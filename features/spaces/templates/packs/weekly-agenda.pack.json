@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 1,
+  "version": 2,
   "title": "Weekly Agenda",
   "description": "Plan the week by day with tasks and meetings side by side, then review on Friday.",
   "forWho": "Solo consultants and small teams",
@@ -72,7 +72,7 @@
           },
           {
             "key": "day",
-            "label": "Day",
+            "label": "Weekday",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -93,9 +93,17 @@
             "required": true
           },
           {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -109,7 +117,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Doing": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "priority",
@@ -153,6 +166,35 @@
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          },
+          {
+            "key": "start_btn",
+            "label": "Start",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_start"
+            }
           }
         ],
         "rows": [
@@ -164,7 +206,8 @@
               "status": "Done",
               "priority": "High",
               "minutes": 120,
-              "owner": "tm-celeste"
+              "owner": "tm-celeste",
+              "on": "@mon"
             }
           },
           {
@@ -175,7 +218,8 @@
               "status": "Done",
               "priority": "Medium",
               "minutes": 20,
-              "owner": "tm-maeve"
+              "owner": "tm-maeve",
+              "on": "@mon"
             }
           },
           {
@@ -186,7 +230,8 @@
               "status": "Doing",
               "priority": "High",
               "minutes": 60,
-              "owner": "tm-rohan"
+              "owner": "tm-rohan",
+              "on": "@mon"
             }
           },
           {
@@ -197,7 +242,8 @@
               "status": "To do",
               "priority": "Low",
               "minutes": 15,
-              "owner": "tm-maeve"
+              "owner": "tm-maeve",
+              "on": "@mon+1d"
             }
           },
           {
@@ -208,7 +254,8 @@
               "status": "To do",
               "priority": "High",
               "minutes": 90,
-              "owner": "tm-celeste"
+              "owner": "tm-celeste",
+              "on": "@mon+1d"
             }
           },
           {
@@ -219,7 +266,8 @@
               "status": "To do",
               "priority": "Medium",
               "minutes": 60,
-              "owner": "tm-rohan"
+              "owner": "tm-rohan",
+              "on": "@mon+1d"
             }
           },
           {
@@ -230,7 +278,8 @@
               "status": "To do",
               "priority": "High",
               "minutes": 75,
-              "owner": "tm-celeste"
+              "owner": "tm-celeste",
+              "on": "@mon+2d"
             }
           },
           {
@@ -241,7 +290,8 @@
               "status": "To do",
               "priority": "Medium",
               "minutes": 30,
-              "owner": "tm-maeve"
+              "owner": "tm-maeve",
+              "on": "@mon+2d"
             }
           },
           {
@@ -252,7 +302,8 @@
               "status": "To do",
               "priority": "Medium",
               "minutes": 45,
-              "owner": "tm-rohan"
+              "owner": "tm-rohan",
+              "on": "@mon+2d"
             }
           },
           {
@@ -263,7 +314,8 @@
               "status": "To do",
               "priority": "High",
               "minutes": 180,
-              "owner": "tm-celeste"
+              "owner": "tm-celeste",
+              "on": "@mon+3d"
             }
           },
           {
@@ -274,7 +326,8 @@
               "status": "To do",
               "priority": "Medium",
               "minutes": 30,
-              "owner": "tm-rohan"
+              "owner": "tm-rohan",
+              "on": "@mon+3d"
             }
           },
           {
@@ -285,7 +338,8 @@
               "status": "To do",
               "priority": "High",
               "minutes": 20,
-              "owner": "tm-maeve"
+              "owner": "tm-maeve",
+              "on": "@mon+3d"
             }
           },
           {
@@ -296,7 +350,8 @@
               "status": "To do",
               "priority": "Medium",
               "minutes": 45,
-              "owner": "tm-celeste"
+              "owner": "tm-celeste",
+              "on": "@mon+4d"
             }
           },
           {
@@ -307,7 +362,8 @@
               "status": "To do",
               "priority": "Low",
               "minutes": 25,
-              "owner": "tm-maeve"
+              "owner": "tm-maeve",
+              "on": "@mon+4d"
             }
           },
           {
@@ -318,7 +374,8 @@
               "status": "To do",
               "priority": "Low",
               "minutes": 40,
-              "owner": "tm-rohan"
+              "owner": "tm-rohan",
+              "on": "@mon+4d"
             }
           }
         ],
@@ -350,7 +407,7 @@
           },
           {
             "key": "day",
-            "label": "Day",
+            "label": "Weekday",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -369,6 +426,14 @@
               "Fri": "pink"
             },
             "required": true
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "time",
@@ -422,7 +487,8 @@
               "day": "Mon",
               "time": "9:00 am",
               "minutes": 30,
-              "kind": "Client call"
+              "kind": "Client call",
+              "on": "@mon"
             }
           },
           {
@@ -432,7 +498,8 @@
               "day": "Mon",
               "time": "4:30 pm",
               "minutes": 15,
-              "kind": "Internal"
+              "kind": "Internal",
+              "on": "@mon"
             }
           },
           {
@@ -442,7 +509,8 @@
               "day": "Tue",
               "time": "10:00 am",
               "minutes": 90,
-              "kind": "Fieldwork"
+              "kind": "Fieldwork",
+              "on": "@mon+1d"
             }
           },
           {
@@ -452,7 +520,8 @@
               "day": "Tue",
               "time": "2:00 pm",
               "minutes": 45,
-              "kind": "Client call"
+              "kind": "Client call",
+              "on": "@mon+1d"
             }
           },
           {
@@ -462,7 +531,8 @@
               "day": "Wed",
               "time": "11:00 am",
               "minutes": 60,
-              "kind": "Internal"
+              "kind": "Internal",
+              "on": "@mon+2d"
             }
           },
           {
@@ -472,7 +542,8 @@
               "day": "Wed",
               "time": "3:30 pm",
               "minutes": 30,
-              "kind": "Internal"
+              "kind": "Internal",
+              "on": "@mon+2d"
             }
           },
           {
@@ -482,7 +553,8 @@
               "day": "Thu",
               "time": "9:30 am",
               "minutes": 180,
-              "kind": "Fieldwork"
+              "kind": "Fieldwork",
+              "on": "@mon+3d"
             }
           },
           {
@@ -492,7 +564,8 @@
               "day": "Thu",
               "time": "2:30 pm",
               "minutes": 30,
-              "kind": "Client call"
+              "kind": "Client call",
+              "on": "@mon+3d"
             }
           },
           {
@@ -502,7 +575,8 @@
               "day": "Fri",
               "time": "9:00 am",
               "minutes": 45,
-              "kind": "Internal"
+              "kind": "Internal",
+              "on": "@mon+4d"
             }
           },
           {
@@ -512,7 +586,8 @@
               "day": "Fri",
               "time": "11:00 am",
               "minutes": 45,
-              "kind": "Networking"
+              "kind": "Networking",
+              "on": "@mon+4d"
             }
           }
         ],
@@ -611,7 +686,93 @@
             }
           }
         ],
-        "independentOf": {}
+        "independentOf": {},
+        "rowTemplates": [
+          {
+            "name": "Week",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Top three outcomes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Second"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Third"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What went well"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What to change next week"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                }
+              ]
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -695,7 +856,36 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_start",
+        "table": "task",
+        "name": "Start",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Doing"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_task",
@@ -773,6 +963,96 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_today",
+        "name": "Today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "This week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "task_nextwk",
+        "name": "Next week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_week"
+          }
+        }
+      },
+      {
+        "token": "meeting_today",
+        "name": "Today",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "meeting_week",
+        "name": "This week",
+        "table": "meeting",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
       }
     ],
     "agent": {
@@ -861,7 +1141,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -943,364 +1223,409 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.2
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Mon"
-                    }
-                  ],
-                  "props": {
-                    "level": 3
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_task"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Mon tasks",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Mon"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meeting",
-                      "view": "all_meeting"
-                    },
-                    "inline": true,
-                    "title": "Meetings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Mon meetings",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Mon"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.2
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Tue"
-                    }
-                  ],
-                  "props": {
-                    "level": 3
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_task"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Tue tasks",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Tue"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meeting",
-                      "view": "all_meeting"
-                    },
-                    "inline": true,
-                    "title": "Meetings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Tue meetings",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Tue"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.2
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Wed"
-                    }
-                  ],
-                  "props": {
-                    "level": 3
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_task"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Wed tasks",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Wed"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meeting",
-                      "view": "all_meeting"
-                    },
-                    "inline": true,
-                    "title": "Meetings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Wed meetings",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Wed"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.2
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Thu"
-                    }
-                  ],
-                  "props": {
-                    "level": 3
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_task"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Thu tasks",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Thu"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meeting",
-                      "view": "all_meeting"
-                    },
-                    "inline": true,
-                    "title": "Meetings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Thu meetings",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Thu"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.2
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Fri"
-                    }
-                  ],
-                  "props": {
-                    "level": 3
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_task"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Fri tasks",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Fri"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meeting",
-                      "view": "all_meeting"
-                    },
-                    "inline": true,
-                    "title": "Meetings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "list",
-                        "name": "Fri meetings",
-                        "icon": "List",
-                        "filters": {
-                          "day": "Fri"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
+              "text": "Mon"
             }
-          ]
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Mon tasks",
+                "icon": "List",
+                "filters": {
+                  "day": "Mon"
+                },
+                "id": "view-0"
+              },
+              {
+                "id": "view-task-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "view-task-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-task-nextwk",
+                "name": "Next week",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "on": {
+                    "relative": "next_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Mon meetings",
+                "icon": "List",
+                "filters": {
+                  "day": "Mon"
+                },
+                "id": "view-0"
+              },
+              {
+                "id": "view-meeting-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "view-meeting-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tue"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Tue tasks",
+                "icon": "List",
+                "filters": {
+                  "day": "Tue"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Tue meetings",
+                "icon": "List",
+                "filters": {
+                  "day": "Tue"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wed"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Wed tasks",
+                "icon": "List",
+                "filters": {
+                  "day": "Wed"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Wed meetings",
+                "icon": "List",
+                "filters": {
+                  "day": "Wed"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Thu"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Thu tasks",
+                "icon": "List",
+                "filters": {
+                  "day": "Thu"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Thu meetings",
+                "icon": "List",
+                "filters": {
+                  "day": "Thu"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fri"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Fri tasks",
+                "icon": "List",
+                "filters": {
+                  "day": "Fri"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Fri meetings",
+                "icon": "List",
+                "filters": {
+                  "day": "Fri"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
         },
         {
           "type": "heading",

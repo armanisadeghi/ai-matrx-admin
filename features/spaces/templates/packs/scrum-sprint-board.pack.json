@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 1,
+  "version": 2,
   "title": "Scrum Sprint Board",
   "description": "Epics, stories, sprints with points rollups, ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -73,7 +73,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -87,7 +87,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Planned"
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "owner",
@@ -99,18 +104,8 @@
             "relationMax": 1
           },
           {
-            "key": "stories",
-            "label": "Stories",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "story",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "story_count",
-            "label": "Story count",
+            "label": "Stories",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -120,7 +115,7 @@
           },
           {
             "key": "points_total",
-            "label": "Points",
+            "label": "Points planned",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -140,6 +135,21 @@
             "filter": {
               "status": "Done"
             }
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Points planned} > 0, ROUND({Points done} / {Points planned} * 100, 0), 0)"
+          },
+          {
+            "key": "outcome",
+            "label": "Outcome",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -149,12 +159,7 @@
               "epic_name": "Lantern mechanics",
               "status": "Done",
               "owner": "tm-fatou",
-              "stories": [
-                "us-01",
-                "us-02",
-                "us-03",
-                "us-04"
-              ]
+              "outcome": "Players can light, carry and swap a lantern"
             }
           },
           {
@@ -163,12 +168,7 @@
               "epic_name": "Harbor level",
               "status": "Done",
               "owner": "tm-nora",
-              "stories": [
-                "us-06",
-                "us-07",
-                "us-08",
-                "us-10"
-              ]
+              "outcome": "The harbor level is explorable end to end"
             }
           },
           {
@@ -177,12 +177,7 @@
               "epic_name": "Tides",
               "status": "In progress",
               "owner": "tm-nora",
-              "stories": [
-                "us-11",
-                "us-12",
-                "us-13",
-                "us-14"
-              ]
+              "outcome": "Tide cycles change what the player can reach"
             }
           },
           {
@@ -191,13 +186,7 @@
               "epic_name": "Platform and save system",
               "status": "In progress",
               "owner": "tm-caleb",
-              "stories": [
-                "us-05",
-                "us-09",
-                "us-15",
-                "us-16",
-                "us-20"
-              ]
+              "outcome": "Saving, loading and settings never lose progress"
             }
           },
           {
@@ -206,11 +195,7 @@
               "epic_name": "Ambient life and sound",
               "status": "Planned",
               "owner": "tm-isolde",
-              "stories": [
-                "us-17",
-                "us-18",
-                "us-19"
-              ]
+              "outcome": "Wind, birds and a music layer that reacts to the lantern"
             }
           },
           {
@@ -219,16 +204,12 @@
               "epic_name": "Polish and accessibility",
               "status": "Planned",
               "owner": "tm-caleb",
-              "stories": [
-                "us-21",
-                "us-22"
-              ]
+              "outcome": "Controller remapping, subtitles and colour-blind modes"
             }
           }
         ],
         "independentOf": {
-          "owner": "Anyone can own an epic.",
-          "stories": "The two sides move on their own schedule and status; neither forces the other."
+          "owner": "Anyone can own an epic."
         }
       },
       {
@@ -330,16 +311,6 @@
             ]
           },
           {
-            "key": "stories",
-            "label": "Stories",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "story",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "committed",
             "label": "Points committed",
             "parityType": "rollup",
@@ -363,6 +334,22 @@
             }
           },
           {
+            "key": "completion",
+            "label": "Completion (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Points committed} > 0, ROUND({Points completed} / {Points committed} * 100, 0), 0)"
+          },
+          {
+            "key": "load",
+            "label": "Load",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Points committed} > {Capacity (points)}, \"Over capacity\", \"Within capacity\")"
+          },
+          {
             "key": "story_count",
             "label": "Story count",
             "parityType": "rollup",
@@ -383,14 +370,7 @@
               "starts_on": "@today-41d",
               "ends_on": "@today-28d",
               "goal": "Players can light and carry a lantern",
-              "capacity": 34,
-              "stories": [
-                "us-01",
-                "us-02",
-                "us-03",
-                "us-04",
-                "us-05"
-              ]
+              "capacity": 34
             }
           },
           {
@@ -402,14 +382,7 @@
               "starts_on": "@today-27d",
               "ends_on": "@today-14d",
               "goal": "The harbor level is walkable end to end",
-              "capacity": 34,
-              "stories": [
-                "us-06",
-                "us-07",
-                "us-08",
-                "us-09",
-                "us-10"
-              ]
+              "capacity": 34
             }
           },
           {
@@ -421,15 +394,7 @@
               "starts_on": "@today-13d",
               "ends_on": "@today",
               "goal": "Tides change the paths in the harbor",
-              "capacity": 32,
-              "stories": [
-                "us-11",
-                "us-12",
-                "us-13",
-                "us-14",
-                "us-15",
-                "us-16"
-              ]
+              "capacity": 32
             }
           },
           {
@@ -441,12 +406,7 @@
               "starts_on": "@today+1d",
               "ends_on": "@today+14d",
               "goal": "Ambient creatures and first audio pass",
-              "capacity": 32,
-              "stories": [
-                "us-17",
-                "us-18",
-                "us-19"
-              ]
+              "capacity": 32
             }
           }
         ],
@@ -474,9 +434,6 @@
               "from": 1
             }
           ]
-        },
-        "independentOf": {
-          "stories": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -502,9 +459,34 @@
             "required": true
           },
           {
+            "key": "story_no",
+            "label": "Story number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sprint",
+            "label": "Sprint",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sprint",
+            "relationMax": 1
+          },
+          {
+            "key": "epic",
+            "label": "Epic",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "epic",
+            "relationMax": 1
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -522,7 +504,14 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Backlog"
+            "default": "Backlog",
+            "statusGroups": {
+              "Backlog": "todo",
+              "Ready": "todo",
+              "In progress": "in_progress",
+              "In review": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "type",
@@ -575,11 +564,66 @@
             "contextPolicy": "include"
           },
           {
+            "key": "blocked_by",
+            "label": "Blocked by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "story",
+            "relationMax": 1
+          },
+          {
+            "key": "blocks_count",
+            "label": "Blocking",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "blocking",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
             "key": "pull_request",
             "label": "Pull request",
             "parityType": "url",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "start_btn",
+            "label": "Start",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "story_start"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "story_done"
+            }
           }
         ],
         "rows": [
@@ -592,7 +636,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-fatou",
-              "pull_request": "https://git.lumenhaus-games.net/pull/300"
+              "pull_request": "https://git.lumenhaus-games.net/pull/300",
+              "epic": "ep-1",
+              "sprint": "sp-1"
             }
           },
           {
@@ -604,7 +650,9 @@
               "points": 3,
               "blocked": false,
               "assignee": "tm-fatou",
-              "pull_request": "https://git.lumenhaus-games.net/pull/301"
+              "pull_request": "https://git.lumenhaus-games.net/pull/301",
+              "epic": "ep-1",
+              "sprint": "sp-1"
             }
           },
           {
@@ -616,7 +664,9 @@
               "points": 3,
               "blocked": false,
               "assignee": "tm-nora",
-              "pull_request": "https://git.lumenhaus-games.net/pull/302"
+              "pull_request": "https://git.lumenhaus-games.net/pull/302",
+              "epic": "ep-1",
+              "sprint": "sp-1"
             }
           },
           {
@@ -628,7 +678,9 @@
               "points": 2,
               "blocked": false,
               "assignee": "tm-sven",
-              "pull_request": "https://git.lumenhaus-games.net/pull/303"
+              "pull_request": "https://git.lumenhaus-games.net/pull/303",
+              "epic": "ep-1",
+              "sprint": "sp-1"
             }
           },
           {
@@ -640,7 +692,9 @@
               "points": 8,
               "blocked": false,
               "assignee": "tm-emeka",
-              "pull_request": "https://git.lumenhaus-games.net/pull/304"
+              "pull_request": "https://git.lumenhaus-games.net/pull/304",
+              "epic": "ep-4",
+              "sprint": "sp-1"
             }
           },
           {
@@ -652,7 +706,9 @@
               "points": 8,
               "blocked": false,
               "assignee": "tm-nora",
-              "pull_request": "https://git.lumenhaus-games.net/pull/305"
+              "pull_request": "https://git.lumenhaus-games.net/pull/305",
+              "epic": "ep-2",
+              "sprint": "sp-2"
             }
           },
           {
@@ -664,7 +720,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-fatou",
-              "pull_request": "https://git.lumenhaus-games.net/pull/306"
+              "pull_request": "https://git.lumenhaus-games.net/pull/306",
+              "epic": "ep-2",
+              "sprint": "sp-2"
             }
           },
           {
@@ -676,7 +734,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-fatou",
-              "pull_request": "https://git.lumenhaus-games.net/pull/307"
+              "pull_request": "https://git.lumenhaus-games.net/pull/307",
+              "epic": "ep-2",
+              "sprint": "sp-2"
             }
           },
           {
@@ -688,7 +748,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-sven",
-              "pull_request": "https://git.lumenhaus-games.net/pull/308"
+              "pull_request": "https://git.lumenhaus-games.net/pull/308",
+              "epic": "ep-4",
+              "sprint": "sp-2"
             }
           },
           {
@@ -700,7 +762,9 @@
               "points": 3,
               "blocked": false,
               "assignee": "tm-sven",
-              "pull_request": "https://git.lumenhaus-games.net/pull/309"
+              "pull_request": "https://git.lumenhaus-games.net/pull/309",
+              "epic": "ep-2",
+              "sprint": "sp-2"
             }
           },
           {
@@ -712,7 +776,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-nora",
-              "pull_request": "https://git.lumenhaus-games.net/pull/310"
+              "pull_request": "https://git.lumenhaus-games.net/pull/310",
+              "epic": "ep-3",
+              "sprint": "sp-3"
             }
           },
           {
@@ -724,7 +790,9 @@
               "points": 8,
               "blocked": false,
               "assignee": "tm-fatou",
-              "pull_request": "https://git.lumenhaus-games.net/pull/311"
+              "pull_request": "https://git.lumenhaus-games.net/pull/311",
+              "epic": "ep-3",
+              "sprint": "sp-3"
             }
           },
           {
@@ -736,7 +804,9 @@
               "points": 3,
               "blocked": false,
               "assignee": "tm-nora",
-              "pull_request": "https://git.lumenhaus-games.net/pull/312"
+              "pull_request": "https://git.lumenhaus-games.net/pull/312",
+              "epic": "ep-3",
+              "sprint": "sp-3"
             }
           },
           {
@@ -748,7 +818,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-sven",
-              "pull_request": "https://git.lumenhaus-games.net/pull/313"
+              "pull_request": "https://git.lumenhaus-games.net/pull/313",
+              "epic": "ep-3",
+              "sprint": "sp-3"
             }
           },
           {
@@ -759,7 +831,10 @@
               "type": "Story",
               "points": 3,
               "blocked": true,
-              "assignee": "tm-sven"
+              "assignee": "tm-sven",
+              "epic": "ep-4",
+              "sprint": "sp-3",
+              "blocked_by": "us-13"
             }
           },
           {
@@ -771,7 +846,9 @@
               "points": 5,
               "blocked": false,
               "assignee": "tm-emeka",
-              "pull_request": "https://git.lumenhaus-games.net/pull/315"
+              "pull_request": "https://git.lumenhaus-games.net/pull/315",
+              "epic": "ep-4",
+              "sprint": "sp-3"
             }
           },
           {
@@ -782,7 +859,9 @@
               "type": "Story",
               "points": 8,
               "blocked": false,
-              "assignee": "tm-fatou"
+              "assignee": "tm-fatou",
+              "epic": "ep-5",
+              "sprint": "sp-4"
             }
           },
           {
@@ -793,7 +872,9 @@
               "type": "Story",
               "points": 5,
               "blocked": false,
-              "assignee": "tm-nora"
+              "assignee": "tm-nora",
+              "epic": "ep-5",
+              "sprint": "sp-4"
             }
           },
           {
@@ -804,7 +885,9 @@
               "type": "Story",
               "points": 5,
               "blocked": false,
-              "assignee": "tm-sven"
+              "assignee": "tm-sven",
+              "epic": "ep-5",
+              "sprint": "sp-4"
             }
           },
           {
@@ -814,7 +897,8 @@
               "status": "Backlog",
               "type": "Story",
               "points": 8,
-              "blocked": false
+              "blocked": false,
+              "epic": "ep-4"
             }
           },
           {
@@ -824,7 +908,8 @@
               "status": "Backlog",
               "type": "Story",
               "points": 13,
-              "blocked": false
+              "blocked": false,
+              "epic": "ep-6"
             }
           },
           {
@@ -834,12 +919,15 @@
               "status": "Backlog",
               "type": "Story",
               "points": 5,
-              "blocked": false
+              "blocked": false,
+              "epic": "ep-6"
             }
           }
         ],
         "independentOf": {
-          "assignee": "Anyone can pick up a story."
+          "assignee": "Anyone can pick up a story.",
+          "epic": "The two sides move on their own schedule and status; neither forces the other.",
+          "sprint": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -965,26 +1053,6 @@
         "inverseKey": "epics_owned"
       },
       {
-        "describes": "An epic is made of stories.",
-        "fromTable": "epic",
-        "fromField": "stories",
-        "toTable": "story",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "epic"
-      },
-      {
-        "describes": "A sprint holds the stories the team committed to.",
-        "fromTable": "sprint",
-        "fromField": "stories",
-        "toTable": "story",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "sprint"
-      },
-      {
         "describes": "Assignee links to team_member.",
         "fromTable": "story",
         "fromField": "assignee",
@@ -1013,6 +1081,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "retro_actions"
+      },
+      {
+        "describes": "Story belongs to a epic.",
+        "fromTable": "story",
+        "fromField": "epic",
+        "toTable": "epic",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "stories"
+      },
+      {
+        "describes": "Story belongs to a sprint.",
+        "fromTable": "story",
+        "fromField": "sprint",
+        "toTable": "sprint",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "stories"
+      },
+      {
+        "describes": "A story can wait on another story.",
+        "fromTable": "story",
+        "fromField": "blocked_by",
+        "toTable": "story",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "blocking"
       }
     ],
     "sharedBlocks": [
@@ -1109,7 +1207,36 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "story_start",
+        "table": "story",
+        "name": "Start",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "story_done",
+        "table": "story",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_story",
@@ -1194,6 +1321,17 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "retro_this_month",
+        "name": "Held this month",
+        "table": "retro",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -1282,7 +1420,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2162,6 +2300,17 @@
                 "name": "Latest",
                 "icon": "List",
                 "id": "view-1"
+              },
+              {
+                "id": "view-retro-this-month",
+                "name": "Held this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "held_on": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"

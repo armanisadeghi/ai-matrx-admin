@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 1,
+  "version": 2,
   "title": "Projects, Tasks & Sprints",
   "description": "Projects with tasks, two-week sprints, points rollups and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -73,7 +73,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -89,7 +89,13 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Planning"
+            "default": "Planning",
+            "statusGroups": {
+              "Planning": "todo",
+              "In progress": "in_progress",
+              "On hold": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "priority",
@@ -153,18 +159,8 @@
             ]
           },
           {
-            "key": "tasks",
-            "label": "Tasks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "task",
-            "relationMax": 40,
-            "multi": true
-          },
-          {
             "key": "task_count",
-            "label": "Task count",
+            "label": "Tasks",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -194,6 +190,14 @@
             "filter": {
               "status": "Done"
             }
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Points planned} > 0, ROUND({Points done} / {Points planned} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -206,18 +210,7 @@
               "lead": "tm-felix",
               "start_on": "@today-30d",
               "due_on": "@today+25d",
-              "budget": 64000,
-              "tasks": [
-                "tk-01",
-                "tk-02",
-                "tk-03",
-                "tk-04",
-                "tk-05",
-                "tk-06",
-                "tk-07",
-                "tk-08",
-                "tk-18"
-              ]
+              "budget": 64000
             }
           },
           {
@@ -229,15 +222,7 @@
               "lead": "tm-nadia",
               "start_on": "@today-14d",
               "due_on": "@today+40d",
-              "budget": 38500,
-              "tasks": [
-                "tk-09",
-                "tk-10",
-                "tk-11",
-                "tk-12",
-                "tk-13",
-                "tk-19"
-              ]
+              "budget": 38500
             }
           },
           {
@@ -249,11 +234,7 @@
               "lead": "tm-tomas",
               "start_on": "@today-60d",
               "due_on": "@today-12d",
-              "budget": 9200,
-              "tasks": [
-                "tk-14",
-                "tk-15"
-              ]
+              "budget": 9200
             }
           },
           {
@@ -265,11 +246,7 @@
               "lead": "tm-dana",
               "start_on": "@today+14d",
               "due_on": "@today+75d",
-              "budget": 22000,
-              "tasks": [
-                "tk-16",
-                "tk-17"
-              ]
+              "budget": 22000
             }
           }
         ],
@@ -280,8 +257,7 @@
           ]
         ],
         "independentOf": {
-          "lead": "The two sides move on their own schedule and status; neither forces the other.",
-          "tasks": "The two sides move on their own schedule and status; neither forces the other."
+          "lead": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -349,16 +325,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "tasks",
-            "label": "Tasks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "task",
-            "relationMax": 40,
-            "multi": true
-          },
-          {
             "key": "committed",
             "label": "Points committed",
             "parityType": "rollup",
@@ -380,6 +346,14 @@
             "filter": {
               "status": "Done"
             }
+          },
+          {
+            "key": "completion",
+            "label": "Completion (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Points committed} > 0, ROUND({Points completed} / {Points committed} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -390,13 +364,7 @@
               "phase": "Past",
               "starts_on": "@today-34d",
               "ends_on": "@today-21d",
-              "goal": "Ship the new cart summary behind a flag",
-              "tasks": [
-                "tk-01",
-                "tk-02",
-                "tk-14",
-                "tk-15"
-              ]
+              "goal": "Ship the new cart summary behind a flag"
             }
           },
           {
@@ -406,13 +374,7 @@
               "phase": "Past",
               "starts_on": "@today-20d",
               "ends_on": "@today-7d",
-              "goal": "Payment retries and the first push notification",
-              "tasks": [
-                "tk-03",
-                "tk-04",
-                "tk-09",
-                "tk-10"
-              ]
+              "goal": "Payment retries and the first push notification"
             }
           },
           {
@@ -422,14 +384,7 @@
               "phase": "Current",
               "starts_on": "@today-6d",
               "ends_on": "@today+7d",
-              "goal": "Checkout address step and notification settings",
-              "tasks": [
-                "tk-05",
-                "tk-06",
-                "tk-07",
-                "tk-11",
-                "tk-12"
-              ]
+              "goal": "Checkout address step and notification settings"
             }
           },
           {
@@ -439,11 +394,7 @@
               "phase": "Next",
               "starts_on": "@today+8d",
               "ends_on": "@today+21d",
-              "goal": "Search tuning kickoff and checkout polish",
-              "tasks": [
-                "tk-08",
-                "tk-13"
-              ]
+              "goal": "Search tuning kickoff and checkout polish"
             }
           }
         ],
@@ -471,9 +422,6 @@
               "from": 8
             }
           ]
-        },
-        "independentOf": {
-          "tasks": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -499,9 +447,46 @@
             "required": true
           },
           {
+            "key": "parent_task",
+            "label": "Parent task",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 1
+          },
+          {
+            "key": "sub_total",
+            "label": "Sub-tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sub_tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "sprint",
+            "label": "Sprint",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sprint",
+            "relationMax": 1
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -517,7 +502,13 @@
               "Done": "green"
             },
             "required": true,
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Blocked": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "type",
@@ -603,6 +594,42 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
+          },
+          {
+            "key": "start_btn",
+            "label": "Start",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_start"
+            }
           }
         ],
         "rows": [
@@ -616,7 +643,9 @@
               "points": 3,
               "type": "Feature",
               "due_on": "@today-28d",
-              "pull_request": "https://code.harborline-labs.net/pull/400"
+              "pull_request": "https://code.harborline-labs.net/pull/400",
+              "project": "pr-checkout",
+              "sprint": "sp-21"
             }
           },
           {
@@ -629,7 +658,9 @@
               "points": 5,
               "type": "Feature",
               "due_on": "@today-24d",
-              "pull_request": "https://code.harborline-labs.net/pull/401"
+              "pull_request": "https://code.harborline-labs.net/pull/401",
+              "project": "pr-checkout",
+              "sprint": "sp-21"
             }
           },
           {
@@ -642,7 +673,9 @@
               "points": 5,
               "type": "Feature",
               "due_on": "@today-12d",
-              "pull_request": "https://code.harborline-labs.net/pull/402"
+              "pull_request": "https://code.harborline-labs.net/pull/402",
+              "project": "pr-checkout",
+              "sprint": "sp-22"
             }
           },
           {
@@ -655,7 +688,9 @@
               "points": 2,
               "type": "Bug",
               "due_on": "@today-10d",
-              "pull_request": "https://code.harborline-labs.net/pull/403"
+              "pull_request": "https://code.harborline-labs.net/pull/403",
+              "project": "pr-checkout",
+              "sprint": "sp-22"
             }
           },
           {
@@ -667,8 +702,11 @@
               "assignee": "tm-felix",
               "points": 8,
               "type": "Feature",
-              "due_on": "@today+3d",
-              "pull_request": "https://code.harborline-labs.net/pull/404"
+              "due_on": "@today",
+              "pull_request": "https://code.harborline-labs.net/pull/404",
+              "project": "pr-checkout",
+              "sprint": "sp-23",
+              "parent_task": "tk-04"
             }
           },
           {
@@ -680,8 +718,11 @@
               "assignee": "tm-nadia",
               "points": 5,
               "type": "Feature",
-              "due_on": "@today+5d",
-              "pull_request": "https://code.harborline-labs.net/pull/405"
+              "due_on": "@today-4d",
+              "pull_request": "https://code.harborline-labs.net/pull/405",
+              "project": "pr-checkout",
+              "sprint": "sp-23",
+              "parent_task": "tk-04"
             }
           },
           {
@@ -693,7 +734,9 @@
               "assignee": "tm-tomas",
               "points": 2,
               "type": "Bug",
-              "due_on": "@today+6d"
+              "due_on": "@today-9d",
+              "project": "pr-checkout",
+              "sprint": "sp-23"
             }
           },
           {
@@ -705,7 +748,9 @@
               "assignee": "tm-kofi",
               "points": 3,
               "type": "Chore",
-              "due_on": "@today+16d"
+              "due_on": "@today+3d",
+              "project": "pr-checkout",
+              "sprint": "sp-24"
             }
           },
           {
@@ -718,7 +763,9 @@
               "points": 2,
               "type": "Spike",
               "due_on": "@today-9d",
-              "pull_request": "https://code.harborline-labs.net/pull/408"
+              "pull_request": "https://code.harborline-labs.net/pull/408",
+              "project": "pr-mobile",
+              "sprint": "sp-22"
             }
           },
           {
@@ -731,7 +778,9 @@
               "points": 5,
               "type": "Feature",
               "due_on": "@today-8d",
-              "pull_request": "https://code.harborline-labs.net/pull/409"
+              "pull_request": "https://code.harborline-labs.net/pull/409",
+              "project": "pr-mobile",
+              "sprint": "sp-22"
             }
           },
           {
@@ -743,8 +792,10 @@
               "assignee": "tm-kofi",
               "points": 5,
               "type": "Feature",
-              "due_on": "@today+4d",
-              "pull_request": "https://code.harborline-labs.net/pull/410"
+              "due_on": "@today+2d",
+              "pull_request": "https://code.harborline-labs.net/pull/410",
+              "project": "pr-mobile",
+              "sprint": "sp-23"
             }
           },
           {
@@ -756,7 +807,9 @@
               "assignee": "tm-tomas",
               "points": 3,
               "type": "Feature",
-              "due_on": "@today+7d"
+              "due_on": "@today+5d",
+              "project": "pr-mobile",
+              "sprint": "sp-23"
             }
           },
           {
@@ -768,7 +821,9 @@
               "assignee": "tm-nadia",
               "points": 8,
               "type": "Feature",
-              "due_on": "@today+19d"
+              "due_on": "@today+19d",
+              "project": "pr-mobile",
+              "sprint": "sp-24"
             }
           },
           {
@@ -781,7 +836,9 @@
               "points": 3,
               "type": "Feature",
               "due_on": "@today-25d",
-              "pull_request": "https://code.harborline-labs.net/pull/413"
+              "pull_request": "https://code.harborline-labs.net/pull/413",
+              "project": "pr-billing",
+              "sprint": "sp-21"
             }
           },
           {
@@ -794,7 +851,9 @@
               "points": 1,
               "type": "Bug",
               "due_on": "@today-22d",
-              "pull_request": "https://code.harborline-labs.net/pull/414"
+              "pull_request": "https://code.harborline-labs.net/pull/414",
+              "project": "pr-billing",
+              "sprint": "sp-21"
             }
           },
           {
@@ -806,7 +865,8 @@
               "assignee": "tm-ines",
               "points": 3,
               "type": "Spike",
-              "due_on": "@today+16d"
+              "due_on": "@today+16d",
+              "project": "pr-search"
             }
           },
           {
@@ -818,7 +878,8 @@
               "assignee": "tm-ines",
               "points": 5,
               "type": "Chore",
-              "due_on": "@today+24d"
+              "due_on": "@today+24d",
+              "project": "pr-search"
             }
           },
           {
@@ -830,7 +891,8 @@
               "assignee": "tm-dana",
               "points": 3,
               "type": "Chore",
-              "due_on": "@today+30d"
+              "due_on": "@today+30d",
+              "project": "pr-checkout"
             }
           },
           {
@@ -842,13 +904,112 @@
               "assignee": "tm-felix",
               "points": 5,
               "type": "Bug",
-              "due_on": "@today+12d"
+              "due_on": "@today+12d",
+              "project": "pr-mobile"
             }
           }
         ],
         "independentOf": {
-          "assignee": "Anyone can pick up a task, whenever they joined."
-        }
+          "assignee": "Anyone can pick up a task, whenever they joined.",
+          "project": "The two sides move on their own schedule and status; neither forces the other.",
+          "sprint": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this matters"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One or two lines: who asked, what breaks or improves when this is done."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Acceptance criteria"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "The behaviour a reviewer can check by hand"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tests added or updated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Docs or release note written if users will notice"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes and links"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Design file, related pull requests, decisions made while working."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -863,26 +1024,6 @@
         "inverseKey": "projects_led"
       },
       {
-        "describes": "A project holds its tasks.",
-        "fromTable": "project",
-        "fromField": "tasks",
-        "toTable": "task",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "project"
-      },
-      {
-        "describes": "A sprint holds the tasks the team committed to.",
-        "fromTable": "sprint",
-        "fromField": "tasks",
-        "toTable": "task",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "sprint"
-      },
-      {
         "describes": "Assignee links to team_member.",
         "fromTable": "task",
         "fromField": "assignee",
@@ -891,6 +1032,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "tasks_assigned"
+      },
+      {
+        "describes": "Task belongs to a project.",
+        "fromTable": "task",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Task belongs to a sprint.",
+        "fromTable": "task",
+        "fromField": "sprint",
+        "toTable": "sprint",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Parent task links to another task.",
+        "fromTable": "task",
+        "fromField": "parent_task",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sub_tasks"
       }
     ],
     "sharedBlocks": [
@@ -991,7 +1162,36 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_start",
+        "table": "task",
+        "name": "Start",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_project",
@@ -1076,6 +1276,61 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress",
+            "Blocked"
+          ]
+        }
       }
     ],
     "agent": {
@@ -1164,7 +1419,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1976,6 +2231,53 @@
       },
       "blocks": [
         {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping the backlog healthy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every item has a type, a priority and, once it is planned, points."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything untouched for two sprints is either re-argued in planning or closed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bugs are triaged within a day; features wait for the next planning session."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The Overdue and Due this week lists above are the first thing to read each morning."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Sun"
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
@@ -2031,6 +2333,61 @@
                   ]
                 },
                 "id": "view-2"
+              },
+              {
+                "id": "view-task-week",
+                "name": "Due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress",
+                    "Blocked"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-0"

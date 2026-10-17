@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 1,
+  "version": 2,
   "title": "Bug Tracker",
   "description": "Report, triage and fix bugs by severity, with a board, a triage guide and release rollups.",
   "forWho": "Engineering and support teams",
@@ -73,7 +73,7 @@
           {
             "key": "state",
             "label": "State",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -87,7 +87,12 @@
               "Released": "green"
             },
             "required": true,
-            "default": "Planned"
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Rolling out": "in_progress",
+              "Released": "done"
+            }
           },
           {
             "key": "release_on",
@@ -98,18 +103,8 @@
             "format": "date"
           },
           {
-            "key": "fixes",
-            "label": "Bugs fixed",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "bug",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "fixed_count",
-            "label": "Bugs fixed (count)",
+            "label": "Bugs fixed",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -129,6 +124,21 @@
             "filter": {
               "severity": "Critical"
             }
+          },
+          {
+            "key": "critical_pct",
+            "label": "Critical share (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Bugs fixed} > 0, ROUND({Critical fixed} / {Bugs fixed} * 100, 0), 0)"
+          },
+          {
+            "key": "highlights",
+            "label": "Highlights",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -138,10 +148,7 @@
               "version": "v4.8.0",
               "state": "Released",
               "release_on": "@today-40d",
-              "fixes": [
-                "bg-01",
-                "bg-02"
-              ]
+              "highlights": "Calendar and export reliability fixes"
             }
           },
           {
@@ -150,11 +157,7 @@
               "version": "v4.9.0",
               "state": "Released",
               "release_on": "@today-12d",
-              "fixes": [
-                "bg-03",
-                "bg-04",
-                "bg-05"
-              ]
+              "highlights": "Push notification and sync fixes"
             }
           },
           {
@@ -163,11 +166,7 @@
               "version": "v4.9.1",
               "state": "Rolling out",
               "release_on": "@today+3d",
-              "fixes": [
-                "bg-07",
-                "bg-08",
-                "bg-09"
-              ]
+              "highlights": "Faster search and the settings cleanup"
             }
           },
           {
@@ -176,13 +175,10 @@
               "version": "v5.0.0",
               "state": "Planned",
               "release_on": "@today+35d",
-              "fixes": []
+              "highlights": "Offline mode and the new onboarding flow"
             }
           }
-        ],
-        "independentOf": {
-          "fixes": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        ]
       },
       {
         "token": "bug",
@@ -207,9 +203,25 @@
             "required": true
           },
           {
+            "key": "bug_no",
+            "label": "Bug number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "release",
+            "label": "Release",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "release",
+            "relationMax": 1
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -231,7 +243,35 @@
               "Won’t fix": "brown"
             },
             "required": true,
-            "default": "Reported"
+            "default": "Reported",
+            "statusGroups": {
+              "Reported": "todo",
+              "Triaged": "in_progress",
+              "In progress": "in_progress",
+              "In review": "in_progress",
+              "Fixed": "done",
+              "Duplicate": "done",
+              "Won’t fix": "done"
+            }
+          },
+          {
+            "key": "duplicate_of",
+            "label": "Duplicate of",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "bug",
+            "relationMax": 1
+          },
+          {
+            "key": "dup_count",
+            "label": "Duplicates",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "duplicates",
+            "pick": "title",
+            "agg": "count"
           },
           {
             "key": "severity",
@@ -349,6 +389,49 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "DATEDIFF({Reported}, TODAY(), 'days')"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "filed_by",
+            "label": "Filed by",
+            "parityType": "created_by",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fixed_btn",
+            "label": "Mark fixed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "bug_fixed"
+            }
+          },
+          {
+            "key": "start_btn",
+            "label": "Start work",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "bug_start"
+            }
           }
         ],
         "rows": [
@@ -361,12 +444,13 @@
               "priority": "P1",
               "assignee": "tm-darius",
               "reporter": "tm-thea",
-              "reported_on": "@today-55d",
+              "reported_on": "@today",
               "environment": "Prod",
               "component": [
                 "API"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1200"
+              "link": "https://code.quillpoint-apps.net/issues/1200",
+              "release": "rl-0"
             }
           },
           {
@@ -384,7 +468,8 @@
                 "Web",
                 "Auth"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1201"
+              "link": "https://code.quillpoint-apps.net/issues/1201",
+              "release": "rl-0"
             }
           },
           {
@@ -401,7 +486,8 @@
               "component": [
                 "Mobile"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1202"
+              "link": "https://code.quillpoint-apps.net/issues/1202",
+              "release": "rl-1"
             }
           },
           {
@@ -419,7 +505,8 @@
                 "API",
                 "Search"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1203"
+              "link": "https://code.quillpoint-apps.net/issues/1203",
+              "release": "rl-1"
             }
           },
           {
@@ -436,7 +523,8 @@
               "component": [
                 "Web"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1204"
+              "link": "https://code.quillpoint-apps.net/issues/1204",
+              "release": "rl-1"
             }
           },
           {
@@ -452,7 +540,8 @@
               "environment": "Prod",
               "component": [
                 "API"
-              ]
+              ],
+              "duplicate_of": "bg-02"
             }
           },
           {
@@ -470,7 +559,8 @@
                 "API",
                 "Web"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1206"
+              "link": "https://code.quillpoint-apps.net/issues/1206",
+              "release": "rl-2"
             }
           },
           {
@@ -487,7 +577,8 @@
               "component": [
                 "Web"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1207"
+              "link": "https://code.quillpoint-apps.net/issues/1207",
+              "release": "rl-2"
             }
           },
           {
@@ -505,7 +596,8 @@
                 "Mobile",
                 "Auth"
               ],
-              "link": "https://code.quillpoint-apps.net/issues/1208"
+              "link": "https://code.quillpoint-apps.net/issues/1208",
+              "release": "rl-2"
             }
           },
           {
@@ -612,7 +704,8 @@
         ],
         "independentOf": {
           "assignee": "Anyone can take a bug.",
-          "reporter": "Anyone can report a bug."
+          "reporter": "Anyone can report a bug.",
+          "release": "The two sides move on their own schedule and status; neither forces the other."
         },
         "statusImplies": [
           {
@@ -627,20 +720,132 @@
               "priority"
             ]
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Bug report",
+            "values": {
+              "status": "Reported"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Paste this into any bug before it is triaged."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps to reproduce"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Go to …"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Click …"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What you expected"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Describe the result you were counting on."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What happened instead"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Include the exact message, and a screenshot if you can."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Environment and version"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Browser or device"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Account used (not the password)"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
     "relationships": [
-      {
-        "describes": "A release fixes several bugs.",
-        "fromTable": "release",
-        "fromField": "fixes",
-        "toTable": "bug",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "fixed_in"
-      },
       {
         "describes": "Assignee links to team_member.",
         "fromTable": "bug",
@@ -660,6 +865,26 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "bugs_reported"
+      },
+      {
+        "describes": "Bug belongs to a release.",
+        "fromTable": "bug",
+        "fromField": "release",
+        "toTable": "release",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "fixes"
+      },
+      {
+        "describes": "A duplicate points at the bug it repeats.",
+        "fromTable": "bug",
+        "fromField": "duplicate_of",
+        "toTable": "bug",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "duplicates"
       }
     ],
     "sharedBlocks": [
@@ -764,7 +989,36 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "bug_fixed",
+        "table": "bug",
+        "name": "Mark fixed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Fixed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "bug_start",
+        "table": "bug",
+        "name": "Start work",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_bug",
@@ -828,6 +1082,49 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "bug_new_week",
+        "name": "Reported this week",
+        "table": "bug",
+        "kind": "grid",
+        "within": {
+          "reported_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "bug_last30",
+        "name": "Reported in 30 days",
+        "table": "bug",
+        "kind": "grid",
+        "within": {
+          "reported_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "bug_mine",
+        "name": "Filed by me",
+        "table": "bug",
+        "kind": "grid",
+        "me": [
+          "filed_by"
+        ]
+      },
+      {
+        "token": "release_this_month",
+        "name": "Releasing this month",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -916,7 +1213,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -978,12 +1275,6 @@
                 {
                   "type": "page",
                   "props": {
-                    "spaceId": "page:bug-report-outline"
-                  }
-                },
-                {
-                  "type": "page",
-                  "props": {
                     "spaceId": "page:release-log"
                   }
                 },
@@ -1007,6 +1298,14 @@
           "props": {
             "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any bug to find a report outline (steps, expected, actual, where) ready to fill in."
+            }
+          ]
         },
         {
           "type": "database",
@@ -1068,6 +1367,26 @@
                 "icon": "Calendar",
                 "dateField": "reported_on",
                 "id": "view-4"
+              },
+              {
+                "id": "view-bug-new-week",
+                "name": "Reported this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "reported_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-bug-mine",
+                "name": "Filed by me",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "filed_by"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1134,119 +1453,102 @@
       },
       "blocks": [
         {
-          "type": "columnList",
-          "children": [
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "bug",
-                      "view": "all_bug"
-                    },
-                    "inline": true,
-                    "title": "Bugs",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "chart",
-                        "name": "Bugs by status",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
             },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Bugs by status",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-0"
               },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "bug",
-                      "view": "all_bug"
-                    },
-                    "inline": true,
-                    "title": "Bugs",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "chart",
-                        "name": "Bugs by severity",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "severity",
-                          "op": "count"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
+              {
+                "id": "view-bug-last30",
+                "name": "Reported in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "reported_on": {
+                    "relative": "past_days",
+                    "n": 30
                   }
                 }
-              ]
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
             },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "bug",
-                      "view": "all_bug"
-                    },
-                    "inline": true,
-                    "title": "Bugs",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "chart",
-                        "name": "Bugs by environment",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "environment",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
-            }
-          ]
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Bugs by severity",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "severity",
+                  "op": "count"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
+            },
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Bugs by environment",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "environment",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
         },
         {
           "type": "heading",
@@ -1610,124 +1912,6 @@
       ]
     },
     {
-      "key": "bug-report-outline",
-      "parent": "bug-tracker",
-      "title": "Bug report outline",
-      "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Paste this into any bug before it is triaged."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Steps to reproduce"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Go to …"
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Click …"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What you expected"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Describe the result you were counting on."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What happened instead"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Include the exact message, and a screenshot if you can."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Where"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Environment and version"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Browser or device"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Account used (not the password)"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "key": "release-log",
       "parent": "bug-tracker",
       "title": "Release log",
@@ -1766,9 +1950,51 @@
                 "icon": "Calendar",
                 "dateField": "release_on",
                 "id": "view-1"
+              },
+              {
+                "id": "view-release-this-month",
+                "name": "Releasing this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "release_on": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How releases work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each release collects the bugs it fixes. Open a bug, set its release, and the counts above update. A release moves from Planned to Rolling out the day it reaches the first customers, and to Released when everyone has it."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Critical share shows how much of a release was emergency work. A release that is mostly critical fixes means the last one shipped too fast."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "TriangleAlert"
           }
         }
       ]

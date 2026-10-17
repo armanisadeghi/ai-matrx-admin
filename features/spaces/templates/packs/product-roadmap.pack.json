@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 1,
+  "version": 2,
   "title": "Product Roadmap",
   "description": "Now, next, later roadmap with timeline, themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
@@ -78,16 +78,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "items",
-            "label": "Roadmap items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "roadmap_item",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "item_count",
             "label": "Items",
             "parityType": "rollup",
@@ -99,7 +89,7 @@
           },
           {
             "key": "shipped_count",
-            "label": "Shipped",
+            "label": "Shipped items",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -109,6 +99,14 @@
             "filter": {
               "status": "Shipped"
             }
+          },
+          {
+            "key": "shipped_pct",
+            "label": "Shipped (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Items} > 0, ROUND({Shipped items} / {Items} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -116,56 +114,31 @@
             "key": "th-0",
             "values": {
               "theme_name": "Get paid faster",
-              "why": "Shorten the days between sending an invoice and receiving money.",
-              "items": [
-                "ri-01",
-                "ri-02",
-                "ri-03",
-                "ri-04"
-              ]
+              "why": "Shorten the days between sending an invoice and receiving money."
             }
           },
           {
             "key": "th-1",
             "values": {
               "theme_name": "Fewer clicks to the books",
-              "why": "Make bookkeeping something owners finish in minutes.",
-              "items": [
-                "ri-05",
-                "ri-06",
-                "ri-07",
-                "ri-12"
-              ]
+              "why": "Make bookkeeping something owners finish in minutes."
             }
           },
           {
             "key": "th-2",
             "values": {
               "theme_name": "Work with the tools people already use",
-              "why": "Connect banks, card readers and accountants.",
-              "items": [
-                "ri-08",
-                "ri-09",
-                "ri-11",
-                "ri-13"
-              ]
+              "why": "Connect banks, card readers and accountants."
             }
           },
           {
             "key": "th-3",
             "values": {
               "theme_name": "Trust and reliability",
-              "why": "Make every number right and every page fast.",
-              "items": [
-                "ri-10",
-                "ri-14"
-              ]
+              "why": "Make every number right and every page fast."
             }
           }
-        ],
-        "independentOf": {
-          "items": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        ]
       },
       {
         "token": "roadmap_item",
@@ -190,9 +163,27 @@
             "required": true
           },
           {
+            "key": "release",
+            "label": "Release",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "release",
+            "relationMax": 1
+          },
+          {
+            "key": "theme",
+            "label": "Theme",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "theme",
+            "relationMax": 1
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -210,7 +201,14 @@
               "Dropped": "red"
             },
             "required": true,
-            "default": "Idea"
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Planned": "todo",
+              "In progress": "in_progress",
+              "Shipped": "done",
+              "Dropped": "done"
+            }
           },
           {
             "key": "horizon",
@@ -320,6 +318,31 @@
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark shipped",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "roadmap_item_ship"
+            }
           }
         ],
         "rows": [
@@ -336,7 +359,9 @@
               "start_on": "@today-90d",
               "target_on": "@today-35d",
               "customer_visible": true,
-              "summary": "Polite reminders before and after an invoice is due."
+              "summary": "Polite reminders before and after an invoice is due.",
+              "theme": "th-0",
+              "release": "rl-0"
             }
           },
           {
@@ -352,7 +377,9 @@
               "start_on": "@today-80d",
               "target_on": "@today-20d",
               "customer_visible": true,
-              "summary": "Customers pay from the email without logging in."
+              "summary": "Customers pay from the email without logging in.",
+              "theme": "th-0",
+              "release": "rl-0"
             }
           },
           {
@@ -365,10 +392,12 @@
               "owner": "tm-bashir",
               "impact": "High",
               "effort": "L",
-              "start_on": "@today-30d",
-              "target_on": "@today+25d",
+              "start_on": "@today-7d",
+              "target_on": "@today",
               "customer_visible": true,
-              "summary": "Schedule monthly or weekly invoices that send themselves."
+              "summary": "Schedule monthly or weekly invoices that send themselves.",
+              "theme": "th-0",
+              "release": "rl-1"
             }
           },
           {
@@ -381,10 +410,12 @@
               "owner": "tm-mateusz",
               "impact": "Medium",
               "effort": "M",
-              "start_on": "@today-12d",
-              "target_on": "@today+30d",
+              "start_on": "@today-11d",
+              "target_on": "@today-4d",
               "customer_visible": true,
-              "summary": "Take a deposit up front and the balance later."
+              "summary": "Take a deposit up front and the balance later.",
+              "theme": "th-0",
+              "release": "rl-2"
             }
           },
           {
@@ -397,10 +428,12 @@
               "owner": "tm-liv",
               "impact": "Medium",
               "effort": "M",
-              "start_on": "@today-18d",
-              "target_on": "@today+20d",
+              "start_on": "@today-16d",
+              "target_on": "@today-9d",
               "customer_visible": true,
-              "summary": "Snap a receipt and it files itself under the right expense."
+              "summary": "Snap a receipt and it files itself under the right expense.",
+              "theme": "th-1",
+              "release": "rl-1"
             }
           },
           {
@@ -413,10 +446,11 @@
               "owner": "tm-bashir",
               "impact": "High",
               "effort": "L",
-              "start_on": "@today+10d",
-              "target_on": "@today+70d",
+              "start_on": "@today-4d",
+              "target_on": "@today+3d",
               "customer_visible": false,
-              "summary": "Teach the app how you categorize repeat transactions."
+              "summary": "Teach the app how you categorize repeat transactions.",
+              "theme": "th-1"
             }
           },
           {
@@ -429,10 +463,12 @@
               "owner": "tm-orla",
               "impact": "High",
               "effort": "L",
-              "start_on": "@today+20d",
-              "target_on": "@today+80d",
+              "start_on": "@today-5d",
+              "target_on": "@today+2d",
               "customer_visible": true,
-              "summary": "A checklist that walks an owner through closing the month."
+              "summary": "A checklist that walks an owner through closing the month.",
+              "theme": "th-1",
+              "release": "rl-2"
             }
           },
           {
@@ -445,10 +481,12 @@
               "owner": "tm-mateusz",
               "impact": "Medium",
               "effort": "S",
-              "start_on": "@today+12d",
-              "target_on": "@today+35d",
+              "start_on": "@today-2d",
+              "target_on": "@today+5d",
               "customer_visible": true,
-              "summary": "Give an accountant a seat without sharing a password."
+              "summary": "Give an accountant a seat without sharing a password.",
+              "theme": "th-2",
+              "release": "rl-2"
             }
           },
           {
@@ -464,7 +502,8 @@
               "start_on": "@today+30d",
               "target_on": "@today+75d",
               "customer_visible": true,
-              "summary": "Bring in-person card sales into the books each night."
+              "summary": "Bring in-person card sales into the books each night.",
+              "theme": "th-2"
             }
           },
           {
@@ -480,7 +519,8 @@
               "start_on": "@today+15d",
               "target_on": "@today+50d",
               "customer_visible": false,
-              "summary": "Cut report load time for accounts with years of history."
+              "summary": "Cut report load time for accounts with years of history.",
+              "theme": "th-3"
             }
           },
           {
@@ -496,7 +536,8 @@
               "start_on": "@today+90d",
               "target_on": "@today+160d",
               "customer_visible": true,
-              "summary": "Invoice in the customer’s currency and see the home total."
+              "summary": "Invoice in the customer’s currency and see the home total.",
+              "theme": "th-2"
             }
           },
           {
@@ -512,7 +553,8 @@
               "start_on": "@today+100d",
               "target_on": "@today+190d",
               "customer_visible": true,
-              "summary": "Send an invoice and check balances from a phone."
+              "summary": "Send an invoice and check balances from a phone.",
+              "theme": "th-1"
             }
           },
           {
@@ -528,7 +570,8 @@
               "start_on": "@today+120d",
               "target_on": "@today+200d",
               "customer_visible": false,
-              "summary": "Simple stock counts for shops that sell goods."
+              "summary": "Simple stock counts for shops that sell goods.",
+              "theme": "th-2"
             }
           },
           {
@@ -544,7 +587,8 @@
               "start_on": "@today+60d",
               "target_on": "@today+100d",
               "customer_visible": false,
-              "summary": "Dropped: too few customers lose their connection while invoicing."
+              "summary": "Dropped: too few customers lose their connection while invoicing.",
+              "theme": "th-3"
             }
           }
         ],
@@ -555,8 +599,135 @@
           ]
         ],
         "independentOf": {
-          "owner": "Anyone can own an item."
-        }
+          "owner": "Anyone can own an item.",
+          "theme": "The two sides move on their own schedule and status; neither forces the other.",
+          "release": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "One-pager",
+            "values": {
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Copy this outline into any roadmap item before it moves from Idea to Planned."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who has it, how often, and what they do today."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outcome"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What will be true for the customer when this ships."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "In scope"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Out of scope"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Open questions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What do we still need to learn?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Success measure"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One number we can check a month after launch."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "release",
@@ -583,7 +754,7 @@
           {
             "key": "state",
             "label": "State",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -597,7 +768,12 @@
               "Released": "green"
             },
             "required": true,
-            "default": "Planned"
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Rolling out": "in_progress",
+              "Released": "done"
+            }
           },
           {
             "key": "release_on",
@@ -608,24 +784,35 @@
             "format": "date"
           },
           {
-            "key": "items",
-            "label": "Included items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "roadmap_item",
-            "relationMax": 20,
-            "multi": true
-          },
-          {
             "key": "item_count",
-            "label": "Item count",
+            "label": "Items",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "items",
             "pick": "item_name",
             "agg": "count"
+          },
+          {
+            "key": "shipped_in",
+            "label": "Shipped items",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count",
+            "filter": {
+              "status": "Shipped"
+            }
+          },
+          {
+            "key": "ready_pct",
+            "label": "Ready (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Items} > 0, ROUND({Shipped items} / {Items} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -634,11 +821,7 @@
             "values": {
               "release_name": "Spring release",
               "state": "Released",
-              "release_on": "@today-30d",
-              "items": [
-                "ri-01",
-                "ri-02"
-              ]
+              "release_on": "@today-30d"
             }
           },
           {
@@ -646,11 +829,7 @@
             "values": {
               "release_name": "Summer release",
               "state": "Rolling out",
-              "release_on": "@today+22d",
-              "items": [
-                "ri-03",
-                "ri-05"
-              ]
+              "release_on": "@today+22d"
             }
           },
           {
@@ -658,31 +837,13 @@
             "values": {
               "release_name": "Autumn release",
               "state": "Planned",
-              "release_on": "@today+60d",
-              "items": [
-                "ri-04",
-                "ri-07",
-                "ri-08"
-              ]
+              "release_on": "@today+60d"
             }
           }
-        ],
-        "independentOf": {
-          "items": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        ]
       }
     ],
     "relationships": [
-      {
-        "describes": "A theme groups roadmap items.",
-        "fromTable": "theme",
-        "fromField": "items",
-        "toTable": "roadmap_item",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "theme"
-      },
       {
         "describes": "Owner links to team_member.",
         "fromTable": "roadmap_item",
@@ -694,14 +855,24 @@
         "inverseKey": "roadmap_owned"
       },
       {
-        "describes": "A release ships several roadmap items.",
-        "fromTable": "release",
-        "fromField": "items",
-        "toTable": "roadmap_item",
+        "describes": "Roadmap item belongs to a theme.",
+        "fromTable": "roadmap_item",
+        "fromField": "theme",
+        "toTable": "theme",
         "flavor": "referenced",
-        "cardinality": "many",
+        "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "release"
+        "inverseKey": "items"
+      },
+      {
+        "describes": "Roadmap item belongs to a release.",
+        "fromTable": "roadmap_item",
+        "fromField": "release",
+        "toTable": "release",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "items"
       }
     ],
     "sharedBlocks": [
@@ -802,7 +973,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "roadmap_item_ship",
+        "table": "roadmap_item",
+        "name": "Mark shipped",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Shipped"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_roadmap_item",
@@ -881,6 +1067,69 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "roadmap_item_target_month",
+        "name": "Targeting this month",
+        "table": "roadmap_item",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "this_month"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "roadmap_item_late",
+        "name": "Past target",
+        "table": "roadmap_item",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "roadmap_item_next30",
+        "name": "Next 30 days",
+        "table": "roadmap_item",
+        "kind": "grid",
+        "within": {
+          "target_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "release_this_month",
+        "name": "Releasing this month",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -969,7 +1218,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1037,12 +1286,6 @@
                 {
                   "type": "page",
                   "props": {
-                    "spaceId": "page:item-one-pager"
-                  }
-                },
-                {
-                  "type": "page",
-                  "props": {
                     "spaceId": "page:team"
                   }
                 }
@@ -1060,6 +1303,14 @@
           "props": {
             "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any item to find a one-pager outline already waiting inside it."
+            }
+          ]
         },
         {
           "type": "database",
@@ -1115,6 +1366,58 @@
                   "status": "Shipped"
                 },
                 "id": "view-4"
+              },
+              {
+                "id": "view-roadmap-item-target-month",
+                "name": "Targeting this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "target_on": {
+                    "relative": "this_month"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "view-roadmap-item-late",
+                "name": "Past target",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "target_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "view-roadmap-item-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "target_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "In progress"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1692,6 +1995,17 @@
                 "icon": "Calendar",
                 "dateField": "release_on",
                 "id": "view-1"
+              },
+              {
+                "id": "view-release-this-month",
+                "name": "Releasing this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "release_on": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1751,127 +2065,6 @@
           "props": {
             "checked": false
           }
-        }
-      ]
-    },
-    {
-      "key": "item-one-pager",
-      "parent": "product-roadmap",
-      "title": "Item one-pager outline",
-      "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Copy this outline into any roadmap item before it moves from Idea to Planned."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Problem"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Who has it, how often, and what they do today."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Outcome"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "What will be true for the customer when this ships."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Scope"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "In scope"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Out of scope"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Open questions"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What do we still need to learn?"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Success measure"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "One number we can check a month after launch."
-            }
-          ]
         }
       ]
     },

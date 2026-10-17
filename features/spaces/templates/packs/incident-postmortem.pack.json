@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 1,
+  "version": 2,
   "title": "Incident Postmortems",
   "description": "Log incidents, write blameless postmortems and track the actions that prevent repeats.",
   "forWho": "Engineering and operations teams",
@@ -71,6 +71,15 @@
             "required": true
           },
           {
+            "key": "incident",
+            "label": "Incident",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "incident",
+            "relationMax": 1
+          },
+          {
             "key": "kind",
             "label": "Type",
             "parityType": "select",
@@ -107,7 +116,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -121,7 +130,30 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Open"
+            "default": "Open",
+            "statusGroups": {
+              "Open": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "action_item_done"
+            }
           }
         ],
         "rows": [
@@ -132,7 +164,8 @@
               "kind": "Detect",
               "owner": "tm-bruno",
               "due_on": "@today-45d",
-              "status": "Done"
+              "status": "Done",
+              "incident": "in-01"
             }
           },
           {
@@ -142,7 +175,8 @@
               "kind": "Mitigate",
               "owner": "tm-amara",
               "due_on": "@today-30d",
-              "status": "Done"
+              "status": "Done",
+              "incident": "in-01"
             }
           },
           {
@@ -151,8 +185,9 @@
               "action_title": "Run a monthly region-loss drill",
               "kind": "Prevent",
               "owner": "tm-sigrid",
-              "due_on": "@today-5d",
-              "status": "In progress"
+              "due_on": "@today",
+              "status": "In progress",
+              "incident": "in-01"
             }
           },
           {
@@ -162,7 +197,8 @@
               "kind": "Prevent",
               "owner": "tm-keiko",
               "due_on": "@today-35d",
-              "status": "Done"
+              "status": "Done",
+              "incident": "in-02"
             }
           },
           {
@@ -172,7 +208,8 @@
               "kind": "Detect",
               "owner": "tm-amara",
               "due_on": "@today-28d",
-              "status": "Done"
+              "status": "Done",
+              "incident": "in-02"
             }
           },
           {
@@ -181,8 +218,9 @@
               "action_title": "Retry queue alert when depth passes 1000",
               "kind": "Detect",
               "owner": "tm-patrick",
-              "due_on": "@today-14d",
-              "status": "In progress"
+              "due_on": "@today-4d",
+              "status": "In progress",
+              "incident": "in-03"
             }
           },
           {
@@ -191,8 +229,9 @@
               "action_title": "Move email sending to its own worker pool",
               "kind": "Prevent",
               "owner": "tm-bruno",
-              "due_on": "@today+12d",
-              "status": "In progress"
+              "due_on": "@today-9d",
+              "status": "In progress",
+              "incident": "in-03"
             }
           },
           {
@@ -201,8 +240,9 @@
               "action_title": "Test replica promotion every week in staging",
               "kind": "Prevent",
               "owner": "tm-keiko",
-              "due_on": "@today+6d",
-              "status": "Open"
+              "due_on": "@today+3d",
+              "status": "Open",
+              "incident": "in-04"
             }
           },
           {
@@ -211,8 +251,9 @@
               "action_title": "Write the manual promotion steps into a runbook",
               "kind": "Mitigate",
               "owner": "tm-keiko",
-              "due_on": "@today+3d",
-              "status": "In progress"
+              "due_on": "@today+2d",
+              "status": "In progress",
+              "incident": "in-04"
             }
           },
           {
@@ -221,8 +262,9 @@
               "action_title": "Alert fourteen days before any certificate expires",
               "kind": "Detect",
               "owner": "tm-amara",
-              "due_on": "@today+4d",
-              "status": "Open"
+              "due_on": "@today+5d",
+              "status": "Open",
+              "incident": "in-05"
             }
           },
           {
@@ -232,12 +274,14 @@
               "kind": "Prevent",
               "owner": "tm-amara",
               "due_on": "@today+20d",
-              "status": "Open"
+              "status": "Open",
+              "incident": "in-05"
             }
           }
         ],
         "independentOf": {
-          "owner": "Anyone can take an action."
+          "owner": "Anyone can take an action.",
+          "incident": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -263,6 +307,13 @@
             "required": true
           },
           {
+            "key": "incident_no",
+            "label": "Incident number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "severity",
             "label": "Severity",
             "parityType": "select",
@@ -284,7 +335,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -300,7 +351,13 @@
               "Postmortem done": "green"
             },
             "required": true,
-            "default": "Investigating"
+            "default": "Investigating",
+            "statusGroups": {
+              "Investigating": "todo",
+              "Mitigated": "in_progress",
+              "Resolved": "done",
+              "Postmortem done": "done"
+            }
           },
           {
             "key": "started_at",
@@ -385,18 +442,8 @@
             "relationMax": 1
           },
           {
-            "key": "actions",
-            "label": "Action items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "action_item",
-            "relationMax": 12,
-            "multi": true
-          },
-          {
             "key": "action_count",
-            "label": "Action count",
+            "label": "Action items",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -406,7 +453,7 @@
           },
           {
             "key": "open_count",
-            "label": "Open actions",
+            "label": "Open items",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -416,6 +463,21 @@
             "filter": {
               "status": "Open"
             }
+          },
+          {
+            "key": "closed_pct",
+            "label": "Actions done (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Action items} > 0, ROUND(({Action items} - {Open items}) / {Action items} * 100, 0), 0)"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -433,12 +495,7 @@
                 "API"
               ],
               "impact": "Many customers",
-              "postmortem_owner": "tm-bruno",
-              "actions": [
-                "ai-01",
-                "ai-02",
-                "ai-03"
-              ]
+              "postmortem_owner": "tm-bruno"
             }
           },
           {
@@ -455,11 +512,7 @@
                 "Database"
               ],
               "impact": "Many customers",
-              "postmortem_owner": "tm-keiko",
-              "actions": [
-                "ai-04",
-                "ai-05"
-              ]
+              "postmortem_owner": "tm-keiko"
             }
           },
           {
@@ -475,11 +528,7 @@
                 "Notifications"
               ],
               "impact": "Some customers",
-              "postmortem_owner": "tm-bruno",
-              "actions": [
-                "ai-06",
-                "ai-07"
-              ]
+              "postmortem_owner": "tm-bruno"
             }
           },
           {
@@ -496,11 +545,7 @@
                 "Payments"
               ],
               "impact": "Some customers",
-              "postmortem_owner": "tm-keiko",
-              "actions": [
-                "ai-08",
-                "ai-09"
-              ]
+              "postmortem_owner": "tm-keiko"
             }
           },
           {
@@ -516,11 +561,7 @@
                 "API"
               ],
               "impact": "Many customers",
-              "postmortem_owner": "tm-amara",
-              "actions": [
-                "ai-10",
-                "ai-11"
-              ]
+              "postmortem_owner": "tm-amara"
             }
           }
         ],
@@ -532,8 +573,7 @@
         ],
         "independentOf": {
           "commander": "Anyone on call can lead.",
-          "postmortem_owner": "The owner is chosen for the cause.",
-          "actions": "The two sides move on their own schedule and status; neither forces the other."
+          "postmortem_owner": "The owner is chosen for the cause."
         },
         "statusImplies": [
           {
@@ -545,6 +585,320 @@
             "filled": [
               "resolved_at"
             ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Postmortem",
+            "values": {
+              "status": "Investigating"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Blameless means we ask what in the system allowed this, not who made the mistake."
+                    }
+                  ],
+                  "background": "green",
+                  "props": {
+                    "icon": "HeartHandshake"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Three sentences: what broke, for whom, for how long."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Impact"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Customers affected and how"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Money or trust lost, if known"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Timeline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Time"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "What happened"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Who"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "00:00"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "First alert fired"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "On-call"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "00:10"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Incident declared"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Commander"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "00:40"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Cause found"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Team"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "01:20"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Fix released"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Team"
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Root cause"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Why did the failure happen?"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Why was it not caught earlier?"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Why did it spread?"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Why did recovery take as long as it did?"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "What is the deepest cause we can fix?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What went well"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Things that worked and should stay"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What went badly"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Things that slowed us down"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Lessons"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What would we tell the next team?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Action items"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Add each action to the Action items table with one owner and a due day."
+                    }
+                  ]
+                }
+              ]
+            }
           }
         ]
       }
@@ -581,14 +935,14 @@
         "inverseKey": "postmortems_owned"
       },
       {
-        "describes": "An incident leads to action items.",
-        "fromTable": "incident",
-        "fromField": "actions",
-        "toTable": "action_item",
+        "describes": "Action item belongs to a incident.",
+        "fromTable": "action_item",
+        "fromField": "incident",
+        "toTable": "incident",
         "flavor": "referenced",
-        "cardinality": "many",
+        "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "incident"
+        "inverseKey": "actions"
       }
     ],
     "sharedBlocks": [
@@ -690,7 +1044,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "action_item_done",
+        "table": "action_item",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_incident",
@@ -768,6 +1137,69 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "action_week",
+        "name": "Due this week",
+        "table": "action_item",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "action_over",
+        "name": "Overdue",
+        "table": "action_item",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "action_next7",
+        "name": "Next 7 days",
+        "table": "action_item",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "incident_month",
+        "name": "Started this month",
+        "table": "incident",
+        "kind": "grid",
+        "within": {
+          "started_at": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -856,7 +1288,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -895,12 +1327,6 @@
                 "width": 0.5
               },
               "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:postmortem-outline"
-                  }
-                },
                 {
                   "type": "page",
                   "props": {
@@ -947,6 +1373,14 @@
           "props": {
             "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any incident to find the full postmortem outline (timeline, impact, causes, fixes) ready to fill in."
+            }
+          ]
         },
         {
           "type": "database",
@@ -1005,6 +1439,17 @@
                   ]
                 },
                 "id": "view-4"
+              },
+              {
+                "id": "view-incident-month",
+                "name": "Started this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "started_at": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1059,320 +1504,62 @@
                 "icon": "Calendar",
                 "dateField": "due_on",
                 "id": "view-2"
+              },
+              {
+                "id": "view-action-week",
+                "name": "Due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "view-action-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "view-action-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-0"
           }
-        }
-      ]
-    },
-    {
-      "key": "postmortem-outline",
-      "parent": "incident-postmortems",
-      "title": "Postmortem outline",
-      "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "Blameless means we ask what in the system allowed this, not who made the mistake."
-            }
-          ],
-          "background": "green",
-          "props": {
-            "icon": "HeartHandshake"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Summary"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Three sentences: what broke, for whom, for how long."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Impact"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Customers affected and how"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Money or trust lost, if known"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Timeline"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Time"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What happened"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Who"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "00:00"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "First alert fired"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "On-call"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "00:10"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Incident declared"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Commander"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "00:40"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Cause found"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Team"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "01:20"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Fix released"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Team"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Root cause"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Why did the failure happen?"
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Why was it not caught earlier?"
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Why did it spread?"
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Why did recovery take as long as it did?"
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "What is the deepest cause we can fix?"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What went well"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Things that worked and should stay"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What went badly"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Things that slowed us down"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Lessons"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "What would we tell the next team?"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Action items"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Add each action to the Action items table with one owner and a due day."
-            }
-          ]
         }
       ]
     },
@@ -1600,6 +1787,69 @@
         "emoji": "🧭"
       },
       "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choosing a severity"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Decide on the customer impact you can see right now, not on how the fix is going. Raise or lower it as you learn more, and say so in the incident channel."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "SEV1: most customers cannot use the product, or data is at risk. Everyone who can help joins now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "SEV2: a core feature is broken for many customers, with no good workaround."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "SEV3: a feature is degraded or broken for a few customers; a workaround exists."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "SEV4: cosmetic or internal-only; fix in normal working hours."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "When in doubt, start one level higher. Lowering a severity costs nothing; raising it late costs trust."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "ShieldAlert"
+          }
+        },
         {
           "type": "table",
           "props": {

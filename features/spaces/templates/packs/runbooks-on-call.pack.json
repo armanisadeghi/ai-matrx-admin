@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0110",
-  "version": 1,
+  "version": 2,
   "title": "Runbooks & On-call",
   "description": "Runbooks per service with freshness checks, plus a weekly on-call schedule and handoff.",
   "forWho": "Infrastructure and support engineering teams",
@@ -71,6 +71,15 @@
             "required": true
           },
           {
+            "key": "service",
+            "label": "Service",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "service",
+            "relationMax": 1
+          },
+          {
             "key": "type",
             "label": "Type",
             "parityType": "select",
@@ -122,6 +131,14 @@
             "format": "date"
           },
           {
+            "key": "days_since_test",
+            "label": "Days since tested",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Last tested}, TODAY(), 'days')"
+          },
+          {
             "key": "freshness",
             "label": "Freshness",
             "parityType": "select",
@@ -144,6 +161,31 @@
             "parityType": "url",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "retested_btn",
+            "label": "Mark current",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "runbook_retested"
+            }
           }
         ],
         "rows": [
@@ -154,9 +196,10 @@
               "type": "Alert response",
               "owner": "tm-dev",
               "severity": "SEV1",
-              "last_tested": "@today-20d",
+              "last_tested": "@today",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/60"
+              "link": "https://alerts.stonebridge-health.net/rules/60",
+              "service": "sv-1"
             }
           },
           {
@@ -168,7 +211,8 @@
               "severity": "SEV2",
               "last_tested": "@today-35d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/61"
+              "link": "https://alerts.stonebridge-health.net/rules/61",
+              "service": "sv-1"
             }
           },
           {
@@ -180,7 +224,8 @@
               "severity": "SEV2",
               "last_tested": "@today-12d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/62"
+              "link": "https://alerts.stonebridge-health.net/rules/62",
+              "service": "sv-2"
             }
           },
           {
@@ -192,7 +237,8 @@
               "severity": "SEV1",
               "last_tested": "@today-50d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/63"
+              "link": "https://alerts.stonebridge-health.net/rules/63",
+              "service": "sv-2"
             }
           },
           {
@@ -204,7 +250,8 @@
               "severity": "SEV2",
               "last_tested": "@today-28d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/64"
+              "link": "https://alerts.stonebridge-health.net/rules/64",
+              "service": "sv-3"
             }
           },
           {
@@ -216,7 +263,8 @@
               "severity": "SEV1",
               "last_tested": "@today-140d",
               "freshness": "Stale",
-              "link": "https://alerts.stonebridge-health.net/rules/65"
+              "link": "https://alerts.stonebridge-health.net/rules/65",
+              "service": "sv-3"
             }
           },
           {
@@ -228,7 +276,8 @@
               "severity": "SEV3",
               "last_tested": "@today-60d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/66"
+              "link": "https://alerts.stonebridge-health.net/rules/66",
+              "service": "sv-3"
             }
           },
           {
@@ -240,7 +289,8 @@
               "severity": "SEV2",
               "last_tested": "@today-25d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/67"
+              "link": "https://alerts.stonebridge-health.net/rules/67",
+              "service": "sv-4"
             }
           },
           {
@@ -252,7 +302,8 @@
               "severity": "SEV3",
               "last_tested": "@today-110d",
               "freshness": "Stale",
-              "link": "https://alerts.stonebridge-health.net/rules/68"
+              "link": "https://alerts.stonebridge-health.net/rules/68",
+              "service": "sv-4"
             }
           },
           {
@@ -264,7 +315,8 @@
               "severity": "SEV3",
               "last_tested": "@today-45d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/69"
+              "link": "https://alerts.stonebridge-health.net/rules/69",
+              "service": "sv-5"
             }
           },
           {
@@ -276,7 +328,8 @@
               "severity": "SEV2",
               "last_tested": "@today-70d",
               "freshness": "Current",
-              "link": "https://alerts.stonebridge-health.net/rules/70"
+              "link": "https://alerts.stonebridge-health.net/rules/70",
+              "service": "sv-6"
             }
           },
           {
@@ -288,12 +341,14 @@
               "severity": "SEV3",
               "last_tested": "@today-95d",
               "freshness": "Stale",
-              "link": "https://alerts.stonebridge-health.net/rules/71"
+              "link": "https://alerts.stonebridge-health.net/rules/71",
+              "service": "sv-6"
             }
           }
         ],
         "independentOf": {
-          "owner": "Anyone can own a runbook."
+          "owner": "Anyone can own a runbook.",
+          "service": "The two sides move on their own schedule and status; neither forces the other."
         },
         "statusByDate": {
           "field": "freshness",
@@ -308,7 +363,244 @@
               "from": -89
             }
           ]
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "Runbook",
+            "values": {
+              "freshness": "Current"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Every runbook starts with one sentence on when to use it."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "When to use this"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The alert name, or the symptom a person will see."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before you start"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "You have access to the dashboards"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "You know who the service owner is"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "You have told the channel you are working on it"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Check the dashboard for the failing component."
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Run the diagnostic command."
+                    }
+                  ]
+                },
+                {
+                  "type": "code",
+                  "text": [
+                    {
+                      "text": "kubectl get pods -n portal --sort-by=.status.startTime"
+                    }
+                  ],
+                  "props": {
+                    "language": "shell"
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Restart one instance and watch for two minutes."
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "If errors continue, escalate."
+                    }
+                  ]
+                },
+                {
+                  "type": "toggle",
+                  "text": [
+                    {
+                      "text": "Rollback"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": [
+                        {
+                          "text": "How to undo what you just did."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Escalation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "When"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Call"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "No improvement after 15 minutes"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Service owner"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Customer data may be affected"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Head of infrastructure"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Nobody answers"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Secondary on call"
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "service",
@@ -359,18 +651,8 @@
             "relationMax": 1
           },
           {
-            "key": "runbooks",
-            "label": "Runbooks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "runbook",
-            "relationMax": 15,
-            "multi": true
-          },
-          {
             "key": "runbook_count",
-            "label": "Runbook count",
+            "label": "Runbooks",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -390,6 +672,14 @@
             "filter": {
               "freshness": "Stale"
             }
+          },
+          {
+            "key": "stale_pct",
+            "label": "Stale (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Runbooks} > 0, ROUND({Stale runbooks} / {Runbooks} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -398,11 +688,7 @@
             "values": {
               "service_name": "Patient portal",
               "tier": "Tier 1",
-              "owner": "tm-dev",
-              "runbooks": [
-                "rb-01",
-                "rb-02"
-              ]
+              "owner": "tm-dev"
             }
           },
           {
@@ -410,11 +696,7 @@
             "values": {
               "service_name": "Appointment API",
               "tier": "Tier 1",
-              "owner": "tm-marisa",
-              "runbooks": [
-                "rb-03",
-                "rb-04"
-              ]
+              "owner": "tm-marisa"
             }
           },
           {
@@ -422,12 +704,7 @@
             "values": {
               "service_name": "Records database",
               "tier": "Tier 1",
-              "owner": "tm-halima",
-              "runbooks": [
-                "rb-05",
-                "rb-06",
-                "rb-07"
-              ]
+              "owner": "tm-halima"
             }
           },
           {
@@ -435,11 +712,7 @@
             "values": {
               "service_name": "Message queue",
               "tier": "Tier 2",
-              "owner": "tm-dev",
-              "runbooks": [
-                "rb-08",
-                "rb-09"
-              ]
+              "owner": "tm-dev"
             }
           },
           {
@@ -447,10 +720,7 @@
             "values": {
               "service_name": "Reporting jobs",
               "tier": "Tier 3",
-              "owner": "tm-halima",
-              "runbooks": [
-                "rb-10"
-              ]
+              "owner": "tm-halima"
             }
           },
           {
@@ -458,17 +728,12 @@
             "values": {
               "service_name": "Office network",
               "tier": "Tier 2",
-              "owner": "tm-oskar",
-              "runbooks": [
-                "rb-11",
-                "rb-12"
-              ]
+              "owner": "tm-oskar"
             }
           }
         ],
         "independentOf": {
-          "owner": "Anyone can own a service.",
-          "runbooks": "The two sides move on their own schedule and status; neither forces the other."
+          "owner": "Anyone can own a service."
         }
       },
       {
@@ -680,16 +945,6 @@
         "inverseKey": "services_owned"
       },
       {
-        "describes": "A service has runbooks.",
-        "fromTable": "service",
-        "fromField": "runbooks",
-        "toTable": "runbook",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "service"
-      },
-      {
         "describes": "Primary links to team_member.",
         "fromTable": "oncall",
         "fromField": "primary",
@@ -708,6 +963,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "oncall_secondary"
+      },
+      {
+        "describes": "Runbook belongs to a service.",
+        "fromTable": "runbook",
+        "fromField": "service",
+        "toTable": "service",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "runbooks"
       }
     ],
     "sharedBlocks": [
@@ -804,7 +1069,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "runbook_retested",
+        "table": "runbook",
+        "name": "Mark current",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "freshness",
+            "set": "value",
+            "value": "Current"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_runbook",
@@ -890,6 +1170,51 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "runbook_tested_month",
+        "name": "Tested this month",
+        "table": "runbook",
+        "kind": "grid",
+        "within": {
+          "last_tested": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "runbook_tested_week",
+        "name": "Tested this week",
+        "table": "runbook",
+        "kind": "grid",
+        "within": {
+          "last_tested": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "oncall_shift_week",
+        "name": "Shifts starting this week",
+        "table": "oncall",
+        "kind": "grid",
+        "within": {
+          "starts_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "oncall_shift_30",
+        "name": "Shifts in 30 days",
+        "table": "oncall",
+        "kind": "grid",
+        "within": {
+          "starts_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
       }
     ],
     "agent": {
@@ -978,7 +1303,7 @@
         "Foxcroft Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1021,12 +1346,6 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:who-is-on-call"
-                  }
-                },
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:runbook-outline"
                   }
                 }
               ]
@@ -1126,6 +1445,29 @@
                   }
                 ],
                 "id": "view-3"
+              },
+              {
+                "id": "view-oncall-shift-week",
+                "name": "Shifts starting this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "starts_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-oncall-shift-30",
+                "name": "Shifts in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "starts_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1141,6 +1483,14 @@
           "props": {
             "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any runbook to find the full outline (when to use it, checks, steps, rollback) already inside it."
+            }
+          ]
         },
         {
           "type": "database",
@@ -1189,6 +1539,28 @@
                   "freshness": "Stale"
                 },
                 "id": "view-3"
+              },
+              {
+                "id": "view-runbook-tested-month",
+                "name": "Tested this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "last_tested": {
+                    "relative": "this_month"
+                  }
+                }
+              },
+              {
+                "id": "view-runbook-tested-week",
+                "name": "Tested this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "last_tested": {
+                    "relative": "this_week"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1356,239 +1728,6 @@
       ]
     },
     {
-      "key": "runbook-outline",
-      "parent": "runbooks-on-call",
-      "title": "Runbook outline",
-      "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "Every runbook starts with one sentence on when to use it."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "When to use this"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "The alert name, or the symptom a person will see."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before you start"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "You have access to the dashboards"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "You know who the service owner is"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "You have told the channel you are working on it"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Steps"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check the dashboard for the failing component."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Run the diagnostic command."
-            }
-          ]
-        },
-        {
-          "type": "code",
-          "text": [
-            {
-              "text": "kubectl get pods -n portal --sort-by=.status.startTime"
-            }
-          ],
-          "props": {
-            "language": "shell"
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Restart one instance and watch for two minutes."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "If errors continue, escalate."
-            }
-          ]
-        },
-        {
-          "type": "toggle",
-          "text": [
-            {
-              "text": "Rollback"
-            }
-          ],
-          "children": [
-            {
-              "type": "text",
-              "text": [
-                {
-                  "text": "How to undo what you just did."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Escalation"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "When"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Call"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "No improvement after 15 minutes"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Service owner"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Customer data may be affected"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Head of infrastructure"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Nobody answers"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Secondary on call"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        }
-      ]
-    },
-    {
       "key": "runbook-health",
       "parent": "runbooks-on-call",
       "title": "Runbook health",
@@ -1711,6 +1850,49 @@
                   }
                 }
               ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping runbooks alive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A runbook nobody has tested is a guess. Every runbook should be run through once a quarter, ideally by someone who did not write it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick Tested this month and Stale from the lists above."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the steps against a safe environment. Fix anything that no longer matches."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the tested date and press Mark current."
             }
           ]
         },

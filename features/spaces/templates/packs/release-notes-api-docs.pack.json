@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 1,
+  "version": 2,
   "title": "Release Notes & API Docs",
   "description": "Releases, changes and an API reference with a public changelog and writing guide.",
   "forWho": "Product and developer-experience teams",
@@ -71,6 +71,15 @@
             "required": true
           },
           {
+            "key": "release",
+            "label": "Release",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "release",
+            "relationMax": 1
+          },
+          {
             "key": "kind",
             "label": "Kind",
             "parityType": "select",
@@ -129,6 +138,13 @@
             "parityType": "url",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -141,7 +157,8 @@
                 "Addresses"
               ],
               "author": "tm-sabine",
-              "pull_request": "https://code.parcelwise.net/pull/900"
+              "pull_request": "https://code.parcelwise.net/pull/900",
+              "release": "rl-1"
             }
           },
           {
@@ -153,7 +170,8 @@
                 "Labels"
               ],
               "author": "tm-thabo",
-              "pull_request": "https://code.parcelwise.net/pull/901"
+              "pull_request": "https://code.parcelwise.net/pull/901",
+              "release": "rl-1"
             }
           },
           {
@@ -165,7 +183,8 @@
                 "Labels"
               ],
               "author": "tm-thabo",
-              "pull_request": "https://code.parcelwise.net/pull/902"
+              "pull_request": "https://code.parcelwise.net/pull/902",
+              "release": "rl-1"
             }
           },
           {
@@ -177,7 +196,8 @@
                 "Tracking"
               ],
               "author": "tm-sabine",
-              "pull_request": "https://code.parcelwise.net/pull/903"
+              "pull_request": "https://code.parcelwise.net/pull/903",
+              "release": "rl-2"
             }
           },
           {
@@ -190,7 +210,8 @@
                 "Webhooks"
               ],
               "author": "tm-thabo",
-              "pull_request": "https://code.parcelwise.net/pull/904"
+              "pull_request": "https://code.parcelwise.net/pull/904",
+              "release": "rl-2"
             }
           },
           {
@@ -202,7 +223,8 @@
                 "Shipments"
               ],
               "author": "tm-ivor",
-              "pull_request": "https://code.parcelwise.net/pull/905"
+              "pull_request": "https://code.parcelwise.net/pull/905",
+              "release": "rl-3"
             }
           },
           {
@@ -215,7 +237,8 @@
                 "Security"
               ],
               "author": "tm-ivor",
-              "pull_request": "https://code.parcelwise.net/pull/906"
+              "pull_request": "https://code.parcelwise.net/pull/906",
+              "release": "rl-3"
             }
           },
           {
@@ -227,7 +250,8 @@
                 "Shipments"
               ],
               "author": "tm-thabo",
-              "pull_request": "https://code.parcelwise.net/pull/907"
+              "pull_request": "https://code.parcelwise.net/pull/907",
+              "release": "rl-3"
             }
           },
           {
@@ -239,7 +263,8 @@
                 "Rates"
               ],
               "author": "tm-sabine",
-              "pull_request": "https://code.parcelwise.net/pull/908"
+              "pull_request": "https://code.parcelwise.net/pull/908",
+              "release": "rl-3"
             }
           },
           {
@@ -251,7 +276,8 @@
                 "Rates"
               ],
               "author": "tm-thabo",
-              "pull_request": "https://code.parcelwise.net/pull/909"
+              "pull_request": "https://code.parcelwise.net/pull/909",
+              "release": "rl-4"
             }
           },
           {
@@ -263,7 +289,8 @@
                 "Tracking"
               ],
               "author": "tm-ivor",
-              "pull_request": "https://code.parcelwise.net/pull/910"
+              "pull_request": "https://code.parcelwise.net/pull/910",
+              "release": "rl-5"
             }
           },
           {
@@ -275,7 +302,8 @@
                 "Security"
               ],
               "author": "tm-ivor",
-              "pull_request": "https://code.parcelwise.net/pull/911"
+              "pull_request": "https://code.parcelwise.net/pull/911",
+              "release": "rl-5"
             }
           },
           {
@@ -287,12 +315,14 @@
                 "Tracking"
               ],
               "author": "tm-sabine",
-              "pull_request": "https://code.parcelwise.net/pull/912"
+              "pull_request": "https://code.parcelwise.net/pull/912",
+              "release": "rl-5"
             }
           }
         ],
         "independentOf": {
-          "author": "Anyone can author a change."
+          "author": "Anyone can author a change.",
+          "release": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -320,7 +350,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -334,7 +364,12 @@
               "Released": "green"
             },
             "required": true,
-            "default": "Planned"
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Rolling out": "in_progress",
+              "Released": "done"
+            }
           },
           {
             "key": "kind",
@@ -384,18 +419,8 @@
             "contextPolicy": "include"
           },
           {
-            "key": "changes",
-            "label": "Changes",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "change",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "change_count",
-            "label": "Change count",
+            "label": "Changes",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -415,6 +440,35 @@
             "filter": {
               "kind": "Breaking"
             }
+          },
+          {
+            "key": "breaking_pct",
+            "label": "Breaking (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Changes} > 0, ROUND({Breaking changes} / {Changes} * 100, 0), 0)"
+          },
+          {
+            "key": "new_endpoints",
+            "label": "Endpoints introduced",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "endpoints",
+            "pick": "endpoint_name",
+            "agg": "count"
+          },
+          {
+            "key": "ship_btn",
+            "label": "Mark released",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "release_ship"
+            }
           }
         ],
         "rows": [
@@ -426,12 +480,7 @@
               "kind": "Minor",
               "audience": "Public",
               "release_on": "@today-75d",
-              "highlights": "Address validation and label reprints.",
-              "changes": [
-                "ch-01",
-                "ch-02",
-                "ch-03"
-              ]
+              "highlights": "Address validation and label reprints."
             }
           },
           {
@@ -442,11 +491,7 @@
               "kind": "Patch",
               "audience": "Public",
               "release_on": "@today-58d",
-              "highlights": "Fixes for time zones on tracking events.",
-              "changes": [
-                "ch-04",
-                "ch-05"
-              ]
+              "highlights": "Fixes for time zones on tracking events."
             }
           },
           {
@@ -457,13 +502,7 @@
               "kind": "Minor",
               "audience": "Public",
               "release_on": "@today-21d",
-              "highlights": "Batch shipments and webhook signing.",
-              "changes": [
-                "ch-06",
-                "ch-07",
-                "ch-08",
-                "ch-09"
-              ]
+              "highlights": "Batch shipments and webhook signing."
             }
           },
           {
@@ -474,10 +513,7 @@
               "kind": "Patch",
               "audience": "Internal",
               "release_on": "@today+2d",
-              "highlights": "Performance work on rate lookups.",
-              "changes": [
-                "ch-10"
-              ]
+              "highlights": "Performance work on rate lookups."
             }
           },
           {
@@ -488,18 +524,10 @@
               "kind": "Major",
               "audience": "Public",
               "release_on": "@today+50d",
-              "highlights": "Removes the old tracking endpoints and the legacy auth header.",
-              "changes": [
-                "ch-11",
-                "ch-12",
-                "ch-13"
-              ]
+              "highlights": "Removes the old tracking endpoints and the legacy auth header."
             }
           }
-        ],
-        "independentOf": {
-          "changes": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        ]
       },
       {
         "token": "endpoint",
@@ -592,7 +620,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -606,7 +634,12 @@
               "Deprecated": "red"
             },
             "required": true,
-            "default": "Stable"
+            "default": "Stable",
+            "statusGroups": {
+              "Stable": "done",
+              "Beta": "in_progress",
+              "Deprecated": "done"
+            }
           },
           {
             "key": "version",
@@ -631,6 +664,13 @@
             "contextPolicy": "include",
             "relationTarget": "release",
             "relationMax": 1
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -793,7 +833,216 @@
         ],
         "independentOf": {
           "since_release": "Endpoints are documented independently of release dates."
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "Endpoint page",
+            "values": {
+              "status": "Beta"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "POST /labels"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Buy a shipping label for an existing shipment."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Request"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "table",
+                  "props": {
+                    "headerRow": true,
+                    "headerColumn": false,
+                    "rows": [
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "Field"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Type"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Required"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Notes"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "shipment_id"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "string"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Yes"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "From Create shipment"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "service"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "string"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Yes"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "Carrier service code"
+                            }
+                          ]
+                        ]
+                      },
+                      {
+                        "cells": [
+                          [
+                            {
+                              "text": "format"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "string"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "No"
+                            }
+                          ],
+                          [
+                            {
+                              "text": "pdf or png; pdf by default"
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "code",
+                  "text": [
+                    {
+                      "text": "{\n  \"shipment_id\": \"shp_91c2e7\",\n  \"service\": \"ground\",\n  \"format\": \"pdf\"\n}"
+                    }
+                  ],
+                  "props": {
+                    "language": "json"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Response"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "code",
+                  "text": [
+                    {
+                      "text": "{\n  \"id\": \"lbl_4d03aa\",\n  \"tracking_number\": \"PW5821907733\",\n  \"url\": \"https://labels.parcelwise.net/lbl_4d03aa.pdf\"\n}"
+                    }
+                  ],
+                  "props": {
+                    "language": "json"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Errors"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "422 when the shipment already has a label"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "402 when the account balance is too low"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -808,16 +1057,6 @@
         "inverseKey": "changes_authored"
       },
       {
-        "describes": "A release is made of changes.",
-        "fromTable": "release",
-        "fromField": "changes",
-        "toTable": "change",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "release"
-      },
-      {
         "describes": "Since release links to release.",
         "fromTable": "endpoint",
         "fromField": "since_release",
@@ -826,6 +1065,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "endpoints"
+      },
+      {
+        "describes": "Change belongs to a release.",
+        "fromTable": "change",
+        "fromField": "release",
+        "toTable": "release",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "changes"
       }
     ],
     "sharedBlocks": [
@@ -927,7 +1176,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "release_ship",
+        "table": "release",
+        "name": "Mark released",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Released"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_release",
@@ -998,6 +1262,41 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "release_month",
+        "name": "Releasing this month",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "release_next30",
+        "name": "Next 30 days",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "release_last30",
+        "name": "Shipped in 30 days",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
       }
     ],
     "agent": {
@@ -1086,7 +1385,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1145,12 +1444,6 @@
                 "width": 0.5
               },
               "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:endpoint-outline"
-                  }
-                },
                 {
                   "type": "page",
                   "props": {
@@ -1231,6 +1524,41 @@
                   }
                 ],
                 "id": "view-3"
+              },
+              {
+                "id": "view-release-month",
+                "name": "Releasing this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "release_on": {
+                    "relative": "this_month"
+                  }
+                }
+              },
+              {
+                "id": "view-release-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "release_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "view-release-last30",
+                "name": "Shipped in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "release_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1303,6 +1631,18 @@
               "text": "This is the page customers see. It lists only public releases, newest first."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Customers read this page. Lead with what they can now do, not with how it was built."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Megaphone"
+          }
         },
         {
           "type": "database",
@@ -1623,211 +1963,6 @@
                   "text": "Slow down. The Retry-After header says when to try again."
                 }
               ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "endpoint-outline",
-      "parent": "release-notes-api-docs",
-      "title": "Endpoint page outline",
-      "icon": {
-        "emoji": "🧩"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "POST /labels"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Buy a shipping label for an existing shipment."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Request"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Field"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Type"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Required"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Notes"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "shipment_id"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "string"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Yes"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "From Create shipment"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "service"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "string"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Yes"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Carrier service code"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "format"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "string"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "No"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "pdf or png; pdf by default"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "code",
-          "text": [
-            {
-              "text": "{\n  \"shipment_id\": \"shp_91c2e7\",\n  \"service\": \"ground\",\n  \"format\": \"pdf\"\n}"
-            }
-          ],
-          "props": {
-            "language": "json"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Response"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "code",
-          "text": [
-            {
-              "text": "{\n  \"id\": \"lbl_4d03aa\",\n  \"tracking_number\": \"PW5821907733\",\n  \"url\": \"https://labels.parcelwise.net/lbl_4d03aa.pdf\"\n}"
-            }
-          ],
-          "props": {
-            "language": "json"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Errors"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "422 when the shipment already has a label"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "402 when the account balance is too low"
             }
           ]
         }

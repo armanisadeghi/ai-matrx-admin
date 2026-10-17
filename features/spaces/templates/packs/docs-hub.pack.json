@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0106",
-  "version": 1,
+  "version": 2,
   "title": "Docs Hub",
   "description": "One database for every document, with status, owner, team, tags and a review dashboard.",
   "forWho": "Teams that write and share lots of documents",
@@ -73,7 +73,7 @@
           {
             "key": "state",
             "label": "State",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -87,7 +87,12 @@
               "Wrapping up": "green"
             },
             "required": true,
-            "default": "Active"
+            "default": "Active",
+            "statusGroups": {
+              "Planning": "todo",
+              "Active": "in_progress",
+              "Wrapping up": "in_progress"
+            }
           },
           {
             "key": "lead",
@@ -99,18 +104,8 @@
             "relationMax": 1
           },
           {
-            "key": "docs",
-            "label": "Write-ups",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "doc",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "doc_count",
-            "label": "Write-up count",
+            "label": "Documents",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -120,7 +115,7 @@
           },
           {
             "key": "published_count",
-            "label": "Published write-ups",
+            "label": "Published",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -130,6 +125,21 @@
             "filter": {
               "status": "Published"
             }
+          },
+          {
+            "key": "published_pct",
+            "label": "Published (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Documents} > 0, ROUND({Published} / {Documents} * 100, 0), 0)"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -139,11 +149,7 @@
               "project_name": "Food pantry expansion",
               "state": "Active",
               "lead": "tm-tobias",
-              "docs": [
-                "dc-01",
-                "dc-02",
-                "dc-03"
-              ]
+              "summary": "Everything the pantry team needs to move to the larger site"
             }
           },
           {
@@ -152,11 +158,7 @@
               "project_name": "Annual fundraising gala",
               "state": "Active",
               "lead": "tm-saoirse",
-              "docs": [
-                "dc-04",
-                "dc-05",
-                "dc-06"
-              ]
+              "summary": "Run of show, sponsors and volunteer roles for the gala"
             }
           },
           {
@@ -165,12 +167,7 @@
               "project_name": "Volunteer program refresh",
               "state": "Active",
               "lead": "tm-elodie",
-              "docs": [
-                "dc-07",
-                "dc-08",
-                "dc-09",
-                "dc-10"
-              ]
+              "summary": "Updated roles and training for returning volunteers"
             }
           },
           {
@@ -179,16 +176,12 @@
               "project_name": "Grant renewals",
               "state": "Planning",
               "lead": "tm-hamid",
-              "docs": [
-                "dc-11",
-                "dc-12"
-              ]
+              "summary": "Reports and letters for each funder, due on their dates"
             }
           }
         ],
         "independentOf": {
-          "lead": "Anyone can lead a project.",
-          "docs": "The two sides move on their own schedule and status; neither forces the other."
+          "lead": "Anyone can lead a project."
         }
       },
       {
@@ -214,6 +207,15 @@
             "required": true
           },
           {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
             "key": "type",
             "label": "Type",
             "parityType": "select",
@@ -237,7 +239,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -253,7 +255,13 @@
               "Archived": "gray"
             },
             "required": true,
-            "default": "Draft"
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "In review": "in_progress",
+              "Published": "done",
+              "Archived": "done"
+            }
           },
           {
             "key": "owner",
@@ -365,6 +373,35 @@
               "Staff only": "amber",
               "Board only": "red"
             }
+          },
+          {
+            "key": "created_by",
+            "label": "Created by",
+            "parityType": "created_by",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "publish_btn",
+            "label": "Publish",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "doc_publish"
+            }
+          },
+          {
+            "key": "archive_btn",
+            "label": "Archive",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "doc_archive"
+            }
           }
         ],
         "rows": [
@@ -380,10 +417,11 @@
                 "pantry",
                 "facilities"
               ],
-              "created_on": "@today-60d",
-              "edited_on": "@today-6d",
+              "created_on": "@today-7d",
+              "edited_on": "@today",
               "verified": true,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-1"
             }
           },
           {
@@ -400,7 +438,8 @@
               "created_on": "@today-14d",
               "edited_on": "@today-2d",
               "verified": false,
-              "visibility": "Staff only"
+              "visibility": "Staff only",
+              "project": "pj-1"
             }
           },
           {
@@ -418,7 +457,8 @@
               "created_on": "@today-21d",
               "edited_on": "@today-5d",
               "verified": false,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-1"
             }
           },
           {
@@ -436,7 +476,8 @@
               "created_on": "@today-45d",
               "edited_on": "@today-3d",
               "verified": true,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-2"
             }
           },
           {
@@ -454,7 +495,8 @@
               "created_on": "@today-30d",
               "edited_on": "@today-4d",
               "verified": false,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-2"
             }
           },
           {
@@ -472,7 +514,8 @@
               "created_on": "@today-80d",
               "edited_on": "@today-40d",
               "verified": true,
-              "visibility": "Staff only"
+              "visibility": "Staff only",
+              "project": "pj-2"
             }
           },
           {
@@ -489,7 +532,8 @@
               "created_on": "@today-100d",
               "edited_on": "@today-12d",
               "verified": true,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-3"
             }
           },
           {
@@ -507,7 +551,8 @@
               "created_on": "@today-140d",
               "edited_on": "@today-90d",
               "verified": true,
-              "visibility": "Staff only"
+              "visibility": "Staff only",
+              "project": "pj-3"
             }
           },
           {
@@ -525,7 +570,8 @@
               "created_on": "@today-9d",
               "edited_on": "@today-1d",
               "verified": false,
-              "visibility": "Staff only"
+              "visibility": "Staff only",
+              "project": "pj-3"
             }
           },
           {
@@ -542,7 +588,8 @@
               "created_on": "@today-18d",
               "edited_on": "@today-8d",
               "verified": false,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-3"
             }
           },
           {
@@ -559,7 +606,8 @@
               "created_on": "@today-120d",
               "edited_on": "@today-20d",
               "verified": true,
-              "visibility": "Everyone"
+              "visibility": "Everyone",
+              "project": "pj-4"
             }
           },
           {
@@ -577,7 +625,8 @@
               "created_on": "@today-10d",
               "edited_on": "@today-2d",
               "verified": false,
-              "visibility": "Staff only"
+              "visibility": "Staff only",
+              "project": "pj-4"
             }
           },
           {
@@ -640,8 +689,151 @@
           ]
         ],
         "independentOf": {
-          "owner": "Anyone can own a document."
-        }
+          "owner": "Anyone can own a document.",
+          "project": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Document",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who reads this and what they should be able to do afterwards."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Three sentences a busy person can stop after."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The full explanation, with headings for each part."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decisions and open questions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Decided so far"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Still to settle"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Owner has read it end to end"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "A second person has checked it"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Marked verified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -656,16 +848,6 @@
         "inverseKey": "docs_projects_led"
       },
       {
-        "describes": "A project gathers its documents.",
-        "fromTable": "project",
-        "fromField": "docs",
-        "toTable": "doc",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "project"
-      },
-      {
         "describes": "Owner links to team_member.",
         "fromTable": "doc",
         "fromField": "owner",
@@ -674,6 +856,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "docs_owned"
+      },
+      {
+        "describes": "Write-up belongs to a project.",
+        "fromTable": "doc",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "docs"
       }
     ],
     "sharedBlocks": [
@@ -760,7 +952,36 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "doc_publish",
+        "table": "doc",
+        "name": "Publish",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Published"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "doc_archive",
+        "table": "doc",
+        "name": "Archive",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Archived"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_doc",
@@ -817,6 +1038,26 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "doc_edited_week",
+        "name": "Edited this week",
+        "table": "doc",
+        "kind": "grid",
+        "within": {
+          "edited_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "doc_mine",
+        "name": "Created by me",
+        "table": "doc",
+        "kind": "grid",
+        "me": [
+          "created_by"
+        ]
       }
     ],
     "agent": {
@@ -905,7 +1146,7 @@
         "Ostrander Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1033,6 +1274,26 @@
                   "status": "Draft"
                 },
                 "id": "view-2"
+              },
+              {
+                "id": "view-doc-edited-week",
+                "name": "Edited this week",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "edited_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-doc-mine",
+                "name": "Created by me",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "created_by"
+                ]
               }
             ],
             "activeViewId": "view-0"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0101",
-  "version": 1,
+  "version": 2,
   "title": "Team Wiki & Company Home",
   "description": "A company home with news, teams and a wiki whose pages expire until an owner reviews them.",
   "forWho": "Companies of 10 to 200 people",
@@ -94,18 +94,8 @@
             "contextPolicy": "include"
           },
           {
-            "key": "pages",
-            "label": "Wiki pages",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "wiki_page",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "page_count",
-            "label": "Pages owned",
+            "label": "Pages",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -125,6 +115,14 @@
             "filter": {
               "verification": "Verified"
             }
+          },
+          {
+            "key": "verified_pct",
+            "label": "Verified (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Pages} > 0, ROUND({Verified pages} / {Pages} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -134,11 +132,7 @@
               "team_name": "Operations",
               "mission": "Keep orders moving from shelf to doorstep.",
               "lead": "tm-marisol",
-              "channel": "#ops-floor",
-              "pages": [
-                "wp-11",
-                "wp-12"
-              ]
+              "channel": "#ops-floor"
             }
           },
           {
@@ -147,11 +141,7 @@
               "team_name": "Customer care",
               "mission": "Answer every customer within a working day.",
               "lead": "tm-kwame",
-              "channel": "#care",
-              "pages": [
-                "wp-01",
-                "wp-06"
-              ]
+              "channel": "#care"
             }
           },
           {
@@ -160,11 +150,7 @@
               "team_name": "People and culture",
               "mission": "Hire well, onboard warmly, keep policies fair.",
               "lead": "tm-ellie",
-              "channel": "#people",
-              "pages": [
-                "wp-02",
-                "wp-03"
-              ]
+              "channel": "#people"
             }
           },
           {
@@ -173,11 +159,7 @@
               "team_name": "Warehouse",
               "mission": "Receive, store and ship accurately.",
               "lead": "tm-rafael",
-              "channel": "#warehouse",
-              "pages": [
-                "wp-04",
-                "wp-05"
-              ]
+              "channel": "#warehouse"
             }
           },
           {
@@ -186,11 +168,7 @@
               "team_name": "Finance",
               "mission": "Pay on time, report honestly.",
               "lead": "tm-june",
-              "channel": "#finance",
-              "pages": [
-                "wp-07",
-                "wp-08"
-              ]
+              "channel": "#finance"
             }
           },
           {
@@ -199,18 +177,12 @@
               "team_name": "Web",
               "mission": "Keep the shop fast and the catalog right.",
               "lead": "tm-ansel",
-              "channel": "#web",
-              "pages": [
-                "wp-09",
-                "wp-10",
-                "wp-13"
-              ]
+              "channel": "#web"
             }
           }
         ],
         "independentOf": {
-          "lead": "The two sides move on their own schedule and status; neither forces the other.",
-          "pages": "The two sides move on their own schedule and status; neither forces the other."
+          "lead": "The two sides move on their own schedule and status; neither forces the other."
         }
       },
       {
@@ -236,6 +208,15 @@
             "required": true
           },
           {
+            "key": "dept",
+            "label": "Team",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "dept",
+            "relationMax": 1
+          },
+          {
             "key": "category",
             "label": "Category",
             "parityType": "select",
@@ -252,29 +233,6 @@
               "How-to": "blue",
               "Reference": "slate",
               "Onboarding": "green"
-            }
-          },
-          {
-            "key": "team",
-            "label": "Team",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Operations",
-              "Customer care",
-              "People and culture",
-              "Warehouse",
-              "Finance",
-              "Web"
-            ],
-            "choiceColors": {
-              "Operations": "blue",
-              "Customer care": "green",
-              "People and culture": "pink",
-              "Warehouse": "orange",
-              "Finance": "teal",
-              "Web": "violet"
             }
           },
           {
@@ -320,11 +278,44 @@
             "format": "date"
           },
           {
+            "key": "days_to_review",
+            "label": "Days until review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Review by}, 'days')"
+          },
+          {
             "key": "summary",
             "label": "Summary",
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "verify_btn",
+            "label": "Mark verified",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "wiki_page_verify"
+            }
           }
         ],
         "rows": [
@@ -333,12 +324,12 @@
             "values": {
               "page_title": "Returns and exchanges policy",
               "category": "Policy",
-              "team": "Customer care",
               "owner": "tm-kwame",
               "verification": "Verified",
               "reviewed_on": "@today-30d",
               "review_by": "@today+150d",
-              "summary": "Customers have 45 days to return unused gear. Covers refunds, exchanges and store credit."
+              "summary": "Customers have 45 days to return unused gear. Covers refunds, exchanges and store credit.",
+              "dept": "te-customer"
             }
           },
           {
@@ -346,12 +337,12 @@
             "values": {
               "page_title": "Parental leave and time off",
               "category": "Policy",
-              "team": "People and culture",
               "owner": "tm-ellie",
               "verification": "Verified",
               "reviewed_on": "@today-45d",
               "review_by": "@today+135d",
-              "summary": "How much leave, who to tell, and how coverage is arranged."
+              "summary": "How much leave, who to tell, and how coverage is arranged.",
+              "dept": "te-people"
             }
           },
           {
@@ -359,12 +350,12 @@
             "values": {
               "page_title": "First week checklist",
               "category": "Onboarding",
-              "team": "People and culture",
               "owner": "tm-ellie",
               "verification": "Verified",
               "reviewed_on": "@today-20d",
               "review_by": "@today+160d",
-              "summary": "Day by day plan for a new hire, with who to meet."
+              "summary": "Day by day plan for a new hire, with who to meet.",
+              "dept": "te-people"
             }
           },
           {
@@ -372,12 +363,12 @@
             "values": {
               "page_title": "Receiving a truck at the dock",
               "category": "How-to",
-              "team": "Warehouse",
               "owner": "tm-rafael",
               "verification": "Verified",
               "reviewed_on": "@today-60d",
               "review_by": "@today+120d",
-              "summary": "Count, inspect and book in a delivery before the driver leaves."
+              "summary": "Count, inspect and book in a delivery before the driver leaves.",
+              "dept": "te-warehouse"
             }
           },
           {
@@ -385,12 +376,12 @@
             "values": {
               "page_title": "Packing fragile orders",
               "category": "How-to",
-              "team": "Warehouse",
               "owner": "tm-rafael",
               "verification": "Expired",
               "reviewed_on": "@today-200d",
               "review_by": "@today-20d",
-              "summary": "Box sizes, padding and when to double-box glass and ceramics."
+              "summary": "Box sizes, padding and when to double-box glass and ceramics.",
+              "dept": "te-warehouse"
             }
           },
           {
@@ -398,12 +389,12 @@
             "values": {
               "page_title": "Answering a shipping delay email",
               "category": "How-to",
-              "team": "Customer care",
               "owner": "tm-kwame",
               "verification": "Verified",
               "reviewed_on": "@today-25d",
               "review_by": "@today+155d",
-              "summary": "Reply templates, when to refund postage and who to loop in."
+              "summary": "Reply templates, when to refund postage and who to loop in.",
+              "dept": "te-customer"
             }
           },
           {
@@ -411,12 +402,12 @@
             "values": {
               "page_title": "Month-end close steps",
               "category": "Reference",
-              "team": "Finance",
               "owner": "tm-june",
               "verification": "Verified",
               "reviewed_on": "@today-15d",
               "review_by": "@today+165d",
-              "summary": "The twelve steps, in order, with the day each is due."
+              "summary": "The twelve steps, in order, with the day each is due.",
+              "dept": "te-finance"
             }
           },
           {
@@ -424,12 +415,12 @@
             "values": {
               "page_title": "Expense claims and receipts",
               "category": "Policy",
-              "team": "Finance",
               "owner": "tm-june",
               "verification": "Expired",
               "reviewed_on": "@today-190d",
               "review_by": "@today-10d",
-              "summary": "What can be claimed, the limit without approval, how to submit."
+              "summary": "What can be claimed, the limit without approval, how to submit.",
+              "dept": "te-finance"
             }
           },
           {
@@ -437,12 +428,12 @@
             "values": {
               "page_title": "Product page standards",
               "category": "Reference",
-              "team": "Web",
               "owner": "tm-ansel",
               "verification": "Verified",
               "reviewed_on": "@today-35d",
               "review_by": "@today+145d",
-              "summary": "Photo sizes, title length, bullet rules and size chart placement."
+              "summary": "Photo sizes, title length, bullet rules and size chart placement.",
+              "dept": "te-web"
             }
           },
           {
@@ -450,12 +441,12 @@
             "values": {
               "page_title": "Releasing a site change safely",
               "category": "How-to",
-              "team": "Web",
               "owner": "tm-ansel",
               "verification": "Verified",
               "reviewed_on": "@today-10d",
               "review_by": "@today+170d",
-              "summary": "Test on staging, announce in chat, release before noon, watch for an hour."
+              "summary": "Test on staging, announce in chat, release before noon, watch for an hour.",
+              "dept": "te-web"
             }
           },
           {
@@ -463,12 +454,12 @@
             "values": {
               "page_title": "Carrier rate comparison",
               "category": "Reference",
-              "team": "Operations",
               "owner": "tm-marisol",
               "verification": "Verified",
               "reviewed_on": "@today-50d",
               "review_by": "@today+130d",
-              "summary": "Current rates and cut-off times for the three carriers we use."
+              "summary": "Current rates and cut-off times for the three carriers we use.",
+              "dept": "te-operations"
             }
           },
           {
@@ -476,12 +467,12 @@
             "values": {
               "page_title": "Holiday peak staffing plan",
               "category": "Reference",
-              "team": "Operations",
               "owner": "tm-marisol",
               "verification": "Expired",
               "reviewed_on": "@today-220d",
               "review_by": "@today-40d",
-              "summary": "The November and December staffing plan, due for a rewrite."
+              "summary": "The November and December staffing plan, due for a rewrite.",
+              "dept": "te-operations"
             }
           },
           {
@@ -489,12 +480,12 @@
             "values": {
               "page_title": "Setting up your laptop",
               "category": "Onboarding",
-              "team": "Web",
               "owner": "tm-ansel",
               "verification": "Verified",
               "reviewed_on": "@today-70d",
               "review_by": "@today+110d",
-              "summary": "Accounts, password manager, VPN and the tools we all use."
+              "summary": "Accounts, password manager, VPN and the tools we all use.",
+              "dept": "te-web"
             }
           }
         ],
@@ -519,8 +510,115 @@
           ]
         },
         "independentOf": {
-          "owner": "A page can be owned by anyone, whenever they joined."
-        }
+          "owner": "A page can be owned by anyone, whenever they joined.",
+          "dept": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Wiki page",
+            "values": {
+              "verification": "Verified"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this page exists"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence on who needs it and what question it answers."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The short version"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "The rule or answer in plain words"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who it applies to"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps or details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "First step"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Second step"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who to ask"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Name the owner and where to reach them. Set the review date when you publish."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "announcement",
@@ -677,16 +775,6 @@
         "inverseKey": "teams_led"
       },
       {
-        "describes": "A team owns its wiki pages.",
-        "fromTable": "dept",
-        "fromField": "pages",
-        "toTable": "wiki_page",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "dept_owner"
-      },
-      {
         "describes": "Owner links to team_member.",
         "fromTable": "wiki_page",
         "fromField": "owner",
@@ -705,6 +793,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "announcements_made"
+      },
+      {
+        "describes": "Wiki page belongs to a team.",
+        "fromTable": "wiki_page",
+        "fromField": "dept",
+        "toTable": "dept",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "pages"
       }
     ],
     "sharedBlocks": [
@@ -801,7 +899,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "wiki_page_verify",
+        "table": "wiki_page",
+        "name": "Mark verified",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "verification",
+            "set": "value",
+            "value": "Verified"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_wiki_page",
@@ -818,10 +931,10 @@
       },
       {
         "token": "wiki_by_team",
-        "name": "By team",
+        "name": "By category",
         "table": "wiki_page",
         "kind": "kanban",
-        "groupBy": "team"
+        "groupBy": "category"
       },
       {
         "token": "wiki_review_calendar",
@@ -865,6 +978,39 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "wiki_page_review_week",
+        "name": "Review due this week",
+        "table": "wiki_page",
+        "kind": "grid",
+        "within": {
+          "review_by": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "wiki_page_review_over",
+        "name": "Review overdue",
+        "table": "wiki_page",
+        "kind": "grid",
+        "within": {
+          "review_by": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "wiki_page_review_month",
+        "name": "Review due this month",
+        "table": "wiki_page",
+        "kind": "grid",
+        "within": {
+          "review_by": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -953,13 +1099,13 @@
         "Alderkeep Wharf"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
       "key": "company-home",
       "parent": null,
-      "title": "Company Home",
+      "title": "Team Wiki & Company Home",
       "icon": {
         "emoji": "🏠"
       },
@@ -1245,9 +1391,9 @@
               },
               {
                 "layout": "kanban",
-                "name": "By team",
+                "name": "By category",
                 "icon": "SquareKanban",
-                "groupField": "team",
+                "groupField": "category",
                 "id": "view-1"
               },
               {
@@ -1261,7 +1407,7 @@
               },
               {
                 "layout": "gallery",
-                "name": "By category",
+                "name": "Cards",
                 "icon": "LayoutGrid",
                 "id": "view-3"
               }
@@ -1588,6 +1734,53 @@
           ]
         },
         {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How reviews work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Review due this week list on Monday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read each page you own. If it is still right, press Mark verified and set a new review date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If it is wrong, fix it first, then verify. A page nobody verified stays Expired and shows in Needs review."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Aim for a review date three to six months out. Policies that change rarely can go a year."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "CalendarCheck"
+          }
+        },
+        {
           "type": "database",
           "props": {
             "source": {
@@ -1633,14 +1826,47 @@
               },
               {
                 "layout": "chart",
-                "name": "Pages by team",
+                "name": "Pages by category",
                 "icon": "ChartColumn",
                 "chart": {
                   "type": "bar",
-                  "groupBy": "team",
+                  "groupBy": "category",
                   "op": "count"
                 },
                 "id": "view-3"
+              },
+              {
+                "id": "view-wiki-page-review-week",
+                "name": "Review due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "review_by": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-wiki-page-review-over",
+                "name": "Review overdue",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "review_by": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "view-wiki-page-review-month",
+                "name": "Review due this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "review_by": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1656,6 +1882,14 @@
         "emoji": "👥"
       },
       "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everyone who owns a wiki page or leads a team appears here. Add new hires on their first day so owners can be picked from the list."
+            }
+          ]
+        },
         {
           "type": "database",
           "props": {

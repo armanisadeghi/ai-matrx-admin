@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0107",
-  "version": 1,
+  "version": 2,
   "title": "Ultimate Tasks",
   "description": "Inbox, focus lists and projects, with a daily journal, estimates and repeating tasks.",
   "forWho": "Individuals and tiny teams who run on tasks",
@@ -73,7 +73,7 @@
           {
             "key": "state",
             "label": "State",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -87,7 +87,12 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Active"
+            "default": "Active",
+            "statusGroups": {
+              "Planning": "todo",
+              "Active": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "target_on",
@@ -98,18 +103,8 @@
             "format": "date"
           },
           {
-            "key": "tasks",
-            "label": "Tasks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "task",
-            "relationMax": 30,
-            "multi": true
-          },
-          {
             "key": "task_count",
-            "label": "Task count",
+            "label": "Tasks",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -131,6 +126,14 @@
             }
           },
           {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks} > 0, ROUND({Tasks done} / {Tasks} * 100, 0), 0)"
+          },
+          {
             "key": "minutes_total",
             "label": "Minutes planned",
             "parityType": "rollup",
@@ -139,6 +142,13 @@
             "via": "tasks",
             "pick": "minutes",
             "agg": "sum"
+          },
+          {
+            "key": "outcome",
+            "label": "Outcome",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -148,14 +158,7 @@
               "project_name": "Redo the studio website",
               "state": "Active",
               "target_on": "@today+30d",
-              "tasks": [
-                "tk-01",
-                "tk-02",
-                "tk-03",
-                "tk-04",
-                "tk-05",
-                "tk-06"
-              ]
+              "outcome": "A site that books workshops without email back-and-forth"
             }
           },
           {
@@ -164,12 +167,7 @@
               "project_name": "Tax and bookkeeping catch-up",
               "state": "Active",
               "target_on": "@today+12d",
-              "tasks": [
-                "tk-07",
-                "tk-08",
-                "tk-09",
-                "tk-10"
-              ]
+              "outcome": "Taxes filed and the books reconciled to the penny"
             }
           },
           {
@@ -178,11 +176,7 @@
               "project_name": "Plan the autumn workshop series",
               "state": "Planning",
               "target_on": "@today+55d",
-              "tasks": [
-                "tk-11",
-                "tk-12",
-                "tk-13"
-              ]
+              "outcome": "Six workshops sold out with a waiting list"
             }
           },
           {
@@ -191,16 +185,10 @@
               "project_name": "Move to a new office",
               "state": "Planning",
               "target_on": "@today+90d",
-              "tasks": [
-                "tk-14",
-                "tk-15"
-              ]
+              "outcome": "Lease signed and the move finished in one weekend"
             }
           }
-        ],
-        "independentOf": {
-          "tasks": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        ]
       },
       {
         "token": "task",
@@ -225,9 +213,37 @@
             "required": true
           },
           {
+            "key": "parent_task",
+            "label": "Parent task",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "relationMax": 1
+          },
+          {
+            "key": "sub_total",
+            "label": "Sub-tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sub_tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "project",
+            "relationMax": 1
+          },
+          {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -243,7 +259,13 @@
               "Done": "green"
             },
             "required": true,
-            "default": "Inbox"
+            "default": "Inbox",
+            "statusGroups": {
+              "Inbox": "todo",
+              "To do": "todo",
+              "Doing": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "focus",
@@ -366,6 +388,35 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "start_btn",
+            "label": "Start",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_start"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
           }
         ],
         "rows": [
@@ -382,7 +433,8 @@
               ],
               "recurrence": "None",
               "minutes": 15,
-              "assignee": "tm-mireille"
+              "assignee": "tm-mireille",
+              "project": "pj-1"
             }
           },
           {
@@ -398,7 +450,8 @@
               ],
               "recurrence": "None",
               "minutes": 180,
-              "assignee": "tm-mireille"
+              "assignee": "tm-mireille",
+              "project": "pj-1"
             }
           },
           {
@@ -414,7 +467,9 @@
               ],
               "recurrence": "None",
               "minutes": 90,
-              "assignee": "tm-mireille"
+              "assignee": "tm-mireille",
+              "project": "pj-1",
+              "parent_task": "tk-02"
             }
           },
           {
@@ -423,14 +478,16 @@
               "task_name": "Choose a new font pairing",
               "status": "To do",
               "focus": "Now",
-              "due_on": "@today",
+              "due_on": "@today-4d",
               "priority": "Low",
               "tags": [
                 "design"
               ],
               "recurrence": "None",
               "minutes": 30,
-              "assignee": "tm-mireille"
+              "assignee": "tm-mireille",
+              "project": "pj-1",
+              "parent_task": "tk-02"
             }
           },
           {
@@ -439,7 +496,7 @@
               "task_name": "Move the blog posts to the new site",
               "status": "To do",
               "focus": "Soon",
-              "due_on": "@today+4d",
+              "due_on": "@today-9d",
               "priority": "Medium",
               "tags": [
                 "writing",
@@ -447,7 +504,8 @@
               ],
               "recurrence": "None",
               "minutes": 120,
-              "assignee": "tm-jasper"
+              "assignee": "tm-jasper",
+              "project": "pj-1"
             }
           },
           {
@@ -456,14 +514,15 @@
               "task_name": "Set up redirects from old pages",
               "status": "To do",
               "focus": "Soon",
-              "due_on": "@today+6d",
+              "due_on": "@today+3d",
               "priority": "Medium",
               "tags": [
                 "dev"
               ],
               "recurrence": "None",
               "minutes": 60,
-              "assignee": "tm-jasper"
+              "assignee": "tm-jasper",
+              "project": "pj-1"
             }
           },
           {
@@ -472,14 +531,15 @@
               "task_name": "Reconcile the bank statement",
               "status": "Doing",
               "focus": "Now",
-              "due_on": "@today",
+              "due_on": "@today+2d",
               "priority": "High",
               "tags": [
                 "admin"
               ],
               "recurrence": "Monthly",
               "minutes": 60,
-              "assignee": "tm-anwen"
+              "assignee": "tm-anwen",
+              "project": "pj-2"
             }
           },
           {
@@ -488,14 +548,15 @@
               "task_name": "Collect receipts from the shared folder",
               "status": "To do",
               "focus": "Now",
-              "due_on": "@today",
+              "due_on": "@today+5d",
               "priority": "Medium",
               "tags": [
                 "admin"
               ],
               "recurrence": "Weekly",
               "minutes": 30,
-              "assignee": "tm-anwen"
+              "assignee": "tm-anwen",
+              "project": "pj-2"
             }
           },
           {
@@ -512,7 +573,8 @@
               ],
               "recurrence": "None",
               "minutes": 45,
-              "assignee": "tm-anwen"
+              "assignee": "tm-anwen",
+              "project": "pj-2"
             }
           },
           {
@@ -528,7 +590,8 @@
               ],
               "recurrence": "None",
               "minutes": 20,
-              "assignee": "tm-anwen"
+              "assignee": "tm-anwen",
+              "project": "pj-2"
             }
           },
           {
@@ -544,7 +607,8 @@
               ],
               "recurrence": "None",
               "minutes": 120,
-              "assignee": "tm-mireille"
+              "assignee": "tm-mireille",
+              "project": "pj-3"
             }
           },
           {
@@ -560,7 +624,8 @@
               ],
               "recurrence": "None",
               "minutes": 45,
-              "assignee": "tm-anwen"
+              "assignee": "tm-anwen",
+              "project": "pj-3"
             }
           },
           {
@@ -576,7 +641,8 @@
               ],
               "recurrence": "None",
               "minutes": 20,
-              "assignee": "tm-anwen"
+              "assignee": "tm-anwen",
+              "project": "pj-3"
             }
           },
           {
@@ -592,7 +658,8 @@
               ],
               "recurrence": "None",
               "minutes": 90,
-              "assignee": "tm-mireille"
+              "assignee": "tm-mireille",
+              "project": "pj-4"
             }
           },
           {
@@ -608,7 +675,8 @@
               ],
               "recurrence": "None",
               "minutes": 30,
-              "assignee": "tm-jasper"
+              "assignee": "tm-jasper",
+              "project": "pj-4"
             }
           },
           {
@@ -694,8 +762,72 @@
           }
         ],
         "independentOf": {
-          "assignee": "Anyone can take a task."
-        }
+          "assignee": "Anyone can take a task.",
+          "project": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next action"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The very next physical thing to do, starting with a verb."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done looks like"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How you will know it is finished."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "journal",
@@ -810,16 +942,6 @@
     ],
     "relationships": [
       {
-        "describes": "A project is made of tasks.",
-        "fromTable": "project",
-        "fromField": "tasks",
-        "toTable": "task",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "project"
-      },
-      {
         "describes": "Assignee links to team_member.",
         "fromTable": "task",
         "fromField": "assignee",
@@ -838,6 +960,26 @@
         "cardinality": "many",
         "onDelete": "set_null",
         "inverseKey": "journal"
+      },
+      {
+        "describes": "Task belongs to a project.",
+        "fromTable": "task",
+        "fromField": "project",
+        "toTable": "project",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Parent task links to another task.",
+        "fromTable": "task",
+        "fromField": "parent_task",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sub_tasks"
       }
     ],
     "sharedBlocks": [
@@ -904,7 +1046,36 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_start",
+        "table": "task",
+        "name": "Start",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Doing"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_task",
@@ -1003,6 +1174,79 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inbox",
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inbox",
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inbox",
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_today",
+        "name": "Due today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inbox",
+            "To do",
+            "Doing"
+          ]
+        }
       }
     ],
     "agent": {
@@ -1091,7 +1335,7 @@
         "Millbrook Terrace"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1355,6 +1599,79 @@
                   "status": "Doing"
                 },
                 "id": "view-0"
+              },
+              {
+                "id": "view-task-week",
+                "name": "Due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-over",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "CircleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "view-task-today",
+                "name": "Due today",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inbox",
+                    "To do",
+                    "Doing"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-0"

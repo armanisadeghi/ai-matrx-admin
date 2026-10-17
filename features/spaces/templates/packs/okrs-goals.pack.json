@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 1,
+  "version": 2,
   "title": "OKRs & Goals",
   "description": "Objectives and key results with live progress rollups, weekly check-ins, cycle review.",
   "forWho": "Leadership teams setting quarterly goals",
@@ -135,18 +135,15 @@
             "default": "On track"
           },
           {
-            "key": "key_results",
-            "label": "Key results",
-            "parityType": "relation",
+            "key": "why",
+            "label": "Why it matters",
+            "parityType": "text",
             "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "key_result",
-            "relationMax": 8,
-            "multi": true
+            "contextPolicy": "include"
           },
           {
             "key": "kr_count",
-            "label": "Key result count",
+            "label": "Key results",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -163,6 +160,13 @@
             "via": "key_results",
             "pick": "progress",
             "agg": "avg"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -174,11 +178,7 @@
               "team": "Member services",
               "owner": "tm-yara",
               "confidence": "On track",
-              "key_results": [
-                "kr-01",
-                "kr-02",
-                "kr-03"
-              ]
+              "why": "New members who are helped in week one stay for years and bring family."
             }
           },
           {
@@ -189,11 +189,7 @@
               "team": "Lending",
               "owner": "tm-desmond",
               "confidence": "At risk",
-              "key_results": [
-                "kr-04",
-                "kr-05",
-                "kr-06"
-              ]
+              "why": "Slow, fiddly applications are the top reason people go elsewhere."
             }
           },
           {
@@ -204,11 +200,7 @@
               "team": "Technology",
               "owner": "tm-sunita",
               "confidence": "On track",
-              "key_results": [
-                "kr-07",
-                "kr-08",
-                "kr-09"
-              ]
+              "why": "Trust in the website is trust in us; one outage costs months of goodwill."
             }
           },
           {
@@ -219,10 +211,7 @@
               "team": "Marketing",
               "owner": "tm-bjorn",
               "confidence": "Off track",
-              "key_results": [
-                "kr-10",
-                "kr-11"
-              ]
+              "why": "Most of our best members came by word of mouth, so we invest there first."
             }
           },
           {
@@ -233,17 +222,109 @@
               "team": "Technology",
               "owner": "tm-sunita",
               "confidence": "On track",
-              "key_results": [
-                "kr-12",
-                "kr-13"
-              ]
+              "why": "Doubling the membership will strain the current tools unless we prepare early."
             }
           }
         ],
         "independentOf": {
-          "owner": "Any leader can own an objective.",
-          "key_results": "The two sides move on their own schedule and status; neither forces the other."
-        }
+          "owner": "Any leader can own an objective."
+        },
+        "rowTemplates": [
+          {
+            "name": "Objective",
+            "values": {
+              "confidence": "On track"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this objective"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The change you want in the world by the end of the cycle, in one sentence."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Key results"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measure one: where it starts, where it should end"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measure two"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measure three"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Risks and help needed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What could stop us, and who can unblock it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "key_result",
@@ -266,6 +347,15 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "objective",
+            "label": "Objective",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "objective",
+            "relationMax": 1
           },
           {
             "key": "start_value",
@@ -324,7 +414,15 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "ROUND(({Current value} - {Start value}) / ({Target value} - {Start value}) * 100, 0)"
+            "formula": "IF({Target value} != {Start value}, ROUND(({Current value} - {Start value}) / ({Target value} - {Start value}) * 100, 0), 0)"
+          },
+          {
+            "key": "gap",
+            "label": "Left to go",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Target value} - {Current value}"
           },
           {
             "key": "owner",
@@ -361,6 +459,24 @@
             },
             "required": true,
             "default": "Flat"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "atrisk_btn",
+            "label": "Flag trend down",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "key_result_atrisk"
+            }
           }
         ],
         "rows": [
@@ -372,8 +488,9 @@
               "current_value": 9,
               "target_value": 4,
               "owner": "tm-yara",
-              "updated_on": "@today-1d",
-              "trend": "Up"
+              "updated_on": "@today",
+              "trend": "Up",
+              "objective": "ob-1"
             }
           },
           {
@@ -384,8 +501,9 @@
               "current_value": 78,
               "target_value": 95,
               "owner": "tm-yara",
-              "updated_on": "@today-2d",
-              "trend": "Up"
+              "updated_on": "@today+2d",
+              "trend": "Up",
+              "objective": "ob-1"
             }
           },
           {
@@ -397,7 +515,8 @@
               "target_value": 88,
               "owner": "tm-yara",
               "updated_on": "@today-3d",
-              "trend": "Flat"
+              "trend": "Flat",
+              "objective": "ob-1"
             }
           },
           {
@@ -409,7 +528,8 @@
               "target_value": 2,
               "owner": "tm-desmond",
               "updated_on": "@today-4d",
-              "trend": "Up"
+              "trend": "Up",
+              "objective": "ob-2"
             }
           },
           {
@@ -421,7 +541,8 @@
               "target_value": 80,
               "owner": "tm-desmond",
               "updated_on": "@today-5d",
-              "trend": "Up"
+              "trend": "Up",
+              "objective": "ob-2"
             }
           },
           {
@@ -433,7 +554,8 @@
               "target_value": 70,
               "owner": "tm-desmond",
               "updated_on": "@today-6d",
-              "trend": "Flat"
+              "trend": "Flat",
+              "objective": "ob-2"
             }
           },
           {
@@ -445,7 +567,8 @@
               "target_value": 99,
               "owner": "tm-sunita",
               "updated_on": "@today-7d",
-              "trend": "Up"
+              "trend": "Up",
+              "objective": "ob-3"
             }
           },
           {
@@ -457,7 +580,8 @@
               "target_value": 90,
               "owner": "tm-sunita",
               "updated_on": "@today-8d",
-              "trend": "Up"
+              "trend": "Up",
+              "objective": "ob-3"
             }
           },
           {
@@ -469,7 +593,8 @@
               "target_value": 9,
               "owner": "tm-sunita",
               "updated_on": "@today-9d",
-              "trend": "Flat"
+              "trend": "Flat",
+              "objective": "ob-3"
             }
           },
           {
@@ -481,7 +606,8 @@
               "target_value": 60,
               "owner": "tm-bjorn",
               "updated_on": "@today-1d",
-              "trend": "Down"
+              "trend": "Down",
+              "objective": "ob-4"
             }
           },
           {
@@ -493,7 +619,8 @@
               "target_value": 400,
               "owner": "tm-bjorn",
               "updated_on": "@today-2d",
-              "trend": "Flat"
+              "trend": "Flat",
+              "objective": "ob-4"
             }
           },
           {
@@ -505,7 +632,8 @@
               "target_value": 10,
               "owner": "tm-sunita",
               "updated_on": "@today-3d",
-              "trend": "Up"
+              "trend": "Up",
+              "objective": "ob-5"
             }
           },
           {
@@ -517,12 +645,14 @@
               "target_value": 3,
               "owner": "tm-sunita",
               "updated_on": "@today-4d",
-              "trend": "Flat"
+              "trend": "Flat",
+              "objective": "ob-5"
             }
           }
         ],
         "independentOf": {
-          "owner": "Any leader can own a result."
+          "owner": "Any leader can own a result.",
+          "objective": "The two sides move on their own schedule and status; neither forces the other."
         }
       }
     ],
@@ -538,16 +668,6 @@
         "inverseKey": "objectives_owned"
       },
       {
-        "describes": "An objective is measured by its key results.",
-        "fromTable": "objective",
-        "fromField": "key_results",
-        "toTable": "key_result",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "set_null",
-        "inverseKey": "objective"
-      },
-      {
         "describes": "Owner links to team_member.",
         "fromTable": "key_result",
         "fromField": "owner",
@@ -556,6 +676,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "key_results_owned"
+      },
+      {
+        "describes": "Key result belongs to a objective.",
+        "fromTable": "key_result",
+        "fromField": "objective",
+        "toTable": "objective",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "key_results"
       }
     ],
     "sharedBlocks": [
@@ -643,7 +773,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "key_result_atrisk",
+        "table": "key_result",
+        "name": "Flag trend down",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "trend",
+            "set": "value",
+            "value": "Down"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_objective",
@@ -700,6 +845,28 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "key_result_upd_week",
+        "name": "Updated this week",
+        "table": "key_result",
+        "kind": "grid",
+        "within": {
+          "updated_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "key_result_upd_month",
+        "name": "Updated this month",
+        "table": "key_result",
+        "kind": "grid",
+        "within": {
+          "updated_on": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -788,13 +955,13 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
       "key": "okrs",
       "parent": null,
-      "title": "Objectives & Key Results",
+      "title": "OKRs & Goals",
       "icon": {
         "emoji": "🎯"
       },
@@ -975,6 +1142,28 @@
                 "icon": "Calendar",
                 "dateField": "updated_on",
                 "id": "view-2"
+              },
+              {
+                "id": "view-key-result-upd-week",
+                "name": "Updated this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "updated_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-key-result-upd-month",
+                "name": "Updated this month",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "updated_on": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -1108,6 +1297,18 @@
               ]
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Progress is read straight from each key result: (current - start) / (target - start). Update the current value every week and everything above follows."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Gauge"
+          }
         },
         {
           "type": "heading",

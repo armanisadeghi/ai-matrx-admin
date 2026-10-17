@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0108",
-  "version": 1,
+  "version": 2,
   "title": "Tech Spec & RFC Library",
   "description": "Write and review technical proposals with status, risk, reviewers and a decision log.",
   "forWho": "Engineering teams that review designs before building",
@@ -73,7 +73,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -91,7 +91,14 @@
               "Superseded": "gray"
             },
             "required": true,
-            "default": "Draft"
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "In review": "in_progress",
+              "Approved": "done",
+              "Implemented": "done",
+              "Superseded": "done"
+            }
           },
           {
             "key": "area",
@@ -139,6 +146,14 @@
             "format": "date"
           },
           {
+            "key": "days_to_review",
+            "label": "Days until review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Review deadline}, 'days')"
+          },
+          {
             "key": "decided_on",
             "label": "Decision date",
             "parityType": "datetime",
@@ -173,11 +188,46 @@
             "relationMax": 1
           },
           {
+            "key": "decision_count",
+            "label": "Decisions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "decisions",
+            "pick": "decision_title",
+            "agg": "count"
+          },
+          {
             "key": "doc_link",
             "label": "Design doc",
             "parityType": "url",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approve_btn",
+            "label": "Approve",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "spec_approve"
+            }
           }
         ],
         "rows": [
@@ -247,7 +297,7 @@
               "author": "tm-zainab",
               "reviewer": "tm-anneliese",
               "decided_on": "@today+6d",
-              "review_by": "@today+5d",
+              "review_by": "@today",
               "risk": "High",
               "doc_link": "https://design.fathomgrid.net/specs/44"
             }
@@ -261,7 +311,7 @@
               "author": "tm-lars",
               "reviewer": "tm-marguerite",
               "decided_on": "@today+9d",
-              "review_by": "@today+8d",
+              "review_by": "@today-4d",
               "risk": "Medium",
               "doc_link": "https://design.fathomgrid.net/specs/45"
             }
@@ -275,7 +325,7 @@
               "author": "tm-cormac",
               "reviewer": "tm-yuki",
               "decided_on": "@today+11d",
-              "review_by": "@today+10d",
+              "review_by": "@today-9d",
               "risk": "Low",
               "doc_link": "https://design.fathomgrid.net/specs/46"
             }
@@ -289,7 +339,7 @@
               "author": "tm-marguerite",
               "reviewer": "tm-zainab",
               "decided_on": "@today+20d",
-              "review_by": "@today+18d",
+              "review_by": "@today+3d",
               "risk": "Medium",
               "doc_link": "https://design.fathomgrid.net/specs/47"
             }
@@ -303,7 +353,7 @@
               "author": "tm-anneliese",
               "reviewer": "tm-cormac",
               "decided_on": "@today+35d",
-              "review_by": "@today+30d",
+              "review_by": "@today+2d",
               "risk": "High",
               "doc_link": "https://design.fathomgrid.net/specs/48"
             }
@@ -317,7 +367,7 @@
               "author": "tm-lars",
               "reviewer": "tm-zainab",
               "decided_on": "@today+28d",
-              "review_by": "@today+24d",
+              "review_by": "@today+5d",
               "risk": "High",
               "doc_link": "https://design.fathomgrid.net/specs/49"
             }
@@ -342,7 +392,289 @@
           "author": "Anyone can write a spec.",
           "reviewer": "Anyone can review.",
           "related": "Specs refer to each other without sharing a schedule."
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "Spec",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Copy this outline into a new spec. Keep each section short; a good spec fits on two screens."
+                    }
+                  ],
+                  "background": "gray",
+                  "props": {
+                    "icon": "FileText"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two sentences: what we will build and why now."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Context and goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What problem are we solving, for whom?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "How will we know it worked?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Non-goals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What are we deliberately not doing?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Proposal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The approach, with a diagram if it helps. Name the components and who owns them."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Alternatives considered"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "toggle",
+                  "text": [
+                    {
+                      "text": "Alternative A"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": [
+                        {
+                          "text": "What it is, and why we did not choose it."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "toggle",
+                  "text": [
+                    {
+                      "text": "Alternative B"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": [
+                        {
+                          "text": "What it is, and why we did not choose it."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Risks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What could go wrong, and how will we notice?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rollout plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Ship behind a flag."
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Enable for internal accounts."
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Enable for ten percent of customers."
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Remove the old path."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Open questions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Questions the review should answer."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sign-off"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Author"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reviewer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Security review, if it touches data or sign-in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
       },
       {
         "token": "decision",
@@ -583,7 +915,22 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "spec_approve",
+        "table": "spec",
+        "name": "Approve",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      }
+    ],
     "views": [
       {
         "token": "all_spec",
@@ -647,6 +994,58 @@
         "table": "team_member",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "spec_rev_week",
+        "name": "Review due this week",
+        "table": "spec",
+        "kind": "grid",
+        "within": {
+          "review_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "spec_rev_over",
+        "name": "Review overdue",
+        "table": "spec",
+        "kind": "grid",
+        "within": {
+          "review_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "spec_rev_30",
+        "name": "Review in 30 days",
+        "table": "spec",
+        "kind": "grid",
+        "within": {
+          "review_by": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "In review"
+          ]
+        }
       }
     ],
     "agent": {
@@ -735,13 +1134,13 @@
         "Edgewater Quay"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
       "key": "tech-specs",
       "parent": null,
-      "title": "Tech Specs & RFCs",
+      "title": "Tech Spec & RFC Library",
       "icon": {
         "emoji": "📐"
       },
@@ -774,12 +1173,6 @@
                 "width": 0.5
               },
               "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:spec-outline"
-                  }
-                },
                 {
                   "type": "page",
                   "props": {
@@ -826,6 +1219,14 @@
           "props": {
             "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open any spec to find the full outline (problem, goals, design, risks, rollout) already inside it."
+            }
+          ]
         },
         {
           "type": "database",
@@ -881,6 +1282,40 @@
                   "status": "In review"
                 },
                 "id": "view-4"
+              },
+              {
+                "id": "view-spec-rev-week",
+                "name": "Review due this week",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "review_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "view-spec-rev-over",
+                "name": "Review overdue",
+                "layout": "grid",
+                "icon": "CalendarClock",
+                "within": {
+                  "review_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "In review"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-0"
@@ -930,284 +1365,6 @@
               }
             ],
             "activeViewId": "view-0"
-          }
-        }
-      ]
-    },
-    {
-      "key": "spec-outline",
-      "parent": "tech-specs",
-      "title": "Spec outline",
-      "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "Copy this outline into a new spec. Keep each section short; a good spec fits on two screens."
-            }
-          ],
-          "background": "gray",
-          "props": {
-            "icon": "FileText"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Summary"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Two sentences: what we will build and why now."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Context and goals"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What problem are we solving, for whom?"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "How will we know it worked?"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Non-goals"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What are we deliberately not doing?"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Proposal"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "The approach, with a diagram if it helps. Name the components and who owns them."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Alternatives considered"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "toggle",
-          "text": [
-            {
-              "text": "Alternative A"
-            }
-          ],
-          "children": [
-            {
-              "type": "text",
-              "text": [
-                {
-                  "text": "What it is, and why we did not choose it."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "toggle",
-          "text": [
-            {
-              "text": "Alternative B"
-            }
-          ],
-          "children": [
-            {
-              "type": "text",
-              "text": [
-                {
-                  "text": "What it is, and why we did not choose it."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Risks"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What could go wrong, and how will we notice?"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Rollout plan"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Ship behind a flag."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Enable for internal accounts."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Enable for ten percent of customers."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Remove the old path."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Open questions"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Questions the review should answer."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Sign-off"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Author"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Reviewer"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Security review, if it touches data or sign-in"
-            }
-          ],
-          "props": {
-            "checked": false
           }
         }
       ]
@@ -1330,119 +1487,108 @@
       },
       "blocks": [
         {
-          "type": "columnList",
-          "children": [
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "spec",
-                      "view": "all_spec"
-                    },
-                    "inline": true,
-                    "title": "Specs",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "chart",
-                        "name": "Specs by status",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spec",
+              "view": "all_spec"
             },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
+            "inline": true,
+            "title": "Specs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Specs by status",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-0"
               },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "spec",
-                      "view": "all_spec"
-                    },
-                    "inline": true,
-                    "title": "Specs",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "chart",
-                        "name": "Specs by area",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "area",
-                          "op": "count"
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
+              {
+                "id": "view-spec-rev-30",
+                "name": "Review in 30 days",
+                "layout": "list",
+                "icon": "CalendarClock",
+                "within": {
+                  "review_by": {
+                    "relative": "next_days",
+                    "n": 30
                   }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "In review"
+                  ]
                 }
-              ]
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spec",
+              "view": "all_spec"
             },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "spec",
-                      "view": "all_spec"
-                    },
-                    "inline": true,
-                    "title": "Specs",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "layout": "chart",
-                        "name": "Specs by risk",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "risk",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "id": "view-0"
-                      }
-                    ],
-                    "activeViewId": "view-0"
-                  }
-                }
-              ]
-            }
-          ]
+            "inline": true,
+            "title": "Specs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Specs by area",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "area",
+                  "op": "count"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "spec",
+              "view": "all_spec"
+            },
+            "inline": true,
+            "title": "Specs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Specs by risk",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "risk",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
         },
         {
           "type": "heading",
@@ -1544,6 +1690,26 @@
         "emoji": "⚖️"
       },
       "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A decision is one sentence and the reason behind it. Log it the day it is made, link it to the spec it belongs to, and nobody has to remember why in a year."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write the reason, not just the choice. “We chose Postgres” ages badly; “We chose Postgres because reporting needs joins” does not."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "database",
           "props": {
