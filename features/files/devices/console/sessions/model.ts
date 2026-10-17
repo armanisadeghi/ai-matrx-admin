@@ -4,7 +4,8 @@
  * rows are the computer's own (its sidebar's Code › Recent, `createRecentChats`), so the words and
  * dots here are the Mac's: Running, Needs you, New output, Running in <app>.
  */
-import type { RecentChatRow, TransportStatus } from "@ai-matrx/coding-sessions";
+import type { ProviderStatus, RecentChatRow, TransportStatus } from "@ai-matrx/coding-sessions";
+import { accountLabelOf } from "@ai-matrx/coding-sessions/react";
 
 import type { ConsoleStatus } from "../connection";
 
@@ -54,7 +55,7 @@ export function wholeViewRefusal(error: unknown): string | null {
 
 export interface RowFacts {
   title: string;
-  /** "parser · Claude Code": the Mac's one rule (the folder's name or "No folder", then the app). */
+  /** "parser · Claude Code · Work": the Mac's one rule (the folder's name or "No folder", the app, then the account when it is not the default sign-in). */
   where: string;
   /** The dot: amber (warning), blue (info), or none. */
   tone: "warning" | "info" | null;
@@ -65,11 +66,17 @@ export interface RowFacts {
 
 const PROVIDER: Record<RecentChatRow["provider"], string> = { claude: "Claude Code", codex: "Codex" };
 
-export function rowFacts(row: RecentChatRow): RowFacts {
+/**
+ * One row's words. `providers` is the computer's own account list (`coding.providers`): a chat on
+ * an account says that account's name, as the Mac's row does (walk 41: the web named none).
+ */
+export function rowFacts(row: RecentChatRow, providers: readonly ProviderStatus[]): RowFacts {
   const folder = row.cwd ? row.cwd.split(/[\\/]+/).filter(Boolean).pop() ?? row.cwd : null;
   const tone = row.state === "new_output" ? "info" : row.state === "idle" ? null : "warning";
   const from = row.startedBy && row.startedBy.kind !== "this_computer" ? (row.startedBy.kind === "agent" ? "From an agent" : `From ${row.startedBy.label}`) : null;
-  return { title: row.title, where: `${folder ?? "No folder"} · ${PROVIDER[row.provider]}`, tone, toneLabel: tone ? row.stateLabel : null, from };
+  const account = accountLabelOf(providers, row.provider, row.accountId);
+  const where = [folder ?? "No folder", PROVIDER[row.provider], account].filter(Boolean).join(" · ");
+  return { title: row.title, where, tone, toneLabel: tone ? row.stateLabel : null, from };
 }
 
 export type SessionsScope = "all" | "attention" | "open" | "pinned";

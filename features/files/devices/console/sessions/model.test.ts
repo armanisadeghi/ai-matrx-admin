@@ -1,4 +1,4 @@
-import type { RecentChatRow } from "@ai-matrx/coding-sessions";
+import type { ProviderStatus, RecentChatRow } from "@ai-matrx/coding-sessions";
 
 import { clientLabelFor, inScope, rowFacts, sessionsState, wholeViewRefusal } from "./model";
 
@@ -38,9 +38,17 @@ describe("the Sessions view's rules", () => {
   });
 
   it("reads a row with the Mac's words and dots, and who started it", () => {
-    expect(rowFacts(row({ state: "running", stateLabel: "Running" }))).toEqual({ title: "Parser", where: "parser · Claude Code", tone: "warning", toneLabel: "Running", from: null });
-    expect(rowFacts(row({ state: "new_output", stateLabel: "New output", startedBy: { kind: "phone", label: "iPhone" } }))).toMatchObject({ tone: "info", from: "From iPhone" });
-    expect(rowFacts(row({ provider: "codex", cwd: null, startedBy: { kind: "agent", label: "An agent" } }))).toMatchObject({ where: "No folder · Codex", tone: null, from: "From an agent" });
+    expect(rowFacts(row({ state: "running", stateLabel: "Running" }), [])).toEqual({ title: "Parser", where: "parser · Claude Code", tone: "warning", toneLabel: "Running", from: null });
+    expect(rowFacts(row({ state: "new_output", stateLabel: "New output", startedBy: { kind: "phone", label: "iPhone" } }), [])).toMatchObject({ tone: "info", from: "From iPhone" });
+    expect(rowFacts(row({ provider: "codex", cwd: null, startedBy: { kind: "agent", label: "An agent" } }), [])).toMatchObject({ where: "No folder · Codex", tone: null, from: "From an agent" });
+  });
+
+  it("names the account a chat runs as, from the computer's own account list (walk 41: the web named none)", () => {
+    const providers = [{ provider: "claude", accounts: [{ id: "acct-b", label: "Acct B" }] }] as unknown as ProviderStatus[];
+    expect(rowFacts(row({ accountId: "acct-b", state: "elsewhere", stateLabel: "Running in Claude Code" }), providers).where).toBe("parser · Claude Code · Acct B");
+    // The default sign-in says no account; an account the list does not carry says none either (never a raw id).
+    expect(rowFacts(row({}), providers).where).toBe("parser · Claude Code");
+    expect(rowFacts(row({ accountId: "gone" }), providers).where).toBe("parser · Claude Code");
   });
 
   it("scopes the list like the Mac's smart mailboxes", () => {

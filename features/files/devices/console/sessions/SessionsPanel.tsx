@@ -18,6 +18,7 @@ import {
   createDesktopProtocolTransport,
   type DesktopCodingTransport,
   type DesktopProtocolLikeClient,
+  type ProviderStatus,
   type RecentChatRow,
   type TransportStatus,
 } from "@ai-matrx/coding-sessions";
@@ -30,6 +31,7 @@ import {
   CodingToastContext,
   ProviderMark,
   relativeTime,
+  useCodingSessionsState,
 } from "@ai-matrx/coding-sessions/react";
 import "@ai-matrx/coding-sessions/react/styles.css";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
@@ -108,6 +110,8 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
   const { transport } = props;
   const status = useTransportStatus(transport);
   const rows = useSyncExternalStore(transport.onRecent, transport.recent, transport.recent);
+  // The computer's own account list: a row on an account names it, as the Mac's row does.
+  const providers = useCodingSessionsState().providers.data;
   const [refusal, setRefusal] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [scope, setScope] = useState<SessionsScope>("all");
@@ -182,7 +186,7 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
       </div>
       <ul className="min-h-0 flex-1 overflow-y-auto" aria-label="Sessions">
         {shown.map((row) => (
-          <SessionRow key={row.target} row={row} now={now} selected={row.target === open} onOpen={() => props.onSelect(row.target)} />
+          <SessionRow key={row.target} row={row} providers={providers} now={now} selected={row.target === open} onOpen={() => props.onSelect(row.target)} />
         ))}
         {loaded && shown.length === 0 ? (
           <li className="px-4 py-10 text-center text-[13px] text-muted-foreground">{scope === "all" ? "No coding sessions on this computer yet." : "Nothing here right now."}</li>
@@ -269,8 +273,8 @@ function useComposerClearsAssists(chat: HTMLDivElement | null, active: boolean):
   }, [chat, active]);
 }
 
-function SessionRow({ row, now, selected, onOpen }: { row: RecentChatRow; now: number; selected: boolean; onOpen: () => void }) {
-  const facts = rowFacts(row);
+function SessionRow({ row, providers, now, selected, onOpen }: { row: RecentChatRow; providers: readonly ProviderStatus[]; now: number; selected: boolean; onOpen: () => void }) {
+  const facts = rowFacts(row, providers);
   return (
     <li>
       <Button
