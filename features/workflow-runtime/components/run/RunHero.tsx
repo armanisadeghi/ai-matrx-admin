@@ -15,6 +15,7 @@
  * single wrap-free scroller, so nothing below it ever moves as state changes.
  */
 
+import type { ReactNode } from "react";
 import { Cost } from "@/components/cost/Cost";
 import { CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
 
@@ -129,6 +130,8 @@ export function RunHero({
   deliverables,
   /** Definition step count — the honest denominator before anything starts. */
   totalSteps,
+  /** Inline after the status word, in the same row (review flags) — never a new row. */
+  statusExtra,
 }: {
   runId: string;
   workflowName: string;
@@ -136,6 +139,7 @@ export function RunHero({
   steps: RunStepPresentation[];
   deliverables: RunStepPresentation[];
   totalSteps: number;
+  statusExtra?: ReactNode;
 }) {
   const status = useAppSelector(selectRunStatus(runId));
   const startedAt = useAppSelector(selectRunStartedAt(runId));
@@ -211,6 +215,7 @@ export function RunHero({
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {copy.label}
         </span>
+        {statusExtra}
         <div className="ml-auto flex items-center gap-3 text-xs tabular-nums text-muted-foreground">
           {costTotal > 0 ? (
             <span aria-label="AI cost so far">

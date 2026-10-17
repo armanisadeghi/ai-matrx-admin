@@ -94,7 +94,7 @@ import { RunFailureCard } from "./RunFailureCard";
 import { RunHeldSteps } from "./RunHeldSteps";
 import { RunHero } from "./RunHero";
 import { RunJourney } from "./RunJourney";
-import { RunReviewBanner } from "../../review/components/RunReviewBanner";
+import { RunReviewChip } from "../../review/components/RunReviewChip";
 import { flagsByNode, useRunFlags } from "../../review/useRunFlags";
 import {
   deliverableSteps,
@@ -242,7 +242,8 @@ export function RunStage({
   const status = useAppSelector(selectRunStatus(runId));
   const emissions = useAppSelector(selectRunEmissions(runId));
   // Review flags (workflow.run_log needs_review): re-read as the status moves.
-  const { flags: reviewFlags } = useRunFlags(runId, status);
+  const reviewRead = useRunFlags(runId, status);
+  const reviewFlags = reviewRead.flags;
   /**
    * 🚨 LOADING IS NOT "NO PROMISE" — the distinction the page shift lives in.
    *
@@ -295,6 +296,15 @@ export function RunStage({
         steps={steps}
         deliverables={deliverables}
         totalSteps={steps.length}
+        statusExtra={
+          <RunReviewChip
+            flags={reviewFlags}
+            error={reviewRead.error}
+            onRetry={reviewRead.retry}
+            definitionId={definitionId}
+            stepLabels={stepLabels}
+          />
+        }
       />
 
       {/* The run's own controls (census #34) — pause / resume / stop / cancel,
@@ -310,12 +320,6 @@ export function RunStage({
       {/* A step that FINISHED with its change held for a person (a new table
           under "Always ask"): the run reads Done, so the decision is drawn
           here, never buried in the result's JSON. */}
-      <RunReviewBanner
-        flags={reviewFlags}
-        definitionId={definitionId}
-        runStatus={status}
-        stepLabels={stepLabels}
-      />
       <RunHeldSteps runId={runId} finishedOnly />
       {/* THE QUESTION (SPEC §4.1). A `panel` question sits here, in the run's
           own column of cards; a `showcase` question is STAGED below instead —

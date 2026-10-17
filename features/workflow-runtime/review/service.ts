@@ -7,6 +7,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { postgrestError } from "@/lib/failure/postgrestError";
+import type { LaneRow } from "@/lib/entity-list/laneRows";
 
 import { stepNamesFromNodes, type ReviewIssueRow, type ReviewIssueStatus, type RunLogRow } from "./model";
 
@@ -65,7 +66,18 @@ export async function fetchRunFlagCounts(runIds: string[]): Promise<Map<string, 
 
 const ISSUE_COLUMNS = "*";
 
-export async function fetchWorkflowIssues(definitionId: string): Promise<ReviewIssueRow[]> {
+/** A capped read: the newest `REVIEW_ISSUE_LIMIT` rows, and whether more exist. */
+export interface IssuePage {
+  rows: ReviewIssueRow[];
+  more: boolean;
+}
+
+function capped(rows: ReviewIssueRow[] | null): IssuePage {
+  const all = rows ?? [];
+  return { rows: all.slice(0, REVIEW_ISSUE_LIMIT), more: all.length > REVIEW_ISSUE_LIMIT };
+}
+
+export async function fetchWorkflowIssues(definitionId: string): Promise<IssuePage> {
   const { data, error } = await supabase
     .schema("workflow")
     .from("review_issue")
@@ -73,9 +85,9 @@ export async function fetchWorkflowIssues(definitionId: string): Promise<ReviewI
     .eq("definition_id", definitionId)
     .is("deleted_at", null)
     .order("last_seen_at", { ascending: false })
-    .limit(REVIEW_ISSUE_LIMIT);
+    .limit(REVIEW_ISSUE_LIMIT + 1);
   if (error) throw postgrestError(error, { action: "read this workflow's issues", fallback: "Could not read this workflow's issues." });
-  return data ?? [];
+  return capped(data);
 }
 
 /**
@@ -83,18 +95,27 @@ export async function fetchWorkflowIssues(definitionId: string): Promise<ReviewI
  * organization (row security decides). `organizationId` is the on-page filter,
  * never the active organization.
  */
-export async function fetchInboxIssues(organizationId: string | null): Promise<ReviewIssueRow[]> {
+export async function fetchInboxIssues(organizationId: string | null): Promise<IssuePage> {
   let query = supabase
     .schema("workflow")
     .from("review_issue")
     .select(ISSUE_COLUMNS)
     .is("deleted_at", null)
     .order("last_seen_at", { ascending: false })
-    .limit(REVIEW_ISSUE_LIMIT);
+    .limit(REVIEW_ISSUE_LIMIT + 1);
   if (organizationId) query = query.eq("organization_id", organizationId);
   const { data, error } = await query;
   if (error) throw postgrestError(error, { action: "read your issues", fallback: "Could not read your issues." });
-  return data ?? [];
+  return capped(data);
+}
+
+/** The inbox's lane reader rows (workflow.review_issue_list_lanes): (issue, lane, organization). */
+export async function fetchReviewIssueLanes(): Promise<LaneRow[]> {
+  const { data, error } = await supabase
+    .schema("workflow")
+    .rpc("review_issue_list_lanes", {});
+  if (error) throw postgrestError(error, { action: "read your review lanes", fallback: "Could not read your review lanes." });
+  return (data ?? []).map((r) => ({ id: r.id, lane: r.lane, organization_id: r.organization_id }));
 }
 
 export async function fetchIssue(issueId: string): Promise<ReviewIssueRow | null> {

@@ -55,8 +55,10 @@ export function ReviewIssuePage({ definitionId, issueId }: { definitionId: strin
     ])
       .then(([row, occ, summaries]) => {
         if (!live) return;
-        setIssue(row);
-        setMissing(row === null);
+        // An issue read under another workflow's address is not this workflow's issue.
+        const mine = row && row.definition_id === definitionId ? row : null;
+        setIssue(mine);
+        setMissing(mine === null);
         setOccurrences(occ);
         setSummary(summaries.get(definitionId));
         setError(null);

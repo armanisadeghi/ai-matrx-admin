@@ -63,13 +63,14 @@ interface RunRowView extends RunListRow {
    * `service.ts` § WorkflowFacts.
    */
   declaredKind: string | null;
-  /** Review flags this run raised; 0 when none (or not yet read). */
-  flagged: number;
+  /** Review flags this run raised; null when the count could not be read (never "0"). */
+  flagged: number | null;
 }
 
 const FLAGGED_FILTER_OPTIONS = [
   { value: "flagged", label: "Flagged" },
   { value: "clean", label: "Not flagged" },
+  { value: "unknown", label: "Unknown" },
 ];
 
 const STATUS_FILTER_OPTIONS = [
@@ -107,20 +108,29 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
   const missingFlagIds = rows.filter((r) => r.reviewFlagCount === null).map((r) => r.runId);
   const missingKey = missingFlagIds.join(",");
   const [flagCounts, setFlagCounts] = useState<Map<string, number>>(new Map());
+  const [flagRead, setFlagRead] = useState<{ key: string; error: string | null } | null>(null);
+  const [flagAttempt, setFlagAttempt] = useState(0);
   useEffect(() => {
     if (!missingKey) return undefined;
     let live = true;
     void fetchRunFlagCounts(missingKey.split(","))
       .then((counts) => {
-        if (live) setFlagCounts(counts);
+        if (!live) return;
+        setFlagCounts(counts);
+        setFlagRead({ key: missingKey, error: null });
       })
       .catch((e: unknown) => {
-        console.error("[runs-list] review flag counts", e);
+        if (live)
+          setFlagRead({
+            key: missingKey,
+            error: e instanceof Error ? e.message : "Could not read run flags.",
+          });
       });
     return () => {
       live = false;
     };
-  }, [missingKey]);
+  }, [missingKey, flagAttempt]);
+  const flagError = flagRead?.key === missingKey ? flagRead.error : null;
   const [clickedRow, setClickedRow] = useState<RunRowView | null>(null);
 
   // The list spans every organization the person belongs to; name each row's.
@@ -136,7 +146,8 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       // The run's own declared kind when the wrapper ever carries one, else
       // the workflow's declaration — the only source a LIST row can have.
       declaredKind: row.deliverableKind ?? fact?.outputKind ?? null,
-      flagged: row.reviewFlagCount ?? flagCounts.get(row.runId) ?? 0,
+      // Unknown (read failed, or the run row could not be read) is never shown as "not flagged".
+      flagged: row.reviewFlagCount ?? flagCounts.get(row.runId) ?? (flagError ? null : 0),
     };
   });
 
@@ -191,9 +202,14 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       align: "right",
       filter: "select",
       filterOptions: FLAGGED_FILTER_OPTIONS,
-      filterValue: (row) => (row.flagged > 0 ? "flagged" : "clean"),
+      filterValue: (row) =>
+        row.flagged === null ? "unknown" : row.flagged > 0 ? "flagged" : "clean",
       cell: (row) =>
-        row.flagged > 0 ? (
+        row.flagged === null ? (
+          <span className="text-destructive" title="Flags could not be read">
+            ?
+          </span>
+        ) : row.flagged > 0 ? (
           <span
             className="inline-flex items-center gap-1 tabular-nums text-warning"
             title={`${row.flagged} review ${row.flagged === 1 ? "flag" : "flags"}`}
@@ -281,6 +297,15 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
           what={definitionId ? "this workflow's runs" : "your runs"}
           onRetry={refresh}
           detail={error}
+          className="mx-3 mb-2"
+        />
+      ) : null}
+      {flagError && view.length > 0 ? (
+        <StaleDataNotice
+          hasData
+          what="run flags"
+          onRetry={() => setFlagAttempt((n) => n + 1)}
+          detail={flagError}
           className="mx-3 mb-2"
         />
       ) : null}

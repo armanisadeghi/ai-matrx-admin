@@ -188,7 +188,8 @@ export function WorkflowRunPage({
   }, [definitionId, attempt]);
 
   // Open review issues on this workflow → a header door to its review page.
-  const [openIssues, setOpenIssues] = useState(0);
+  // "unreadable" keeps the door visible (to the review page, which shows the read's own failure).
+  const [openIssues, setOpenIssues] = useState<number | "unreadable">(0);
   useEffect(() => {
     if (!definitionId) return undefined;
     let live = true;
@@ -198,6 +199,7 @@ export function WorkflowRunPage({
       })
       .catch((e: unknown) => {
         console.error("[workflow-run-page] open review issues", e);
+        if (live) setOpenIssues("unreadable");
       });
     return () => {
       live = false;
@@ -269,7 +271,15 @@ export function WorkflowRunPage({
               ]}
             />
           ) : null}
-          {definitionId && openIssues > 0 ? (
+          {definitionId && openIssues === "unreadable" ? (
+            <TapTargetButtonTransparent
+              icon={<Flag />}
+              tone="destructive"
+              badge="dot"
+              ariaLabel="Open issues could not be counted"
+              href={workflowReviewHref(definitionId)}
+            />
+          ) : definitionId && typeof openIssues === "number" && openIssues > 0 ? (
             <TapTargetButtonTransparent
               icon={<Flag />}
               tone="warning"

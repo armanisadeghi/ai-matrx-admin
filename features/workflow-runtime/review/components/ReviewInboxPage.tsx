@@ -1,9 +1,11 @@
 "use client";
 
 // /workflows/review — every review issue the person can see, across every
-// workflow and every organization they belong to. 🚨 Never filtered by the
-// active organization: the on-page organization filter (?org_filter=,
-// default All organizations) is the only narrowing (access ladder).
+// workflow, in the platform's list lanes (All | Mine | My team | My Orgs |
+// Shared | System) with the organization filter (default All organizations).
+// 🚨 Never filtered by the active organization (access ladder). Lanes come from
+// the lane reader workflow.review_issue_list_lanes — an issue sits in every
+// lane its workflow sits in — so the tab counts equal the rows under them.
 
 import { useEffect, useState } from "react";
 import { Flag, ListOrdered } from "lucide-react";
@@ -12,32 +14,51 @@ import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
+import { EntityLaneHeader } from "@/lib/entity-list/components/EntityLaneHeader";
+import { laneIds } from "@/lib/entity-list/laneRows";
+import { useLaneParam } from "@/lib/entity-list/useLaneParam";
+import { useLaneRows } from "@/lib/entity-list/useLaneRows";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
+import {
+  withStandardLanes,
+  type LaneSupport,
+  type ListScopeKind,
+} from "@/lib/list-scope/types";
 
 import type { ReviewIssueRow } from "../model";
 import {
   fetchInboxIssues,
+  fetchReviewIssueLanes,
   fetchWorkflowSummaries,
+  REVIEW_ISSUE_LIMIT,
   type WorkflowSummary,
 } from "../service";
 import { issueView, ReviewIssuesTable } from "./ReviewIssuesTable";
 
+/** A stranger's workflow issues are never readable, so Public is absent. */
+const REVIEW_SCOPES: ListScopeKind[] = ["mine", "orgs", "shared", "system"];
+const REVIEW_LANE_SUPPORT: LaneSupport = { public: false };
+const REVIEW_LANES = withStandardLanes(REVIEW_SCOPES, { lanes: REVIEW_LANE_SUPPORT });
+
 export function ReviewInboxPage() {
-  const [orgFilter, setOrgFilter] = useOrgFilterParam();
+  const [lane, setLane] = useLaneParam("workflow", REVIEW_LANES);
+  const [orgFilter, setOrgFilter] = useOrgFilterParam([]);
+  const [attempt, setAttempt] = useState(0);
+  const laneRows = useLaneRows(() => fetchReviewIssueLanes(), `review-lanes:${attempt}`);
   const [issues, setIssues] = useState<ReviewIssueRow[]>([]);
+  const [more, setMore] = useState(false);
   const [summaries, setSummaries] = useState<Map<string, WorkflowSummary>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let live = true;
-    void fetchInboxIssues(orgFilter)
-      .then(async (rows) => {
-        const names = await fetchWorkflowSummaries(rows.map((r) => r.definition_id));
+    void fetchInboxIssues(null)
+      .then(async (page) => {
+        const names = await fetchWorkflowSummaries(page.rows.map((r) => r.definition_id));
         if (!live) return;
-        setIssues(rows);
+        setIssues(page.rows);
+        setMore(page.more);
         setSummaries(names);
         setError(null);
       })
@@ -50,12 +71,18 @@ export function ReviewInboxPage() {
     return () => {
       live = false;
     };
-  }, [orgFilter, attempt]);
+  }, [attempt]);
 
   const onChanged = (next: ReviewIssueRow) =>
     setIssues((rows) => rows.map((r) => (r.id === next.id ? next : r)));
 
-  const rows = issues.map((issue) => issueView(issue, summaries.get(issue.definition_id)));
+  const shown = laneRows.rows ? laneIds(laneRows.rows, lane, orgFilter) : null;
+  const rows = shown
+    ? issues
+        .filter((issue) => shown.has(issue.id))
+        .map((issue) => issueView(issue, summaries.get(issue.definition_id)))
+    : [];
+  const readError = error ?? (laneRows.error ? new Error(laneRows.error) : null);
 
   return (
     <>
@@ -77,25 +104,38 @@ export function ReviewInboxPage() {
       />
       <div className="h-full overflow-hidden">
         <div className="flex h-full flex-col overflow-y-auto pt-[var(--shell-header-h)]">
-          {error ? (
-            <ReadFailure error={error} what="your issues" onRetry={() => setAttempt((n) => n + 1)} />
+          <EntityLaneHeader
+            scopes={REVIEW_SCOPES}
+            laneSupport={REVIEW_LANE_SUPPORT}
+            lane={lane}
+            onLaneChange={setLane}
+            orgId={orgFilter}
+            onOrgChange={setOrgFilter}
+            laneRows={laneRows}
+            className="px-3 pb-2"
+          />
+          {readError ? (
+            <ReadFailure
+              error={readError}
+              what="your issues"
+              onRetry={() => {
+                setLoading(true);
+                setAttempt((n) => n + 1);
+              }}
+            />
           ) : (
             <div className="flex min-h-0 flex-1 flex-col" data-review-inbox="">
+              {more ? (
+                <p className="px-3 pb-1 text-xs text-muted-foreground" data-review-capped="">
+                  {`Showing the newest ${REVIEW_ISSUE_LIMIT}`}
+                </p>
+              ) : null}
               <ReviewIssuesTable
                 rows={rows}
-                loading={loading}
+                loading={loading || laneRows.rows === null}
                 showWorkflow
                 urlStateId="review-inbox"
                 onChanged={onChanged}
-                toolbarLeading={
-                  <EntityOrgFilter
-                    orgId={orgFilter}
-                    onChange={(id) => {
-                      setLoading(true);
-                      setOrgFilter(id);
-                    }}
-                  />
-                }
               />
             </div>
           )}

@@ -34,15 +34,15 @@ export const REVIEW_CATEGORIES = [
 const CATEGORY_LABEL: Record<string, string> = {
   recovered_error: "Recovered error",
   retry: "Retry",
-  rework: "Rework",
+  rework: "Redo",
   fallback: "Fallback",
-  validation_failed: "Failed check",
+  validation_failed: "Validation failed",
   unexpected_path: "Unexpected path",
   extra_cost: "Extra cost",
-  degraded_output: "Degraded output",
+  degraded_output: "Bad output shape",
   skipped_item: "Skipped item",
   human_handoff: "Handed to a person",
-  stall_recovery: "Stall recovered",
+  stall_recovery: "Stall recovery",
   other: "Other",
 };
 

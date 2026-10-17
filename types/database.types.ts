@@ -39338,6 +39338,7 @@ export type Database = {
       }
       _fx_flat: { Args: { p_vals: Json[] }; Returns: Json }
       _fx_flatten: { Args: { p_v: Json }; Returns: Json }
+      _fx_floored_mod: { Args: { p_x: number; p_y: number }; Returns: number }
       _fx_iso: { Args: { p_date_only: boolean; p_ts: string }; Returns: string }
       _fx_item_text: { Args: { p_x: Json }; Returns: string }
       _fx_itemkey: { Args: { p_x: Json }; Returns: Json }
@@ -42491,6 +42492,10 @@ export type Database = {
       field_retire: {
         Args: { p_field_id: string; p_organization_id: string }
         Returns: boolean
+      }
+      field_retype_preview: {
+        Args: { p_field_id: string; p_organization_id: string; p_patch: Json }
+        Returns: Json
       }
       field_rules: {
         Args: { p_field_data: Json }
@@ -155461,11 +155466,13 @@ export type Database = {
           duration_ms: number | null
           failed: number | null
           finished: number | null
+          flagged: number | null
           has_request: number | null
           how_started: string | null
           organization_id: string | null
           person_id: string | null
           requests: number | null
+          review_flag_count: number | null
           run_id: string | null
           started_at: string | null
           status: string | null
@@ -155690,6 +155697,14 @@ export type Database = {
       restore_triggers_archived_with: {
         Args: { p_archived_at: string; p_definition_id: string }
         Returns: number
+      }
+      review_issue_list_lanes: {
+        Args: { p_org_id?: string }
+        Returns: {
+          id: string
+          lane: string
+          organization_id: string
+        }[]
       }
       unwatch_table: { Args: { p_table: unknown }; Returns: undefined }
       watch_table: { Args: { p_table: unknown }; Returns: undefined }

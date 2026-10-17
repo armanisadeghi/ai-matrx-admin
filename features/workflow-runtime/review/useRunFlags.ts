@@ -11,10 +11,15 @@ import { fetchRunFlags, type RunFlag } from "./service";
 export interface RunFlagsState {
   flags: RunFlag[];
   error: string | null;
+  retry: () => void;
 }
 
 export function useRunFlags(runId: string, statusKey: string | null): RunFlagsState {
-  const [state, setState] = useState<RunFlagsState>({ flags: [], error: null });
+  const [state, setState] = useState<{ flags: RunFlag[]; error: string | null }>({
+    flags: [],
+    error: null,
+  });
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let live = true;
     void fetchRunFlags(runId)
@@ -31,8 +36,8 @@ export function useRunFlags(runId: string, statusKey: string | null): RunFlagsSt
     return () => {
       live = false;
     };
-  }, [runId, statusKey]);
-  return state;
+  }, [runId, statusKey, attempt]);
+  return { ...state, retry: () => setAttempt((n) => n + 1) };
 }
 
 /** Flag count per step (node id), for the run journey's markers. */

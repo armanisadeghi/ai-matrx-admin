@@ -1230,6 +1230,7 @@
 ["custom","archive_confirm_over"],
 ["custom","automation_catch_up_hours"],
 ["custom","back_links"],
+["custom","base_snapshot_keep"],
 ["custom","batch_items_max"],
 ["custom","choice_nudge"],
 ["custom","closed_custom_field_tables"],

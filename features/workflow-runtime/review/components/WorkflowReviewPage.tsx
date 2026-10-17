@@ -22,6 +22,7 @@ import { REVIEW_INBOX_HREF } from "../hrefs";
 import {
   fetchWorkflowIssues,
   fetchWorkflowSummaries,
+  REVIEW_ISSUE_LIMIT,
   type WorkflowSummary,
 } from "../service";
 import { issueView, ReviewIssuesTable } from "./ReviewIssuesTable";
@@ -30,6 +31,7 @@ export function WorkflowReviewPage({ definitionId }: { definitionId: string }) {
   const [summary, setSummary] = useState<WorkflowSummary | null>(null);
   const [missing, setMissing] = useState(false);
   const [issues, setIssues] = useState<ReviewIssueRow[]>([]);
+  const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -37,12 +39,13 @@ export function WorkflowReviewPage({ definitionId }: { definitionId: string }) {
   useEffect(() => {
     let live = true;
     void Promise.all([fetchWorkflowSummaries([definitionId]), fetchWorkflowIssues(definitionId)])
-      .then(([summaries, rows]) => {
+      .then(([summaries, page]) => {
         if (!live) return;
         const s = summaries.get(definitionId) ?? null;
         setSummary(s);
         setMissing(s === null);
-        setIssues(rows);
+        setIssues(page.rows);
+        setMore(page.more);
         setError(null);
       })
       .catch((e: unknown) => {
@@ -102,6 +105,11 @@ export function WorkflowReviewPage({ definitionId }: { definitionId: string }) {
             <ReadFailure error={error} what="this workflow's issues" onRetry={() => setAttempt((n) => n + 1)} />
           ) : (
             <div className="flex min-h-0 flex-1 flex-col" data-workflow-review="">
+              {more ? (
+                <p className="px-3 pb-1 text-xs text-muted-foreground" data-review-capped="">
+                  {`Showing the newest ${REVIEW_ISSUE_LIMIT}`}
+                </p>
+              ) : null}
               <ReviewIssuesTable
                 rows={rows}
                 loading={loading}
