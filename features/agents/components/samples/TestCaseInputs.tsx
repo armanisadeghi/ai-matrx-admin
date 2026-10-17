@@ -306,7 +306,7 @@ export function TestCaseInputs({
   ) {
     return (
       <p className={cn("px-2.5 py-1.5 type-meta text-muted-foreground", className)}>
-        This test case carries no inputs.
+        This one carries no inputs.
       </p>
     );
   }

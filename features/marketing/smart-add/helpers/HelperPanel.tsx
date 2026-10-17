@@ -127,7 +127,7 @@ function AdminBlock({ info, session }: { info: HelperMethodInfo | null; session:
         <PropertyRow
           label="Measured time"
           value={r || session.elapsedMs != null ? `${seconds(session.elapsedMs)} in browser · ${seconds(r?.ms)} server` : null}
-          missing="Not run"
+          missing={r || session.elapsedMs != null ? undefined : "Not run"}
         />
         <PropertyRow
           label="This run cost"
@@ -138,7 +138,7 @@ function AdminBlock({ info, session }: { info: HelperMethodInfo | null; session:
                   .join(" + ")
               : null
           }
-          missing="Not run"
+          missing={r?.costs.length ? undefined : "Not run"}
         />
         {r?.filtered_aggregators.length ? (
           <PropertyRow label="Aggregators dropped" value={r.filtered_aggregators.join(", ")} />

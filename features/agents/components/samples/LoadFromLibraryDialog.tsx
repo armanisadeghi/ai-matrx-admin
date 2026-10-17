@@ -14,7 +14,7 @@
  * changed.
  *
  * THE JOB IS ASYNCHRONOUS AND THIS SCREEN SAYS SO. The POST returns a job, not
- * test cases. So the confirmation names what actually happened — N items sent —
+ * samples. So the confirmation names what actually happened — N items sent —
  * then watches the samples list a bounded number of times and, if nothing has
  * landed by then, says that plainly and leaves a refresh in the person's hand
  * instead of pretending.
@@ -82,7 +82,7 @@ export function libraryReadiness(input: {
   }
   return {
     canStart: false,
-    sentence: `None of the ${input.totalCount} items in ${input.libraryName} have a transcript yet, and a test case is made from the transcript. Transcribe them in the Library first, then come back.`,
+    sentence: `None of the ${input.totalCount} items in ${input.libraryName} have a transcript yet, and a sample is made from the transcript. Transcribe them in the Library first, then come back.`,
   };
 }
 
@@ -277,7 +277,7 @@ export function LoadFromLibraryDialog({
         selection: { source_ids: chosenIds },
         estimate_token: null,
         params: { agent_id: agentId },
-        name: `Test cases from ${chosenLibrary.name}`,
+        name: `Samples from ${chosenLibrary.name}`,
       });
     } catch (caught) {
       setPhase({ kind: "choosing" });
@@ -302,7 +302,7 @@ export function LoadFromLibraryDialog({
         <DialogHeader>
           <DialogTitle>Load sample data from a Library</DialogTitle>
           <DialogDescription>
-            Catalogued items with transcripts become candidate test cases,
+            Catalogued items with transcripts become candidate samples,
             listed under Candidates as they are written.
           </DialogDescription>
         </DialogHeader>
@@ -330,7 +330,7 @@ export function LoadFromLibraryDialog({
                   Make one
                 </Link>{" "}
                 from a channel or playlist, transcribe a few items, and they can
-                become test cases here.
+                become samples here.
               </p>
             ) : (
               <Select
@@ -457,14 +457,14 @@ export function LoadFromLibraryDialog({
           ) : null}
           {phase.kind === "arrived" ? (
             <p className="type-body text-muted-foreground">
-              The first test cases from those {phase.sent} items are in
+              The first samples from those {phase.sent} items are in
               Candidates. The rest arrive as the Library writes them.
             </p>
           ) : null}
           {phase.kind === "quiet" ? (
             <p className="type-body text-muted-foreground">
               {/* read-gate-exempt: phase is the outcome of an import just run, not a read that can fail */}
-              {phase.sent} items sent, no test case written yet. Refresh in a
+              {phase.sent} items sent, no sample written yet. Refresh in a
               minute or open the Library.
             </p>
           ) : null}
@@ -499,7 +499,7 @@ export function LoadFromLibraryDialog({
             >
               {chosenIds.length === 0
                 ? "Choose at least one item"
-                : `Load ${chosenIds.length} test cases`}
+                : `Load ${chosenIds.length} samples`}
             </Button>
           ) : null}
         </DialogFooter>

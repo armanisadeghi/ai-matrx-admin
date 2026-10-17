@@ -57,9 +57,9 @@ const AGENTS_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/administration/agents/system-agents/agents/[id]/samples",
-      label: "Agent test cases (samples)",
+      label: "Agent samples",
       description:
-        "Per-agent sample-input store (agent.exemplar): browse approved/candidate test cases with contract-staleness badges, borrow raw inputs + reference output from real runs, approve (knob-capped) or prune. In the builder, ONE floating icon (AgentSamplesLauncher) opens the same manager — samples never add page chrome. SoR: features/agents/samples/FEATURE.md.",
+        "Per-agent sample-input store (agent.exemplar): browse approved/candidate samples with contract-staleness badges, borrow raw inputs + reference output from real runs, approve (knob-capped) or prune. In the builder, ONE floating icon (AgentSamplesLauncher) opens the same manager — samples never add page chrome. SoR: features/agents/samples/FEATURE.md.",
       filePath:
         "app/(admin)/administration/agents/system-agents/agents/[id]/samples/page.tsx",
       status: "Live",
@@ -78,7 +78,7 @@ const AGENTS_ADMIN_MAP: FeatureAdminMap = {
     {
       overlayId: "agentTestCasesWindow",
       description:
-        "Builder test cases — the canonical sample manager in a non-blocking window, opened from the Flask control directly above Smart Agent.",
+        "Builder samples — the canonical sample manager in a non-blocking window, opened from the Flask control directly above Smart Agent.",
       status: "Live",
     },
     {
@@ -128,7 +128,7 @@ const AGENTS_ADMIN_MAP: FeatureAdminMap = {
       name: "AgentSamplesManager",
       filePath: "features/agents/components/samples/AgentSamplesManager.tsx",
       description:
-        "Browse/borrow/approve/prune an agent's test cases: freshness derived from contract hashes, borrow-from-real-runs (raw declared-variable values + __agent_user_input__, final response preview, conversation click-through).",
+        "Browse/borrow/approve/prune an agent's samples: freshness derived from contract hashes, borrow-from-real-runs (raw declared-variable values + __agent_user_input__, final response preview, conversation click-through).",
       tier: "internal",
     },
     {

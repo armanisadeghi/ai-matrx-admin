@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * NewTestCaseDialog — type a test case by hand: a name, one box per declared
+ * NewTestCaseDialog — type a sample by hand: a name, one box per declared
  * variable, the human's own text, and the answer to compare against. Writes
  * through createAgentSample (the borrow button's insert, minus a source run).
  */
@@ -57,7 +57,7 @@ export function NewTestCaseDialog({
         referenceOutput,
         head,
       });
-      toast.success("Test case saved as a candidate.");
+      toast.success("Sample saved as a candidate.");
       setLabel("");
       setValues({});
       setUserInput("");
@@ -75,7 +75,7 @@ export function NewTestCaseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>New test case</DialogTitle>
+          <DialogTitle>New sample</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
           <Input

@@ -60,13 +60,13 @@ function CheckRow({ check }: { check: CheckResultView }) {
         <PropertyRow
           label="Expected"
           value={check.expectedRedacted ? hiddenText(check) : check.expected}
-          missing={check.expectedRedacted ? undefined : "Nothing"}
+          missing={!check.expectedRedacted && !check.expected ? "Nothing" : undefined}
           meta={check.expectedSource || undefined}
         />
         <PropertyRow
           label="Actual"
           value={check.observedRedacted ? hiddenText(check) : check.observed}
-          missing={check.observedRedacted ? undefined : "Nothing"}
+          missing={!check.observedRedacted && !check.observed ? "Nothing" : undefined}
           meta={check.truncated ? "Shortened" : undefined}
         />
       </div>
@@ -118,7 +118,7 @@ function JudgeSection({ id }: { id: string }) {
       <PropertyRow
         label="Reasoning"
         value={judge.reasoning}
-        missing="None given"
+        missing={judge.reasoning ? undefined : "None given"}
       />
     </>
   );
@@ -185,12 +185,12 @@ export function ResultDetail({
               <PropertyRow
                 label="Identity"
                 value={result.identityMode}
-                missing="Unknown"
+                missing={result.identityMode ? undefined : "Unknown"}
               />
               <PropertyRow
                 label="Origin"
                 value={result.originClass}
-                missing="Unknown"
+                missing={result.originClass ? undefined : "Unknown"}
               />
             </>
           ) : null}
@@ -201,7 +201,7 @@ export function ResultDetail({
                 ? null
                 : formatDurationMs(result.durationMs)
             }
-            missing="Not measured"
+            missing={result.durationMs === null ? "Not measured" : undefined}
           />
           <PropertyRow
             label="Setup"

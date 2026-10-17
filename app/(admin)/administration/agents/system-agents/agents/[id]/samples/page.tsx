@@ -4,7 +4,7 @@ import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 
-export const metadata = { title: "Agent Test Cases | Admin" };
+export const metadata = { title: "Agent Samples | Admin" };
 
 const ADMIN_BASE_PATH = "/administration/agents/system-agents/agents";
 
@@ -43,7 +43,7 @@ export default async function AdminSystemAgentSamplesPage({
       <div className="h-full overflow-y-auto">
         <div className="mx-auto max-w-3xl space-y-4 p-4">
           <div>
-            <h1 className="text-lg font-semibold">Test cases</h1>
+            <h1 className="text-lg font-semibold">Samples</h1>
           </div>
           <AgentSamplesManager agentId={id} />
         </div>
