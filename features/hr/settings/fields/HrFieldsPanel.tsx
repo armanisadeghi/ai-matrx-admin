@@ -18,12 +18,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ClipboardList } from "lucide-react";
-import { RecordsProvider, useEntityFieldMutation, useEntityFields } from "@ai-matrx/records/react";
-import type { Field } from "@ai-matrx/records";
+import { Archive, ClipboardList, Lock, Plus } from "lucide-react";
+import { RecordsProvider, useEntityFieldMutation, useRecordsClient } from "@ai-matrx/records/react";
+import type { Field, RecordsError } from "@ai-matrx/records";
 import { FieldEditor, RefusalLine } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { FIELD_SENSITIVITY_LABEL, fieldTypeLabel } from "@ai-matrx/records-ui/helpers";
 import { ConfirmDelete } from "@ai-matrx/design-system/controls";
+import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -180,13 +183,12 @@ export function HrFieldsPanel() {
             </p>
           ) : (
             <RecordsProvider config={recordsConfig}>
-              {enabledTargets.map((target) => (
-                <HrTokenFields
-                  key={target.target_token}
-                  token={target.target_token}
-                  label={labelFor(target.target_token)}
-                />
-              ))}
+              <HrFieldsTable
+                targets={enabledTargets.map((t) => ({
+                  token: t.target_token,
+                  label: labelFor(t.target_token),
+                }))}
+              />
             </RecordsProvider>
           )}
         </section>
@@ -233,76 +235,194 @@ export function HrFieldsPanel() {
   );
 }
 
-/** One record type's custom fields, through the custom store's own doors. */
-function HrTokenFields({ token, label }: { token: string; label: string }) {
-  const fields = useEntityFields(token);
-  const mutation = useEntityFieldMutation();
-  const [adding, setAdding] = useState(false);
-  const [confirming, setConfirming] = useState<string | null>(null);
+type FieldLine = Field & { token: string };
 
-  const retire = async (field: Field) => {
-    const done = await mutation.retire({ field_id: field.id });
+const AI_EXPOSURE_LABEL: Record<string, string> = {
+  include: "Included",
+  on_request: "On request",
+  exclude: "Kept out",
+};
+const aiExposureWords = (f: Field) =>
+  f.sensitivity === "restricted" ? "Never" : f.context_policy ? (AI_EXPOSURE_LABEL[f.context_policy] ?? UNRECOGNIZED) : "Not set";
+
+/** Every switched-on record type's custom fields in ONE table, through the custom store's own doors. */
+function HrFieldsTable({ targets }: { targets: { token: string; label: string }[] }) {
+  const client = useRecordsClient();
+  const mutation = useEntityFieldMutation();
+  const [lines, setLines] = useState<FieldLine[] | null>(null);
+  const recordLabel = (token: string) => targets.find((t) => t.token === token)?.label ?? "Unnamed record type";
+  const [loadError, setLoadError] = useState<RecordsError | null>(null);
+  const [reload, setReload] = useState(0);
+  const [adding, setAdding] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<FieldLine | null>(null);
+  const key = targets.map((t) => t.token).join("|");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const results = await Promise.all(
+        key.split("|").map(async (token) => ({ token, result: await client.entityFields({ token }) })),
+      );
+      if (cancelled) return;
+      const failed = results.find((r) => !r.result.ok);
+      setLoadError(failed && !failed.result.ok ? failed.result.error : null);
+      setLines(
+        results.flatMap((r) =>
+          r.result.ok
+            ? r.result.data.map((f) => ({ ...f, token: r.token }))
+            : [],
+        ),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, key, reload]);
+
+  const retire = async (line: FieldLine) => {
+    const done = await mutation.retire({ field_id: line.id });
     setConfirming(null);
-    if (done) fields.reload();
+    if (done) setReload((n) => n + 1);
   };
 
+  const columns: MatrxColumnDef<FieldLine>[] = [
+    { id: "label", accessorKey: "label", header: "Field", filter: "text", frozen: true, width: 220 },
+    {
+      id: "record",
+      accessorFn: (row) => recordLabel(row.token),
+      header: "On which record",
+      filter: "select",
+      format: { id: "choice" },
+    },
+    {
+      id: "type",
+      accessorFn: (row) => fieldTypeLabel(row),
+      header: "Type",
+      filter: "select",
+      format: { id: "choice" },
+    },
+    {
+      id: "sensitivity",
+      accessorFn: (row) => sensitivityWords(row.sensitivity),
+      header: "Sensitivity",
+      filter: "select",
+      format: { id: "choice" },
+      cell: (row) => (
+        <Badge variant={row.sensitivity === "restricted" ? "destructive" : row.sensitivity === "confidential" ? "default" : "secondary"}>
+          {sensitivityWords(row.sensitivity)}
+        </Badge>
+      ),
+    },
+    {
+      id: "ai",
+      accessorFn: (row) => aiExposureWords(row),
+      header: "AI exposure",
+      filter: "select",
+      format: { id: "choice" },
+      cell: (row) => (
+        <span className="inline-flex items-center gap-1 text-sm text-foreground">
+          {row.sensitivity === "restricted" ? <Lock className="h-3.5 w-3.5" /> : <AGENT_ICON className="h-3.5 w-3.5 text-muted-foreground" />}
+          {aiExposureWords(row)}
+        </span>
+      ),
+    },
+    {
+      id: "required",
+      accessorFn: (row) => row.required,
+      header: "Required",
+      filter: "boolean",
+      format: { id: "boolean" },
+      mobileHidden: true,
+    },
+    {
+      id: "added",
+      accessorFn: (row) => row.created_at,
+      header: "Added",
+      filter: "date",
+      format: { id: "datetime" },
+      defaultSortDirection: "desc",
+    },
+  ];
+
   return (
-    <div className="rounded-lg border border-border bg-card" data-hr-field-token={token}>
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-3">
-        <span className="text-sm font-medium text-foreground">{label}</span>
-        {!adding ? (
-          <Button type="button" variant="outline" onClick={() => setAdding(true)}>
-            Add a custom field
+    <div className="space-y-3" data-hr-fields-table>
+      <div className="flex flex-wrap items-center gap-2">
+        {targets.map((t) => (
+          <Button
+            key={t.token}
+            type="button"
+            variant="outline"
+            onClick={() => setAdding(adding === t.token ? null : t.token)}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {targets.length === 1 ? "Add a custom field" : `Add to ${t.label}`}
           </Button>
-        ) : null}
-      </header>
+        ))}
+      </div>
       {adding ? (
-        <div className="border-b border-border p-3">
+        <div className="rounded-lg border border-border bg-card p-3">
           <FieldEditor
-            entityToken={token}
-            tableLabel={label}
+            entityToken={adding}
+            tableLabel={targets.find((t) => t.token === adding)?.label ?? ""}
             onSaved={() => {
-              setAdding(false);
-              fields.reload();
+              setAdding(null);
+              setReload((n) => n + 1);
             }}
-            onCancel={() => setAdding(false)}
+            onCancel={() => setAdding(null)}
           />
         </div>
       ) : null}
-      {fields.error ? <RefusalLine error={fields.error} className="p-3" /> : null}
-      {mutation.error ? <RefusalLine error={mutation.error} className="p-3" /> : null}
-      {fields.loading && !fields.data ? (
-        <p className="p-3 text-sm text-muted-foreground">Loading…</p>
-      ) : (fields.data ?? []).length === 0 && !fields.error ? (
-        <p className="p-3 text-sm text-muted-foreground">No custom fields on {label} yet.</p>
-      ) : (
-        <ul className="divide-y divide-border">
-          {(fields.data ?? []).map((field) => (
-            <li key={field.id} className="flex flex-wrap items-center gap-2 p-3 text-sm">
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium text-foreground">{field.label}</span>
-                <span className="text-muted-foreground">
-                  {fieldTypeLabel(field)}
-                  {field.required ? " · required" : ""}
-                  {field.sensitivity ? ` · ${sensitivityWords(field.sensitivity)}` : ""}
-                </span>
-              </span>
-              <Button type="button" variant="quiet" onClick={() => setConfirming(field.id)}>
-                Archive
-              </Button>
-              <ConfirmDelete
-                open={confirming === field.id}
-                onOpenChange={(open) => setConfirming(open ? field.id : null)}
-                title={`Archive ${field.label}?`}
-                cost="Its values stay readable on every record, and nobody can add new ones."
-                confirmLabel="Archive field"
-                busy={mutation.saving}
-                onConfirm={() => retire(field)}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      {loadError ? <RefusalLine error={loadError} /> : null}
+      {mutation.error ? <RefusalLine error={mutation.error} /> : null}
+      <MatrxDataTable<FieldLine>
+        tableId="hr-custom-fields"
+        data={lines ?? []}
+        columns={columns}
+        getRowId={(row) => row.id}
+        pageSize={25}
+        toolbar={{ search: true, searchPlaceholder: "Search custom fields" }}
+        rowActions={(row) => [
+          { id: "archive", icon: Archive, label: "Archive field", onClick: () => setConfirming(row) },
+        ]}
+        contextMenu={{
+          sections: (payload) =>
+            payload.level === "row" || payload.level === "cell"
+              ? [
+                  {
+                    id: "field",
+                    title: "Field",
+                    primary: true,
+                    items: [
+                      {
+                        id: "archive",
+                        label: "Archive field",
+                        destructive: true,
+                        onSelect: () => setConfirming(payload.row),
+                      },
+                    ],
+                  },
+                ]
+              : [],
+        }}
+        read={{
+          status: loadError ? "error" : lines === null ? "loading" : "ready",
+          error: loadError,
+          onRetry: () => setReload((n) => n + 1),
+          what: "custom fields",
+        }}
+        emptyState={{ title: "No custom fields on HR records" }}
+      />
+      <ConfirmDelete
+        open={confirming !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirming(null);
+        }}
+        title={`Archive ${confirming?.label ?? "field"}?`}
+        cost="Its values stay readable on every record, and nobody can add new ones."
+        confirmLabel="Archive field"
+        busy={mutation.saving}
+        onConfirm={() => (confirming ? retire(confirming) : undefined)}
+      />
     </div>
   );
 }
