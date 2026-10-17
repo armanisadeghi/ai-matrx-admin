@@ -53,7 +53,7 @@ let root: Root;
 let host: HTMLDivElement;
 const noop = () => {};
 const show = (v: ToolCallView | null, clientError: string | null = null) =>
-  act(() => root.render(<ToolResult view={v} clientError={clientError} onRunAgain={noop} onCancel={noop} />));
+  act(() => root.render(<ToolResult view={v} clientError={clientError} onRunAgain={noop} onCancel={noop} onReopen={noop} />));
 beforeEach(() => {
   host = document.createElement("div");
   document.body.appendChild(host);
@@ -102,6 +102,22 @@ describe("ToolResult", () => {
     show(view("waiting", { stage_label: "Waiting on source", points_held: 400 }));
     expect(host.querySelector("[data-tool-result='running']")?.textContent).toContain("Waiting on source");
     expect(host.textContent).toContain("held");
+  });
+
+  it("a finishing call offers no Stop, and a call that cannot be read says it is saved and can be reopened", () => {
+    show(view("running", { stage: "done", stage_label: "Done" }));
+    expect([...host.querySelectorAll("button")].some((b) => b.textContent === "Stop")).toBe(false);
+    show(view("running", { stage: "fetching", stage_label: "Fetching" }));
+    expect([...host.querySelectorAll("button")].some((b) => b.textContent === "Stop")).toBe(true);
+    show(view("running"), "Your answer is saved. Reopen it to see it.");
+    expect(host.querySelector("[data-tool-result='lost-touch']")).toBeTruthy();
+    expect([...host.querySelectorAll("button")].some((b) => b.textContent === "Reopen it")).toBe(true);
+  });
+
+  it("the raw view is a marked source view, so internal keys are allowed there and nowhere else", () => {
+    show(view("succeeded", { output: { domain: "x.org" }, raw: { __kind: "domain_authority", domain: "x.org" } }));
+    act(() => ([...host.querySelectorAll("button")].find((b) => b.textContent === "Raw data") as HTMLButtonElement).click());
+    expect(host.querySelector("[data-kind-source='explicit'] [data-raw]")).toBeTruthy();
   });
 
   it("nothing sent yet is a quiet placeholder; a call that never reached the server says so", () => {
