@@ -67,7 +67,7 @@ import { OrgScopeTree } from "./OrgScopeTree";
 import { OrgModuleSettings } from "./OrgModuleSettings";
 import { OrgHrPeopleSection } from "@/features/hr/entry-points/OrgHrPeopleSection";
 import { DictionarySection } from "@/features/dictionary/components/DictionarySection";
-import { VaultWorkspace } from "@/features/secrets/components/VaultWorkspace";
+import { OrganizationVault } from "@/features/secrets/components/WebVault";
 import { OrganizationAbbreviation } from "./OrganizationAbbreviation";
 import { OrgCompetitorLabelsSettings } from "@/features/marketing/competitors/OrgCompetitorLabelsSettings";
 import { SpendBudgetCard } from "@/features/entitlements/guardrails/SpendBudgetCard";
@@ -687,13 +687,7 @@ export function OrgManage({
             title="Organization vault"
             description="Shared API keys and credentials. Members can use values without revealing them."
           >
-            <VaultWorkspace
-              principal={{
-                type: "organization",
-                organizationId: displayOrganization.id,
-              }}
-              canManage={canManageSettings}
-            />
+            <OrganizationVault organizationId={displayOrganization.id} />
           </SectionCard>
 
           {/* Privacy — OrgPrivacyTab self-cards */}

@@ -136,13 +136,39 @@ export interface PromoteResult {
   media?: { file_id?: string; step: string; ok: boolean; words?: string }[];
 }
 
+/** PATCH /admin/ai-catalog/discovery/models/{id}/listing — every field optional except expected_updated_at. */
+export interface ListingEdit {
+  expected_updated_at: string | null;
+  name?: string;
+  common_name?: string | null;
+  description?: string | null;
+  display_order?: number | null;
+  active?: boolean;
+  /** Flat merge; a null value removes that key. */
+  facts?: Record<string, unknown>;
+  facts_replace?: boolean;
+}
+
+export interface ListingResult {
+  model_id: string;
+  name: string;
+  common_name: string | null;
+  description: string | null;
+  display_order: number | null;
+  facts: Record<string, unknown>;
+  active: boolean;
+  offered_variants: unknown[];
+  updated_at: string;
+  words: string;
+}
+
 export interface CallAuth {
   baseUrl: string | null;
   accessToken: string | null;
   organizationId: string | null | undefined;
 }
 
-async function post<T>(auth: CallAuth, path: string, body: Record<string, unknown> = {}): Promise<T> {
+async function post<T>(auth: CallAuth, path: string, body: Record<string, unknown> = {}, method: "POST" | "PATCH" = "POST"): Promise<T> {
   if (!auth.baseUrl) throw new Error("No AI Matrx server address is configured.");
   if (!auth.accessToken) throw new Error("Sign in again; no session was found.");
   return postJsonAsUser<T>({
@@ -151,10 +177,14 @@ async function post<T>(auth: CallAuth, path: string, body: Record<string, unknow
     organizationId: auth.organizationId,
     path,
     body,
+    method,
   });
 }
 
 export const discoveryApi = {
+  /** The Catalogs page's one model edit: names, description, order, active (offered), facts; 409 when stale. */
+  editListing: (auth: CallAuth, modelId: string, edit: ListingEdit) =>
+    post<ListingResult>(auth, `/admin/ai-catalog/discovery/models/${modelId}/listing`, edit as unknown as Record<string, unknown>, "PATCH"),
   resolve: (auth: CallAuth, link: string) =>
     post<Candidate>(auth, "/admin/ai-catalog/discovery/resolve", { link }),
   promote: (auth: CallAuth, candidateId: string, picks: PromotePicks) =>

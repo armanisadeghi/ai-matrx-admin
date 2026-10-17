@@ -5,17 +5,17 @@
 // Applications › Catalogs for a MODEL kind (Arman, "one editor"): the list reads the unified catalog
 // (ai.*) through THE shared query and order — fetchCuratedModels + curatedList from
 // @ai-matrx/agents/models, the same list Matrx 2 shows (its offered rows) in the same order. Order is
-// edited inline and written to ai.model_presentation.display_order through the one write path (the
-// admin discovery placement route). Active = offered (shown; the switch arrives with the
-// model-listing route). The old public.catalog_entries rows stay viewable, read-only, behind
-// "Old list (read-only)" so old and new can be compared.
+// edited inline, Active (offered in Matrx 2) is a switch, and opening a row edits every field and fact —
+// all through THE one write path, PATCH /admin/ai-catalog/discovery/models/{id}/listing, with the
+// last-read stamp (a stale edit is refused and the list reloads). The old public.catalog_entries rows
+// stay viewable, read-only, behind "Old list (read-only)" so old and new can be compared.
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowLeft, ExternalLink, Link2 } from "lucide-react";
 import { curatedList, fetchCuratedModels, type CuratedCatalogClient, type CuratedModel } from "@ai-matrx/agents/models";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -27,7 +27,8 @@ import { selectAccessToken } from "@/lib/redux/slices/userSlice";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
 import { extractErrorMessage } from "@/utils/errors";
-import { discoveryApi, type CallAuth } from "@/features/ai-models/discovery/api";
+import { discoveryApi, type CallAuth, type ListingEdit } from "@/features/ai-models/discovery/api";
+import { ModelListingEditor } from "./ModelListingEditor";
 import { kindLabel } from "@/features/admin/applications/catalogs/schemas";
 import type { CatalogEntryRow } from "@/features/admin/applications/catalogs/types";
 
@@ -111,6 +112,7 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
   const [models, setModels] = useState<CuratedModel[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showOld, setShowOld] = useState(false);
+  const [editing, setEditing] = useState<CuratedModel | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -143,13 +145,8 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
           continue;
         }
         if (parsed === row.order) continue;
-        const p = row.model.presentation;
-        if (!p?.page || !p.shelf || !p.shelf_title) {
-          failures.push(`${row.name}: has no page and shelf yet; place it on the Discovery page first`);
-          continue;
-        }
         try {
-          await discoveryApi.movePlacement(auth, row.id, { page: p.page, shelf: p.shelf, shelf_title: p.shelf_title, display_order: parsed } as never);
+          await discoveryApi.editListing(auth, row.id, { expected_updated_at: row.model.updated_at, display_order: parsed });
         } catch (err) {
           failures.push(`${row.name}: ${extractErrorMessage(err)}`);
         }
@@ -162,6 +159,32 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [auth.accessToken, auth.baseUrl, auth.organizationId, load, toast],
+  );
+
+  /** The one write: send, reload, and say a refusal in words (a stale stamp reloads the list). */
+  const edit = useCallback(
+    async (model: CuratedModel, change: ListingEdit) => {
+      try {
+        await discoveryApi.editListing(auth, model.id, change);
+      } catch (err) {
+        await load();
+        throw new Error(extractErrorMessage(err));
+      }
+      await load();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [auth.accessToken, auth.baseUrl, auth.organizationId, load],
+  );
+
+  const toggleActive = useCallback(
+    async (row: ModelRow, next: boolean) => {
+      try {
+        await edit(row.model, { expected_updated_at: row.model.updated_at, active: next });
+      } catch (err) {
+        toast({ title: `${row.name} was not changed`, description: extractErrorMessage(err), variant: "destructive" });
+      }
+    },
+    [edit, toast],
   );
 
   const columns = useMemo(
@@ -178,10 +201,12 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
         align: "center",
         width: 110,
         filter: "boolean",
-        cell: (r) => (r.offered ? <Badge variant="outline">Offered</Badge> : <Badge variant="secondary">Not offered</Badge>),
+        cell: (r) => (
+          <Switch checked={r.offered} onCheckedChange={(next) => void toggleActive(r, Boolean(next))} aria-label={`${r.name} offered in Matrx 2`} />
+        ),
       },
     ],
-    [],
+    [toggleActive],
   );
 
   return (
@@ -213,7 +238,7 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
       ) : (
         <div className="min-h-0 flex-1">
           {error ? <ErrorNotice message={error} size="compact" /> : null}
-          <p className="pb-2 text-xs text-muted-foreground">Active shows whether Matrx 2 offers it; switching it here comes with the model-listing update.</p>
+          <p className="pb-2 text-xs text-muted-foreground">Active means Matrx 2 offers it. Open a row to edit its fields and facts.</p>
           <MatrxDataTable
             urlState={{ id: `application-catalog-models-${kind.replace(/_/g, "-")}` }}
             data={rows}
@@ -232,11 +257,13 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
                 </Button>
               ),
             }}
+            onRowOpen={(r) => setEditing(r.model)}
             detail={{ enabled: false }}
             edit={{ enabled: true, onSave: saveEdits }}
           />
         </div>
       )}
+      {editing ? <ModelListingEditor model={editing} onClose={() => setEditing(null)} onSave={(change) => edit(editing, change)} /> : null}
     </div>
   );
 }

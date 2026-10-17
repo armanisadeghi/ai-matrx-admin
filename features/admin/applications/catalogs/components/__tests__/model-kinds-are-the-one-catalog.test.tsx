@@ -20,15 +20,23 @@ jest.mock("@/lib/redux/slices/apiConfigSlice", () => ({ selectResolvedBaseUrl: (
 jest.mock("@/lib/api/useServerOrganizationId", () => ({ useServerOrganizationId: () => "org-1" }));
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => { throw new Error("the test passes its own client"); } }));
 jest.mock("@/components/ui/use-toast", () => ({ useToast: () => ({ toast: () => {} }) }));
+const sent: Array<{ path: string; method: string; body: any }> = [];
+jest.mock("@/lib/api/post-json-as-user", () => ({
+  postJsonAsUser: async ({ path, body, method = "POST" }: any) => {
+    sent.push({ path, method, body });
+    return { updated_at: "2026-10-17T00:00:00+00:00" };
+  },
+}));
 
 import { UnifiedModelKindTable, kindOfModel } from "../UnifiedModelKindTable";
+import { listingEditOf } from "../ModelListingEditor";
 
 const tables: Record<string, Record<string, unknown>[]> = {
   model_definition: [
     { id: "m-zeta", name: "zeta", common_name: "Zeta 8B", capabilities: { input: ["text"], output: ["text"] } },
     { id: "m-alpha", name: "alpha", common_name: "Alpha 4B", capabilities: { input: ["text"], output: ["text"] } },
     { id: "m-mid", name: "mid", common_name: "Mid 12B", capabilities: { input: ["text"], output: ["text"] } },
-    { id: "m-off", name: "beta", common_name: "Beta 2B", capabilities: { input: ["text"], output: ["text"] } },
+    { id: "m-off", name: "beta", common_name: "Beta 2B", capabilities: { input: ["text"], output: ["text"] }, updated_at: "2026-10-16T05:00:00+00:00" },
     { id: "m-whisper", name: "whisper", common_name: "Whisper", capabilities: { input: ["audio"], output: ["text"] } },
   ],
   model_variant: [
@@ -39,7 +47,7 @@ const tables: Record<string, Record<string, unknown>[]> = {
     { id: "v5", model_id: "m-whisper", key: "ggml", quant: "", review_state: "offered", metadata: { catalog_entry_ids: ["e-w"] } },
   ],
   model_presentation: [
-    { model_id: "m-zeta", display_order: 1, page: "text", shelf: "s", shelf_title: "S" },
+    { model_id: "m-zeta", display_order: 1, page: "text", shelf: "s", shelf_title: "S", facts: { tier: "pro", text_rating: 4 }, updated_at: "2026-10-16T03:00:00+00:00" },
     { model_id: "m-mid", display_order: 2, page: "text", shelf: "s", shelf_title: "S" },
     { model_id: "m-off", display_order: 0, page: "text", shelf: "s", shelf_title: "S" },
   ],
@@ -87,7 +95,9 @@ describe("Catalogs model kinds are the one catalog", () => {
     expect(shown.map((t) => expected.find((n) => t.includes(n)))).toEqual(expected);
     expect(expected).toEqual(["Beta 2B", "Zeta 8B", "Mid 12B", "Alpha 4B"]);
     // The page's offered rows === Matrx 2's list for this kind.
-    const offeredShown = shown.filter((t) => t.includes("Offered") && !t.includes("Not offered")).map((t) => expected.find((n) => t.includes(n)));
+    const offeredShown = Array.from(host.querySelectorAll("tbody tr"))
+      .filter((tr) => tr.querySelector('[role="switch"]')?.getAttribute("aria-checked") === "true")
+      .map((tr) => expected.find((n) => (tr.textContent ?? "").includes(n)));
     expect(offeredShown).toEqual(llm(true).map((m) => m.common_name));
     expect(shown.some((t) => t.includes("Whisper"))).toBe(false);
     await act(async () => root.unmount());
@@ -99,5 +109,40 @@ describe("Catalogs model kinds are the one catalog", () => {
     await act(async () => toggle.click());
     expect(host.querySelector('[data-testid="old-list-read-only"]')?.textContent).toContain("OLD ROWS: Zeta (old)");
     await act(async () => root.unmount());
+  });
+
+  it("Active is a switch that writes through the one listing route, with the last-read stamp; no 'coming' note", async () => {
+    sent.length = 0;
+    const { host, root } = await mount();
+    expect(host.textContent).not.toMatch(/comes with/);
+    const sw = host.querySelector('[aria-label="Beta 2B offered in Matrx 2"]') as HTMLElement;
+    expect(sw).not.toBeNull();
+    await act(async () => {
+      sw.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(sent).toContainEqual({
+      path: "/admin/ai-catalog/discovery/models/m-off/listing",
+      method: "PATCH",
+      body: { expected_updated_at: "2026-10-16T05:00:00+00:00", active: true },
+    });
+    await act(async () => root.unmount());
+  });
+
+  it("the editor sends only what changed, a removed fact as null, through the same route's body", async () => {
+    const zeta = (await fetchCuratedModels(client)).find((m) => m.id === "m-zeta")!;
+    const edit = listingEditOf(zeta, {
+      name: "zeta",
+      common_name: "Zeta 8B Instruct",
+      description: "",
+      order: "1",
+      active: true,
+      facts: [{ key: "tier", value: "max" }, { key: "speed", value: "12" }],
+    });
+    expect(edit).toEqual({
+      expected_updated_at: "2026-10-16T03:00:00+00:00",
+      common_name: "Zeta 8B Instruct",
+      facts: { tier: "max", text_rating: null, speed: 12 },
+    });
   });
 });

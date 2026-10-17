@@ -27,6 +27,8 @@ import {
   Copy,
   Loader2,
   Tag as TagIcon,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import { copyReferenceFence } from "@/features/matrx-envelope/referenceClipboard";
 import { useRouter } from "next/navigation";
@@ -72,6 +74,11 @@ interface NoteEditorDockProps {
   readOnly?: boolean;
   /** The editor the dock's formatting strip acts on — set in the editing modes, null in Read. */
   formatResolve?: (() => FormatTarget | null) | null;
+  /** The note's undo / redo (useNoteUndoRedo) — the Undo and Redo buttons beside the formatting strip. */
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 // ─── Constants (mirrors MobileDock) ──────────────────────────────────────────
@@ -95,6 +102,10 @@ export function NoteEditorDock({
   isDeleting,
   readOnly = false,
   formatResolve = null,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
 }: NoteEditorDockProps) {
   // The note's view key reads the "note" source adapter, which the lazy rich-content host registers.
   const hostLanded = useNoteRenderHost();
@@ -292,11 +303,33 @@ export function NoteEditorDock({
         {/* The phone's formatting: the essential set (text style, B, I, list,
             checklist, link) and More for the rest — the same toolbar as desktop. */}
         {formatResolve && !readOnly && (
-          <div className="mb-1.5 flex justify-center">
+          <div className="mb-1.5 flex items-center justify-center gap-1.5">
+            {/* Undo / Redo: always rendered in every editing mode (disabled, never hidden) so the strip
+                never shifts; 44px targets. */}
+            <div className="matrx-glass-core pointer-events-auto flex shrink-0 items-center rounded-full">
+              <button
+                type="button"
+                aria-label="Undo"
+                disabled={!canUndo}
+                onClick={onUndo}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors disabled:text-muted-foreground/50"
+              >
+                <Undo2 className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Redo"
+                disabled={!canRedo}
+                onClick={onRedo}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors disabled:text-muted-foreground/50"
+              >
+                <Redo2 className="h-5 w-5" />
+              </button>
+            </div>
             <FormatButtons
               variant="essential"
               resolve={formatResolve}
-              className="matrx-glass-core pointer-events-auto rounded-full px-1.5 py-1"
+              className="matrx-glass-core pointer-events-auto min-w-0 rounded-full px-1.5 py-1"
             />
           </div>
         )}

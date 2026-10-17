@@ -256,9 +256,15 @@ export function OverviewContent({ kpis }: { kpis: CxOverviewKpis }) {
             value={formatTokens(kpis.total_output_tokens)}
             subValue={
               kpis.total_cached_tokens > 0
-                ? `${formatTokens(kpis.total_cached_tokens)} cached`
+                ? `${formatTokens(kpis.total_cached_tokens)} cache read`
                 : undefined
             }
+            icon={Hash}
+          />
+          <CxKpiCard
+            label="Cache Written"
+            value={formatTokens(kpis.total_cache_write_tokens)}
+            subValue={`${formatTokens(kpis.total_cache_write_5m_tokens)} 5m · ${formatTokens(kpis.total_cache_write_1h_tokens)} 1h`}
             icon={Hash}
           />
         </div>
