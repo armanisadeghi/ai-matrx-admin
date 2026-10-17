@@ -107,3 +107,39 @@ export function summarizeToolHealth(items: readonly AttentionItem[]): string | n
   if (items.length === 1) return `${items[0].title}: ${items[0].state}.`;
   return `${items.length} Tool sources are switched off.`;
 }
+
+export interface ProposalDecisionPlan {
+  /** False when the proposal has nothing to apply mechanically (the button is absent, never disabled-and-silent). */
+  canApprove: boolean;
+  approveLabel: string;
+  approveConsequence: string;
+  declineLabel: string;
+  declineConsequence: string;
+}
+
+/**
+ * The real actions on an upkeep proposal's record page, and the consequence named before each click.
+ * Only price drift and new-source alarms are decidable; any other kind returns null (its fix is Verify on Tool control).
+ */
+export function proposalDecisionPlan(row: Pick<ToolHealthRow, "kind" | "facts">): ProposalDecisionPlan | null {
+  const proposal = ((row.facts ?? {}) as { proposal?: Record<string, unknown> }).proposal ?? {};
+  if (row.kind === "price_drift") {
+    return {
+      canApprove: true,
+      approveLabel: "Approve new price",
+      approveConsequence: `Changes the price book entry ${String(proposal.price_ref ?? "")} from $${String(proposal.current ?? "?")} to $${String(proposal.value ?? "?")} per unit. Every cost estimate and spend check that reads it uses the new price from now on.`,
+      declineLabel: "Decline",
+      declineConsequence: "Keeps the current price. This alert closes; the price check raises it again if the vendor price still differs.",
+    };
+  }
+  if (row.kind === "import_candidate") {
+    return {
+      canApprove: false,
+      approveLabel: "",
+      approveConsequence: "",
+      declineLabel: "Dismiss",
+      declineConsequence: "Closes this alert without adding any source. The import check lists them again on its next run.",
+    };
+  }
+  return null;
+}

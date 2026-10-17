@@ -16,3 +16,19 @@ export async function fetchToolHealth(): Promise<ToolHealthRow[]> {
   if (error) throw new Error(error.message);
   return (data ?? []) as ToolHealthRow[];
 }
+
+type LooseDecideRpc = {
+  rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+};
+
+/** Approve or decline one upkeep proposal by its alarm id (`tool.control_decide_proposal`, super-admin only). */
+export async function decideToolProposal(alarmId: string, decision: "approve" | "decline", note?: string): Promise<{ note: string }> {
+  const { data, error } = await (createClient().schema("tool") as unknown as LooseDecideRpc).rpc("control_decide_proposal", {
+    p_alarm: alarmId,
+    p_decision: decision,
+    p_note: note ?? null,
+  });
+  // access-errors: ok — the database refuses in its own sentence; the record page shows it as an error toast
+  if (error) throw new Error(error.message);
+  return data as { note: string };
+}

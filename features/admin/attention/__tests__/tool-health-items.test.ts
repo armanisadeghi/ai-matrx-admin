@@ -4,7 +4,7 @@
  * was refused, and every row opens the Tool control screen.
  */
 
-import { summarizeToolHealth, toolHealthItems, toolHealthRecordHref, type ToolHealthRow } from "../sources/tool-health";
+import { summarizeToolHealth, toolHealthItems, toolHealthRecordHref, proposalDecisionPlan, type ToolHealthRow } from "../sources/tool-health";
 
 const deps = { muteLocally: jest.fn(), unmuteLocally: jest.fn(), now: Date.parse("2026-10-16T23:00:00Z") };
 
@@ -80,4 +80,15 @@ test("no tool-health kind ever links to the bare Tool control landing page", () 
 
 test("a Tool alarm that names its tool keeps its own Tool link", () => {
   expect(toolHealthRecordHref(row({}))).toBe("/administration/agents/tool-control?tool=t1");
+});
+
+test("a price proposal can be approved or declined and names the consequence; sources to review can only be dismissed; other kinds have no decision", () => {
+  const price = proposalDecisionPlan({ kind: "price_drift", facts: { proposal: { price_ref: "tavily_search_usd", current: "0.008", value: "0.016" } } })!;
+  expect(price.canApprove).toBe(true);
+  expect(price.approveConsequence).toMatch(/tavily_search_usd from \$0\.008 to \$0\.016/);
+  expect(price.declineConsequence).toMatch(/Keeps the current price/);
+  const review = proposalDecisionPlan({ kind: "import_candidate", facts: { proposal: { total: 16 } } })!;
+  expect(review.canApprove).toBe(false);
+  expect(review.declineLabel).toBe("Dismiss");
+  expect(proposalDecisionPlan({ kind: "source_off", facts: {} })).toBeNull();
 });

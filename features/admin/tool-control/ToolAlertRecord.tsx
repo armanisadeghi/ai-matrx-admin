@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
-import { fetchToolHealth } from "@/features/admin/attention/tool-health-service";
-import { toolHealthItems, TOOL_HEALTH_SOURCE_ID, type ToolHealthRow } from "@/features/admin/attention/sources/tool-health";
+import { Button } from "@ai-matrx/design-system/controls";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { toast } from "@/lib/toast";
+import { decideToolProposal, fetchToolHealth } from "@/features/admin/attention/tool-health-service";
+import { toolHealthItems, proposalDecisionPlan, TOOL_HEALTH_SOURCE_ID, type ToolHealthRow } from "@/features/admin/attention/sources/tool-health";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
 import { TOOL_CONTROL_PATH, TOOL_CONTROL_QUERY_KEY } from "./paths";
@@ -73,6 +77,29 @@ export function ToolAlertRecord({ alarmId }: { alarmId: string }) {
   });
   const key = `${TOOL_HEALTH_SOURCE_ID}:${alarmId}`;
   const row = query.data?.find((r) => r.item_key === key) ?? null;
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState<"approve" | "decline" | null>(null);
+  const plan = row ? proposalDecisionPlan(row) : null;
+  const decide = async (decision: "approve" | "decline") => {
+    if (!plan) return;
+    const ok = await confirm({
+      title: decision === "approve" ? `${plan.approveLabel}?` : `${plan.declineLabel}?`,
+      description: decision === "approve" ? plan.approveConsequence : plan.declineConsequence,
+      confirmLabel: decision === "approve" ? plan.approveLabel : plan.declineLabel,
+      variant: decision === "approve" ? "destructive" : "default",
+    });
+    if (!ok) return;
+    setBusy(decision);
+    try {
+      const result = await decideToolProposal(alarmId, decision);
+      toast.success(result.note);
+      await queryClient.invalidateQueries({ queryKey: ["admin-attention"] });
+    } catch (err) {
+      toast.error("That did not happen", { description: extractErrorMessage(err) });
+    } finally {
+      setBusy(null);
+    }
+  };
   const item = row ? toolHealthItems([row], { muteLocally: () => {}, unmuteLocally: () => {} })[0] : null;
 
   return (
@@ -103,6 +130,16 @@ export function ToolAlertRecord({ alarmId }: { alarmId: string }) {
             <Findings row={row} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {plan?.canApprove ? (
+              <Button disabled={busy !== null} onClick={() => void decide("approve")} data-testid="tool-alert-approve">
+                {plan.approveLabel}
+              </Button>
+            ) : null}
+            {plan ? (
+              <Button variant="outline" disabled={busy !== null} onClick={() => void decide("decline")} data-testid="tool-alert-decline">
+                {plan.declineLabel}
+              </Button>
+            ) : null}
             <CopyForAiAction label="Tool alert" agent={item.copy!.agent} />
             <Link href={TOOL_CONTROL_PATH} className="text-sm underline">
               Tool control
