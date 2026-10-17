@@ -58,6 +58,7 @@ import RichEditor, {
   type RichEditorView,
 } from "@ai-matrx/rich-content/editor/editor/RichEditor";
 import { noteIdentityContentSource } from "../richDocumentSource";
+import { useNoteRenderHost } from "../hooks/useNoteRenderHost";
 import type { ImagePolicyDeclaration } from "@ai-matrx/rich-content/levels/prose/remote-image-policy";
 import { NOTE_EXCLUDED_ACTIONS } from "../constants/noteExcludedActions";
 
@@ -285,6 +286,10 @@ export function NoteEditorCore({
   // the middle; embedded/tile surfaces must NOT (it balloons content past the
   // box and bleeds over neighbors).
   const bottomPad = embedded ? "pb-6" : "pb-[85dvh]";
+  // Read draws only once the rich-content host has landed: until then the engine
+  // would paint the note's raw markdown as plain text. The host is requested the
+  // moment a note is on screen, so by the time Read is pressed it is ready.
+  const readRendererReady = useNoteRenderHost();
   // Long-form surfaces (full Notes route) opt into the larger, persistent,
   // higher-contrast scrollbar; everything else keeps the default ultra-thin.
   const previewScrollbarClass = largeScrollbar
@@ -527,6 +532,7 @@ export function NoteEditorCore({
               the text opens THE ONE editor right here and autosaves through the
               note's own onChange; Escape / ⌘Enter returns to Read. The note's
               mode never changes — Read stays the note's view. */}
+          {readRendererReady && (
           <EditInPlace
             key={resetKey}
             value={content}
@@ -569,6 +575,7 @@ export function NoteEditorCore({
             }
           />
           </EditInPlace>
+          )}
         </div>
       )}
 

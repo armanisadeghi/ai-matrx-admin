@@ -17,6 +17,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useNoteRenderHost } from "../hooks/useNoteRenderHost";
 import { updateNoteTags } from "../redux/slice";
 import {
   selectNoteTags,
@@ -56,6 +57,7 @@ export function NoteMetadataBar({
   variant = "chrome",
 }: NoteMetadataBarProps) {
   const dispatch = useAppDispatch();
+  const hostLanded = useNoteRenderHost();
 
   const tags = useAppSelector(selectNoteTags(noteId));
   const note = useAppSelector(selectNoteById(noteId));
@@ -225,7 +227,7 @@ export function NoteMetadataBar({
             references={[{ id: note.id, label: "Copy note reference", noun: "note", items: [{ id: note.id, label: noteDisplayLabel(note) }] }]}
             className="shrink-0"
             // Plain flips the note's Read view (its RichDocument keys the same item).
-            viewKey={richDocumentViewKey(noteIdentityContentSource(note.id), "")}
+            viewKey={hostLanded ? richDocumentViewKey(noteIdentityContentSource(note.id), "") : undefined}
             exportTitle={noteDisplayLabel(note)}
             // Copy / Copy as → Text and Markdown carry the NOTE: its live
             // markdown, nothing else. The record summary (metadata, save
