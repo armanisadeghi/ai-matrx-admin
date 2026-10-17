@@ -99,7 +99,7 @@ export function WorkflowRunsExplorer({ lane }: { lane: "platform" | "mine" }) {
       rootLabel={lane === "platform" ? "Every run" : "Runs you started"}
       firstQuestion={WORKFLOW_RUNS_FIRST_QUESTION}
       names={names}
-      headline={{ measure: "runs", also: ["failures", "runs_with_requests"] }}
+      headline={{ measure: "runs", also: ["failures", "flagged_runs", "runs_with_requests"] }}
       rowNoun="run"
       countMeasure="runs"
       // each run is a record of the definition (`records`, lane DRILL-ADOPT): its id opens the run
