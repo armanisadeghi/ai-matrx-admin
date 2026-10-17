@@ -1,0 +1,1510 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0214",
+  "version": 1,
+  "title": "Moving Checklist",
+  "description": "Timeframe checklist, box inventory and address-change tracker for a move.",
+  "forWho": "Anyone moving house",
+  "icon": {
+    "emoji": "📦"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "moving",
+    "checklist",
+    "home"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-moving-checklist",
+    "catalogueId": "SP0214",
+    "useCase": "Gabriel Torres is moving across town and tracks every task, box and address change in one list.",
+    "industry": "cross_industry",
+    "vertical": "Moving house",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-moving-checklist",
+    "tables": [
+      {
+        "token": "task",
+        "name": "Moving tasks",
+        "labelSingular": "Moving task",
+        "labelPlural": "Moving tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Everything to do, grouped by how long before the move it should happen.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "timeframe",
+            "label": "Timeframe",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "8 weeks out",
+              "4 weeks out",
+              "1 week out",
+              "Moving day",
+              "After the move"
+            ],
+            "choiceColors": {
+              "8 weeks out": "slate",
+              "4 weeks out": "blue",
+              "1 week out": "green",
+              "Moving day": "amber",
+              "After the move": "red"
+            }
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Admin",
+              "Packing",
+              "Cleaning",
+              "Utilities"
+            ],
+            "choiceColors": {
+              "Admin": "slate",
+              "Packing": "blue",
+              "Cleaning": "green",
+              "Utilities": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "default": "To do"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "task_name": "Set a moving budget",
+              "timeframe": "8 weeks out",
+              "category": "Admin",
+              "status": "Done",
+              "due_on": "@today-50d",
+              "notes": "Use the shared checklist"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "task_name": "Get three quotes from moving companies",
+              "timeframe": "8 weeks out",
+              "category": "Admin",
+              "status": "Done",
+              "due_on": "@today-45d",
+              "notes": "Ask about weekend rates"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "task_name": "Book the movers",
+              "timeframe": "8 weeks out",
+              "category": "Admin",
+              "status": "Done",
+              "due_on": "@today-40d",
+              "notes": "Keep the receipt"
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "task_name": "Declutter closets and donate extras",
+              "timeframe": "8 weeks out",
+              "category": "Packing",
+              "status": "In progress",
+              "due_on": "@today-10d",
+              "notes": "Photos for the deposit"
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "task_name": "Order boxes and packing tape",
+              "timeframe": "4 weeks out",
+              "category": "Packing",
+              "status": "Done",
+              "due_on": "@today-7d",
+              "notes": "Confirm by email"
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "task_name": "Notify the landlord in writing",
+              "timeframe": "4 weeks out",
+              "category": "Admin",
+              "status": "Done",
+              "due_on": "@today-12d",
+              "notes": "Check the lease terms"
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "task_name": "Schedule internet at the new place",
+              "timeframe": "4 weeks out",
+              "category": "Utilities",
+              "status": "In progress",
+              "due_on": "@today+3d",
+              "notes": "Ask a friend to help"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "task_name": "Transfer electricity and gas",
+              "timeframe": "4 weeks out",
+              "category": "Utilities",
+              "status": "To do",
+              "due_on": "@today+6d",
+              "notes": "Use the shared checklist"
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "task_name": "Pack out-of-season clothes",
+              "timeframe": "4 weeks out",
+              "category": "Packing",
+              "status": "To do",
+              "due_on": "@today+9d",
+              "notes": "Ask about weekend rates"
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "task_name": "Forward mail with the post office",
+              "timeframe": "1 week out",
+              "category": "Admin",
+              "status": "To do",
+              "due_on": "@today+14d",
+              "notes": "Keep the receipt"
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "task_name": "Defrost the freezer",
+              "timeframe": "1 week out",
+              "category": "Cleaning",
+              "status": "To do",
+              "due_on": "@today+17d",
+              "notes": "Photos for the deposit"
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "task_name": "Pack an essentials bag",
+              "timeframe": "1 week out",
+              "category": "Packing",
+              "status": "To do",
+              "due_on": "@today+19d",
+              "notes": "Confirm by email"
+            }
+          },
+          {
+            "key": "t13",
+            "values": {
+              "task_name": "Deep clean the old kitchen",
+              "timeframe": "1 week out",
+              "category": "Cleaning",
+              "status": "To do",
+              "due_on": "@today+20d",
+              "notes": "Check the lease terms"
+            }
+          },
+          {
+            "key": "t14",
+            "values": {
+              "task_name": "Confirm arrival time with movers",
+              "timeframe": "Moving day",
+              "category": "Admin",
+              "status": "To do",
+              "due_on": "@today+21d",
+              "notes": "Ask a friend to help"
+            }
+          },
+          {
+            "key": "t15",
+            "values": {
+              "task_name": "Photograph meter readings",
+              "timeframe": "Moving day",
+              "category": "Utilities",
+              "status": "To do",
+              "due_on": "@today+21d",
+              "notes": "Use the shared checklist"
+            }
+          },
+          {
+            "key": "t16",
+            "values": {
+              "task_name": "Return keys to the landlord",
+              "timeframe": "Moving day",
+              "category": "Admin",
+              "status": "To do",
+              "due_on": "@today+22d",
+              "notes": "Ask about weekend rates"
+            }
+          },
+          {
+            "key": "t17",
+            "values": {
+              "task_name": "Unpack the kitchen first",
+              "timeframe": "After the move",
+              "category": "Packing",
+              "status": "To do",
+              "due_on": "@today+24d",
+              "notes": "Keep the receipt"
+            }
+          },
+          {
+            "key": "t18",
+            "values": {
+              "task_name": "Update the address with the bank",
+              "timeframe": "After the move",
+              "category": "Admin",
+              "status": "To do",
+              "due_on": "@today+28d",
+              "notes": "Photos for the deposit"
+            }
+          },
+          {
+            "key": "t19",
+            "values": {
+              "task_name": "Register the car at the new address",
+              "timeframe": "After the move",
+              "category": "Admin",
+              "status": "To do",
+              "due_on": "@today+35d",
+              "notes": "Confirm by email"
+            }
+          },
+          {
+            "key": "t20",
+            "values": {
+              "task_name": "Meet the new neighbours",
+              "timeframe": "After the move",
+              "category": "Admin",
+              "status": "To do",
+              "due_on": "@today+40d",
+              "notes": "Check the lease terms"
+            }
+          }
+        ]
+      },
+      {
+        "token": "box",
+        "name": "Boxes",
+        "labelSingular": "Box",
+        "labelPlural": "Boxes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "box_label",
+        "describes": "Every box with its room, contents and where it is in the move.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "box_label",
+            "label": "Box label",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Kitchen",
+              "Living room",
+              "Bedroom",
+              "Bathroom",
+              "Office",
+              "Garage",
+              "Hallway"
+            ],
+            "choiceColors": {
+              "Kitchen": "slate",
+              "Living room": "blue",
+              "Bedroom": "green",
+              "Bathroom": "amber",
+              "Office": "red",
+              "Garage": "violet",
+              "Hallway": "teal"
+            }
+          },
+          {
+            "key": "contents",
+            "label": "Contents",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fragile",
+            "label": "Fragile",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Packed",
+              "Moved",
+              "Unpacked"
+            ],
+            "choiceColors": {
+              "Packed": "slate",
+              "Moved": "blue",
+              "Unpacked": "green"
+            },
+            "default": "Packed"
+          },
+          {
+            "key": "weight",
+            "label": "Weight (lb)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 80
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "key": "bx01",
+            "values": {
+              "box_label": "Kitchen: dishes and glasses",
+              "room": "Kitchen",
+              "contents": "Plates, bowls, glasses wrapped in towels",
+              "fragile": true,
+              "status": "Packed",
+              "weight": 22
+            }
+          },
+          {
+            "key": "bx02",
+            "values": {
+              "box_label": "Kitchen: pantry basics",
+              "room": "Kitchen",
+              "contents": "Rice, pasta, spices, oils",
+              "fragile": false,
+              "status": "Packed",
+              "weight": 18
+            }
+          },
+          {
+            "key": "bx03",
+            "values": {
+              "box_label": "Living room: books",
+              "room": "Living room",
+              "contents": "Two shelves of paperbacks",
+              "fragile": false,
+              "status": "Packed",
+              "weight": 35
+            }
+          },
+          {
+            "key": "bx04",
+            "values": {
+              "box_label": "Living room: lamps and frames",
+              "room": "Living room",
+              "contents": "Table lamp, six frames",
+              "fragile": true,
+              "status": "Packed",
+              "weight": 12
+            }
+          },
+          {
+            "key": "bx05",
+            "values": {
+              "box_label": "Bedroom: winter clothes",
+              "room": "Bedroom",
+              "contents": "Coats, sweaters, scarves",
+              "fragile": false,
+              "status": "Packed",
+              "weight": 15
+            }
+          },
+          {
+            "key": "bx06",
+            "values": {
+              "box_label": "Bedroom: bedding",
+              "room": "Bedroom",
+              "contents": "Sheets, duvet, pillows",
+              "fragile": false,
+              "status": "Moved",
+              "weight": 9
+            }
+          },
+          {
+            "key": "bx07",
+            "values": {
+              "box_label": "Bathroom: toiletries",
+              "room": "Bathroom",
+              "contents": "Towels, first-aid kit",
+              "fragile": false,
+              "status": "Moved",
+              "weight": 10
+            }
+          },
+          {
+            "key": "bx08",
+            "values": {
+              "box_label": "Office: cables and chargers",
+              "room": "Office",
+              "contents": "Router, monitor cables, hard drives",
+              "fragile": true,
+              "status": "Packed",
+              "weight": 20
+            }
+          },
+          {
+            "key": "bx09",
+            "values": {
+              "box_label": "Office: desk supplies",
+              "room": "Office",
+              "contents": "Notebooks, stapler, files",
+              "fragile": false,
+              "status": "Unpacked",
+              "weight": 14
+            }
+          },
+          {
+            "key": "bx10",
+            "values": {
+              "box_label": "Garage: tools",
+              "room": "Garage",
+              "contents": "Drill, screwdrivers, hammer",
+              "fragile": false,
+              "status": "Packed",
+              "weight": 28
+            }
+          },
+          {
+            "key": "bx11",
+            "values": {
+              "box_label": "Garage: camping gear",
+              "room": "Garage",
+              "contents": "Tent, stove, sleeping bags",
+              "fragile": false,
+              "status": "Packed",
+              "weight": 24
+            }
+          },
+          {
+            "key": "bx12",
+            "values": {
+              "box_label": "Hallway: shoes and umbrellas",
+              "room": "Hallway",
+              "contents": "Six pairs of shoes",
+              "fragile": false,
+              "status": "Unpacked",
+              "weight": 8
+            }
+          }
+        ]
+      },
+      {
+        "token": "address_change",
+        "name": "Address changes",
+        "labelSingular": "Address change",
+        "labelPlural": "Address changes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mail",
+        "titleField": "service",
+        "describes": "Every place that needs the new address, ticked off as you tell them.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "service",
+            "label": "Service",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "method",
+            "label": "How",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Online",
+              "Phone",
+              "In person",
+              "By letter"
+            ],
+            "choiceColors": {
+              "Online": "slate",
+              "Phone": "blue",
+              "In person": "green",
+              "By letter": "amber"
+            }
+          },
+          {
+            "key": "account",
+            "label": "Account reference",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ac1",
+            "values": {
+              "service": "Bank and credit cards",
+              "done": true,
+              "due_on": "@today+28d",
+              "method": "Online",
+              "account": "Acct ending 4471"
+            }
+          },
+          {
+            "key": "ac2",
+            "values": {
+              "service": "Employer payroll",
+              "done": false,
+              "due_on": "@today+7d",
+              "method": "Online",
+              "account": "Employee 2093"
+            }
+          },
+          {
+            "key": "ac3",
+            "values": {
+              "service": "Health insurer",
+              "done": false,
+              "due_on": "@today+14d",
+              "method": "Phone",
+              "account": "Member 88-1274"
+            }
+          },
+          {
+            "key": "ac4",
+            "values": {
+              "service": "Driver licence",
+              "done": false,
+              "due_on": "@today+35d",
+              "method": "In person",
+              "account": "Licence on file"
+            }
+          },
+          {
+            "key": "ac5",
+            "values": {
+              "service": "Magazine subscriptions",
+              "done": true,
+              "due_on": "@today-3d",
+              "method": "Online",
+              "account": "Sub 7420"
+            }
+          },
+          {
+            "key": "ac6",
+            "values": {
+              "service": "Phone carrier",
+              "done": true,
+              "due_on": "@today-5d",
+              "method": "Phone",
+              "account": "Line 503-555-0192"
+            }
+          },
+          {
+            "key": "ac7",
+            "values": {
+              "service": "Family and friends",
+              "done": false,
+              "due_on": "@today+25d",
+              "method": "By letter"
+            }
+          },
+          {
+            "key": "ac8",
+            "values": {
+              "service": "Voter registration",
+              "done": false,
+              "due_on": "@today+40d",
+              "method": "Online",
+              "account": "Reg 1180-44"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_box",
+        "name": "Label a box",
+        "describes": "Record a new box.",
+        "audience": "staff",
+        "table": "box",
+        "fields": [
+          {
+            "fieldKey": "box_label",
+            "ask": "What is on the label?",
+            "required": true
+          },
+          {
+            "fieldKey": "room",
+            "ask": "Which room is it for?"
+          },
+          {
+            "fieldKey": "contents",
+            "ask": "What is inside?"
+          },
+          {
+            "fieldKey": "fragile",
+            "ask": "Is it fragile?"
+          }
+        ],
+        "submitLabel": "Add box",
+        "confirmation": "Box added."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_timeframe",
+        "name": "By timeframe",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "timeframe"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "all_boxes",
+        "name": "All boxes",
+        "table": "box",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "box_room",
+        "name": "By room",
+        "table": "box",
+        "kind": "kanban",
+        "groupBy": "room"
+      },
+      {
+        "token": "box_status",
+        "name": "By status",
+        "table": "box",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_changes",
+        "name": "Address changes",
+        "table": "address_change",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every moving task and its status."
+        },
+        {
+          "name": "related_tables",
+          "table": "box",
+          "describes": "Every packed box."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are done?",
+        "whyItMatters": "Gabriel checks progress every Sunday.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Done"
+          },
+          "answer": 5,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open tasks by timeframe.",
+        "action": {
+          "kind": "open",
+          "surface": "task_timeframe"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_timeframe",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open boxes by room.",
+        "action": {
+          "kind": "open",
+          "surface": "box_room"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "box_room",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the task calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "task_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_calendar",
+          "minItems": 15
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "moving-checklist",
+      "parent": null,
+      "title": "Moving Checklist",
+      "icon": {
+        "emoji": "📦"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Work left to right across the timeframes, label every box, and tell everyone your new address."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks by timeframe"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Moving tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "By timeframe",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "timeframe"
+              },
+              {
+                "id": "view-2",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-3",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-4",
+                "name": "Open",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Progress"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Moving tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-5",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "view-6",
+                        "name": "Tasks by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Address changes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "address_change",
+                      "view": "all_changes"
+                    },
+                    "inline": true,
+                    "title": "Address changes",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-7",
+                        "name": "To do",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "done": false
+                        }
+                      },
+                      {
+                        "id": "view-8",
+                        "name": "All",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "view-7"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Boxes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "box",
+              "view": "all_boxes"
+            },
+            "inline": true,
+            "title": "Boxes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-9",
+                "name": "By room",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "room"
+              },
+              {
+                "id": "view-10",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-11",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-12",
+                "name": "All boxes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-13",
+                "name": "Weight by room",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "room",
+                  "op": "sum",
+                  "field": "weight"
+                }
+              }
+            ],
+            "activeViewId": "view-9"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:packing-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:first-night"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "packing-guide",
+      "parent": "moving-checklist",
+      "title": "Packing guide",
+      "icon": {
+        "emoji": "🧰"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pack room by room and label two sides of every box."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Heavy items in small boxes, light items in large boxes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fill gaps with towels so nothing shifts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark fragile boxes on the top and sides."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep tape, scissors and markers in the last box."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Box size"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Best for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weight limit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Small"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Books, tools"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "35 lb"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Medium"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kitchen, shoes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30 lb"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Large"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bedding, coats"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "20 lb"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "box",
+              "view": "all_boxes"
+            },
+            "inline": true,
+            "title": "Boxes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Fragile",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "fragile": true
+                }
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        }
+      ]
+    },
+    {
+      "key": "first-night",
+      "parent": "moving-checklist",
+      "title": "First night kit",
+      "icon": {
+        "emoji": "🛏️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pack this last and carry it yourself."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bedding and pillows"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Towels and toiletries"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Phone chargers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kettle, mugs and snacks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Light bulbs and a flashlight"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Basic tools and tape"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Medicines and documents"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Open the first-night box before anything else."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Moon"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1402 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0215",
+  "version": 1,
+  "title": "Home Inventory",
+  "description": "Record what you own by room with values, serial numbers and warranty dates.",
+  "forWho": "Homeowners and renters",
+  "icon": {
+    "emoji": "🏠"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "inventory",
+    "home",
+    "warranty"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-home-inventory",
+    "catalogueId": "SP0215",
+    "useCase": "Oliver Brandt records everything in the house so he knows what it is worth and when warranties end.",
+    "industry": "cross_industry",
+    "vertical": "Home organisation",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-home-inventory",
+    "tables": [
+      {
+        "token": "room",
+        "name": "Rooms",
+        "labelSingular": "Room",
+        "labelPlural": "Rooms",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "door-open",
+        "titleField": "room_name",
+        "describes": "Each room with how many things are in it and what they are worth.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "room_name",
+            "label": "Room",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "floor",
+            "label": "Floor",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ground floor",
+              "Upstairs"
+            ],
+            "choiceColors": {
+              "Ground floor": "slate",
+              "Upstairs": "blue"
+            }
+          },
+          {
+            "key": "purpose",
+            "label": "Purpose",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area_sqft",
+            "label": "Area (sq ft)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 10
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "last_photographed",
+            "label": "Last photographed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "items",
+            "label": "Items",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "item",
+            "multi": true
+          },
+          {
+            "key": "item_count",
+            "label": "Item count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count"
+          },
+          {
+            "key": "total_value",
+            "label": "Total value",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "current_value",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rm1",
+            "values": {
+              "room_name": "Living room",
+              "floor": "Ground floor",
+              "purpose": "Main seating and media",
+              "area_sqft": 320,
+              "last_photographed": "@today-60d"
+            }
+          },
+          {
+            "key": "rm2",
+            "values": {
+              "room_name": "Kitchen",
+              "floor": "Ground floor",
+              "purpose": "Appliances and cookware",
+              "area_sqft": 180,
+              "last_photographed": "@today-83d"
+            }
+          },
+          {
+            "key": "rm3",
+            "values": {
+              "room_name": "Primary bedroom",
+              "floor": "Upstairs",
+              "purpose": "Furniture and personal electronics",
+              "area_sqft": 240,
+              "last_photographed": "@today-106d"
+            }
+          },
+          {
+            "key": "rm4",
+            "values": {
+              "room_name": "Home office",
+              "floor": "Upstairs",
+              "purpose": "Work equipment",
+              "area_sqft": 150,
+              "last_photographed": "@today-129d"
+            }
+          },
+          {
+            "key": "rm5",
+            "values": {
+              "room_name": "Garage",
+              "floor": "Ground floor",
+              "purpose": "Tools and outdoor gear",
+              "area_sqft": 400,
+              "last_photographed": "@today-152d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "item",
+        "name": "Belongings",
+        "labelSingular": "Belonging",
+        "labelPlural": "Belongings",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "boxes",
+        "titleField": "item_name",
+        "describes": "Everything you own worth recording: what it is, what it cost and when the warranty ends.",
+        "subject": "thing",
+        "before": [
+          [
+            "purchased_on",
+            "warranty_ends"
+          ]
+        ],
+        "independentOf": {
+          "room": "Items can be moved between rooms at any time."
+        },
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Belonging",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "room",
+            "relationMax": 1
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Furniture",
+              "Electronics",
+              "Appliance",
+              "Cookware",
+              "Decor",
+              "Tools",
+              "Sports"
+            ],
+            "choiceColors": {
+              "Furniture": "slate",
+              "Electronics": "blue",
+              "Appliance": "green",
+              "Cookware": "amber",
+              "Decor": "red",
+              "Tools": "violet",
+              "Sports": "teal"
+            }
+          },
+          {
+            "key": "brand",
+            "label": "Brand",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "model",
+            "label": "Model",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "serial",
+            "label": "Serial number",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "purchased_on",
+            "label": "Purchased",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "price",
+            "label": "Purchase price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "current_value",
+            "label": "Current value",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "warranty_ends",
+            "label": "Warranty ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "condition",
+            "label": "Condition",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Excellent",
+              "Good",
+              "Fair",
+              "Poor"
+            ],
+            "choiceColors": {
+              "Excellent": "slate",
+              "Good": "blue",
+              "Fair": "green",
+              "Poor": "amber"
+            }
+          },
+          {
+            "key": "location_detail",
+            "label": "Where exactly",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "i01",
+            "values": {
+              "item_name": "Corner sofa",
+              "room": "rm1",
+              "category": "Furniture",
+              "brand": "Tideline",
+              "model": "Harbor L-7",
+              "price": 1850,
+              "current_value": 1100,
+              "purchased_on": "@today-900d",
+              "condition": "Good",
+              "serial": "LS-4410",
+              "location_detail": "Against the north wall"
+            }
+          },
+          {
+            "key": "i02",
+            "values": {
+              "item_name": "55-inch television",
+              "room": "rm1",
+              "category": "Electronics",
+              "brand": "Verano",
+              "model": "VT55-Q",
+              "price": 780,
+              "current_value": 520,
+              "purchased_on": "@today-700d",
+              "condition": "Excellent",
+              "serial": "VN55-902117",
+              "warranty_ends": "@today+30d",
+              "location_detail": "Mounted above the console"
+            }
+          },
+          {
+            "key": "i03",
+            "values": {
+              "item_name": "Soundbar",
+              "room": "rm1",
+              "category": "Electronics",
+              "brand": "Corvane",
+              "model": "SB-300",
+              "price": 320,
+              "current_value": 210,
+              "purchased_on": "@today-700d",
+              "condition": "Good",
+              "serial": "CV300-81822",
+              "warranty_ends": "@today+30d",
+              "location_detail": "Under the TV"
+            }
+          },
+          {
+            "key": "i04",
+            "values": {
+              "item_name": "Area rug",
+              "room": "rm1",
+              "category": "Decor",
+              "brand": "Kilimli",
+              "model": "Ash 8x10",
+              "price": 640,
+              "current_value": 420,
+              "purchased_on": "@today-1200d",
+              "condition": "Fair",
+              "location_detail": "Center of the room"
+            }
+          },
+          {
+            "key": "i05",
+            "values": {
+              "item_name": "Espresso machine",
+              "room": "rm2",
+              "category": "Appliance",
+              "brand": "Brewlark",
+              "model": "EM-9 Pro",
+              "price": 640,
+              "current_value": 430,
+              "purchased_on": "@today-500d",
+              "condition": "Excellent",
+              "serial": "BL9-70431",
+              "warranty_ends": "@today+210d",
+              "location_detail": "On the counter"
+            }
+          },
+          {
+            "key": "i06",
+            "values": {
+              "item_name": "Refrigerator",
+              "room": "rm2",
+              "category": "Appliance",
+              "brand": "Northwell",
+              "model": "FR-26D",
+              "price": 1450,
+              "current_value": 950,
+              "purchased_on": "@today-1500d",
+              "condition": "Good",
+              "serial": "NW26-558201",
+              "warranty_ends": "@today+45d",
+              "location_detail": "Kitchen alcove"
+            }
+          },
+          {
+            "key": "i07",
+            "values": {
+              "item_name": "Cast iron skillet set",
+              "room": "rm2",
+              "category": "Cookware",
+              "brand": "Hartsmith",
+              "model": "Trio",
+              "price": 180,
+              "current_value": 150,
+              "purchased_on": "@today-1800d",
+              "condition": "Excellent",
+              "location_detail": "Top shelf"
+            }
+          },
+          {
+            "key": "i08",
+            "values": {
+              "item_name": "Dishwasher",
+              "room": "rm2",
+              "category": "Appliance",
+              "brand": "Northwell",
+              "model": "DW-14",
+              "price": 820,
+              "current_value": 620,
+              "purchased_on": "@today-300d",
+              "condition": "Excellent",
+              "serial": "NW14-330918",
+              "warranty_ends": "@today+420d",
+              "location_detail": "Under the counter"
+            }
+          },
+          {
+            "key": "i09",
+            "values": {
+              "item_name": "Queen bed frame",
+              "room": "rm3",
+              "category": "Furniture",
+              "brand": "Tideline",
+              "model": "Marlow",
+              "price": 980,
+              "current_value": 700,
+              "purchased_on": "@today-1000d",
+              "condition": "Good",
+              "location_detail": "Bedroom corner"
+            }
+          },
+          {
+            "key": "i10",
+            "values": {
+              "item_name": "Mattress",
+              "room": "rm3",
+              "category": "Furniture",
+              "brand": "Slumberhill",
+              "model": "Cloud 12",
+              "price": 1300,
+              "current_value": 950,
+              "purchased_on": "@today-800d",
+              "condition": "Good",
+              "serial": "SH12-77310",
+              "warranty_ends": "@today+50d",
+              "location_detail": "On the frame"
+            }
+          },
+          {
+            "key": "i11",
+            "values": {
+              "item_name": "Standing desk",
+              "room": "rm4",
+              "category": "Furniture",
+              "brand": "Uplift Works",
+              "model": "UW-60",
+              "price": 720,
+              "current_value": 560,
+              "purchased_on": "@today-600d",
+              "condition": "Excellent",
+              "serial": "UW60-24488",
+              "warranty_ends": "@today+160d",
+              "location_detail": "Beside the window"
+            }
+          },
+          {
+            "key": "i12",
+            "values": {
+              "item_name": "Laptop",
+              "room": "rm4",
+              "category": "Electronics",
+              "brand": "Corvane",
+              "model": "Slate 14",
+              "price": 1850,
+              "current_value": 1250,
+              "purchased_on": "@today-400d",
+              "condition": "Excellent",
+              "serial": "CS14-90812",
+              "warranty_ends": "@today+330d",
+              "location_detail": "Desk drawer"
+            }
+          },
+          {
+            "key": "i13",
+            "values": {
+              "item_name": "External monitor",
+              "room": "rm4",
+              "category": "Electronics",
+              "brand": "Verano",
+              "model": "VM27",
+              "price": 430,
+              "current_value": 330,
+              "purchased_on": "@today-450d",
+              "condition": "Good",
+              "serial": "VM27-66210",
+              "warranty_ends": "@today+300d",
+              "location_detail": "On the desk"
+            }
+          },
+          {
+            "key": "i14",
+            "values": {
+              "item_name": "Office chair",
+              "room": "rm4",
+              "category": "Furniture",
+              "brand": "Seatwell",
+              "model": "Aero",
+              "price": 540,
+              "current_value": 380,
+              "purchased_on": "@today-850d",
+              "condition": "Good",
+              "serial": "SW-A-19044",
+              "warranty_ends": "@today+20d",
+              "location_detail": "At the desk"
+            }
+          },
+          {
+            "key": "i15",
+            "values": {
+              "item_name": "Cordless drill",
+              "room": "rm5",
+              "category": "Tools",
+              "brand": "Boltwright",
+              "model": "BD-20V",
+              "price": 160,
+              "current_value": 110,
+              "purchased_on": "@today-1300d",
+              "condition": "Good",
+              "serial": "BW20-4471",
+              "location_detail": "Pegboard"
+            }
+          },
+          {
+            "key": "i16",
+            "values": {
+              "item_name": "Lawn mower",
+              "room": "rm5",
+              "category": "Tools",
+              "brand": "Greenfield",
+              "model": "GM-21",
+              "price": 430,
+              "current_value": 280,
+              "purchased_on": "@today-950d",
+              "condition": "Fair",
+              "serial": "GF21-90077",
+              "warranty_ends": "@today+55d",
+              "location_detail": "Shed side"
+            }
+          },
+          {
+            "key": "i17",
+            "values": {
+              "item_name": "Road bike",
+              "room": "rm5",
+              "category": "Sports",
+              "brand": "Ridgeline",
+              "model": "Aero 2",
+              "price": 1500,
+              "current_value": 1050,
+              "purchased_on": "@today-650d",
+              "condition": "Excellent",
+              "serial": "RL-A2-3310",
+              "warranty_ends": "@today+90d",
+              "location_detail": "Hooks on the wall"
+            }
+          },
+          {
+            "key": "i18",
+            "values": {
+              "item_name": "Camping tent",
+              "room": "rm5",
+              "category": "Sports",
+              "brand": "Wayfarer",
+              "model": "Dome 4",
+              "price": 320,
+              "current_value": 240,
+              "purchased_on": "@today-1100d",
+              "condition": "Good",
+              "location_detail": "Garage loft"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "An item lives in one room.",
+        "fromTable": "item",
+        "fromField": "room",
+        "toTable": "room",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "items_in"
+      },
+      {
+        "describes": "A room lists its items.",
+        "fromTable": "room",
+        "fromField": "items",
+        "toTable": "item",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "room_items"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_item",
+        "name": "Add an item",
+        "describes": "Record something you own.",
+        "audience": "staff",
+        "table": "item",
+        "fields": [
+          {
+            "fieldKey": "item_name",
+            "ask": "What is it?",
+            "required": true
+          },
+          {
+            "fieldKey": "room",
+            "ask": "Which room is it in?"
+          },
+          {
+            "fieldKey": "price",
+            "ask": "What did it cost?"
+          },
+          {
+            "fieldKey": "purchased_on",
+            "ask": "When did you buy it?"
+          },
+          {
+            "fieldKey": "warranty_ends",
+            "ask": "When does the warranty end?"
+          }
+        ],
+        "submitLabel": "Save item",
+        "confirmation": "Recorded."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_items",
+        "name": "All items",
+        "table": "item",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "item_condition",
+        "name": "By condition",
+        "table": "item",
+        "kind": "kanban",
+        "groupBy": "condition"
+      },
+      {
+        "token": "item_category",
+        "name": "By category",
+        "table": "item",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "warranty_calendar",
+        "name": "Warranty calendar",
+        "table": "item",
+        "kind": "calendar",
+        "dateField": "warranty_ends",
+        "allDay": true
+      },
+      {
+        "token": "all_rooms",
+        "name": "Rooms",
+        "table": "room",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "item",
+          "describes": "Every item with its value and warranty."
+        },
+        {
+          "name": "related_tables",
+          "table": "room",
+          "describes": "The rooms the items are in."
+        }
+      ],
+      "question": {
+        "ask": "How many items are in excellent condition?",
+        "whyItMatters": "Oliver prioritises upkeep by condition.",
+        "expect": {
+          "table": "item",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "condition": "Excellent"
+          },
+          "answer": 7,
+          "unit": "items"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open every item.",
+        "action": {
+          "kind": "open",
+          "surface": "all_items"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_items",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open the warranty calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "warranty_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "warranty_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open items by condition.",
+        "action": {
+          "kind": "open",
+          "surface": "item_condition"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "item_condition",
+          "minItems": 15
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "home-inventory",
+      "parent": null,
+      "title": "Home Inventory",
+      "icon": {
+        "emoji": "🏠"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A record of what you own, room by room, with prices, serial numbers and warranty dates. Handy for insurance and for knowing when to renew."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rooms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "room",
+                      "view": "all_rooms"
+                    },
+                    "inline": true,
+                    "title": "Rooms",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "Rooms",
+                        "layout": "gallery",
+                        "icon": "LayoutGrid"
+                      },
+                      {
+                        "id": "view-2",
+                        "name": "Value by room",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "view-3",
+                        "name": "Value by room",
+                        "layout": "chart",
+                        "icon": "ChartBar",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "room_name",
+                          "op": "sum",
+                          "field": "total_value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Value by category"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "item",
+                      "view": "all_items"
+                    },
+                    "inline": true,
+                    "title": "Items",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-4",
+                        "name": "Value by category",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "current_value",
+                          "centerValue": true
+                        }
+                      },
+                      {
+                        "id": "view-5",
+                        "name": "Items by condition",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "condition",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-4"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Warranties"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_items"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-6",
+                "name": "Warranty calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "warranty_ends"
+              },
+              {
+                "id": "view-7",
+                "name": "Ending soonest",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "warranty_ends",
+                    "direction": "asc"
+                  }
+                ],
+                "filters": {
+                  "condition": [
+                    "Excellent",
+                    "Good",
+                    "Fair"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-6"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "All items"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_items"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "All items",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-9",
+                "name": "By room",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "room"
+              },
+              {
+                "id": "view-10",
+                "name": "By condition",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "condition"
+              },
+              {
+                "id": "view-11",
+                "name": "High value",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "current_value",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-12",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:insurance-notes"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:annual-check"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "insurance-notes",
+      "parent": "home-inventory",
+      "title": "Insurance notes",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "This list only records what you own. For coverage questions talk to your insurer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep receipts for items over a few hundred dollars."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record serial numbers where they exist."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Photograph each room once a year."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Store a copy of this list somewhere outside the home."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_items"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Most valuable",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "current_value",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-13"
+          }
+        }
+      ]
+    },
+    {
+      "key": "annual-check",
+      "parent": "home-inventory",
+      "title": "Annual check",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An hour each year keeps the list honest."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Walk each room and add anything new"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update current values for big items"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check which warranties are about to end"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Retire items you sold or gave away"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Back up the list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Condition"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Excellent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nothing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Good"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep an eye on it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fair"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan a repair or replacement"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Poor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Decide: fix or retire"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2080 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0213",
+  "version": 1,
+  "title": "Wedding Planner",
+  "description": "Tasks, guest list, vendors, budget and seating for the big day.",
+  "forWho": "Couples planning a wedding",
+  "icon": {
+    "emoji": "💍"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "personal",
+  "tags": [
+    "wedding",
+    "events",
+    "budget"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-wedding-planner",
+    "catalogueId": "SP0213",
+    "useCase": "Elena Marchetti and Samuel Whitfield track their guest replies, vendor deposits and planning tasks in one place.",
+    "industry": "cross_industry",
+    "vertical": "Wedding planning",
+    "job": "projects",
+    "audience": "individual",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Personal workspace",
+      "describes": "A private personal workspace for one person.",
+      "address": {
+        "line1": "41 Marrow Lane",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0148",
+      "website": "lifeledger.net",
+      "email": "hello@lifeledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-wedding-planner",
+    "tables": [
+      {
+        "token": "vendor",
+        "name": "Vendors",
+        "labelSingular": "Vendor",
+        "labelPlural": "Vendors",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "store",
+        "titleField": "vendor_name",
+        "describes": "Everyone you are hiring, with their quote, deposit and contact.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "vendor_name",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Venue",
+              "Catering",
+              "Photography",
+              "Music",
+              "Flowers",
+              "Cake"
+            ],
+            "choiceColors": {
+              "Venue": "slate",
+              "Catering": "blue",
+              "Photography": "green",
+              "Music": "amber",
+              "Flowers": "red",
+              "Cake": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Contacted",
+              "Quoted",
+              "Booked",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Contacted": "slate",
+              "Quoted": "blue",
+              "Booked": "green",
+              "Declined": "amber"
+            },
+            "default": "Contacted"
+          },
+          {
+            "key": "contact",
+            "label": "Contact person",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email_addr",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone_no",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit paid",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "budget_lines",
+            "label": "Budget lines",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "budget",
+            "multi": true
+          },
+          {
+            "key": "lines_total",
+            "label": "Estimated total",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "budget_lines",
+            "pick": "estimated",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "actual_total",
+            "label": "Actual total",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "budget_lines",
+            "pick": "actual",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          }
+        ],
+        "rows": [
+          {
+            "key": "v1",
+            "values": {
+              "vendor_name": "Marlowe Hall",
+              "type": "Venue",
+              "status": "Booked",
+              "contact": "Gwen Abara",
+              "email_addr": "gwen@marlowehall.net",
+              "phone_no": "(971) 555-0141",
+              "deposit": 2500
+            }
+          },
+          {
+            "key": "v2",
+            "values": {
+              "vendor_name": "Wildflower Catering",
+              "type": "Catering",
+              "status": "Booked",
+              "contact": "Tomas Reyes",
+              "email_addr": "tomas@wildflowercatering.net",
+              "phone_no": "(971) 555-0163",
+              "deposit": 1800
+            }
+          },
+          {
+            "key": "v3",
+            "values": {
+              "vendor_name": "Lantern & Lens",
+              "type": "Photography",
+              "status": "Booked",
+              "contact": "Ingrid Sol",
+              "email_addr": "ingrid@lanternandlens.net",
+              "phone_no": "(503) 555-0127",
+              "deposit": 900
+            }
+          },
+          {
+            "key": "v4",
+            "values": {
+              "vendor_name": "Harbor Strings",
+              "type": "Music",
+              "status": "Quoted",
+              "contact": "Felix Odom",
+              "email_addr": "felix@harborstrings.net",
+              "phone_no": "(503) 555-0152",
+              "deposit": 0
+            }
+          },
+          {
+            "key": "v5",
+            "values": {
+              "vendor_name": "Petal Theory",
+              "type": "Flowers",
+              "status": "Quoted",
+              "contact": "Odalys Brun",
+              "email_addr": "odalys@petaltheory.net",
+              "phone_no": "(971) 555-0119",
+              "deposit": 0
+            }
+          },
+          {
+            "key": "v6",
+            "values": {
+              "vendor_name": "Sweet Ledger Bakery",
+              "type": "Cake",
+              "status": "Contacted",
+              "contact": "Nora Whitlock",
+              "email_addr": "nora@sweetledger.net",
+              "phone_no": "(503) 555-0175",
+              "deposit": 0
+            }
+          }
+        ]
+      },
+      {
+        "token": "budget",
+        "name": "Budget",
+        "labelSingular": "Budget line",
+        "labelPlural": "Budget",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calculator",
+        "titleField": "budget_name",
+        "describes": "Every cost, what you expected and what it came to.",
+        "subject": "thing",
+        "independentOf": {
+          "vendor": "A cost can be planned before a vendor is chosen."
+        },
+        "fields": [
+          {
+            "key": "budget_name",
+            "label": "Line",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Venue",
+              "Food and drink",
+              "Photography",
+              "Music",
+              "Flowers",
+              "Cake",
+              "Attire and rings",
+              "Paper",
+              "Lodging",
+              "Planning"
+            ],
+            "choiceColors": {
+              "Venue": "slate",
+              "Food and drink": "blue",
+              "Photography": "green",
+              "Music": "amber",
+              "Flowers": "red",
+              "Cake": "violet",
+              "Attire and rings": "teal",
+              "Paper": "orange",
+              "Lodging": "yellow",
+              "Planning": "pink"
+            }
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "vendor",
+            "relationMax": 1
+          },
+          {
+            "key": "estimated",
+            "label": "Estimated",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "actual",
+            "label": "Actual",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "difference",
+            "label": "Difference",
+            "parityType": "formula",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "formula": "{Actual} - {Estimated}",
+            "source": "formula",
+            "computeOn": "read",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "paid",
+            "label": "Paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "b01",
+            "values": {
+              "budget_name": "Venue rental",
+              "category": "Venue",
+              "estimated": 9800,
+              "actual": 9800,
+              "paid": true,
+              "vendor": "v1"
+            }
+          },
+          {
+            "key": "b02",
+            "values": {
+              "budget_name": "Dinner for 95",
+              "category": "Food and drink",
+              "estimated": 6400,
+              "actual": 6400,
+              "paid": true,
+              "vendor": "v2"
+            }
+          },
+          {
+            "key": "b03",
+            "values": {
+              "budget_name": "Bar service",
+              "category": "Food and drink",
+              "estimated": 800,
+              "actual": 800,
+              "paid": false,
+              "vendor": "v2"
+            }
+          },
+          {
+            "key": "b04",
+            "values": {
+              "budget_name": "Photographer, full day",
+              "category": "Photography",
+              "estimated": 3600,
+              "actual": 3600,
+              "paid": false,
+              "vendor": "v3"
+            }
+          },
+          {
+            "key": "b05",
+            "values": {
+              "budget_name": "String quartet for ceremony",
+              "category": "Music",
+              "estimated": 1800,
+              "actual": 1800,
+              "paid": false,
+              "vendor": "v4"
+            }
+          },
+          {
+            "key": "b06",
+            "values": {
+              "budget_name": "Ceremony and table flowers",
+              "category": "Flowers",
+              "estimated": 2400,
+              "actual": 2600,
+              "paid": false,
+              "vendor": "v5"
+            }
+          },
+          {
+            "key": "b07",
+            "values": {
+              "budget_name": "Three-tier cake",
+              "category": "Cake",
+              "estimated": 900,
+              "actual": 0,
+              "paid": false,
+              "vendor": "v6"
+            }
+          },
+          {
+            "key": "b08",
+            "values": {
+              "budget_name": "Wedding rings",
+              "category": "Attire and rings",
+              "estimated": 1600,
+              "actual": 1480,
+              "paid": true
+            }
+          },
+          {
+            "key": "b09",
+            "values": {
+              "budget_name": "Dress alterations",
+              "category": "Attire and rings",
+              "estimated": 450,
+              "actual": 380,
+              "paid": true
+            }
+          },
+          {
+            "key": "b10",
+            "values": {
+              "budget_name": "Stationery and postage",
+              "category": "Paper",
+              "estimated": 420,
+              "actual": 0,
+              "paid": false
+            }
+          },
+          {
+            "key": "b11",
+            "values": {
+              "budget_name": "Hotel block for family",
+              "category": "Lodging",
+              "estimated": 1100,
+              "actual": 0,
+              "paid": false
+            }
+          },
+          {
+            "key": "b12",
+            "values": {
+              "budget_name": "Day-of coordinator",
+              "category": "Planning",
+              "estimated": 1200,
+              "actual": 600,
+              "paid": true
+            }
+          }
+        ]
+      },
+      {
+        "token": "seating",
+        "name": "Seating tables",
+        "labelSingular": "Seating table",
+        "labelPlural": "Seating tables",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "armchair",
+        "titleField": "table_name",
+        "describes": "The dinner tables and who sits at each.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "table_name",
+            "label": "Table",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "theme",
+            "label": "Table theme",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "guest",
+            "multi": true
+          },
+          {
+            "key": "seated",
+            "label": "Guests seated",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "guests",
+            "pick": "guest_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tb1",
+            "values": {
+              "table_name": "Head table",
+              "seats": 8,
+              "theme": "Candlelit"
+            }
+          },
+          {
+            "key": "tb2",
+            "values": {
+              "table_name": "Family of the bride",
+              "seats": 10,
+              "theme": "Wildflowers"
+            }
+          },
+          {
+            "key": "tb3",
+            "values": {
+              "table_name": "Family of the groom",
+              "seats": 10,
+              "theme": "Herbs"
+            }
+          },
+          {
+            "key": "tb4",
+            "values": {
+              "table_name": "College friends",
+              "seats": 10,
+              "theme": "Lanterns"
+            }
+          },
+          {
+            "key": "tb5",
+            "values": {
+              "table_name": "Work friends",
+              "seats": 8,
+              "theme": "Citrus"
+            }
+          },
+          {
+            "key": "tb6",
+            "values": {
+              "table_name": "Cousins and plus-ones",
+              "seats": 10,
+              "theme": "Mixed"
+            }
+          }
+        ]
+      },
+      {
+        "token": "guest",
+        "name": "Guests",
+        "labelSingular": "Guest",
+        "labelPlural": "Guests",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "guest_name",
+        "describes": "Everyone invited, whether they replied and what they will eat.",
+        "subject": "person",
+        "independentOf": {
+          "seating": "Guests are seated whenever they reply."
+        },
+        "fields": [
+          {
+            "key": "guest_name",
+            "label": "Guest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "side",
+            "label": "Side",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Bride",
+              "Groom"
+            ],
+            "choiceColors": {
+              "Bride": "slate",
+              "Groom": "blue"
+            }
+          },
+          {
+            "key": "rsvp",
+            "label": "RSVP",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Invited",
+              "Yes",
+              "Maybe",
+              "No"
+            ],
+            "choiceColors": {
+              "Invited": "slate",
+              "Yes": "green",
+              "Maybe": "amber",
+              "No": "red"
+            },
+            "default": "Invited"
+          },
+          {
+            "key": "plus_one",
+            "label": "Plus-one",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "meal",
+            "label": "Meal",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Chicken",
+              "Fish",
+              "Vegetarian",
+              "Not chosen"
+            ],
+            "choiceColors": {
+              "Chicken": "slate",
+              "Fish": "blue",
+              "Vegetarian": "green",
+              "Not chosen": "amber"
+            },
+            "default": "Not chosen"
+          },
+          {
+            "key": "seating",
+            "label": "Table",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "seating",
+            "relationMax": 1
+          },
+          {
+            "key": "email_addr",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "invite_sent",
+            "label": "Invitation sent",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "g1",
+            "values": {
+              "guest_name": "Elena Marchetti",
+              "side": "Bride",
+              "rsvp": "Yes",
+              "plus_one": true,
+              "meal": "Chicken",
+              "email_addr": "elena.marchetti@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb1"
+            }
+          },
+          {
+            "key": "g2",
+            "values": {
+              "guest_name": "Samuel Whitfield",
+              "side": "Groom",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Fish",
+              "email_addr": "samuel.whitfield@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb1"
+            }
+          },
+          {
+            "key": "g3",
+            "values": {
+              "guest_name": "Carmen Marchetti",
+              "side": "Bride",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Vegetarian",
+              "email_addr": "carmen.marchetti@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb2"
+            }
+          },
+          {
+            "key": "g4",
+            "values": {
+              "guest_name": "Rocco Marchetti",
+              "side": "Bride",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Chicken",
+              "email_addr": "rocco.marchetti@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb2"
+            }
+          },
+          {
+            "key": "g5",
+            "values": {
+              "guest_name": "Dorothy Whitfield",
+              "side": "Groom",
+              "rsvp": "Yes",
+              "plus_one": true,
+              "meal": "Fish",
+              "email_addr": "dorothy.whitfield@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb3"
+            }
+          },
+          {
+            "key": "g6",
+            "values": {
+              "guest_name": "Lionel Whitfield",
+              "side": "Groom",
+              "rsvp": "Maybe",
+              "plus_one": false,
+              "meal": "Not chosen",
+              "email_addr": "lionel.whitfield@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb3"
+            }
+          },
+          {
+            "key": "g7",
+            "values": {
+              "guest_name": "Anjali Rao",
+              "side": "Bride",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Fish",
+              "email_addr": "anjali.rao@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb4"
+            }
+          },
+          {
+            "key": "g8",
+            "values": {
+              "guest_name": "Peter Lindgren",
+              "side": "Groom",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Vegetarian",
+              "email_addr": "peter.lindgren@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb4"
+            }
+          },
+          {
+            "key": "g9",
+            "values": {
+              "guest_name": "Sofia Alvarado",
+              "side": "Bride",
+              "rsvp": "No",
+              "plus_one": true,
+              "meal": "Not chosen",
+              "email_addr": "sofia.alvarado@guestmail.net",
+              "invite_sent": true
+            }
+          },
+          {
+            "key": "g10",
+            "values": {
+              "guest_name": "Henry Cho",
+              "side": "Groom",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Fish",
+              "email_addr": "henry.cho@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb5"
+            }
+          },
+          {
+            "key": "g11",
+            "values": {
+              "guest_name": "Beatrice Nolan",
+              "side": "Bride",
+              "rsvp": "Invited",
+              "plus_one": false,
+              "meal": "Not chosen",
+              "email_addr": "beatrice.nolan@guestmail.net",
+              "invite_sent": true
+            }
+          },
+          {
+            "key": "g12",
+            "values": {
+              "guest_name": "Marcus Ibekwe",
+              "side": "Groom",
+              "rsvp": "Yes",
+              "plus_one": false,
+              "meal": "Fish",
+              "email_addr": "marcus.ibekwe@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb6"
+            }
+          },
+          {
+            "key": "g13",
+            "values": {
+              "guest_name": "Priya Venkataraman",
+              "side": "Bride",
+              "rsvp": "Yes",
+              "plus_one": true,
+              "meal": "Vegetarian",
+              "email_addr": "priya.venkataraman@guestmail.net",
+              "invite_sent": true,
+              "seating": "tb6"
+            }
+          },
+          {
+            "key": "g14",
+            "values": {
+              "guest_name": "Walter Dunmore",
+              "side": "Groom",
+              "rsvp": "Invited",
+              "plus_one": false,
+              "meal": "Not chosen",
+              "email_addr": "walter.dunmore@guestmail.net",
+              "invite_sent": false
+            }
+          },
+          {
+            "key": "g15",
+            "values": {
+              "guest_name": "Leona Fitzgerald",
+              "side": "Bride",
+              "rsvp": "Maybe",
+              "plus_one": false,
+              "meal": "Not chosen",
+              "email_addr": "leona.fitzgerald@guestmail.net",
+              "invite_sent": false,
+              "seating": "tb5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Planning tasks",
+        "labelSingular": "Planning task",
+        "labelPlural": "Planning tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "The to-do list from first booking to final headcount.",
+        "subject": "thing",
+        "independentOf": {
+          "vendor": "Tasks can be planned before a vendor is chosen."
+        },
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Venue",
+              "Food",
+              "Paper",
+              "Photography",
+              "Attire",
+              "Music",
+              "Flowers",
+              "Planning"
+            ],
+            "choiceColors": {
+              "Venue": "slate",
+              "Food": "blue",
+              "Paper": "green",
+              "Photography": "amber",
+              "Attire": "red",
+              "Music": "violet",
+              "Flowers": "teal",
+              "Planning": "orange"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "default": "To do"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "vendor",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Elena",
+              "Samuel",
+              "Both"
+            ],
+            "choiceColors": {
+              "Elena": "slate",
+              "Samuel": "blue",
+              "Both": "green"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "task_name": "Book the venue",
+              "category": "Venue",
+              "status": "Done",
+              "due_on": "@today-120d",
+              "owner": "Both",
+              "vendor": "v1"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "task_name": "Sign the catering contract",
+              "category": "Food",
+              "status": "Done",
+              "due_on": "@today-90d",
+              "owner": "Elena",
+              "vendor": "v2"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "task_name": "Send save-the-dates",
+              "category": "Paper",
+              "status": "Done",
+              "due_on": "@today-80d",
+              "owner": "Samuel"
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "task_name": "Choose the photographer",
+              "category": "Photography",
+              "status": "Done",
+              "due_on": "@today-60d",
+              "owner": "Both",
+              "vendor": "v3"
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "task_name": "Order wedding rings",
+              "category": "Attire",
+              "status": "Done",
+              "due_on": "@today-45d",
+              "owner": "Elena"
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "task_name": "Book the string quartet",
+              "category": "Music",
+              "status": "In progress",
+              "due_on": "@today+10d",
+              "owner": "Samuel",
+              "vendor": "v4"
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "task_name": "Finalize the flower design",
+              "category": "Flowers",
+              "status": "In progress",
+              "due_on": "@today+20d",
+              "owner": "Both",
+              "vendor": "v5"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "task_name": "Taste and order the cake",
+              "category": "Food",
+              "status": "To do",
+              "due_on": "@today+30d",
+              "owner": "Elena",
+              "vendor": "v6"
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "task_name": "Mail invitations",
+              "category": "Paper",
+              "status": "To do",
+              "due_on": "@today+40d",
+              "owner": "Samuel"
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "task_name": "Plan the rehearsal dinner",
+              "category": "Planning",
+              "status": "To do",
+              "due_on": "@today+60d",
+              "owner": "Both"
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "task_name": "Create the seating chart",
+              "category": "Planning",
+              "status": "To do",
+              "due_on": "@today+75d",
+              "owner": "Elena"
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "task_name": "Final headcount to caterer",
+              "category": "Food",
+              "status": "To do",
+              "due_on": "@today+100d",
+              "owner": "Samuel",
+              "vendor": "v2"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A cost may belong to a vendor.",
+        "fromTable": "budget",
+        "fromField": "vendor",
+        "toTable": "vendor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "costs_of"
+      },
+      {
+        "describes": "A guest sits at one table.",
+        "fromTable": "guest",
+        "fromField": "seating",
+        "toTable": "seating",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "guests_at"
+      },
+      {
+        "describes": "A task may involve a vendor.",
+        "fromTable": "task",
+        "fromField": "vendor",
+        "toTable": "vendor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks_for"
+      },
+      {
+        "describes": "A vendor lists its budget lines.",
+        "fromTable": "vendor",
+        "fromField": "budget_lines",
+        "toTable": "budget",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "vendor_costs"
+      },
+      {
+        "describes": "A table lists its guests.",
+        "fromTable": "seating",
+        "fromField": "guests",
+        "toTable": "guest",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "restrict",
+        "inverseKey": "table_guests"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_guest",
+        "name": "Add a guest",
+        "describes": "Add someone to the guest list.",
+        "audience": "staff",
+        "table": "guest",
+        "fields": [
+          {
+            "fieldKey": "guest_name",
+            "ask": "What is their name?",
+            "required": true
+          },
+          {
+            "fieldKey": "side",
+            "ask": "Whose side are they on?"
+          },
+          {
+            "fieldKey": "email_addr",
+            "ask": "What is their email?"
+          },
+          {
+            "fieldKey": "plus_one",
+            "ask": "Are they bringing someone?"
+          }
+        ],
+        "submitLabel": "Add guest",
+        "confirmation": "Added to the list."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "By status",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_timeline",
+        "name": "Timeline",
+        "table": "task",
+        "kind": "timeline",
+        "startField": "due_on",
+        "endField": "due_on"
+      },
+      {
+        "token": "all_guests",
+        "name": "Guest list",
+        "table": "guest",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "guest_rsvp",
+        "name": "By RSVP",
+        "table": "guest",
+        "kind": "kanban",
+        "groupBy": "rsvp"
+      },
+      {
+        "token": "guest_side",
+        "name": "By side",
+        "table": "guest",
+        "kind": "kanban",
+        "groupBy": "side"
+      },
+      {
+        "token": "all_vendors",
+        "name": "Vendors",
+        "table": "vendor",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "vendor_board",
+        "name": "By status",
+        "table": "vendor",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_budget",
+        "name": "Budget",
+        "table": "budget",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "budget_cat",
+        "name": "By category",
+        "table": "budget",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_tables",
+        "name": "Seating tables",
+        "table": "seating",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "guest",
+          "describes": "Every guest, RSVP and meal."
+        },
+        {
+          "name": "related_tables",
+          "table": "seating",
+          "describes": "The seating tables."
+        }
+      ],
+      "question": {
+        "ask": "How many guests have said yes?",
+        "whyItMatters": "The caterer needs a headcount.",
+        "expect": {
+          "table": "guest",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "rsvp": "Yes"
+          },
+          "answer": 10,
+          "unit": "guests"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open guests by RSVP.",
+        "action": {
+          "kind": "open",
+          "surface": "guest_rsvp"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "guest_rsvp",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the budget by category.",
+        "action": {
+          "kind": "open",
+          "surface": "budget_cat"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "budget_cat",
+          "minItems": 10
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lifeledger.net"
+      ],
+      "fictionalStreets": [
+        "Marrow Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "wedding-planner",
+      "parent": null,
+      "title": "Wedding Planner",
+      "icon": {
+        "emoji": "💍"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything for the big day in one place: tasks, guests, vendors, budget and seating. Start with the checklist, then work down the page."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tasks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Planning tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-1",
+                        "name": "By status",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "status"
+                      },
+                      {
+                        "id": "view-2",
+                        "name": "Timeline",
+                        "layout": "timeline",
+                        "icon": "ChartGantt",
+                        "dateField": "due_on"
+                      },
+                      {
+                        "id": "view-3",
+                        "name": "All tasks",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "view-1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Guests"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "guest",
+                      "view": "all_guests"
+                    },
+                    "inline": true,
+                    "title": "Guests",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-4",
+                        "name": "By RSVP",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "rsvp"
+                      },
+                      {
+                        "id": "view-5",
+                        "name": "By side",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "side"
+                      },
+                      {
+                        "id": "view-6",
+                        "name": "Guest list",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "view-7",
+                        "name": "RSVP",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "rsvp",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-4"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Vendors"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "vendor",
+                      "view": "all_vendors"
+                    },
+                    "inline": true,
+                    "title": "Vendors",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-8",
+                        "name": "By status",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "status"
+                      },
+                      {
+                        "id": "view-9",
+                        "name": "All vendors",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "view-10",
+                        "name": "Gallery",
+                        "layout": "gallery",
+                        "icon": "LayoutGrid"
+                      }
+                    ],
+                    "activeViewId": "view-8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Budget"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "budget",
+                      "view": "all_budget"
+                    },
+                    "inline": true,
+                    "title": "Budget",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-11",
+                        "name": "By category",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "category"
+                      },
+                      {
+                        "id": "view-12",
+                        "name": "All lines",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "view-13",
+                        "name": "Estimated by category",
+                        "layout": "chart",
+                        "icon": "ChartBar",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "estimated"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-11"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Seating"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "seating",
+              "view": "all_tables"
+            },
+            "inline": true,
+            "title": "Seating tables",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-14",
+                "name": "Tables",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-15",
+                "name": "Table list",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-14"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:timeline-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:day-of"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "timeline-guide",
+      "parent": "wedding-planner",
+      "title": "Planning timeline",
+      "icon": {
+        "emoji": "⏳"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Roughly what to do and when."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Window"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "12 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Venue, budget, guest list draft"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "9 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Photographer, caterer, attire"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "6 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Music, flowers, save-the-dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invitations, cake, seating draft"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1 month out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final headcount, rehearsal, timeline"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Planning tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-16",
+                "name": "Open tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-16"
+          }
+        }
+      ]
+    },
+    {
+      "key": "day-of",
+      "parent": "wedding-planner",
+      "title": "Day-of checklist",
+      "icon": {
+        "emoji": "🎉"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hand a copy to the coordinator."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rings with the best person"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Vendor contact sheet printed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Seating chart at the entrance"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Emergency kit packed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payments and tips in labelled envelopes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Someone assigned to return rentals"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budget snapshot"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "budget",
+              "view": "all_budget"
+            },
+            "inline": true,
+            "title": "Budget",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-17",
+                "name": "Paid or not",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "paid",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "view-18",
+                "name": "Unpaid",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "paid": false
+                }
+              }
+            ],
+            "activeViewId": "view-17"
+          }
+        }
+      ]
+    }
+  ]
+}
