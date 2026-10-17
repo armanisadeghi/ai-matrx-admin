@@ -21,7 +21,7 @@ import {
   liveLaunchWidgetHandleCount,
   registerLaunchWidgetHandle,
 } from "@ai-matrx/chat/agents/utils/launch-widget-handles";
-import { callbackManager } from "@ai-matrx/chat/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import type { SelectionWriteBack } from "@ai-matrx/chat/agents/types/widget-handle.types";
 import { CHAT_WINDOWS } from "@ai-matrx/chat/host/windows";
 
