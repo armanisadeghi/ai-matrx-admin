@@ -28,6 +28,8 @@ export interface SystemPlan {
   answer: string;
   /** Which run produced it (null for a hand-saved plan). */
   conversationId: string | null;
+  /** The Conductor of the Orchestra made from this plan (an existing Orchestra, not a second ensemble system). */
+  orchestraConductorId?: string | null;
 }
 
 export const SYSTEM_PLAN_TAG = "system-plan";

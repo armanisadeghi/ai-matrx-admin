@@ -149,3 +149,33 @@ describe("the dental reminders answer (real Architect answer, 2026-10-17)", () =
     expect(shown).toContain("- **Send time** — 10:00 local");
   });
 });
+
+describe("a Steps section written as a table (real Architect answer, 2026-10-17)", () => {
+  const raw = require("fs").readFileSync(require("path").join(__dirname, "real-planner-answer-5.fixture.md"), "utf8") as string;
+  it("reads one step per row, titled by the step cell's bold lead", () => {
+    const plan = parsePlannerAnswer(raw, "x");
+    expect(plan.steps.length).toBe(8);
+    expect(plan.steps[0].title).toBe("Brief, then draft");
+    expect(plan.steps[1].title).toMatch(/^Automatic checks/);
+    expect(plan.steps[5].doer).toBe("human");
+    for (const s of plan.steps) {
+      expect(s.summary).not.toMatch(/[*|]/);
+      expect(s.job.length).toBeGreaterThan(10);
+    }
+  });
+});
+
+describe("a section called \"The three steps\" with a sub-heading per step (real Architect answer, 2026-10-17)", () => {
+  const raw = require("fs").readFileSync(require("path").join(__dirname, "real-planner-answer-6.fixture.md"), "utf8") as string;
+  it("reads the three steps, not the bullets inside them", () => {
+    const plan = parsePlannerAnswer(raw, "x");
+    expect(plan.steps.map((s) => s.title)).toEqual(["Article Writer", "Medical Fact-Checker", "Social Post Writer"]);
+  });
+});
+
+it("a step's card sentence never opens on its Model line", () => {
+  const raw = require("fs").readFileSync(require("path").join(__dirname, "real-planner-answer-6.fixture.md"), "utf8") as string;
+  const plan = parsePlannerAnswer(raw, "x");
+  expect(plan.steps[0].summary).toMatch(/^Gets:/);
+  expect(plan.steps[0].modelClass).toBe("frontier");
+});
