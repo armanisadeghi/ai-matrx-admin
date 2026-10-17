@@ -393,6 +393,13 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
   };
   const open = (id: SpaceId, blockId?: string) => {
     setMobileSidebarOpen(false);
+    // The page being opened is the last one from now on: /spaces's "open the last page" hop, if it is still
+    // mounted while this navigation commits, lands on the same page instead of sending the person back.
+    try {
+      window.localStorage.setItem(LAST_SPACE_KEY, id);
+    } catch {
+      // view state only
+    }
     router.push(`/spaces/${id}${blockId ? `#block-${blockId}` : ""}`);
   };
 
