@@ -19,14 +19,14 @@ const records = { columns: ["created_at", "person_id", "cost"] };
 
 describe("recordsSortOf", () => {
   it("a Measure sorts the records by the column it sums, largest first", () => {
-    expect(recordsSortOf(def, records, { key: "cost" })).toEqual({ key: "cost", direction: "desc" });
+    expect(recordsSortOf(def, records, { key: "cost", direction: "desc" })).toEqual({ key: "cost", direction: "desc" });
     expect(recordsSortOf(def, records, { key: "cost", direction: "asc" })).toEqual({ key: "cost", direction: "asc" });
   });
-  it("a Dimension keeps its key (the door maps it) and reads ascending by default", () => {
-    expect(recordsSortOf(def, records, { key: "person" })).toEqual({ key: "person", direction: "asc" });
+  it("a Dimension keeps its key (the door maps it)", () => {
+    expect(recordsSortOf(def, records, { key: "person", direction: "asc" })).toEqual({ key: "person", direction: "asc" });
   });
   it("a sort no records column can carry (a ratio) or no sort is null", () => {
-    expect(recordsSortOf(def, records, { key: "cost_per_request" })).toBeNull();
+    expect(recordsSortOf(def, records, { key: "cost_per_request", direction: "desc" })).toBeNull();
     expect(recordsSortOf(def, records, undefined)).toBeNull();
   });
 });
