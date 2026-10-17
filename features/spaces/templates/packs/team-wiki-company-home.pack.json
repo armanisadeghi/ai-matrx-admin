@@ -1,0 +1,1685 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0101",
+  "version": 1,
+  "title": "Team Wiki & Company Home",
+  "description": "A company home with news, teams and a wiki whose pages expire until an owner reviews them.",
+  "forWho": "Companies of 10 to 200 people",
+  "icon": {
+    "emoji": "🏠"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "docs",
+  "tags": [
+    "wiki",
+    "handbook",
+    "intranet",
+    "policies"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-team-wiki-company-home",
+    "catalogueId": "SP0101",
+    "useCase": "Marisol Vandenberg runs operations at a growing retailer and uses this so staff find policies and how-tos in one place, with an owner and review date on each.",
+    "industry": "cross_industry",
+    "vertical": "Company wiki",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Tidewater Provisions",
+      "describes": "An online and catalog retailer of camping and fishing gear.",
+      "address": {
+        "line1": "77 Alderkeep Wharf",
+        "city": "Portland",
+        "region": "ME",
+        "postalCode": "04101",
+        "country": "US"
+      },
+      "phone": "(207) 555-0100",
+      "website": "tidewaterprov.net",
+      "email": "hello@tidewaterprov.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-team-wiki-company-home",
+    "tables": [
+      {
+        "token": "dept",
+        "name": "Teams",
+        "labelSingular": "Team",
+        "labelPlural": "Teams",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "team_name",
+        "describes": "The teams in the company, what each is for and who leads it.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "team_name",
+            "label": "Team",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "mission",
+            "label": "Mission",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "channel",
+            "label": "Chat channel",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pages",
+            "label": "Wiki pages",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "wiki_page",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "page_count",
+            "label": "Pages owned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pages",
+            "pick": "page_title",
+            "agg": "count"
+          },
+          {
+            "key": "verified_count",
+            "label": "Verified pages",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pages",
+            "pick": "page_title",
+            "agg": "count",
+            "filter": {
+              "verification": "Verified"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "te-operations",
+            "values": {
+              "team_name": "Operations",
+              "mission": "Keep orders moving from shelf to doorstep.",
+              "lead": "tm-marisol",
+              "channel": "#ops-floor",
+              "pages": [
+                "wp-11",
+                "wp-12"
+              ]
+            }
+          },
+          {
+            "key": "te-customer",
+            "values": {
+              "team_name": "Customer care",
+              "mission": "Answer every customer within a working day.",
+              "lead": "tm-kwame",
+              "channel": "#care",
+              "pages": [
+                "wp-01",
+                "wp-06"
+              ]
+            }
+          },
+          {
+            "key": "te-people",
+            "values": {
+              "team_name": "People and culture",
+              "mission": "Hire well, onboard warmly, keep policies fair.",
+              "lead": "tm-ellie",
+              "channel": "#people",
+              "pages": [
+                "wp-02",
+                "wp-03"
+              ]
+            }
+          },
+          {
+            "key": "te-warehouse",
+            "values": {
+              "team_name": "Warehouse",
+              "mission": "Receive, store and ship accurately.",
+              "lead": "tm-rafael",
+              "channel": "#warehouse",
+              "pages": [
+                "wp-04",
+                "wp-05"
+              ]
+            }
+          },
+          {
+            "key": "te-finance",
+            "values": {
+              "team_name": "Finance",
+              "mission": "Pay on time, report honestly.",
+              "lead": "tm-june",
+              "channel": "#finance",
+              "pages": [
+                "wp-07",
+                "wp-08"
+              ]
+            }
+          },
+          {
+            "key": "te-web",
+            "values": {
+              "team_name": "Web",
+              "mission": "Keep the shop fast and the catalog right.",
+              "lead": "tm-ansel",
+              "channel": "#web",
+              "pages": [
+                "wp-09",
+                "wp-10",
+                "wp-13"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "lead": "The two sides move on their own schedule and status; neither forces the other.",
+          "pages": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "wiki_page",
+        "name": "Wiki pages",
+        "labelSingular": "Wiki page",
+        "labelPlural": "Wiki pages",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "page_title",
+        "describes": "Every page of the company wiki: its owner, category and whether it is still verified.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "page_title",
+            "label": "Page",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Policy",
+              "How-to",
+              "Reference",
+              "Onboarding"
+            ],
+            "choiceColors": {
+              "Policy": "red",
+              "How-to": "blue",
+              "Reference": "slate",
+              "Onboarding": "green"
+            }
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Operations",
+              "Customer care",
+              "People and culture",
+              "Warehouse",
+              "Finance",
+              "Web"
+            ],
+            "choiceColors": {
+              "Operations": "blue",
+              "Customer care": "green",
+              "People and culture": "pink",
+              "Warehouse": "orange",
+              "Finance": "teal",
+              "Web": "violet"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "verification",
+            "label": "Verification",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Verified",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Verified": "green",
+              "Expired": "red"
+            },
+            "required": true,
+            "default": "Verified"
+          },
+          {
+            "key": "reviewed_on",
+            "label": "Last reviewed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "review_by",
+            "label": "Review by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "wp-01",
+            "values": {
+              "page_title": "Returns and exchanges policy",
+              "category": "Policy",
+              "team": "Customer care",
+              "owner": "tm-kwame",
+              "verification": "Verified",
+              "reviewed_on": "@today-30d",
+              "review_by": "@today+150d",
+              "summary": "Customers have 45 days to return unused gear. Covers refunds, exchanges and store credit."
+            }
+          },
+          {
+            "key": "wp-02",
+            "values": {
+              "page_title": "Parental leave and time off",
+              "category": "Policy",
+              "team": "People and culture",
+              "owner": "tm-ellie",
+              "verification": "Verified",
+              "reviewed_on": "@today-45d",
+              "review_by": "@today+135d",
+              "summary": "How much leave, who to tell, and how coverage is arranged."
+            }
+          },
+          {
+            "key": "wp-03",
+            "values": {
+              "page_title": "First week checklist",
+              "category": "Onboarding",
+              "team": "People and culture",
+              "owner": "tm-ellie",
+              "verification": "Verified",
+              "reviewed_on": "@today-20d",
+              "review_by": "@today+160d",
+              "summary": "Day by day plan for a new hire, with who to meet."
+            }
+          },
+          {
+            "key": "wp-04",
+            "values": {
+              "page_title": "Receiving a truck at the dock",
+              "category": "How-to",
+              "team": "Warehouse",
+              "owner": "tm-rafael",
+              "verification": "Verified",
+              "reviewed_on": "@today-60d",
+              "review_by": "@today+120d",
+              "summary": "Count, inspect and book in a delivery before the driver leaves."
+            }
+          },
+          {
+            "key": "wp-05",
+            "values": {
+              "page_title": "Packing fragile orders",
+              "category": "How-to",
+              "team": "Warehouse",
+              "owner": "tm-rafael",
+              "verification": "Expired",
+              "reviewed_on": "@today-200d",
+              "review_by": "@today-20d",
+              "summary": "Box sizes, padding and when to double-box glass and ceramics."
+            }
+          },
+          {
+            "key": "wp-06",
+            "values": {
+              "page_title": "Answering a shipping delay email",
+              "category": "How-to",
+              "team": "Customer care",
+              "owner": "tm-kwame",
+              "verification": "Verified",
+              "reviewed_on": "@today-25d",
+              "review_by": "@today+155d",
+              "summary": "Reply templates, when to refund postage and who to loop in."
+            }
+          },
+          {
+            "key": "wp-07",
+            "values": {
+              "page_title": "Month-end close steps",
+              "category": "Reference",
+              "team": "Finance",
+              "owner": "tm-june",
+              "verification": "Verified",
+              "reviewed_on": "@today-15d",
+              "review_by": "@today+165d",
+              "summary": "The twelve steps, in order, with the day each is due."
+            }
+          },
+          {
+            "key": "wp-08",
+            "values": {
+              "page_title": "Expense claims and receipts",
+              "category": "Policy",
+              "team": "Finance",
+              "owner": "tm-june",
+              "verification": "Expired",
+              "reviewed_on": "@today-190d",
+              "review_by": "@today-10d",
+              "summary": "What can be claimed, the limit without approval, how to submit."
+            }
+          },
+          {
+            "key": "wp-09",
+            "values": {
+              "page_title": "Product page standards",
+              "category": "Reference",
+              "team": "Web",
+              "owner": "tm-ansel",
+              "verification": "Verified",
+              "reviewed_on": "@today-35d",
+              "review_by": "@today+145d",
+              "summary": "Photo sizes, title length, bullet rules and size chart placement."
+            }
+          },
+          {
+            "key": "wp-10",
+            "values": {
+              "page_title": "Releasing a site change safely",
+              "category": "How-to",
+              "team": "Web",
+              "owner": "tm-ansel",
+              "verification": "Verified",
+              "reviewed_on": "@today-10d",
+              "review_by": "@today+170d",
+              "summary": "Test on staging, announce in chat, release before noon, watch for an hour."
+            }
+          },
+          {
+            "key": "wp-11",
+            "values": {
+              "page_title": "Carrier rate comparison",
+              "category": "Reference",
+              "team": "Operations",
+              "owner": "tm-marisol",
+              "verification": "Verified",
+              "reviewed_on": "@today-50d",
+              "review_by": "@today+130d",
+              "summary": "Current rates and cut-off times for the three carriers we use."
+            }
+          },
+          {
+            "key": "wp-12",
+            "values": {
+              "page_title": "Holiday peak staffing plan",
+              "category": "Reference",
+              "team": "Operations",
+              "owner": "tm-marisol",
+              "verification": "Expired",
+              "reviewed_on": "@today-220d",
+              "review_by": "@today-40d",
+              "summary": "The November and December staffing plan, due for a rewrite."
+            }
+          },
+          {
+            "key": "wp-13",
+            "values": {
+              "page_title": "Setting up your laptop",
+              "category": "Onboarding",
+              "team": "Web",
+              "owner": "tm-ansel",
+              "verification": "Verified",
+              "reviewed_on": "@today-70d",
+              "review_by": "@today+110d",
+              "summary": "Accounts, password manager, VPN and the tools we all use."
+            }
+          }
+        ],
+        "before": [
+          [
+            "reviewed_on",
+            "review_by"
+          ]
+        ],
+        "statusByDate": {
+          "field": "verification",
+          "dateField": "review_by",
+          "bands": [
+            {
+              "status": "Expired",
+              "to": 0
+            },
+            {
+              "status": "Verified",
+              "from": 0
+            }
+          ]
+        },
+        "independentOf": {
+          "owner": "A page can be owned by anyone, whenever they joined."
+        }
+      },
+      {
+        "token": "announcement",
+        "name": "Announcements",
+        "labelSingular": "Announcement",
+        "labelPlural": "Announcements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "megaphone",
+        "titleField": "headline",
+        "describes": "News everyone should see, newest first.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "headline",
+            "label": "Headline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "posted_on",
+            "label": "Posted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "audience",
+            "label": "Audience",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Everyone",
+              "Warehouse",
+              "Web",
+              "Finance"
+            ],
+            "choiceColors": {
+              "Everyone": "slate",
+              "Warehouse": "orange",
+              "Web": "violet",
+              "Finance": "teal"
+            }
+          },
+          {
+            "key": "weight",
+            "label": "Weight",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pinned",
+              "Normal"
+            ],
+            "choiceColors": {
+              "Pinned": "amber",
+              "Normal": "slate"
+            },
+            "required": true,
+            "default": "Normal"
+          }
+        ],
+        "rows": [
+          {
+            "key": "an-1",
+            "values": {
+              "headline": "Spring returns window starts Monday",
+              "posted_on": "@today-3d",
+              "author": "tm-kwame",
+              "audience": "Everyone",
+              "weight": "Pinned"
+            }
+          },
+          {
+            "key": "an-2",
+            "values": {
+              "headline": "New carrier cut-off at 3 pm",
+              "posted_on": "@today-6d",
+              "author": "tm-marisol",
+              "audience": "Warehouse",
+              "weight": "Pinned"
+            }
+          },
+          {
+            "key": "an-3",
+            "values": {
+              "headline": "Welcome to Ansel’s staging guide",
+              "posted_on": "@today-12d",
+              "author": "tm-ansel",
+              "audience": "Web",
+              "weight": "Normal"
+            }
+          },
+          {
+            "key": "an-4",
+            "values": {
+              "headline": "Open enrollment closes Friday",
+              "posted_on": "@today-4d",
+              "author": "tm-ellie",
+              "audience": "Everyone",
+              "weight": "Pinned"
+            }
+          },
+          {
+            "key": "an-5",
+            "values": {
+              "headline": "Dock door 3 is closed for repairs",
+              "posted_on": "@today-1d",
+              "author": "tm-rafael",
+              "audience": "Warehouse",
+              "weight": "Normal"
+            }
+          },
+          {
+            "key": "an-6",
+            "values": {
+              "headline": "Month-end close calendar posted",
+              "posted_on": "@today-8d",
+              "author": "tm-june",
+              "audience": "Finance",
+              "weight": "Normal"
+            }
+          }
+        ],
+        "independentOf": {
+          "author": "Anyone can post."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Lead links to team_member.",
+        "fromTable": "dept",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "teams_led"
+      },
+      {
+        "describes": "A team owns its wiki pages.",
+        "fromTable": "dept",
+        "fromField": "pages",
+        "toTable": "wiki_page",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "dept_owner"
+      },
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "wiki_page",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "pages_owned"
+      },
+      {
+        "describes": "Author links to team_member.",
+        "fromTable": "announcement",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "announcements_made"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-marisol",
+            "values": {
+              "full_name": "Marisol Vandenberg",
+              "role": "Head of operations",
+              "work_email": "marisol@tidewaterprov.net",
+              "mobile": "(207) 555-0101",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-kwame",
+            "values": {
+              "full_name": "Kwame Osei-Bonsu",
+              "role": "Customer care lead",
+              "work_email": "kwame@tidewaterprov.net",
+              "mobile": "(207) 555-0102",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-ellie",
+            "values": {
+              "full_name": "Ellie Brzezinski",
+              "role": "People and culture",
+              "work_email": "ellie@tidewaterprov.net",
+              "mobile": "(207) 555-0103",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-rafael",
+            "values": {
+              "full_name": "Rafael Duarte",
+              "role": "Warehouse manager",
+              "work_email": "rafael@tidewaterprov.net",
+              "mobile": "(207) 555-0104",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-june",
+            "values": {
+              "full_name": "June Takahashi-Moore",
+              "role": "Finance controller",
+              "work_email": "june@tidewaterprov.net",
+              "mobile": "(207) 555-0105",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-ansel",
+            "values": {
+              "full_name": "Ansel Rutkowski",
+              "role": "Web developer",
+              "work_email": "ansel@tidewaterprov.net",
+              "mobile": "(207) 555-0106",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "wiki_page_request",
+        "name": "Suggest a wiki page",
+        "describes": "Anyone can ask for a page nobody has written yet.",
+        "audience": "staff",
+        "table": "wiki_page",
+        "fields": [
+          {
+            "fieldKey": "page_title",
+            "ask": "What should the page cover?",
+            "required": true
+          },
+          {
+            "fieldKey": "category",
+            "ask": "What kind of page is it?"
+          },
+          {
+            "fieldKey": "summary",
+            "ask": "In a sentence, what should a reader learn?"
+          }
+        ],
+        "submitLabel": "Send the suggestion",
+        "confirmation": "Thanks. The page owner will pick it up."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_wiki_page",
+        "name": "All pages",
+        "table": "wiki_page",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "category",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "wiki_by_team",
+        "name": "By team",
+        "table": "wiki_page",
+        "kind": "kanban",
+        "groupBy": "team"
+      },
+      {
+        "token": "wiki_review_calendar",
+        "name": "Review calendar",
+        "table": "wiki_page",
+        "kind": "calendar",
+        "dateField": "review_by",
+        "allDay": true
+      },
+      {
+        "token": "all_announcement",
+        "name": "All announcements",
+        "table": "announcement",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "posted_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "announcement_calendar",
+        "name": "Calendar",
+        "table": "announcement",
+        "kind": "calendar",
+        "dateField": "posted_on",
+        "allDay": true
+      },
+      {
+        "token": "all_dept",
+        "name": "Teams",
+        "table": "dept",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Wiki assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "wiki_page",
+          "describes": "Every wiki page, its owner and review date."
+        },
+        {
+          "name": "related_tables",
+          "table": "team",
+          "describes": "The teams that own the pages."
+        }
+      ],
+      "question": {
+        "ask": "How many wiki pages are past their review date?",
+        "whyItMatters": "People and culture chases owners every Friday.",
+        "expect": {
+          "table": "wiki_page",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "verification": "Expired"
+          },
+          "answer": 3,
+          "unit": "pages"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the wiki by team.",
+        "action": {
+          "kind": "open",
+          "surface": "wiki_by_team"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "wiki_by_team",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the review calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "wiki_review_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "wiki_review_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the announcements.",
+        "action": {
+          "kind": "open",
+          "surface": "all_announcement"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_announcement",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "tidewaterprov.net"
+      ],
+      "fictionalStreets": [
+        "Alderkeep Wharf"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "company-home",
+      "parent": null,
+      "title": "Company Home",
+      "icon": {
+        "emoji": "🏠"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything we know, in one place. Find a policy, read the news, meet the teams. If a page looks out of date, tell its owner."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Start here"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-this-wiki-works"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:onboarding-guide"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:review-calendar"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quick links"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Returns policy"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Expense claims"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Carrier cut-off times"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Need help"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Customer care: #care"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "People: #people"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Site problems: #web"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Announcements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "announcement",
+              "view": "all_announcement"
+            },
+            "inline": true,
+            "title": "Announcements",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Latest",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "posted_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Pinned",
+                "icon": "List",
+                "filters": {
+                  "weight": "Pinned"
+                },
+                "id": "view-1"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "posted_on",
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Teams"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dept",
+              "view": "all_dept"
+            },
+            "inline": true,
+            "title": "Teams",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "gallery",
+                "name": "Teams",
+                "icon": "LayoutGrid",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "Directory",
+                "icon": "Table",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wiki"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "wiki_page",
+              "view": "all_wiki_page"
+            },
+            "inline": true,
+            "title": "Wiki pages",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All pages",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "category",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By team",
+                "icon": "SquareKanban",
+                "groupField": "team",
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Needs review",
+                "icon": "List",
+                "filters": {
+                  "verification": "Expired"
+                },
+                "id": "view-2"
+              },
+              {
+                "layout": "gallery",
+                "name": "By category",
+                "icon": "LayoutGrid",
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "how-this-wiki-works",
+      "parent": "company-home",
+      "title": "How this wiki works",
+      "icon": {
+        "emoji": "📖"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The wiki is only useful if people trust it. Three habits keep it honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every page has an owner"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The owner answers questions about it and reviews it twice a year."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every page has a review date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the date passes, the page shows as Expired until the owner reads it again and moves the date forward."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Write for the new person"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Assume the reader started this week. Say what a thing is before saying how to do it."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Choosing a category"
+            }
+          ],
+          "children": [
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Policy",
+                  "bold": true
+                },
+                {
+                  "text": " — a rule people must follow."
+                }
+              ]
+            },
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "How-to",
+                  "bold": true
+                },
+                {
+                  "text": " — steps for a task."
+                }
+              ]
+            },
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Reference",
+                  "bold": true
+                },
+                {
+                  "text": " — facts to look up."
+                }
+              ]
+            },
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Onboarding",
+                  "bold": true
+                },
+                {
+                  "text": " — for new hires."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "onboarding-guide",
+      "parent": "company-home",
+      "title": "Onboarding guide",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Share this page with every new hire on their first morning."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Compass"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Laptop, accounts and password manager set up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Meet your manager and your team lead"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the returns and time-off policies"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shadow a customer care shift for an hour"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Walk the warehouse floor with the manager"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Finish your first small project"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Book a check-in with People and culture"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pages every new hire reads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "wiki_page",
+              "view": "all_wiki_page"
+            },
+            "inline": true,
+            "title": "Wiki pages",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Onboarding",
+                "icon": "List",
+                "filters": {
+                  "category": "Onboarding"
+                },
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Policies",
+                "icon": "List",
+                "filters": {
+                  "category": "Policy"
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "review-calendar",
+      "parent": "company-home",
+      "title": "Review calendar",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pages come due for review on these dates. Owners: open your pages and confirm they are still true."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "wiki_page",
+              "view": "all_wiki_page"
+            },
+            "inline": true,
+            "title": "Wiki pages",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "review_by",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "By due date",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "review_by",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-1"
+              },
+              {
+                "layout": "chart",
+                "name": "Verified or expired",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "verification",
+                  "op": "count",
+                  "centerValue": true
+                },
+                "id": "view-2"
+              },
+              {
+                "layout": "chart",
+                "name": "Pages by team",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "team",
+                  "op": "count"
+                },
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "team-directory",
+      "parent": "company-home",
+      "title": "People directory",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "People",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

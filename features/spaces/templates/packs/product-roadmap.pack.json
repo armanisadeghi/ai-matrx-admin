@@ -1,0 +1,1912 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0102",
+  "version": 1,
+  "title": "Product Roadmap",
+  "description": "Now, next, later roadmap with timeline, themes, releases and a status dashboard.",
+  "forWho": "Product teams planning a quarter or two ahead",
+  "icon": {
+    "emoji": "🗺️"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "planning",
+  "tags": [
+    "roadmap",
+    "product",
+    "releases",
+    "planning"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-product-roadmap",
+    "catalogueId": "SP0102",
+    "useCase": "Orla Fitzgerald-Shah leads product at a small invoicing software company and uses this to show what is being built, what is next and what was dropped, with owners and dates.",
+    "industry": "cross_industry",
+    "vertical": "Software product",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Kestrel Ledger",
+      "describes": "Invoicing and bookkeeping software for small service businesses.",
+      "address": {
+        "line1": "2150 Larkmoor Street",
+        "city": "San Francisco",
+        "region": "CA",
+        "postalCode": "94110",
+        "country": "US"
+      },
+      "phone": "(415) 555-0110",
+      "website": "kestrelledger.net",
+      "email": "hello@kestrelledger.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-product-roadmap",
+    "tables": [
+      {
+        "token": "theme",
+        "name": "Themes",
+        "labelSingular": "Theme",
+        "labelPlural": "Themes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "compass",
+        "titleField": "theme_name",
+        "describes": "The few big bets the roadmap serves, and how many items of each have shipped.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "theme_name",
+            "label": "Theme",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "why",
+            "label": "Why it matters",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "items",
+            "label": "Roadmap items",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "roadmap_item",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "item_count",
+            "label": "Items",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count"
+          },
+          {
+            "key": "shipped_count",
+            "label": "Shipped",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count",
+            "filter": {
+              "status": "Shipped"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "th-0",
+            "values": {
+              "theme_name": "Get paid faster",
+              "why": "Shorten the days between sending an invoice and receiving money.",
+              "items": [
+                "ri-01",
+                "ri-02",
+                "ri-03",
+                "ri-04"
+              ]
+            }
+          },
+          {
+            "key": "th-1",
+            "values": {
+              "theme_name": "Fewer clicks to the books",
+              "why": "Make bookkeeping something owners finish in minutes.",
+              "items": [
+                "ri-05",
+                "ri-06",
+                "ri-07",
+                "ri-12"
+              ]
+            }
+          },
+          {
+            "key": "th-2",
+            "values": {
+              "theme_name": "Work with the tools people already use",
+              "why": "Connect banks, card readers and accountants.",
+              "items": [
+                "ri-08",
+                "ri-09",
+                "ri-11",
+                "ri-13"
+              ]
+            }
+          },
+          {
+            "key": "th-3",
+            "values": {
+              "theme_name": "Trust and reliability",
+              "why": "Make every number right and every page fast.",
+              "items": [
+                "ri-10",
+                "ri-14"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "items": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "roadmap_item",
+        "name": "Roadmap items",
+        "labelSingular": "Roadmap item",
+        "labelPlural": "Roadmap items",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map",
+        "titleField": "item_name",
+        "describes": "Every planned, active and shipped item, with a horizon, a team and an owner.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Initiative",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Planned",
+              "In progress",
+              "Shipped",
+              "Dropped"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Planned": "blue",
+              "In progress": "amber",
+              "Shipped": "green",
+              "Dropped": "red"
+            },
+            "required": true,
+            "default": "Idea"
+          },
+          {
+            "key": "horizon",
+            "label": "Horizon",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Now",
+              "Next",
+              "Later"
+            ],
+            "choiceColors": {
+              "Now": "green",
+              "Next": "blue",
+              "Later": "slate"
+            }
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Product",
+              "Engineering",
+              "Design",
+              "Growth"
+            ],
+            "choiceColors": {
+              "Product": "violet",
+              "Engineering": "blue",
+              "Design": "pink",
+              "Growth": "orange"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "impact",
+            "label": "Impact",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "effort",
+            "label": "Effort",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "S",
+              "M",
+              "L"
+            ],
+            "choiceColors": {
+              "S": "green",
+              "M": "amber",
+              "L": "red"
+            }
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "target_on",
+            "label": "Target",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "customer_visible",
+            "label": "Customer-facing",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ri-01",
+            "values": {
+              "item_name": "Automatic payment reminders",
+              "status": "Shipped",
+              "horizon": "Now",
+              "team": "Growth",
+              "owner": "tm-priyanka",
+              "impact": "High",
+              "effort": "M",
+              "start_on": "@today-90d",
+              "target_on": "@today-35d",
+              "customer_visible": true,
+              "summary": "Polite reminders before and after an invoice is due."
+            }
+          },
+          {
+            "key": "ri-02",
+            "values": {
+              "item_name": "Pay-by-link on every invoice",
+              "status": "Shipped",
+              "horizon": "Now",
+              "team": "Engineering",
+              "owner": "tm-mateusz",
+              "impact": "High",
+              "effort": "M",
+              "start_on": "@today-80d",
+              "target_on": "@today-20d",
+              "customer_visible": true,
+              "summary": "Customers pay from the email without logging in."
+            }
+          },
+          {
+            "key": "ri-03",
+            "values": {
+              "item_name": "Recurring invoices",
+              "status": "In progress",
+              "horizon": "Now",
+              "team": "Engineering",
+              "owner": "tm-bashir",
+              "impact": "High",
+              "effort": "L",
+              "start_on": "@today-30d",
+              "target_on": "@today+25d",
+              "customer_visible": true,
+              "summary": "Schedule monthly or weekly invoices that send themselves."
+            }
+          },
+          {
+            "key": "ri-04",
+            "values": {
+              "item_name": "Partial payments and deposits",
+              "status": "In progress",
+              "horizon": "Now",
+              "team": "Engineering",
+              "owner": "tm-mateusz",
+              "impact": "Medium",
+              "effort": "M",
+              "start_on": "@today-12d",
+              "target_on": "@today+30d",
+              "customer_visible": true,
+              "summary": "Take a deposit up front and the balance later."
+            }
+          },
+          {
+            "key": "ri-05",
+            "values": {
+              "item_name": "Receipt photo capture",
+              "status": "In progress",
+              "horizon": "Now",
+              "team": "Design",
+              "owner": "tm-liv",
+              "impact": "Medium",
+              "effort": "M",
+              "start_on": "@today-18d",
+              "target_on": "@today+20d",
+              "customer_visible": true,
+              "summary": "Snap a receipt and it files itself under the right expense."
+            }
+          },
+          {
+            "key": "ri-06",
+            "values": {
+              "item_name": "Bank feed matching rules",
+              "status": "Planned",
+              "horizon": "Next",
+              "team": "Engineering",
+              "owner": "tm-bashir",
+              "impact": "High",
+              "effort": "L",
+              "start_on": "@today+10d",
+              "target_on": "@today+70d",
+              "customer_visible": false,
+              "summary": "Teach the app how you categorize repeat transactions."
+            }
+          },
+          {
+            "key": "ri-07",
+            "values": {
+              "item_name": "One-tap month-end close",
+              "status": "Planned",
+              "horizon": "Next",
+              "team": "Product",
+              "owner": "tm-orla",
+              "impact": "High",
+              "effort": "L",
+              "start_on": "@today+20d",
+              "target_on": "@today+80d",
+              "customer_visible": true,
+              "summary": "A checklist that walks an owner through closing the month."
+            }
+          },
+          {
+            "key": "ri-08",
+            "values": {
+              "item_name": "Accountant invite and read access",
+              "status": "Planned",
+              "horizon": "Next",
+              "team": "Engineering",
+              "owner": "tm-mateusz",
+              "impact": "Medium",
+              "effort": "S",
+              "start_on": "@today+12d",
+              "target_on": "@today+35d",
+              "customer_visible": true,
+              "summary": "Give an accountant a seat without sharing a password."
+            }
+          },
+          {
+            "key": "ri-09",
+            "values": {
+              "item_name": "Card reader sync",
+              "status": "Planned",
+              "horizon": "Next",
+              "team": "Engineering",
+              "owner": "tm-bashir",
+              "impact": "Medium",
+              "effort": "M",
+              "start_on": "@today+30d",
+              "target_on": "@today+75d",
+              "customer_visible": true,
+              "summary": "Bring in-person card sales into the books each night."
+            }
+          },
+          {
+            "key": "ri-10",
+            "values": {
+              "item_name": "Faster reports on large accounts",
+              "status": "Planned",
+              "horizon": "Next",
+              "team": "Engineering",
+              "owner": "tm-mateusz",
+              "impact": "Medium",
+              "effort": "M",
+              "start_on": "@today+15d",
+              "target_on": "@today+50d",
+              "customer_visible": false,
+              "summary": "Cut report load time for accounts with years of history."
+            }
+          },
+          {
+            "key": "ri-11",
+            "values": {
+              "item_name": "Multi-currency invoicing",
+              "status": "Idea",
+              "horizon": "Later",
+              "team": "Product",
+              "owner": "tm-orla",
+              "impact": "Medium",
+              "effort": "L",
+              "start_on": "@today+90d",
+              "target_on": "@today+160d",
+              "customer_visible": true,
+              "summary": "Invoice in the customer’s currency and see the home total."
+            }
+          },
+          {
+            "key": "ri-12",
+            "values": {
+              "item_name": "Mobile app for iOS",
+              "status": "Idea",
+              "horizon": "Later",
+              "team": "Design",
+              "owner": "tm-liv",
+              "impact": "High",
+              "effort": "L",
+              "start_on": "@today+100d",
+              "target_on": "@today+190d",
+              "customer_visible": true,
+              "summary": "Send an invoice and check balances from a phone."
+            }
+          },
+          {
+            "key": "ri-13",
+            "values": {
+              "item_name": "Inventory tracking",
+              "status": "Idea",
+              "horizon": "Later",
+              "team": "Product",
+              "owner": "tm-orla",
+              "impact": "Low",
+              "effort": "L",
+              "start_on": "@today+120d",
+              "target_on": "@today+200d",
+              "customer_visible": false,
+              "summary": "Simple stock counts for shops that sell goods."
+            }
+          },
+          {
+            "key": "ri-14",
+            "values": {
+              "item_name": "Offline invoice drafts",
+              "status": "Dropped",
+              "horizon": "Later",
+              "team": "Engineering",
+              "owner": "tm-bashir",
+              "impact": "Low",
+              "effort": "M",
+              "start_on": "@today+60d",
+              "target_on": "@today+100d",
+              "customer_visible": false,
+              "summary": "Dropped: too few customers lose their connection while invoicing."
+            }
+          }
+        ],
+        "before": [
+          [
+            "start_on",
+            "target_on"
+          ]
+        ],
+        "independentOf": {
+          "owner": "Anyone can own an item."
+        }
+      },
+      {
+        "token": "release",
+        "name": "Releases",
+        "labelSingular": "Release",
+        "labelPlural": "Releases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "release_name",
+        "describes": "The named releases and the roadmap items each one carries.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "release_name",
+            "label": "Release",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Rolling out",
+              "Released"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Rolling out": "amber",
+              "Released": "green"
+            },
+            "required": true,
+            "default": "Planned"
+          },
+          {
+            "key": "release_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "items",
+            "label": "Included items",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "roadmap_item",
+            "relationMax": 20,
+            "multi": true
+          },
+          {
+            "key": "item_count",
+            "label": "Item count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rl-0",
+            "values": {
+              "release_name": "Spring release",
+              "state": "Released",
+              "release_on": "@today-30d",
+              "items": [
+                "ri-01",
+                "ri-02"
+              ]
+            }
+          },
+          {
+            "key": "rl-1",
+            "values": {
+              "release_name": "Summer release",
+              "state": "Rolling out",
+              "release_on": "@today+22d",
+              "items": [
+                "ri-03",
+                "ri-05"
+              ]
+            }
+          },
+          {
+            "key": "rl-2",
+            "values": {
+              "release_name": "Autumn release",
+              "state": "Planned",
+              "release_on": "@today+60d",
+              "items": [
+                "ri-04",
+                "ri-07",
+                "ri-08"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "items": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A theme groups roadmap items.",
+        "fromTable": "theme",
+        "fromField": "items",
+        "toTable": "roadmap_item",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "theme"
+      },
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "roadmap_item",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "roadmap_owned"
+      },
+      {
+        "describes": "A release ships several roadmap items.",
+        "fromTable": "release",
+        "fromField": "items",
+        "toTable": "roadmap_item",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "release"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-orla",
+            "values": {
+              "full_name": "Orla Fitzgerald-Shah",
+              "role": "Head of product",
+              "work_email": "orla@kestrelledger.net",
+              "mobile": "(415) 555-0111",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-bashir",
+            "values": {
+              "full_name": "Bashir Nwosu",
+              "role": "Engineering lead",
+              "work_email": "bashir@kestrelledger.net",
+              "mobile": "(415) 555-0112",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-liv",
+            "values": {
+              "full_name": "Liv Andersson",
+              "role": "Product designer",
+              "work_email": "liv@kestrelledger.net",
+              "mobile": "(415) 555-0113",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-mateusz",
+            "values": {
+              "full_name": "Mateusz Kaczmarek",
+              "role": "Staff engineer",
+              "work_email": "mateusz@kestrelledger.net",
+              "mobile": "(415) 555-0114",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-priyanka",
+            "values": {
+              "full_name": "Priyanka Venkataraman",
+              "role": "Growth lead",
+              "work_email": "priyanka@kestrelledger.net",
+              "mobile": "(415) 555-0115",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-gideon",
+            "values": {
+              "full_name": "Gideon Abara",
+              "role": "Support lead",
+              "work_email": "gideon@kestrelledger.net",
+              "mobile": "(415) 555-0116",
+              "start_date": "@today-18m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "idea_submission",
+        "name": "Suggest a roadmap idea",
+        "describes": "How anyone in the company proposes a new item.",
+        "audience": "staff",
+        "table": "roadmap_item",
+        "fields": [
+          {
+            "fieldKey": "item_name",
+            "ask": "What should we build?",
+            "required": true
+          },
+          {
+            "fieldKey": "summary",
+            "ask": "What problem does it solve, in a sentence?"
+          },
+          {
+            "fieldKey": "team",
+            "ask": "Which team would build it?"
+          },
+          {
+            "fieldKey": "impact",
+            "ask": "How big would the effect be?"
+          }
+        ],
+        "submitLabel": "Add to the ideas",
+        "confirmation": "Thanks. It is on the board as an Idea."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_roadmap_item",
+        "name": "All items",
+        "table": "roadmap_item",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "start_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "roadmap_timeline",
+        "name": "Timeline",
+        "table": "roadmap_item",
+        "kind": "timeline",
+        "startField": "start_on",
+        "endField": "target_on"
+      },
+      {
+        "token": "roadmap_status",
+        "name": "By status",
+        "table": "roadmap_item",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "roadmap_horizon",
+        "name": "Now, next, later",
+        "table": "roadmap_item",
+        "kind": "kanban",
+        "groupBy": "horizon"
+      },
+      {
+        "token": "roadmap_calendar",
+        "name": "Target dates",
+        "table": "roadmap_item",
+        "kind": "calendar",
+        "dateField": "target_on",
+        "allDay": true
+      },
+      {
+        "token": "all_theme",
+        "name": "All themes",
+        "table": "theme",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_release",
+        "name": "All releases",
+        "table": "release",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "release_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "release_calendar",
+        "name": "Calendar",
+        "table": "release",
+        "kind": "calendar",
+        "dateField": "release_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Roadmap assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "roadmap_item",
+          "describes": "Every roadmap item, its status, team, owner and dates."
+        },
+        {
+          "name": "related_tables",
+          "table": "theme",
+          "describes": "The themes the items serve."
+        }
+      ],
+      "question": {
+        "ask": "How many roadmap items are in progress?",
+        "whyItMatters": "Orla checks this before every planning meeting.",
+        "expect": {
+          "table": "roadmap_item",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "In progress"
+          },
+          "answer": 3,
+          "unit": "items"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the roadmap timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "roadmap_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "roadmap_timeline",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open now, next, later.",
+        "action": {
+          "kind": "open",
+          "surface": "roadmap_horizon"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "roadmap_horizon",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the release calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "release_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "release_calendar",
+          "minItems": 2
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "kestrelledger.net"
+      ],
+      "fictionalStreets": [
+        "Larkmoor Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "product-roadmap",
+      "parent": null,
+      "title": "Product Roadmap",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One page for what we are building, why, and when. Read it by horizon for the big picture or by timeline for dates. Owners keep their own items current."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:roadmap-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-read-this"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:release-plan"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:item-one-pager"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Now, next, later"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "roadmap_item",
+              "view": "all_roadmap_item"
+            },
+            "inline": true,
+            "title": "Roadmap",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "Now, next, later",
+                "icon": "SquareKanban",
+                "groupField": "horizon",
+                "id": "view-0"
+              },
+              {
+                "layout": "timeline",
+                "name": "Timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on",
+                "id": "view-1"
+              },
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-2"
+              },
+              {
+                "layout": "grid",
+                "name": "All items",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "start_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-3"
+              },
+              {
+                "layout": "gallery",
+                "name": "Shipped",
+                "icon": "LayoutGrid",
+                "filters": {
+                  "status": "Shipped"
+                },
+                "id": "view-4"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Themes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "theme",
+              "view": "all_theme"
+            },
+            "inline": true,
+            "title": "Themes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "gallery",
+                "name": "Themes",
+                "icon": "LayoutGrid",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "Progress",
+                "icon": "Table",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Releases",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "release_on",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "roadmap-dashboard",
+      "parent": "product-roadmap",
+      "title": "Roadmap dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "roadmap_item",
+                      "view": "all_roadmap_item"
+                    },
+                    "inline": true,
+                    "title": "Items",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Items by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "roadmap_item",
+                      "view": "all_roadmap_item"
+                    },
+                    "inline": true,
+                    "title": "Items",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Items by team",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "team",
+                          "op": "count"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "roadmap_item",
+                      "view": "all_roadmap_item"
+                    },
+                    "inline": true,
+                    "title": "Items",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Items by impact",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "impact",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "High impact, not yet shipped"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "roadmap_item",
+              "view": "all_roadmap_item"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "High impact",
+                "icon": "List",
+                "filters": {
+                  "impact": "High",
+                  "status": [
+                    "Planned",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "target_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customer-facing and due soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "roadmap_item",
+              "view": "all_roadmap_item"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Customer-facing",
+                "icon": "Table",
+                "filters": {
+                  "customer_visible": true,
+                  "status": [
+                    "Planned",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "target_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ideas waiting for a decision"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "roadmap_item",
+              "view": "all_roadmap_item"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Ideas",
+                "icon": "List",
+                "filters": {
+                  "status": "Idea"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "how-to-read-this",
+      "parent": "product-roadmap",
+      "title": "How to read this roadmap",
+      "icon": {
+        "emoji": "📘"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The roadmap is a plan, not a promise. Dates move; the order of themes moves less often."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Horizons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Now",
+              "bold": true
+            },
+            {
+              "text": " — being built, dates are firm to within two weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Next",
+              "bold": true
+            },
+            {
+              "text": " — scoped and ready to start; dates are a quarter-sized estimate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Later",
+              "bold": true
+            },
+            {
+              "text": " — worth keeping in view; no date should be quoted to a customer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Impact and effort"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Effort"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "S"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "About a week for one person"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "M"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two to four weeks for one or two people"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "L"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "More than a month or a cross-team effort"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "When an item changes status"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Move the card, update the target date, and write one line in the summary saying why. Dropped items stay on the board so nobody proposes them twice."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "What counts as customer-facing"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Anything a customer would notice or that we would put in release notes."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "release-plan",
+      "parent": "product-roadmap",
+      "title": "Release plan",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each release bundles roadmap items. Add an item to a release from the release’s page."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Releases",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "release_on",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Release checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every included item has a summary customers can read"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Support has the new help article"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Growth has the announcement email drafted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The rollback steps are written down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "item-one-pager",
+      "parent": "product-roadmap",
+      "title": "Item one-pager outline",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Copy this outline into any roadmap item before it moves from Idea to Planned."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Problem"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who has it, how often, and what they do today."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Outcome"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What will be true for the customer when this ships."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scope"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "In scope"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Out of scope"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open questions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What do we still need to learn?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Success measure"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One number we can check a month after launch."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "product-roadmap",
+      "title": "Team",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Team",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}
