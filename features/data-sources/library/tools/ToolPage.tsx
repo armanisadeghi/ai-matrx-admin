@@ -30,7 +30,7 @@ import { ToolResult } from "./ToolResult";
 import { KeepInCrm, AddressStatus } from "./people/KeepInCrm";
 import { checkedPhone, emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
 import { FollowUpCard, NextSteps, type FollowUp } from "./people/ToolFollowUps";
-import { jobFamilyOf, reliabilityFacts, speedText } from "./toolFacts";
+import { jobFamilyOf, refillFor, reliabilityFacts, speedText } from "./toolFacts";
 import { useToolCall } from "./useToolCall";
 import { useToolRunForm } from "./useToolRunForm";
 
@@ -173,10 +173,10 @@ export function ToolPage({
   // A stored call page refills the form with what that call was asked (once, from its own inputs).
   const refilled = useRef<string | null>(null);
   useEffect(() => {
-    const id = callId && view?.call_id === callId ? callId : null;
-    if (!id || refilled.current === id || !view?.inputs) return;
-    refilled.current = id;
-    setValues(view.inputs);
+    const inputs = refillFor(callId, view, refilled.current);
+    if (!callId || !inputs) return;
+    refilled.current = callId;
+    setValues(inputs);
   }, [callId, view]);
 
   const stop = call.stop;

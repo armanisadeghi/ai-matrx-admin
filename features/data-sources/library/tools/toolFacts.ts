@@ -98,3 +98,17 @@ export function verdictLine(verdict: "strong" | "closest" | "none" | null, query
   if (verdict === "closest") return "Nothing matches exactly. These are closest.";
   return null;
 }
+
+/**
+ * What a stored call page puts back in the form: the inputs of the call named in the address, once.
+ * Null when there is nothing to refill (no stored call, the shown call is another one, the server
+ * sent no inputs, or this call was already refilled).
+ */
+export function refillFor(
+  callId: string | null,
+  view: { call_id: string; inputs?: Record<string, unknown> | null } | null,
+  alreadyRefilled: string | null,
+): Record<string, unknown> | null {
+  if (!callId || !view || view.call_id !== callId || alreadyRefilled === callId) return null;
+  return view.inputs ?? null;
+}
