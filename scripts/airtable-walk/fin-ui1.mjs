@@ -1,0 +1,12 @@
+import { start, open, out } from "./lib.mjs";
+const J = "e740f9c2-4f45-4550-a66f-d77f5da413f7", C = "cea66e26-2d9d-4d94-bcf8-d44fe279d754";
+const { browser, page, who, errs } = await start(false);
+out("who", who);
+await open(page, C);
+await page.screenshot({ path: "/tmp/claude-501/w/shots/cust.png" });
+out("CUST text:", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(0, 1500));
+await open(page, J);
+await page.screenshot({ path: "/tmp/claude-501/w/shots/jobs.png" });
+out("JOBS text:", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(0, 2500));
+out("errs", JSON.stringify(errs.slice(0, 5)));
+await browser.close();

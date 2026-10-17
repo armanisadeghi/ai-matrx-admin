@@ -15,6 +15,11 @@
  */
 import * as KindKit from "@ai-matrx/content-ir/kind-kit";
 import * as Recharts from "recharts";
+// Stored code may name ANY lucide icon and compiles synchronously, so this scope
+// supplies the full set up front — exactly what @ai-matrx/code-runtime did itself
+// before it made lucide lazy (2026-10-16). Moving this to an awaited prepare step
+// is the follow-up that takes the set off these paths.
+import * as Lucide from "lucide-react";
 import { provideScopeModules } from "@ai-matrx/code-runtime/scope";
 import "./kind-kit-host";
 
@@ -73,5 +78,6 @@ export function provideStoredComponentScopeModules(): void {
     // input, sheet, popover and skeleton have no app export of that name: the
     // package's design-system default serves them (as the old registry did).
     recharts: () => Recharts,
+    "lucide-react": () => Lucide,
   });
 }

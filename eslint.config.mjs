@@ -665,7 +665,13 @@ const matrxLintPlugin = {
           ImportDeclaration(node) {
             if (node.source.value !== "lucide-react") return;
             for (const spec of node.specifiers) {
-              if (spec.type === "ImportNamespaceSpecifier" && node.importKind !== "type") {
+              // lib/code-runtime/stored-scope.ts is the one sanctioned holder: stored
+              // components compile synchronously against any icon name.
+              if (
+                spec.type === "ImportNamespaceSpecifier" &&
+                node.importKind !== "type" &&
+                !context.filename.endsWith("lib/code-runtime/stored-scope.ts")
+              ) {
                 context.report({ node: spec, messageId: "wholeSet" });
                 continue;
               }

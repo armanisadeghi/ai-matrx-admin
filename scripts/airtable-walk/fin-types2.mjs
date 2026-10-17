@@ -1,0 +1,21 @@
+import { store } from "./store.mjs";
+const { client } = await store();
+const [cust, jobs, ...rest] = process.argv.slice(2);
+const cids = JSON.parse(process.env.CIDS), jids = JSON.parse(process.env.JIDS);
+const D = async (t, spec) => { const r = await client.fieldDeclare({ table_id: t, spec }); console.log(spec.key, r.ok ? "ok" : "FAIL " + r.error.message.slice(0, 220)); return r.ok; };
+const link = { [cids[0]]: [jids[0], jids[3]], [cids[1]]: [jids[1]], [cids[2]]: [jids[2], jids[4]] };
+for (const [c, js] of Object.entries(link)) { const r = await client.recordUpdate({ record_id: c, patch: { jobs_rel: js } }); console.log("link", r.ok ? "ok" : JSON.stringify(r.error).slice(0,200)); }
+await D(cust, { key: "total", label: "Lifetime spend", type: "rollup", via: "jobs_rel", of: "price", agg: "sum" });
+await D(cust, { key: "njobs", label: "Job count", type: "count", via: "jobs_rel" });
+await D(cust, { key: "made_by", label: "Created by", type: "created_by" });
+await D(cust, { key: "edited_by", label: "Last modified by", type: "modified_by" });
+await D(jobs, { key: "frame", label: "Frame barcode", type: "barcode", symbology: "code128" });
+await D(jobs, { key: "pickup", label: "Pickup time", type: "time_of_day" });
+await D(jobs, { key: "spec", label: "Spec (JSON)", type: "json" });
+await D(jobs, { key: "sig", label: "Customer signature", type: "signature" });
+await D(jobs, { key: "where", label: "Pickup address", type: "address" });
+await D(jobs, { key: "stage", label: "Stage", type: "status", options: ["Intake", "Wrenching", "Ready"], status_groups: { Intake: "todo", Wrenching: "in_progress", Ready: "done" } });
+await D(jobs, { key: "pct", label: "Deposit %", type: "percent" });
+await D(jobs, { key: "sku", label: "Work order #", type: "text", required: true, unique: true });
+await D(jobs, { key: "pri", label: "Priority", type: "select", options: ["Low", "High"], default: "Low" });
+await D(jobs, { key: "ref", label: "Linked record", type: "entity_reference", allowed_types: ["note"] });
