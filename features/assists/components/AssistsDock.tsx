@@ -69,7 +69,8 @@ import {
   selectPendingAssists,
 } from "../redux/assistsSlice";
 import { AssistChip } from "./AssistChip";
-import { useDockDrag } from "./useDockDrag";
+import { useDock } from "@ai-matrx/summon/dock";
+import { DEFAULT_DOCK_OFFSET, DOCK_MIN_VISIBLE } from "../dock-position";
 import { useAssistClearance } from "../assistClearance";
 import { useAssistsPrefs } from "../hooks/useAssistsPrefs";
 import { ASSISTS_MANAGER_HREF } from "../constants";
@@ -107,11 +108,33 @@ export default function AssistsDock() {
   // Derived, not an effect: a quiet dock must never sit open over the page it
   // was just told to get out of.
   const open = openRequested && !quiet;
-  const { offset, dragging, onPointerDown, suppressClickRef } = useDockDrag(
-    dockPosition,
-    setDockPosition,
-    !isMobile,
-  );
+  // The one dock primitive (@ai-matrx/summon/dock): painted per frame while it moves, committed once
+  // on release into the per-user preference, re-clamped every render with the grab area reachable,
+  // a drag never fires the click it ends on. Touch is excluded (it fights page scroll) and a phone
+  // gets the Drawer below, never a draggable pill.
+  // Destructured: the React compiler treats an object carrying a `ref` as a ref.
+  const {
+    ref: dockRef,
+    offset: dockOffset,
+    dragging,
+    zIndex: dockZ,
+    handleProps: { onPointerDown },
+  } = useDock({
+    id: "assists-dock",
+    corner: "bottom-right",
+    position: dockPosition ? { x: dockPosition.right, y: dockPosition.bottom } : null,
+    defaultPosition: { x: DEFAULT_DOCK_OFFSET.right, y: DEFAULT_DOCK_OFFSET.bottom },
+    onPositionChange: (next) =>
+      setDockPosition(next ? { right: next.x, bottom: next.y } : null),
+    draggable: !isMobile,
+    touch: false,
+    clamp: { margin: 0, minVisible: DOCK_MIN_VISIBLE },
+    zIndex: 40,
+  });
+  const offset = {
+    right: dockOffset?.x ?? DEFAULT_DOCK_OFFSET.right,
+    bottom: dockOffset?.y ?? DEFAULT_DOCK_OFFSET.bottom,
+  };
 
   // Assists are informational. The shell's ONE count read (`lib/boot/shellCounts`, after the page
   // settles) says whether any exist; the list loads only then. A later count read (window focus,
@@ -198,6 +221,8 @@ export default function AssistsDock() {
     // + the auto-dock lift: off any control it would otherwise cover (../assistClearance.ts).
     bottom: `var(--assist-dock-slot-bottom, calc(${offset.bottom}px + var(--page-bottom-dock-h, 0px) + var(--assist-dock-lift, 0px)))`,
     top: "var(--assist-dock-slot-top, auto)",
+    // Raised into the window manager's z lane once pressed; z-40 (the class) until then.
+    zIndex: dockZ,
   };
 
   // Quiet means invisible (Arman, 2026-10-02). The way back on lives on the
@@ -281,6 +306,7 @@ export default function AssistsDock() {
 
   return (
     <div
+      ref={dockRef}
       data-matrx-notice-surface=""
       className={cn(
         // pointer-events-none on the CONTAINER: it is a layout box larger than
@@ -343,10 +369,7 @@ export default function AssistsDock() {
         <button
           type="button"
           onPointerDown={onPointerDown}
-          onClick={() => {
-            if (suppressClickRef.current) return;
-            setOpen((v) => !v);
-          }}
+          onClick={() => setOpen((v) => !v)}
           className="flex touch-none items-center gap-1.5 py-1.5 pl-1 pr-1 text-xs font-medium text-foreground"
           aria-label={open ? "Collapse assists" : "Show assists"}
         >

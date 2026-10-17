@@ -1,5 +1,5 @@
 {
-  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs). Ratchet only down (--update). 2026-10-17 before the fix: /notes 323466, /dashboard 321775, /pricing 294513.",
+  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs, needs a `build-lab/run.sh <label> --maps` build). Ratchet only down (--update). 2026-10-17: before the fix /notes 314879, /dashboard 314879, /pricing 287617; after 147337 / 144429 / 115998.",
   "forbidden": [
     "^summon/window/(WindowPanel|WindowSidebar|LayoutIcon|useWindowPanel|icons)",
     "^summon/window/(chrome|mobile|utils|tray/TrayChip)",
