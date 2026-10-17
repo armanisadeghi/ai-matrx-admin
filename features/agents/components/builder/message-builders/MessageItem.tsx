@@ -87,6 +87,7 @@ import {
   usePromptInsertSources,
 } from "@/features/agents/components/builder/message-builders/PromptAssist";
 import { MessageFlagToggles } from "@ai-matrx/chat/agents/message-flags/MessageFlagToggles";
+import { PrefillCompatNote } from "@/features/agents/message-flags/PrefillCompatNote";
 import { useMessageFlags } from "@/features/agents/message-flags/useMessageFlags";
 
 /** Extract text from a TextBlock. */
@@ -832,6 +833,14 @@ export function MessageItem({
           />
         </div>
       </div>
+
+      <PrefillCompatNote
+        prefillOn={messageFlags.prefill.on}
+        verdict={messageFlags.prefill.verdict}
+        onPickModel={messageFlags.prefill.pickModel}
+        onMoveIntoInstructions={messageFlags.prefill.moveIntoInstructions}
+        onRemovePrefill={messageFlags.prefill.remove}
+      />
 
       {/* Content */}
       <div className="p-4" ref={contentRef}>
