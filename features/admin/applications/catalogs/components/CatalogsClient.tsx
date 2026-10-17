@@ -229,6 +229,10 @@ export function CatalogsClient({
     setLinkDialogOpen(true);
   };
 
+  const handleLinkPick = (prefill: EntryPrefill) => {
+    setView({ mode: "new", kind: prefill.kind, prefill });
+  };
+
   // Kinds shown on the dashboard: the registry order, plus any unknown kinds
   // that exist in the data (forward compat — never hide real rows).
   const knownSlugs = new Set(CATALOG_KINDS.map((k) => k.slug));
@@ -423,6 +427,8 @@ export function CatalogsClient({
             key={`link-${linkDialogKind ?? "auto"}`}
             open={linkDialogOpen}
             onOpenChange={setLinkDialogOpen}
+            defaultKind={linkDialogKind}
+            onPick={handleLinkPick}
           />
         </div>
       </SurfaceRuntimeProvider>
@@ -455,6 +461,8 @@ export function CatalogsClient({
             key={`link-${linkDialogKind ?? "auto"}`}
             open={linkDialogOpen}
             onOpenChange={setLinkDialogOpen}
+            defaultKind={linkDialogKind}
+            onPick={handleLinkPick}
           />
         </div>
       </SurfaceRuntimeProvider>
@@ -595,6 +603,8 @@ export function CatalogsClient({
           key={`link-${linkDialogKind ?? "auto"}`}
           open={linkDialogOpen}
           onOpenChange={setLinkDialogOpen}
+          defaultKind={linkDialogKind}
+          onPick={handleLinkPick}
         />
       </div>
     </SurfaceRuntimeProvider>

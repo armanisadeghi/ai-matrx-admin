@@ -63,7 +63,7 @@ describe("Catalogs Add from link", () => {
     document.body.appendChild(host);
     const root = createRoot(host);
     await act(async () => {
-      root.render(<AddFromLinkDialog open onOpenChange={() => {}} />);
+      root.render(<AddFromLinkDialog open onOpenChange={() => {}} onPick={() => {}} />);
     });
     const dialog = document.body;
     expect(dialog.querySelector('[data-testid="model-discovery"]')).not.toBeNull();
@@ -90,6 +90,39 @@ describe("Catalogs Add from link", () => {
     expect(dialog.querySelectorAll('[data-recommended="true"]')).toHaveLength(1);
     expect(Array.from(dialog.querySelectorAll("button")).filter((b) => b.textContent === "Add this version")).toHaveLength(2);
     expect(dialog.textContent).not.toContain("g-Q4_K_M.gguf");
+    await act(async () => root.unmount());
+  });
+
+  async function mount(el: React.ReactElement) {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const root = createRoot(host);
+    await act(async () => root.render(el));
+    return root;
+  }
+
+  it("no dropped capability: a Civitai link goes to the older reader, said on screen", async () => {
+    posted.length = 0;
+    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} onPick={() => {}} />);
+    const tab = Array.from(document.body.querySelectorAll("button,[role=tab]")).find((b) => b.textContent === "Paste a link") as HTMLElement;
+    await act(async () => tab.click());
+    const field = document.body.querySelector('input[aria-label="Model link"]') as HTMLInputElement;
+    await act(async () => setInput(field, "https://civitai.com/models/12345"));
+    const find = Array.from(document.body.querySelectorAll("button")).find((b) => b.textContent === "Find versions")!;
+    await act(async () => {
+      find.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    expect(document.body.querySelector('[data-testid="older-reader-notice"]')?.textContent).toBe("Using the older link reader for Civitai links");
+    expect(posted.some((p) => p.path === "/api/catalog-resolver/resolve")).toBe(true);
+    expect(posted.some((p) => p.path === "/admin/ai-catalog/discovery/resolve")).toBe(false);
+    await act(async () => root.unmount());
+  });
+
+  it("a kind the engine does not cover (LoRA) opens the older reader, said on screen", async () => {
+    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} defaultKind="lora" onPick={() => {}} />);
+    expect(document.body.querySelector('[data-testid="older-reader-notice"]')?.textContent).toMatch(/^Using the older link reader for .+ links$/);
+    expect(document.body.textContent).toContain("Kind hint");
     await act(async () => root.unmount());
   });
 });
