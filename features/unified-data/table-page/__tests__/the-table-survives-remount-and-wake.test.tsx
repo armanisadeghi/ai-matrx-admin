@@ -84,6 +84,11 @@ jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => {
     useAppRecordsConfig: (organizationId: string | null) => ({ dataSource: seam(), actor: null, organizationId }),
   };
 });
+// The data seam moved to its own light module (first-load campaign): the page reads it from here.
+jest.mock("@/features/data-tables/records-ui-host/recordsDataSource", () => ({
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  useRecordsDataSource: () => require("@ai-matrx/records-ui").recordsDataSource(),
+}));
 jest.mock("@/features/data-tables/records-ui-host/mergedGridKnob", () => ({ useMergedGridKnob: () => true }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), loading: jest.fn(), success: jest.fn(), info: jest.fn() } }));
 jest.mock("@/features/unified-data/row-change-agent/RowChangeAgentLink", () => ({

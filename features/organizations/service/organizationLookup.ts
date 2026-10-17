@@ -39,11 +39,24 @@ export function organizationLookupVersion(): number {
   return version;
 }
 
-/** Pages / searches the store already holds are answers too: no call for an id they carry. */
+/** Same organization by value (a fresh object carrying the same fields is not news). */
+function sameOrganization(a: OrganizationWithRole | null | undefined, b: OrganizationWithRole): boolean {
+  if (a === b) return true;
+  if (!a) return false;
+  const ak = Object.keys(a) as (keyof OrganizationWithRole)[];
+  if (ak.length !== Object.keys(b).length) return false;
+  return ak.every((k) => Object.is(a[k], b[k]));
+}
+
+/**
+ * Pages / searches the store already holds are answers too: no call for an id they carry.
+ * Stable against fresh-but-equal arrays and objects: only a real change bumps (a bump re-renders
+ * every subscriber, so bumping on equal data would loop a caller that remembers during render).
+ */
 export function rememberOrganizations(orgs: readonly OrganizationWithRole[]): void {
   let changed = false;
   for (const org of orgs) {
-    if (known.get(org.id) !== org) {
+    if (!sameOrganization(known.get(org.id), org)) {
       known.set(org.id, org);
       changed = true;
     }
