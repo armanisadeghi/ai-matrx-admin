@@ -303,6 +303,12 @@ The frontend never receives a password, seed, or generated code from that path.
 
 ## Change log
 
+- **2026-10-17** — `listProfiles` no longer asks `get_resource_access` for every visible profile on every
+  snapshot load (~250 calls when an admin opened the Computer tab): one's own profile is admin with no
+  call; anyone else's goes through `profileAccess` (one call per profile per minute, shared in flight,
+  failures not kept). `useCloudBrowser` takes `{ followProgress }` (default true) so a surface that
+  never shows written progress does not poll `action_event`.
+
 - **2026-10-17** — `mintStreamTicket(run, "view")` treats 409 as expected (no Error Inspector
   incident) and `isViewStreamUnavailable` names that fallback; `isStreamGone` accepts the typed
   `stream_superseded` / `stream_ended` codes; `useCloudBrowserSurfaceKind` (chat slot) names the
