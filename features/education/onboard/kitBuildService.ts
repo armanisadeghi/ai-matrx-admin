@@ -6,7 +6,7 @@
 // server, but the merge of every section and the SAVE of the deck, quiz,
 // notes and audio happened here — so a locked phone or a closed tab lost or
 // orphaned them. Now the tab starts ONE server run, the system workflow
-// `education_kit_build` (aidream `workflows/education_kit_build_v1.py`), and
+// `education_kit_build` (a platform workflow edited in Workflow Studio, `platform:education_kit_build`), and
 // only watches it: one step per output, each of which reads the kit's
 // Sources, runs the live mandate section by section, merges, saves the rows
 // and links them into the kit — inside the run, with no page open.
@@ -44,7 +44,7 @@ export const KIT_BUILD_SOURCE_FEATURE = "education-ingest";
 export const KIT_BUILD_LABEL = "Study kit outputs";
 
 /**
- * Every output the server build makes (aidream `education_kit_build_v1.TARGETS`
+ * Every output the server build makes (aidream `graph_actions/education/kit_build.py` `KIT_TARGETS`
  * — one step each). The kit picker offers exactly these; it never asks the
  * tab's own generator registry, which no longer builds a kit.
  */

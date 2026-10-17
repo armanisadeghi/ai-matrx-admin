@@ -12,6 +12,10 @@ jest.mock("@/features/content-ir/studio/components/KindInstanceRender", () => ({
 jest.mock("./StructuredValueView", () => ({
   StructuredValueView: () => <div>Generic value</div>,
 }));
+jest.mock("@ai-matrx/rich-content/host", () => ({
+  requestRichContentHost: () => undefined,
+  useRichContentHostLanded: () => true,
+}));
 jest.mock("@ai-matrx/media/react", () => ({ InlineMediaRef: () => null }));
 
 describe("AnswerValueView stored kind text", () => {
@@ -43,5 +47,18 @@ describe("AnswerValueView stored kind text", () => {
         <AnswerValueView value={{ jobs: [] }} kind="buyer_jobs_result" />,
       ),
     ).toContain('data-kind="buyer_jobs_result"');
+  });
+
+  it("waits for the lazy rich-content host before drawing a kind (never the floor view for good)", () => {
+    jest.resetModules();
+    jest.doMock("@ai-matrx/rich-content/host", () => ({
+      requestRichContentHost: () => undefined,
+      useRichContentHostLanded: () => false,
+    }));
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { AnswerValueView: Waiting } = require("./AnswerValueView") as typeof import("./AnswerValueView");
+    const html = renderToStaticMarkup(<Waiting value={{ jobs: [] }} kind="buyer_jobs_result" />);
+    expect(html).toContain("data-answer-waiting-for-host");
+    expect(html).not.toContain("data-kind=");
   });
 });

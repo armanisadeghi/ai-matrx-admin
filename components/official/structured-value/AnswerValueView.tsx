@@ -18,7 +18,9 @@
 // whole answer to `structuredValueWindow` (`useOpenStructuredValueWindow`),
 // which renders through this same view.
 
+import { useEffect } from "react";
 import { KIND_KEY } from "@ai-matrx/content-ir";
+import { requestRichContentHost, useRichContentHostLanded } from "@ai-matrx/rich-content/host";
 import { AnswerTextView } from "@/components/official/structured-value/AnswerTextView";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { KindFixItBar } from "@/features/content-ir/react/fixit/KindFixItBar";
@@ -55,8 +57,18 @@ export function AnswerValueView({
   density,
   emptyText = "The run finished with an empty answer.",
 }: AnswerValueViewProps) {
+  // The kind registry's database tiers are registered by the lazily loaded rich-content host. A kind answer drawn
+  // before it lands would read the compiled floor only and settle on the "no custom view yet" view for good, so
+  // the host is requested here and the answer waits for it (a short skeleton, never the raw view).
+  const hostLanded = useRichContentHostLanded();
+  useEffect(() => {
+    requestRichContentHost();
+  }, []);
   if (value != null && typeof value === "object") {
     const routeKind = kind ?? kindOfValue(value);
+    if (routeKind && !hostLanded) {
+      return <div className="h-24 animate-pulse rounded-lg bg-muted" data-answer-waiting-for-host="" />;
+    }
     return routeKind ? (
       <KindInstanceRender
         kind={routeKind}

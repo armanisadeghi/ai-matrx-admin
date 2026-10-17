@@ -46,8 +46,9 @@ describe("organization list failure contract", () => {
   });
 
   it("lets a failed members read throw instead of swallowing it", () => {
+    // The bounded page read (2026-10-16): a failed `iam.my_organizations_page` throws.
     expect(serviceSource).toContain(
-      "throw new Error(membersResult.error.message)",
+      "if (!answer.ok) throw pgErrorToError(answer.error",
     );
     expect(serviceSource).not.toContain(
       "Silently handle if organizations table doesn't exist yet",
