@@ -17,7 +17,7 @@ import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { planSimpleBox } from "@ai-matrx/chat/mandates/invoke/simple-box";
 import { Chip, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { newToolCallKey, toolPriceText, type ToolCallView } from "@ai-matrx/agents/tools";
+import { newToolCallKey, type ToolCallView } from "@ai-matrx/agents/tools";
 import { formatPoints } from "@ai-matrx/kit/format";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -158,13 +158,15 @@ export function ResearchTab() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5" data-social-research="">
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
-        <Tabs
-          aria-label="What to look up"
-          variant="capsule"
-          value={mode}
-          data={RESEARCH_MODES.map((m) => ({ value: m.id, label: m.label }))}
-          onValueChange={(v) => choose(v as ResearchMode, defaultSourceOf(v as ResearchMode))}
-        />
+        <div className="min-w-0 overflow-x-auto">
+          <Tabs
+            aria-label="What to look up"
+            variant="capsule"
+            value={mode}
+            data={RESEARCH_MODES.map((m) => ({ value: m.id, label: m.label }))}
+            onValueChange={(v) => choose(v as ResearchMode, defaultSourceOf(v as ResearchMode))}
+          />
+        </div>
         {mode === "account" ? <PlatformChips value={sourceId} onChange={(id) => choose("account", id)} /> : null}
         {mode === "ads" ? <AdLibraryChips value={source?.id ?? DEFAULT_AD_SOURCE} onChange={(id) => choose("ads", id)} /> : null}
         {tools.isLoading ? (
@@ -238,7 +240,7 @@ function AdLibraryChips({ value, onChange }: { value: string; onChange: (id: str
   return (
     <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Ad libraries">
       {AD_SOURCES.map((s) => (
-        <Chip key={s.id} asChild label={s.label} pressed={s.id === value} icon={<PlatformMark platform={s.id === "meta" ? "facebook" : s.id === "google" ? "youtube" : s.id} size={14} />}>
+        <Chip key={s.id} asChild label={s.label} pressed={s.id === value} icon={s.id === "google" ? undefined : <PlatformMark platform={s.id === "meta" ? "facebook" : s.id} size={14} />}>
           <button type="button" onClick={() => onChange(s.id)} />
         </Chip>
       ))}
@@ -250,8 +252,7 @@ function PriceLine({ expected, charged, missing }: { expected: number | null; ch
   const parts: string[] = [];
   if (charged != null) parts.push(charged > 0 ? `This look-up cost ${formatPoints(charged)}` : "No charge");
   else {
-    const hint = expected != null ? toolPriceText({ price_hint_points: expected }) : null;
-    if (hint) parts.push(hint);
+    if (expected != null) parts.push(`About ${formatPoints(expected)}`);
   }
   if (missing.length > 0) parts.push(`${missing.join(" and ")} not available yet`);
   if (parts.length === 0) return null;
