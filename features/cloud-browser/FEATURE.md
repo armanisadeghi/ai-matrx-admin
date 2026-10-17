@@ -222,6 +222,17 @@ browser that parks and waits for a human on every expired session is not a cloud
 
 ## Invariants
 
+- **One viewer per run (2026-10-16).** A newer control-stream claim supersedes older ones
+  (aidream `BrowserStreamService.claim`), so every component that opens a control stream
+  first holds the run's seat (`runViewer.ts` / `hooks/useRunViewerSeat.ts`). A second mounted
+  pane stays passive ("Shown in another tab" → Show it here moves the seat). A machine run
+  (`execution_target = 'sandbox'`), or any un-named open by a person who has a Cloud
+  Computer, opens the **Computer** tab, never a Cloud Browser pane
+  (`browserBelongsToComputer`); `cloudBrowserCanvasSourceId` then returns the Computer id.
+- **Screenshot refusals are states.** `requestScreenshot` lists 409 as expected (no Error
+  Inspector row); `useScreenshotSession` backs off 5 s → 60 s after any refused capture and
+  `start` is a no-op while `paused`. Renew loops stop on their first refusal.
+
 - **Before there is a browser, the Live area says what is happening.** Starting →
   `CloudBrowserStarting` (what, elapsed seconds, "up to a minute"). Failed →
   `CloudBrowserStartFailed`: the server's `user_message`, **Try again** ONLY when the
@@ -291,6 +302,10 @@ login is explicitly enabled; automatic TOTP additionally requires its own toggle
 The frontend never receives a password, seed, or generated code from that path.
 
 ## Change log
+
+- **2026-10-16** — One viewer per run (`runViewer.ts`); machine runs route to the Computer
+  tab; `loadSnapshot(…, { target })` / `startRun(…, target)` for the machine's `sandbox`
+  target; screenshot 409s expected + back-off; renew loops stop on refusal; `isStreamGone`.
 
 - **2026-09-18** — Residential egress provenance. `CloudBrowserRun` carries
   `egress` (from `browser.run.metadata.egress`) and `ProgressEvent` carries

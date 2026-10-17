@@ -24,6 +24,7 @@ import { useCloudBrowser } from "@/features/cloud-browser/hooks/useCloudBrowser"
 import { useScreenshotSession } from "@/features/cloud-browser/hooks/useScreenshotSession";
 import { useCloudBrowserTakeover } from "@/features/cloud-browser/hooks/useCloudBrowserTakeover";
 import { useRunViewerSeat } from "@/features/cloud-browser/hooks/useRunViewerSeat";
+import { useCloudBrowserProfileContextSync } from "@/features/cloud-browser/hooks/useCloudBrowserProfileContextSync";
 import {
   browserActionBlockedReason,
   isStreamGone,
@@ -121,6 +122,9 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
 function ComputerScreen({ conversationId }: { conversationId?: string }) {
   // Only a run ON the machine: never adopt or start a cold fleet browser here.
   const cb = useCloudBrowser(undefined, null, "sandbox");
+  // ONE chip: the composer's browser pill already stands for this computer, so
+  // a "Cloud Browser" profile value chip left by an earlier pane is cleared.
+  useCloudBrowserProfileContextSync(conversationId, null);
   const agentId = useAppSelector((s) =>
     conversationId ? selectInstanceAgentId(conversationId)(s) : undefined,
   );
