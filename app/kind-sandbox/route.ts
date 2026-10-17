@@ -51,7 +51,10 @@ function appOrigin(request: NextRequest): string {
     if (!host) return request.nextUrl.origin;
     const proto =
         headers.get("x-forwarded-proto") ??
-        (host.startsWith("localhost") || host.startsWith("127.0.0.1")
+        // `localhost`, `127.0.0.1` and every `<session>.localhost` (each agent session has its own cookie
+        // jar on one — `*.localhost` is loopback by definition): plain http. Saying https for those named the
+        // wrong origin in the CSP, so the frame's own script was blocked and no view ever loaded.
+        (/^(localhost|127\.0\.0\.1|[^:/]+\.localhost)(:\d+)?$/.test(host)
             ? "http"
             : "https");
     return `${proto}://${host}`;
