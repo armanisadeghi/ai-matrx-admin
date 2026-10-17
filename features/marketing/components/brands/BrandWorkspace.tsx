@@ -1006,7 +1006,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               <div className="mt-0.5 flex h-6 min-w-0 items-center overflow-hidden">
                 {current.website_url ? contactFactValue({ kind: "website", value: externalHref(current.website_url) }) : null}
               </div>
-              <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
+              {/* Status, kind and industry, with the setup status at the end of the same line (often empty). */}
+              <div className="mt-2 flex h-7 min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
                 <StatusBadge value={current.status} />
                 {isPersonBrand(current) ? (
                   <>
@@ -1017,10 +1018,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 {current.industry ? (
                   <Badge variant="outline" className="min-w-0 truncate">{current.industry}</Badge>
                 ) : null}
-              </div>
-              {/* Setup status owns a fixed-height line from first paint, so it never reflows the badges. */}
-              <div className="mt-1.5 flex h-7 min-w-0 items-center overflow-hidden">
-                <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
+                <div className="flex shrink-0 items-center">
+                  <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
+                </div>
               </div>
               {/* One non-wrapping row of accounts; what does not fit is a +N that opens the Social tab. */}
               <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">

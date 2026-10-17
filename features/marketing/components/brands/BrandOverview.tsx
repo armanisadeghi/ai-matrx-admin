@@ -8,7 +8,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, AtSign, Globe2, ImageOff, Images, ListChecks, Plus } from "lucide-react";
-import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { useOutsideImage } from "@/features/marketing/lib/useOutsideImage";
 import type { LucideIcon } from "lucide-react";
 
 import { Button, Chip, EmptyState, PropertyRow } from "@ai-matrx/design-system/controls";
@@ -300,24 +300,12 @@ export function BrandOverviewFacts({
   );
 }
 
-/** The host an outside image comes from, for the failed tile. */
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return "";
-  }
-}
-
 /**
- * One asset tile: shimmer while the picture loads; a source the browser refuses (hotlink / CORP) is retried
- * once through our image proxy; a source that truly fails shows an image glyph and its domain, never a broken image.
+ * One asset tile: shimmer while the picture loads; outside pictures fall back through useOutsideImage; a source
+ * that truly fails shows an image glyph and its site's domain, never a broken image.
  */
 function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void }) {
-  const [state, setState] = useState<"direct" | "proxy" | "ready" | "failed">(asset.preview ? "direct" : "ready");
-  const [loaded, setLoaded] = useState(false);
-  const src = asset.preview ? (state === "proxy" ? proxiedExternalImageUrl(asset.preview) : asset.preview) : null;
-  const fail = () => setState((prev) => (prev === "direct" && /^https?:\/\//i.test(asset.preview ?? "") ? "proxy" : "failed"));
+  const image = useOutsideImage(asset.preview);
   return (
     <button
       type="button"
@@ -326,29 +314,20 @@ function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () => void
       aria-label={asset.label}
       className="relative aspect-square overflow-hidden rounded-md border border-border bg-background"
     >
-      {src && state !== "failed" ? (
+      {image.src ? (
         <img
-          key={src}
-          src={src}
+          key={image.imgKey}
+          {...image.imgProps}
           alt=""
           decoding="async"
-          // A picture that failed before hydration never fires onError: read its state on mount.
-          ref={(img) => {
-            if (img?.complete) {
-              if (img.naturalWidth > 0) setLoaded(true);
-              else fail();
-            }
-          }}
-          onLoad={() => setLoaded(true)}
-          onError={fail}
-          className={loaded ? "absolute inset-0 h-full w-full object-contain p-1" : "absolute inset-0 h-full w-full object-contain p-1 opacity-0"}
+          className={image.loaded ? "absolute inset-0 h-full w-full object-contain p-1" : "absolute inset-0 h-full w-full object-contain p-1 opacity-0"}
         />
       ) : null}
-      {src && state !== "failed" && !loaded ? <Skeleton motion="shimmer" className="absolute inset-0" /> : null}
-      {asset.preview && state === "failed" ? (
+      {image.src && !image.loaded ? <Skeleton motion="shimmer" className="absolute inset-0" /> : null}
+      {image.failed ? (
         <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-1 text-muted-foreground">
           <ImageOff className="h-4 w-4" aria-hidden="true" />
-          <span className="max-w-full truncate type-meta">{hostOf(asset.preview)}</span>
+          <span className="max-w-full truncate type-meta">{image.host}</span>
         </span>
       ) : null}
       {!asset.preview && asset.color ? (
@@ -389,7 +368,7 @@ export function BrandOverviewAssets({
 
 /** The brand home while it loads: the same frame (header card, tab bar, two-column grid), so nothing moves when it arrives. */
 /** The brand hero's one height at every width — the hero and its loading placeholder share it, so nothing moves. */
-export const BRAND_HERO_FRAME = "h-[186px]";
+export const BRAND_HERO_FRAME = "h-[156px]";
 
 export function BrandHomeSkeleton() {
   return (
@@ -403,7 +382,7 @@ export function BrandHomeSkeleton() {
             <Skeleton className="h-5 w-64 max-w-full" />
           </div>
         </div>
-        <div className="h-[34px] rounded-lg border border-border bg-card" />
+        <div className="h-[33px] rounded-lg border border-border bg-card" />
         <div className="grid items-start gap-3 lg:grid-cols-3">
           <div className="grid min-w-0 gap-3 lg:col-span-2">
             <div className="h-64 rounded-lg border border-border bg-card" />
