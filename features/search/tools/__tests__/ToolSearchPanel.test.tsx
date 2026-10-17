@@ -124,6 +124,12 @@ describe("the Reviews tab", () => {
     expect(host.querySelector("[data-tool-lane]")?.getAttribute("data-tool-lane")).toBe("appstore");
   });
 
+  it("opens on the source a link named in the search box", () => {
+    forms.app_store_reviews = { isLoading: false, data: formFor("t-app", "live", null, "product_id") };
+    show("reviews", "https://apps.apple.com/us/app/gumroad/id916819108");
+    expect(host.querySelector("[data-tool-lane]")?.getAttribute("data-tool-lane")).toBe("appstore");
+  });
+
   it("looks for a name instead of buying a call that would fail", () => {
     forms.app_store_reviews = { isLoading: false, data: formFor("t-app", "live") };
     show("reviews");

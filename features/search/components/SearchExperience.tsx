@@ -106,6 +106,7 @@ import { PlatformMark, platformLabel } from "@/features/marketing/social/compone
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ToolSearchPanel } from "@/features/search/tools/ToolSearchPanel";
 import {
+  detectReviewLane,
   isToolTab,
   TOOL_TABS,
   TOOL_TAB_LABEL,
@@ -271,12 +272,15 @@ function SearchPill({
   inputs,
   onQuery,
   onClear,
+  onSubmit,
   autoFocus,
 }: {
   form: UseScraperKeywordSearchFormReturn;
   inputs: UseSearchInputsReturn;
   onQuery: (value: string) => void;
   onClear: () => void;
+  /** The press: the page decides where what was typed goes (a store link goes to Reviews). */
+  onSubmit: () => void;
   autoFocus?: boolean;
 }) {
   const { keywords, isLoading, isLocating, vertical } = form;
@@ -303,7 +307,7 @@ function SearchPill({
           ariaLabel="Search"
           tooltip="Search"
           disabled={!canSearch}
-          onClick={inputs.submit}
+          onClick={onSubmit}
           className="text-muted-foreground"
         />
       )}
@@ -315,7 +319,7 @@ function SearchPill({
         value={keywords}
         onChange={(e) => onQuery(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && !busy) inputs.submit();
+          if (e.key === "Enter" && !busy) onSubmit();
         }}
         onPaste={(e) => {
           const file = Array.from(e.clipboardData?.files ?? []).find((f) =>
@@ -424,6 +428,15 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
       replaceAddressWithoutNavigating(qs ? `${window.location.pathname}?${qs}` : window.location.pathname);
     }
     onTab(next);
+  };
+
+  /** A store, map or Trustpilot link typed in the pill is a reviews question: it opens the Reviews tab, filled in. */
+  const submitBox = () => {
+    if (detectReviewLane(keywords)) {
+      onAnyTab("reviews");
+      return;
+    }
+    inputs.submit();
   };
 
   /** Run the current tab now (an explicit press). */
@@ -595,7 +608,7 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
       <div className="relative flex-1 overflow-auto px-4" {...dragProps}>
         {dropVeil}
         <div className={cn("mx-auto w-full space-y-4 pb-16 pt-[18vh] sm:pt-[24vh]", PILL_WIDTH)}>
-          <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} autoFocus />
+          <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} autoFocus />
           <div className="flex min-h-4 justify-center">{statusLine}</div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <Tabs
@@ -628,7 +641,7 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
         <div className={cn("mx-auto space-y-1", PAGE_WIDTH)}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <div className={cn("w-full min-w-0 sm:flex-1", PILL_WIDTH)}>
-              <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} />
+              <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} />
             </div>
             {engineControls}
           </div>
