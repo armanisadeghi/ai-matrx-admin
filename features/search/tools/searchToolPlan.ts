@@ -81,7 +81,7 @@ export function adaptInput(jobKey: string, inputName: string, value: string): st
   const v = value.trim();
   if (!v) return v;
   if (jobKey === "app_store_reviews" && inputName === "product_id") {
-    const id = /\/id(\d+)/.exec(v) ?? /^(\d{6,})$/.exec(v);
+    const id = /\/id(\d+)/.exec(v) ?? /^(?:id)?(\d{6,})$/i.exec(v);
     return id?.[1] ?? v;
   }
   if (jobKey === "data_app_store_reviews" && inputName === "url" && /^\d{6,}$/.test(v)) {
@@ -90,6 +90,9 @@ export function adaptInput(jobKey: string, inputName: string, value: string): st
   if (jobKey === "play_store_reviews" && inputName === "product_id") return /[?&]id=([\w.]+)/.exec(v)?.[1] ?? v;
   if (jobKey === "data_google_play_reviews" && inputName === "url" && /^[a-z][\w]*(\.[\w]+)+$/i.test(v)) {
     return `https://play.google.com/store/apps/details?id=${v}`;
+  }
+  if (jobKey === "place_reviews" && inputName === "place" && !/^https?:\/\//i.test(v) && detectReviewLane(v) === "maps") {
+    return `https://${v}`;
   }
   if (jobKey === "customer_reviews" && inputName === "domain") return trustpilotDomain(v);
   if (jobKey === "data_trustpilot_reviews" && inputName === "url" && !/trustpilot\.com/i.test(v)) {
@@ -175,7 +178,8 @@ export function laneCanFind(laneId: string): boolean {
 export function needsFinder(laneId: string, text: string): boolean {
   const t = text.trim();
   if (!t || !laneCanFind(laneId)) return false;
-  if (/^https?:\/\//i.test(t) || /^\d{6,}$/.test(t)) return false;
+  // A link (even without its https://), an app number, or the `id…` the store prints: nothing to look for.
+  if (/^https?:\/\//i.test(t) || /^(id)?\d{6,}$/i.test(t) || detectReviewLane(t)) return false;
   if (laneId === "maps") return !/^ChIJ[\w-]{10,}$/.test(t);
   if (laneId === "trustpilot") {
     const kind = classifyText(t, { anyEnding: true })?.type;

@@ -56,6 +56,12 @@ describe("what each Tool's input holds", () => {
     expect(adaptInput("customer_reviews", "domain", "example.com")).toBe("example.com");
   });
 
+  it("gives the Maps Tool a full link, and reads the app number out of id916819108", () => {
+    expect(adaptInput("place_reviews", "place", "maps.app.goo.gl/AbC123")).toBe("https://maps.app.goo.gl/AbC123");
+    expect(adaptInput("place_reviews", "place", "ChIJG-gJw2vKRIYROWi2uwOp8QE")).toBe("ChIJG-gJw2vKRIYROWi2uwOp8QE");
+    expect(adaptInput("app_store_reviews", "product_id", "id916819108")).toBe("916819108");
+  });
+
   it("builds the Trustpilot page for a bare website, and leaves a Trustpilot link alone", () => {
     expect(adaptInput("data_trustpilot_reviews", "url", "example.com")).toBe("https://www.trustpilot.com/review/example.com");
     const page = "https://www.trustpilot.com/review/www.apple.com";
@@ -102,6 +108,11 @@ describe("finding an app or a business by its name", () => {
     expect(needsFinder("maps", "ChIJG-gJw2vKRIYROWi2uwOp8QE")).toBe(false);
     expect(needsFinder("maps", "https://www.google.com/maps/place/Epoch+Coffee")).toBe(false);
     expect(needsFinder("appstore", "   ")).toBe(false);
+    // a link pasted without its https://, and the id as the store prints it, are not names
+    expect(needsFinder("appstore", "apps.apple.com/us/app/gumroad/id916819108")).toBe(false);
+    expect(needsFinder("appstore", "id916819108")).toBe(false);
+    expect(needsFinder("play", "play.google.com/store/apps/details?id=com.duolingo")).toBe(false);
+    expect(needsFinder("maps", "maps.app.goo.gl/AbC123")).toBe(false);
   });
 
   it("looks only where the thing lives", () => {
