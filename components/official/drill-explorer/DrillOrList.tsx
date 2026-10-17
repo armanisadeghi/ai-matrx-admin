@@ -11,28 +11,31 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { pushAppHref } from "@/lib/deployment/navigate";
-import { supabase } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+
+import { describeOnce } from "./describeOnce";
+import { drillClientFor } from "./useDrillExplorer";
 
 type Presence = "reading" | "present" | "absent";
 
 /** Is this declared definition on the database the app talks to? (`platform.drill_describe` answers or refuses.) */
 export function useDrillDefinitionPresent(definition: string, organizationId: string | null = SYSTEM_ORGANIZATION_ID): Presence {
   const [state, setState] = useState<Presence>("reading");
+  // the explorer's own client: the answer is held there, so the explorer that opens next never describes again
+  const userId = useAppSelector(selectUserId);
   useEffect(() => {
     // No organization yet (a member whose memberships are still loading): the door cannot be asked, so
     // the answer stays "reading" until one is known — never a false "not on this database".
     if (!organizationId) return;
     let cancelled = false;
-    void supabase
-      .schema("platform")
-      .rpc("drill_describe", { p_organization_id: organizationId, p_source: { kind: "entity", token: definition } })
-      .then(({ error }) => {
-        if (!cancelled) setState(error ? "absent" : "present");
-      });
+    void describeOnce(drillClientFor(organizationId, userId), { kind: "entity", token: definition }).then((got) => {
+      if (!cancelled) setState(got.ok ? "present" : "absent");
+    });
     return () => {
       cancelled = true;
     };
-  }, [definition, organizationId]);
+  }, [definition, organizationId, userId]);
   return state;
 }
 
