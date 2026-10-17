@@ -114,7 +114,7 @@ import {
   type TapButtonProps,
 } from "@ai-matrx/tap-target/buttons";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 
 const FeedbackHighlight = dynamic(() => import("./FeedbackHighlight"), {
   ssr: false,
@@ -209,7 +209,7 @@ export interface TapButtonProps {
 ## Pillar 4 — Opening a dialog from the button
 
 **Use the overlay's typed opener** — `useOpenX()` from
-`features/overlays/openers/<overlayId>.tsx` (~210 openers, ~520 call sites).
+`features/overlays/definitions/<overlayId>.overlay.ts(x)` (~220 definitions, ~520 call sites).
 Never `dispatch(openOverlay(...))` in new or migrated code; the ~115 raw
 dispatch sites left are legacy and get migrated when you touch them. The one
 owner of this rule is the `overlay-system` skill — read it for callbacks,
@@ -220,7 +220,7 @@ declarative controllers, and adding a new overlay.
 dispatch(openOverlay({ overlayId: "feedbackDialog" }));
 
 // ✅ Typed opener — options are type-checked, close() handle returned
-import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 const openFeedback = useOpenFeedbackWindow();
 openFeedback();
 ```
@@ -261,7 +261,7 @@ Read these before applying the pattern to a new component:
 - `@ai-matrx/tap-target` (package) — primitive (`TapTargetButton`, `TapTargetButtonTransparent`, `TapTargetButtonSolid`, `TapTargetButtonForGroup`, `TapTargetButtonGroup`). Don't import directly unless a pre-composed version doesn't exist; add a new pre-composed export instead.
 - `components/icons/README.md` — definitive doc on the spacing rule and the `Wrap` helper for adding new pre-composed buttons.
 - `app/(dev)/demos/button-demo/page.dev.tsx` — live demo of every variant, group, and AI brand button.
-- `features/overlays/openers/` — the typed openers (owner: `overlay-system`).
+- `features/overlays/definitions/` — the typed openers (owner: `overlay-system`).
 
 The migration of `FeedbackButton`'s consumers (`components/layout/new-layout/DesktopLayout.tsx`, `features/public-chat/components/ChatMobileHeader.tsx`, `components/matrx/PublicHeaderFeedback.tsx`) is the canonical example of consumer-side rules in action — read those diffs to see how `className=...` becomes `variant=...` and how Suspense fallbacks are resized.
 

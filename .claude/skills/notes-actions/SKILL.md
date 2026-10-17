@@ -42,15 +42,16 @@ Come here when adding/altering a notes action component or its provider/API cont
 
 ### Pattern 1: Redux overlay dispatch (most common)
 
-Many features skip the button entirely and dispatch `openSaveToNotes` directly:
+Many features skip the button entirely and open the `saveToNotes` overlay directly:
 
 ```typescript
-import { openSaveToNotes } from '@/lib/redux/slices/overlaySlice';
+import { openOverlay } from '@ai-matrx/summon';
 
-dispatch(openSaveToNotes({ content, defaultFolder: 'Scratch' }));
+dispatch(openOverlay({ overlayId: 'saveToNotes', data: { initialContent: content } }));
+// or, in a component: useOpenQuickNoteSaveOverlay() from features/overlays/definitions/saveToNotes.overlay
 ```
 
-`OverlayController` handles dynamic import of `QuickNoteSaveModal` and wraps it with `NotesProvider`.
+`OverlayWorldHost` handles dynamic import of `QuickNoteSaveModal` and wraps it with `NotesProvider`.
 
 ### Pattern 2: Drop-in buttons
 
@@ -81,7 +82,7 @@ Requires `NotesProvider` ancestor.
 import { QuickNotesSheet } from '@/features/notes/actions/QuickNotesSheet';
 ```
 
-Used inside `OverlayController` or any layout that provides `NotesProvider`.
+Used inside `OverlayWorldHost` or any layout that provides `NotesProvider`.
 
 ## Maintenance Rules
 
@@ -99,8 +100,8 @@ Used inside `OverlayController` or any layout that provides `NotesProvider`.
 - `features/notes/actions/notes-actions.md` — living usage reference
 - `features/notes/service/notesApi.ts` — `NotesAPI` (programmatic CRUD)
 - `features/notes/context/NotesContext.tsx` — shared state + realtime
-- `features/overlays/OverlayController.tsx` — overlay host for modal/sheet (see the `overlay-system` skill)
-- `lib/redux/slices/overlaySlice.ts` — `openSaveToNotes` action creator
+- `features/overlays/host/OverlayWorldHost.tsx` — overlay host for modal/sheet (see the `overlay-system` skill)
+- `@ai-matrx/summon` — `openOverlay({ overlayId: 'saveToNotes' })`; the definition is `features/overlays/definitions/saveToNotes.overlay.tsx`
 
 ## Provider Requirements
 
@@ -109,7 +110,7 @@ Used inside `OverlayController` or any layout that provides `NotesProvider`.
 | `SaveToScratchButton` | No (uses `NotesAPI` directly) |
 | `SaveSelectionButton` | No (uses `NotesAPI` directly) |
 | `QuickCaptureButton` | No (dispatches Redux action) |
-| `QuickNoteSaveModal` | Yes (OverlayController provides it) |
+| `QuickNoteSaveModal` | Yes (OverlayWorldHost provides it) |
 | `QuickNotesSheet` | Yes |
 | `CategoryNotesModal` | Yes |
 | `WindowNotesBody` | No (bundles its own `NotesProvider`) |

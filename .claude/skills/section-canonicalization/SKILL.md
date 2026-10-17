@@ -50,7 +50,7 @@ decision to surface to the user, not a silent omission.
 |---|---|---|
 | 1 | **Canonical component library** — pure presentational pieces + ONE prop-driven composite | `features/marketing/seo/serp/` (`SerpResult`, `SerpValidation`, `MetaRecommendations`, `MetadataAnalyzer`) |
 | 2 | **Deterministic core utility** — environment-free calculation module | `features/marketing/seo/serp/metrics.ts` + `char-widths.ts` |
-| 3 | **Window panel** — the composite in a floating window, prop-fed, openable from anywhere | `windows/seo/SerpAnalyzerWindow.tsx` + opener `features/overlays/openers/serpAnalyzerWindow.tsx` |
+| 3 | **Window panel** — the composite in a floating window, prop-fed, openable from anywhere | `windows/seo/SerpAnalyzerWindow.tsx` + opener `features/overlays/definitions/serpAnalyzerWindow.overlay.tsx` |
 | 4 | **In-page section upgrades** — replace every hand-rolled version with the canonical pieces + a header launcher into the panel | marketing `PageWorkspace` `SerpPreview` |
 | 5 | **DB persistence** — versioned jsonb contract, auto-written on BOTH triggers (user save + server capture) | `migrations/web_seo_metrics.sql` |
 | 6 | **Python twin + agent tool** — same algorithm in the server package, wired into the automatic pipeline, exposed as a tool | `matrx_scraper/meta_metrics.py`, crawl persister, `seo` tool |
@@ -78,11 +78,11 @@ decision to surface to the user, not a silent omission.
 The `window-panel-authoring` skill predates the registry split — the CURRENT
 five touch points are:
 
-1. `features/window-panels/registry/windowRegistryMetadata.ts` — `STATIC_REGISTRY` entry (slug, overlayId, label, defaultData, mobilePresentation, optional `urlSync`).
-2. `features/overlays/catalogue.ts` — add `<overlayId>: { label, instanceMode, isWindow }`; the key IS the id (`OverlayId = keyof typeof OVERLAY_CATALOGUE`), so forgetting it is a compile error at dispatch sites.
+1. `features/overlays/definitions/<id>.overlay.ts (window block)` — `STATIC_REGISTRY` entry (slug, overlayId, label, defaultData, mobilePresentation, optional `urlSync`).
+2. `features/overlays/definitions/registry.ts` — add `<overlayId>: { label, instanceMode, isWindow }`; the key IS the id (`OverlayId = keyof typeof APP_OVERLAYS`), so forgetting it is a compile error at dispatch sites.
 3. `features/window-panels/windows/<area>/<Name>Window.tsx` — outer `if (!isOpen) return null` guard; inner renders `WindowPanel` with stable `id`, `overlayId`, `onCollectData`, `urlSyncKey` matching the registry. Track live child values in a **ref** for `onCollectData` — don't re-render the shell per keystroke.
-4. `features/overlays/OverlayController.tsx` — `lazyOverlay(() => import(...))` const + `isOpenById` + `dataById` selectors + a render block (typed prop narrowing from `data`).
-5. Opener hook `features/overlays/openers/<overlayId>.tsx` — `useOpenXWindow(options)` dispatching `openOverlay` with normalized data. Optionally a Tools-grid tile (`tools-grid/toolsGridTiles.ts`).
+4. `features/overlays/host/OverlayWorldHost.tsx` — `lazyOverlay(() => import(...))` const + `isOpenById` + `dataById` selectors + a render block (typed prop narrowing from `data`).
+5. Opener hook `features/overlays/definitions/<overlayId>.tsx` — `useOpenXWindow(options)` dispatching `openOverlay` with normalized data. Optionally a Tools-grid tile (`tools-grid/toolsGridTiles.ts`).
 - **Size the panel so the full composite is visible on a large screen** (the SERP analyzer uses 1360×900, min 560×480); container queries handle shrinkage.
 
 ## 4 · In-page sections
