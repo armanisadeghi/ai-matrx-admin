@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0213",
-  "version": 1,
+  "version": 2,
   "title": "Wedding Planner",
   "description": "Tasks, guest list, vendors, budget and seating for the big day.",
   "forWho": "Couples planning a wedding",
@@ -95,7 +95,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -110,7 +110,13 @@
               "Booked": "green",
               "Declined": "amber"
             },
-            "default": "Contacted"
+            "default": "Contacted",
+            "statusGroups": {
+              "Contacted": "todo",
+              "Quoted": "in_progress",
+              "Booked": "done",
+              "Declined": "done"
+            }
           },
           {
             "key": "contact",
@@ -153,17 +159,8 @@
             ]
           },
           {
-            "key": "budget_lines",
-            "label": "Budget lines",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "budget",
-            "multi": true
-          },
-          {
             "key": "lines_total",
-            "label": "Estimated total",
+            "label": "Estimated",
             "parityType": "rollup",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -175,7 +172,7 @@
           },
           {
             "key": "actual_total",
-            "label": "Actual total",
+            "label": "Actual",
             "parityType": "rollup",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -184,6 +181,14 @@
             "agg": "sum",
             "unit": "USD",
             "format": "currency"
+          },
+          {
+            "key": "left_to_pay",
+            "label": "Left to pay",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Actual} - {Deposit paid}"
           }
         ],
         "rows": [
@@ -257,6 +262,104 @@
               "email_addr": "nora@sweetledger.net",
               "phone_no": "(503) 555-0175",
               "deposit": 0
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Vendor call",
+            "values": {
+              "status": "Contacted"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Questions to ask"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Is our date free, and how long do you hold it?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What is included in the price?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What is the deposit and the cancellation policy?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Can we see recent work or speak to a recent client?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they said"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Price, date options, anything unusual."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Compare with the other quotes"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
             }
           }
         ]
@@ -366,7 +469,7 @@
           },
           {
             "key": "difference",
-            "label": "Difference",
+            "label": "Actual minus estimate",
             "parityType": "formula",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -375,6 +478,14 @@
             "computeOn": "read",
             "unit": "USD",
             "format": "currency"
+          },
+          {
+            "key": "diff_pct",
+            "label": "Over or under (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Estimated} > 0, ROUND(({Actual} - {Estimated}) / {Estimated} * 100, 0), 0)"
           },
           {
             "key": "paid",
@@ -561,15 +672,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "guests",
-            "label": "Guests",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "guest",
-            "multi": true
-          },
-          {
             "key": "seated",
             "label": "Guests seated",
             "parityType": "rollup",
@@ -578,6 +680,22 @@
             "via": "guests",
             "pick": "guest_name",
             "agg": "count"
+          },
+          {
+            "key": "open_seats",
+            "label": "Open seats",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Seats} - {Guests seated}"
+          },
+          {
+            "key": "full_flag",
+            "label": "Seat status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Guests seated} >= {Seats}, \"Full\", IF({Guests seated} = 0, \"Empty\", \"Open\"))"
           }
         ],
         "rows": [
@@ -740,6 +858,24 @@
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "yes_btn",
+            "label": "RSVP yes",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "guest_yes"
+            }
           }
         ],
         "rows": [
@@ -992,7 +1128,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -1005,7 +1141,12 @@
               "In progress": "blue",
               "Done": "green"
             },
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "due_on",
@@ -1014,6 +1155,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 14, \"Due soon\", \"\")))"
           },
           {
             "key": "vendor",
@@ -1039,6 +1188,24 @@
               "Elena": "slate",
               "Samuel": "blue",
               "Both": "green"
+            }
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
             }
           }
         ],
@@ -1102,7 +1269,7 @@
               "task_name": "Book the string quartet",
               "category": "Music",
               "status": "In progress",
-              "due_on": "@today+10d",
+              "due_on": "@today-4d",
               "owner": "Samuel",
               "vendor": "v4"
             }
@@ -1113,7 +1280,7 @@
               "task_name": "Finalize the flower design",
               "category": "Flowers",
               "status": "In progress",
-              "due_on": "@today+20d",
+              "due_on": "@today+3d",
               "owner": "Both",
               "vendor": "v5"
             }
@@ -1170,6 +1337,113 @@
               "vendor": "v2"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What needs doing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One clear sentence, then who it involves."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Get quotes or options"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Decide together"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Book or order"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirm the week before"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Contacts, prices, and anything to bring to the next meeting."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -1182,7 +1456,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "costs_of"
+        "inverseKey": "budget_lines"
       },
       {
         "describes": "A guest sits at one table.",
@@ -1192,7 +1466,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "guests_at"
+        "inverseKey": "guests"
       },
       {
         "describes": "A task may involve a vendor.",
@@ -1203,26 +1477,6 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "tasks_for"
-      },
-      {
-        "describes": "A vendor lists its budget lines.",
-        "fromTable": "vendor",
-        "fromField": "budget_lines",
-        "toTable": "budget",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "vendor_costs"
-      },
-      {
-        "describes": "A table lists its guests.",
-        "fromTable": "seating",
-        "fromField": "guests",
-        "toTable": "guest",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "table_guests"
       }
     ],
     "sharedBlocks": [],
@@ -1257,7 +1511,38 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "guest_yes",
+        "table": "guest",
+        "name": "RSVP yes",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "rsvp",
+            "set": "value",
+            "value": "Yes"
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_tasks",
@@ -1342,6 +1627,61 @@
         "table": "seating",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_overdue",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_30",
+        "name": "Next 30 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "This week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "bud_unpaid",
+        "name": "Unpaid",
+        "table": "budget",
+        "kind": "grid",
+        "filters": {
+          "paid": false
+        }
       }
     ],
     "agent": {
@@ -1430,7 +1770,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1461,263 +1801,221 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Tasks"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Planning tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "By status",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "status"
-                      },
-                      {
-                        "id": "view-2",
-                        "name": "Timeline",
-                        "layout": "timeline",
-                        "icon": "ChartGantt",
-                        "dateField": "due_on"
-                      },
-                      {
-                        "id": "view-3",
-                        "name": "All tasks",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Guests"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "guest",
-                      "view": "all_guests"
-                    },
-                    "inline": true,
-                    "title": "Guests",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-4",
-                        "name": "By RSVP",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "rsvp"
-                      },
-                      {
-                        "id": "view-5",
-                        "name": "By side",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "side"
-                      },
-                      {
-                        "id": "view-6",
-                        "name": "Guest list",
-                        "layout": "grid",
-                        "icon": "Table"
-                      },
-                      {
-                        "id": "view-7",
-                        "name": "RSVP",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "rsvp",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-4"
-                  }
-                }
-              ]
+              "text": "Tasks"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Planning tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-2",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "due_on"
+              },
+              {
+                "id": "view-3",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "guest",
+              "view": "all_guests"
+            },
+            "inline": true,
+            "title": "Guests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-4",
+                "name": "By RSVP",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "rsvp"
+              },
+              {
+                "id": "view-5",
+                "name": "By side",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "side"
+              },
+              {
+                "id": "view-6",
+                "name": "Guest list",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-7",
+                "name": "RSVP",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "rsvp",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-4"
+          }
         },
         {
           "type": "divider"
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Vendors"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "vendor",
-                      "view": "all_vendors"
-                    },
-                    "inline": true,
-                    "title": "Vendors",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-8",
-                        "name": "By status",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "status"
-                      },
-                      {
-                        "id": "view-9",
-                        "name": "All vendors",
-                        "layout": "grid",
-                        "icon": "Table"
-                      },
-                      {
-                        "id": "view-10",
-                        "name": "Gallery",
-                        "layout": "gallery",
-                        "icon": "LayoutGrid"
-                      }
-                    ],
-                    "activeViewId": "view-8"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Budget"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "budget",
-                      "view": "all_budget"
-                    },
-                    "inline": true,
-                    "title": "Budget",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-11",
-                        "name": "By category",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "category"
-                      },
-                      {
-                        "id": "view-12",
-                        "name": "All lines",
-                        "layout": "grid",
-                        "icon": "Table"
-                      },
-                      {
-                        "id": "view-13",
-                        "name": "Estimated by category",
-                        "layout": "chart",
-                        "icon": "ChartBar",
-                        "chart": {
-                          "type": "hbar",
-                          "groupBy": "category",
-                          "op": "sum",
-                          "field": "estimated"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-11"
-                  }
-                }
-              ]
+              "text": "Vendors"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vendor",
+              "view": "all_vendors"
+            },
+            "inline": true,
+            "title": "Vendors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-9",
+                "name": "All vendors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-10",
+                "name": "Gallery",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budget"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "budget",
+              "view": "all_budget"
+            },
+            "inline": true,
+            "title": "Budget",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-11",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "view-12",
+                "name": "All lines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-13",
+                "name": "Estimated by category",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "estimated"
+                }
+              }
+            ],
+            "activeViewId": "view-11"
+          }
         },
         {
           "type": "heading",
@@ -1812,6 +2110,141 @@
               "text": "Roughly what to do and when."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Use these months as a rough pacing guide and adjust to your date. The table below shows what is still open from your own plan."
+            }
+          ],
+          "background": "pink",
+          "props": {
+            "icon": "Calendar"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "9-12 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Big decisions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Venue, date, guest list outline, budget"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "6-9 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Core vendors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Caterer, photographer, music, officiant"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3-6 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invitations, attire, flowers, lodging blocks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1-3 months out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Logistics"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Seating, timeline, final headcounts, rehearsal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Final month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm everything"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vendor arrival times, payments, day-of contacts"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "table",
@@ -1920,25 +2353,54 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-16",
-                "name": "Open tasks",
+                "id": "view-u8",
+                "name": "Overdue",
                 "layout": "grid",
                 "icon": "Table",
-                "filters": {
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
                   "status": [
                     "To do",
                     "In progress"
                   ]
-                },
-                "sorts": [
-                  {
-                    "field": "due_on",
-                    "direction": "asc"
+                }
+              },
+              {
+                "id": "view-u9",
+                "name": "Next 30 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
                   }
-                ]
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "view-u10",
+                "name": "Open tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
               }
             ],
-            "activeViewId": "view-16"
+            "activeViewId": "view-u8"
           }
         }
       ]
@@ -2072,6 +2534,133 @@
               }
             ],
             "activeViewId": "view-17"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Morning timeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who owns it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Morning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Flowers and cake delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coordinator"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Midday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hair, makeup, photographs begin"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Both"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Afternoon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ceremony"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Everyone"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Evening"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reception, dinner, music"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coordinator"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Write the coordinator's phone number at the top of every printout."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Phone"
           }
         }
       ]

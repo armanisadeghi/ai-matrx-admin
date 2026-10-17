@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0212",
-  "version": 1,
+  "version": 2,
   "title": "Job Application Tracker",
   "description": "Pipeline board for roles, contacts and interviews with follow-up dates.",
   "forWho": "Job seekers",
@@ -123,6 +123,32 @@
             "via": "applications",
             "pick": "role_title",
             "agg": "count"
+          },
+          {
+            "key": "relationship",
+            "label": "Relationship",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Recruiter",
+              "Hiring manager",
+              "Referrer",
+              "Peer"
+            ],
+            "choiceColors": {
+              "Recruiter": "blue",
+              "Hiring manager": "violet",
+              "Referrer": "green",
+              "Peer": "orange"
+            }
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -134,7 +160,9 @@
               "company": "Halyard Software",
               "email_addr": "renata@halyardsoft.net",
               "phone_no": "(206) 555-0114",
-              "last_contact": "@today-9d"
+              "last_contact": "@today-9d",
+              "relationship": "Recruiter",
+              "notes": "Replied within two days; prefers email"
             }
           },
           {
@@ -145,7 +173,9 @@
               "company": "Ember Health",
               "email_addr": "idris@emberhealth.net",
               "phone_no": "(312) 555-0172",
-              "last_contact": "@today-4d"
+              "last_contact": "@today-4d",
+              "relationship": "Hiring manager",
+              "notes": "Replied within two days; prefers email"
             }
           },
           {
@@ -156,7 +186,9 @@
               "company": "Northfield Labs",
               "email_addr": "colette@northfieldlabs.net",
               "phone_no": "(415) 555-0133",
-              "last_contact": "@today-21d"
+              "last_contact": "@today-21d",
+              "relationship": "Referrer",
+              "notes": "Replied within two days; prefers email"
             }
           },
           {
@@ -167,7 +199,9 @@
               "company": "Tidewater Analytics",
               "email_addr": "yusuf@tidewateranalytics.net",
               "phone_no": "(503) 555-0188",
-              "last_contact": "@today-30d"
+              "last_contact": "@today-30d",
+              "relationship": "Peer",
+              "notes": "Replied within two days; prefers email"
             }
           },
           {
@@ -178,7 +212,9 @@
               "company": "Orchard Cloud",
               "email_addr": "meiling@orchardcloud.net",
               "phone_no": "(425) 555-0126",
-              "last_contact": "@today-12d"
+              "last_contact": "@today-12d",
+              "relationship": "Recruiter",
+              "notes": "Replied within two days; prefers email"
             }
           }
         ]
@@ -215,6 +251,13 @@
             "required": true
           },
           {
+            "key": "ref",
+            "label": "Application no.",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "role_title",
             "label": "Role",
             "parityType": "text",
@@ -224,7 +267,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -245,7 +288,16 @@
               "Rejected": "red",
               "Accepted": "amber"
             },
-            "default": "Wishlist"
+            "default": "Wishlist",
+            "statusGroups": {
+              "Wishlist": "todo",
+              "Applied": "in_progress",
+              "Screening": "in_progress",
+              "Interview": "in_progress",
+              "Offer": "in_progress",
+              "Rejected": "done",
+              "Accepted": "done"
+            }
           },
           {
             "key": "applied_on",
@@ -313,6 +365,14 @@
             ]
           },
           {
+            "key": "salary_mid",
+            "label": "Salary midpoint",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND(({Salary from} + {Salary to}) / 2, 0)"
+          },
+          {
             "key": "location",
             "label": "Location",
             "parityType": "text",
@@ -369,6 +429,14 @@
             "format": "date"
           },
           {
+            "key": "next_flag",
+            "label": "Next step status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Rejected\", \"\", IF(DATEDIFF(TODAY(), {Next step on}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Next step on}, 'days') <= 7, \"This week\", \"\")))"
+          },
+          {
             "key": "resume",
             "label": "Resume version",
             "parityType": "select",
@@ -402,17 +470,8 @@
             "relationMax": 1
           },
           {
-            "key": "interviews",
-            "label": "Interviews",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "interview",
-            "multi": true
-          },
-          {
             "key": "interview_count",
-            "label": "Interview count",
+            "label": "Interviews",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -429,6 +488,32 @@
             "formula": "DATEDIFF({Applied}, TODAY(), 'days')",
             "source": "formula",
             "computeOn": "read"
+          },
+          {
+            "key": "follow_up",
+            "label": "Follow-up",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Status} = \"Applied\", {Days since applied} >= 7), \"Follow up\", \"\")"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "applied_btn",
+            "label": "Mark applied",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "app_applied"
+            }
           }
         ],
         "rows": [
@@ -465,7 +550,7 @@
               "remote": "Remote",
               "priority": "High",
               "next_step": "Send availability for the call",
-              "next_step_on": "@today+1d",
+              "next_step_on": "@today",
               "resume": "Resume v2",
               "posting": "https://jobs.lifeledger.net/a2",
               "applied_on": "@today-14d",
@@ -505,7 +590,7 @@
               "remote": "On-site",
               "priority": "Medium",
               "next_step": "Follow up if quiet",
-              "next_step_on": "@today+6d",
+              "next_step_on": "@today-2d",
               "resume": "Resume v3",
               "posting": "https://jobs.lifeledger.net/a4",
               "applied_on": "@today-8d",
@@ -663,6 +748,129 @@
               "applied_on": "@today-3d"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New application",
+            "values": {
+              "status": "Wishlist"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The role"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the job is, in two lines, and why it caught your eye."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Fit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Three requirements you meet"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "One gap and how you will address it"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Materials"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tailor the resume"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Write a short cover note"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Ask a contact for a referral"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Date to follow up if you hear nothing."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -750,6 +958,13 @@
               "Not a fit": "amber"
             },
             "default": "Pending"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -830,6 +1045,140 @@
               "outcome": "Went well"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Interview prep",
+            "values": {
+              "outcome": "Pending"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Re-read the posting and note three keywords"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pick two stories that show impact"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Prepare three questions for the interviewer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Test audio, video and the meeting link"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Story outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Situation"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What I did"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Result, with a number if possible"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Send a thank-you note"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How it went and what to improve next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -852,7 +1201,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "interviews_of"
+        "inverseKey": "interviews"
       },
       {
         "describes": "A contact lists their applications.",
@@ -863,16 +1212,6 @@
         "cardinality": "many",
         "onDelete": "restrict",
         "inverseKey": "contact_applications"
-      },
-      {
-        "describes": "An application lists its interviews.",
-        "fromTable": "application",
-        "fromField": "interviews",
-        "toTable": "interview",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "application_interviews"
       }
     ],
     "sharedBlocks": [],
@@ -907,7 +1246,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "app_applied",
+        "table": "application",
+        "name": "Mark applied",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Applied"
+          }
+        ],
+        "color": "blue"
+      }
+    ],
     "views": [
       {
         "token": "all_apps",
@@ -922,14 +1277,6 @@
         "table": "application",
         "kind": "kanban",
         "groupBy": "status"
-      },
-      {
-        "token": "app_followup",
-        "name": "Follow-up calendar",
-        "table": "application",
-        "kind": "calendar",
-        "dateField": "next_step_on",
-        "allDay": true
       },
       {
         "token": "app_priority",
@@ -964,6 +1311,74 @@
         "table": "interview",
         "kind": "calendar",
         "dateField": "when"
+      },
+      {
+        "token": "app_followup",
+        "name": "Next steps this week",
+        "table": "application",
+        "kind": "grid",
+        "within": {
+          "next_step_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "app_overdue",
+        "name": "Overdue next steps",
+        "table": "application",
+        "kind": "grid",
+        "within": {
+          "next_step_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Wishlist",
+            "Applied",
+            "Screening",
+            "Interview",
+            "Offer"
+          ]
+        }
+      },
+      {
+        "token": "app_recent",
+        "name": "Applied, last 14 days",
+        "table": "application",
+        "kind": "grid",
+        "within": {
+          "applied_on": {
+            "relative": "past_days",
+            "n": 14
+          }
+        }
+      },
+      {
+        "token": "iv_next7",
+        "name": "Interviews, next 7 days",
+        "table": "interview",
+        "kind": "grid",
+        "within": {
+          "when": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "contact_recent",
+        "name": "Contacted, last 14 days",
+        "table": "contact",
+        "kind": "grid",
+        "within": {
+          "last_contact": {
+            "relative": "past_days",
+            "n": 14
+          }
+        }
       }
     ],
     "agent": {
@@ -1052,7 +1467,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1107,6 +1522,38 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u5",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "next_step_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Wishlist",
+                    "Applied",
+                    "Screening",
+                    "Interview",
+                    "Offer"
+                  ]
+                }
+              },
+              {
+                "id": "view-u4",
+                "name": "Next 7 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "next_step_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
                 "id": "view-1",
                 "name": "Pipeline",
                 "layout": "kanban",
@@ -1137,131 +1584,110 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Follow-ups due"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "application",
-                      "view": "all_apps"
-                    },
-                    "inline": true,
-                    "title": "Applications",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-5",
-                        "name": "Next steps",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "status": [
-                            "Wishlist",
-                            "Applied",
-                            "Screening",
-                            "Interview",
-                            "Offer"
-                          ]
-                        },
-                        "sorts": [
-                          {
-                            "field": "next_step_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "view-6",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "next_step_on"
-                      }
-                    ],
-                    "activeViewId": "view-5"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Interviews"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "interview",
-                      "view": "all_interviews"
-                    },
-                    "inline": true,
-                    "title": "Interviews",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-7",
-                        "name": "Upcoming",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "outcome": "Pending"
-                        },
-                        "sorts": [
-                          {
-                            "field": "when",
-                            "direction": "asc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "view-8",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "when"
-                      }
-                    ],
-                    "activeViewId": "view-7"
-                  }
-                }
-              ]
+              "text": "Follow-ups due"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "Next steps",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Wishlist",
+                    "Applied",
+                    "Screening",
+                    "Interview",
+                    "Offer"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "next_step_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-6",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_step_on"
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interviews"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "interview",
+              "view": "all_interviews"
+            },
+            "inline": true,
+            "title": "Interviews",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-7",
+                "name": "Upcoming",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "outcome": "Pending"
+                },
+                "sorts": [
+                  {
+                    "field": "when",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-8",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when"
+              }
+            ],
+            "activeViewId": "view-7"
+          }
         },
         {
           "type": "heading",
@@ -1353,119 +1779,117 @@
       },
       "blocks": [
         {
-          "type": "columnList",
-          "children": [
+          "type": "callout",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "application",
-                      "view": "all_apps"
-                    },
-                    "inline": true,
-                    "title": "Applications",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-11",
-                        "name": "Roles by status",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-11"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "application",
-                      "view": "all_apps"
-                    },
-                    "inline": true,
-                    "title": "Applications",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-12",
-                        "name": "Where roles came from",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "source",
-                          "op": "count"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-12"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "application",
-                      "view": "all_apps"
-                    },
-                    "inline": true,
-                    "title": "Applications",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-13",
-                        "name": "Work style",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "remote",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-13"
-                  }
-                }
-              ]
+              "text": "Numbers help you steer: how many applications turn into screens, and which source works best. Keep the sheet current and look at it weekly."
             }
-          ]
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "ChartLine"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u6",
+                "name": "Waiting to hear",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Applied"
+                },
+                "sorts": [
+                  {
+                    "field": "applied_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-u7",
+                "name": "Applied in the last 14 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "applied_on": {
+                    "relative": "past_days",
+                    "n": 14
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-u6"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-12",
+                "name": "Where roles came from",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "source",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "view-12"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_apps"
+            },
+            "inline": true,
+            "title": "Applications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Work style",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "remote",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-13"
+          }
         },
         {
           "type": "heading",
@@ -1509,13 +1933,48 @@
             ],
             "activeViewId": "view-14"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to look for"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Applied for more than a week with no reply: send a polite follow-up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Many applications from one source but no screens: change the resume or the source."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Interviews without offers: ask for feedback and rehearse the story outline."
+            }
+          ]
         }
       ]
     },
     {
       "key": "interview-prep",
       "parent": "job-tracker",
-      "title": "Interview prep",
+      "title": "Interview guide",
       "icon": {
         "emoji": "🎤"
       },
@@ -1527,6 +1986,18 @@
               "text": "Before every interview, run this list."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Each interview row opens with a prep checklist. This page holds the longer advice behind it."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Mic"
+          }
         },
         {
           "type": "todo",
@@ -1684,6 +2155,60 @@
             ],
             "activeViewId": "view-15"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions worth asking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What does success look like in the first ninety days?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How does the team handle disagreement?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is the hardest part of this role?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After a rejection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Log the reason if you were told one, thank the interviewer, and move the row to Rejected. Patterns show up after five or six."
+            }
+          ]
         }
       ]
     }

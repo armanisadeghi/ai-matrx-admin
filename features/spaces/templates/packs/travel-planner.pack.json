@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 1,
+  "version": 2,
   "title": "Travel Planner",
   "description": "Trips with itinerary, bookings, packing and places in one hub.",
   "forWho": "Travelers planning trips",
@@ -85,7 +85,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -100,7 +100,13 @@
               "Booked": "green",
               "Done": "amber"
             },
-            "default": "Dreaming"
+            "default": "Dreaming",
+            "statusGroups": {
+              "Dreaming": "todo",
+              "Planning": "in_progress",
+              "Booked": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "starts_on",
@@ -117,6 +123,22 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "days_until",
+            "label": "Days until departure",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Leaving}, 'days')"
+          },
+          {
+            "key": "nights",
+            "label": "Nights",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Leaving}, {Returning}, 'days')"
           },
           {
             "key": "budget",
@@ -138,35 +160,8 @@
             ]
           },
           {
-            "key": "bookings",
-            "label": "Bookings",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "booking",
-            "multi": true
-          },
-          {
-            "key": "plan_items",
-            "label": "Plan items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "itinerary",
-            "multi": true
-          },
-          {
-            "key": "pack_list",
-            "label": "Packing items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "packing",
-            "multi": true
-          },
-          {
             "key": "booking_total",
-            "label": "All bookings cost",
+            "label": "Bookings total",
             "parityType": "rollup",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -177,8 +172,24 @@
             "format": "currency"
           },
           {
+            "key": "budget_left",
+            "label": "Budget left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Budget} - {Bookings total}"
+          },
+          {
+            "key": "budget_flag",
+            "label": "Budget check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Bookings total} > {Budget}, \"Over budget\", \"Within budget\")"
+          },
+          {
             "key": "plan_count",
-            "label": "Planned activities",
+            "label": "Plans",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -188,7 +199,7 @@
           },
           {
             "key": "items_to_pack",
-            "label": "Items still to pack",
+            "label": "Still to pack",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -198,6 +209,31 @@
             "filter": {
               "packed": false
             }
+          },
+          {
+            "key": "items_total",
+            "label": "Packing items",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "pack_list",
+            "pick": "packing_name",
+            "agg": "count"
+          },
+          {
+            "key": "packed_pct",
+            "label": "Packed (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Packing items} > 0, ROUND(({Packing items} - {Still to pack}) / {Packing items} * 100, 0), 0)"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -232,6 +268,121 @@
               "starts_on": "@today-70d",
               "ends_on": "@today-64d",
               "budget": 1500
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New trip",
+            "values": {
+              "status": "Dreaming"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this trip"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who is going, and what do you want to come home with?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Dates and budget"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Set the dates and a budget in the fields above, then add bookings as you make them."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Must-do list"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Passport and visas"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Flights and lodging"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Daily plan for the first and last days"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Open questions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Anything you still need to decide"
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -303,7 +454,7 @@
           },
           {
             "key": "cost",
-            "label": "Cost",
+            "label": "Estimated cost",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -331,6 +482,13 @@
             "key": "booked",
             "label": "Booked",
             "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
           }
@@ -492,6 +650,83 @@
               "booked": true
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Day plan",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What is happening, where, and how do you get there?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Address or meeting point"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Confirmation code and opening hours"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Backup plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What if it rains or the line is too long?"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -594,6 +829,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "nights",
+            "label": "Nights",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({From}, {To}, 'days')"
           }
         ],
         "rows": [
@@ -761,6 +1004,17 @@
                 "value": 30
               }
             ]
+          },
+          {
+            "key": "packed_btn",
+            "label": "Mark packed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pack_done"
+            }
           }
         ],
         "rows": [
@@ -977,6 +1231,28 @@
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "visit_btn",
+            "label": "Mark visited",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "place_visit"
+            }
+          },
+          {
+            "key": "map_btn",
+            "label": "Find on map",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "https://www.openstreetmap.org/search?query={{place_name}}"
+            }
           }
         ],
         "rows": [
@@ -1052,7 +1328,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "plans_of"
+        "inverseKey": "plan_items"
       },
       {
         "describes": "A booking is for one trip.",
@@ -1062,7 +1338,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "bookings_of"
+        "inverseKey": "bookings"
       },
       {
         "describes": "A packing item is for one trip.",
@@ -1072,37 +1348,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "packing_of"
-      },
-      {
-        "describes": "A trip lists its bookings.",
-        "fromTable": "trip",
-        "fromField": "bookings",
-        "toTable": "booking",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "trip_bookings"
-      },
-      {
-        "describes": "A trip lists its plan items.",
-        "fromTable": "trip",
-        "fromField": "plan_items",
-        "toTable": "itinerary",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "trip_plans"
-      },
-      {
-        "describes": "A trip lists its packing items.",
-        "fromTable": "trip",
-        "fromField": "pack_list",
-        "toTable": "packing",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "trip_packing"
+        "inverseKey": "pack_list"
       }
     ],
     "sharedBlocks": [],
@@ -1137,7 +1383,38 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "pack_done",
+        "table": "packing",
+        "name": "Mark packed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "packed",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "place_visit",
+        "table": "place",
+        "name": "Mark visited",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "visited",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_trips",
@@ -1222,6 +1499,51 @@
         "table": "place",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "trip_upcoming",
+        "name": "Upcoming",
+        "table": "trip",
+        "kind": "grid",
+        "within": {
+          "starts_on": {
+            "relative": "next_days",
+            "n": 120
+          }
+        }
+      },
+      {
+        "token": "plan_60",
+        "name": "Next 60 days",
+        "table": "itinerary",
+        "kind": "grid",
+        "within": {
+          "when": {
+            "relative": "next_days",
+            "n": 60
+          }
+        }
+      },
+      {
+        "token": "book_60",
+        "name": "Bookings, next 60 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "from_on": {
+            "relative": "next_days",
+            "n": 60
+          }
+        }
+      },
+      {
+        "token": "pack_open",
+        "name": "Still to pack",
+        "table": "packing",
+        "kind": "grid",
+        "filters": {
+          "packed": false
+        }
       }
     ],
     "agent": {
@@ -1310,7 +1632,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1365,6 +1687,18 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u1",
+                "name": "Upcoming",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "starts_on": {
+                    "relative": "next_days",
+                    "n": 120
+                  }
+                }
+              },
+              {
                 "id": "view-1",
                 "name": "Gallery",
                 "layout": "gallery",
@@ -1395,241 +1729,199 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Itinerary"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "itinerary",
-                      "view": "all_plans"
-                    },
-                    "inline": true,
-                    "title": "Itinerary",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-5",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "when"
-                      },
-                      {
-                        "id": "view-6",
-                        "name": "By category",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "category"
-                      },
-                      {
-                        "id": "view-7",
-                        "name": "All plans",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "when",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-5"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Bookings"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "booking",
-                      "view": "all_bookings"
-                    },
-                    "inline": true,
-                    "title": "Bookings",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-8",
-                        "name": "All bookings",
-                        "layout": "grid",
-                        "icon": "Table"
-                      },
-                      {
-                        "id": "view-9",
-                        "name": "By type",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "type"
-                      },
-                      {
-                        "id": "view-10",
-                        "name": "Cost by type",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "type",
-                          "op": "sum",
-                          "field": "cost",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-8"
-                  }
-                }
-              ]
+              "text": "Itinerary"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
         },
         {
-          "type": "columnList",
-          "children": [
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Packing"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "packing",
-                      "view": "all_packing"
-                    },
-                    "inline": true,
-                    "title": "Packing list",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-11",
-                        "name": "To pack",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "packed": false
-                        }
-                      },
-                      {
-                        "id": "view-12",
-                        "name": "By category",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "category"
-                      }
-                    ],
-                    "activeViewId": "view-11"
-                  }
-                }
-              ]
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "itinerary",
+              "view": "all_plans"
             },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
+            "inline": true,
+            "title": "Itinerary",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when"
               },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Places to see"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
+              {
+                "id": "view-6",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "view-7",
+                "name": "All plans",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when",
+                    "direction": "asc"
                   }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "place",
-                      "view": "all_places"
-                    },
-                    "inline": true,
-                    "title": "Places",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-13",
-                        "name": "Places",
-                        "layout": "gallery",
-                        "icon": "LayoutGrid"
-                      },
-                      {
-                        "id": "view-14",
-                        "name": "Not yet visited",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "visited": false
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-13"
-                  }
-                }
-              ]
+                ]
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookings"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_bookings"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "All bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-9",
+                "name": "By type",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "type"
+              },
+              {
+                "id": "view-10",
+                "name": "Cost by type",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "type",
+                  "op": "sum",
+                  "field": "cost",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-8"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "packing",
+              "view": "all_packing"
+            },
+            "inline": true,
+            "title": "Packing list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-11",
+                "name": "To pack",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "packed": false
+                }
+              },
+              {
+                "id": "view-12",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              }
+            ],
+            "activeViewId": "view-11"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Places to see"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "place",
+              "view": "all_places"
+            },
+            "inline": true,
+            "title": "Places",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Places",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-14",
+                "name": "Not yet visited",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "visited": false
+                }
+              }
+            ],
+            "activeViewId": "view-13"
+          }
         },
         {
           "type": "divider"
@@ -1687,6 +1979,18 @@
               "text": "Compare what is booked with what you planned to spend."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Bookings total compares what you have committed with the budget you set for each trip. The sheet records your numbers only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Wallet"
+          }
         },
         {
           "type": "database",
@@ -1763,6 +2067,41 @@
           "props": {
             "icon": "Info"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the figures"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bookings total is the sum of bookings linked to the trip."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Budget left is the budget minus bookings total; Budget check flags a trip when bookings pass the budget."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Plans carry an estimated cost for activities that are not booked yet."
+            }
+          ]
         }
       ]
     },
@@ -1774,6 +2113,18 @@
         "emoji": "✈️"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run this list a week before leaving. Anything you cannot tick today goes on the packing table with a due day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Plane"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -1862,16 +2213,103 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-18",
+                "id": "view-u2",
                 "name": "Still to pack",
                 "layout": "grid",
                 "icon": "Table",
                 "filters": {
                   "packed": false
                 }
+              },
+              {
+                "id": "view-u3",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category",
+                "filters": {
+                  "packed": false
+                }
               }
             ],
-            "activeViewId": "view-18"
+            "activeViewId": "view-u2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the weather and adjust the packing list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Charge power banks and download tickets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leave a copy of the itinerary with someone at home"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day of travel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Passport, phone, wallet, keys"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lock windows and turn off appliances"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         }
       ]

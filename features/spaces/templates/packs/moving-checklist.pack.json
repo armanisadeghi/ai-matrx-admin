@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 1,
+  "version": 2,
   "title": "Moving Checklist",
   "description": "Timeframe checklist, box inventory and address-change tracker for a move.",
   "forWho": "Anyone moving house",
@@ -112,7 +112,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -125,7 +125,12 @@
               "In progress": "blue",
               "Done": "green"
             },
-            "default": "To do"
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "due_on",
@@ -136,11 +141,37 @@
             "format": "date"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 7, \"This week\", \"\")))"
+          },
+          {
             "key": "notes",
             "label": "Notes",
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
           }
         ],
         "rows": [
@@ -228,7 +259,7 @@
               "timeframe": "4 weeks out",
               "category": "Utilities",
               "status": "To do",
-              "due_on": "@today+6d",
+              "due_on": "@today",
               "notes": "Use the shared checklist"
             }
           },
@@ -239,7 +270,7 @@
               "timeframe": "4 weeks out",
               "category": "Packing",
               "status": "To do",
-              "due_on": "@today+9d",
+              "due_on": "@today+5d",
               "notes": "Ask about weekend rates"
             }
           },
@@ -364,6 +395,88 @@
               "notes": "Check the lease terms"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New moving task",
+            "values": {
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What to do"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Describe the task and who it involves."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Needs"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Phone number or website"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Account or reference number"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done when"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirmation received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -430,7 +543,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -443,7 +556,12 @@
               "Moved": "blue",
               "Unpacked": "green"
             },
-            "default": "Packed"
+            "default": "Packed",
+            "statusGroups": {
+              "Packed": "todo",
+              "Moved": "in_progress",
+              "Unpacked": "done"
+            }
           },
           {
             "key": "weight",
@@ -461,6 +579,24 @@
                 "value": 80
               }
             ]
+          },
+          {
+            "key": "packed_at",
+            "label": "Packed at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "moved_btn",
+            "label": "Mark moved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "box_moved"
+            }
           }
         ],
         "rows": [
@@ -596,6 +732,96 @@
               "weight": 8
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New box",
+            "values": {
+              "status": "Packed"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contents"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "List the main items so you can find the box without opening it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Handling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Fragile? Mark top and sides"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Which room does it go to?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Weight: keep it under what one person can lift"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Unpacking"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Unpacked and flattened"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -636,6 +862,14 @@
             "format": "date"
           },
           {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Done} = TRUE, \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 7, \"This week\", \"\")))"
+          },
+          {
             "key": "method",
             "label": "How",
             "parityType": "select",
@@ -660,6 +894,17 @@
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "change_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "change_done"
+            }
           }
         ],
         "rows": [
@@ -678,7 +923,7 @@
             "values": {
               "service": "Employer payroll",
               "done": false,
-              "due_on": "@today+7d",
+              "due_on": "@today+4d",
               "method": "Online",
               "account": "Employee 2093"
             }
@@ -707,7 +952,7 @@
             "key": "ac5",
             "values": {
               "service": "Magazine subscriptions",
-              "done": true,
+              "done": false,
               "due_on": "@today-3d",
               "method": "Online",
               "account": "Sub 7420"
@@ -778,7 +1023,53 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "change_done",
+        "table": "address_change",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "box_moved",
+        "table": "box",
+        "name": "Mark moved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Moved"
+          }
+        ],
+        "color": "blue"
+      }
+    ],
     "views": [
       {
         "token": "all_tasks",
@@ -835,6 +1126,94 @@
         "table": "address_change",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_overdue",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_today",
+        "name": "Today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "task_next30",
+        "name": "Next 30 days",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "change_open",
+        "name": "Address changes due soon",
+        "table": "address_change",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "change_overdue",
+        "name": "Address changes overdue",
+        "table": "address_change",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
       }
     ],
     "agent": {
@@ -923,7 +1302,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -978,6 +1357,23 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u15",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
+              },
+              {
                 "id": "view-1",
                 "name": "By timeframe",
                 "layout": "kanban",
@@ -1014,125 +1410,122 @@
                     "In progress"
                   ]
                 }
+              },
+              {
+                "id": "view-u16",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-1"
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Progress"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Moving tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-5",
-                        "name": "Tasks by status",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      },
-                      {
-                        "id": "view-6",
-                        "name": "Tasks by category",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "category",
-                          "op": "count"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-5"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Address changes"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "address_change",
-                      "view": "all_changes"
-                    },
-                    "inline": true,
-                    "title": "Address changes",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-7",
-                        "name": "To do",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "done": false
-                        }
-                      },
-                      {
-                        "id": "view-8",
-                        "name": "All",
-                        "layout": "grid",
-                        "icon": "Table"
-                      }
-                    ],
-                    "activeViewId": "view-7"
-                  }
-                }
-              ]
+              "text": "Progress"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Moving tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-5",
+                "name": "Tasks by status",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "view-6",
+                "name": "Tasks by category",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "category",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "view-5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Address changes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "address_change",
+              "view": "all_changes"
+            },
+            "inline": true,
+            "title": "Address changes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-7",
+                "name": "To do",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-8",
+                "name": "All",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-7"
+          }
         },
         {
           "type": "heading",
@@ -1235,6 +1628,12 @@
               ]
             }
           ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:moving-day"
+          }
         }
       ]
     },
@@ -1396,6 +1795,60 @@
             ],
             "activeViewId": "view-14"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Room-by-room order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start with rooms you use least: garage, spare room, off-season closets."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Do the kitchen over two days; it always takes longer than planned."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Leave beds, toiletries and the essentials bag for the last evening."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Label format that works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the destination room, a two-word summary of the contents, and a number on two sides. Example: KITCHEN - pans and lids - 7."
+            }
+          ]
         }
       ]
     },
@@ -1502,6 +1955,225 @@
           "background": "purple",
           "props": {
             "icon": "Moon"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why a kit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After a long day you will not want to dig for a charger or a kettle. One box, packed last and loaded last, makes the first evening calm."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Optional extras"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pet food and bowls"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Toilet paper and hand soap"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cash and a takeaway menu for dinner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "moving-day",
+      "parent": "moving-checklist",
+      "title": "Moving day plan",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hand this timeline to whoever is helping on the day."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Early"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final walk-through, meter photos"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Photograph every room"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Arrival of movers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Walk them through fragile boxes and the order of loading"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep the first-night kit with you"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Midday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cleaning crew or last clean"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check cupboards and the freezer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Afternoon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keys to the landlord, unload at the new place"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Direct each box to its room by the label"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Evening"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Beds made, kettle on"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open the first-night box"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keep valuables, documents and medicines with you, not on the truck."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "Briefcase"
           }
         }
       ]

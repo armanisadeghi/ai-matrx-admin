@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0215",
-  "version": 1,
+  "version": 2,
   "title": "Home Inventory",
   "description": "Record what you own by room with values, serial numbers and warranty dates.",
   "forWho": "Homeowners and renters",
@@ -117,17 +117,8 @@
             "format": "date"
           },
           {
-            "key": "items",
-            "label": "Items",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "item",
-            "multi": true
-          },
-          {
             "key": "item_count",
-            "label": "Item count",
+            "label": "Items",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -146,6 +137,14 @@
             "agg": "sum",
             "unit": "USD",
             "format": "currency"
+          },
+          {
+            "key": "avg_value",
+            "label": "Average item value",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Items} > 0, ROUND({Total value} / {Items}, 0), 0)"
           }
         ],
         "rows": [
@@ -334,12 +333,36 @@
             ]
           },
           {
+            "key": "value_change",
+            "label": "Value change",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Current value} - {Purchase price}"
+          },
+          {
             "key": "warranty_ends",
             "label": "Warranty ends",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "warranty_days",
+            "label": "Warranty days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Warranty ends}, 'days')"
+          },
+          {
+            "key": "warranty_flag",
+            "label": "Warranty",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Warranty days left} < 0, \"Expired\", IF({Warranty days left} <= 60, \"Ending soon\", \"Covered\"))"
           },
           {
             "key": "condition",
@@ -366,6 +389,31 @@
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "search_btn",
+            "label": "Find manual",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "https://www.google.com/search?q={{brand}}+{{model}}+manual"
+            }
           }
         ],
         "rows": [
@@ -596,7 +644,7 @@
               "purchased_on": "@today-850d",
               "condition": "Good",
               "serial": "SW-A-19044",
-              "warranty_ends": "@today+20d",
+              "warranty_ends": "@today-30d",
               "location_detail": "At the desk"
             }
           },
@@ -665,6 +713,112 @@
               "location_detail": "Garage loft"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New item",
+            "values": {
+              "condition": "Good"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where it is"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Room, shelf or cupboard."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purchase"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where and when you bought it"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Price and receipt location"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Identifiers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Model and serial number"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Photo of the label"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Care"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Cleaning, servicing and warranty claims."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -677,17 +831,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "items_in"
-      },
-      {
-        "describes": "A room lists its items.",
-        "fromTable": "room",
-        "fromField": "items",
-        "toTable": "item",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "room_items"
+        "inverseKey": "items"
       }
     ],
     "sharedBlocks": [],
@@ -763,6 +907,29 @@
         "table": "room",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "item_warranty60",
+        "name": "Warranty ending, next 60 days",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "warranty_ends": {
+            "relative": "next_days",
+            "n": 60
+          }
+        }
+      },
+      {
+        "token": "item_expired",
+        "name": "Warranty expired",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "warranty_ends": {
+            "relative": "before_today"
+          }
+        }
       }
     ],
     "agent": {
@@ -851,7 +1018,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -882,129 +1049,108 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Rooms"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "room",
-                      "view": "all_rooms"
-                    },
-                    "inline": true,
-                    "title": "Rooms",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Rooms",
-                        "layout": "gallery",
-                        "icon": "LayoutGrid"
-                      },
-                      {
-                        "id": "view-2",
-                        "name": "Value by room",
-                        "layout": "grid",
-                        "icon": "Table"
-                      },
-                      {
-                        "id": "view-3",
-                        "name": "Value by room",
-                        "layout": "chart",
-                        "icon": "ChartBar",
-                        "chart": {
-                          "type": "hbar",
-                          "groupBy": "room_name",
-                          "op": "sum",
-                          "field": "total_value"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Value by category"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "item",
-                      "view": "all_items"
-                    },
-                    "inline": true,
-                    "title": "Items",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-4",
-                        "name": "Value by category",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "category",
-                          "op": "sum",
-                          "field": "current_value",
-                          "centerValue": true
-                        }
-                      },
-                      {
-                        "id": "view-5",
-                        "name": "Items by condition",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "condition",
-                          "op": "count"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-4"
-                  }
-                }
-              ]
+              "text": "Rooms"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "room",
+              "view": "all_rooms"
+            },
+            "inline": true,
+            "title": "Rooms",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Rooms",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "view-2",
+                "name": "Value by room",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "view-3",
+                "name": "Value by room",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "room_name",
+                  "op": "sum",
+                  "field": "total_value"
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Value by category"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_items"
+            },
+            "inline": true,
+            "title": "Items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-4",
+                "name": "Value by category",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "current_value",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "view-5",
+                "name": "Items by condition",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "condition",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "view-4"
+          }
         },
         {
           "type": "divider"
@@ -1034,6 +1180,24 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u17",
+                "name": "Ending in 60 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "warranty_ends",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
                 "id": "view-6",
                 "name": "Warranty calendar",
                 "layout": "calendar",
@@ -1051,12 +1215,22 @@
                     "direction": "asc"
                   }
                 ],
-                "filters": {
-                  "condition": [
-                    "Excellent",
-                    "Good",
-                    "Fair"
-                  ]
+                "within": {
+                  "warranty_ends": {
+                    "relative": "next_days",
+                    "n": 120
+                  }
+                }
+              },
+              {
+                "id": "view-u18",
+                "name": "Expired",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "warranty_ends": {
+                    "relative": "before_today"
+                  }
                 }
               }
             ],
@@ -1243,6 +1417,108 @@
             ],
             "activeViewId": "view-13"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to record for each item"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Field"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why it helps"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Purchase price and date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shows what you paid and how old it is"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Serial and model"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Identifies the exact item"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Photo of the item and the label"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Easy proof it exists"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Current value"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Your own estimate, updated yearly"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Photographs and receipts are stored on your own devices; this list keeps their location in plain words."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Camera"
+          }
         }
       ]
     },
@@ -1394,6 +1670,53 @@
                 ]
               }
             ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order of work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start with the highest-value room and work down."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Warranty ending list and decide what to repair, replace or ignore."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Save a copy of the list outside the home."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If you only have ten minutes, check the Warranty ending soon view."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Timer"
           }
         }
       ]

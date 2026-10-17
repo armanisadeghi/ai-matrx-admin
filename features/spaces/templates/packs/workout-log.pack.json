@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 1,
+  "version": 2,
   "title": "Workout Log",
   "description": "Log sessions, exercises and sets with totals, personal bests and body metrics.",
   "forWho": "Lifters and runners",
@@ -150,17 +150,8 @@
             "format": "date"
           },
           {
-            "key": "sets_logged",
-            "label": "Logged sets",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "set_entry",
-            "multi": true
-          },
-          {
             "key": "best_weight",
-            "label": "Heaviest lift (lb)",
+            "label": "Heaviest set (lb)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -170,7 +161,7 @@
           },
           {
             "key": "total_sets",
-            "label": "Set count",
+            "label": "Sets logged",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -396,20 +387,26 @@
             ]
           },
           {
+            "key": "done",
+            "label": "Completed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status_flag",
+            "label": "Status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Completed} = TRUE, \"Done\", IF(DATEDIFF(TODAY(), {Date}, 'days') < 0, \"Missed\", \"Planned\"))"
+          },
+          {
             "key": "notes",
             "label": "Notes",
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
-          },
-          {
-            "key": "sets",
-            "label": "Sets",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "set_entry",
-            "multi": true
           },
           {
             "key": "volume",
@@ -423,13 +420,39 @@
           },
           {
             "key": "set_count",
-            "label": "Sets done",
+            "label": "Sets",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "sets",
             "pick": "set_name",
             "agg": "count"
+          },
+          {
+            "key": "avg_per_set",
+            "label": "Volume per set (lb)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Sets} > 0, ROUND({Total volume (lb)} / {Sets}, 0), 0)"
+          },
+          {
+            "key": "logged",
+            "label": "Logged at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "wo_done"
+            }
           }
         ],
         "rows": [
@@ -441,7 +464,8 @@
               "type": "Strength",
               "duration": 62,
               "effort": 7,
-              "notes": "Felt strong, benched a new best"
+              "notes": "Felt strong, benched a new best",
+              "done": true
             }
           },
           {
@@ -452,7 +476,8 @@
               "type": "Strength",
               "duration": 58,
               "effort": 8,
-              "notes": "Grip gave out on deadlifts"
+              "notes": "Grip gave out on deadlifts",
+              "done": true
             }
           },
           {
@@ -463,7 +488,8 @@
               "type": "Strength",
               "duration": 70,
               "effort": 9,
-              "notes": "Squats heavy but clean"
+              "notes": "Squats heavy but clean",
+              "done": true
             }
           },
           {
@@ -474,7 +500,8 @@
               "type": "Cardio",
               "duration": 40,
               "effort": 5,
-              "notes": "Conversation pace"
+              "notes": "Conversation pace",
+              "done": true
             }
           },
           {
@@ -485,7 +512,8 @@
               "type": "Strength",
               "duration": 60,
               "effort": 7,
-              "notes": "Added a rep to every set"
+              "notes": "Added a rep to every set",
+              "done": true
             }
           },
           {
@@ -496,7 +524,8 @@
               "type": "Cardio",
               "duration": 30,
               "effort": 9,
-              "notes": "Four rounds, tough"
+              "notes": "Four rounds, tough",
+              "done": true
             }
           },
           {
@@ -507,7 +536,8 @@
               "type": "Strength",
               "duration": 57,
               "effort": 7,
-              "notes": "Pull-ups moving well"
+              "notes": "Pull-ups moving well",
+              "done": true
             }
           },
           {
@@ -518,7 +548,176 @@
               "type": "Mobility",
               "duration": 35,
               "effort": 3,
-              "notes": "Hips finally loosening"
+              "notes": "Hips finally loosening",
+              "done": true
+            }
+          },
+          {
+            "key": "wp1",
+            "values": {
+              "workout_name": "Push day, volume focus",
+              "on": "@today+1d",
+              "type": "Strength",
+              "duration": 55,
+              "notes": "Planned",
+              "done": false
+            }
+          },
+          {
+            "key": "wp2",
+            "values": {
+              "workout_name": "Mobility reset",
+              "on": "@today",
+              "type": "Mobility",
+              "duration": 30,
+              "notes": "Planned",
+              "done": false
+            }
+          },
+          {
+            "key": "wp3",
+            "values": {
+              "workout_name": "Long run",
+              "on": "@today+3d",
+              "type": "Cardio",
+              "duration": 50,
+              "notes": "Planned",
+              "done": false
+            }
+          },
+          {
+            "key": "wp4",
+            "values": {
+              "workout_name": "Pull day",
+              "on": "@today+5d",
+              "type": "Strength",
+              "duration": 55,
+              "notes": "Planned",
+              "done": false
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Workout",
+            "values": {
+              "type": "Strength",
+              "done": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Warm-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "5 minutes easy cardio"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Joint circles and light sets"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Main work"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "List each exercise with sets, reps and weight. Log the sets in the Sets table so the volume totals build up."
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Exercise, sets x reps at weight"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Exercise, sets x reps at weight"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Cool-down"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Stretch what you trained"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How it felt"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Effort from 1 to 10 and one line on sleep, food and energy."
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -961,7 +1160,7 @@
           },
           {
             "key": "weight",
-            "label": "Weight (lb)",
+            "label": "Body weight (lb)",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -998,6 +1197,21 @@
             "label": "Notes",
             "parityType": "text",
             "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "weekly_change",
+            "label": "Days since",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Date}, TODAY(), 'days')"
+          },
+          {
+            "key": "logged",
+            "label": "Logged at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
             "contextPolicy": "include"
           }
         ],
@@ -1074,7 +1288,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "sets_of"
+        "inverseKey": "sets"
       },
       {
         "describes": "A set is of one exercise.",
@@ -1084,27 +1298,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "sets_for"
-      },
-      {
-        "describes": "A workout lists its sets.",
-        "fromTable": "workout",
-        "fromField": "sets",
-        "toTable": "set_entry",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "workout_sets"
-      },
-      {
-        "describes": "An exercise lists the sets logged for it.",
-        "fromTable": "exercise",
-        "fromField": "sets_logged",
-        "toTable": "set_entry",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "exercise_sets"
+        "inverseKey": "sets_logged"
       }
     ],
     "sharedBlocks": [],
@@ -1139,7 +1333,23 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "wo_done",
+        "table": "workout",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_workouts",
@@ -1202,6 +1412,68 @@
             "direction": "desc"
           }
         ]
+      },
+      {
+        "token": "wo_today",
+        "name": "Today",
+        "table": "workout",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "wo_week",
+        "name": "This week",
+        "table": "workout",
+        "kind": "calendar",
+        "dateField": "on",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "wo_next7",
+        "name": "Next 7 days",
+        "table": "workout",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "wo_last30",
+        "name": "Last 30 days",
+        "table": "workout",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        },
+        "filters": {
+          "done": true
+        }
+      },
+      {
+        "token": "me_90",
+        "name": "Last 90 days",
+        "table": "measurement",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "past_days",
+            "n": 90
+          }
+        }
       }
     ],
     "agent": {
@@ -1290,7 +1562,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1321,131 +1593,151 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Recent workouts"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "workout",
-                      "view": "all_workouts"
-                    },
-                    "inline": true,
-                    "title": "Workouts",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "on"
-                      },
-                      {
-                        "id": "view-2",
-                        "name": "Latest",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "on",
-                            "direction": "desc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "view-3",
-                        "name": "By type",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "type"
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Training load"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "workout",
-                      "view": "all_workouts"
-                    },
-                    "inline": true,
-                    "title": "Workouts",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-4",
-                        "name": "Minutes by type",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "type",
-                          "op": "sum",
-                          "field": "duration"
-                        }
-                      },
-                      {
-                        "id": "view-5",
-                        "name": "Sessions by type",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "type",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-4"
-                  }
-                }
-              ]
+              "text": "Recent workouts"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "workout",
+              "view": "all_workouts"
+            },
+            "inline": true,
+            "title": "Workouts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u1",
+                "name": "This week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-1",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on"
+              },
+              {
+                "id": "view-2",
+                "name": "Latest",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-3",
+                "name": "By type",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "type"
+              },
+              {
+                "id": "view-u2",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u3",
+                "name": "Last 30 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                },
+                "filters": {
+                  "done": true
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Training load"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "workout",
+              "view": "all_workouts"
+            },
+            "inline": true,
+            "title": "Workouts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-4",
+                "name": "Minutes by type",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "type",
+                  "op": "sum",
+                  "field": "duration"
+                }
+              },
+              {
+                "id": "view-5",
+                "name": "Sessions by type",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "type",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-4"
+          }
         },
         {
           "type": "divider"
@@ -1504,111 +1796,90 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Sets logged"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "set_entry",
-                      "view": "all_sets"
-                    },
-                    "inline": true,
-                    "title": "Sets",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-9",
-                        "name": "All sets",
-                        "layout": "grid",
-                        "icon": "Table"
-                      }
-                    ],
-                    "activeViewId": "view-9"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Body metrics"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "measurement",
-                      "view": "all_metrics"
-                    },
-                    "inline": true,
-                    "title": "Body metrics",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-10",
-                        "name": "Weight over time",
-                        "layout": "chart",
-                        "icon": "ChartLine",
-                        "chart": {
-                          "type": "line",
-                          "groupBy": "on",
-                          "op": "avg",
-                          "field": "weight"
-                        }
-                      },
-                      {
-                        "id": "view-11",
-                        "name": "Table",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "on",
-                            "direction": "desc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-10"
-                  }
-                }
-              ]
+              "text": "Sets logged"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "set_entry",
+              "view": "all_sets"
+            },
+            "inline": true,
+            "title": "Sets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-9",
+                "name": "All sets",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-9"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Body metrics"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "measurement",
+              "view": "all_metrics"
+            },
+            "inline": true,
+            "title": "Body metrics",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-10",
+                "name": "Weight over time",
+                "layout": "chart",
+                "icon": "ChartLine",
+                "chart": {
+                  "type": "line",
+                  "groupBy": "on",
+                  "op": "avg",
+                  "field": "weight"
+                }
+              },
+              {
+                "id": "view-11",
+                "name": "Table",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-10"
+          }
         },
         {
           "type": "divider"
@@ -1663,6 +1934,18 @@
               "text": "Reusable layouts to copy into a new workout."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Pick a routine, start a new workout from the template, and log each set. The numbers below are examples, not prescriptions."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Dumbbell"
+          }
         },
         {
           "type": "heading",
@@ -1833,6 +2116,41 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to scale a routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Too easy for three sessions in a row: add a set or a few pounds."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Too hard to finish: drop a set, keep the movements."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Short on time: do the first two exercises and the mobility finish."
+            }
+          ]
         }
       ]
     },
@@ -1851,6 +2169,18 @@
               "text": "Review once a month."
             }
           ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Look at the Heaviest set column on Exercises and the volume per workout. Progress rarely moves in a straight line; compare months, not days."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "TrendingUp"
+          }
         },
         {
           "type": "numbered",
@@ -1927,7 +2257,7 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-13",
+                "id": "view-u4",
                 "name": "Hard sessions",
                 "layout": "grid",
                 "icon": "Table",
@@ -1936,11 +2266,36 @@
                     8,
                     9
                   ]
+                },
+                "within": {
+                  "on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
                 }
               }
             ],
-            "activeViewId": "view-13"
+            "activeViewId": "view-u4"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A sample monthly note"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bench press heaviest set up 10 lb. Leg day effort stayed at 9 with no gain: add a rest day before it. Next month: two mobility sessions, keep the long run on weekends."
+            }
+          ]
         }
       ]
     }
