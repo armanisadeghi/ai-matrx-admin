@@ -53,9 +53,9 @@ export function useMessageFlags(agentId: string, messageIndex: number): MessageF
 
   const states: Partial<Record<MessageFlagKey, FlagToggleState>> = {
     example: {
-      // Examples are added as a pair from the builder's "+ Example" button; the
-      // header only shows the flag on a message that already is one (to take it off).
-      hidden: !flags.example || (role !== "user" && role !== "assistant"),
+      // Examples are added as a pair from the builder's "+ Example" button and
+      // removed by deleting their messages — never toggled in a message header.
+      hidden: true,
       verdict: {
         verdict: "native",
         reason: "Sent as an ordinary turn; the paired user and assistant messages toggle together.",

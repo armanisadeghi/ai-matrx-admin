@@ -18,7 +18,7 @@
  * learns this because the panel keeps requesting frames while it is active.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { BackendApiError } from "@ai-matrx/api";
 import {
@@ -45,26 +45,6 @@ export function useScreenshotSession(runId: string | null, rapid = false) {
   const activityCaptureRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handledActivityRef = useRef<number | null>(null);
   const captureInFlightRef = useRef(false);
-  // Back-off after a refused capture. A 409 (a person holds the wheel, or the
-  // run is changing state) is a STATE, not an error: pause quietly and let the
-  // caller start again later. Any other failure pauses too, so a viewer that
-  // re-starts whenever the session is inactive can never loop on one error.
-  const [pausedUntil, setPausedUntil] = useState<number | null>(null);
-  const refusalsRef = useRef(0);
-  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
-    },
-    [],
-  );
-  const pause = useCallback(() => {
-    const delay = Math.min(60_000, 5_000 * 2 ** refusalsRef.current);
-    refusalsRef.current += 1;
-    setPausedUntil(Date.now() + delay);
-    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
-    pauseTimerRef.current = setTimeout(() => setPausedUntil(null), delay);
-  }, []);
 
   const clearTimers = useCallback(() => {
     if (cadenceRef.current) clearInterval(cadenceRef.current);
@@ -85,7 +65,6 @@ export function useScreenshotSession(runId: string | null, rapid = false) {
     captureInFlightRef.current = true;
     try {
       const frame = await requestScreenshot(runId);
-      refusalsRef.current = 0;
       dispatch(pushFrame(frame));
     } catch (error) {
       const details =
@@ -106,25 +85,21 @@ export function useScreenshotSession(runId: string | null, rapid = false) {
       // A retryable worker replacement may recover on the next cadence; every
       // other failure ends this bounded session so timers cannot spam the same
       // error or leak an unhandled promise rejection.
-      if (!workerIsBeingReplaced) {
-        stop();
-        pause();
-      }
+      if (!workerIsBeingReplaced) stop();
     } finally {
       captureInFlightRef.current = false;
     }
-  }, [dispatch, runId, stop, pause]);
+  }, [dispatch, runId, stop]);
 
-  const paused = pausedUntil !== null;
   const start = useCallback(() => {
-    if (!runId || paused) return;
+    if (!runId) return;
     dispatch(
       startScreenshotSession({
         autoOffAt: Date.now() + SCREENSHOT_AUTO_OFF_MS,
       }),
     );
     void capture();
-  }, [capture, dispatch, runId, paused]);
+  }, [capture, dispatch, runId]);
 
   /** Re-arm resets the 5-minute clock (interaction / explicit "keep watching"). */
   const rearm = useCallback(() => {
@@ -171,8 +146,6 @@ export function useScreenshotSession(runId: string | null, rapid = false) {
     active: session.active,
     autoOffAt: session.autoOffAt,
     frames: session.frames,
-    /** A refused capture is backing off; `start` is a no-op until it clears. */
-    paused,
     start,
     stop,
     rearm,
