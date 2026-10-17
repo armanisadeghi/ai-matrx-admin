@@ -9,8 +9,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link2, Loader2, Unlink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@ai-matrx/design-system/controls";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -93,71 +93,74 @@ export function SpokespeoplePanel({
   const eligible = mine.filter((row) => !organizationId || row.organization_id === organizationId);
 
   return (
-    <Card className="p-4" data-testid="voice-spokespeople">
-      <h2 className="text-sm font-medium text-foreground">Spokespeople</h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        A person&apos;s own measured voice, linked to this brand.
-      </p>
-      {error ? <p className="mt-2 text-sm text-destructive">{error}<ErrorAlchemyMenu error={error} /></p> : null}
-      {linked === null && !error ? (
-        <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Reading spokespeople
-        </p>
-      ) : null}
-      {/* read-gate-exempt: linked stays null when the read fails; the failure shows above */}
-      {linked?.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">No spokesperson linked.</p> : null}
-      <ul className="mt-2 divide-y divide-border">
-        {(linked ?? []).map((row) => (
-          <li key={row.id} className="flex items-center gap-2 py-2 text-sm">
-            <Avatar className="h-6 w-6">
-              {row.person_user_id === userId && myAvatar ? <AvatarImage src={myAvatar} alt="" /> : null}
-              <AvatarFallback className="text-[10px]">{nameOf(row).slice(0, 1).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="min-w-0 flex-1 truncate text-foreground">{nameOf(row)}</span>
-            <Badge variant={row.status === "confirmed" ? "default" : "secondary"}>
-              {row.status === "confirmed" ? "Confirmed" : "Draft"}
-            </Badge>
-            {row.person_user_id === userId ? (
-              <Button variant="quiet" icon={<Unlink />} disabled={busyId === row.id} onClick={() => void change(row, null)}>
-                Unlink
-              </Button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-      {mine.length - eligible.length > 0 ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          {mine.length - eligible.length} of your voices are filed in another organization.
-        </p>
-      ) : null}
-      {onMeasureMine && userId ? (
-        <div className="mt-3">
-          <Button variant="primary" icon={<Link2 />} onClick={onMeasureMine}>
-            {alreadyLinked ? "Re-measure" : `Measure my voice for ${brandName}`}
+    <SectionCard
+      title="Spokespeople"
+      about="A person's own measured voice, linked to this brand. Drafts written as that person for this brand are checked against their voice."
+      headerExtra={
+        onMeasureMine && userId ? (
+          <Button variant="outline" icon={<Link2 />} onClick={onMeasureMine}>
+            {alreadyLinked ? "Re-measure" : "Measure my voice"}
           </Button>
-        </div>
-      ) : null}
-      {eligible.length ? (
-        <div className="mt-3 border-t border-border pt-3">
-          <p className="text-xs text-muted-foreground">Your voices</p>
-          <ul className="mt-1 divide-y divide-border">
-            {eligible.map((row) => (
-              <li key={row.id} className="flex items-center gap-2 py-2 text-sm">
-                <span className="min-w-0 flex-1 truncate text-foreground">
-                  {nameOf(row)}
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    {row.status === "confirmed" ? "Confirmed" : "Draft"} · {row.sample_count} samples · measured{" "}
-                    {new Date(row.last_extracted_at).toLocaleDateString()}
-                  </span>
-                </span>
-                <Button variant="quiet" icon={<Link2 />} disabled={busyId === row.id} onClick={() => void change(row, brandId)}>
-                  Link as spokesperson
-                </Button>
+        ) : null
+      }
+    >
+      <div data-testid="voice-spokespeople">
+        {error ? <p className="px-3 py-2 type-secondary text-destructive">{error}<ErrorAlchemyMenu error={error} /></p> : null}
+        {linked === null && !error ? (
+          <p className="flex items-center gap-2 px-3 py-2 type-secondary text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Reading spokespeople
+          </p>
+        ) : null}
+        {/* read-gate-exempt: linked stays null when the read fails; the failure shows above */}
+        {linked?.length === 0 ? <p className="px-3 py-2 type-secondary text-muted-foreground">No spokesperson linked</p> : null}
+        {(linked ?? []).length > 0 ? (
+          <ul className="divide-y divide-border">
+            {(linked ?? []).map((row) => (
+              <li key={row.id} className="flex min-h-10 items-center gap-2 px-3 py-1.5">
+                <Avatar className="h-6 w-6">
+                  {row.person_user_id === userId && myAvatar ? <AvatarImage src={myAvatar} alt="" /> : null}
+                  <AvatarFallback className="type-meta">{nameOf(row).slice(0, 1).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="min-w-0 flex-1 truncate type-body text-foreground">{nameOf(row)}</span>
+                <Badge variant={row.status === "confirmed" ? "default" : "secondary"}>
+                  {row.status === "confirmed" ? "Confirmed" : "Draft"}
+                </Badge>
+                {row.person_user_id === userId ? (
+                  <Button variant="quiet" icon={<Unlink />} disabled={busyId === row.id} onClick={() => void change(row, null)}>
+                    Unlink
+                  </Button>
+                ) : null}
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
-    </Card>
+        ) : null}
+        {eligible.length ? (
+          <div className="border-t border-border">
+            <h3 className="px-3 pt-2 type-label">Your voices</h3>
+            <ul className="divide-y divide-border">
+              {eligible.map((row) => (
+                <li key={row.id} className="flex min-h-10 items-center gap-2 px-3 py-1.5">
+                  <span className="min-w-0 flex-1 truncate">
+                    <span className="type-body text-foreground">{nameOf(row)}</span>
+                    <span className="ml-2 type-meta text-muted-foreground">
+                      {row.status === "confirmed" ? "Confirmed" : "Draft"} · {row.sample_count} samples · measured{" "}
+                      {new Date(row.last_extracted_at).toLocaleDateString()}
+                    </span>
+                  </span>
+                  <Button variant="quiet" icon={<Link2 />} disabled={busyId === row.id} onClick={() => void change(row, brandId)}>
+                    Link as spokesperson
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {mine.length - eligible.length > 0 ? (
+          <p className="border-t border-border px-3 py-2 type-meta text-muted-foreground">
+            {mine.length - eligible.length} of your voices are filed in another organization
+          </p>
+        ) : null}
+      </div>
+    </SectionCard>
   );
 }

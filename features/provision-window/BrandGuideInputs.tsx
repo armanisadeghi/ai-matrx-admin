@@ -56,13 +56,16 @@ function PointRow({
     }
   };
   return (
-    <div className="flex h-7 items-center gap-1" data-testid={`brand-guide-inputs-${point}`}>
-      <span className="mr-1 font-semibold">{BRAND_GUIDE_POINTS[point]}</span>
+    // One line, never wrapping: the chips sit in the page title row, which scrolls sideways instead of growing.
+    <div className="flex h-7 shrink-0 items-center gap-1 whitespace-nowrap" data-testid={`brand-guide-inputs-${point}`}>
+      <span className="mr-1 type-label">{BRAND_GUIDE_POINTS[point]}</span>
       <Button variant="outline" onClick={capture} disabled={busy}>
         {busy ? "Capturing" : "Capture"}
       </Button>
-      <ProvisionCaptures pointKey={pointKey} subjectId={brandId} title={title} refreshKey={captured} limit={3} />
-      {error ? <span className="text-destructive">{error}</span> : null}
+      <span className="flex shrink-0 items-center whitespace-nowrap type-meta">
+        <ProvisionCaptures pointKey={pointKey} subjectId={brandId} title={title} refreshKey={captured} limit={3} />
+      </span>
+      {error ? <span className="type-meta text-destructive" title={error}>Capture failed</span> : null}
     </div>
   );
 }
@@ -83,7 +86,7 @@ export function BrandGuideInputs({
   );
   if (!canSee) return null;
   return (
-    <div className="flex flex-row items-center gap-x-4 text-xs" data-testid="brand-guide-inputs">
+    <div className="flex shrink-0 flex-row flex-nowrap items-center gap-x-4" data-testid="brand-guide-inputs">
       {points.map((p) => (
         <PointRow key={p} point={p} brandId={brandId} brandName={brandName} organizationId={organizationId} />
       ))}

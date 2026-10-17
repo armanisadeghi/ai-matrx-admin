@@ -26,7 +26,10 @@ import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/de
 import { AUTO_OPEN_NO_ROOM_EVENT, autoOpenHasRoom, markAutoOpened } from "@ai-matrx/summon/window";
 import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { runIsOver } from "@/features/workflow-runtime/types";
-import { useOptionalCanvas } from "@ai-matrx/canvas/react";
+import { useOptionalCanvas, useOptionalCanvasState } from "@ai-matrx/canvas/react";
+import { canvasItemId } from "@ai-matrx/canvas";
+import { closeOverlay } from "@ai-matrx/summon";
+import { watchAiCopyToClose } from "./watch-ai-one-place";
 import { openToolInCanvas } from "@/features/canvas/host/toolCanvas";
 import { AI_WATCH_CANVAS_ID, AI_WATCH_CANVAS_KEY, WORKFLOW_RUN_CANVAS_ID } from "./canvas/runViewKinds";
 import { selectOpenInstances } from "@ai-matrx/summon";
@@ -76,6 +79,16 @@ export default function AutoWatch() {
     };
   }, [canWatch, waiting]);
 
+  // ONE place: a Watch AI window and a Watch AI canvas tab never stand together (reload used to open both).
+  const watchTabId = canvasItemId(AI_WATCH_CANVAS_ID, AI_WATCH_CANVAS_KEY);
+  const canvasHasWatch = useOptionalCanvasState((state) => Boolean(state.items[watchTabId]), false);
+  const windowHasWatch = useAppSelector((state) => selectOpenInstances(state as RootState, "aiWatchWindow").some((i) => i.instanceId === AI_WATCH_PAGE_INSTANCE));
+  useEffect(() => {
+    const close = watchAiCopyToClose({ windowOpen: windowHasWatch, canvasOpen: canvasHasWatch, room });
+    if (close === "canvas") canvas?.close(watchTabId);
+    else if (close === "window") dispatch(closeOverlay({ overlayId: "aiWatchWindow", instanceId: AI_WATCH_PAGE_INSTANCE }));
+  }, [windowHasWatch, canvasHasWatch, room, canvas, watchTabId, dispatch]);
+
   const openRunInCanvas = useCallback(
     (runId: string) => {
       openToolInCanvas(canvas, { kind: WORKFLOW_RUN_CANVAS_ID, key: runId, title: "Workflow run", data: { runId } });
@@ -104,7 +117,7 @@ export default function AutoWatch() {
     if (watchOpened.current) return;
     // Never a second copy: a window already open on the page's one instance is the one.
     const open = selectOpenInstances(store.getState(), "aiWatchWindow");
-    if (open.some((i) => i.instanceId === AI_WATCH_PAGE_INSTANCE)) {
+    if (open.some((i) => i.instanceId === AI_WATCH_PAGE_INSTANCE) || canvas?.getState().items[watchTabId]) {
       watchOpened.current = true;
       return;
     }
@@ -115,7 +128,7 @@ export default function AutoWatch() {
     }
     markAutoOpened("aiWatchWindow", AI_WATCH_PAGE_INSTANCE);
     dispatch(watchAiRunAction());
-  }, [dispatch, store, room, openWatchInCanvas]);
+  }, [dispatch, store, room, openWatchInCanvas, canvas, watchTabId]);
 
   const openedRuns = useRef(new Set<string>());
   useEffect(() => {

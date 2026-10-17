@@ -9,13 +9,15 @@ import { DiscoveryWorkspace } from "./DiscoveryWorkspace";
 export function DiscoveryPage() {
   const { site, brandId } = useMarketingSite();
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain p-3">
-      <DiscoveryWorkspace
-        siteId={site.id}
-        brandId={brandId ?? null}
-        organizationId={site.organization_id ?? null}
-        siteLabel={site.domain ?? site.name ?? site.id}
-      />
+    <div className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain">
+      <div className="mx-auto w-full max-w-6xl px-3 py-3 sm:px-4">
+        <DiscoveryWorkspace
+          siteId={site.id}
+          brandId={brandId ?? null}
+          organizationId={site.organization_id ?? null}
+          siteLabel={site.domain ?? site.name ?? site.id}
+        />
+      </div>
     </div>
   );
 }
