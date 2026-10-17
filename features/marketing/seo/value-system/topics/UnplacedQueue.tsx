@@ -146,8 +146,7 @@ export function UnplacedQueue({
           onSelectedKeywordIdsChange={setBatch}
           emptyState={{
             title: "Nothing is unplaced",
-            description:
-              "Every keyword with traffic in this window is on the tree. That is the goal state.",
+            description: "Every keyword with traffic is on the tree.",
           }}
           headerActions={
             isAdmin ? (
