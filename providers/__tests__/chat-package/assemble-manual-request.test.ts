@@ -634,11 +634,12 @@ describe("assembleManualRequest — live read contract", () => {
   });
 
   test("a persistent model override never reaches the payload; a one-turn choice does", async () => {
-    const state = makeState({ modelId: "model-A" }) as ChatRootState & {
-      instanceModelOverrides: { byConversationId: Record<string, unknown> };
-    };
+    const state = makeState({ modelId: "model-A" });
     state.instanceModelOverrides.byConversationId[CONVERSATION_ID] = {
+      conversationId: CONVERSATION_ID,
+      baseSettings: {},
       overrides: { model: "persistent-override" },
+      removals: [],
     };
     const live = (await assembleManualRequest(state, CONVERSATION_ID))!;
     expect(live.ai_model_id).toBe("model-A");
