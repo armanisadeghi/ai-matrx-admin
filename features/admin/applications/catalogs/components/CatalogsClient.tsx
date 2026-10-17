@@ -34,7 +34,8 @@ import { APPLICATIONS_ADMIN_LOCATION } from "@/features/admin/applications/const
 import { AddFromLinkDialog } from "@/features/admin/applications/catalogs/components/AddFromLinkDialog";
 import { CatalogEntryEditor } from "@/features/admin/applications/catalogs/components/CatalogEntryEditor";
 import { CatalogKindTable } from "@/features/admin/applications/catalogs/components/CatalogKindTable";
-import { MODEL_KINDS, UnifiedModelKindTable } from "@/features/admin/applications/catalogs/components/UnifiedModelKindTable";
+import { MODEL_KINDS, UnifiedModelKindTable, kindOfModel } from "@/features/admin/applications/catalogs/components/UnifiedModelKindTable";
+import { fetchCuratedModels, type CuratedCatalogClient, type CuratedModel } from "@ai-matrx/agents/models";
 import {
   CATALOG_KINDS,
   DEFAULT_CATALOG_APP,
@@ -243,24 +244,33 @@ export function CatalogsClient({
 
   // One row per kind: the registry order, plus any unregistered kinds present
   // in the data (forward compat — never hide real rows).
-  const kindRows = useMemo(
-    () =>
-      [...CATALOG_KINDS.map((k) => k.slug), ...extraKinds].map((slug) => {
-        const entries = appRows.filter((r) => r.kind === slug);
-        const active = entries.filter((r) => r.is_active).length;
-        const def = CATALOG_KINDS.find((k) => k.slug === slug);
-        return {
-          slug,
-          label: kindLabel(slug),
-          description: def?.description ?? "",
-          registered: Boolean(def),
-          total: entries.length,
-          active,
-          inactive: entries.length - active,
-        };
-      }),
-    [appRows, extraKinds],
-  );
+  // Model kinds count the unified catalog (ai.*) — the list their table shows — never catalog_entries.
+  const [curated, setCurated] = useState<CuratedModel[] | null>(null);
+  const [curatedError, setCuratedError] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchCuratedModels(createClient() as unknown as CuratedCatalogClient)
+      .then((m) => alive && setCurated(m))
+      .catch((err: unknown) => alive && setCuratedError(err instanceof Error ? err.message : String(err)));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const kindRows = useMemo(() => {
+    const kindOfEntry = new Map(rows.map((e) => [e.id, e.kind]));
+    return [...CATALOG_KINDS.map((k) => k.slug), ...extraKinds].map((slug) => {
+      const def = CATALOG_KINDS.find((k) => k.slug === slug);
+      const base = { slug, label: kindLabel(slug), description: def?.description ?? "", registered: Boolean(def) };
+      if (MODEL_KINDS.has(slug)) {
+        const models = (curated ?? []).filter((m) => kindOfModel(m, kindOfEntry) === slug);
+        const active = models.filter((m) => m.offered).length;
+        return { ...base, pending: curated === null, total: models.length, active, inactive: models.length - active };
+      }
+      const entries = appRows.filter((r) => r.kind === slug);
+      const active = entries.filter((r) => r.is_active).length;
+      return { ...base, pending: false, total: entries.length, active, inactive: entries.length - active };
+    });
+  }, [appRows, rows, extraKinds, curated]);
 
   type KindRow = (typeof kindRows)[number];
 
@@ -308,7 +318,7 @@ export function CatalogsClient({
       accessorKey: "total",
       header: "Entries",
       align: "right",
-      cell: (row) => <span className="font-mono text-xs">{row.total}</span>,
+      cell: (row) => <span className="font-mono text-xs">{row.pending ? "…" : row.total}</span>,
       width: 90,
     },
     {
@@ -317,7 +327,9 @@ export function CatalogsClient({
       header: "Active",
       align: "right",
       cell: (row) =>
-        row.active > 0 ? (
+        row.pending ? (
+          <span className="font-mono text-xs text-muted-foreground">…</span>
+        ) : row.active > 0 ? (
           <Badge
             variant="outline"
             className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
@@ -338,7 +350,7 @@ export function CatalogsClient({
       align: "right",
       cell: (row) => (
         <span className="font-mono text-xs text-muted-foreground">
-          {row.inactive}
+          {row.pending ? "…" : row.inactive}
         </span>
       ),
       width: 90,
@@ -507,6 +519,9 @@ export function CatalogsClient({
         >
           New entries start inactive; active ones reach every install
         </p>
+        {curatedError ? (
+          <p className="text-xs text-destructive-ink">The model catalog counts could not be read: {curatedError}</p>
+        ) : null}
 
         <div className="min-h-0 flex-1">
           {/* No entity: a kind row here is a rollup ("N entries, N active")

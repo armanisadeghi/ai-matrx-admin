@@ -48,6 +48,7 @@ export interface LaneRollup {
   p50_ms: number | null;
   p95_ms: number | null;
   p50_ok_ms: number | null;
+  p50_round_trip_ms: number | null;
   cost_usd: number;
   points: number;
   cost_per_success_usd: number | null;

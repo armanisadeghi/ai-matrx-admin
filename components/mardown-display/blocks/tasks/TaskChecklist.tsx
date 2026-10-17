@@ -104,6 +104,8 @@ const TaskChecklist = ({
   const blockControls = useBlockControls("tasks", content, useBlockEdit());
   const [saveSuccess, setSaveSuccess] = useState(false);
   const initialStateRef = useRef<CheckboxStateType>({});
+  // The box each row had in the source at the last parse (to tell a source change from a person's tick).
+  const sourceTicksRef = useRef<CheckboxStateType>({});
   const initialChecklistRef = useRef<TaskItemType[]>([]);
 
   // Modal state
@@ -127,15 +129,25 @@ const TaskChecklist = ({
     setChecklist(parsedChecklist);
     initialChecklistRef.current = JSON.parse(JSON.stringify(parsedChecklist));
 
-    // Initialize any missing state with false (unchecked)
+    // Initialize any missing state from the source's own boxes. A box the SOURCE moved since the last
+    // parse (a Controls "Done" switch, then the editor's Undo) is the source's call and wins over the
+    // tick state kept here, so a change and its undo both show; a tick the person made on a row the
+    // source did not touch stays.
     const newState = { ...checkboxState };
     let stateChanged = false;
+    const sourceTicks = sourceTicksRef.current;
+    const nextTicks: CheckboxStateType = {};
 
     const processItems = (items: TaskItemType[]) => {
       items.forEach((item) => {
-        if (item.id && newState[item.id] === undefined) {
-          newState[item.id] = item.checked || false;
-          stateChanged = true;
+        if (item.id) {
+          const written = item.checked || false;
+          nextTicks[item.id] = written;
+          const moved = item.id in sourceTicks && sourceTicks[item.id] !== written;
+          if (newState[item.id] === undefined || moved) {
+            if (newState[item.id] !== written) stateChanged = true;
+            newState[item.id] = written;
+          }
         }
 
         if (item.children) {
@@ -145,6 +157,7 @@ const TaskChecklist = ({
     };
 
     processItems(parsedChecklist);
+    sourceTicksRef.current = nextTicks;
 
     if (stateChanged) {
       setCheckboxState(newState);

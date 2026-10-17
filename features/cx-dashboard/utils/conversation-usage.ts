@@ -8,6 +8,7 @@ import type {
   CxRequest,
   CxToolCall,
 } from "../types/cxDashboardTypes";
+import { cacheWriteSplit } from "./format";
 
 const num = (v: unknown): number => Number(v) || 0;
 
@@ -34,7 +35,8 @@ export function summarizeConversationUsage(
 ): CxConversationUsage {
   const totals: CxConversationUsage["totals"] = {
     cost: 0, model_cost: 0, tool_cost: 0, model_calls: modelCalls.length, tool_calls: toolCalls.length,
-    input_tokens: 0, output_tokens: 0, cached_tokens: 0, total_tokens: 0,
+    input_tokens: 0, output_tokens: 0, cached_tokens: 0,
+    cache_write_tokens: 0, cache_write_5m_tokens: 0, cache_write_1h_tokens: 0, total_tokens: 0,
     api_duration_ms: 0, tool_duration_ms: 0, failed_tool_calls: 0, max_tokens_hits: 0,
   };
   const byModel = new Map<string, CxConversationUsage["by_model"][number] & { duration_sum: number }>();
@@ -47,6 +49,10 @@ export function summarizeConversationUsage(
     totals.input_tokens += num(r.input_tokens);
     totals.output_tokens += num(r.output_tokens);
     totals.cached_tokens += num(r.cached_tokens);
+    const w = cacheWriteSplit(r);
+    totals.cache_write_tokens += w.total;
+    totals.cache_write_5m_tokens += w.m5;
+    totals.cache_write_1h_tokens += w.h1;
     totals.total_tokens += tokens;
     totals.api_duration_ms += num(r.api_duration_ms);
     if (r.finish_reason === "max_tokens") totals.max_tokens_hits += 1;
@@ -54,13 +60,14 @@ export function summarizeConversationUsage(
     const name = r.model_name ?? "Unknown model";
     const m = byModel.get(name) ?? {
       model_name: name, provider: r.provider ?? "Unknown", calls: 0, cost: 0,
-      input_tokens: 0, output_tokens: 0, cached_tokens: 0, total_tokens: 0, avg_duration_ms: 0, duration_sum: 0,
+      input_tokens: 0, output_tokens: 0, cached_tokens: 0, cache_write_tokens: 0, total_tokens: 0, avg_duration_ms: 0, duration_sum: 0,
     };
     m.calls += 1;
     m.cost += cost;
     m.input_tokens += num(r.input_tokens);
     m.output_tokens += num(r.output_tokens);
     m.cached_tokens += num(r.cached_tokens);
+    m.cache_write_tokens += w.total;
     m.total_tokens += tokens;
     m.duration_sum += num(r.api_duration_ms);
     byModel.set(name, m);

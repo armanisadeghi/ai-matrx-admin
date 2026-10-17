@@ -15,6 +15,7 @@ import {
   formatDate,
   formatDuration,
   formatTokens,
+  cacheWriteSplit,
   truncateId,
 } from "@/features/cx-dashboard/utils/format";
 import type {
@@ -56,6 +57,7 @@ const modelColumns: MatrxColumnDef<ModelRow>[] = [
   { id: "input_tokens", accessorKey: "input_tokens", header: "Input", align: "right", width: 90, cell: (r) => formatTokens(r.input_tokens) },
   { id: "output_tokens", accessorKey: "output_tokens", header: "Output", align: "right", width: 90, cell: (r) => formatTokens(r.output_tokens) },
   { id: "cached_tokens", accessorKey: "cached_tokens", header: "Cached", align: "right", width: 90, cell: (r) => formatTokens(r.cached_tokens) },
+  { id: "cache_write_tokens", accessorKey: "cache_write_tokens", header: "Cache write", align: "right", width: 100, cell: (r) => formatTokens(r.cache_write_tokens) },
   { id: "avg_duration_ms", accessorKey: "avg_duration_ms", header: "Avg time", align: "right", width: 90, cell: (r) => formatDuration(r.avg_duration_ms) },
 ];
 
@@ -85,6 +87,9 @@ const callColumns: MatrxColumnDef<CxRequest>[] = [
   { id: "input_tokens", accessorKey: "input_tokens", header: "Input", align: "right", width: 90, cell: (r) => formatTokens(r.input_tokens) },
   { id: "output_tokens", accessorKey: "output_tokens", header: "Output", align: "right", width: 90, cell: (r) => formatTokens(r.output_tokens) },
   { id: "cached_tokens", accessorKey: "cached_tokens", header: "Cached", align: "right", width: 90, cell: (r) => formatTokens(r.cached_tokens) },
+  { id: "cache_write_tokens", header: "Cache write", align: "right", width: 100, accessorFn: (r) => cacheWriteSplit(r).total, cell: (r) => formatTokens(cacheWriteSplit(r).total) },
+  { id: "cache_write_5m", header: "Write 5m", align: "right", width: 90, accessorFn: (r) => cacheWriteSplit(r).m5, cell: (r) => formatTokens(cacheWriteSplit(r).m5) },
+  { id: "cache_write_1h", header: "Write 1h", align: "right", width: 90, accessorFn: (r) => cacheWriteSplit(r).h1, cell: (r) => formatTokens(cacheWriteSplit(r).h1) },
   ...adminCostColumns<CxRequest>({ id: "cost", value: (r) => r.cost }),
   { id: "api_duration_ms", accessorKey: "api_duration_ms", header: "Time", align: "right", width: 90, cell: (r) => formatDuration(r.api_duration_ms) },
   {

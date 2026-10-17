@@ -1,0 +1,10 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "/Users/armanisadeghi/code/matrx-frontend/scripts/airtable-walk/walk-signin.mjs";
+const ORIGIN=process.env.ORIGIN, H=process.env.HREF, MEMBER=!!process.env.MEMBER;
+const b=await chromium.launch(); const s=await b.newContext(); const sp=await s.newPage();
+await walkSignIn(sp,ORIGIN,{member:MEMBER}); const st=await s.storageState(); st.origins=[];
+const c=await b.newContext({storageState:st,viewport:{width:1440,height:900}}); const p=await c.newPage();
+await p.goto(ORIGIN+H,{waitUntil:"domcontentloaded",timeout:180000}); await p.waitForTimeout(9000);
+console.log(p.url(), await p.evaluate(()=>document.body.innerText.slice(0,200)));await p.screenshot({path:"/tmp/m1.png"});console.log(JSON.stringify(await p.evaluate(()=>[...document.querySelectorAll("[data-route-header-action]")].map(e=>[e.dataset.routeHeaderAction,e.offsetWidth,e.dataset.routeHeaderTwin!=null]))));
+console.log(await p.evaluate(()=>{const r=document.querySelector("[data-route-header-action]")?.parentElement;return r?r.offsetWidth+" "+r.className.slice(0,80):"none"}));
+await b.close();

@@ -1,18 +1,24 @@
 "use client";
 
 /**
- * Vault as a floating window — the credential store available beside whatever
- * you are actually working on, which is the point: you need a password while
- * you are in the middle of something else, not on a dedicated page.
+ * Vault as a floating window — the credential store beside whatever you are
+ * working on. Renders the shared `@ai-matrx/vault` workspace through the
+ * website's host (`features/secrets/components/WebVault.tsx`).
  *
- * Renders the ONE `VaultWorkspace` (features/secrets/FEATURE.md). Reveal
- * behavior is unchanged here: values are component-local and auto-clear, and
- * nothing plaintext is ever collected into the window's persisted `data`.
+ * Only the non-secret position is persisted (`window_sessions.data`): the open
+ * item and the rest of the workspace address (vault, view, search, panel) as
+ * query text. Never a field value, never a revealed secret.
  */
 import { useCallback, useState } from "react";
+import {
+  DEFAULT_LOCATION,
+  locationFromParams,
+  locationToParams,
+  type VaultLocation,
+} from "@ai-matrx/vault";
 
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { VaultWorkspace } from "@/features/secrets/components/VaultWorkspace";
+import { WebVault } from "@/features/secrets/components/WebVault";
 
 export interface VaultWindowProps {
   isOpen: boolean;
@@ -20,7 +26,8 @@ export interface VaultWindowProps {
   instanceId?: string;
   /** Restored from `window_sessions.data` — see the registry `defaultData`. */
   initialSelectedItemId?: string | null;
-  initialScope?: string | null;
+  /** The workspace address as query text (`locationToParams`), e.g. `mode=new&kind=website_login`. */
+  initialLocation?: string | null;
 }
 
 export default function VaultWindow({
@@ -28,7 +35,7 @@ export default function VaultWindow({
   onClose,
   instanceId = "default",
   initialSelectedItemId = null,
-  initialScope = null,
+  initialLocation = null,
 }: VaultWindowProps) {
   if (!isOpen) return null;
   return (
@@ -36,7 +43,7 @@ export default function VaultWindow({
       onClose={onClose}
       instanceId={instanceId}
       initialSelectedItemId={initialSelectedItemId}
-      initialScope={initialScope}
+      initialLocation={initialLocation}
     />
   );
 }
@@ -45,18 +52,23 @@ function VaultWindowInner({
   onClose,
   instanceId,
   initialSelectedItemId,
-  initialScope,
+  initialLocation,
 }: Omit<VaultWindowProps, "isOpen">) {
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(
-    initialSelectedItemId ?? null,
+  const [location, setLocation] = useState<VaultLocation>(() =>
+    initialLocation || initialSelectedItemId
+      ? locationFromParams(
+          new URLSearchParams(initialLocation ?? ""),
+          initialSelectedItemId ?? null,
+        )
+      : DEFAULT_LOCATION,
   );
-  const [scope, setScope] = useState<string>(initialScope ?? "mine");
 
-  // Only non-secret UI position is persisted — an item id and which scope tab
-  // was open. Never a field value, never a revealed secret.
   const collectData = useCallback(
-    (): Record<string, unknown> => ({ selectedItemId, scope }),
-    [selectedItemId, scope],
+    (): Record<string, unknown> => ({
+      selectedItemId: location.itemId,
+      location: locationToParams(location).toString(),
+    }),
+    [location],
   );
 
   return (
@@ -64,22 +76,16 @@ function VaultWindowInner({
       id={`credential-vault-${instanceId}`}
       title="Vault"
       onClose={onClose}
-      minWidth={560}
+      minWidth={360}
       minHeight={460}
-      width={900}
+      width={960}
       height={640}
       position="center"
       overlayId="credentialVaultWindow"
       onCollectData={collectData}
-      bodyClassName="flex min-h-0 flex-1 flex-col overflow-y-auto p-3"
+      bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden"
     >
-      <VaultWorkspace
-        principal={{ type: "user" }}
-        selectedItemId={selectedItemId}
-        onSelectedItemIdChange={setSelectedItemId}
-        scope={scope}
-        onScopeChange={setScope}
-      />
+      <WebVault location={location} onLocationChange={(next) => setLocation(next)} />
     </WindowPanel>
   );
 }

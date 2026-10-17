@@ -248,7 +248,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
         <KpiTile
           label="Tokens"
           value={formatTokens(t.total_tokens)}
-          hint={`${formatTokens(t.input_tokens)} in · ${formatTokens(t.output_tokens)} out · ${formatTokens(t.cached_tokens)} cached`}
+          hint={`${formatTokens(t.input_tokens)} in · ${formatTokens(t.output_tokens)} out · ${formatTokens(t.cached_tokens)} read · ${formatTokens(t.cache_write_tokens)} written (${formatTokens(t.cache_write_5m_tokens)} 5m / ${formatTokens(t.cache_write_1h_tokens)} 1h)`}
           href={viewHref("usage")}
         />
         <KpiTile

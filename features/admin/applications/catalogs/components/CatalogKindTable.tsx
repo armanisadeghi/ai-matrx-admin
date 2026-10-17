@@ -401,6 +401,8 @@ export function CatalogKindTable({
 
   return (
     <div className="flex h-full flex-col gap-3">
+      {/* Read-only: shown under the model catalog's own header, so no second header. */}
+      {readOnly ? null : (
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <Button icon={<ArrowLeft />} type="button" variant="quiet" onClick={onBack}> All kinds
@@ -420,6 +422,7 @@ export function CatalogKindTable({
           </div>
         </div>
       </div>
+      )}
 
       <div className="min-h-0 flex-1">
         {/* No entity: public.catalog_entries has no registered EntityTypeToken

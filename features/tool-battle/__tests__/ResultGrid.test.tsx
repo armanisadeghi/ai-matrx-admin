@@ -6,7 +6,7 @@ import type { BattleView, CellView, LaneRollup } from "../types";
 
 const rollup = (over: Partial<LaneRollup>): LaneRollup => ({
   cells: 2, succeeded: 2, empty: 0, failed: 0, refused: 0, cancelled: 0, success_rate: 1, hit_rate: 1,
-  p50_ms: 400, p95_ms: 500, p50_ok_ms: 400, cost_usd: 0.003, points: 60, cost_per_success_usd: 0.0015,
+  p50_ms: 400, p95_ms: 500, p50_ok_ms: 400, p50_round_trip_ms: 420, cost_usd: 0.003, points: 60, cost_per_success_usd: 0.0015,
   points_per_success: 30, mean_filled_fields: 3, ...over,
 });
 

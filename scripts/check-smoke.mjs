@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// pnpm check:smoke [--route /notes]... [--admin-only|--member-only] [--after 4000] [--tail 18000] [--plant]
+// pnpm check:smoke [--route /notes]... [--admin-only|--member-only] [--after 4000] [--tail 18000] [--plant] [--restored]
 //
 // THE SMOKE DETECTORS, checked in a real browser (lib/diagnostics/loadTrace.ts has the rules).
 // Signs in on the ONE shared preview (port 3001) with `pnpm dev-login` as admin and as member,
@@ -15,6 +15,9 @@
 // deleted from the file. Never add an entry to get green: fix what loads early.
 // --plant proves the guard: it injects a heavy marker at boot, a lazy marker before settle and a
 // late block that shifts the page, and the run must go RED.
+// --restored loads each route as a RETURNING person: the canvas saved open (a "Saved" tab, 520px)
+// is seeded into browser storage before the page runs. Restoring what the person left open may load
+// its modules (heavy markers print as RESTORED, not red); the page must still not shift (CLS rule).
 // Exit 0 green, 1 red, 2 could not run (no server, no sign-in).
 import fs from "node:fs";
 import path from "node:path";
@@ -41,6 +44,7 @@ let roles = ["admin", "member"];
 let after = 4_000;
 let tail = 18_000;
 let plant = false;
+let restored = false;
 for (let i = 0; i < argv.length; i += 1) {
   if (argv[i] === "--route") routes.push(argv[++i]);
   else if (argv[i] === "--admin-only") roles = ["admin"];
@@ -48,6 +52,7 @@ for (let i = 0; i < argv.length; i += 1) {
   else if (argv[i] === "--after") after = Number(argv[++i]);
   else if (argv[i] === "--tail") tail = Number(argv[++i]);
   else if (argv[i] === "--plant") plant = true;
+  else if (argv[i] === "--restored") restored = true;
   else {
     console.error(`[smoke] unknown argument ${argv[i]}`);
     process.exit(2);
@@ -84,6 +89,29 @@ const PLANT = () => {
   });
 };
 
+// --restored: what a returning person's browser holds — the canvas saved open with one restorable tab.
+const RESTORED_STATE = () => {
+  const item = "saved-items::default";
+  const pane = "pane-1";
+  const now = Date.now();
+  window.localStorage.setItem(
+    "ai-matrx.canvas.v1",
+    JSON.stringify({
+      version: 1,
+      isOpen: true,
+      isFullscreen: false,
+      width: 520,
+      layout: { type: "pane", paneId: pane },
+      focusedPaneId: pane,
+      windows: {},
+      panes: { [pane]: { id: pane, itemIds: [item], activeItemId: item } },
+      items: { [item]: { id: item, kind: "saved-items", key: "default", title: "Saved", data: null, openedAt: now, updatedAt: now } },
+      seq: 1,
+      hydrated: true,
+    }),
+  );
+};
+
 const { chromium } = require("playwright");
 const browser = await chromium.launch({ headless: true });
 let red = 0;
@@ -97,6 +125,7 @@ for (const role of roles) {
   }
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   if (plant) await context.addInitScript(PLANT);
+  if (restored) await context.addInitScript(RESTORED_STATE);
   const page = await context.newPage();
   const origin = new URL(loginUrl).origin;
   await page.goto(loginUrl, { waitUntil: "load", timeout: 120_000 });
@@ -149,7 +178,8 @@ for (const role of roles) {
     const findings = [];
     const known = [];
     for (const v of report.violations) {
-      if (v.kind === "heavy-before-engagement")
+      if (v.kind === "heavy-before-engagement" && restored) known.push(`RESTORED ${v.name} (+${v.at}ms)`);
+      else if (v.kind === "heavy-before-engagement")
         (isKnown("heavy", v.name, route) ? known : findings).push(`HEAVY BEFORE ENGAGEMENT  ${v.name} (+${v.at}ms)`);
       if (v.kind === "lazy-before-settle")
         (isKnown("lazy", v.name, route) ? known : findings).push(`LAZY BEFORE SETTLE  ${v.name} (+${v.at}ms, settled +${report.settledAt}ms)`);
@@ -159,7 +189,7 @@ for (const role of roles) {
     const clsLine = `CLS ${report.cls} > ${CLS_MAX}${shifts.length ? `\n         ${shifts.join("\n         ")}` : ""}`;
     if (report.cls > clsMax) findings.push(clsLine);
     else if (report.cls > CLS_MAX) known.push(`${clsLine} (allowed ${clsMax} on this route)`);
-    console.log(`\n${findings.length ? "RED  " : "ok   "} ${role} ${route}  settled +${report.settledAt}ms · LCP ${report.lcp?.at ?? "?"}ms · CLS ${report.cls} · ${report.requests.length} requests${navigations > 1 ? ` · (dev server reloaded ${navigations - 1}×, last load counted)` : ""}`);
+    console.log(`\n${findings.length ? "RED  " : "ok   "} ${role} ${route}${restored ? " (restored)" : ""}  settled +${report.settledAt}ms · LCP ${report.lcp?.at ?? "?"}ms · CLS ${report.cls} · ${report.requests.length} requests${navigations > 1 ? ` · (dev server reloaded ${navigations - 1}×, last load counted)` : ""}`);
     for (const line of lines) console.log(`       ${line}`);
     for (const f of findings) console.log(`   →   ${f}`);
     for (const k of known) console.log(`   ·   KNOWN ${k}`);
@@ -168,7 +198,7 @@ for (const role of roles) {
   await context.close();
 }
 await browser.close();
-if (!couldNotRun) {
+if (!couldNotRun && !restored) {
   for (const [kind, names] of Object.entries(baseline.known ?? {})) {
     for (const [name, routesFor] of Object.entries(names)) {
       if (!routesFor.includes("*") && !routesFor.some((r) => targets.includes(r))) continue;

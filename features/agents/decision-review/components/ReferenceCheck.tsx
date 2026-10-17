@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import {
   Button,
+  DisclosureHeader,
   EmptyState,
   NumberStepper,
   RegionSkeleton,
@@ -39,7 +40,10 @@ import {
 import { ReadFailure } from "@ai-matrx/design-system";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import type {
+  MatrxColumnDef,
+  MatrxDataTableMobileCardControls,
+} from "@ai-matrx/design-system/data-table/types";
 import { DecisionAnswers } from "@ai-matrx/chat/agents/decision-answers/DecisionAnswers";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { rejoinOperationThunk } from "@/lib/api/resume-or-rejoin";
@@ -62,7 +66,7 @@ import {
   REFERENCE_FALLBACK_MAX,
   answerWithPercent,
   applyRunEvent,
-  firstLine,
+  distinctSnippets,
   formatUsd,
   orderReferenceRows,
   referenceView,
@@ -241,6 +245,37 @@ function resultColumns(): MatrxColumnDef<ReferenceResultRow>[] {
   ];
 }
 
+/** A result on a phone: what was judged, both answers, and whether they agree. */
+function ResultCard({ row, controls }: { row: ReferenceResultRow; controls: MatrxDataTableMobileCardControls }) {
+  const open = controls.open;
+  return (
+    <div
+      role={open ? "button" : undefined}
+      tabIndex={open ? 0 : undefined}
+      data-clickable={open ? "" : undefined}
+      onClick={open}
+      onKeyDown={(event) => {
+        if (open && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          open();
+        }
+      }}
+      className="flex w-full min-w-0 flex-col gap-1 border-b border-border px-3 py-2"
+    >
+      <span className={cn("block w-full truncate type-secondary", !row.snippet && "text-muted-foreground")}>
+        {row.snippet ?? "Not readable"}
+      </span>
+      <span className="flex w-full min-w-0 items-center gap-2 font-mono type-meta">
+        <span className="truncate text-muted-foreground">{row.item.question}</span>
+        <span className="truncate">{answerWithPercent(row.item.view, row.item.pAnswer)}</span>
+        <span className="text-muted-foreground">vs</span>
+        <span className="truncate">{referenceText(row)}</span>
+        <span className="ml-auto shrink-0">{controls.renderCell("agree")}</span>
+      </span>
+    </div>
+  );
+}
+
 // ── Drill-in ─────────────────────────────────────────────────────────────────
 
 function ItemDrill({
@@ -257,6 +292,7 @@ function ItemDrill({
   const [currentId, setCurrentId] = useState(startId);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [stateOpen, setStateOpen] = useState(true);
   const index = Math.max(0, rows.findIndex((r) => r.id === currentId));
   const row = rows[index] ?? null;
 
@@ -315,7 +351,7 @@ function ItemDrill({
   const instructions = item.instructions ? { [item.question]: item.instructions } : undefined;
 
   return (
-    <div className="flex flex-col gap-3 p-3">
+    <div className="@container flex flex-col gap-3 p-3">
       <div className="flex items-center gap-2">
         <span className="font-mono type-meta text-muted-foreground">
           {item.question} · v{item.version}
@@ -327,18 +363,12 @@ function ItemDrill({
         <Button variant="quiet" icon={<ChevronRight />} aria-label="Next item" onClick={() => move(1)} />
       </div>
 
-      <div className="type-title">{item.instructions ?? "Question text not recorded"}</div>
+      <div className="line-clamp-2 type-title" title={item.instructions ?? undefined}>
+        {item.instructions ?? "Question text not recorded"}
+      </div>
 
-      <section className="rounded-lg border border-border bg-card">
-        <div className="border-b border-border px-3 py-1.5 type-meta font-medium text-muted-foreground">
-          What the model judged
-        </div>
-        <div className="max-h-[32vh] overflow-y-auto whitespace-pre-wrap px-3 py-2 type-secondary leading-relaxed">
-          <JudgedStateText item={item} />
-        </div>
-      </section>
-
-      <div className="grid gap-3 lg:grid-cols-2">
+      {/* The two answers and the labels first: the judged input is long and sits below. */}
+      <div className="grid gap-3 @md:grid-cols-2">
         <section className="flex min-w-0 flex-col gap-1">
           <div className="type-meta font-medium text-muted-foreground">
             Decision model{item.model ? ` · ${item.model}` : ""}
@@ -432,6 +462,15 @@ function ItemDrill({
           </p>
         )}
       </section>
+
+      <section className="flex flex-col gap-1">
+        <DisclosureHeader open={stateOpen} title="What the model judged" onClick={() => setStateOpen((v) => !v)} />
+        {stateOpen && (
+          <div className="max-h-[40vh] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-card px-3 py-2 type-secondary leading-relaxed">
+            <JudgedStateText item={item} />
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -491,24 +530,24 @@ export function ReferenceReliability({ groups }: { groups: ReferenceGroup[] }) {
 
 // ── Reads ────────────────────────────────────────────────────────────────────
 
-async function fetchItems(ids: string[]): Promise<{ items: ReviewItem[]; snippets: Record<string, string | null> }> {
+async function fetchItems(ids: string[]): Promise<{ items: ReviewItem[]; states: Record<string, string[] | null> }> {
   const items = await loadItemsByIds(ids);
-  const snippets: Record<string, string | null> = {};
+  const states: Record<string, string[] | null> = {};
   try {
-    const states = await loadJudgedStates(items);
-    for (const it of items) snippets[it.id] = firstLine(states.get(it.id) ?? []);
+    const loaded = await loadJudgedStates(items);
+    for (const it of items) states[it.id] = loaded.get(it.id) ?? null;
   } catch (err) {
     // The table still shows every answer; only the state column reads "Not readable".
     console.error("[decision-review] judged states failed", err);
   }
-  return { items, snippets };
+  return { items, states };
 }
 
 /** Every stored reference verdict of an agent, with the items it checked. */
 async function fetchStoredTable(agentId: string) {
   const verdicts = await loadReferenceVerdicts(agentId);
-  const { items, snippets } = await fetchItems(verdicts.map((v) => v.itemId));
-  return { verdicts, items, snippets };
+  const { items, states } = await fetchItems(verdicts.map((v) => v.itemId));
+  return { verdicts, items, states };
 }
 
 function byItemId(verdicts: ReferenceVerdict[]): Record<string, ReferenceVerdict> {
@@ -546,7 +585,8 @@ export function ReferenceCheck({
   const [maxItems, setMaxItems] = useState(REFERENCE_FALLBACK_MAX);
 
   const [items, setItems] = useState<Record<string, ReviewItem>>({});
-  const [snippets, setSnippets] = useState<Record<string, string | null>>({});
+  /** Each item's judged state (text parts); the State column shows what sets it apart. */
+  const [states, setStates] = useState<Record<string, string[] | null>>({});
   const [stored, setStored] = useState<Record<string, ReferenceVerdict>>({});
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<unknown>(null);
@@ -564,23 +604,23 @@ export function ReferenceCheck({
   /** Item ids already loaded or loading — read and written in handlers only. */
   const knownIds = useRef<Set<string>>(new Set());
 
-  /** Load decision items (and their state's first line) the table does not have yet. */
-  const mergeItems = (loadedItems: ReviewItem[], loadedSnippets: Record<string, string | null>) => {
+  /** Merge loaded decision items and their judged states. */
+  const mergeItems = (loadedItems: ReviewItem[], loadedStates: Record<string, string[] | null>) => {
     setItems((current) => {
       const next = { ...current };
       for (const it of loadedItems) next[it.id] = it;
       return next;
     });
-    setSnippets((current) => ({ ...current, ...loadedSnippets }));
+    setStates((current) => ({ ...current, ...loadedStates }));
   };
 
-  /** Load decision items (and their state's first line) the table does not have yet. */
+  /** Load decision items (and their judged states) the table does not have yet. */
   const ensureItems = async (ids: string[]) => {
     const missing = [...new Set(ids)].filter((id) => !knownIds.current.has(id));
     if (missing.length === 0) return;
     for (const id of missing) knownIds.current.add(id);
     const loadedItems = await fetchItems(missing);
-    mergeItems(loadedItems.items, loadedItems.snippets);
+    mergeItems(loadedItems.items, loadedItems.states);
   };
 
   const reloadStored = async () => {
@@ -596,7 +636,7 @@ export function ReferenceCheck({
       .then((table) => {
         if (cancelled) return;
         knownIds.current = new Set(table.items.map((i) => i.id));
-        mergeItems(table.items, table.snippets);
+        mergeItems(table.items, table.states);
         setStored(byItemId(table.verdicts));
         setLoadError(null);
         setLoaded(true);
@@ -773,6 +813,8 @@ export function ReferenceCheck({
     }));
   };
 
+  // The State column: what tells each item apart from the agent's other loaded items.
+  const snippets = distinctSnippets(states);
   // Rows: every stored verdict, every item of the current run, every live result.
   const ids = new Set<string>([
     ...Object.keys(stored),
@@ -982,6 +1024,8 @@ export function ReferenceCheck({
             render: (r) => <ItemDrill key={r.id} rows={rows} startId={r.id} onLabel={onLabel} onRecheck={recheck} />,
           }}
           emptyState={{ title: "No reference checks yet" }}
+          mobileCards={(r, _index, controls) => <ResultCard row={r} controls={controls} />}
+          mobileCardsBreakpoint="sm"
         />
       )}
 
