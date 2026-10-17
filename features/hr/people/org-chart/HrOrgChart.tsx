@@ -245,11 +245,12 @@ export function HrOrgChart() {
                 checked={showDotted}
                 onCheckedChange={setShowDotted}
                 aria-label="Show dotted-line reporting"
-                className="relative before:absolute before:left-1 before:top-1/2 before:-translate-y-1/2 before:content-[''] lg:before:hidden"
               />
+              {/* The label is the 44px touch target below desktop: a tap anywhere
+                  on "Dotted lines" toggles the switch. */}
               <Label
                 htmlFor="hr-dotted-lines"
-                className="text-xs text-muted-foreground"
+                className="flex min-h-11 items-center text-xs text-muted-foreground lg:min-h-0"
               >
                 Dotted lines
               </Label>

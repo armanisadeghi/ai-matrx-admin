@@ -8,8 +8,9 @@ const source = readFileSync(
 
 describe("HR org chart responsive interaction contract", () => {
   it("keeps the dotted-line switch at a 44px target below desktop", () => {
-    expect(source).toContain(
-      'aria-label="Show dotted-line reporting"\n                className="relative h-11 w-11',
+    // The switch keeps its one geometry; its label row is the 44px target.
+    expect(source).toMatch(
+      /htmlFor="hr-dotted-lines"\s+className="flex min-h-11 items-center[^"]*lg:min-h-0"/,
     );
   });
 
