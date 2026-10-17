@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1599 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1600 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "7a85fe8e83a0";
+export const KIND_REGISTRY_FINGERPRINT = "167d65438551";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -3309,23 +3309,23 @@ export interface ElevatorPitchItem {
  *  * From kind `email_candidates`.
  */
 export interface EmailCandidate {
-  type?: string | null;
+  role?: string | null;
   email: string;
+  score?: number | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
-  position?: string | null;
+  status?: "deliverable" | "risky" | "undeliverable" | "unknown" | null;
+  seen_at?: string | null;
   full_name?: string | null;
   last_name?: string | null;
   seniority?: string | null;
-  confidence?: number | null;
   department?: string | null;
   first_name?: string | null;
-  last_checked?: string | null;
   linkedin_url?: string | null;
   phone_number?: string | null;
-  verification?: string | null;
+  shared_inbox?: boolean | null;
   decision_maker?: boolean | null;
 }
 
@@ -3989,6 +3989,25 @@ export interface FontItem {
    * 0.0-1.0: how sure the agent is that this is true of THIS brand.
    */
   confidence: number;
+}
+
+/**
+ * A Tool library (a skill paired with a bundle of similar Tools) that holds Tools the search found.
+ *  *
+ *  * From kind `found_tools`.
+ */
+export interface FoundLibrary {
+  key: string;
+  label: string;
+  tools?: string[];
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  lister?: string;
+  matched?: string[];
+  skill_id?: string;
+  description?: string;
 }
 
 /**
@@ -16088,6 +16107,23 @@ export interface AuthorityNewsjackingArticle {
 }
 
 /**
+ * How strong one website's links are, scored 0 to 100 by one source. A comparison shows one per source:
+ * an industry leader by name, our own sources as "Matrx" (the call's display source, not a field here).
+ *  *
+ *  * Kind `authority_score` (registry v1).
+ */
+export interface AuthorityScore {
+  score?: number | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "authority_score";
+  domain?: string | null;
+  backlinks?: number | null;
+  linking_domains?: number | null;
+}
+
+/**
  * The individual links from other websites to one site.
  *  *
  *  * Kind `backlink_rows` (registry v1).
@@ -16458,7 +16494,7 @@ export interface BrandEarlyFacts {
 }
 
 /**
- * Kind `brand_evidence` (registry v3).
+ * Kind `brand_evidence` (registry v4).
  */
 export interface BrandEvidence {
   title?: string;
@@ -16525,7 +16561,7 @@ export interface BrandEvidenceFindings {
 }
 
 /**
- * Kind `brand_evidence_item` (registry v2).
+ * Kind `brand_evidence_item` (registry v3).
  */
 export interface BrandEvidenceItem {
   key?: string;
@@ -26898,7 +26934,7 @@ export interface ElectronicsIntakeAnalysis {
 /**
  * Addresses found for a company (or one person at it) — unverified until a person confirms one.
  *  *
- *  * Kind `email_candidates` (registry v3).
+ *  * Kind `email_candidates` (registry v4).
  */
 export interface EmailCandidates {
   /**
@@ -26912,20 +26948,19 @@ export interface EmailCandidates {
 /**
  * Whether one address can receive mail, as one check saw it.
  *  *
- *  * Kind `email_verdict` (registry v2).
+ *  * Kind `email_verdict` (registry v3).
  */
 export interface EmailVerdict {
-  free?: boolean | null;
-  role?: boolean | null;
   email: string;
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "email_verdict";
-  result?: string | null;
-  quality?: string | null;
-  subresult?: string | null;
-  suggestion?: string | null;
+  reason?: "mailbox_found" | "accepts_any_address" | "disposable" | "no_mailbox" | "not_determined" | null;
+  deliverable?: "yes" | "risky" | "no" | "unknown" | null;
+  did_you_mean?: string | null;
+  shared_inbox?: boolean | null;
+  free_mail_service?: boolean | null;
 }
 
 /**
@@ -28619,7 +28654,7 @@ export interface FormattedDatetime {
 /**
  * The Tools a catalog search found for an agent, best first.
  *  *
- *  * Kind `found_tools` (registry v2).
+ *  * Kind `found_tools` (registry v4).
  */
 export interface FoundTools {
   note?: string;
@@ -28631,6 +28666,7 @@ export interface FoundTools {
    */
   __kind?: "found_tools";
   verdict?: string;
+  libraries?: FoundLibrary[];
 }
 
 /**
@@ -50243,7 +50279,7 @@ export interface SeoRulingSessionTeachOffer {
 }
 
 /**
- * Kind `seo.serp_intent_analysis.offer` (registry v20).
+ * Kind `seo.serp_intent_analysis.offer` (registry v22).
  */
 export interface SeoSerpIntentAnalysisOffer {
   /**
@@ -51526,7 +51562,7 @@ export interface SeoRankHistory {
 /**
  * Everything one site tracks. ADDITIVE SUPERSEDE — `targets` is unchanged.
  *  *
- *  * Kind `seo_rank_portfolio` (registry v8).
+ *  * Kind `seo_rank_portfolio` (registry v9).
  */
 export interface SeoRankPortfolio {
   /**
@@ -51647,7 +51683,7 @@ export interface SeoRankSerpLandscape {
  * fact twice (the "one copy of everything" law). The history kind owns
  * readings; this one owns standing.
  *  *
- *  * Kind `seo_rank_target` (registry v8).
+ *  * Kind `seo_rank_target` (registry v9).
  */
 export interface SeoRankTarget {
   tags?: string[];
@@ -51662,7 +51698,7 @@ export interface SeoRankTarget {
    */
   device: string;
   /**
-   * Which engine is tracked: 'brave' | 'google' | 'chat_gpt' | 'claude' | 'gemini' | 'perplexity'.
+   * Which engine is tracked: the default web engine | 'google' | 'chat_gpt' | 'claude' | 'gemini' | 'perplexity'.
    */
   engine: string;
   /**
@@ -52250,7 +52286,7 @@ export interface SerpAnalysis {
  * dispatches on the nested `__kind` and renders the canonical component the
  * search pilot already built.
  *  *
- *  * Kind `serp_placement` (registry v8).
+ *  * Kind `serp_placement` (registry v9).
  */
 export interface SerpPlacement {
   /**
@@ -60592,7 +60628,7 @@ export interface WebRedirectLoopV1 {
 }
 
 /**
- * Kind `web_result` (registry v22).
+ * Kind `web_result` (registry v23).
  */
 export interface WebResult {
   url: string;
@@ -60608,7 +60644,7 @@ export interface WebResult {
   author?: string | null;
   rating?: Rating | null;
   /**
-   * Provider that returned this result, e.g. 'brave' | 'google'.
+   * Display label of the service that returned this result.
    */
   source: string;
   favicon?: string | null;
@@ -60743,7 +60779,7 @@ export interface WebSearchIntentAlignmentV1 {
 }
 
 /**
- * Kind `web_search_results` (registry v6).
+ * Kind `web_search_results` (registry v7).
  */
 export interface WebSearchResults {
   urls?: string[];
@@ -61709,25 +61745,25 @@ export interface WorkClaim {
 /**
  * One person's work address as a source found it — unverified until a person confirms it.
  *  *
- *  * Kind `work_email` (registry v2).
+ *  * Kind `work_email` (registry v3).
  */
 export interface WorkEmail {
+  role?: string | null;
   email: string;
+  score?: number | null;
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "work_email";
   domain?: string | null;
+  status?: "deliverable" | "risky" | "undeliverable" | "unknown" | null;
   company?: string | null;
   seen_on?: string | null;
-  position?: string | null;
   full_name?: string | null;
   last_name?: string | null;
-  confidence?: number | null;
   first_name?: string | null;
   linkedin_url?: string | null;
   phone_number?: string | null;
-  verification?: string | null;
 }
 
 /**
@@ -62516,6 +62552,7 @@ export type GeneratedKindSlug =
   | "asset_variant"
   | "audio.speech.offer"
   | "authority_newsjacking_article"
+  | "authority_score"
   | "backlink_rows"
   | "backlinks_summary"
   | "basic_card"
@@ -64118,6 +64155,7 @@ export interface KindPayloadBySlug {
   "asset_variant": AssetVariant;
   "audio.speech.offer": AudioSpeechOffer;
   "authority_newsjacking_article": AuthorityNewsjackingArticle;
+  "authority_score": AuthorityScore;
   "backlink_rows": BacklinkRows;
   "backlinks_summary": BacklinksSummary;
   "basic_card": BasicCard;
@@ -65724,6 +65762,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "asset_variant",
   "audio.speech.offer",
   "authority_newsjacking_article",
+  "authority_score",
   "backlink_rows",
   "backlinks_summary",
   "basic_card",
