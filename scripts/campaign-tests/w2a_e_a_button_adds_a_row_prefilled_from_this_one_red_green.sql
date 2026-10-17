@@ -1,5 +1,6 @@
 -- LANE W2-A 2 - A BUTTON ADDS A ROW, PREFILLED FROM THE PRESSED ONE, IN THIS TABLE OR ANOTHER. Seat: admin@admin.com, own fixture org, rolled back.
 -- RED before 20261018054000_w2a_e_a_button_adds_a_row_prefilled_from_this_one.sql: R1 fails (do add_row refused as a button setting).
+-- RED before 20261018055000_w2a_f_add_row_fills_a_many_link_with_a_list.sql: R2c fails (a many-link got the bare id).
 begin;
 set local statement_timeout = '30s';
 do $t$
@@ -15,30 +16,40 @@ begin
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'W2-A fixture');
   insert into custom.record (organization_id, table_id, data) values (v_org, null, jsonb_build_object('name','WAB Home')) returning id into v_home;
   perform set_config('role','authenticated', true);
-  v_jobs := custom.table_declare(v_org, spec || jsonb_build_object('name','Jobs','slug','jobs','label_singular','Job','label_plural','Jobs','parent_id',v_home::text,
-    'fields', jsonb_build_array(jsonb_build_object('name','title'), jsonb_build_object('name','phone'), jsonb_build_object('name','from_row'))));
   v_cust := custom.table_declare(v_org, spec || jsonb_build_object('name','Customers','slug','customers','label_singular','Customer','label_plural','Customers','parent_id',v_home::text,
     'fields', jsonb_build_array(jsonb_build_object('name','title'), jsonb_build_object('name','phone'), jsonb_build_object('name','new_job','type','button'), jsonb_build_object('name','copy_me','type','button'))));
+  v_jobs := custom.table_declare(v_org, spec || jsonb_build_object('name','Jobs','slug','jobs','label_singular','Job','label_plural','Jobs','parent_id',v_home::text,
+    'fields', jsonb_build_array(jsonb_build_object('name','title'), jsonb_build_object('name','phone'), jsonb_build_object('name','from_row'), jsonb_build_object('name','customer','type','relation','relation_target',v_cust::text,'relation_max',1), jsonb_build_object('name','customers','type','relation','relation_target',v_cust::text))));
   execute 'reset role';
   select id into v_btn from custom.record where organization_id = v_org and table_id = custom.field_kernel_id() and deleted_at is null and data ->> 'entity_definition_id' = v_cust::text and data ->> 'key' = 'new_job';
   select id into v_same from custom.record where organization_id = v_org and table_id = custom.field_kernel_id() and deleted_at is null and data ->> 'entity_definition_id' = v_cust::text and data ->> 'key' = 'copy_me';
   perform set_config('role','authenticated', true);
   -- R1 the button settings take add_row (another table, and this table)
   perform custom.field_update(v_org, v_btn, jsonb_build_object('button', jsonb_build_object('label','New job','do','add_row','table_id',v_jobs::text,
-            'prefill', jsonb_build_object('title','title','phone','phone','from_row','@row'))));
+            'prefill', jsonb_build_object('title','title','phone','phone','from_row','@row','customer','@row','customers','@row'))));
   perform custom.field_update(v_org, v_same, jsonb_build_object('button', jsonb_build_object('label','Copy','do','add_row','prefill', jsonb_build_object('title','title'))));
   raise notice 'R1 PASS - add_row stored on both buttons';
   -- R2 a press on a customer makes a job prefilled from it, through the create door, and answers its id
   v_r := custom.record_write(v_org, v_cust, jsonb_build_object('title','Hollis','phone','555-0101'));
   v_out := custom.button_press(v_org, v_r, v_btn);
   if v_out ->> 'do' <> 'add_row' or (v_out ->> 'table_id')::uuid <> v_jobs or v_out ->> 'record_id' is null then raise exception 'R2 RED: %', v_out; end if;
+  execute 'reset role';
   v_vals := custom.record_values(v_org, (v_out ->> 'record_id')::uuid);
   if v_vals ->> 'title' <> 'Hollis' or v_vals ->> 'phone' <> '555-0101' or v_vals ->> 'from_row' <> v_r::text then raise exception 'R2 RED: the job holds %', v_vals; end if;
-  raise notice 'R2 PASS - a job in the linked table, prefilled: %', v_vals;
+  -- R2b the LINK column back to the customer holds the pressed row
+  if coalesce(v_vals ->> 'customer', '') not like '%' || v_r::text || '%' then
+    raise exception 'R2b RED: the job does not link back to its customer: %', v_vals; end if;
+  -- R2c a many-link column takes a LIST holding the pressed row (the shape record_write reads back for it), a one-link the id
+  if v_vals -> 'customers' is distinct from jsonb_build_array(v_r::text) or v_vals -> 'customer' is distinct from to_jsonb(v_r::text) then
+    raise exception 'R2c RED: the link columns hold customer % / customers %', v_vals -> 'customer', v_vals -> 'customers'; end if;
+  raise notice 'R2 PASS - a job in the linked table, prefilled and linked back: %', v_vals;
+  perform set_config('role','authenticated', true);
   -- R3 with no table_id the row lands in this table
   v_out := custom.button_press(v_org, v_r, v_same);
+  execute 'reset role';
   if (v_out ->> 'table_id')::uuid <> v_cust or custom.record_values(v_org, (v_out ->> 'record_id')::uuid) ->> 'title' <> 'Hollis' then raise exception 'R3 RED: %', v_out; end if;
   raise notice 'R3 PASS - a copy in this table';
+  perform set_config('role','authenticated', true);
   -- R4 a prefill that is not a map is refused by name
   begin perform custom.field_update(v_org, v_same, jsonb_build_object('button', jsonb_build_object('label','Bad','do','add_row','prefill','title')));
     raise exception 'R4 RED: a string prefill was stored';

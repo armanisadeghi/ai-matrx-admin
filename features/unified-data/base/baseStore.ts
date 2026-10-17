@@ -3,6 +3,7 @@
 
 import type { BaseSnapshotRecord } from "@ai-matrx/records";
 
+import { putJson } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
 
 export interface BaseIdentity {
@@ -69,9 +70,14 @@ export async function saveBase(
   return (data ?? [])[0] as BaseIdentity;
 }
 
-export async function setSnapshotSchedule(baseId: string, enabled: boolean, every = "weekly"): Promise<void> {
-  const { error } = await from("base").update({ snapshot_schedule: { enabled, every } }).eq("id", baseId);
-  if (error) throw new Error(error.message);
+/**
+ * The "Take a snapshot every week" toggle. ON makes THIS base's own schedule on the platform scheduler (aidream
+ * `PUT /base-snapshots/schedule`), OFF removes it; the server also writes `custom.base.snapshot_schedule`. Nothing exists until a
+ * person turns it on. Answers the new state.
+ */
+export async function setSnapshotSchedule(organizationId: string, baseId: string, enabled: boolean, every: "daily" | "weekly" = "weekly"): Promise<{ enabled: boolean; every: string }> {
+  const { data } = await putJson<{ snapshot_schedule: { enabled: boolean; every: string } }>("/base-snapshots/schedule", { base_id: baseId, enabled, every }, { organizationId });
+  return data.snapshot_schedule;
 }
 
 export async function listSnapshots(baseId: string): Promise<BaseSnapshotRow[]> {

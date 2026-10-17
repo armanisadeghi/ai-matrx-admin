@@ -10,12 +10,14 @@ import { Button, Field } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { createVaultItem } from "@/features/secrets/vault-service";
 import { postJson, postNdjson } from "@/lib/python-client";
 import { createClient } from "@/utils/supabase/client";
 
 interface Token { id: string; name: string }
 interface AirtableBase { id: string; name: string; permission: string }
+interface PreviewTable { id: string; name: string; fields: number; views: number }
 interface Item { kind: string; item: string | null; reason: string | null }
 type Report = { counts: Record<string, number>; came_over: Record<string, number>; came_with_a_difference: Item[]; not_carried: Item[] };
 
@@ -31,11 +33,13 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
   const [bases, setBases] = useState<AirtableBase[] | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [step, setStep] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [preview, setPreview] = useState<Record<string, PreviewTable[] | "loading">>({});
   const [report, setReport] = useState<Report | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
 
   const reload = useCallback(async () => setTokens(await savedTokens().catch(() => [])), []);
-  useEffect(() => { if (open) { setBases(null); setReport(null); setProblem(null); void reload(); } }, [open, reload]);
+  useEffect(() => { if (open) { setBases(null); setReport(null); setProblem(null); setPreview({}); setProgress(null); void reload(); } }, [open, reload]);
 
   const listFor = async (id: string) => {
     setItem(id); setProblem(null); setStep("Asking Airtable which bases this token can read…");
@@ -43,6 +47,17 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
       const { data } = await postJson<{ bases: AirtableBase[] }>("/airtable-import/bases", { credential_item_id: id }, { organizationId });
       setBases(data.bases); setPicked(new Set(data.bases.map((b) => b.id)));
     } catch (e) { setProblem(e instanceof Error ? e.message : "Airtable did not answer."); } finally { setStep(null); }
+  };
+  const look = async (baseId: string) => {
+    if (!item) return;
+    setPreview((p) => ({ ...p, [baseId]: "loading" }));
+    try {
+      const { data } = await postJson<{ tables: PreviewTable[] }>("/airtable-import/tables", { credential_item_id: item, base_id: baseId }, { organizationId });
+      setPreview((p) => ({ ...p, [baseId]: data.tables }));
+    } catch (e) {
+      setPreview((p) => { const n = { ...p }; delete n[baseId]; return n; });
+      setProblem(e instanceof Error ? e.message : "Airtable did not answer.");
+    }
   };
   const saveToken = async () => {
     try {
@@ -53,16 +68,19 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
   };
   const run = async () => {
     if (!item) return;
-    setProblem(null); setStep("Reading…");
+    setProblem(null); setStep("Reading…"); setProgress(null);
     try {
       for await (const ev of postNdjson("/airtable-import/import", { credential_item_id: item, base_ids: [...picked] }, { organizationId })) {
         if (ev.event !== "data") continue;
         const d = ev.data as Record<string, unknown>;
-        if (d.type === "notion_import.progress") setStep(`${String(d.step)} · ${String(d.detail ?? "")}`);
+        if (d.type === "notion_import.progress") {
+          setStep(`${String(d.step)} · ${String(d.detail ?? "")}`);
+          if (typeof d.done === "number" && typeof d.total === "number" && d.total > 0) setProgress({ done: d.done, total: d.total });
+        }
         else if (d.type === "notion_import.failed") { setProblem(String(d.message)); setStep(null); return; }
         else if (d.type === "notion_import.finished") setReport(d as unknown as Report);
       }
-    } catch (e) { setProblem(e instanceof Error ? e.message : "The import stopped."); } finally { setStep(null); }
+    } catch (e) { setProblem(e instanceof Error ? e.message : "The import stopped."); } finally { setStep(null); setProgress(null); }
   };
 
   return (
@@ -80,8 +98,18 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
           <div className="flex flex-col gap-2">
             <ul className="max-h-64 divide-y divide-border overflow-auto rounded-md border border-border">
               {bases.map((b) => (
-                <li key={b.id}><label className="flex items-center gap-2 px-3 py-2 text-sm"><input type="checkbox" checked={picked.has(b.id)} aria-label={b.name}
-                  onChange={(e) => setPicked((s) => { const n = new Set(s); if (e.target.checked) n.add(b.id); else n.delete(b.id); return n; })} />{b.name}</label></li>
+                <li key={b.id} data-airtable-base={b.id}>
+                  <div className="flex items-center gap-2 px-3 py-2 text-sm">
+                    <label className="flex flex-1 items-center gap-2"><input type="checkbox" checked={picked.has(b.id)} aria-label={b.name}
+                      onChange={(e) => setPicked((s) => { const n = new Set(s); if (e.target.checked) n.add(b.id); else n.delete(b.id); return n; })} />{b.name}</label>
+                    <Button variant="quiet" disabled={!!step || preview[b.id] === "loading"} onClick={() => void look(b.id)} data-airtable-look={b.id}>{preview[b.id] === "loading" ? "Looking…" : "Tables"}</Button>
+                  </div>
+                  {Array.isArray(preview[b.id]) ? (
+                    <ul className="border-t border-border bg-muted/30 px-3 py-1 text-xs" data-airtable-tables={b.id}>
+                      {(preview[b.id] as PreviewTable[]).map((t) => <li key={t.id} className="flex justify-between py-0.5"><span>{t.name}</span><span className="text-muted-foreground">{t.fields} columns · {t.views} views</span></li>)}
+                    </ul>
+                  ) : null}
+                </li>
               ))}
             </ul>
             <div className="flex justify-end gap-2">
@@ -100,6 +128,7 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
             <p className="text-xs text-muted-foreground">Needs data.records:read, schema.bases:read and data.recordComments:read.</p>
           </div>
         )}
+        {progress ? <Progress value={Math.min(100, Math.round((progress.done / progress.total) * 100))} data-airtable-progress="" /> : null}
         {step ? <p className="text-xs text-muted-foreground">{step}</p> : null}
         {problem ? <p className="text-xs text-destructive" role="alert">{problem}</p> : null}
       </DialogContent>

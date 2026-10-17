@@ -25,9 +25,12 @@ import type { OrganizationWithRole } from "@/features/organizations/types";
 export function OrganizationPickerPanel({
   hideHeading = false,
   itemClassName,
+  onChosen,
 }: {
   hideHeading?: boolean;
   itemClassName?: string;
+  /** Said after an organization is chosen: a host that opened the panel in a popover closes it here. */
+  onChosen?: () => void;
 }) {
   const { activeOrgId, selectOrganization } = useActiveOrganizationPicker({ load: false });
   const paged = usePagedOrganizations();
@@ -44,7 +47,10 @@ export function OrganizationPickerPanel({
       loading={paged.loading}
       loadFailed={Boolean(paged.error) && paged.organizations.length === 0}
       {...pagedPickerProps(paged)}
-      onSelect={(org) => selectOrganization(org.id, org.name)}
+      onSelect={(org) => {
+        selectOrganization(org.id, org.name);
+        onChosen?.();
+      }}
       onToggleFavorite={toggleFavorite}
     />
   );

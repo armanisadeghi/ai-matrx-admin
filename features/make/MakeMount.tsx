@@ -62,6 +62,7 @@ export function SavesTo() {
   return (
     <OrganizationPickerPopover
       align="end"
+      closeOnChoose
       trigger={
         <Button size="sm" variant="ghost" className="max-w-full gap-1.5 text-muted-foreground" data-make-saves-to={active.organizationState}>
           <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />

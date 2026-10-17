@@ -218,7 +218,7 @@ export function toResultView(row: ResultRow): TestResultView {
   };
 }
 
-function toCaseView(row: ExemplarRow): TestCaseView {
+export function toCaseView(row: ExemplarRow): TestCaseView {
   const variables = isJsonObject(row.variables) ? row.variables : {};
   return {
     id: row.id,

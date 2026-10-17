@@ -14,7 +14,7 @@
 // picker their own way. A notice is one line plus a button; the list opens on
 // demand, the same way everywhere.
 //
-// It stays open after a selection on purpose: "Keep it at the top" only
+// It stays open after a selection on purpose (unless `closeOnChoose`): "Keep it at the top" only
 // enables once an organization is active. Outside-click / Esc / swipe closes.
 
 import { useState, type ReactElement, type ReactNode } from "react";
@@ -50,6 +50,8 @@ export interface OrganizationPickerPopoverProps {
   contentClassName?: string;
   /** Passed to the canonical panel (heading off, a host menu's row class). */
   panelProps?: { hideHeading?: boolean; itemClassName?: string };
+  /** Close the picker once an organization is chosen (New table's "New things save to": the tiles must not stay covered). */
+  closeOnChoose?: boolean;
 }
 
 export function OrganizationPickerPopover({
@@ -61,6 +63,7 @@ export function OrganizationPickerPopover({
   header,
   contentClassName,
   panelProps,
+  closeOnChoose = false,
 }: OrganizationPickerPopoverProps) {
   const isMobile = useIsMobile();
   const [ownOpen, setOwnOpen] = useState(false);
@@ -83,7 +86,7 @@ export function OrganizationPickerPopover({
             </DrawerHeader>
             <div className="matrx-touch-targets overflow-y-auto px-2 pb-4">
               {header}
-              <OrganizationPickerPanel {...panelProps} />
+              <OrganizationPickerPanel {...panelProps} {...(closeOnChoose ? { onChosen: () => setOpen(false) } : {})} />
             </div>
           </DrawerContent>
         </Drawer>
@@ -102,7 +105,7 @@ export function OrganizationPickerPopover({
         className={contentClassName ?? "w-80 p-1"}
       >
         {header}
-        <OrganizationPickerPanel {...panelProps} />
+        <OrganizationPickerPanel {...panelProps} {...(closeOnChoose ? { onChosen: () => setOpen(false) } : {})} />
       </PopoverContent>
     </Popover>
   );

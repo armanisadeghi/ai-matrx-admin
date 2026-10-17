@@ -238,7 +238,8 @@ registerChatUi({
   ServerNotes: ServerNotes,
 });
 
-import { LiteWindow as Host_MatrxFloatingFrame } from "@ai-matrx/summon/lite";
+// Loaded when a floating frame first renders: the light-window section never rides the boot graph.
+const Host_MatrxFloatingFrame = dynamic(() => import("@ai-matrx/summon/lite").then((m) => m.LiteWindow));
 registerChatUi({
   MatrxFloatingFrame: Host_MatrxFloatingFrame,
 });

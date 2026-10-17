@@ -67,6 +67,8 @@ export interface PageLock {
 
 /** Screen px kept between a page and the view's edges. */
 export const PAGE_VIEW_MARGIN = 24;
+/** A view smaller than this is still laying out: the page lock waits for a real size. */
+const PAGE_MIN_VIEW = 160;
 
 export interface Insets {
   top: number;
@@ -250,6 +252,8 @@ export class BoardCameraStore {
 
   private lockedCamera(next: Camera): Camera {
     const lock = this.pageLock!;
+    // A view still laying out (0-wide while a rail slides open) would read as a 5% zoom: wait for a real size.
+    if (this.size.w < PAGE_MIN_VIEW || this.size.h < PAGE_MIN_VIEW) return next;
     const { top, bottom, left, right } = this.insets;
     const z = this.pageZoom(lock);
     const innerW = Math.max(1, this.size.w - left - right);

@@ -269,6 +269,39 @@ export async function loadJevAnswers(conversationIds: string[]): Promise<Map<str
   return out;
 }
 
+/**
+ * The full final answer of each run, from its conversation's last assistant message. A battle cell
+ * keeps only the first 6,000 characters of its answer, and today's holder answers 25 results per
+ * call — a full batch runs past that, so the cell's copy is cut mid-JSON and unreadable (2026-10-17:
+ * 2 of 6 batches, 50 results shown as "No answer"). The conversation holds every character.
+ */
+export async function loadFullAnswers(conversationIds: string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  for (let i = 0; i < conversationIds.length; i += 50) {
+    const chunk = conversationIds.slice(i, i + 50);
+    const rows = await readAllRows(
+      ({ from, to }) =>
+        createClient()
+          .schema("chat")
+          .from("message")
+          .select("conversation_id, position, content", { count: "exact" })
+          .in("conversation_id", chunk)
+          .eq("role", "assistant")
+          .is("deleted_at", null)
+          .order("conversation_id", { ascending: true })
+          .order("position", { ascending: true })
+          .range(from, to),
+      { label: "chat.message (final answers of bench runs)" },
+    );
+    for (const row of rows) {
+      const parts = Array.isArray(row.content) ? (row.content as { type?: string; text?: string }[]) : [];
+      const text = parts.filter((p) => p?.type === "text" && typeof p.text === "string").map((p) => p.text).join("");
+      if (text) out.set(row.conversation_id, text); // ordered by position: the last assistant message wins
+    }
+  }
+  return out;
+}
+
 /** Save one truth mark (null clears it) and, when Jev answered that result, label its answer. */
 export async function saveTruth(
   setId: string,

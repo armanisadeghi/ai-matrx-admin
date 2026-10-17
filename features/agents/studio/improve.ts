@@ -1,6 +1,6 @@
 /**
  * Mode "Improve an agent I have": the latest real run opens in the center. Nothing is saved on
- * open: a run becomes a test case (the ONE store, `agent.exemplar`, via `borrowSampleFromRun`)
+ * open: a run becomes a test case (the ONE store, an eval test case, via `saveRunAsTestCase`)
  * only when the person presses "Save as test case" on it (`runToSave`). Runs the Studio itself launched are the person's tries, not the agent's real work, so
  * they are used only when the agent has no other runs.
  */

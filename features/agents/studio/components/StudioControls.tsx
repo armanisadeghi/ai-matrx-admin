@@ -6,9 +6,9 @@
  * - Settings: name, goal, model (the canonical `ModelListDropdown`), inputs (read only), feedback
  *   to the assistant, and Save version. Edits go through the Agent Builder's own record and save
  *   path (`setAgentField` → `saveAgent`): every save is a new immutable version.
- * - Cases: the agent's test cases (the ONE store, `agent.exemplar`, through `AgentSamplesManager`);
- *   "Use" runs one fresh in the center.
- * - Versions: the agent's saved versions (`agent.definition_version`), each opens.
+ * - Cases: the agent's test cases on Agent Evaluation (`StudioCases`: kind='test_case' rows, the
+ *   eval runner, checks + judge); "Open" runs one fresh in the center.
+ * - Versions: cases × versions from eval results, then the saved versions, each opens.
  * - Battle: the existing model battle with this agent locked in, its input loaded with a test case
  *   (`applySampleToComposer`), or the versions battle.
  * - Debrief: opens Debrief (`@ai-matrx/chat` debrief) on the latest answer in the center, in place.
@@ -28,9 +28,10 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { setAgentField } from "@/features/agents/redux/agent-builder.slice";
 import { saveAgent } from "@/features/agents/redux/builder-write.thunks";
 import { setLockedAgent } from "@/features/agent-comparison/modes/model/redux/thunks";
-import { AgentSamplesManager } from "@/features/agents/components/samples/AgentSamplesManager";
 import { applySampleToComposer } from "@/features/agents/samples/apply-sample";
-import { fetchAgentSamples, type AgentSampleRow } from "@/features/agents/samples/service";
+import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
+import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
+import { StudioCases } from "./StudioCases";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
@@ -55,7 +56,7 @@ interface StudioControlsProps {
   /** After a save: run the agent again, fresh. */
   onSaved: () => void;
   /** Run one of the agent's test cases, fresh, in the center. */
-  onUseCase: (sample: AgentSampleRow) => void;
+  onUseCase: (testCase: TestCaseRow) => void;
   /** Changes when the page added test cases (the Cases list re-reads). */
   casesVersion?: number;
   /** The tab the pane opens on (mode "Improve" opens on Debrief: its first action). */
@@ -83,9 +84,7 @@ export function StudioControls({
         ) : tab === "settings" ? (
           <SettingsTab agentId={agentId} onFeedback={onFeedback} onSaved={onSaved} />
         ) : tab === "cases" ? (
-          <div data-testid="studio-cases">
-            <AgentSamplesManager key={casesVersion} agentId={agentId} onUseSample={onUseCase} />
-          </div>
+          <StudioCases agentId={agentId} casesVersion={casesVersion} onUseCase={onUseCase} />
         ) : tab === "versions" ? (
           <VersionsTab agentId={agentId} />
         ) : tab === "battle" ? (
@@ -219,7 +218,9 @@ function VersionsTab({ agentId }: { agentId: string }) {
   if (!rows) return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Loading versions" />;
   if (rows.length === 0) return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="No saved versions yet" />;
   return (
-    <ul className="flex flex-col gap-1" data-testid="studio-versions">
+    <div className="flex flex-col gap-3">
+      <CaseVersionGrid agentId={agentId} />
+      <ul className="flex flex-col gap-1" data-testid="studio-versions">
       {rows.map((r) => (
         <li key={r.version_number}>
           <Link
@@ -231,7 +232,8 @@ function VersionsTab({ agentId }: { agentId: string }) {
           </Link>
         </li>
       ))}
-    </ul>
+      </ul>
+    </div>
   );
 }
 
@@ -240,10 +242,10 @@ function BattleTab({ agentId, casesVersion }: { agentId: string; casesVersion: n
   const store = useAppStore();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const [cases, setCases] = useState<AgentSampleRow[] | null>(null);
+  const [cases, setCases] = useState<TestCaseRow[] | null>(null);
   useEffect(() => {
     let live = true;
-    void fetchAgentSamples(agentId)
+    void fetchTestCaseRows(agentId)
       .then((rows) => live && setCases(rows))
       .catch(() => live && setCases([]));
     return () => {
@@ -252,7 +254,7 @@ function BattleTab({ agentId, casesVersion }: { agentId: string; casesVersion: n
   }, [agentId, casesVersion]);
 
   /** The model battle with this agent locked in; with a case, its input is that case. */
-  const compareModels = async (sample?: AgentSampleRow) => {
+  const compareModels = async (sample?: TestCaseRow) => {
     setBusy(true);
     try {
       await dispatch(setLockedAgent({ agentId })).unwrap();

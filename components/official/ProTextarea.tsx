@@ -491,6 +491,18 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
    * the box to 36px and the 38px buttons stuck out of it, 2026-10-12).
    */
   controls?: ProTextareaControls;
+  /**
+   * `field` (default): the form box. `hero`: a front door's ONE big composer (a studio start, a
+   * welcome) — 16px text, a roomy inset, a 16px radius, a soft lift and a primary focus halo. Pair it
+   * with a `type-display` headline above. Never on a working screen.
+   */
+  appearance?: "field" | "hero";
+  /**
+   * Content at the START of the reserved control row, opposite the mic / submit cluster (an "Add an
+   * example" button, an attach). Shown only when that row is reserved (`onSubmit` or the coarse
+   * controls); a press here never takes focus from the field.
+   */
+  leading?: React.ReactNode;
 }
 
 export const ProTextarea = React.forwardRef<
@@ -551,6 +563,8 @@ export const ProTextarea = React.forwardRef<
       uploadImage,
       expandable = false,
       controls,
+      appearance = "field",
+      leading,
       ...props
     },
     ref,
@@ -1392,14 +1406,23 @@ export const ProTextarea = React.forwardRef<
     const mountOwnMenu = enableContextMenu && !insideAncestorMenu && !disabled;
 
     // The field surface, shared by the <textarea> and a hosted editor.
+    const hero = appearance === "hero";
     const fieldClassName = cn(
-      "flex w-full border border-border bg-card px-3 py-2 text-sm shadow-sm placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
+      hero
+        ? "flex w-full border border-border bg-card px-5 pt-4 pb-3 text-base leading-7 text-foreground placeholder:text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.05),0_12px_32px_-12px_rgb(0_0_0/0.22)] transition-[border-color,box-shadow] duration-200"
+        : "flex w-full border border-border bg-card px-3 py-2 text-sm shadow-sm placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
       // The pinned stats bar is desktop-only (see its render below),
       // so the flat bottom edge that pairs with it is sm+ only too.
       showPinnedTextStatsBar
-        ? "rounded-md sm:rounded-b-none sm:border-b-0"
-        : "rounded-md",
-      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        ? hero
+          ? "rounded-2xl sm:rounded-b-none sm:border-b-0"
+          : "rounded-md sm:rounded-b-none sm:border-b-0"
+        : hero
+          ? "rounded-2xl"
+          : "rounded-md",
+      hero
+        ? "focus-visible:outline-none focus-visible:border-primary/50 focus-visible:shadow-[0_0_0_4px_hsl(var(--primary)/0.12),0_12px_32px_-12px_hsl(var(--foreground)/0.18)]"
+        : "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
       "disabled:cursor-not-allowed disabled:opacity-50",
       fillHeight ? "min-h-0 flex-1 resize-none overflow-y-auto" : "resize-y",
       // Auto-grow disables the manual resize handle. Use overflow-y-auto
@@ -1412,7 +1435,7 @@ export const ProTextarea = React.forwardRef<
       // never over text (proTextareaControlPlacement.ts): one 38px tap
       // row inset 4px from the corner, so 44px (pb-11) clears it — no more
       // (a 48px blank band under three lines read as wasted space, 2026-10-09).
-      "pr-3",
+      hero ? "pr-5" : "pr-3",
       className,
       // AFTER the consumer's className: a caller's own padding (`py-2`) used
       // to erase the reserved row and the cluster sat on the last line again
@@ -1423,8 +1446,12 @@ export const ProTextarea = React.forwardRef<
         (hasCoarseControls || onSubmit) &&
         (editor?.singleLine && !onSubmit
           ? "pr-24 pointer-coarse:pr-32"
-          : "pb-11"),
+          : hero
+            ? "pb-14"
+            : "pb-11"),
     );
+    // The reserved control row exists (the leading slot shares it with the cluster).
+    const reservesRow = !inlineControls && (hasCoarseControls || !!onSubmit) && !editor?.singleLine;
     const fieldStyle: React.CSSProperties = {
       ...style,
       minHeight:
@@ -1542,13 +1569,24 @@ export const ProTextarea = React.forwardRef<
             box left a 10px hole, 2026-10-05). A press here never takes
             focus from the field, so a focus-revealed row cannot hide
             itself mid-click. */}
+            {leading && reservesRow ? (
+              <div
+                data-pro-textarea-leading=""
+                onMouseDown={(e) => e.preventDefault()}
+                className={cn("absolute z-10 flex items-center gap-1", hero ? "bottom-2 left-3" : "bottom-1 left-1")}
+              >
+                {leading}
+              </div>
+            ) : null}
             <div
               ref={setClusterNode}
               onMouseDown={(e) => e.preventDefault()}
               data-matrx-tap-dense={denseInline ? "" : undefined}
               className={cn(
                 "absolute z-10 flex items-center",
-                proTextareaClusterPlacement(!!onSubmit, inlineControls ? "inline" : "row").className,
+                hero && !inlineControls
+                  ? "bottom-2 right-2"
+                  : proTextareaClusterPlacement(!!onSubmit, inlineControls ? "inline" : "row").className,
                 editor?.singleLine && "top-1/2 bottom-auto -translate-y-1/2",
               )}
             >

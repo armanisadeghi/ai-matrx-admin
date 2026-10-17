@@ -82,7 +82,7 @@ links to — is already declared in the admin navigation registry.
   norm (Arman, 2026-09-16). A dead ladder stays kind `media` with the
   diagnosis as `error_type`.
 - **A notice never modifies the page underneath it** (Arman, 2026-09-12). The
-  outage notice FLOATS: fixed, movable (`useDraggableFloat`), mutable. It
+  outage notice FLOATS: fixed, movable (`useDock`, `@ai-matrx/summon/dock`), mutable. It
   publishes no height, measures nothing, and reserves no layout — a full-width
   bar wedged into `AppShell` between the header and the page body is the exact
   shape that was ruled out after the schedule alarm shipped it. Guard:

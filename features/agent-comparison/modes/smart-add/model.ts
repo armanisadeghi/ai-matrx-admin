@@ -396,6 +396,7 @@ export function readRuns(
   cells: MatrixCell[],
   bench: BenchState,
   jevStore: Map<string, SystemAnswer> = new Map(),
+  fullAnswers: Map<string, string> = new Map(),
 ): Record<SystemKey, SystemRun> {
   const empty = (): SystemRun => ({ answers: new Map(), durations: [], cost: 0, calls: 0, done: 0, failed: 0, conversations: new Map() });
   const runs: Record<SystemKey, SystemRun> = { holder: empty(), jev: empty(), reference: empty() };
@@ -416,7 +417,9 @@ export function readRuns(
       if (a) run.answers.set(cell.rowId, a);
       run.conversations.set(cell.rowId, cell.conversationId);
     } else {
-      for (const [k, a] of readBatchCell(cell.result.answer, bench.stances)) run.answers.set(k, a);
+      // The cell keeps 6,000 characters; a full batch answer is longer — read the conversation's copy.
+      const text = fullAnswers.get(cell.conversationId) ?? cell.result.answer;
+      for (const [k, a] of readBatchCell(text, bench.stances)) run.answers.set(k, a);
     }
   }
   return runs;
@@ -553,4 +556,20 @@ export function rowStatus(cells: MatrixCell[], bench: BenchState, key: string, s
   if (cell.status === "completed") return "done";
   if (cell.status === "failed" || cell.status === "cancelled" || cell.stalled) return "failed";
   return cell.status === "running" ? "judging" : "waiting";
+}
+
+/** A batch cell whose kept answer cannot be read (cut at the cell's 6,000-character limit). */
+export function batchAnswerUnreadable(cell: MatrixCell): boolean {
+  if (cell.columnId === COLUMN_ID.jev || cell.status !== "completed") return false;
+  return readBatchCell(cell.result?.answer, {}).size === 0;
+}
+
+/**
+ * Money on the bench: a cent or more is $x.xx; under a cent shows two significant digits
+ * ($0.0093, $0.000052), so every figure in a column reads the same way (Arman, 2026-10-17).
+ */
+export function moneyDigits(value: number): number {
+  const m = Math.abs(value);
+  if (m === 0 || m >= 0.01) return 2;
+  return Math.max(2, 1 - Math.floor(Math.log10(m)));
 }

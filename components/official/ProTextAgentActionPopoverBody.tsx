@@ -147,9 +147,11 @@ export function ProTextAgentActionPopoverBody({
         </div>
       )}
 
-      <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-2">
+      {/* Back, Cancel, Compare and Apply do not fit one row of the 20rem panel: the row wraps, so Apply is never
+          cut at the right edge (walk 2026-10-17, D9). */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-border px-3 py-2" data-pro-text-action-footer="">
         <Button variant="quiet" onClick={onBack}>Back</Button>
-        <div className="flex items-center gap-1.5">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
           <Button variant="quiet" onClick={onCancel}>Cancel</Button>
           {onCompare && isComplete && hasResult && (
             <Button variant="quiet" icon={<GitCompareArrows />} onClick={onCompare} title="Compare your current text with the AI result before applying">Compare</Button>

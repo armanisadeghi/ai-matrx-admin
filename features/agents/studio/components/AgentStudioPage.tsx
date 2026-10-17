@@ -55,15 +55,8 @@ import { BuildProgress } from "@/features/agents/factory/components/BuildProgres
 import { getFactoryBuild } from "@/features/agents/factory/service";
 import { KEPT_OUTCOMES, type FactoryBuildState } from "@/features/agents/factory/types";
 import { makeAgentFromChat, type StudioBrief } from "@/features/agents/from-chat/service";
-import {
-  borrowSampleFromRun,
-  createAgentSample,
-  fetchAgentContractHead,
-  fetchAgentSamples,
-  fetchCandidateRuns,
-  sampleInputText,
-  type AgentSampleRow,
-} from "@/features/agents/samples/service";
+import { fetchAgentContractHead, fetchCandidateRuns, sampleInputText } from "@/features/agents/samples/service";
+import { createTestCase, fetchTestCaseRows, saveRunAsTestCase, type TestCaseRow } from "@/features/agent-tests/cases";
 import { fetchFullAgent } from "@/features/agents/redux/fetch-full-agent.thunk";
 import { useAgentBuilderPageScope } from "@/features/agents/hooks/useAgentBuilderSurfaceScope";
 import { AgentBuilderClientTools } from "@/features/agents/hooks/useAgentBuilderClientTools";
@@ -220,7 +213,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     })();
   }, [mode.id, state.agentId, state.runId, go]);
 
-  /** "Save as test case" on the run on screen (Improve mode). */
+  /** "Save as test case" on the run on screen: an eval test case (kind='test_case'), its answer approved. */
   const [savingCase, setSavingCase] = useState(false);
   const [savedRuns, setSavedRuns] = useState<ReadonlySet<string>>(new Set());
   const shownRun = runConversation ?? state.runId;
@@ -229,8 +222,8 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     if (!agentId || !shownRun) return;
     setSavingCase(true);
     try {
-      const [runs, samples] = await Promise.all([fetchCandidateRuns(agentId, { limit: 25 }), fetchAgentSamples(agentId)]);
-      const already = new Set(samples.map((x) => x.source_conversation_id).filter((id): id is string => Boolean(id)));
+      const [runs, cases] = await Promise.all([fetchCandidateRuns(agentId, { limit: 25 }), fetchTestCaseRows(agentId)]);
+      const already = new Set(cases.map((x) => x.source_conversation_id).filter((id): id is string => Boolean(id)));
       const target = runToSave(runs, shownRun, new Set([...already, ...savedRuns]));
       if (target === "already") {
         setSavedRuns((prev) => new Set(prev).add(shownRun));
@@ -238,7 +231,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       } else if (!target) {
         toast.error("This run is not saved yet", { description: "Send it first, then save it as a test case" });
       } else {
-        await borrowSampleFromRun({ agentId, run: target });
+        await saveRunAsTestCase({ agentId, run: target, head: await fetchAgentContractHead(agentId) });
         setSavedRuns((prev) => new Set(prev).add(shownRun));
         setCasesVersion((v) => v + 1);
         toast.success("Saved as a test case");
@@ -261,15 +254,15 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     const cases = fromExamples ? studioCasesFromBuild(build, EXAMPLES_CASE_SOURCE) : [studioCase];
     void (async () => {
       try {
-        if ((await fetchAgentSamples(agentId)).length > 0) return;
+        if ((await fetchTestCaseRows(agentId)).length > 0) return;
         const head = await fetchAgentContractHead(agentId);
         for (const [i, c] of cases.entries()) {
-          await createAgentSample({
+          await createTestCase({
             agentId,
             label: fromExamples ? `Your example ${i + 1}` : "Approved in the Studio",
             variables: c.variables,
             userInput: c.userInput,
-            referenceOutput: c.approved,
+            approvedAnswer: c.approved,
             head,
           });
         }
@@ -424,7 +417,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   };
 
   /** A saved test case, run fresh in the center. */
-  const runCase = (sample: AgentSampleRow) => {
+  const runCase = (sample: TestCaseRow) => {
     const variables: Record<string, string> = {};
     if (sample.variables && typeof sample.variables === "object" && !Array.isArray(sample.variables)) {
       for (const [k, v] of Object.entries(sample.variables)) {
@@ -560,7 +553,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
             Make this an agent
           </Button>
         )}
-        {mode.id === "improve" && state.agentId && shownRun && (
+        {state.agentId && shownRun && (
           <Button
             variant="outline"
             data-testid="studio-save-case"

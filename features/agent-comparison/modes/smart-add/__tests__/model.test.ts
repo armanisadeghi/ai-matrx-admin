@@ -3,6 +3,7 @@ import {
   cellsToRun,
   emptyBench,
   expectedCells,
+  moneyDigits,
   mergeResults,
   normalizeUrl,
   readBatchCell,
@@ -102,4 +103,14 @@ test("the page waits for every cell the run will make", () => {
   expect(expectedCells(b)).toBe(4); // no reference model picked: no reference cells
   b.agents.referenceModel = "m";
   expect(expectedCells(b)).toBe(5);
+});
+
+test("money: a cent or more is $x.xx, under a cent two significant digits", () => {
+  const { formatUsd } = require("@ai-matrx/kit/format") as typeof import("@ai-matrx/kit/format");
+  const show = (v: number) => formatUsd(v, { digits: moneyDigits(v) });
+  expect(show(0.0447)).toBe("$0.04");
+  expect(show(0.009325)).toBe("$0.0093");
+  expect(show(0.000052)).toBe("$0.000052");
+  expect(show(0.1273)).toBe("$0.13");
+  expect(show(0)).toBe("$0.00");
 });

@@ -50,7 +50,7 @@ describe("global fixed alerts preserve reachable page actions", () => {
   });
 
   it("the dock and shared toasts have separate bottom slots", () => {
-    expect(BANNER_TSX).toContain("useDraggableFloat");
+    expect(BANNER_TSX).toContain("useDock(");
     expect(BANNER_TSX).toContain("SNOOZE_CHOICES");
     expect(BANNER_TSX).toContain("DEFAULT_SNOOZE");
     const toast = readFileSync(join(__dirname, "..", "..", "components", "ui", "toast.tsx"), "utf8");

@@ -429,7 +429,11 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
         <label className="flex items-center justify-between gap-2 text-sm">
           <span>Take a snapshot every week</span>
           <input type="checkbox" checked={scheduleOn} aria-label="Take a snapshot every week" disabled={!!busy}
-            onChange={async (e) => { const b = base ?? (await onNeedIdentity()); await setSnapshotSchedule(b.id, e.target.checked); setBase({ ...b, snapshot_schedule: { enabled: e.target.checked, every: "weekly" } }); }} />
+            onChange={async (e) => {
+              const on = e.target.checked;
+              try { const b = base ?? (await onNeedIdentity()); const state = await setSnapshotSchedule(organizationId, b.id, on); setBase({ ...b, snapshot_schedule: state }); setNote(null); }
+              catch (err) { setNote(err instanceof Error ? err.message : "The schedule could not be changed."); }
+            }} />
         </label>
         <Words>Off until you turn it on. Snapshots you remove stay recoverable for 90 days.</Words>
         <span hidden data-home={homeId} />

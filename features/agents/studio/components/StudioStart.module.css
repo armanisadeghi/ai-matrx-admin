@@ -1,0 +1,108 @@
+/*
+ * The Agent Studio start screen's stage (a flagship front door): a calm, living light behind the
+ * headline and composer. Theme tokens only (primary + brand-secondary), drawn behind the content,
+ * never over it; it never moves layout (absolute, pointer-events none) and stops under reduced motion.
+ */
+
+.stage {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: min(46rem, 100%);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+
+.glowA,
+.glowB {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+.glowA {
+  width: 38rem;
+  height: 22rem;
+  left: 50%;
+  top: 6rem;
+  margin-left: -26rem;
+  background: hsl(var(--primary) / 0.16);
+  animation: drift-a 28s ease-in-out infinite alternate;
+}
+
+.glowB {
+  width: 32rem;
+  height: 20rem;
+  left: 50%;
+  top: 9rem;
+  margin-left: -4rem;
+  background: hsl(var(--brand-secondary) / 0.14);
+  animation: drift-b 34s ease-in-out infinite alternate;
+}
+
+:global(.dark) .glowA {
+  background: hsl(var(--primary) / 0.22);
+}
+
+:global(.dark) .glowB {
+  background: hsl(var(--brand-secondary) / 0.2);
+}
+
+@keyframes drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3rem, 1.5rem, 0) scale(1.08);
+  }
+}
+
+@keyframes drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  to {
+    transform: translate3d(-3.5rem, -1rem, 0) scale(0.95);
+  }
+}
+
+/* The headline and the open way in cross-fade on a switch — opacity only, so nothing moves. */
+.enter {
+  animation: enter 220ms ease-out both;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowA,
+  .glowB,
+  .enter {
+    animation: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .glowA {
+    width: 22rem;
+    height: 14rem;
+    margin-left: -15rem;
+    top: 4rem;
+  }
+
+  .glowB {
+    width: 18rem;
+    height: 12rem;
+    margin-left: -2rem;
+    top: 6rem;
+  }
+}

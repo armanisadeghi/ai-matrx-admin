@@ -1,6 +1,6 @@
 /**
  * Agent Studio — the ways in (DESIGN.md §11). A registry, never a hard-coded flow: the start
- * screen renders one card per row, and a row with `comingSoonId` is a tracked promise
+ * screen renders one selector item per row, and a row with `comingSoonId` is a tracked promise
  * (`lib/coming-soon/registry.ts`), never a working door.
  */
 
@@ -18,8 +18,12 @@ export type StudioModeId =
 export interface StudioMode {
   id: StudioModeId;
   title: string;
+  /** The selector's compact label (≤16 chars); the full `title` is its tooltip. */
+  label: string;
   /** One line under the title (≤60 chars). */
   line: string;
+  /** The start screen's headline while this way in is open (in-place ways in only). */
+  headline?: string;
   icon: LucideIcon;
   /**
    * Set = this way in is its own page (the card links there instead of starting in place). Bring-over
@@ -31,23 +35,41 @@ export interface StudioMode {
 }
 
 export const STUDIO_MODES: readonly StudioMode[] = [
-  { id: "describe", title: "Describe it", line: "Say what the agent should do; we build it", icon: Lightbulb },
-  { id: "do-with-me", title: "Just do it with me", line: "Get the result first, then make it an agent", icon: Handshake },
+  {
+    id: "describe",
+    title: "Describe it",
+    label: "Describe it",
+    line: "Say what the agent should do; we build it",
+    headline: "What should your agent do?",
+    icon: Lightbulb,
+  },
+  {
+    id: "do-with-me",
+    title: "Just do it with me",
+    label: "Do it with me",
+    line: "Get the result first, then make it an agent",
+    icon: Handshake,
+  },
   {
     id: "improve",
     title: "Improve an agent I have",
+    label: "Improve one",
+    headline: "Which agent should get better?",
     line: "Try, give feedback, save a better version",
     icon: Wrench,
   },
   {
     id: "from-examples",
     title: "From examples I already have",
+    label: "From examples",
+    headline: "Show it what you already made",
     line: "Paste 2–5 you made; get an agent that makes them",
     icon: Files,
   },
   {
     id: "from-claude-account",
     title: "Bring it over from my Claude account",
+    label: "From Claude",
     line: "Upload your Claude export; pick the chat to copy",
     icon: ArrowDownToLine,
     href: "/agents/new/studio/from-claude",
@@ -55,6 +77,7 @@ export const STUDIO_MODES: readonly StudioMode[] = [
   {
     id: "with-claude-code",
     title: "Build it with Claude Code",
+    label: "Claude Code",
     line: "Copy a prompt; Claude Code sends us the job",
     icon: TerminalSquare,
     href: "/agents/new/studio/with-claude-code",
