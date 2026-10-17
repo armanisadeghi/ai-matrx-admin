@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { extractErrorMessage } from "@/utils/errors";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
@@ -65,7 +66,12 @@ function PointRow({
       <span className="flex shrink-0 items-center whitespace-nowrap type-meta">
         <ProvisionCaptures pointKey={pointKey} subjectId={brandId} title={title} refreshKey={captured} limit={3} />
       </span>
-      {error ? <span className="max-w-48 truncate type-meta text-destructive" title={error}>{error}</span> : null}
+      {error ? (
+        <span className="flex min-w-0 items-center gap-1">
+          <span className="max-w-48 truncate type-meta text-destructive" title={error}>{error}</span>
+          <ErrorAlchemyMenu error={error} />
+        </span>
+      ) : null}
     </div>
   );
 }
