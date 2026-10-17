@@ -1,0 +1,3 @@
+-- chair-step: inverse of read_lane_v2_b4_02_runtime_global_execution_event — un-enrolls runtime.global_execution_event from read-lane v2 and regenerates it back to the set-form read lane.
+delete from iam.read_lane_v2_rollout where token = (select token from platform.entity_types where schema_name = 'runtime' and table_name = 'global_execution_event' and is_active);
+select iam.apply_rls('runtime', 'global_execution_event', (select token from platform.entity_types where schema_name = 'runtime' and table_name = 'global_execution_event' and is_active), (select rls_variant from platform.entity_types where schema_name = 'runtime' and table_name = 'global_execution_event' and is_active));
