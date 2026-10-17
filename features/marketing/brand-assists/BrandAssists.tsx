@@ -128,7 +128,7 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
   });
 
   return (
-    <div className="flex flex-col gap-2" data-testid="brand-assists">
+    <div className="flex flex-col gap-2 empty:hidden" data-testid="brand-assists">
       <AssistStrip surfaceName={BRAND_ASSIST_SURFACE} filter={(a) => a.entityId === brandId} />
       {results.length > 0 ? (
         <div className="grid gap-2 sm:grid-cols-2" data-testid="brand-assist-results">

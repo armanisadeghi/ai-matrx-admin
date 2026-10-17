@@ -53,6 +53,8 @@ import {
   Type,
   SlidersHorizontal,
   ScanSearch,
+  MoreHorizontal,
+  Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -83,6 +85,7 @@ import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEdit
 import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
 import {
+  BRAND_HERO_FRAME,
   BrandHomeSkeleton,
   BrandOverviewAbout,
   BrandOverviewAssets,
@@ -158,6 +161,15 @@ import { extractErrorMessage } from "@/utils/errors";
 import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/useEditTarget";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
+import { ShareModal } from "@/features/sharing/components/ShareModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@ai-matrx/design-system";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -593,6 +605,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   useFocusEditTarget("description", editorOpen);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [editingSite, setEditingSite] = useState<MarketingSite | null>(null);
   const [deletingSite, setDeletingSite] = useState<MarketingSite | null>(null);
   const [propertyEditor, setPropertyEditor] = useState<{
@@ -863,28 +876,79 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
       <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
         <div className="grid w-full gap-3">
           {/* A person brand leads with the person: their face and their accounts come first. */}
-          <section className={`flex items-start gap-3 rounded-lg sm:gap-4 border border-border bg-card p-4${isPersonBrand(current) ? " order-first" : ""}`}>
-            {isPersonBrand(current) ? (
-              <PersonBrandAvatar
-                brandId={current.id}
-                size={72}
-                fallback={<SiteIdentityMark site={heroIdentity} size={72} prefer="logo" className="bg-background p-1.5" />}
-              />
-            ) : (
-              <SiteIdentityMark
-                site={heroIdentity}
-                size={72}
-                prefer="logo"
-                className="bg-background p-1.5"
-              />
-            )}
+          {/* Fixed-height hero (BRAND_HERO_FRAME): every line holds its height from first paint, so the
+              loading placeholder and the loaded page are the same size at every width. */}
+          <section className={`${BRAND_HERO_FRAME} flex items-start gap-3 overflow-hidden rounded-lg border border-border bg-card p-4 sm:gap-4${isPersonBrand(current) ? " order-first" : ""}`}>
+            <div className="size-12 shrink-0 sm:size-[72px] [&>*]:!size-full">
+              {isPersonBrand(current) ? (
+                <PersonBrandAvatar
+                  brandId={current.id}
+                  size={72}
+                  fallback={<SiteIdentityMark site={heroIdentity} size={72} prefer="logo" className="bg-background p-1.5" />}
+                />
+              ) : (
+                <SiteIdentityMark site={heroIdentity} size={72} prefer="logo" className="bg-background p-1.5" />
+              )}
+            </div>
             <div className="min-w-0 flex-1">
-              {/* Name and actions share the top line; the actions wrap under the name when the row runs out. */}
-              <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-                <h2 className="min-w-0 break-words text-xl font-semibold tracking-tight text-foreground">
+              <div className="flex h-7 min-w-0 items-center justify-between gap-3">
+                <h2 className="min-w-0 truncate text-xl font-semibold tracking-tight text-foreground" title={current.name}>
                   {current.name}
                 </h2>
-                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                {/* Phone: copy + one overflow menu. Wider: every action visible. */}
+                <div className="flex shrink-0 items-center gap-1.5 sm:hidden">
+                  <CopyButtons size="icon" {...brandCopy} />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button icon={<MoreHorizontal />} variant="outline" aria-label="Brand actions" title="Brand actions" data-testid="brand-actions-menu" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {canEdit ? (
+                        <DropdownMenuItem asChild>
+                          <Link prefetch={false} href={marketingRoutes.smartAddEnrich(current.id)}>
+                            <ScanSearch />
+                            Enrich Brand
+                          </Link>
+                        </DropdownMenuItem>
+                      ) : null}
+                      {canEdit ? (
+                        <DropdownMenuItem onSelect={() => setEditorOpen(true)}>
+                          <Pencil />
+                          Edit
+                        </DropdownMenuItem>
+                      ) : null}
+                      {canEdit ? (
+                        <DropdownMenuItem onSelect={() => setMoving(true)}>
+                          <ArrowRightLeft />
+                          Move
+                        </DropdownMenuItem>
+                      ) : null}
+                      <DropdownMenuItem onSelect={() => setSharing(true)}>
+                        <Share2 />
+                        Share
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link prefetch={false} href={marketingRoutes.brandDiscovery(brandId)}>
+                          <Inbox />
+                          To review
+                          <DropdownMenuShortcut className="tabular-nums">
+                            {pending.isLoading ? "…" : (pending.data ?? 0).toLocaleString()}
+                          </DropdownMenuShortcut>
+                        </Link>
+                      </DropdownMenuItem>
+                      {canEdit ? (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setConfirmingDelete(true)}>
+                            <Archive />
+                            Archive
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
                   <CopyButtons size="icon" {...brandCopy} />
                   <ShareButton
                     resourceType="web_brand"
@@ -939,12 +1003,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   ) : null}
                 </div>
               </div>
-              {current.website_url ? (
-                <div className="mt-0.5 flex h-6 min-w-0 items-center">
-                  {contactFactValue({ kind: "website", value: externalHref(current.website_url) })}
-                </div>
-              ) : null}
-              <div className="mt-2 flex flex-wrap items-center gap-2">
+              <div className="mt-0.5 flex h-6 min-w-0 items-center overflow-hidden">
+                {current.website_url ? contactFactValue({ kind: "website", value: externalHref(current.website_url) }) : null}
+              </div>
+              <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
                 <StatusBadge value={current.status} />
                 {isPersonBrand(current) ? (
                   <>
@@ -953,65 +1015,78 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   </>
                 ) : null}
                 {current.industry ? (
-                  <Badge variant="outline">{current.industry}</Badge>
+                  <Badge variant="outline" className="min-w-0 truncate">{current.industry}</Badge>
                 ) : null}
               </div>
               {/* Setup status owns a fixed-height line from first paint, so it never reflows the badges. */}
-              <div className="mt-1.5 flex h-7 items-center">
+              <div className="mt-1.5 flex h-7 min-w-0 items-center overflow-hidden">
                 <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
               </div>
-                {properties.isLoading || socialProperties.length > 0 ? (
-                  // Own line, height held while the accounts load, so the hero never grows under the reader.
-                  <span className="mt-2 flex h-6 max-w-full items-center gap-x-2 overflow-hidden">
-                    {socialProperties.slice(0, 8).map((property) => {
-                      const accountRow = (socialAccounts.data ?? []).find((r) => r.propertyId === property.id);
-                      const href = accountRow
-                        ? brandAccountHref(marketingSeg(current), accountRow)
-                        : propertyPublicUrl(property);
-                      const internal = Boolean(accountRow && href);
-                      const label =
-                        PROPERTY_KIND_LABELS[toPropertyKind(property.kind)];
-                      const title = property.handle
-                        ? `${label} · ${formatSocialHandle({ platform: property.kind, handle: property.handle, url: property.url })}`
-                        : label;
-                      return internal && href ? (
-                        <Link
-                          prefetch={false}
-                          key={property.id}
-                          href={href}
-                          title={title}
-                          aria-label={title}
-                          className="matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110"
-                        >
-                          <PropertyKindMark kind={property.kind} size={24} />
-                        </Link>
-                      ) : href ? (
-                        <OutboundLink
-                          key={property.id}
-                          href={href}
-                          title={title}
-                          aria-label={title}
-                          className="matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110"
-                        >
-                          <PropertyKindMark kind={property.kind} size={24} />
-                        </OutboundLink>
-                      ) : (
-                        <PropertyKindMark
-                          key={property.id}
-                          kind={property.kind}
-                          size={24}
-                        />
-                      );
-                    })}
-                    {socialProperties.length > 8 ? (
-                      <button type="button" onClick={() => setTab("social")} className="type-meta tabular-nums text-muted-foreground hover:text-foreground">
-                        +{socialProperties.length - 8}
-                      </button>
-                    ) : null}
-                  </span>
+              {/* One non-wrapping row of accounts; what does not fit is a +N that opens the Social tab. */}
+              <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
+                {socialProperties.slice(0, 8).map((property, index) => {
+                  // A phone shows six marks; the +N below counts what each width hides.
+                  const phoneHidden = index >= 6 ? " max-sm:hidden" : "";
+                  const accountRow = (socialAccounts.data ?? []).find((r) => r.propertyId === property.id);
+                  const href = accountRow
+                    ? brandAccountHref(marketingSeg(current), accountRow)
+                    : propertyPublicUrl(property);
+                  const internal = Boolean(accountRow && href);
+                  const label =
+                    PROPERTY_KIND_LABELS[toPropertyKind(property.kind)];
+                  const title = property.handle
+                    ? `${label} · ${formatSocialHandle({ platform: property.kind, handle: property.handle, url: property.url })}`
+                    : label;
+                  return internal && href ? (
+                    <Link
+                      prefetch={false}
+                      key={property.id}
+                      href={href}
+                      title={title}
+                      aria-label={title}
+                      className={`matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110${phoneHidden}`}
+                    >
+                      <PropertyKindMark kind={property.kind} size={24} />
+                    </Link>
+                  ) : href ? (
+                    <OutboundLink
+                      key={property.id}
+                      href={href}
+                      title={title}
+                      aria-label={title}
+                      className={`matrx-tap-area inline-flex shrink-0 transition-transform hover:scale-110${phoneHidden}`}
+                    >
+                      <PropertyKindMark kind={property.kind} size={24} />
+                    </OutboundLink>
+                  ) : (
+                    <span key={property.id} className={`inline-flex shrink-0${phoneHidden}`}>
+                      <PropertyKindMark kind={property.kind} size={24} />
+                    </span>
+                  );
+                })}
+                {socialProperties.length > 6 ? (
+                  <button type="button" onClick={() => setTab("social")} className="shrink-0 type-meta tabular-nums text-muted-foreground hover:text-foreground sm:hidden">
+                    +{socialProperties.length - 6}
+                  </button>
                 ) : null}
+                {socialProperties.length > 8 ? (
+                  <button type="button" onClick={() => setTab("social")} className="hidden shrink-0 type-meta tabular-nums text-muted-foreground hover:text-foreground sm:inline">
+                    +{socialProperties.length - 8}
+                  </button>
+                ) : null}
+              </div>
             </div>
           </section>
+          {sharing ? (
+            <ShareModal
+              isOpen={sharing}
+              onClose={() => setSharing(false)}
+              resourceType="web_brand"
+              resourceId={current.id}
+              resourceName={current.name}
+              organizationId={current.organization_id}
+            />
+          ) : null}
 
           {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
           {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}

@@ -388,12 +388,15 @@ export function BrandOverviewAssets({
 }
 
 /** The brand home while it loads: the same frame (header card, tab bar, two-column grid), so nothing moves when it arrives. */
+/** The brand hero's one height at every width — the hero and its loading placeholder share it, so nothing moves. */
+export const BRAND_HERO_FRAME = "h-[186px]";
+
 export function BrandHomeSkeleton() {
   return (
     <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
       <div className="grid w-full gap-3" aria-busy="true" aria-label="Loading brand">
-        <div className="flex h-[196px] items-start gap-3 rounded-lg border border-border bg-card p-4 sm:gap-4">
-          <Skeleton className="h-[72px] w-[72px] shrink-0 rounded-lg" />
+        <div className={`${BRAND_HERO_FRAME} flex items-start gap-3 rounded-lg border border-border bg-card p-4 sm:gap-4`}>
+          <Skeleton className="size-12 shrink-0 rounded-lg sm:size-[72px]" />
           <div className="grid min-w-0 flex-1 gap-2">
             <Skeleton className="h-6 w-56 max-w-full" />
             <Skeleton className="h-4 w-40 max-w-full" />
