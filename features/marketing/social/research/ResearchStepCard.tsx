@@ -11,6 +11,9 @@ import { useEffect, useRef } from "react";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import type { ToolCallView } from "@ai-matrx/agents/tools";
+import { Button } from "@ai-matrx/design-system/controls";
+
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 
 import { ToolResult } from "@/features/data-sources/library/tools/ToolResult";
 import { useToolCall } from "@/features/data-sources/library/tools/useToolCall";
@@ -82,6 +85,24 @@ export function ResearchStepCard({
         onCancel={call.stop}
       />
       )}
+      {call.view?.status === "succeeded" && call.view.cache !== "none" && submission ? (
+        <div className="flex items-center gap-2" data-research-fresh="">
+          <span className="type-secondary text-muted-foreground">This is a saved answer.</span>
+          <Button
+            variant="quiet"
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Ask again?",
+                description: `${title} is asked of the source again and charged in points like a new look-up.`,
+                confirmLabel: "Get a fresh answer",
+              });
+              if (ok) void call.run({}, submission.inputs, undefined, "refresh");
+            }}
+          >
+            Get a fresh answer
+          </Button>
+        </div>
+      ) : null}
       {approval ? (
         <ToolActionApprovalDialog
           approval={approval}

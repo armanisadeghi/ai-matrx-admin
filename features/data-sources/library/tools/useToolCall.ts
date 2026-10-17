@@ -9,7 +9,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cancelHostToolCall, resumeHostToolCall, runHostToolCall } from "@ai-matrx/chat/agents/identity/tool-calls";
-import { newToolCallKey, type ToolCallView } from "@ai-matrx/agents/tools";
+import { newToolCallKey, type ToolCachePolicy, type ToolCallView } from "@ai-matrx/agents/tools";
 
 import { extractErrorMessage } from "@/utils/errors";
 
@@ -23,7 +23,7 @@ export interface ToolCallState {
   view: ToolCallView | null;
   clientError: string | null;
   /** Send one call. `overrides` are inputs layered over `base`; `spendApprovalId` follows a "needs OK". */
-  run: (base: Record<string, unknown>, overrides?: Record<string, unknown>, spendApprovalId?: string) => Promise<void>;
+  run: (base: Record<string, unknown>, overrides?: Record<string, unknown>, spendApprovalId?: string, cachePolicy?: ToolCachePolicy) => Promise<void>;
   /** Show an earlier call again (a reload, a link). A no-op for the call already shown. */
   resume: (callId: string) => void;
   /** Read the saved call again after a lost connection. */
@@ -45,7 +45,7 @@ export function useToolCall(toolId: string, onCallId?: (callId: string) => void)
 
   useEffect(() => () => abort.current?.abort(), []);
 
-  const run: ToolCallState["run"] = async (base, overrides = {}, spendApprovalId) => {
+  const run: ToolCallState["run"] = async (base, overrides = {}, spendApprovalId, cachePolicy = "prefer") => {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
@@ -56,7 +56,7 @@ export function useToolCall(toolId: string, onCallId?: (callId: string) => void)
           tool_id: toolId,
           inputs: inputsToSend({ ...base, ...overrides }),
           idempotency_key: newToolCallKey(),
-          cache_policy: "prefer",
+          cache_policy: cachePolicy,
           spend_approval_id: spendApprovalId ?? null,
           wait_s: 25,
         },
