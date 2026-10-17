@@ -1,0 +1,2114 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0250",
+  "version": 1,
+  "title": "Student OS",
+  "description": "Classes, tasks, notes and study time in one dashboard for the whole term.",
+  "forWho": "Students in high school and college",
+  "icon": {
+    "emoji": "🎓"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "student",
+    "classes",
+    "planner",
+    "grades"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-student-os",
+    "catalogueId": "SP0250",
+    "useCase": "Maya Okonkwo is a sophomore juggling five classes and uses this to see what is due, how each class is going and where her study time goes.",
+    "industry": "education",
+    "vertical": "Student planner",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Northfield College Student Life",
+      "describes": "A college-student planner kept by a sophomore at a mid-sized liberal arts college.",
+      "address": {
+        "line1": "410 Alder Quill Court",
+        "city": "Madison",
+        "region": "WI",
+        "postalCode": "53703",
+        "country": "US"
+      },
+      "phone": "(608) 555-0124",
+      "website": "northfieldstudentlife.net",
+      "email": "hello@northfieldstudentlife.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-student-os",
+    "tables": [
+      {
+        "token": "class",
+        "name": "Classes",
+        "labelSingular": "Class",
+        "labelPlural": "Classes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "graduation-cap",
+        "titleField": "class_name",
+        "describes": "Every class this term: who teaches it, when it meets and how the grade stands.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "class_name",
+            "label": "Class",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "code",
+            "label": "Code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instructor",
+            "label": "Instructor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "term",
+            "label": "Term",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fall",
+              "Spring",
+              "Summer",
+              "Winter"
+            ],
+            "choiceColors": {
+              "Fall": "blue",
+              "Spring": "green",
+              "Summer": "amber",
+              "Winter": "red"
+            },
+            "default": "Fall"
+          },
+          {
+            "key": "color",
+            "label": "Color",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Blue",
+              "Green",
+              "Pink",
+              "Amber",
+              "Violet"
+            ],
+            "choiceColors": {
+              "Blue": "blue",
+              "Green": "green",
+              "Pink": "amber",
+              "Amber": "red",
+              "Violet": "violet"
+            }
+          },
+          {
+            "key": "credits",
+            "label": "Credits",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 6
+              }
+            ]
+          },
+          {
+            "key": "schedule",
+            "label": "Schedule",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "task_list",
+            "label": "Task list",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "multi": true
+          },
+          {
+            "key": "instructor_email",
+            "label": "Instructor email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "weight_graded",
+            "label": "Weight graded (%)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "task_list",
+            "pick": "weight",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "open_tasks",
+            "label": "Open tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "task_list",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "To do",
+                "In progress"
+              ]
+            }
+          },
+          {
+            "key": "archived",
+            "label": "Archived",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cl-bio",
+            "values": {
+              "class_name": "Cell Biology",
+              "code": "BIO 201",
+              "instructor": "Dr. Imani Okoro",
+              "term": "Fall",
+              "color": "Blue",
+              "credits": 4,
+              "schedule": "Mon Wed 10:00",
+              "room": "Science Hall 214",
+              "archived": false,
+              "instructor_email": "okoro@northfield-college.net",
+              "task_list": [
+                "t01",
+                "t02",
+                "t03"
+              ]
+            }
+          },
+          {
+            "key": "cl-calc",
+            "values": {
+              "class_name": "Calculus II",
+              "code": "MATH 152",
+              "instructor": "Prof. Dmitri Volkov",
+              "term": "Fall",
+              "color": "Green",
+              "credits": 4,
+              "schedule": "Tue Thu 09:00",
+              "room": "Gauss Building 108",
+              "archived": false,
+              "instructor_email": "volkov@northfield-college.net",
+              "task_list": [
+                "t04",
+                "t05",
+                "t06"
+              ]
+            }
+          },
+          {
+            "key": "cl-lit",
+            "values": {
+              "class_name": "American Literature",
+              "code": "ENG 230",
+              "instructor": "Dr. Marguerite Boyle",
+              "term": "Fall",
+              "color": "Pink",
+              "credits": 3,
+              "schedule": "Mon Wed 13:30",
+              "room": "Humanities 305",
+              "archived": false,
+              "instructor_email": "boyle@northfield-college.net",
+              "task_list": [
+                "t07",
+                "t08",
+                "t09"
+              ]
+            }
+          },
+          {
+            "key": "cl-econ",
+            "values": {
+              "class_name": "Principles of Economics",
+              "code": "ECON 101",
+              "instructor": "Prof. Tomasz Wrobel",
+              "term": "Fall",
+              "color": "Amber",
+              "credits": 3,
+              "schedule": "Fri 11:00",
+              "room": "Commerce Hall 120",
+              "archived": false,
+              "instructor_email": "wrobel@northfield-college.net",
+              "task_list": [
+                "t10",
+                "t11",
+                "t12"
+              ]
+            }
+          },
+          {
+            "key": "cl-span",
+            "values": {
+              "class_name": "Intermediate Spanish",
+              "code": "SPAN 210",
+              "instructor": "Profa. Lucía Fernández",
+              "term": "Fall",
+              "color": "Violet",
+              "credits": 3,
+              "schedule": "Tue Thu 14:00",
+              "room": "Languages Annex 12",
+              "archived": false,
+              "instructor_email": "fernández@northfield-college.net",
+              "task_list": [
+                "t13",
+                "t14",
+                "t15"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Every assignment, quiz, exam and project, the class it belongs to and its weight in the final grade.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "class",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "class",
+            "relationMax": 1
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Assignment",
+              "Quiz",
+              "Exam",
+              "Project",
+              "Reading",
+              "Lab"
+            ],
+            "choiceColors": {
+              "Assignment": "blue",
+              "Quiz": "green",
+              "Exam": "amber",
+              "Project": "red",
+              "Reading": "violet",
+              "Lab": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "weight",
+            "label": "Weight",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "score",
+            "label": "Score",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Estimated hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "weighted",
+            "label": "Weighted earned",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Score} * {Weight} / 100"
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "task_name": "Cell membrane lab report",
+              "class": "cl-bio",
+              "type": "Lab",
+              "due_on": "@today-9d",
+              "status": "Done",
+              "priority": "High",
+              "weight": 10,
+              "score": 92,
+              "hours": 5
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "task_name": "Midterm: Cell Biology",
+              "class": "cl-bio",
+              "type": "Exam",
+              "due_on": "@today+6d",
+              "status": "To do",
+              "priority": "High",
+              "weight": 25,
+              "hours": 12
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "task_name": "Read chapters 7 and 8",
+              "class": "cl-bio",
+              "type": "Reading",
+              "due_on": "@today+1d",
+              "status": "In progress",
+              "priority": "Medium",
+              "weight": 0,
+              "hours": 3
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "task_name": "Problem set 5: integration by parts",
+              "class": "cl-calc",
+              "type": "Assignment",
+              "due_on": "@today-2d",
+              "status": "Done",
+              "priority": "Medium",
+              "weight": 5,
+              "score": 88,
+              "hours": 4
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "task_name": "Quiz 3: series",
+              "class": "cl-calc",
+              "type": "Quiz",
+              "due_on": "@today+3d",
+              "status": "To do",
+              "priority": "High",
+              "weight": 5,
+              "hours": 2
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "task_name": "Midterm 2: Calculus II",
+              "class": "cl-calc",
+              "type": "Exam",
+              "due_on": "@today+12d",
+              "status": "To do",
+              "priority": "High",
+              "weight": 25,
+              "hours": 10
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "task_name": "Essay: voice in the Harlem Renaissance",
+              "class": "cl-lit",
+              "type": "Assignment",
+              "due_on": "@today+4d",
+              "status": "In progress",
+              "priority": "High",
+              "weight": 15,
+              "hours": 8
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "task_name": "Reading response: Beloved",
+              "class": "cl-lit",
+              "type": "Reading",
+              "due_on": "@today-5d",
+              "status": "Done",
+              "priority": "Low",
+              "weight": 5,
+              "score": 95,
+              "hours": 2
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "task_name": "Group presentation: Great Gatsby",
+              "class": "cl-lit",
+              "type": "Project",
+              "due_on": "@today+16d",
+              "status": "To do",
+              "priority": "Medium",
+              "weight": 15,
+              "hours": 9
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "task_name": "Supply and demand worksheet",
+              "class": "cl-econ",
+              "type": "Assignment",
+              "due_on": "@today-1d",
+              "status": "In progress",
+              "priority": "Medium",
+              "weight": 5,
+              "hours": 3
+            }
+          },
+          {
+            "key": "t11",
+            "values": {
+              "task_name": "Quiz 2: elasticity",
+              "class": "cl-econ",
+              "type": "Quiz",
+              "due_on": "@today-12d",
+              "status": "Done",
+              "priority": "Medium",
+              "weight": 5,
+              "score": 84,
+              "hours": 2
+            }
+          },
+          {
+            "key": "t12",
+            "values": {
+              "task_name": "Market analysis project",
+              "class": "cl-econ",
+              "type": "Project",
+              "due_on": "@today+20d",
+              "status": "To do",
+              "priority": "High",
+              "weight": 20,
+              "hours": 14
+            }
+          },
+          {
+            "key": "t13",
+            "values": {
+              "task_name": "Oral presentation: mi familia",
+              "class": "cl-span",
+              "type": "Project",
+              "due_on": "@today+7d",
+              "status": "In progress",
+              "priority": "High",
+              "weight": 10,
+              "hours": 5
+            }
+          },
+          {
+            "key": "t14",
+            "values": {
+              "task_name": "Vocabulary quiz: viajes",
+              "class": "cl-span",
+              "type": "Quiz",
+              "due_on": "@today+2d",
+              "status": "To do",
+              "priority": "Medium",
+              "weight": 5,
+              "hours": 1.5
+            }
+          },
+          {
+            "key": "t15",
+            "values": {
+              "task_name": "Composition: un día en mi ciudad",
+              "class": "cl-span",
+              "type": "Assignment",
+              "due_on": "@today-6d",
+              "status": "Done",
+              "priority": "Medium",
+              "weight": 10,
+              "score": 90,
+              "hours": 3
+            }
+          }
+        ]
+      },
+      {
+        "token": "note",
+        "name": "Notes",
+        "labelSingular": "Note",
+        "labelPlural": "Notes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "notebook-pen",
+        "titleField": "note_name",
+        "describes": "Class notes by day, linked to the class they came from.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "note_name",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "class",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "class",
+            "relationMax": 1
+          },
+          {
+            "key": "noted_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lecture",
+              "Reading",
+              "Lab",
+              "Review"
+            ],
+            "choiceColors": {
+              "Lecture": "blue",
+              "Reading": "green",
+              "Lab": "amber",
+              "Review": "red"
+            }
+          },
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reviewed",
+            "label": "Reviewed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "n1",
+            "values": {
+              "note_name": "Lecture: osmosis and active transport",
+              "class": "cl-bio",
+              "noted_on": "@today-4d",
+              "type": "Lecture",
+              "topic": "Transport",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "n2",
+            "values": {
+              "note_name": "Lecture: u-substitution patterns",
+              "class": "cl-calc",
+              "noted_on": "@today-3d",
+              "type": "Lecture",
+              "topic": "Techniques",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "n3",
+            "values": {
+              "note_name": "Discussion: unreliable narrators",
+              "class": "cl-lit",
+              "noted_on": "@today-2d",
+              "type": "Lecture",
+              "topic": "Narration",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "n4",
+            "values": {
+              "note_name": "Reading: marginal cost curves",
+              "class": "cl-econ",
+              "noted_on": "@today-6d",
+              "type": "Reading",
+              "topic": "Costs",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "n5",
+            "values": {
+              "note_name": "Review: subjunctive mood",
+              "class": "cl-span",
+              "noted_on": "@today-1d",
+              "type": "Review",
+              "topic": "Grammar",
+              "reviewed": false
+            }
+          },
+          {
+            "key": "n6",
+            "values": {
+              "note_name": "Lab notes: membrane permeability",
+              "class": "cl-bio",
+              "noted_on": "@today-10d",
+              "type": "Lab",
+              "topic": "Lab",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "n7",
+            "values": {
+              "note_name": "Lecture: comparison tests",
+              "class": "cl-calc",
+              "noted_on": "@today-8d",
+              "type": "Lecture",
+              "topic": "Series",
+              "reviewed": true
+            }
+          },
+          {
+            "key": "n8",
+            "values": {
+              "note_name": "Reading: Hurston chapter notes",
+              "class": "cl-lit",
+              "noted_on": "@today-7d",
+              "type": "Reading",
+              "topic": "Context",
+              "reviewed": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "session",
+        "name": "Study sessions",
+        "labelSingular": "Study session",
+        "labelPlural": "Study sessions",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "timer",
+        "titleField": "session_name",
+        "describes": "Every block of focused study, how long it lasted and what for.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "class",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "class",
+            "relationMax": 1
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 5
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "focus",
+            "label": "Focus",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reading",
+              "Practice",
+              "Memorize",
+              "Write"
+            ],
+            "choiceColors": {
+              "Reading": "blue",
+              "Practice": "green",
+              "Memorize": "amber",
+              "Write": "red"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "s1",
+            "values": {
+              "session_name": "Cell structure flashcards",
+              "class": "cl-bio",
+              "on": "@today-1d",
+              "minutes": 45,
+              "focus": "Memorize"
+            }
+          },
+          {
+            "key": "s2",
+            "values": {
+              "session_name": "Practice integrals",
+              "class": "cl-calc",
+              "on": "@today-2d",
+              "minutes": 70,
+              "focus": "Practice"
+            }
+          },
+          {
+            "key": "s3",
+            "values": {
+              "session_name": "Draft essay outline",
+              "class": "cl-lit",
+              "on": "@today-1d",
+              "minutes": 50,
+              "focus": "Write"
+            }
+          },
+          {
+            "key": "s4",
+            "values": {
+              "session_name": "Supply curve problems",
+              "class": "cl-econ",
+              "on": "@today-3d",
+              "minutes": 40,
+              "focus": "Practice"
+            }
+          },
+          {
+            "key": "s5",
+            "values": {
+              "session_name": "Verb conjugation drill",
+              "class": "cl-span",
+              "on": "@today-2d",
+              "minutes": 30,
+              "focus": "Memorize"
+            }
+          },
+          {
+            "key": "s6",
+            "values": {
+              "session_name": "Read Hurston, part 2",
+              "class": "cl-lit",
+              "on": "@today-4d",
+              "minutes": 60,
+              "focus": "Reading"
+            }
+          },
+          {
+            "key": "s7",
+            "values": {
+              "session_name": "Lab report writeup",
+              "class": "cl-bio",
+              "on": "@today-8d",
+              "minutes": 90,
+              "focus": "Write"
+            }
+          },
+          {
+            "key": "s8",
+            "values": {
+              "session_name": "Series convergence review",
+              "class": "cl-calc",
+              "on": "@today-5d",
+              "minutes": 55,
+              "focus": "Practice"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A class lists the tasks that belong to it.",
+        "fromTable": "class",
+        "fromField": "task_list",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "class_of_task"
+      },
+      {
+        "describes": "Each task belongs to one class.",
+        "fromTable": "task",
+        "fromField": "class",
+        "toTable": "class",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each note comes from one class.",
+        "fromTable": "note",
+        "fromField": "class",
+        "toTable": "class",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "notes"
+      },
+      {
+        "describes": "Each study session is for one class.",
+        "fromTable": "session",
+        "fromField": "class",
+        "toTable": "class",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "sessions"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "quick_task",
+        "name": "Add a task",
+        "describes": "How a student drops in an assignment as soon as it is announced.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What is due?",
+            "required": true
+          },
+          {
+            "fieldKey": "class",
+            "ask": "Which class is it for?"
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What kind of work is it?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it due?"
+          }
+        ],
+        "submitLabel": "Add the task",
+        "confirmation": "Thanks. It is on your board as To do."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_classes",
+        "name": "All classes",
+        "table": "class",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "class_gallery",
+        "name": "Classes",
+        "table": "class",
+        "kind": "kanban",
+        "groupBy": "term"
+      },
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "Board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_notes",
+        "name": "All notes",
+        "table": "note",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "note_calendar",
+        "name": "Note calendar",
+        "table": "note",
+        "kind": "calendar",
+        "dateField": "noted_on"
+      },
+      {
+        "token": "all_sessions",
+        "name": "All sessions",
+        "table": "session",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "session_calendar",
+        "name": "Session calendar",
+        "table": "session",
+        "kind": "calendar",
+        "dateField": "on"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Student OS assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task, its class, type, weight and due day."
+        },
+        {
+          "name": "related_tables",
+          "table": "class",
+          "describes": "The classes the tasks belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are still open?",
+        "whyItMatters": "Maya checks the open count before planning her week.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "To do"
+          },
+          "answer": 6,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the task calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "task_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open all classes.",
+        "action": {
+          "kind": "open",
+          "surface": "all_classes"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_classes",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "northfieldstudentlife.net"
+      ],
+      "fictionalStreets": [
+        "Alder Quill Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "student-os",
+      "parent": null,
+      "title": "Student OS",
+      "icon": {
+        "emoji": "🎓"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One home for the whole term: classes, everything due, class notes and study time. Add a task the moment it is announced and check the dashboard each morning."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Due soon"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-open",
+                        "name": "Not done",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": [
+                            "To do",
+                            "In progress"
+                          ]
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-open"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "This week at a glance"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "task_calendar"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-cal",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "due_on"
+                      }
+                    ],
+                    "activeViewId": "v-cal"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Classes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "class",
+              "view": "class_gallery"
+            },
+            "inline": true,
+            "title": "Classes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-term",
+                "name": "By term",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "term"
+              },
+              {
+                "id": "v-all",
+                "name": "All classes",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "archived": false
+                }
+              }
+            ],
+            "activeViewId": "v-term"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exams and big projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-exam",
+                "name": "Exams",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "type": [
+                    "Exam",
+                    "Project"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-exam"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:study-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:semester-wrap-up"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:notes-home"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "All tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "v-t",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-b"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Semester archive"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Tick Archived on a class when the term ends. It leaves the gallery but keeps every note and grade."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "student-os",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v1",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "v1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v2",
+                        "name": "Hours by class",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "class",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "v2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "session",
+                      "view": "all_sessions"
+                    },
+                    "inline": true,
+                    "title": "Study sessions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v3",
+                        "name": "Minutes by focus",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "focus",
+                          "op": "sum",
+                          "centerValue": true,
+                          "field": "minutes"
+                        }
+                      }
+                    ],
+                    "activeViewId": "v3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Work still to do"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-n",
+                "name": "Not done",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-n"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Study time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "session",
+              "view": "all_sessions"
+            },
+            "inline": true,
+            "title": "Study sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-s",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-sc",
+                "name": "Minutes by class",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "class",
+                  "op": "sum",
+                  "field": "minutes"
+                }
+              }
+            ],
+            "activeViewId": "v-s"
+          }
+        }
+      ]
+    },
+    {
+      "key": "study-guide",
+      "parent": "student-os",
+      "title": "How to run the term",
+      "icon": {
+        "emoji": "📘"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A short routine that keeps the whole term in one place."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the first day of class, add the class and read the syllabus for every due date and its weight."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each assignment, quiz and exam as a task with its weight. Set the score once it is returned."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each morning open Due soon and pick the three tasks that matter most today."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After every lecture, add a note and tick Reviewed once you have gone over it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log a study session when you finish one so the dashboard shows where the time went."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Weight is the share of the final grade. Weighted earned is score times weight, so you can add it up per class."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Calculator"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exam prep checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gather every note for the class"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "List the topics the exam covers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Do one practice test under time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review the questions you missed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sleep and breakfast, the night before"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "semester-wrap-up",
+      "parent": "student-os",
+      "title": "Semester wrap-up",
+      "icon": {
+        "emoji": "🏁"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fill this in during the last week of term."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Grades"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-g",
+                "name": "Graded work",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "desc"
+                  }
+                ],
+                "filters": {
+                  "status": "Done"
+                }
+              }
+            ],
+            "activeViewId": "v-g"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reflect"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What worked in how I studied?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Which class took more time than I planned?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What will I change next term?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "notes-home",
+      "parent": "student-os",
+      "title": "Class notes",
+      "icon": {
+        "emoji": "📓"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Lecture, reading and lab notes in one place. Group by class to revise before an exam."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "note",
+              "view": "all_notes"
+            },
+            "inline": true,
+            "title": "Notes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-n1",
+                "name": "By class",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "noted_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-n2",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "noted_on"
+              },
+              {
+                "id": "v-n3",
+                "name": "To review",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "reviewed": false
+                }
+              }
+            ],
+            "activeViewId": "v-n1"
+          }
+        }
+      ]
+    }
+  ]
+}

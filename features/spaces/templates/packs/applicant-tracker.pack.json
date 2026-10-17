@@ -1,0 +1,2107 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0252",
+  "version": 1,
+  "title": "Applicant Tracker",
+  "description": "Roles, candidates and interviews with a drag-and-drop hiring pipeline.",
+  "forWho": "Recruiters and hiring managers",
+  "icon": {
+    "emoji": "🧲"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "hiring",
+    "recruiting",
+    "ats",
+    "pipeline"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-applicant-tracker",
+    "catalogueId": "SP0252",
+    "useCase": "Yuki Tanabe recruits for a seventy-person software company and uses this to see every open role, where each candidate stands and who still owes interview feedback.",
+    "industry": "staffing_hr_recruiting",
+    "vertical": "Hiring pipeline",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "kanban",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Copperfield Labs",
+      "describes": "A seventy-person software company building scheduling tools for clinics.",
+      "address": {
+        "line1": "8 Larkmoor Terrace",
+        "city": "Chicago",
+        "region": "IL",
+        "postalCode": "60607",
+        "country": "US"
+      },
+      "phone": "(312) 555-0110",
+      "website": "copperfieldlabs.net",
+      "email": "hello@copperfieldlabs.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-applicant-tracker",
+    "tables": [
+      {
+        "token": "role",
+        "name": "Open roles",
+        "labelSingular": "Role",
+        "labelPlural": "Open roles",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "role_name",
+        "describes": "Every position being hired for, who manages it and where it stands.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "role_name",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "department",
+            "label": "Department",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Engineering",
+              "Design",
+              "Sales"
+            ],
+            "choiceColors": {
+              "Engineering": "blue",
+              "Design": "green",
+              "Sales": "amber"
+            }
+          },
+          {
+            "key": "manager",
+            "label": "Hiring manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Open",
+              "On hold",
+              "Filled",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Open": "green",
+              "On hold": "amber",
+              "Filled": "blue",
+              "Closed": "gray"
+            },
+            "required": true,
+            "default": "Open"
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Chicago",
+              "Remote"
+            ],
+            "choiceColors": {
+              "Chicago": "blue",
+              "Remote": "teal"
+            }
+          },
+          {
+            "key": "employment",
+            "label": "Employment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Full-time",
+              "Contract",
+              "Intern"
+            ],
+            "choiceColors": {
+              "Full-time": "violet",
+              "Contract": "orange",
+              "Intern": "pink"
+            }
+          },
+          {
+            "key": "salary",
+            "label": "Salary range",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "opened_on",
+            "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "candidate_list",
+            "label": "Candidates",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "candidate",
+            "multi": true
+          },
+          {
+            "key": "active",
+            "label": "Active candidates",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "candidate_list",
+            "pick": "full_name",
+            "agg": "count",
+            "filter": {
+              "stage": [
+                "Applied",
+                "Screen",
+                "Interview",
+                "Offer"
+              ]
+            }
+          },
+          {
+            "key": "hires",
+            "label": "Hires",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "candidate_list",
+            "pick": "full_name",
+            "agg": "count",
+            "filter": {
+              "stage": "Hired"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "r-be",
+            "values": {
+              "role_name": "Backend engineer",
+              "department": "Engineering",
+              "manager": "tm-omar",
+              "status": "Open",
+              "location": "Chicago",
+              "employment": "Full-time",
+              "salary": "$140,000 to $165,000",
+              "opened_on": "@today-40d",
+              "candidate_list": [
+                "c01",
+                "c02",
+                "c03",
+                "c04",
+                "c05"
+              ]
+            }
+          },
+          {
+            "key": "r-pd",
+            "values": {
+              "role_name": "Product designer",
+              "department": "Design",
+              "manager": "tm-sofia",
+              "status": "Open",
+              "location": "Remote",
+              "employment": "Full-time",
+              "salary": "$115,000 to $135,000",
+              "opened_on": "@today-25d",
+              "candidate_list": [
+                "c06",
+                "c07",
+                "c08"
+              ]
+            }
+          },
+          {
+            "key": "r-ae",
+            "values": {
+              "role_name": "Account executive",
+              "department": "Sales",
+              "manager": "tm-devon",
+              "status": "Open",
+              "location": "Chicago",
+              "employment": "Full-time",
+              "salary": "$90,000 base plus commission",
+              "opened_on": "@today-33d",
+              "candidate_list": [
+                "c09",
+                "c10",
+                "c11"
+              ]
+            }
+          },
+          {
+            "key": "r-sup",
+            "values": {
+              "role_name": "Customer support intern",
+              "department": "Sales",
+              "manager": "tm-devon",
+              "status": "On hold",
+              "location": "Chicago",
+              "employment": "Intern",
+              "salary": "$24 per hour",
+              "opened_on": "@today-18d",
+              "candidate_list": [
+                "c14"
+              ]
+            }
+          },
+          {
+            "key": "r-dev",
+            "values": {
+              "role_name": "Frontend engineer",
+              "department": "Engineering",
+              "manager": "tm-omar",
+              "status": "Filled",
+              "location": "Remote",
+              "employment": "Full-time",
+              "salary": "$130,000 to $150,000",
+              "opened_on": "@today-90d",
+              "candidate_list": [
+                "c12",
+                "c13"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "candidate",
+        "name": "Candidates",
+        "labelSingular": "Candidate",
+        "labelPlural": "Candidates",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-search",
+        "titleField": "full_name",
+        "describes": "Everyone in the pipeline, which role they are for, their stage and how interviews went.",
+        "subject": "thing",
+        "childDates": [
+          {
+            "relation": "role",
+            "field": "applied_on",
+            "parentField": "opened_on"
+          }
+        ],
+        "statusAgrees": [
+          {
+            "relation": "role",
+            "field": "stage",
+            "childStatus": [
+              "Applied",
+              "Screen",
+              "Interview",
+              "Offer"
+            ],
+            "parentField": "status",
+            "parentStatus": [
+              "Open",
+              "On hold"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "full_name",
+            "label": "Candidate",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "role",
+            "relationMax": 1
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Applied",
+              "Screen",
+              "Interview",
+              "Offer",
+              "Hired",
+              "Rejected"
+            ],
+            "choiceColors": {
+              "Applied": "slate",
+              "Screen": "blue",
+              "Interview": "violet",
+              "Offer": "amber",
+              "Hired": "green",
+              "Rejected": "red"
+            },
+            "required": true,
+            "default": "Applied"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize",
+            "askOfSubject": true
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize",
+            "askOfSubject": true
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "LinkedIn",
+              "Job board",
+              "Inbound",
+              "Agency"
+            ],
+            "choiceColors": {
+              "Referral": "green",
+              "LinkedIn": "blue",
+              "Job board": "amber",
+              "Inbound": "pink",
+              "Agency": "teal"
+            }
+          },
+          {
+            "key": "applied_on",
+            "label": "Applied",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "rating",
+            "label": "Rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "interview_list",
+            "label": "Interviews",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "interview",
+            "multi": true
+          },
+          {
+            "key": "avg_score",
+            "label": "Average score",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "interview_list",
+            "pick": "score",
+            "agg": "avg"
+          },
+          {
+            "key": "days_open",
+            "label": "Days since applied",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Applied}, TODAY(), 'days')"
+          },
+          {
+            "key": "reject_reason",
+            "label": "Rejection reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Skills gap",
+              "Salary",
+              "Withdrew",
+              "Culture fit",
+              "Position filled"
+            ],
+            "choiceColors": {
+              "Skills gap": "red",
+              "Salary": "orange",
+              "Withdrew": "amber",
+              "Culture fit": "pink",
+              "Position filled": "slate"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "full_name": "Tobias Eriksen",
+              "role": "r-be",
+              "stage": "Interview",
+              "source": "Referral",
+              "rating": "4",
+              "applied_on": "@today-21d",
+              "email": "tobias.eriksen@mailbox-demo.net",
+              "phone": "(312) 555-0181",
+              "interview_list": [
+                "i01",
+                "i02"
+              ]
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "full_name": "Naledi Mokoena",
+              "role": "r-be",
+              "stage": "Offer",
+              "source": "LinkedIn",
+              "rating": "5",
+              "applied_on": "@today-34d",
+              "email": "naledi.mokoena@mailbox-demo.net",
+              "phone": "(312) 555-0182",
+              "interview_list": [
+                "i03",
+                "i04"
+              ]
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "full_name": "Hugo Bellamy",
+              "role": "r-be",
+              "stage": "Screen",
+              "source": "Job board",
+              "rating": "3",
+              "applied_on": "@today-6d",
+              "email": "hugo.bellamy@mailbox-demo.net",
+              "phone": "(312) 555-0183",
+              "interview_list": []
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "full_name": "Anjali Deshmukh",
+              "role": "r-be",
+              "stage": "Rejected",
+              "source": "Inbound",
+              "rating": "2",
+              "applied_on": "@today-30d",
+              "email": "anjali.d@mailbox-demo.net",
+              "phone": "(312) 555-0184",
+              "reject_reason": "Skills gap",
+              "interview_list": [
+                "i05"
+              ]
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "full_name": "Mateus Oliveira",
+              "role": "r-be",
+              "stage": "Applied",
+              "source": "Job board",
+              "applied_on": "@today-2d",
+              "email": "mateus.oliveira@mailbox-demo.net",
+              "phone": "(312) 555-0185",
+              "interview_list": []
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "full_name": "Ingrid Solheim",
+              "role": "r-pd",
+              "stage": "Interview",
+              "source": "Referral",
+              "rating": "5",
+              "applied_on": "@today-19d",
+              "email": "ingrid.solheim@mailbox-demo.net",
+              "phone": "(312) 555-0186",
+              "interview_list": [
+                "i06",
+                "i07"
+              ]
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "full_name": "Marcus Delacroix",
+              "role": "r-pd",
+              "stage": "Screen",
+              "source": "LinkedIn",
+              "rating": "3",
+              "applied_on": "@today-8d",
+              "email": "marcus.delacroix@mailbox-demo.net",
+              "phone": "(312) 555-0187",
+              "interview_list": []
+            }
+          },
+          {
+            "key": "c08",
+            "values": {
+              "full_name": "Fatima Zahra El-Idrissi",
+              "role": "r-pd",
+              "stage": "Applied",
+              "source": "Inbound",
+              "applied_on": "@today-3d",
+              "email": "fatima.elidrissi@mailbox-demo.net",
+              "phone": "(312) 555-0188",
+              "interview_list": []
+            }
+          },
+          {
+            "key": "c09",
+            "values": {
+              "full_name": "Gideon Park",
+              "role": "r-ae",
+              "stage": "Interview",
+              "source": "Agency",
+              "rating": "4",
+              "applied_on": "@today-15d",
+              "email": "gideon.park@mailbox-demo.net",
+              "phone": "(312) 555-0189",
+              "interview_list": [
+                "i08"
+              ]
+            }
+          },
+          {
+            "key": "c10",
+            "values": {
+              "full_name": "Rosalind Achterberg",
+              "role": "r-ae",
+              "stage": "Rejected",
+              "source": "Job board",
+              "rating": "2",
+              "applied_on": "@today-26d",
+              "email": "rosalind.a@mailbox-demo.net",
+              "phone": "(312) 555-0190",
+              "reject_reason": "Skills gap",
+              "interview_list": [
+                "i09"
+              ]
+            }
+          },
+          {
+            "key": "c11",
+            "values": {
+              "full_name": "Kwame Asante",
+              "role": "r-ae",
+              "stage": "Screen",
+              "source": "Referral",
+              "rating": "4",
+              "applied_on": "@today-5d",
+              "email": "kwame.asante@mailbox-demo.net",
+              "phone": "(312) 555-0191",
+              "interview_list": []
+            }
+          },
+          {
+            "key": "c12",
+            "values": {
+              "full_name": "Tilda Rasmussen",
+              "role": "r-dev",
+              "stage": "Hired",
+              "source": "Referral",
+              "rating": "5",
+              "applied_on": "@today-70d",
+              "email": "tilda.rasmussen@mailbox-demo.net",
+              "phone": "(312) 555-0192",
+              "interview_list": [
+                "i10"
+              ]
+            }
+          },
+          {
+            "key": "c13",
+            "values": {
+              "full_name": "Bastien Fournier",
+              "role": "r-dev",
+              "stage": "Rejected",
+              "source": "LinkedIn",
+              "rating": "2",
+              "applied_on": "@today-75d",
+              "email": "bastien.fournier@mailbox-demo.net",
+              "phone": "(312) 555-0193",
+              "reject_reason": "Position filled",
+              "interview_list": []
+            }
+          },
+          {
+            "key": "c14",
+            "values": {
+              "full_name": "Leilani Kahale",
+              "role": "r-sup",
+              "stage": "Applied",
+              "source": "Inbound",
+              "applied_on": "@today-9d",
+              "email": "leilani.kahale@mailbox-demo.net",
+              "phone": "(312) 555-0194",
+              "interview_list": []
+            }
+          }
+        ]
+      },
+      {
+        "token": "interview",
+        "name": "Interviews",
+        "labelSingular": "Interview",
+        "labelPlural": "Interviews",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "interview_name",
+        "describes": "Every conversation with a candidate, who ran it and what they recommended.",
+        "subject": "thing",
+        "childDates": [
+          {
+            "relation": "candidate",
+            "field": "on",
+            "parentField": "applied_on"
+          }
+        ],
+        "fields": [
+          {
+            "key": "interview_name",
+            "label": "Interview",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "candidate",
+            "label": "Candidate",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "candidate",
+            "relationMax": 1
+          },
+          {
+            "key": "interviewer",
+            "label": "Interviewer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "round",
+            "label": "Round",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Phone screen",
+              "Technical",
+              "Culture",
+              "Final"
+            ],
+            "choiceColors": {
+              "Phone screen": "blue",
+              "Technical": "violet",
+              "Culture": "pink",
+              "Final": "green"
+            }
+          },
+          {
+            "key": "on",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "score",
+            "label": "Score",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "recommendation",
+            "label": "Recommendation",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Strong yes",
+              "Yes",
+              "No",
+              "Strong no"
+            ],
+            "choiceColors": {
+              "Strong yes": "green",
+              "Yes": "teal",
+              "No": "orange",
+              "Strong no": "red"
+            }
+          },
+          {
+            "key": "feedback",
+            "label": "Feedback",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "i01",
+            "values": {
+              "interview_name": "Tobias: phone screen",
+              "candidate": "c01",
+              "interviewer": "tm-yuki",
+              "round": "Phone screen",
+              "on": "@today-14d 10:00",
+              "score": 4,
+              "recommendation": "Yes",
+              "feedback": "Clear on past work, quick learner."
+            }
+          },
+          {
+            "key": "i02",
+            "values": {
+              "interview_name": "Tobias: technical round",
+              "candidate": "c01",
+              "interviewer": "tm-amara",
+              "round": "Technical",
+              "on": "@today+2d 14:00"
+            }
+          },
+          {
+            "key": "i03",
+            "values": {
+              "interview_name": "Naledi: technical round",
+              "candidate": "c02",
+              "interviewer": "tm-amara",
+              "round": "Technical",
+              "on": "@today-20d 11:00",
+              "score": 5,
+              "recommendation": "Strong yes",
+              "feedback": "Excellent systems design and clean code."
+            }
+          },
+          {
+            "key": "i04",
+            "values": {
+              "interview_name": "Naledi: final round",
+              "candidate": "c02",
+              "interviewer": "tm-omar",
+              "round": "Final",
+              "on": "@today-9d 15:00",
+              "score": 5,
+              "recommendation": "Strong yes",
+              "feedback": "Would raise the bar for the team."
+            }
+          },
+          {
+            "key": "i05",
+            "values": {
+              "interview_name": "Anjali: phone screen",
+              "candidate": "c04",
+              "interviewer": "tm-yuki",
+              "round": "Phone screen",
+              "on": "@today-24d 09:30",
+              "score": 2,
+              "recommendation": "No",
+              "feedback": "Looking for a more front-end role."
+            }
+          },
+          {
+            "key": "i06",
+            "values": {
+              "interview_name": "Ingrid: portfolio review",
+              "candidate": "c06",
+              "interviewer": "tm-sofia",
+              "round": "Technical",
+              "on": "@today-11d 13:00",
+              "score": 5,
+              "recommendation": "Strong yes",
+              "feedback": "Thoughtful process, strong systems thinking."
+            }
+          },
+          {
+            "key": "i07",
+            "values": {
+              "interview_name": "Ingrid: culture round",
+              "candidate": "c06",
+              "interviewer": "tm-lena",
+              "round": "Culture",
+              "on": "@today+3d 10:30"
+            }
+          },
+          {
+            "key": "i08",
+            "values": {
+              "interview_name": "Gideon: sales role-play",
+              "candidate": "c09",
+              "interviewer": "tm-devon",
+              "round": "Technical",
+              "on": "@today-4d 16:00",
+              "score": 4,
+              "recommendation": "Yes",
+              "feedback": "Good discovery questions."
+            }
+          },
+          {
+            "key": "i09",
+            "values": {
+              "interview_name": "Rosalind: phone screen",
+              "candidate": "c10",
+              "interviewer": "tm-yuki",
+              "round": "Phone screen",
+              "on": "@today-20d 12:00",
+              "score": 2,
+              "recommendation": "No",
+              "feedback": "Limited experience with long sales cycles."
+            }
+          },
+          {
+            "key": "i10",
+            "values": {
+              "interview_name": "Tilda: final round",
+              "candidate": "c12",
+              "interviewer": "tm-omar",
+              "round": "Final",
+              "on": "@today-55d 14:00",
+              "score": 5,
+              "recommendation": "Strong yes",
+              "feedback": "Offer made the same day."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each role has a hiring manager.",
+        "fromTable": "role",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "roles_managed"
+      },
+      {
+        "describes": "A role lists the candidates applying for it.",
+        "fromTable": "role",
+        "fromField": "candidate_list",
+        "toTable": "candidate",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "role_of_candidate"
+      },
+      {
+        "describes": "Each candidate applies for one role.",
+        "fromTable": "candidate",
+        "fromField": "role",
+        "toTable": "role",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "candidates"
+      },
+      {
+        "describes": "A candidate lists their interviews.",
+        "fromTable": "candidate",
+        "fromField": "interview_list",
+        "toTable": "interview",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "candidate_of_interview"
+      },
+      {
+        "describes": "Each interview is with one candidate.",
+        "fromTable": "interview",
+        "fromField": "candidate",
+        "toTable": "candidate",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "interviews"
+      },
+      {
+        "describes": "Each interview has one interviewer.",
+        "fromTable": "interview",
+        "fromField": "interviewer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "interviews_run"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-lena",
+            "values": {
+              "full_name": "Lena Kowalczyk",
+              "role": "Head of people",
+              "work_email": "lena@copperfieldlabs.net",
+              "mobile": "(312) 555-0111",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-omar",
+            "values": {
+              "full_name": "Omar Haddad",
+              "role": "Engineering director",
+              "work_email": "omar@copperfieldlabs.net",
+              "mobile": "(312) 555-0112",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-sofia",
+            "values": {
+              "full_name": "Sofia Marchetti",
+              "role": "Design lead",
+              "work_email": "sofia@copperfieldlabs.net",
+              "mobile": "(312) 555-0113",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-devon",
+            "values": {
+              "full_name": "Devon Albright",
+              "role": "Sales director",
+              "work_email": "devon@copperfieldlabs.net",
+              "mobile": "(312) 555-0114",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-yuki",
+            "values": {
+              "full_name": "Yuki Tanabe",
+              "role": "Senior recruiter",
+              "work_email": "yuki@copperfieldlabs.net",
+              "mobile": "(312) 555-0115",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-amara",
+            "values": {
+              "full_name": "Amara Nwosu",
+              "role": "Staff engineer",
+              "work_email": "amara@copperfieldlabs.net",
+              "mobile": "(312) 555-0116",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "apply",
+        "name": "Apply for a role",
+        "describes": "The page a candidate fills in to apply.",
+        "audience": "public",
+        "table": "candidate",
+        "fields": [
+          {
+            "fieldKey": "full_name",
+            "ask": "What is your full name?",
+            "required": true
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Which email should we reach you at?",
+            "required": true,
+            "askOfSubject": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?",
+            "askOfSubject": true
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did you hear about us?"
+          }
+        ],
+        "submitLabel": "Apply",
+        "confirmation": "Thanks. A recruiter will reply within three working days."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_roles",
+        "name": "All roles",
+        "table": "role",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "role_board",
+        "name": "By status",
+        "table": "role",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_candidates",
+        "name": "All candidates",
+        "table": "candidate",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "applied_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "pipeline",
+        "name": "Pipeline",
+        "table": "candidate",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "candidate_calendar",
+        "name": "Applied",
+        "table": "candidate",
+        "kind": "calendar",
+        "dateField": "applied_on"
+      },
+      {
+        "token": "all_interviews",
+        "name": "All interviews",
+        "table": "interview",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "interview_calendar",
+        "name": "Interview calendar",
+        "table": "interview",
+        "kind": "calendar",
+        "dateField": "on"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Applicant Tracker assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "candidate",
+          "describes": "Every candidate, their role, stage, source and score."
+        },
+        {
+          "name": "related_tables",
+          "table": "role",
+          "describes": "The roles candidates apply for."
+        }
+      ],
+      "question": {
+        "ask": "How many candidates are at the Interview stage?",
+        "whyItMatters": "Yuki schedules the next round for everyone in Interview each Monday.",
+        "expect": {
+          "table": "candidate",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "stage": "Interview"
+          },
+          "answer": 3,
+          "unit": "candidates"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the hiring pipeline.",
+        "action": {
+          "kind": "open",
+          "surface": "pipeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "pipeline",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the interview calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "interview_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "interview_calendar",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open all roles.",
+        "action": {
+          "kind": "open",
+          "surface": "all_roles"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_roles",
+          "minItems": 4
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperfieldlabs.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Larkmoor Terrace"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "hiring",
+      "parent": null,
+      "title": "Hiring",
+      "icon": {
+        "emoji": "🧲"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Track every role and candidate from application to offer. Move a card across the pipeline as people progress, and log an interview right after it happens."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Open roles"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "role",
+                      "view": "all_roles"
+                    },
+                    "inline": true,
+                    "title": "Open roles",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-rl",
+                        "name": "Open",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "Open"
+                        }
+                      },
+                      {
+                        "id": "v-rb",
+                        "name": "By status",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "status"
+                      }
+                    ],
+                    "activeViewId": "v-rl"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Interviews coming up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "interview",
+                      "view": "all_interviews"
+                    },
+                    "inline": true,
+                    "title": "Interviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-ic",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "on"
+                      },
+                      {
+                        "id": "v-il",
+                        "name": "Pending feedback",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "recommendation": null
+                        }
+                      }
+                    ],
+                    "activeViewId": "v-ic"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "candidate",
+              "view": "pipeline"
+            },
+            "inline": true,
+            "title": "Candidates",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-p",
+                "name": "Pipeline",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "v-f",
+                "name": "Finalists",
+                "layout": "gallery",
+                "icon": "LayoutGrid",
+                "filters": {
+                  "stage": [
+                    "Interview",
+                    "Offer"
+                  ]
+                }
+              },
+              {
+                "id": "v-a",
+                "name": "All candidates",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "applied_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-ca",
+                "name": "Applied",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "applied_on"
+              }
+            ],
+            "activeViewId": "v-p"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Roles"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "role",
+              "view": "all_roles"
+            },
+            "inline": true,
+            "title": "Roles",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-r1",
+                "name": "All roles",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-r2",
+                "name": "Candidates by department",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "department",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "v-r1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:hiring-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:process-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:scorecard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interview log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "interview",
+              "view": "all_interviews"
+            },
+            "inline": true,
+            "title": "Interviews",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-i1",
+                "name": "All interviews",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-i2",
+                "name": "By round",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "round"
+              }
+            ],
+            "activeViewId": "v-i1"
+          }
+        }
+      ]
+    },
+    {
+      "key": "hiring-dashboard",
+      "parent": "hiring",
+      "title": "Hiring dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "candidate",
+                      "view": "all_candidates"
+                    },
+                    "inline": true,
+                    "title": "Candidates",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "Candidates by stage",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "candidate",
+                      "view": "all_candidates"
+                    },
+                    "inline": true,
+                    "title": "Candidates",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "Candidates by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "role",
+                      "view": "all_roles"
+                    },
+                    "inline": true,
+                    "title": "Roles",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "Roles by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Needs a decision"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "candidate",
+              "view": "all_candidates"
+            },
+            "inline": true,
+            "title": "Candidates",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-o",
+                "name": "Offer stage",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "stage": "Offer"
+                }
+              }
+            ],
+            "activeViewId": "d-o"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Newest applicants"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "candidate",
+              "view": "all_candidates"
+            },
+            "inline": true,
+            "title": "Candidates",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-n",
+                "name": "Applied",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "stage": "Applied"
+                },
+                "sorts": [
+                  {
+                    "field": "applied_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "d-n"
+          }
+        }
+      ]
+    },
+    {
+      "key": "process-guide",
+      "parent": "hiring",
+      "title": "How we hire",
+      "icon": {
+        "emoji": "📘"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every hire follows the same four steps so candidates get a fair and quick process."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Applied: a recruiter reads the application and replies within three working days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Screen: a 30 minute call about motivation, experience and pay expectations."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Interview: a technical or portfolio round, then a team conversation. Two interviewers score each round from 1 to 5."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer: the hiring manager and head of people agree the offer before anyone calls the candidate."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reject quickly and kindly. Record the reason so we learn which roles attract the wrong applicants."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Heart"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for every new candidate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Screen call booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scorecard shared with interviewers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "References requested"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Offer drafted and approved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "scorecard",
+      "parent": "hiring",
+      "title": "Interview scorecard",
+      "icon": {
+        "emoji": "🧮"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Score each area from 1 (clear gap) to 5 (exceptional). Write one sentence of evidence for each score."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to look for"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Craft"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quality and judgement in the work they show"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem solving"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Breaks a vague problem into steps"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Communication"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Explains clearly and listens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ownership"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Follows through, owns mistakes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Team fit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Works well with how we operate"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recommendation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Strong yes: would be among our best."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Yes: meets the bar."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No: gaps that training will not close soon."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Strong no: serious concerns."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

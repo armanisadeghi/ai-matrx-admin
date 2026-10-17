@@ -1,0 +1,1962 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0251",
+  "version": 1,
+  "title": "Employee Onboarding Hub",
+  "description": "A new-hire portal with 30-60-90 goals, tool access checklist and manager 1:1s.",
+  "forWho": "HR teams and managers onboarding new hires",
+  "icon": {
+    "emoji": "🚀"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "onboarding",
+    "hr",
+    "new-hire",
+    "30-60-90"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-employee-onboarding-hub",
+    "catalogueId": "SP0251",
+    "useCase": "Dana Whitlock runs people operations at a forty-person supply company and uses this so every new hire sees their goals, tools and contacts in one place.",
+    "industry": "staffing_hr_recruiting",
+    "vertical": "Employee onboarding",
+    "job": "team_hr",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Harborline Supply",
+      "describes": "A forty-person distributor of marine parts for boatyards and marinas.",
+      "address": {
+        "line1": "51 Tidewrack Lane",
+        "city": "Seattle",
+        "region": "WA",
+        "postalCode": "98109",
+        "country": "US"
+      },
+      "phone": "(206) 555-0140",
+      "website": "harborlinesupply.net",
+      "email": "hello@harborlinesupply.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-employee-onboarding-hub",
+    "tables": [
+      {
+        "token": "objective",
+        "name": "Objectives",
+        "labelSingular": "Objective",
+        "labelPlural": "Objectives",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "objective_name",
+        "describes": "The goals that shape a new hire's first three months, grouped by 30, 60 and 90 days.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "objective_name",
+            "label": "Objective",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "30 days",
+              "60 days",
+              "90 days"
+            ],
+            "choiceColors": {
+              "30 days": "green",
+              "60 days": "amber",
+              "90 days": "violet"
+            },
+            "required": true
+          },
+          {
+            "key": "owner",
+            "label": "New hire",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "sponsor",
+            "label": "Sponsor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "kr_list",
+            "label": "Key results",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "key_result",
+            "multi": true
+          },
+          {
+            "key": "progress",
+            "label": "Progress",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "kr_list",
+            "pick": "completion",
+            "agg": "avg"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ob-30a",
+            "values": {
+              "objective_name": "Learn our product and customers",
+              "phase": "30 days",
+              "owner": "tm-noor",
+              "sponsor": "tm-ines",
+              "due_on": "@today+9d",
+              "kr_list": [
+                "kr1",
+                "kr2",
+                "kr3"
+              ]
+            }
+          },
+          {
+            "key": "ob-30b",
+            "values": {
+              "objective_name": "Get set up and secure",
+              "phase": "30 days",
+              "owner": "tm-noor",
+              "sponsor": "tm-wes",
+              "due_on": "@today+6d",
+              "kr_list": [
+                "kr4",
+                "kr5",
+                "kr6"
+              ]
+            }
+          },
+          {
+            "key": "ob-60a",
+            "values": {
+              "objective_name": "Handle tickets on your own",
+              "phase": "60 days",
+              "owner": "tm-noor",
+              "sponsor": "tm-ines",
+              "due_on": "@today+39d",
+              "kr_list": [
+                "kr7",
+                "kr8"
+              ]
+            }
+          },
+          {
+            "key": "ob-60b",
+            "values": {
+              "objective_name": "Shadow three customer calls",
+              "phase": "60 days",
+              "owner": "tm-noor",
+              "sponsor": "tm-ines",
+              "due_on": "@today+45d",
+              "kr_list": [
+                "kr9",
+                "kr10"
+              ]
+            }
+          },
+          {
+            "key": "ob-90a",
+            "values": {
+              "objective_name": "Own one improvement project",
+              "phase": "90 days",
+              "owner": "tm-noor",
+              "sponsor": "tm-dana",
+              "due_on": "@today+69d",
+              "kr_list": [
+                "kr11",
+                "kr12"
+              ]
+            }
+          },
+          {
+            "key": "ob-90b",
+            "values": {
+              "objective_name": "Run a customer training session",
+              "phase": "90 days",
+              "owner": "tm-noor",
+              "sponsor": "tm-ines",
+              "due_on": "@today+80d",
+              "kr_list": [
+                "kr13",
+                "kr14"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "key_result",
+        "name": "Key results",
+        "labelSingular": "Key result",
+        "labelPlural": "Key results",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "check-circle",
+        "titleField": "kr_name",
+        "describes": "The measurable steps behind each objective and how far each one is.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "kr_name",
+            "label": "Key result",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "objective",
+            "label": "Objective",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "objective",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "To do next",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "To do next": "amber",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Not started"
+          },
+          {
+            "key": "completion",
+            "label": "Completion",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "key": "kr1",
+            "values": {
+              "kr_name": "Complete product walkthrough videos",
+              "objective": "ob-30a",
+              "status": "Done",
+              "completion": 100
+            }
+          },
+          {
+            "key": "kr2",
+            "values": {
+              "kr_name": "Read the top 20 support articles",
+              "objective": "ob-30a",
+              "status": "Done",
+              "completion": 100
+            }
+          },
+          {
+            "key": "kr3",
+            "values": {
+              "kr_name": "Sit in on five live support calls",
+              "objective": "ob-30a",
+              "status": "In progress",
+              "completion": 50
+            }
+          },
+          {
+            "key": "kr4",
+            "values": {
+              "kr_name": "Laptop imaged and signed in",
+              "objective": "ob-30b",
+              "status": "Done",
+              "completion": 100
+            }
+          },
+          {
+            "key": "kr5",
+            "values": {
+              "kr_name": "Password manager and two-step sign-in on",
+              "objective": "ob-30b",
+              "status": "Done",
+              "completion": 100
+            }
+          },
+          {
+            "key": "kr6",
+            "values": {
+              "kr_name": "Finish security awareness course",
+              "objective": "ob-30b",
+              "status": "To do next",
+              "completion": 10
+            }
+          },
+          {
+            "key": "kr7",
+            "values": {
+              "kr_name": "Close 15 tickets with no hand-off",
+              "objective": "ob-60a",
+              "status": "In progress",
+              "completion": 50
+            }
+          },
+          {
+            "key": "kr8",
+            "values": {
+              "kr_name": "Reach a first reply under 2 hours",
+              "objective": "ob-60a",
+              "status": "Not started",
+              "completion": 0
+            }
+          },
+          {
+            "key": "kr9",
+            "values": {
+              "kr_name": "Review three colleagues' answers",
+              "objective": "ob-60b",
+              "status": "Not started",
+              "completion": 0
+            }
+          },
+          {
+            "key": "kr10",
+            "values": {
+              "kr_name": "Write call summaries for each one",
+              "objective": "ob-60b",
+              "status": "Not started",
+              "completion": 0
+            }
+          },
+          {
+            "key": "kr11",
+            "values": {
+              "kr_name": "Pick a problem from the pain-point list",
+              "objective": "ob-90a",
+              "status": "Not started",
+              "completion": 0
+            }
+          },
+          {
+            "key": "kr12",
+            "values": {
+              "kr_name": "Present findings to the leads",
+              "objective": "ob-90a",
+              "status": "Not started",
+              "completion": 0
+            }
+          },
+          {
+            "key": "kr13",
+            "values": {
+              "kr_name": "Draft a training outline",
+              "objective": "ob-90b",
+              "status": "Not started",
+              "completion": 0
+            }
+          },
+          {
+            "key": "kr14",
+            "values": {
+              "kr_name": "Run the session for six customers",
+              "objective": "ob-90b",
+              "status": "Not started",
+              "completion": 0
+            }
+          }
+        ]
+      },
+      {
+        "token": "tool",
+        "name": "Tools checklist",
+        "labelSingular": "Tool",
+        "labelPlural": "Tools",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "tool_name",
+        "describes": "Every system a new hire needs, who grants it and whether access is in place.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "tool_name",
+            "label": "Tool",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Comms",
+              "Support",
+              "Finance",
+              "HR",
+              "Security"
+            ],
+            "choiceColors": {
+              "Comms": "blue",
+              "Support": "green",
+              "Finance": "amber",
+              "HR": "red",
+              "Security": "violet"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Access owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "granted",
+            "label": "Access granted",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "granted_on",
+            "label": "Granted on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tl1",
+            "values": {
+              "tool_name": "Work email and calendar",
+              "category": "Comms",
+              "owner": "tm-wes",
+              "granted": true,
+              "granted_on": "@today-3w",
+              "link": "https://work.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl2",
+            "values": {
+              "tool_name": "Team chat workspace",
+              "category": "Comms",
+              "owner": "tm-wes",
+              "granted": true,
+              "granted_on": "@today-3w",
+              "link": "https://team.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl3",
+            "values": {
+              "tool_name": "Ticketing system",
+              "category": "Support",
+              "owner": "tm-ines",
+              "granted": true,
+              "granted_on": "@today-2w",
+              "link": "https://ticketing.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl4",
+            "values": {
+              "tool_name": "Customer database (read only)",
+              "category": "Support",
+              "owner": "tm-ines",
+              "granted": true,
+              "granted_on": "@today-2w",
+              "link": "https://customer.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl5",
+            "values": {
+              "tool_name": "Knowledge base editor",
+              "category": "Support",
+              "owner": "tm-ines",
+              "granted": false,
+              "link": "https://knowledge.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl6",
+            "values": {
+              "tool_name": "Expense reporting",
+              "category": "Finance",
+              "owner": "tm-priya",
+              "granted": false,
+              "link": "https://expense.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl7",
+            "values": {
+              "tool_name": "Payroll and benefits portal",
+              "category": "HR",
+              "owner": "tm-dana",
+              "granted": true,
+              "granted_on": "@today-3w",
+              "link": "https://payroll.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl8",
+            "values": {
+              "tool_name": "Password manager",
+              "category": "Security",
+              "owner": "tm-wes",
+              "granted": true,
+              "granted_on": "@today-3w",
+              "link": "https://password.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl9",
+            "values": {
+              "tool_name": "VPN access",
+              "category": "Security",
+              "owner": "tm-wes",
+              "granted": true,
+              "granted_on": "@today-3w",
+              "link": "https://vpn.harborlinesupply.net"
+            }
+          },
+          {
+            "key": "tl10",
+            "values": {
+              "tool_name": "Training portal",
+              "category": "HR",
+              "owner": "tm-dana",
+              "granted": true,
+              "granted_on": "@today-2w",
+              "link": "https://training.harborlinesupply.net"
+            }
+          }
+        ]
+      },
+      {
+        "token": "one_on_one",
+        "name": "Manager 1:1s",
+        "labelSingular": "1:1",
+        "labelPlural": "Manager 1:1s",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "messages-square",
+        "titleField": "session_name",
+        "describes": "Weekly conversations between the new hire and their manager.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Meeting",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "held_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "manager",
+            "label": "Manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "mood",
+            "label": "Mood",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "topics",
+            "label": "Topics",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "private_notes",
+            "label": "Private notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          }
+        ],
+        "rows": [
+          {
+            "key": "o1",
+            "values": {
+              "session_name": "Week 1 check-in",
+              "held_on": "@today-14d",
+              "manager": "tm-ines",
+              "mood": "4",
+              "topics": "Settling in, wants more call practice"
+            }
+          },
+          {
+            "key": "o2",
+            "values": {
+              "session_name": "Week 2 check-in",
+              "held_on": "@today-7d",
+              "manager": "tm-ines",
+              "mood": "4",
+              "topics": "Tools all working, ticket queue feels heavy"
+            }
+          },
+          {
+            "key": "o3",
+            "values": {
+              "session_name": "Week 3 check-in",
+              "held_on": "@today-1d",
+              "manager": "tm-ines",
+              "mood": "5",
+              "topics": "Enjoyed the shadowing, ready for live tickets"
+            }
+          },
+          {
+            "key": "o4",
+            "values": {
+              "session_name": "Mid-30 day review",
+              "held_on": "@today+8d",
+              "manager": "tm-ines"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each objective belongs to the new hire.",
+        "fromTable": "objective",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "objectives_owned"
+      },
+      {
+        "describes": "Each objective has a sponsor who unblocks it.",
+        "fromTable": "objective",
+        "fromField": "sponsor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "objectives_sponsored"
+      },
+      {
+        "describes": "An objective lists its key results.",
+        "fromTable": "objective",
+        "fromField": "kr_list",
+        "toTable": "key_result",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "objective_of_kr"
+      },
+      {
+        "describes": "Each key result belongs to one objective.",
+        "fromTable": "key_result",
+        "fromField": "objective",
+        "toTable": "objective",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "key_results"
+      },
+      {
+        "describes": "Each tool has one person who grants access.",
+        "fromTable": "tool",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tools_granted"
+      },
+      {
+        "describes": "Each 1:1 has a manager.",
+        "fromTable": "one_on_one",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "one_on_ones_held"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-dana",
+            "values": {
+              "full_name": "Dana Whitlock",
+              "role": "People operations lead",
+              "work_email": "dana@harborlinesupply.net",
+              "mobile": "(206) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-rohan",
+            "values": {
+              "full_name": "Rohan Chaudhry",
+              "role": "Engineering manager",
+              "work_email": "rohan@harborlinesupply.net",
+              "mobile": "(206) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-ines",
+            "values": {
+              "full_name": "Inês Carvalho",
+              "role": "Customer success lead",
+              "work_email": "ines@harborlinesupply.net",
+              "mobile": "(206) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-wes",
+            "values": {
+              "full_name": "Wesley Nakamura",
+              "role": "IT administrator",
+              "work_email": "wes@harborlinesupply.net",
+              "mobile": "(206) 555-0144",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-priya",
+            "values": {
+              "full_name": "Priya Venkataraman",
+              "role": "Finance manager",
+              "work_email": "priya@harborlinesupply.net",
+              "mobile": "(206) 555-0145",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-callum",
+            "values": {
+              "full_name": "Callum Brightwater",
+              "role": "Senior engineer",
+              "work_email": "callum@harborlinesupply.net",
+              "mobile": "(206) 555-0146",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-noor",
+            "values": {
+              "full_name": "Noor Abdelrahman",
+              "role": "Support specialist (new hire)",
+              "work_email": "noor@harborlinesupply.net",
+              "mobile": "(206) 555-0147",
+              "start_date": "@today-3w"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "first_month_feedback",
+        "name": "First-month impressions",
+        "describes": "How a new hire shares what is working and what is not after the first month.",
+        "audience": "staff",
+        "table": "one_on_one",
+        "fields": [
+          {
+            "fieldKey": "session_name",
+            "ask": "What would you like to call this check-in?",
+            "required": true
+          },
+          {
+            "fieldKey": "mood",
+            "ask": "How is it going, from 1 to 5?"
+          },
+          {
+            "fieldKey": "topics",
+            "ask": "What is on your mind?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. Your manager will read it before the next 1:1."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_objectives",
+        "name": "All objectives",
+        "table": "objective",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "objective_board",
+        "name": "By phase",
+        "table": "objective",
+        "kind": "kanban",
+        "groupBy": "phase"
+      },
+      {
+        "token": "objective_calendar",
+        "name": "Due dates",
+        "table": "objective",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_krs",
+        "name": "All key results",
+        "table": "key_result",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "kr_board",
+        "name": "By status",
+        "table": "key_result",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_tools",
+        "name": "All tools",
+        "table": "tool",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "tool_board",
+        "name": "By category",
+        "table": "tool",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_one_on_ones",
+        "name": "All 1:1s",
+        "table": "one_on_one",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "one_on_one_calendar",
+        "name": "Calendar",
+        "table": "one_on_one",
+        "kind": "calendar",
+        "dateField": "held_on"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Employee Onboarding Hub assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "key_result",
+          "describes": "Every key result, its objective, status and completion."
+        },
+        {
+          "name": "related_tables",
+          "table": "objective",
+          "describes": "The 30-60-90 objectives the key results belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many tools still need access granted?",
+        "whyItMatters": "Dana chases the missing ones on Friday.",
+        "expect": {
+          "table": "tool",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "granted": false
+          },
+          "answer": 2,
+          "unit": "tools"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the objectives board.",
+        "action": {
+          "kind": "open",
+          "surface": "objective_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "objective_board",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open the key results board.",
+        "action": {
+          "kind": "open",
+          "surface": "kr_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "kr_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the tools list.",
+        "action": {
+          "kind": "open",
+          "surface": "all_tools"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_tools",
+          "minItems": 8
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "harborlinesupply.net"
+      ],
+      "fictionalStreets": [
+        "Tidewrack Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "onboarding-hub",
+      "parent": null,
+      "title": "Onboarding Hub",
+      "icon": {
+        "emoji": "🚀"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Welcome. This page is your map for the first 90 days: what to achieve, which tools to get access to, and who to ask. Start with the checklist and your 30-day objectives."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Rocket"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Your first week"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Meet your manager and read the welcome page"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sign in to email, chat and the ticketing system"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Turn on two-step sign-in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Book coffee with each teammate"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Watch the product walkthrough videos"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quick links"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:welcome"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:tools-and-access"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:first-month-report"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:meet-the-team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "30-60-90 plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "objective",
+              "view": "objective_board"
+            },
+            "inline": true,
+            "title": "Objectives",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-ob",
+                "name": "By phase",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "phase"
+              },
+              {
+                "id": "v-ot",
+                "name": "All objectives",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-oc",
+                "name": "Due dates",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "v-ob"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Key results"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "key_result",
+              "view": "kr_board"
+            },
+            "inline": true,
+            "title": "Key results",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-kb",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-kt",
+                "name": "All key results",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-kb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tools and access"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tool",
+              "view": "all_tools"
+            },
+            "inline": true,
+            "title": "Tools",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-tl",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "v-tm",
+                "name": "Missing access",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "granted": false
+                }
+              }
+            ],
+            "activeViewId": "v-tl"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Manager 1:1s"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "one_on_one",
+              "view": "all_one_on_ones"
+            },
+            "inline": true,
+            "title": "Manager 1:1s",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-1",
+                "name": "All 1:1s",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-1c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "held_on"
+              }
+            ],
+            "activeViewId": "v-1"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Policies and documents"
+            }
+          ],
+          "children": [
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Employee handbook"
+                }
+              ]
+            },
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Security and acceptable use"
+                }
+              ]
+            },
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Expense policy"
+                }
+              ]
+            },
+            {
+              "type": "bulleted",
+              "text": [
+                {
+                  "text": "Time off policy"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "welcome",
+      "parent": "onboarding-hub",
+      "title": "Welcome and mission",
+      "icon": {
+        "emoji": "👋"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Harborline Supply keeps small boatyards and marinas stocked with the parts they need, shipped within two days. We are a team of forty who care about being useful and being easy to reach."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What we value"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Answer the customer first, then fix the process."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write things down so the next person does not have to ask."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say what you do not know."
+            }
+          ]
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "A good first month is mostly listening."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How a typical day runs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "09:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Team stand-up in chat"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "09:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ticket queue and customer calls"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "12:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lunch, no meetings"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "15:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus time or project work"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "16:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hand-offs and daily summary"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "tools-and-access",
+      "parent": "onboarding-hub",
+      "title": "Tools and access",
+      "icon": {
+        "emoji": "🔐"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each tool lists who grants access. Ask that person in chat and tick Access granted when it works."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tool",
+              "view": "all_tools"
+            },
+            "inline": true,
+            "title": "Tools",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-a",
+                "name": "All tools",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-b",
+                "name": "Still missing",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "granted": false
+                }
+              },
+              {
+                "id": "v-c",
+                "name": "By category",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "category",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "v-a"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Never share a password in chat. Ask IT for a reset link instead."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "ShieldAlert"
+          }
+        }
+      ]
+    },
+    {
+      "key": "first-month-report",
+      "parent": "onboarding-hub",
+      "title": "First-month impressions",
+      "icon": {
+        "emoji": "📝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fill this in before your 30-day review. Be candid; it goes only to your manager and people operations."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What went well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What was confusing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What would have helped in week one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly 1:1 prep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wins since last time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Blockers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Questions about the role"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Something I want to learn"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "meet-the-team",
+      "parent": "onboarding-hub",
+      "title": "Meet the team",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who to ask, by topic. Everyone here has agreed to be asked."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "v-t",
+                "name": "Team",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-g",
+                "name": "All people",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who to ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Topic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pay, benefits, time off"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dana"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Laptop, accounts, access"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wesley"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Customer questions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Inês"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Expenses and invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Priya"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Code and integrations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rohan or Callum"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
