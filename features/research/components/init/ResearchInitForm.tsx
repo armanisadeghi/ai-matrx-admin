@@ -1562,14 +1562,11 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
         topic_id: topicId,
         use_user_agent_overrides: false,
       };
-      // The suggester never hears the person's keyword cap, so an over-cap list opened the review
-      // as a red error before the person did anything: tell it the cap up front.
-      const keywordCap =
-        typeof topic.max_keywords === "number" && topic.max_keywords > 0
-          ? `Suggest at most ${topic.max_keywords} search keywords.`
-          : "";
-      const userInput = [additionalInstructions.trim(), keywordCap].filter(Boolean).join("\n\n");
-      if (userInput) suggestBody.user_input = userInput;
+      // user_input is the person's own words, verbatim — never code-authored text
+      // (check:no-injected-user-input). An over-cap list is handled in review.
+      if (additionalInstructions.trim()) {
+        suggestBody.user_input = additionalInstructions.trim();
+      }
 
       const suggestRes = await api.suggest(suggestBody);
       if (!suggestRes.ok) {
