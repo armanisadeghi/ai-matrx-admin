@@ -1,1842 +1,2505 @@
 {
- "packVersion": 1,
- "catalogueId": "SP0305",
- "version": 1,
- "title": "Creator Studio",
- "description": "Take video ideas to publish day, with sponsors, results and gear in one place.",
- "forWho": "Video and channel creators",
- "icon": {
-  "emoji": "🎬"
- },
- "cover": {
-  "url": "gallery:photo-lavender-dusk",
-  "offsetY": 50
- },
- "category": "marketing",
- "tags": [
-  "video",
-  "youtube",
-  "creator",
-  "sponsors"
- ],
- "spec": {
-  "specVersion": 1,
-  "id": "spaces-creator-studio",
+  "packVersion": 1,
   "catalogueId": "SP0305",
-  "useCase": "Tavita Moreau films a weekly cooking channel and uses this to see which videos are in production, which sponsors owe payments and how recent uploads performed.",
-  "industry": "cross_industry",
-  "vertical": "Video production",
-  "job": "content",
-  "audience": "organization",
-  "teaches": "relations_rollups",
-  "strengths": [],
-  "requires": [],
-  "business": {
-   "name": "Wildgrain Kitchen",
-   "describes": "A one-person home cooking channel with weekly videos and occasional sponsor reads.",
-   "address": {
-    "line1": "29 Hobbler Street",
-    "city": "Savannah",
-    "region": "GA",
-    "postalCode": "31401",
-    "country": "US"
-   },
-   "phone": "(912) 555-0127",
-   "website": "wildgrainkitchen.net",
-   "email": "collab@wildgrainkitchen.net",
-   "timezone": "America/New_York"
-  },
-  "cleanupTag": "use-case:spaces-creator-studio",
-  "tables": [
-   {
-    "token": "sponsor",
-    "name": "Sponsors",
-    "labelSingular": "Sponsor",
-    "labelPlural": "Sponsors",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "badge-dollar",
-    "titleField": "brand",
-    "describes": "Brands that pay for placement.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "brand",
-      "label": "Brand",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Pitched",
-       "Negotiating",
-       "Booked",
-       "Delivered",
-       "Paid"
-      ],
-      "choiceColors": {
-       "Pitched": "slate",
-       "Negotiating": "blue",
-       "Booked": "green",
-       "Delivered": "amber",
-       "Paid": "violet"
-      },
-      "required": true,
-      "default": "Pitched"
-     },
-     {
-      "key": "fee",
-      "label": "Fee",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100000
-       }
-      ]
-     },
-     {
-      "key": "pay_days",
-      "label": "Pay terms (days)",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 120
-       }
-      ]
-     },
-     {
-      "key": "follow_up",
-      "label": "Follow-up on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "email",
-      "label": "Contact email",
-      "parityType": "email",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "video_count",
-      "label": "Videos sponsored",
-      "parityType": "rollup",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "via": "videos",
-      "pick": "title",
-      "agg": "count"
-     },
-     {
-      "key": "videos",
-      "label": "Videos",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "video",
-      "multi": true
-     }
-    ],
-    "rows": [
-     {
-      "key": "s1",
-      "values": {
-       "brand": "Oak Barrel Cookware",
-       "status": "Booked",
-       "fee": 3500,
-       "pay_days": 30,
-       "follow_up": "@today+5d",
-       "email": "collab@oakbarrelcookware.net",
-       "videos": [
-        "v3",
-        "v5"
-       ]
-      }
-     },
-     {
-      "key": "s2",
-      "values": {
-       "brand": "Spice Trail Co.",
-       "status": "Delivered",
-       "fee": 1800,
-       "pay_days": 45,
-       "follow_up": "@today+2d",
-       "email": "partners@spicetrailco.net",
-       "videos": [
-        "v2",
-        "v4"
-       ]
-      }
-     },
-     {
-      "key": "s3",
-      "values": {
-       "brand": "Fresh Haven Meal Kits",
-       "status": "Negotiating",
-       "fee": 4200,
-       "pay_days": 30,
-       "follow_up": "@today+8d",
-       "email": "media@freshhaven.net",
-       "videos": [
-        "v6"
-       ]
-      }
-     },
-     {
-      "key": "s4",
-      "values": {
-       "brand": "Cinder Gas Grills",
-       "status": "Pitched",
-       "fee": 2600,
-       "pay_days": 60,
-       "follow_up": "@today+12d",
-       "email": "brand@cindergrills.net",
-       "videos": [
-        "v8"
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "token": "video",
-    "name": "Videos",
-    "labelSingular": "Video",
-    "labelPlural": "Videos",
-    "type": "entity",
-    "display": "board",
-    "weight": "light",
-    "ordered": false,
-    "icon": "video",
-    "titleField": "title",
-    "describes": "Every video from script to published.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "title",
-      "label": "Title",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "status",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Idea",
-       "Scripting",
-       "Filming",
-       "Editing",
-       "Scheduled",
-       "Published"
-      ],
-      "choiceColors": {
-       "Idea": "slate",
-       "Scripting": "blue",
-       "Filming": "amber",
-       "Editing": "violet",
-       "Scheduled": "green",
-       "Published": "teal"
-      },
-      "required": true,
-      "default": "Idea"
-     },
-     {
-      "key": "publish_on",
-      "label": "Publish on",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "series",
-      "label": "Series",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Weeknight dinners",
-       "Baking",
-       "Basics",
-       "Gear"
-      ],
-      "choiceColors": {
-       "Weeknight dinners": "slate",
-       "Baking": "blue",
-       "Basics": "amber",
-       "Gear": "violet"
-      }
-     },
-     {
-      "key": "length",
-      "label": "Length",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "views",
-      "label": "Views",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 10000000
-       }
-      ]
-     },
-     {
-      "key": "ctr",
-      "label": "Click-through rate (%)",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 100
-       }
-      ]
-     },
-     {
-      "key": "sponsor_paid",
-      "label": "Sponsor paid",
-      "parityType": "checkbox",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     },
-     {
-      "key": "sponsor",
-      "label": "Sponsor",
-      "parityType": "relation",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "relationTarget": "sponsor",
-      "relationMax": 1
-     }
-    ],
-    "rows": [
-     {
-      "key": "v1",
-      "values": {
-       "title": "Crispy roast potatoes without the fuss",
-       "status": "Published",
-       "publish_on": "@today-20d",
-       "series": "Weeknight dinners",
-       "length": "14:20",
-       "views": 48200,
-       "ctr": 6.1,
-       "sponsor_paid": true
-      }
-     },
-     {
-      "key": "v2",
-      "values": {
-       "title": "One-pan lemon chicken",
-       "status": "Published",
-       "publish_on": "@today-13d",
-       "series": "Weeknight dinners",
-       "length": "11:05",
-       "views": 36900,
-       "ctr": 5.4,
-       "sponsor_paid": true,
-       "sponsor": "s2"
-      }
-     },
-     {
-      "key": "v3",
-      "values": {
-       "title": "Sourdough for scaredy-cats",
-       "status": "Published",
-       "publish_on": "@today-6d",
-       "series": "Baking",
-       "length": "18:40",
-       "views": 21400,
-       "ctr": 7.2,
-       "sponsor_paid": true,
-       "sponsor": "s1"
-      }
-     },
-     {
-      "key": "v4",
-      "values": {
-       "title": "Five pantry sauces",
-       "status": "Scheduled",
-       "publish_on": "@today+1d",
-       "series": "Basics",
-       "length": "12:30",
-       "views": 0,
-       "ctr": 0,
-       "sponsor_paid": false,
-       "sponsor": "s2"
-      }
-     },
-     {
-      "key": "v5",
-      "values": {
-       "title": "Cast iron care myths",
-       "status": "Editing",
-       "publish_on": "@today+5d",
-       "series": "Gear",
-       "length": "09:50",
-       "views": 0,
-       "ctr": 0,
-       "sponsor_paid": false,
-       "sponsor": "s1"
-      }
-     },
-     {
-      "key": "v6",
-      "values": {
-       "title": "Meal prep for a busy week",
-       "status": "Filming",
-       "publish_on": "@today+9d",
-       "series": "Weeknight dinners",
-       "length": "16:10",
-       "views": 0,
-       "ctr": 0,
-       "sponsor_paid": false,
-       "sponsor": "s3"
-      }
-     },
-     {
-      "key": "v7",
-      "values": {
-       "title": "Knife skills in ten minutes",
-       "status": "Scripting",
-       "publish_on": "@today+13d",
-       "series": "Basics",
-       "length": "10:00",
-       "views": 0,
-       "ctr": 0,
-       "sponsor_paid": false
-      }
-     },
-     {
-      "key": "v8",
-      "values": {
-       "title": "Summer grilling guide",
-       "status": "Idea",
-       "publish_on": "@today+21d",
-       "series": "Gear",
-       "length": "20:00",
-       "views": 0,
-       "ctr": 0,
-       "sponsor_paid": false,
-       "sponsor": "s4"
-      }
-     }
-    ],
-    "independentOf": {
-     "sponsor": "Either record can be created or change status before the other."
-    }
-   },
-   {
-    "token": "idea",
-    "name": "Ideas",
-    "labelSingular": "Idea",
-    "labelPlural": "Ideas",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "lightbulb",
-    "titleField": "idea",
-    "describes": "Video ideas checked for search demand before they are scripted.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "idea",
-      "label": "Idea",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "topic",
-      "label": "Topic",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Weeknight dinners",
-       "Baking",
-       "Basics",
-       "Gear"
-      ],
-      "choiceColors": {
-       "Weeknight dinners": "slate",
-       "Baking": "blue",
-       "Basics": "amber",
-       "Gear": "violet"
-      }
-     },
-     {
-      "key": "demand",
-      "label": "Search demand",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Low",
-       "Medium",
-       "High"
-      ],
-      "choiceColors": {
-       "Low": "slate",
-       "Medium": "blue",
-       "High": "amber"
-      }
-     },
-     {
-      "key": "verdict",
-      "label": "Status",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Raw",
-       "Validated",
-       "Approved",
-       "Rejected"
-      ],
-      "choiceColors": {
-       "Raw": "slate",
-       "Validated": "blue",
-       "Approved": "green",
-       "Rejected": "red"
-      },
-      "required": true,
-      "default": "Raw"
-     },
-     {
-      "key": "hook",
-      "label": "Hook",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "id0",
-      "values": {
-       "idea": "Why does my bread collapse?",
-       "topic": "Baking",
-       "demand": "High",
-       "verdict": "Validated",
-       "hook": "The answer is almost never the oven"
-      }
-     },
-     {
-      "key": "id1",
-      "values": {
-       "idea": "Lunchbox ideas for the whole week",
-       "topic": "Weeknight dinners",
-       "demand": "High",
-       "verdict": "Approved",
-       "hook": "Five minutes on Sunday saves five dinners"
-      }
-     },
-     {
-      "key": "id2",
-      "values": {
-       "idea": "Is a stand mixer worth it?",
-       "topic": "Gear",
-       "demand": "Medium",
-       "verdict": "Raw",
-       "hook": "I tried three so you do not have to"
-      }
-     },
-     {
-      "key": "id3",
-      "values": {
-       "idea": "Reverse-sear steak",
-       "topic": "Basics",
-       "demand": "High",
-       "verdict": "Approved",
-       "hook": "Restaurant crust at home"
-      }
-     },
-     {
-      "key": "id4",
-      "values": {
-       "idea": "Pickling anything",
-       "topic": "Basics",
-       "demand": "Medium",
-       "verdict": "Validated",
-       "hook": "Jars on the counter in twenty minutes"
-      }
-     },
-     {
-      "key": "id5",
-      "values": {
-       "idea": "Kitchen setup tour",
-       "topic": "Gear",
-       "demand": "Low",
-       "verdict": "Raw",
-       "hook": "A tour with a few strong opinions"
-      }
-     },
-     {
-      "key": "id6",
-      "values": {
-       "idea": "Cooking with leftovers",
-       "topic": "Weeknight dinners",
-       "demand": "High",
-       "verdict": "Validated",
-       "hook": "Nothing goes in the bin"
-      }
-     },
-     {
-      "key": "id7",
-      "values": {
-       "idea": "Rejected: fad diet recipes",
-       "topic": "Basics",
-       "demand": "Low",
-       "verdict": "Rejected",
-       "hook": "A quick myth check"
-      }
-     }
-    ]
-   },
-   {
-    "token": "log",
-    "name": "Weekly stats",
-    "labelSingular": "Weekly stat",
-    "labelPlural": "Weekly stats",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "chart-line",
-    "titleField": "week",
-    "describes": "A weekly snapshot of channel growth.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "week",
-      "label": "Week",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "logged_on",
-      "label": "Week of",
-      "parityType": "datetime",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "format": "date"
-     },
-     {
-      "key": "subscribers",
-      "label": "Subscribers",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 5000000
-       }
-      ]
-     },
-     {
-      "key": "views",
-      "label": "Views",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 50000000
-       }
-      ]
-     },
-     {
-      "key": "watch_hours",
-      "label": "Watch hours",
-      "parityType": "number",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 1000000
-       }
-      ]
-     },
-     {
-      "key": "revenue",
-      "label": "Revenue",
-      "parityType": "currency",
-      "sensitivity": "confidential",
-      "contextPolicy": "include",
-      "unit": "USD",
-      "format": "currency",
-      "rules": [
-       {
-        "kind": "min",
-        "value": 0
-       },
-       {
-        "kind": "max",
-        "value": 1000000
-       }
-      ]
-     }
-    ],
-    "rows": [
-     {
-      "key": "lg0",
-      "values": {
-       "week": "Week 7",
-       "logged_on": "@mon-7w",
-       "subscribers": 2200,
-       "views": 18000,
-       "watch_hours": 820,
-       "revenue": 740
-      }
-     },
-     {
-      "key": "lg1",
-      "values": {
-       "week": "Week 6",
-       "logged_on": "@mon-6w",
-       "subscribers": 2270,
-       "views": 19700,
-       "watch_hours": 860,
-       "revenue": 795
-      }
-     },
-     {
-      "key": "lg2",
-      "values": {
-       "week": "Week 5",
-       "logged_on": "@mon-5w",
-       "subscribers": 2340,
-       "views": 21400,
-       "watch_hours": 900,
-       "revenue": 850
-      }
-     },
-     {
-      "key": "lg3",
-      "values": {
-       "week": "Week 4",
-       "logged_on": "@mon-4w",
-       "subscribers": 2410,
-       "views": 23100,
-       "watch_hours": 940,
-       "revenue": 905
-      }
-     },
-     {
-      "key": "lg4",
-      "values": {
-       "week": "Week 3",
-       "logged_on": "@mon-3w",
-       "subscribers": 2480,
-       "views": 24800,
-       "watch_hours": 980,
-       "revenue": 960
-      }
-     },
-     {
-      "key": "lg5",
-      "values": {
-       "week": "Week 2",
-       "logged_on": "@mon-2w",
-       "subscribers": 2550,
-       "views": 26500,
-       "watch_hours": 1020,
-       "revenue": 1015
-      }
-     },
-     {
-      "key": "lg6",
-      "values": {
-       "week": "Week 1",
-       "logged_on": "@mon-1w",
-       "subscribers": 2620,
-       "views": 28200,
-       "watch_hours": 1060,
-       "revenue": 1070
-      }
-     },
-     {
-      "key": "lg7",
-      "values": {
-       "week": "Week 0",
-       "logged_on": "@mon-0w",
-       "subscribers": 2690,
-       "views": 29900,
-       "watch_hours": 1100,
-       "revenue": 1125
-      }
-     }
-    ]
-   },
-   {
-    "token": "resource",
-    "name": "Resources",
-    "labelSingular": "Resource",
-    "labelPlural": "Resources",
-    "type": "entity",
-    "display": "grid",
-    "weight": "light",
-    "ordered": false,
-    "icon": "toolbox",
-    "titleField": "name",
-    "describes": "Gear, software and music the channel relies on.",
-    "subject": "thing",
-    "fields": [
-     {
-      "key": "name",
-      "label": "Resource",
-      "parityType": "text",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "required": true
-     },
-     {
-      "key": "type",
-      "label": "Type",
-      "parityType": "select",
-      "sensitivity": "internal",
-      "contextPolicy": "include",
-      "choices": [
-       "Gear",
-       "Software",
-       "Music",
-       "Template"
-      ],
-      "choiceColors": {
-       "Gear": "slate",
-       "Software": "blue",
-       "Music": "amber",
-       "Template": "violet"
-      }
-     },
-     {
-      "key": "link",
-      "label": "Link",
-      "parityType": "url",
-      "sensitivity": "confidential",
-      "contextPolicy": "include"
-     }
-    ],
-    "rows": [
-     {
-      "key": "rs0",
-      "values": {
-       "name": "Mirrorless camera body",
-       "type": "Gear",
-       "link": "https://kit.wildgrainkitchen.net/camera"
-      }
-     },
-     {
-      "key": "rs1",
-      "values": {
-       "name": "Softbox lights",
-       "type": "Gear",
-       "link": "https://kit.wildgrainkitchen.net/lights"
-      }
-     },
-     {
-      "key": "rs2",
-      "values": {
-       "name": "Lavalier microphone",
-       "type": "Gear",
-       "link": "https://kit.wildgrainkitchen.net/mic"
-      }
-     },
-     {
-      "key": "rs3",
-      "values": {
-       "name": "Editing suite",
-       "type": "Software",
-       "link": "https://kit.wildgrainkitchen.net/edit"
-      }
-     },
-     {
-      "key": "rs4",
-      "values": {
-       "name": "Thumbnail templates",
-       "type": "Template",
-       "link": "https://kit.wildgrainkitchen.net/thumbs"
-      }
-     },
-     {
-      "key": "rs5",
-      "values": {
-       "name": "Licensed music library",
-       "type": "Music",
-       "link": "https://kit.wildgrainkitchen.net/music"
-      }
-     }
-    ]
-   }
-  ],
-  "relationships": [
-   {
-    "describes": "Each video belongs to one sponsor.",
-    "fromTable": "video",
-    "fromField": "sponsor",
-    "toTable": "sponsor",
-    "flavor": "referenced",
-    "cardinality": "one",
-    "onDelete": "restrict",
-    "inverseKey": "video_by_sponsor"
-   },
-   {
-    "describes": "A sponsor lists its videos.",
-    "fromTable": "sponsor",
-    "fromField": "videos",
-    "toTable": "video",
-    "flavor": "referenced",
-    "cardinality": "many",
-    "onDelete": "set_null",
-    "inverseKey": "sponsor_from_videos"
-   }
-  ],
-  "sharedBlocks": [],
-  "forms": [
-   {
-    "token": "idea_form",
-    "name": "Add an idea",
-    "describes": "Drop a new video idea in the inbox.",
-    "audience": "staff",
-    "table": "idea",
-    "fields": [
-     {
-      "fieldKey": "idea",
-      "ask": "What is the idea?",
-      "required": true
-     },
-     {
-      "fieldKey": "topic",
-      "ask": "Which topic?"
-     },
-     {
-      "fieldKey": "hook",
-      "ask": "What is the hook?"
-     }
-    ],
-    "submitLabel": "Save the idea",
-    "confirmation": "Thanks. It is in the idea inbox as Raw."
-   }
-  ],
-  "dimensions": [],
-  "extras": [],
-  "views": [
-   {
-    "token": "all_resource",
-    "name": "All resources",
-    "table": "resource",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_log",
-    "name": "All weekly stats",
-    "table": "log",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_idea",
-    "name": "All ideas",
-    "table": "idea",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_video",
-    "name": "All videos",
-    "table": "video",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "all_sponsor",
-    "name": "All sponsors",
-    "table": "sponsor",
-    "kind": "grid",
-    "isDefault": true
-   },
-   {
-    "token": "video_board",
-    "name": "Production board",
-    "table": "video",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "video_cal",
-    "name": "Publishing calendar",
-    "table": "video",
-    "kind": "calendar",
-    "dateField": "publish_on",
-    "allDay": true
-   },
-   {
-    "token": "idea_board",
-    "name": "Idea board",
-    "table": "idea",
-    "kind": "kanban",
-    "groupBy": "verdict"
-   },
-   {
-    "token": "sponsor_board",
-    "name": "Sponsor board",
-    "table": "sponsor",
-    "kind": "kanban",
-    "groupBy": "status"
-   },
-   {
-    "token": "log_all",
-    "name": "Weekly stats",
-    "table": "log",
-    "kind": "grid",
-    "sorts": [
-     {
-      "field": "logged_on",
-      "direction": "desc"
-     }
-    ]
-   }
-  ],
-  "agent": {
-   "platformAgent": {
-    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
-    "name": "Answers From Your Tables"
-   },
-   "name": "Studio assistant",
-   "variables": [
-    {
-     "name": "primary_table",
-     "table": "video",
-     "describes": "Every video with its status, publish day and sponsor."
-    },
-    {
-     "name": "related_tables",
-     "table": "sponsor",
-     "describes": "The brands sponsoring videos."
-    }
-   ],
-   "question": {
-    "ask": "How many videos are published?",
-    "whyItMatters": "Tavita checks the catalogue before planning the month.",
-    "expect": {
-     "table": "video",
-     "measure": {
-      "op": "count"
-     },
-     "filter": {
-      "status": "Published"
-     },
-     "answer": 3,
-     "unit": "videos"
-    }
-   }
-  },
-  "walk": [
-   {
-    "says": "Open production board.",
-    "action": {
-     "kind": "open",
-     "surface": "video_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "video_board",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open publishing calendar.",
-    "action": {
-     "kind": "open",
-     "surface": "video_cal"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "video_cal",
-     "minItems": 3
-    }
-   },
-   {
-    "says": "Open idea board.",
-    "action": {
-     "kind": "open",
-     "surface": "idea_board"
-    },
-    "expect": {
-     "kind": "renders",
-     "surface": "idea_board",
-     "minItems": 3
-    }
-   }
-  ],
-  "foundation": [],
-  "provenance": {
-   "kind": "synthesized",
-   "authoredBy": "Spaces template library builder (Claude)",
-   "authoredOn": "2026-10-17",
-   "noRealPeople": true,
-   "sources": [],
-   "fictionalDomains": [
-    "wildgrainkitchen.net",
-    "oakbarrelcookware.net",
-    "spicetrailco.net",
-    "freshhaven.net",
-    "cindergrills.net"
-   ],
-   "fictionalStreets": [
-    "Hobbler Street"
-   ]
-  },
-  "version": 1
- },
- "pages": [
-  {
-   "key": "creator-studio",
-   "parent": null,
-   "title": "Creator Studio",
-   "icon": {
+  "version": 2,
+  "title": "Creator Studio",
+  "description": "Take video ideas to publish day, with sponsors, results and gear in one place.",
+  "forWho": "Video and channel creators",
+  "icon": {
     "emoji": "🎬"
-   },
-   "cover": {
+  },
+  "cover": {
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Ideas are validated, then become videos that move from script to published. Sponsors link to the videos they paid for."
-      }
-     ],
-     "background": "blue",
-     "props": {
-      "icon": "Lightbulb"
-     }
-    },
-    {
-     "type": "columnList",
-     "children": [
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:dashboard"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:video-checklist"
-         }
-        }
-       ]
+  },
+  "category": "marketing",
+  "tags": [
+    "video",
+    "youtube",
+    "creator",
+    "sponsors"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-creator-studio",
+    "catalogueId": "SP0305",
+    "useCase": "Tavita Moreau films a weekly cooking channel and uses this to see which videos are in production, which sponsors owe payments and how recent uploads performed.",
+    "industry": "cross_industry",
+    "vertical": "Video production",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Wildgrain Kitchen",
+      "describes": "A one-person home cooking channel with weekly videos and occasional sponsor reads.",
+      "address": {
+        "line1": "29 Hobbler Street",
+        "city": "Savannah",
+        "region": "GA",
+        "postalCode": "31401",
+        "country": "US"
       },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.5
-       },
-       "children": [
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:script-outline"
-         }
-        },
-        {
-         "type": "page",
-         "props": {
-          "spaceId": "page:sponsor-brief"
-         }
-        }
-       ]
-      }
-     ]
+      "phone": "(912) 555-0127",
+      "website": "wildgrainkitchen.net",
+      "email": "collab@wildgrainkitchen.net",
+      "timezone": "America/New_York"
     },
-    {
-     "type": "heading",
-     "text": [
+    "cleanupTag": "use-case:spaces-creator-studio",
+    "tables": [
       {
-       "text": "Production"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "video",
-       "view": "video_board"
-      },
-      "inline": true,
-      "title": "Production",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Pipeline",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-cal",
-        "name": "Calendar",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "publish_on"
-       },
-       {
-        "id": "view-gal",
-        "name": "Published",
-        "layout": "grid",
-        "icon": "Table",
-        "filters": {
-         "status": "Published"
-        },
-        "sorts": [
-         {
-          "field": "views",
-          "direction": "desc"
-         }
+        "token": "sponsor",
+        "name": "Sponsors",
+        "labelSingular": "Sponsor",
+        "labelPlural": "Sponsors",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-dollar",
+        "titleField": "brand",
+        "describes": "Brands that pay for placement.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "brand",
+            "label": "Brand",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pitched",
+              "Negotiating",
+              "Booked",
+              "Delivered",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Pitched": "slate",
+              "Negotiating": "blue",
+              "Booked": "green",
+              "Delivered": "amber",
+              "Paid": "violet"
+            },
+            "required": true,
+            "default": "Pitched",
+            "statusGroups": {
+              "Pitched": "todo",
+              "Negotiating": "in_progress",
+              "Booked": "in_progress",
+              "Delivered": "in_progress",
+              "Paid": "done"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "pay_days",
+            "label": "Pay terms (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "key": "follow_up",
+            "label": "Follow-up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "video_count",
+            "label": "Videos sponsored",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "pub_count",
+            "label": "Videos published",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "title",
+            "agg": "count",
+            "filter": {
+              "status": "Published"
+            }
+          },
+          {
+            "key": "views_total",
+            "label": "Views delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "videos",
+            "pick": "views",
+            "agg": "sum"
+          },
+          {
+            "key": "left_to_make",
+            "label": "Videos left to make",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Videos sponsored} - {Videos published}"
+          },
+          {
+            "key": "cpm",
+            "label": "Fee per 1,000 views (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Views delivered} > 0, ROUND({Fee (USD)} / {Views delivered} * 1000, 2), 0)"
+          },
+          {
+            "key": "email_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "sponsor_paid"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "s1",
+            "values": {
+              "brand": "Oak Barrel Cookware",
+              "status": "Booked",
+              "fee": 3500,
+              "pay_days": 30,
+              "follow_up": "@today+5d",
+              "email": "collab@oakbarrelcookware.net"
+            }
+          },
+          {
+            "key": "s2",
+            "values": {
+              "brand": "Spice Trail Co.",
+              "status": "Delivered",
+              "fee": 1800,
+              "pay_days": 45,
+              "follow_up": "@today+2d",
+              "email": "partners@spicetrailco.net"
+            }
+          },
+          {
+            "key": "s3",
+            "values": {
+              "brand": "Fresh Haven Meal Kits",
+              "status": "Negotiating",
+              "fee": 4200,
+              "pay_days": 30,
+              "follow_up": "@today+8d",
+              "email": "media@freshhaven.net"
+            }
+          },
+          {
+            "key": "s4",
+            "values": {
+              "brand": "Cinder Gas Grills",
+              "status": "Pitched",
+              "fee": 2600,
+              "pay_days": 60,
+              "follow_up": "@today+12d",
+              "email": "brand@cindergrills.net"
+            }
+          }
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "fee"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Sponsor brief",
+            "values": {
+              "status": "Pitched"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What to agree before filming"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Fee and payment terms in days"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Talking points and anything you will not say"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Usage rights and how long they run"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Revision rounds and the approval deadline"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Deliverables"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Video"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Description link"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
-       },
-       {
-        "id": "view-unpaid",
-        "name": "Sponsor unpaid",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "sponsor_paid": false
-        }
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Ideas"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "idea",
-       "view": "idea_board"
       },
-      "inline": true,
-      "title": "Ideas",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "By status",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "verdict"
-       },
-       {
-        "id": "view-tbl",
+      {
+        "token": "video",
+        "name": "Videos",
+        "labelSingular": "Video",
+        "labelPlural": "Videos",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "video",
+        "titleField": "title",
+        "describes": "Every video from script to published.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Idea",
+              "Scripting",
+              "Filming",
+              "Editing",
+              "Scheduled",
+              "Published"
+            ],
+            "choiceColors": {
+              "Idea": "slate",
+              "Scripting": "blue",
+              "Filming": "amber",
+              "Editing": "violet",
+              "Scheduled": "green",
+              "Published": "teal"
+            },
+            "required": true,
+            "default": "Idea",
+            "statusGroups": {
+              "Idea": "todo",
+              "Scripting": "in_progress",
+              "Filming": "in_progress",
+              "Editing": "in_progress",
+              "Scheduled": "in_progress",
+              "Published": "done"
+            }
+          },
+          {
+            "key": "publish_on",
+            "label": "Publish on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to",
+            "label": "Days to publish",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Publish on}, 'days')"
+          },
+          {
+            "key": "series",
+            "label": "Series",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weeknight dinners",
+              "Baking",
+              "Basics",
+              "Gear"
+            ],
+            "choiceColors": {
+              "Weeknight dinners": "slate",
+              "Baking": "blue",
+              "Basics": "amber",
+              "Gear": "violet"
+            }
+          },
+          {
+            "key": "length",
+            "label": "Length",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "views",
+            "label": "Views",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "ctr",
+            "label": "Click-through rate (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "sponsor_paid",
+            "label": "Sponsor paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sponsor",
+            "label": "Sponsor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sponsor",
+            "relationMax": 1
+          },
+          {
+            "key": "updated_at",
+            "label": "Last updated",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pub_btn",
+            "label": "Mark published",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "video_pub"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "v1",
+            "values": {
+              "title": "Crispy roast potatoes without the fuss",
+              "status": "Published",
+              "publish_on": "@today-20d",
+              "series": "Weeknight dinners",
+              "length": "14:20",
+              "views": 48200,
+              "ctr": 6.1,
+              "sponsor_paid": true
+            }
+          },
+          {
+            "key": "v2",
+            "values": {
+              "title": "One-pan lemon chicken",
+              "status": "Published",
+              "publish_on": "@today-13d",
+              "series": "Weeknight dinners",
+              "length": "11:05",
+              "views": 36900,
+              "ctr": 5.4,
+              "sponsor_paid": true,
+              "sponsor": "s2"
+            }
+          },
+          {
+            "key": "v3",
+            "values": {
+              "title": "Sourdough for scaredy-cats",
+              "status": "Published",
+              "publish_on": "@today-6d",
+              "series": "Baking",
+              "length": "18:40",
+              "views": 21400,
+              "ctr": 7.2,
+              "sponsor_paid": true,
+              "sponsor": "s1"
+            }
+          },
+          {
+            "key": "v4",
+            "values": {
+              "title": "Five pantry sauces",
+              "status": "Scheduled",
+              "publish_on": "@today+1d",
+              "series": "Basics",
+              "length": "12:30",
+              "views": 0,
+              "ctr": 0,
+              "sponsor_paid": false,
+              "sponsor": "s2"
+            }
+          },
+          {
+            "key": "v5",
+            "values": {
+              "title": "Cast iron care myths",
+              "status": "Editing",
+              "publish_on": "@today-1d",
+              "series": "Gear",
+              "length": "09:50",
+              "views": 0,
+              "ctr": 0,
+              "sponsor_paid": false,
+              "sponsor": "s1"
+            }
+          },
+          {
+            "key": "v6",
+            "values": {
+              "title": "Meal prep for a busy week",
+              "status": "Filming",
+              "publish_on": "@today+9d",
+              "series": "Weeknight dinners",
+              "length": "16:10",
+              "views": 0,
+              "ctr": 0,
+              "sponsor_paid": false,
+              "sponsor": "s3"
+            }
+          },
+          {
+            "key": "v7",
+            "values": {
+              "title": "Knife skills in ten minutes",
+              "status": "Scripting",
+              "publish_on": "@today+13d",
+              "series": "Basics",
+              "length": "10:00",
+              "views": 0,
+              "ctr": 0,
+              "sponsor_paid": false
+            }
+          },
+          {
+            "key": "v8",
+            "values": {
+              "title": "Summer grilling guide",
+              "status": "Idea",
+              "publish_on": "@today+21d",
+              "series": "Gear",
+              "length": "20:00",
+              "views": 0,
+              "ctr": 0,
+              "sponsor_paid": false,
+              "sponsor": "s4"
+            }
+          }
+        ],
+        "independentOf": {
+          "sponsor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Video",
+            "values": {
+              "status": "Idea"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Script outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Hook: the payoff in one sentence"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Setup: what you need and why"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Steps: three beats at most"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Result: show the finished thing"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Call to action: one ask"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Thumbnail ideas"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Description and chapters"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Publish checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Title tested against two alternatives"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Thumbnail exported"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sponsor disclosure in the first 30 seconds"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "idea",
+        "name": "Ideas",
+        "labelSingular": "Idea",
+        "labelPlural": "Ideas",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "lightbulb",
+        "titleField": "idea",
+        "describes": "Video ideas checked for search demand before they are scripted.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "idea",
+            "label": "Idea",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weeknight dinners",
+              "Baking",
+              "Basics",
+              "Gear"
+            ],
+            "choiceColors": {
+              "Weeknight dinners": "slate",
+              "Baking": "blue",
+              "Basics": "amber",
+              "Gear": "violet"
+            }
+          },
+          {
+            "key": "demand",
+            "label": "Search demand",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "blue",
+              "High": "amber"
+            }
+          },
+          {
+            "key": "verdict",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Raw",
+              "Validated",
+              "Approved",
+              "Rejected"
+            ],
+            "choiceColors": {
+              "Raw": "slate",
+              "Validated": "blue",
+              "Approved": "green",
+              "Rejected": "red"
+            },
+            "required": true,
+            "default": "Raw",
+            "statusGroups": {
+              "Raw": "todo",
+              "Validated": "in_progress",
+              "Approved": "in_progress",
+              "Rejected": "done"
+            }
+          },
+          {
+            "key": "hook",
+            "label": "Hook",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approve_btn",
+            "label": "Approve",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "idea_approve"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "id0",
+            "values": {
+              "idea": "Why does my bread collapse?",
+              "topic": "Baking",
+              "demand": "High",
+              "verdict": "Validated",
+              "hook": "The answer is almost never the oven"
+            }
+          },
+          {
+            "key": "id1",
+            "values": {
+              "idea": "Lunchbox ideas for the whole week",
+              "topic": "Weeknight dinners",
+              "demand": "High",
+              "verdict": "Approved",
+              "hook": "Five minutes on Sunday saves five dinners"
+            }
+          },
+          {
+            "key": "id2",
+            "values": {
+              "idea": "Is a stand mixer worth it?",
+              "topic": "Gear",
+              "demand": "Medium",
+              "verdict": "Raw",
+              "hook": "I tried three so you do not have to"
+            }
+          },
+          {
+            "key": "id3",
+            "values": {
+              "idea": "Reverse-sear steak",
+              "topic": "Basics",
+              "demand": "High",
+              "verdict": "Approved",
+              "hook": "Restaurant crust at home"
+            }
+          },
+          {
+            "key": "id4",
+            "values": {
+              "idea": "Pickling anything",
+              "topic": "Basics",
+              "demand": "Medium",
+              "verdict": "Validated",
+              "hook": "Jars on the counter in twenty minutes"
+            }
+          },
+          {
+            "key": "id5",
+            "values": {
+              "idea": "Kitchen setup tour",
+              "topic": "Gear",
+              "demand": "Low",
+              "verdict": "Raw",
+              "hook": "A tour with a few strong opinions"
+            }
+          },
+          {
+            "key": "id6",
+            "values": {
+              "idea": "Cooking with leftovers",
+              "topic": "Weeknight dinners",
+              "demand": "High",
+              "verdict": "Validated",
+              "hook": "Nothing goes in the bin"
+            }
+          },
+          {
+            "key": "id7",
+            "values": {
+              "idea": "Rejected: fad diet recipes",
+              "topic": "Basics",
+              "demand": "Low",
+              "verdict": "Rejected",
+              "hook": "A quick myth check"
+            }
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New idea",
+            "values": {
+              "verdict": "Raw"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The idea"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why people would watch"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Search check"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What viewers already search for"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "log",
+        "name": "Weekly stats",
+        "labelSingular": "Weekly stat",
+        "labelPlural": "Weekly stats",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chart-line",
+        "titleField": "week",
+        "describes": "A weekly snapshot of channel growth.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "week",
+            "label": "Week",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "logged_on",
+            "label": "Week of",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "subscribers",
+            "label": "Subscribers",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "views",
+            "label": "Views",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000000
+              }
+            ]
+          },
+          {
+            "key": "watch_hours",
+            "label": "Watch hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "rpm",
+            "label": "Revenue per 1,000 views (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Views} > 0, ROUND({Revenue (USD)} / {Views} * 1000, 2), 0)"
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "lg0",
+            "values": {
+              "week": "Week 7",
+              "logged_on": "@mon-7w",
+              "subscribers": 2200,
+              "views": 18000,
+              "watch_hours": 820,
+              "revenue": 740
+            }
+          },
+          {
+            "key": "lg1",
+            "values": {
+              "week": "Week 6",
+              "logged_on": "@mon-6w",
+              "subscribers": 2270,
+              "views": 19700,
+              "watch_hours": 860,
+              "revenue": 795
+            }
+          },
+          {
+            "key": "lg2",
+            "values": {
+              "week": "Week 5",
+              "logged_on": "@mon-5w",
+              "subscribers": 2340,
+              "views": 21400,
+              "watch_hours": 900,
+              "revenue": 850
+            }
+          },
+          {
+            "key": "lg3",
+            "values": {
+              "week": "Week 4",
+              "logged_on": "@mon-4w",
+              "subscribers": 2410,
+              "views": 23100,
+              "watch_hours": 940,
+              "revenue": 905
+            }
+          },
+          {
+            "key": "lg4",
+            "values": {
+              "week": "Week 3",
+              "logged_on": "@mon-3w",
+              "subscribers": 2480,
+              "views": 24800,
+              "watch_hours": 980,
+              "revenue": 960
+            }
+          },
+          {
+            "key": "lg5",
+            "values": {
+              "week": "Week 2",
+              "logged_on": "@mon-2w",
+              "subscribers": 2550,
+              "views": 26500,
+              "watch_hours": 1020,
+              "revenue": 1015
+            }
+          },
+          {
+            "key": "lg6",
+            "values": {
+              "week": "Week 1",
+              "logged_on": "@mon-1w",
+              "subscribers": 2620,
+              "views": 28200,
+              "watch_hours": 1060,
+              "revenue": 1070
+            }
+          },
+          {
+            "key": "lg7",
+            "values": {
+              "week": "Week 0",
+              "logged_on": "@mon-0w",
+              "subscribers": 2690,
+              "views": 29900,
+              "watch_hours": 1100,
+              "revenue": 1125
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Weekly numbers",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What moved the numbers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next week"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "resource",
+        "name": "Resources",
+        "labelSingular": "Resource",
+        "labelPlural": "Resources",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "toolbox",
+        "titleField": "name",
+        "describes": "Gear, software and music the channel relies on.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "name",
+            "label": "Resource",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Gear",
+              "Software",
+              "Music",
+              "Template"
+            ],
+            "choiceColors": {
+              "Gear": "slate",
+              "Software": "blue",
+              "Music": "amber",
+              "Template": "violet"
+            }
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rs0",
+            "values": {
+              "name": "Mirrorless camera body",
+              "type": "Gear",
+              "link": "https://kit.wildgrainkitchen.net/camera"
+            }
+          },
+          {
+            "key": "rs1",
+            "values": {
+              "name": "Softbox lights",
+              "type": "Gear",
+              "link": "https://kit.wildgrainkitchen.net/lights"
+            }
+          },
+          {
+            "key": "rs2",
+            "values": {
+              "name": "Lavalier microphone",
+              "type": "Gear",
+              "link": "https://kit.wildgrainkitchen.net/mic"
+            }
+          },
+          {
+            "key": "rs3",
+            "values": {
+              "name": "Editing suite",
+              "type": "Software",
+              "link": "https://kit.wildgrainkitchen.net/edit"
+            }
+          },
+          {
+            "key": "rs4",
+            "values": {
+              "name": "Thumbnail templates",
+              "type": "Template",
+              "link": "https://kit.wildgrainkitchen.net/thumbs"
+            }
+          },
+          {
+            "key": "rs5",
+            "values": {
+              "name": "Licensed music library",
+              "type": "Music",
+              "link": "https://kit.wildgrainkitchen.net/music"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New resource",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What it is for"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Settings or notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each video belongs to one sponsor.",
+        "fromTable": "video",
+        "fromField": "sponsor",
+        "toTable": "sponsor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "videos"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "idea_form",
+        "name": "Add an idea",
+        "describes": "Drop a new video idea in the inbox.",
+        "audience": "staff",
+        "table": "idea",
+        "fields": [
+          {
+            "fieldKey": "idea",
+            "ask": "What is the idea?",
+            "required": true
+          },
+          {
+            "fieldKey": "topic",
+            "ask": "Which topic?"
+          },
+          {
+            "fieldKey": "hook",
+            "ask": "What is the hook?"
+          }
+        ],
+        "submitLabel": "Save the idea",
+        "confirmation": "Thanks. It is in the idea inbox as Raw."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "sponsor_paid",
+        "table": "sponsor",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "video_pub",
+        "table": "video",
+        "name": "Mark published",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Published"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "idea_approve",
+        "table": "idea",
+        "name": "Approve",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "verdict",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_resource",
+        "name": "All resources",
+        "table": "resource",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_log",
+        "name": "All weekly stats",
+        "table": "log",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_idea",
         "name": "All ideas",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Sponsors"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "sponsor",
-       "view": "sponsor_board"
+        "table": "idea",
+        "kind": "grid",
+        "isDefault": true
       },
-      "inline": true,
-      "title": "Sponsors",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-board",
-        "name": "Pipeline",
-        "layout": "kanban",
-        "icon": "SquareKanban",
-        "groupField": "status"
-       },
-       {
-        "id": "view-cal",
-        "name": "Follow-ups",
-        "layout": "calendar",
-        "icon": "Calendar",
-        "dateField": "follow_up"
-       },
-       {
-        "id": "view-tbl",
+      {
+        "token": "all_video",
+        "name": "All videos",
+        "table": "video",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_sponsor",
         "name": "All sponsors",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-board"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Channel stats"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "log",
-       "view": "log_all"
+        "table": "sponsor",
+        "kind": "grid",
+        "isDefault": true
       },
-      "inline": true,
-      "title": "Channel stats",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-tbl",
-        "name": "Weekly",
-        "layout": "grid",
-        "icon": "Table",
+      {
+        "token": "video_board",
+        "name": "Production board",
+        "table": "video",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "video_cal",
+        "name": "Publishing calendar",
+        "table": "video",
+        "kind": "calendar",
+        "dateField": "publish_on",
+        "allDay": true
+      },
+      {
+        "token": "idea_board",
+        "name": "Idea board",
+        "table": "idea",
+        "kind": "kanban",
+        "groupBy": "verdict"
+      },
+      {
+        "token": "sponsor_board",
+        "name": "Sponsor board",
+        "table": "sponsor",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "log_all",
+        "name": "Weekly stats",
+        "table": "log",
+        "kind": "grid",
         "sorts": [
-         {
-          "field": "logged_on",
-          "direction": "desc"
-         }
+          {
+            "field": "logged_on",
+            "direction": "desc"
+          }
         ]
-       }
-      ],
-      "activeViewId": "view-tbl"
-     }
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Resources"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "resource",
-       "view": "all_resource"
       },
-      "inline": true,
-      "title": "Resources",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-tbl",
-        "name": "Kit",
-        "layout": "grid",
-        "icon": "Table"
-       }
-      ],
-      "activeViewId": "view-tbl"
-     }
-    }
-   ]
-  },
-  {
-   "key": "dashboard",
-   "parent": "creator-studio",
-   "title": "Dashboard",
-   "icon": {
-    "emoji": "📊"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "columnList",
-     "children": [
       {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
+        "token": "vd_week",
+        "name": "Publishing this week",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Scripting",
+            "Filming",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "vd_late",
+        "name": "Behind schedule",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Scripting",
+            "Filming",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "vd_next7",
+        "name": "Next 7 days",
+        "table": "video",
+        "kind": "grid",
+        "within": {
+          "publish_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Idea",
+            "Scripting",
+            "Filming",
+            "Editing",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "sp_fu_week",
+        "name": "Follow up this week",
+        "table": "sponsor",
+        "kind": "grid",
+        "within": {
+          "follow_up": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Pitched",
+            "Negotiating",
+            "Booked",
+            "Delivered"
+          ]
+        }
+      },
+      {
+        "token": "lg_30",
+        "name": "Last 30 days",
+        "table": "log",
+        "kind": "grid",
+        "within": {
+          "logged_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Studio assistant",
+      "variables": [
         {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "video",
-           "view": "all_video"
-          },
-          "inline": true,
-          "title": "Videos by status",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c1",
-            "name": "Videos by status",
-            "layout": "chart",
-            "icon": "ChartPie",
-            "chart": {
-             "type": "donut",
-             "groupBy": "status",
-             "op": "count",
-             "centerValue": true
-            }
-           }
-          ],
-          "activeViewId": "view-c1"
-         }
-        }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.33
-       },
-       "children": [
+          "name": "primary_table",
+          "table": "video",
+          "describes": "Every video with its status, publish day and sponsor."
+        },
         {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "video",
-           "view": "all_video"
-          },
-          "inline": true,
-          "title": "Views by series",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c2",
-            "name": "Views by series",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "series",
-             "op": "sum",
-             "field": "views"
-            }
-           }
-          ],
-          "activeViewId": "view-c2"
-         }
+          "name": "related_tables",
+          "table": "sponsor",
+          "describes": "The brands sponsoring videos."
         }
-       ]
-      },
-      {
-       "type": "column",
-       "props": {
-        "width": 0.34
-       },
-       "children": [
-        {
-         "type": "database",
-         "props": {
-          "source": {
-           "kind": "template",
-           "table": "log",
-           "view": "all_log"
-          },
-          "inline": true,
-          "title": "Views by week",
-          "linked": true,
-          "showTitle": false,
-          "views": [
-           {
-            "id": "view-c3",
-            "name": "Views by week",
-            "layout": "chart",
-            "icon": "ChartColumn",
-            "chart": {
-             "type": "bar",
-             "groupBy": "week",
-             "op": "sum",
-             "field": "views"
-            }
-           }
-          ],
-          "activeViewId": "view-c3"
-         }
-        }
-       ]
-      }
-     ]
-    },
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Sponsor payments due"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "database",
-     "props": {
-      "source": {
-       "kind": "template",
-       "table": "video",
-       "view": "all_video"
-      },
-      "inline": true,
-      "title": "Sponsor payments due",
-      "linked": true,
-      "showTitle": false,
-      "views": [
-       {
-        "id": "view-pay",
-        "name": "Sponsored, unpaid",
-        "layout": "list",
-        "icon": "List",
-        "filters": {
-         "sponsor_paid": false
-        }
-       }
       ],
-      "activeViewId": "view-pay"
-     }
-    }
-   ]
+      "question": {
+        "ask": "How many videos are published?",
+        "whyItMatters": "Tavita checks the catalogue before planning the month.",
+        "expect": {
+          "table": "video",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Published"
+          },
+          "answer": 3,
+          "unit": "videos"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open production board.",
+        "action": {
+          "kind": "open",
+          "surface": "video_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "video_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open publishing calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "video_cal"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "video_cal",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open idea board.",
+        "action": {
+          "kind": "open",
+          "surface": "idea_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "idea_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "wildgrainkitchen.net",
+        "oakbarrelcookware.net",
+        "spicetrailco.net",
+        "freshhaven.net",
+        "cindergrills.net"
+      ],
+      "fictionalStreets": [
+        "Hobbler Street"
+      ]
+    },
+    "version": 2
   },
-  {
-   "key": "video-checklist",
-   "parent": "creator-studio",
-   "title": "Publish checklist",
-   "icon": {
-    "emoji": "✅"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
+  "pages": [
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Title tested against two alternatives"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "creator-studio",
+      "parent": null,
+      "title": "Creator Studio",
+      "icon": {
+        "emoji": "🎬"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Ideas are validated, then become videos that move from script to published. Sponsors link to the videos they paid for."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:dashboard"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:video-checklist"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Production"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video",
+              "view": "video_board"
+            },
+            "inline": true,
+            "title": "Production",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Pipeline",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_on"
+              },
+              {
+                "id": "view-gal",
+                "name": "Published",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Published"
+                },
+                "sorts": [
+                  {
+                    "field": "views",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-unpaid",
+                "name": "Sponsor unpaid",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "sponsor_paid": false
+                }
+              },
+              {
+                "id": "v-wk",
+                "name": "Publishing this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "publish_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "v-lt",
+                "name": "Behind schedule",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "publish_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "v-n7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "publish_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Idea",
+                    "Scripting",
+                    "Filming",
+                    "Editing",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ideas"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "idea",
+              "view": "idea_board"
+            },
+            "inline": true,
+            "title": "Ideas",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "verdict"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All ideas",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sponsor",
+              "view": "sponsor_board"
+            },
+            "inline": true,
+            "title": "Sponsors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-board",
+                "name": "Pipeline",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "view-cal",
+                "name": "Follow-ups",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "follow_up"
+              },
+              {
+                "id": "view-tbl",
+                "name": "All sponsors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-fw",
+                "name": "Follow up this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Pitched",
+                    "Negotiating",
+                    "Booked",
+                    "Delivered"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Channel stats"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "log",
+              "view": "log_all"
+            },
+            "inline": true,
+            "title": "Channel stats",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-tbl",
+                "name": "Weekly",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "logged_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-l30",
+                "name": "Last 30 days",
+                "layout": "grid",
+                "icon": "Clock",
+                "within": {
+                  "logged_on": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-tbl"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Resources"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "resource",
+              "view": "all_resource"
+            },
+            "inline": true,
+            "title": "Resources",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-tbl",
+                "name": "Kit",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-tbl"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Thumbnail exported"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "dashboard",
+      "parent": "creator-studio",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "video",
+                      "view": "all_video"
+                    },
+                    "inline": true,
+                    "title": "Videos by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c1",
+                        "name": "Videos by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "video",
+                      "view": "all_video"
+                    },
+                    "inline": true,
+                    "title": "Views by series",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c2",
+                        "name": "Views by series",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "series",
+                          "op": "sum",
+                          "field": "views"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "log",
+                      "view": "all_log"
+                    },
+                    "inline": true,
+                    "title": "Views by week",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "view-c3",
+                        "name": "Views by week",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "week",
+                          "op": "sum",
+                          "field": "views"
+                        }
+                      }
+                    ],
+                    "activeViewId": "view-c3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sponsor payments due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "video",
+              "view": "all_video"
+            },
+            "inline": true,
+            "title": "Sponsor payments due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-pay",
+                "name": "Sponsored, unpaid",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "sponsor_paid": false
+                }
+              }
+            ],
+            "activeViewId": "view-pay"
+          }
+        }
+      ]
     },
     {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Chapters and description written"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Sponsor disclosure in the first 30 seconds"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "End screen and cards added"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
-    },
-    {
-     "type": "todo",
-     "text": [
-      {
-       "text": "Scheduled for the right day and time"
-      }
-     ],
-     "props": {
-      "checked": false
-     }
+      "key": "video-checklist",
+      "parent": "creator-studio",
+      "title": "Publish checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run this list on every video, sponsored or not. The sponsor line matters most: disclose early and plainly."
+            }
+          ],
+          "props": {
+            "icon": "ListChecks"
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Title tested against two alternatives"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thumbnail exported"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Chapters and description written"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sponsor disclosure in the first 30 seconds"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "End screen and cards added"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scheduled for the right day and time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After it is live"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the video Published and watch the first two hours for problems."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reply to the first ten comments."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enter the final view and click-through numbers in the row a week later."
+            }
+          ]
+        }
+      ]
     }
-   ]
-  },
-  {
-   "key": "script-outline",
-   "parent": "creator-studio",
-   "title": "Script outline",
-   "icon": {
-    "emoji": "📝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "Every video"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Hook: the payoff in one sentence."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Setup: what you need and why."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Steps: three beats at most."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Result: show the finished thing."
-      }
-     ]
-    },
-    {
-     "type": "numbered",
-     "text": [
-      {
-       "text": "Call to action: one ask."
-      }
-     ]
-    },
-    {
-     "type": "callout",
-     "text": [
-      {
-       "text": "Write the hook last. It is easier once you know what you made."
-      }
-     ],
-     "background": "yellow",
-     "props": {
-      "icon": "Pencil"
-     }
-    }
-   ]
-  },
-  {
-   "key": "sponsor-brief",
-   "parent": "creator-studio",
-   "title": "Sponsor brief",
-   "icon": {
-    "emoji": "🤝"
-   },
-   "settings": {
-    "fullWidth": true
-   },
-   "blocks": [
-    {
-     "type": "heading",
-     "text": [
-      {
-       "text": "What to agree before filming"
-      }
-     ],
-     "props": {
-      "level": 2
-     }
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Fee and payment terms in days"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Talking points and anything you will not say"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Usage rights and how long they run"
-      }
-     ]
-    },
-    {
-     "type": "bulleted",
-     "text": [
-      {
-       "text": "Revision rounds and the approval deadline"
-      }
-     ]
-    }
-   ]
-  }
- ]
+  ]
 }
