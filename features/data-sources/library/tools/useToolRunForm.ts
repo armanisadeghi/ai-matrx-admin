@@ -7,9 +7,13 @@ import { getJson } from "@/lib/python-client";
 
 /** What the run-form says about the Tool itself, beside its inputs (CONTRACT §10; our words only). */
 export interface ToolFormFacts {
+  /** The Tool's id, whether the form was asked for by id or by job key. */
+  toolId: string;
   displayName: string;
   summary: string;
   displayNoun: string;
+  /** The button's own words ("Find work email"). */
+  submitLabel: string;
   priceHintPoints: number | null;
   state: string;
   /** Plain sentence when the Tool is paused or off ("Domain Authority is paused while we check it."). */
@@ -37,9 +41,11 @@ export function useToolRunForm(toolId: string | null) {
       return {
         schema: parseServedRunForm(data),
         facts: {
+          toolId: str(data.definition_id, toolId ?? ""),
           displayName: str(data.display_name, "Tool"),
           summary: str(data.summary),
           displayNoun: str(data.display_noun),
+          submitLabel: str(data.submit_label),
           priceHintPoints: typeof data.price_hint_points === "number" ? data.price_hint_points : null,
           state: str(data.state, "live"),
           offNotice: typeof data.tool_off_notice === "string" ? data.tool_off_notice : null,

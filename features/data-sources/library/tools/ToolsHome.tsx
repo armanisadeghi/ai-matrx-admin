@@ -17,6 +17,8 @@ import type { CatalogSearchState, CatalogToolHit } from "@ai-matrx/agents/tools"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
+import { LookupSuggestion } from "./people/LookupSuggestion";
+import { lookupHelp, planLookup, type LookupPlan } from "./people/lookupPlan";
 import { ToolCard } from "./ToolCard";
 import { JOB_FAMILIES, verdictLine } from "./toolFacts";
 
@@ -30,6 +32,7 @@ export function ToolsHome({
   onFamily,
   onOpenTool,
   onGive,
+  onLookup,
   dataSection,
 }: {
   search: ToolsSearch;
@@ -39,6 +42,8 @@ export function ToolsHome({
   onFamily: (family: string | null) => void;
   onOpenTool: (hit: CatalogToolHit) => void;
   onGive: (hit: CatalogToolHit) => void;
+  /** The one box recognised a website, email, phone or person: open that lookup with the box filled. */
+  onLookup: (plan: LookupPlan) => void;
   /** The data sources that answer the same words, under the Tools. */
   dataSection: ReactNode;
 }) {
@@ -59,6 +64,8 @@ export function ToolsHome({
 
   const firstLoad = (status === "idle" || status === "loading") && tools.length === 0;
   const line = verdictLine(verdict, query);
+  const lookup = planLookup(query);
+  const help = !lookup && (family === "people" || family === "company") ? lookupHelp(query) : null;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-5" data-tools-home="">
@@ -94,6 +101,9 @@ export function ToolsHome({
           ))}
         </div>
       </section>
+
+      {lookup ? <LookupSuggestion plan={lookup} onLookup={onLookup} /> : null}
+      {help ? <p className="text-sm text-muted-foreground" data-lookup-help="">{help}</p> : null}
 
       <section className="flex flex-col gap-3" aria-label="Tools">
         <div className="flex items-baseline gap-2">
