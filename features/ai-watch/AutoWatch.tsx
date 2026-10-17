@@ -21,6 +21,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { useCanWatchAi } from "./useCanWatchAi";
 import { isAutomatedRun, selectLivePageAiRuns } from "./page-ai-runs";
+import { useFollowedWork } from "./followed-work";
 import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { AUTO_OPEN_NO_ROOM_EVENT, autoOpenHasRoom, markAutoOpened } from "@ai-matrx/summon/window";
 import { openWorkflowRunWindowAction, workflowRunWindowInstanceId } from "@/features/overlays/definitions/workflowRunWindow.overlay";
@@ -48,6 +49,9 @@ export default function AutoWatch() {
   const store = useAppStore();
   const liveRootRuns = useAppSelector(selectLiveRootRunKey);
   const live = useAppSelector(selectLivePageAiRuns);
+  // Server work this page started or opened (a factory build, an eval run) has no client stream: its
+  // registration is what opens Watch AI.
+  const followedKeys = useFollowedWork().map((w) => w.key).join(",");
   // A live workflow run makes every live AI call on the page its own; otherwise only workflow lanes count
   // (a person's own chat turn never opens Watch AI).
   const automatedKeys = live
@@ -61,7 +65,7 @@ export default function AutoWatch() {
   // waiting, because a page lays itself out after a run starts. `null` = not measured yet.
   const canvas = useOptionalCanvas();
   const [room, setRoom] = useState<boolean | null>(null);
-  const waiting = Boolean(liveRootRuns || automatedKeys);
+  const waiting = Boolean(liveRootRuns || automatedKeys || followedKeys);
   useEffect(() => {
     if (!canWatch || !waiting) return undefined;
     const first = window.setTimeout(() => setRoom(autoOpenHasRoom()), 0);
@@ -133,12 +137,13 @@ export default function AutoWatch() {
 
   const openedCalls = useRef(new Set<string>());
   useEffect(() => {
-    if (!canWatch || room === null || !automatedKeys) return;
-    const fresh = automatedKeys.split(",").filter((k) => !openedCalls.current.has(k));
+    const keys = [automatedKeys, followedKeys].filter(Boolean).join(",");
+    if (!canWatch || room === null || !keys) return;
+    const fresh = keys.split(",").filter((k) => !openedCalls.current.has(k));
     if (!fresh.length) return;
     for (const k of fresh) openedCalls.current.add(k);
     openWatchAiOnce();
-  }, [canWatch, room, automatedKeys, openWatchAiOnce]);
+  }, [canWatch, room, automatedKeys, followedKeys, openWatchAiOnce]);
 
   return null;
 }

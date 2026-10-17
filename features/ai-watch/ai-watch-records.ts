@@ -69,6 +69,9 @@ export interface AiWatchRunSummary {
   workflowRunId: string | null;
   /** Who started the call (`chat.user_request.origin_class`) — names the group outside a run. */
   originClass: string | null;
+  /** The followed server work this call belongs to (`followed-work.ts`), when it was found through one. */
+  followKey?: string | null;
+  followLabel?: string | null;
 }
 
 const USER_REQUEST_COLUMNS =
@@ -429,3 +432,66 @@ export async function fetchMandateDefinitionVersion(mandateId: string): Promise<
   return data ? num((data as Row).version) : null;
 }
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
+
+/** One followed work item's call identities, for `fetchFollowedRuns`. */
+export interface FollowedScope {
+  key: string;
+  label: string;
+  userRequestIds: readonly string[];
+  conversationIds: readonly string[];
+}
+
+/**
+ * The recorded AI calls of followed server work (factory builds, eval runs): by their own
+ * user_request ids and by their conversations, each tagged with the work it belongs to.
+ */
+export async function fetchFollowedRuns(scopes: readonly FollowedScope[]): Promise<AiWatchRunSummary[]> {
+  const ids = [...new Set(scopes.flatMap((s) => s.userRequestIds))];
+  const conversations = [...new Set(scopes.flatMap((s) => s.conversationIds))];
+  if (!ids.length && !conversations.length) return [];
+  const select = "id, status, source_feature, workflow_run_id, conversation_id, origin_class, created_at, metadata";
+  const [byId, byConversation] = await Promise.all([
+    ids.length
+      ? supabase.schema("chat").from("user_request").select(select).in("id", ids).is("deleted_at", null)
+      : Promise.resolve({ data: [] as Row[], error: null }),
+    conversations.length
+      ? supabase.schema("chat").from("user_request").select(select).in("conversation_id", conversations).is("deleted_at", null)
+      : Promise.resolve({ data: [] as Row[], error: null }),
+  ]);
+  if (byId.error) throw new Error(byId.error.message);
+  if (byConversation.error) throw new Error(byConversation.error.message);
+  const rows = new Map<string, Row>();
+  for (const r of [...((byId.data ?? []) as Row[]), ...((byConversation.data ?? []) as Row[])]) rows.set(String(r.id), r);
+  return followedSummaries([...rows.values()], scopes);
+}
+
+/** Pure: label each stored call and tag it with the followed work that names it. */
+export function followedSummaries(rows: readonly Row[], scopes: readonly FollowedScope[]): AiWatchRunSummary[] {
+  return rows
+    .map((row, index) => {
+      const metadata = obj(row.metadata) ?? {};
+      const holder = obj(metadata.mandate_holder);
+      const watch = obj(metadata.mandate_watch);
+      const scope =
+        scopes.find((s) => s.userRequestIds.includes(String(row.id))) ??
+        scopes.find((s) => s.conversationIds.includes(String(row.conversation_id)));
+      return {
+        userRequestId: String(row.id),
+        label:
+          str(holder?.name) ??
+          str(watch?.mandate_key) ??
+          str(metadata.mandate_key) ??
+          str(metadata.agent_name) ??
+          str(row.source_feature) ??
+          `Run ${index + 1}`,
+        status: str(row.status),
+        createdAt: String(row.created_at ?? ""),
+        nodeId: str(metadata.workflow_node_id),
+        workflowRunId: str(row.workflow_run_id),
+        originClass: str(row.origin_class),
+        followKey: scope?.key ?? null,
+        followLabel: scope?.label ?? null,
+      };
+    })
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}

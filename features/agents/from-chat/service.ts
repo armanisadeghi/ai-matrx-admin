@@ -14,6 +14,7 @@
 
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
+import { followServerWork } from "@/features/ai-watch/followed-work";
 import { adminDoorOpen } from "@/lib/api/adminDoor";
 import { createDraftRulebook } from "@/features/masterwork/service";
 import { supabase } from "@/utils/supabase/client";
@@ -197,6 +198,7 @@ export async function makeAgentFromChat(
         lastStep = d.step;
         if (progressBuildId(d)) {
           buildId = progressBuildId(d);
+          followServerWork({ kind: "factory_build", id: buildId as string, label: "Agent Factory build", source: "Studio · from chat" });
           proofCases = progressProofCases(d);
           buildSays = d.says;
         }

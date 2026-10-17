@@ -13,6 +13,7 @@ import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { postJson } from "@/lib/python-client";
+import { followServerWork } from "@/features/ai-watch/followed-work";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { applyServerTableState, type ServerTableSpec } from "@/features/admin/shared/server-table/postgrest";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
@@ -172,6 +173,8 @@ export async function getFactoryBuild(buildId: string, signal?: AbortSignal): Pr
   const { data: exec, error: execError } = await execQuery.maybeSingle();
   if (execError) throw operationFailed("load the Agent Factory build", execError);
   if (!exec) return null;
+  // Opening a build is following it: its steps' AI calls show in Watch AI and the Builder panel.
+  followServerWork({ kind: "factory_build", id: exec.id, label: "Agent Factory build", source: "build page" });
 
   let cpQuery = supabase
     .schema("runtime")
@@ -259,6 +262,7 @@ export async function startFactoryBuild(input: StartFactoryBuildInput): Promise<
   };
   const { data } = await postJson<{ build_id: string }>("/agent-factory/builds", body);
   if (!data?.build_id) throw new Error("The Agent Factory did not return a build id");
+  followServerWork({ kind: "factory_build", id: data.build_id, label: "Agent Factory build", source: "Agent Factory admin" });
   return data.build_id;
 }
 
@@ -308,6 +312,7 @@ export async function startAgentBuild(input: StartAgentBuildInput): Promise<stri
     input.organizationId ? { organizationId: input.organizationId } : {},
   );
   if (!data?.build_id) throw new Error("The Agent Factory did not return a build id");
+  followServerWork({ kind: "factory_build", id: data.build_id, label: "Agent Factory build", source: input.door ?? "agent build" });
   return data.build_id;
 }
 

@@ -26,6 +26,9 @@ export interface RailGroup {
   workflowRunId: string | null;
   /** Who started the calls of a group outside a workflow run (`chat.user_request.origin_class`). */
   originClass: string | null;
+  /** Followed server work these calls belong to (a factory build, an eval run), with its label. */
+  followKey?: string | null;
+  followLabel?: string | null;
   startedAt: string;
   calls: RailCall[];
 }
@@ -42,13 +45,15 @@ export function buildRail(registry: readonly WatchableRun[], records: readonly A
   for (const r of records) {
     // Outside a workflow run a call is grouped by WHO STARTED IT — never one blanket "chat"
     // group (2026-10-16: factory, API and scheduled calls all read "Chat").
-    const gid = r.workflowRunId ?? `origin:${r.originClass ?? "unknown"}`;
+    const gid = r.followKey ? `follow:${r.followKey}` : r.workflowRunId ?? `origin:${r.originClass ?? "unknown"}`;
     let group = groups.get(gid);
     if (!group) {
       group = {
         id: gid,
-        workflowRunId: r.workflowRunId,
-        originClass: r.workflowRunId ? null : r.originClass,
+        workflowRunId: r.followKey ? null : r.workflowRunId,
+        originClass: r.workflowRunId || r.followKey ? null : r.originClass,
+        followKey: r.followKey ?? null,
+        followLabel: r.followLabel ?? null,
         startedAt: r.createdAt,
         calls: [],
       };
@@ -142,6 +147,7 @@ const ORIGIN_HEADINGS: Record<string, string> = {
 /** A rail group's heading: the page's run, an earlier run, or who started the calls. */
 export function railGroupHeading(group: RailGroup, currentRunId: string | null): string {
   if (group.id === UNRECORDED_GROUP) return "Live";
+  if (group.followLabel) return group.followLabel;
   if (group.workflowRunId) return group.workflowRunId === currentRunId ? "This run" : "Earlier run";
   return ORIGIN_HEADINGS[group.originClass ?? ""] ?? "Other calls";
 }
