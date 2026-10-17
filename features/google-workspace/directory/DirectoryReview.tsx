@@ -133,7 +133,7 @@ const PEOPLE_COLUMNS: MatrxColumnDef<DirectoryPerson>[] = [
       person.source_types.length
         ? person.source_types.map(sourceLabel).join(", ")
         : "—",
-    filter: "text",
+    filter: "select",
     width: 160,
   },
   {

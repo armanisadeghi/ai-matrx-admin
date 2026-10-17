@@ -196,6 +196,7 @@ export function HrPayGroupsPanel() {
       id: "workweek_from",
       accessorKey: "workweek_effective_from",
       header: "In effect since",
+      format: { id: "date" },
       mobileHidden: true,
     },
     {

@@ -467,6 +467,7 @@ const addonColumns: MatrxColumnDef<AddonTableRow>[] = [
     id: "source",
     header: "Source",
     accessorFn: (row) => row.addon.source,
+    filter: "select",
     cell: (row) => (
       <div>
         <p>{row.addon.source}</p>

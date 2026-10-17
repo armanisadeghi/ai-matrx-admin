@@ -73,6 +73,7 @@ const columns: MatrxColumnDef<ProviderAccountRegistryRow>[] = [
     accessorKey: "accountKind",
     header: "Purpose",
     label: "Purpose",
+    filter: "select",
     sortValue: (row) => row.accountKind,
     cell: (row) => label(row.accountKind),
   },
@@ -81,6 +82,7 @@ const columns: MatrxColumnDef<ProviderAccountRegistryRow>[] = [
     accessorKey: "status",
     header: "Status",
     label: "Status",
+    filter: "select",
     sortValue: (row) => row.status,
     cell: (row) => (
       <Badge variant={statusVariant(row.status)}>{label(row.status)}</Badge>
@@ -109,6 +111,7 @@ const columns: MatrxColumnDef<ProviderAccountRegistryRow>[] = [
     accessorKey: "lastVerifiedAt",
     header: "Verified",
     label: "Verified",
+    format: { id: "datetime" },
     sortValue: (row) => row.lastVerifiedAt ?? "",
     cell: (row) => (
       <span className="text-muted-foreground">

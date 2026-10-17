@@ -209,6 +209,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       id: "started",
       accessorKey: "startedAt",
       header: "Started",
+      format: { id: "datetime" },
       width: 130,
       align: "right",
       // The run's door. A timestamp is what a person recognises a run by —
@@ -249,6 +250,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       id: "delivers",
       accessorKey: "declaredKind",
       header: "Delivers",
+      filter: "select",
       width: 160,
       mobileHidden: true,
       cell: (row) =>

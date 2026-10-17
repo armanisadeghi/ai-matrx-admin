@@ -237,6 +237,7 @@ export function RunsTable({
       width: 72,
       hidden: narrow,
       sortable: true,
+      // table-filter-off: server source does not filter level yet
       filter: false,
       accessorFn: (run) => rungWords(run.rung),
       cell: (run) => (

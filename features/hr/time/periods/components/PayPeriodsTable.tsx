@@ -128,6 +128,7 @@ export function PayPeriodsTable({ rows, isLoading, hrefFor, read, query, sourceT
       id: "payDate",
       accessorKey: "payDate",
       header: "Pay date",
+      format: { id: "date" },
       cell: (row) => (
         <span className="whitespace-nowrap text-muted-foreground">
           {formatLocalDate(row.payDate, { year: true })}

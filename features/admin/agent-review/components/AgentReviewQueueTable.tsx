@@ -309,7 +309,7 @@ export default function AgentReviewQueueTable() {
       {
         accessorKey: "created_at",
         header: "Filed",
-        filter: "text",
+        format: { id: "datetime" },
         cell: (row) => new Date(row.created_at).toLocaleString(),
         width: 180,
         mobileHidden: true,
@@ -317,7 +317,7 @@ export default function AgentReviewQueueTable() {
       {
         accessorKey: "updated_at",
         header: "Last activity",
-        filter: "text",
+        format: { id: "datetime" },
         cell: (row) => new Date(row.updated_at).toLocaleString(),
         width: 180,
         mobileHidden: true,

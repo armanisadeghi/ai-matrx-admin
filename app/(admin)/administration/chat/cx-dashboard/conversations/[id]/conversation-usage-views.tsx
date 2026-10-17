@@ -70,7 +70,7 @@ const toolColumns: MatrxColumnDef<ToolRow>[] = [
 ];
 
 const callColumns: MatrxColumnDef<CxRequest>[] = [
-  { id: "created_at", accessorKey: "created_at", header: "When", width: 130, cell: (r) => formatDate(r.created_at) },
+  { id: "created_at", accessorKey: "created_at", header: "When", format: { id: "datetime" }, width: 130, cell: (r) => formatDate(r.created_at) },
   {
     id: "user_request_id",
     accessorKey: "user_request_id",

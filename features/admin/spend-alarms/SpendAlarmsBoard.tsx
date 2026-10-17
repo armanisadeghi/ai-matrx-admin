@@ -148,7 +148,7 @@ export function SpendAlarmsBoard() {
       accessorFn: (r) => (r.watching ? "Fixed, watching" : fixFor(r) ? "Fixed in code; resolve it" : r.fix ?? ""),
 
     },
-    { id: "last_seen_at", accessorKey: "last_seen_at", header: "Last seen", cell: (r) => new Date(r.last_seen_at).toLocaleString() },
+    { id: "last_seen_at", accessorKey: "last_seen_at", header: "Last seen", format: { id: "datetime" }, cell: (r) => new Date(r.last_seen_at).toLocaleString() },
     {
       id: "status",
       header: "Status",

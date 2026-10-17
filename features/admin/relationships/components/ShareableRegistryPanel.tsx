@@ -395,6 +395,11 @@ export function ShareableRegistryPanel({
         accessorKey: "resource_type",
         header: "Resource type",
         accessorFn: (r) => `${r.resource_type} ${label(r.resource_type)}`,
+        filter: "select",
+        filterOptions: [...new Set(registry.map((r) => r.resource_type))].map((token) => ({
+          value: `${token} ${label(token)}`,
+          label: label(token),
+        })),
         cell: (row) => <EntityTypeChip token={row.resource_type} showToken />,
         width: 208,
       },
@@ -510,7 +515,7 @@ export function ShareableRegistryPanel({
         width: 72,
       },
     ];
-  }, []);
+  }, [registry]);
 
   const resolveContextOnOpen = (target: HTMLElement | null) => {
     const resourceType = target

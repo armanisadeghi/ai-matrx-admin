@@ -81,7 +81,7 @@ export function CrawlSnapshotsInspectionTable({
       id: "captured_at",
       accessorKey: "captured_at",
       header: "Captured",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.captured_at)}

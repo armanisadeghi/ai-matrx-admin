@@ -240,6 +240,7 @@ export function WatchlistTab({
       width: 70,
       // The All/Queries/Pages toggle above owns kind filtering — a second,
       // independent column filter could contradict it.
+      // table-filter-off: the All/Queries/Pages toggle above owns kind filtering
       filter: false,
       cell: (row) => (
         <Chip

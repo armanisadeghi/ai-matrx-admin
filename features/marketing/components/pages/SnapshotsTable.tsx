@@ -85,6 +85,7 @@ export function SnapshotsTable({ pageId }: { pageId: string }) {
       id: "captured_at",
       accessorKey: "captured_at",
       header: "Captured",
+      // table-filter-off: server source does not filter captured_at yet
       filter: false,
       // THE DOOR LAW: a snapshot's capture time is how the user names it, so
       // that cell is the real anchor to the snapshot record. Same destination

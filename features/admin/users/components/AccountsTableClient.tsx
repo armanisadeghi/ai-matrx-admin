@@ -860,6 +860,7 @@ function AccountsRoster() {
         id: "created_at",
         accessorKey: "created_at",
         header: "Created",
+        format: { id: "datetime" },
         cell: (row) => (
           <span className="text-xs text-muted-foreground">
             {fmtDate(row.created_at)}

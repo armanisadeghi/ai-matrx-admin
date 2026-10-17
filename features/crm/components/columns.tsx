@@ -217,7 +217,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     accessorKey: "date_of_birth",
     header: "Born",
     sortable: true,
-    filter: "text",
+    format: { id: "date" },
     cell: (row) =>
       row.date_of_birth ? (
         <span className="type-meta whitespace-nowrap tabular-nums text-muted-foreground">
@@ -352,6 +352,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     // A date column's finite value set is "how recently", not a timestamp —
     // relative buckets served as `updated_at >= now() - bucket`. Buckets nest
     // (7d ⊂ 30d), so ORing them is meaningless — single-choice (D218).
+    format: { id: "datetime" },
     filter: "select",
     filterSingle: true,
     filterOptions: DATE_BUCKET_OPTIONS,
@@ -367,6 +368,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     accessorKey: "created_at",
     header: "Created",
     sortable: true,
+    format: { id: "datetime" },
     filter: "select",
     filterSingle: true,
     filterOptions: DATE_BUCKET_OPTIONS,

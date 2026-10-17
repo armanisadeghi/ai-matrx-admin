@@ -398,7 +398,7 @@ export function CmsArtifactList() {
           </span>
         ),
       },
-      { id: "kind", header: "Kind", accessorFn: (artifact) => ARTIFACT_TYPE_LABELS[artifact.artifactType] ?? artifact.artifactType, mobileHidden: true },
+      { id: "kind", header: "Kind", accessorFn: (artifact) => ARTIFACT_TYPE_LABELS[artifact.artifactType] ?? artifact.artifactType, filter: "select", filterOptions: Object.values(ARTIFACT_TYPE_LABELS).map((labelText) => ({ value: labelText, label: labelText })), mobileHidden: true },
       { id: "updated", header: "Updated", accessorFn: (artifact) => artifact.updatedAt, filter: "date", mobileHidden: true, cell: (artifact) => <time dateTime={artifact.updatedAt} title={new Date(artifact.updatedAt).toLocaleString()}>{formatUpdatedAt(artifact.updatedAt)}</time> },
       { id: "status", header: "Status", accessorFn: (artifact) => artifact.status, filter: "select", mobileHidden: true, cell: (artifact) => artifact.status === "published" ? "—" : <span className={statusTone(artifact.status)}>{ARTIFACT_STATUS_LABELS[artifact.status]}</span> },
     ],

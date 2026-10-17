@@ -224,7 +224,7 @@ export function BrandPresenceSection({ brandId, canEdit }: { brandId: string; ca
   const patch = usePatch("temp_brand_presence", queryKey);
   const edit = canEdit;
   const columns: MatrxColumnDef<PresenceRow>[] = [
-    { id: "presence_type", label: "Kind", header: "Kind", width: 130, accessorFn: (r) => r.presence_type, editable: edit ? "string" : false, filter: "text", cell: (r) => <span className="text-xs">{r.presence_type.replace(/_/g, " ")}</span> },
+    { id: "presence_type", label: "Kind", header: "Kind", width: 130, accessorFn: (r) => r.presence_type, editable: edit ? "string" : false, filter: "select", cell: (r) => <span className="text-xs">{r.presence_type.replace(/_/g, " ")}</span> },
     { id: "label", label: "Name", header: "Name", width: 220, minWidth: 140, accessorFn: (r) => r.label, editable: edit ? "string" : false, filter: "text" },
     { id: "platform_name", label: "Platform", header: "Platform", width: 130, accessorFn: (r) => r.platform_name ?? "", editable: edit ? "string" : false, filter: "text" },
     { id: "domain", label: "Domain", header: "Domain", width: 160, accessorFn: (r) => r.domain ?? "", editable: edit ? "string" : false },
