@@ -465,6 +465,40 @@ export async function launchRun(
     judge_policy: options.judgePolicy,
     purpose: "user",
     idempotency_key: crypto.randomUUID(),
+    // A person pressed Run (recorded on the run as its initiation).
+    initiation: "user",
+  };
+  if (caseIds && caseIds.length > 0) body.case_ids = [...caseIds];
+  return readLaunched(await serverApi.call<unknown>(RUNS_OP, { body }));
+}
+
+/** One column of a battle on cases (CONTRACT §4.1 `RunSetup`). */
+export interface BattleSetup {
+  key: string;
+  label: string;
+  holder: { kind: "agent" | "agent_version"; id: string };
+  patch?: { model_id?: string; messages?: unknown[] };
+}
+
+/**
+ * A battle on cases: the same runner, every case × every setup, results in `agent.test_result`
+ * (one per case × setup), so it shows on the test page, the case grid and Watch AI like any run.
+ */
+export async function launchBattle(
+  agentId: string,
+  setups: readonly BattleSetup[],
+  options: RunOptions,
+  caseIds?: readonly string[],
+): Promise<LaunchedRun> {
+  const body: Record<string, unknown> = {
+    agent_ids: [agentId],
+    setups: setups.map((s) => ({ ...s, patch: s.patch ?? {} })),
+    door_policy: options.doorPolicy,
+    repeats: options.repeats,
+    judge_policy: options.judgePolicy,
+    purpose: "user",
+    idempotency_key: crypto.randomUUID(),
+    initiation: "user",
   };
   if (caseIds && caseIds.length > 0) body.case_ids = [...caseIds];
   return readLaunched(await serverApi.call<unknown>(RUNS_OP, { body }));

@@ -10,6 +10,7 @@
  *   `onConversation` reports its id.
  * - `runKey` changes → a NEW conversation (the Studio's "run again, fresh every time").
  * - `seed` set → the first turn runs at once with those inputs (mode 2's original request).
+ * - Above the runner: "Next message on" — the composer's "This message only" model, in sight.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -22,6 +23,7 @@ import { registerConversationHooks } from "@ai-matrx/chat/host";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { StudioTurnModel } from "./StudioTurnModel";
 
 export interface StudioRunSeed {
   variables?: Record<string, string>;
@@ -159,5 +161,10 @@ export function StudioRun({
     );
   }
   if (!agentId || !shown) return <RegionSkeleton />;
-  return <AgentRunner conversationId={shown} surfaceKey={surfaceKey} className="h-full" />;
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      {mandateKey ? null : <StudioTurnModel conversationId={shown} />}
+      <AgentRunner conversationId={shown} surfaceKey={surfaceKey} className="min-h-0 flex-1" />
+    </div>
+  );
 }
