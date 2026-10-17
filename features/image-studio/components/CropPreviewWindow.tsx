@@ -9,7 +9,7 @@
  * position, or background colour. The user can switch between files and
  * presets from inside the window.
  *
- * Rendered inline by `ImageStudioShell` — not registered in windowRegistry
+ * Rendered inline by `ImageStudioShell` — not a registered summon overlay
  * because its state is driven by the shell's props, not Redux. Do NOT
  * convert to a registered overlay without first wrapping its callback API
  * in a callback-bus group (see ImageUploaderWindow).

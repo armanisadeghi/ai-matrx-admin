@@ -14,8 +14,8 @@ interface QuickDataWindowProps {
   isOpen: boolean;
   onClose?: () => void;
   /**
-   * Pre-selected table id. Wired up from the registry's `defaultData.selectedTable`
-   * slot — `OverlaySurface` spreads the overlay data onto window props, so any
+   * Pre-selected table id. Wired up from the definition's `defaultData.selectedTable`
+   * slot — the render module spreads the overlay data onto window props, so any
    * `dispatch(openOverlay({ overlayId: "quickDataWindow", data: { selectedTable } }))`
    * call lands here.
    */

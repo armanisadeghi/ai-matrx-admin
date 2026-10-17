@@ -3,7 +3,7 @@
  * haven't yet. Drives the "Add from candidates" dialog on /admin/surfaces.
  *
  * Sourced from a one-time inventory of:
- *   - features/window-panels/registry/windowRegistry*.ts (the ~60 overlay set)
+ *   - the overlay set (then the window registry, now features/overlays/definitions)
  *   - app/(authenticated)/** route tree
  *   - app/(public)/** route tree
  *   - features/agents/utils/shortcut-context-utils.ts

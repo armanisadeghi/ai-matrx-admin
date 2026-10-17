@@ -2239,7 +2239,7 @@ export default [
   // imports its window component) or declares the hook itself over a
   // `import type` of the window's data type. Neither shape pulls a window
   // component into the openers chunk, so the bundle-splitting contract the ban
-  // protects is intact here; OverlayController's per-overlay dynamic() still
+  // protects is intact here; SummonHost's per-overlay render import still
   // owns every actual component import.
   //
   // Do NOT widen this beyond features/overlays/** — a call site outside it

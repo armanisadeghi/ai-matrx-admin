@@ -17,7 +17,7 @@
  * edge-bleeding footer, matching Dialog.
  *
  * The popout wiring this file did by hand (`usePopoutContainer`) is now the
- * package's `PortalContainerProvider` seam, fed by `PopoutShell`.
+ * package's `PortalContainerProvider` seam, fed by summon's `PopoutShell` (`@ai-matrx/summon/window`).
  *
  * Import from here or from the package — both are the same component.
  */

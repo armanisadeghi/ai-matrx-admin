@@ -16,8 +16,8 @@
  *   popover or menu opened inside stays in the scroll shard.
  *
  * The popout wiring this file used to do by hand is now the package's
- * `PortalContainerProvider` seam, fed by `features/window-panels/popout/
- * PopoutShell.tsx`. `useDialogContainer` still resolves here for
+ * `PortalContainerProvider` seam, fed by summon's `PopoutShell`
+ * (`@ai-matrx/summon/window`). `useDialogContainer` still resolves here for
  * `hooks/use-nested-portal-container.ts`.
  *
  * Import from here or from the package — both are the same component.

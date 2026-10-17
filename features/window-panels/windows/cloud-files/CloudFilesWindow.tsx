@@ -2,7 +2,7 @@
  * features/window-panels/windows/cloud-files/CloudFilesWindow.tsx
  *
  * Floating WindowPanel wrapper around the cloud-files WindowPanelShell body.
- * Registered in windowRegistry as `cloudFilesWindow` / slug `cloud-files-window`.
+ * Summon overlay `cloudFilesWindow` / slug `cloud-files-window`.
  *
  * Design:
  *  - WindowPanel provides the OS-style frame (drag, resize, maximize, minimize).

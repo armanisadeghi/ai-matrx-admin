@@ -137,8 +137,8 @@ import {
 import { EnhanceSetDialog } from "@/features/flashcards/components/set-detail/EnhanceSetDialog";
 import { useFlashcardMandates } from "@/features/flashcards/data/mandate-disclosure";
 // BUNDLE-LEAK GUARD (F9): these two float as draggable WindowPanels, and a
-// STATIC import of either would drag features/window-panels/WindowPanel.tsx —
-// and its 100+ registry lazy chunks — into the flashcards route bundle
+// STATIC import of either would drag summon's WindowPanel
+// (`@ai-matrx/summon/window`) and its chunk graph into the flashcards route bundle
 // (lazy-bundle-guard fires "[WINDOW-PANELS BUNDLE LEAK]" on route boot).
 // They open one-at-a-time on explicit user action, so each gets its own
 // ssr:false edge (the AgentPeekButton pattern; code-splitting rule 3 allows

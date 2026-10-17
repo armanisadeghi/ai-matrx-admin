@@ -423,7 +423,7 @@ const SHARE_DOWNLOAD_RE = /^\/share\/([^/]+)\/download(?:\?|$)/i;
 // any failure in our fallthrough `fetch(request)` surfaces as
 // `TypeError: Failed to fetch` to the page (this is the bug that was eating
 // next/dynamic chunk loads and causing overlay windows to silently never
-// render — heartbeat showed OverlaySurface mounted but the per-window chunk
+// render — heartbeat showed the overlay host mounted but the per-window chunk
 // never resolved).
 //
 // To fix this we keep an in-memory mirror of `STORE_URL_MAP` so the fetch

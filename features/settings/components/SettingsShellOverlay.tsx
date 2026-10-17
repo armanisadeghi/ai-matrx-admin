@@ -103,6 +103,6 @@ function mapLegacyTab(legacy: string | undefined): string | undefined {
   return LEGACY_TAB_MAP[legacy] ?? legacy;
 }
 
-// Default export used by windowRegistry.componentImport. Same component —
-// the registry system expects a default-exported React component.
+// Default export for the overlay render module. Same component —
+// summon render modules expect a default-exported React component.
 export default SettingsShellOverlay;

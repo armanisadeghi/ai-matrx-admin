@@ -5,7 +5,7 @@
  *
  * These replace the 98 inline `useAppSelector(s => selectIsOverlayOpen(s, "..."))`
  * + `selectOverlayData(...)` calls in the legacy OverlayWorldHost. Each hook
- * subscribes to only the slice it needs, keeping OverlaySurface re-renders
+ * subscribes to only the slice it needs, keeping overlay re-renders
  * tightly scoped per overlay.
  *
  * Signature mirrors the selectors in summon overlay state.ts — a thin, typed wrapper.

@@ -83,6 +83,16 @@ jest.mock("@/features/admin/system-errors/open-outages", () => {
 
 const fetchDeployFreshness = jest.fn();
 jest.mock("../deploy-freshness-service", () => ({ fetchDeployFreshness: () => fetchDeployFreshness() }));
+// Tools (b2a34e76e4) is a LOUD source too: unmocked, its read fails and every "nothing
+// live" case renders "A check could not be read". No switched-off tools here.
+jest.mock("../tool-health-service", () => ({ fetchToolHealth: async () => [] }));
+// Package copies (c9092033fc) reads a report shipped with the app, so unmocked it adds a
+// real row to every count here. Its own rows are proven in package-copies-items.test.ts;
+// this suite runs against a report with no app holding package code.
+jest.mock("../sources/package-copies.report.json", () => ({
+  generatedAt: "2026-10-15T00:00:00.000Z",
+  apps: {},
+}));
 // Known-domain proposals (9bfa9e6a) is a LOUD source: unmocked, its read fails and every
 // "nothing live" case renders "A check could not be read".
 jest.mock("@/lib/web-domains/service", () => ({
@@ -338,6 +348,14 @@ function installDockGeometry(element: HTMLElement): void {
   };
 }
 
+/** The ResizeObserver fires, and summon's dock re-measures on the next animation frame. */
+async function fireResize(): Promise<void> {
+  await act(async () => {
+    resizeObservers.forEach((callback) => callback([], {} as ResizeObserver));
+    await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+  });
+}
+
 async function tick(): Promise<void> {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -499,16 +517,12 @@ describe("AdminAttentionDock", () => {
 
     const dock = container.querySelector('[data-surface-value="admin_attention_dock_collapsed"]') as HTMLElement;
     installDockGeometry(dock);
-    await act(async () => {
-      resizeObservers.forEach((callback) => callback([], {} as ResizeObserver));
-    });
+    await fireResize();
     expect(dock.style.left).toBe("312px");
     expect(dock.style.top).toBe("344px");
 
     await expand();
-    await act(async () => {
-      resizeObservers.forEach((callback) => callback([], {} as ResizeObserver));
-    });
+    await fireResize();
 
     expect(dock.style.left).toBe("32px");
     expect(dock.style.top).toBe("132px");
