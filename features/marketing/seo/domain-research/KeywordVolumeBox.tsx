@@ -5,7 +5,8 @@
 // declaration (`SimpleBoxForm`), with the price before the press and the cost after, and the rows saving
 // to a table through the same result bar as every other Tool. The site's own top keywords are one press away.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ListPlus } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
@@ -15,6 +16,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { formatPoints } from "@ai-matrx/kit/format";
 import { isCallRunning, type CatalogToolHit } from "@ai-matrx/agents/tools";
 
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ToolResult } from "@/features/data-sources/library/tools/ToolResult";
 import { useToolCall } from "@/features/data-sources/library/tools/useToolCall";
 import { useToolRunForm } from "@/features/data-sources/library/tools/useToolRunForm";
@@ -23,7 +25,19 @@ import { withLists } from "./seoTools";
 
 export function KeywordVolumeBox({ hit, seeds }: { hit: CatalogToolHit; seeds: readonly string[] }) {
   const form = useToolRunForm(hit.tool_id);
-  const call = useToolCall(hit.tool_id);
+  // The call id rides in the address (`?ck=`), so a reload reads the same saved answer, free.
+  const call = useToolCall(hit.tool_id, (callId) => {
+    const next = new URLSearchParams(window.location.search);
+    next.set("ck", callId);
+    replaceAddressWithoutNavigating(`${window.location.pathname}?${next.toString()}`);
+  });
+  const saved = useSearchParams().get("ck");
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (resumed.current || !saved) return;
+    resumed.current = true;
+    call.resume(saved);
+  });
   const [values, setValues] = useState<Record<string, unknown>>({});
 
   const declared = form.data?.schema.inputs ?? [];

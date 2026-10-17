@@ -212,6 +212,9 @@ export function DomainResearchPage() {
               />
             ) : (
               <>
+                {tab === "keywords" && seoTools.data?.keywords ? (
+                  <KeywordVolumeBox hit={seoTools.data.keywords} seeds={seeds} />
+                ) : null}
                 {onOverview ? (
                   seoTools.isLoading ? (
                     <RegionSkeleton shape="cards" count={3} aria-label="Loading checks" />
@@ -252,9 +255,7 @@ export function DomainResearchPage() {
 
                 {tab === "keywords" ? (
                   <section aria-label="Keywords" className="flex flex-col gap-2">
-                    {seoTools.data?.keywords ? (
-                      <KeywordVolumeBox hit={seoTools.data.keywords} seeds={seeds} />
-                    ) : null}
+
                     <SourceLine
                       what="Keywords"
                       state={keywords.state}
