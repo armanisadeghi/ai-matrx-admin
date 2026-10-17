@@ -1,11 +1,12 @@
 // features/marketing/seo/domain-research/authority.ts — the "Authority" row: one score per source,
-// side by side (pure). Three different Tools answer three different scores on the same 0-100 scale;
-// a source is named only when it is a known industry leader (R-1), and the aggregators' score reads
-// "Matrx". Nothing here reaches a vendor: it reads the finished call records.
+// side by side (pure). Three different Tools answer three different scores on the same 0-100 scale
+// (each on its own source's scale, never averaged); a source is named only when it is a known industry
+// leader (R-1), and the aggregators' score reads "Matrx" — the unpinned `seo_authority_score` call is served
+// only by our own sources. Nothing here reaches a vendor: it reads the finished call records.
 
 import { isCallRunning, type ToolCallView } from "@ai-matrx/agents/tools";
 
-export type AuthorityKey = "authority" | "links" | "searchAds";
+export type AuthorityKey = "authority" | "matrx" | "searchAds";
 
 export type TileStatus = "idle" | "running" | "ready" | "empty" | "failed";
 
@@ -27,7 +28,7 @@ export interface AuthorityTile {
 
 const FIELD: Record<AuthorityKey, { field: string; label: string; leader: string | null }> = {
   authority: { field: "domain_authority", label: "Domain Authority", leader: "Moz" },
-  links: { field: "rank", label: "Link strength", leader: null },
+  matrx: { field: "score", label: "Authority score", leader: null },
   searchAds: { field: "site_strength", label: "Site strength", leader: "SpyFu" },
 };
 
@@ -76,5 +77,5 @@ export function authorityTiles(
   views: Record<AuthorityKey, ToolCallView | null>,
   errors: Record<AuthorityKey, string | null>,
 ): AuthorityTile[] {
-  return (["authority", "links", "searchAds"] as const).map((key) => authorityTile(key, views[key], errors[key]));
+  return (["authority", "matrx", "searchAds"] as const).map((key) => authorityTile(key, views[key], errors[key]));
 }

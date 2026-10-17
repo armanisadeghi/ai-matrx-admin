@@ -58,24 +58,24 @@ describe("finding the SEO Tools by job", () => {
 });
 
 describe("the authority row", () => {
-  it("names a leader as the source of its own score and 'Matrx' for our own link strength", () => {
+  it("names a leader as the source of its own score and 'Matrx' for our own authority score", () => {
     const tiles = authorityTiles(
       {
         authority: view({ output: { domain_authority: 31 }, points_charged: 134 }),
-        links: view({ output: { rank: 46 }, points_charged: 482 }),
+        matrx: view({ output: { score: 46 }, points_charged: 50 }),
         searchAds: view({ output: { site_strength: 49 }, points_charged: 20 }),
       },
-      { authority: null, links: null, searchAds: null },
+      { authority: null, matrx: null, searchAds: null },
     );
     expect(tiles.map((t) => [t.label, t.source, t.score, t.points])).toEqual([
       ["Domain Authority", "Moz", 31, 134],
-      ["Link strength", "Matrx", 46, 482],
+      ["Authority score", "Matrx", 46, 50],
       ["Site strength", "SpyFu", 49, 20],
     ]);
   });
 
   it("never prints an aggregator's own name even if one arrives as the display source", () => {
-    const tile = authorityTile("links", view({ output: { rank: 46 }, display_source: "Matrx" }), null);
+    const tile = authorityTile("matrx", view({ output: { score: 46 }, display_source: "Matrx" }), null);
     expect(tile.source).toBe("Matrx");
   });
 
@@ -89,10 +89,10 @@ describe("the authority row", () => {
   });
 
   it("carries a failed call's own words and a lost connection's", () => {
-    const failed = authorityTile("links", view({ status: "failed", error: { code: "all_sources_failed", message: "No source could answer right now." } }), null);
+    const failed = authorityTile("matrx", view({ status: "failed", error: { code: "all_sources_failed", message: "No source could answer right now." } }), null);
     expect(failed.status).toBe("failed");
     expect(failed.note).toBe("No source could answer right now.");
-    expect(authorityTile("links", null, "Could not be reached").status).toBe("failed");
+    expect(authorityTile("matrx", null, "Could not be reached").status).toBe("failed");
   });
 
   it("clamps a score into 0-100 and bands it in plain words", () => {

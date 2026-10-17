@@ -36,7 +36,7 @@ anon doors that answer ONLY what an owner published to the web (`published_to_we
 `/marketing/tools/domain?d=<host>` opens on **Overview** (`seo/domain-research/WebsiteCheck.tsx`): one press
 checks a website three ways through catalog Tools over `/tools/calls` (the durable call record, never
 screen-run) and lays the scores side by side — **Domain Authority** (Moz, named: a leader beside other
-values), **Link strength** (ours: aggregator values read "Matrx", R-1/R-18) and **Site strength** (SpyFu).
+values), **Authority score** (ours: the unpinned `seo_authority_score` call, served only by our own sources and labelled "Matrx", R-1/R-18) and **Site strength** (SpyFu), each on its own source's 0-100 scale, never averaged.
 Beneath: Backlinks (`seo_backlinks_summary` kind; "See the links" runs `seo_backlink_rows`) and Search and
 ads (`seo_search_ads_overview`), each answer in its own kind with the same Save to a table bar as the
 Tools home. The Keywords tab adds the keyword-volume box (`seo_keyword_data`) generated from the Tool's own

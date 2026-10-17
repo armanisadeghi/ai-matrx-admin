@@ -10,6 +10,7 @@ import { getJson } from "@/lib/python-client";
 /** The jobs of this screen, in the catalog's own keys. */
 export const SEO_JOBS = {
   authority: "seo_domain_authority",
+  authorityScore: "seo_authority_score",
   links: "seo_backlinks_summary",
   linkRows: "seo_backlink_rows",
   searchAds: "seo_search_ads_overview",

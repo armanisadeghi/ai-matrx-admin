@@ -45,13 +45,15 @@ const hit = (job_key: string, price: number): CatalogToolHit => ({
 });
 const TOOLS: SeoTools = {
   authority: hit("seo_domain_authority", 134),
+  authorityScore: hit("seo_authority_score", 50),
   links: hit("seo_backlinks_summary", 482),
   searchAds: hit("seo_search_ads_overview", 20),
   linkRows: hit("seo_backlink_rows", 400),
 };
 const OUTPUT: Record<string, { output: unknown; points: number }> = {
   "id-seo_domain_authority": { output: { __kind: "domain_authority", domain_authority: 31 }, points: 134 },
-  "id-seo_backlinks_summary": { output: { __kind: "backlinks_summary", rank: 46 }, points: 481 },
+  "id-seo_authority_score": { output: { __kind: "authority_score", score: 46 }, points: 50 },
+  "id-seo_backlinks_summary": { output: { __kind: "backlinks_summary", backlinks: 1710 }, points: 481 },
   "id-seo_search_ads_overview": { output: { __kind: "search_ads_overview", site_strength: 49 }, points: 20 },
   "id-seo_backlink_rows": { output: { __kind: "backlink_rows", items: [] }, points: 400 },
 };
@@ -102,7 +104,7 @@ const button = (label: string) => [...host.querySelectorAll("button")].find((b) 
 it("buys nothing before the press and names the price together", async () => {
   await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={TOOLS} />));
   expect(runHostToolCall).not.toHaveBeenCalled();
-  expect(button("Check website")?.textContent).toContain("about 636 points");
+  expect(button("Check website")?.textContent).toContain("about 686 points");
   expect(text()).toContain("134 pts");
   expect(text()).toContain("482 pts");
 });
@@ -112,7 +114,12 @@ it("runs the three Tools for the typed website and shows their scores side by si
   await act(async () => button("Check website")!.click());
 
   const sent = runHostToolCall.mock.calls.map((c) => (c[0] as { request: { tool_id: string; inputs: unknown; cache_policy: string } }).request);
-  expect(sent.map((r) => r.tool_id).sort()).toEqual(["id-seo_backlinks_summary", "id-seo_domain_authority", "id-seo_search_ads_overview"]);
+  expect(sent.map((r) => r.tool_id).sort()).toEqual([
+    "id-seo_authority_score",
+    "id-seo_backlinks_summary",
+    "id-seo_domain_authority",
+    "id-seo_search_ads_overview",
+  ]);
   expect(sent.every((r) => JSON.stringify(r.inputs) === JSON.stringify({ domain: "smitten.example" }))).toBe(true);
   expect(sent.every((r) => r.cache_policy === "prefer")).toBe(true);
 
@@ -123,7 +130,7 @@ it("runs the three Tools for the typed website and shows their scores side by si
   expect(tiles[1]).toContain("46");
   expect(tiles[2]).toContain("SpyFu");
   expect(tiles[2]).toContain("49");
-  expect(host.querySelector("[data-check-spent]")?.textContent).toContain("635");
+  expect(host.querySelector("[data-check-spent]")?.textContent).toContain("685");
   expect(replaced.some((u) => u.includes("ca=call-id-seo_domain_authority"))).toBe(true);
 });
 

@@ -26,8 +26,8 @@ import { authorityTiles, bandOf, type AuthorityKey, type AuthorityTile } from ".
 import { formatTile, linkTiles, searchTiles, type StatTile } from "./summaries";
 import { pointsTogether, type SeoTools } from "./seoTools";
 
-type RunKey = AuthorityKey | "linkRows";
-const CALL_PARAM: Record<RunKey, string> = { authority: "ca", links: "cl", searchAds: "cs", linkRows: "cr" };
+type RunKey = AuthorityKey | "links" | "linkRows";
+const CALL_PARAM: Record<RunKey, string> = { authority: "ca", matrx: "cm", links: "cl", searchAds: "cs", linkRows: "cr" };
 
 function pin(key: RunKey, callId: string) {
   const next = new URLSearchParams(window.location.search);
@@ -65,29 +65,31 @@ function ApprovalGate({ call, host }: { call: ToolCallState; host: string }) {
 
 export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools }) {
   const authority = useSeoRun("authority", tools.authority);
+  const matrx = useSeoRun("matrx", tools.authorityScore);
   const links = useSeoRun("links", tools.links);
   const searchAds = useSeoRun("searchAds", tools.searchAds);
   const linkRows = useSeoRun("linkRows", tools.linkRows);
   const [detail, setDetail] = useState(false);
 
   const inputs = { domain: host };
-  const checks = [authority, links, searchAds];
+  const checks = [authority, matrx, links, searchAds];
   const busy = checks.some((c) => c.view != null && isCallRunning(c.view.status));
   const everyTool = Boolean(tools.authority && tools.links && tools.searchAds);
-  const together = pointsTogether([tools.authority, tools.links, tools.searchAds]);
+  const together = pointsTogether([tools.authority, tools.authorityScore, tools.links, tools.searchAds]);
   const asked = checks.some((c) => c.view != null || c.clientError != null);
 
   const runAll = () => {
     if (tools.authority) void authority.run(inputs);
+    if (tools.authorityScore) void matrx.run(inputs);
     if (tools.links) void links.run(inputs);
     if (tools.searchAds) void searchAds.run(inputs);
   };
 
   const tiles = authorityTiles(
-    { authority: authority.view, links: links.view, searchAds: searchAds.view },
-    { authority: authority.clientError, links: links.clientError, searchAds: searchAds.clientError },
+    { authority: authority.view, matrx: matrx.view, searchAds: searchAds.view },
+    { authority: authority.clientError, matrx: matrx.clientError, searchAds: searchAds.clientError },
   );
-  const spent = [authority, links, searchAds, linkRows].reduce((sum, c) => sum + (c.view?.points_charged ?? 0), 0);
+  const spent = [authority, matrx, links, searchAds, linkRows].reduce((sum, c) => sum + (c.view?.points_charged ?? 0), 0);
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8" data-website-check={host}>
@@ -113,7 +115,7 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
         </Button>
       </section>
 
-      <AuthorityRow tiles={tiles} tools={tools} onRetry={(key) => void { authority, links, searchAds }[key].run(inputs)} />
+      <AuthorityRow tiles={tiles} tools={tools} onRetry={(key) => void { authority, matrx, searchAds }[key].run(inputs)} />
 
       <Panel
         icon={<Link2 className="h-4 w-4" />}
@@ -155,6 +157,7 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
       ) : null}
 
       <ApprovalGate call={authority} host={host} />
+      <ApprovalGate call={matrx} host={host} />
       <ApprovalGate call={links} host={host} />
       <ApprovalGate call={searchAds} host={host} />
       <ApprovalGate call={linkRows} host={host} />
@@ -263,7 +266,7 @@ function AuthorityRow({
   tools: SeoTools;
   onRetry: (key: AuthorityKey) => void;
 }) {
-  const price = (key: AuthorityKey) => (key === "authority" ? tools.authority : key === "links" ? tools.links : tools.searchAds);
+  const price = (key: AuthorityKey) => (key === "authority" ? tools.authority : key === "matrx" ? tools.authorityScore : tools.searchAds);
   return (
     <section aria-label="Authority" className="grid gap-3 sm:grid-cols-3">
       {tiles.map((tile) => (
