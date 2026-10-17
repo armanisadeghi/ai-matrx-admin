@@ -129,3 +129,36 @@ describe("a kind says how its rows read as a table", () => {
     expect(d.keyHeader).toBe("Row key");
   });
 });
+
+describe("a real App Store answer (captured 2026-10-17, call 170d556b) on the registered customer_reviews kind", () => {
+  // The kind titles a review's id AND its text "Review"; rows keyed by header refused every row of the real answer.
+  const kindSchema = {
+    type: "object",
+    properties: { items: { type: "array", items: { $ref: "#/$defs/ReviewRow" } } },
+    $defs: {
+      ReviewRow: {
+        type: "object",
+        properties: {
+          review_id: { type: "string", title: "Review", "x-row-key": true },
+          rating: { type: "number", title: "Stars" },
+          title: { type: "string", title: "Headline" },
+          text: { type: "string", title: "Review" },
+          date: { type: "string", title: "Date" },
+          author: { type: "string", title: "Reviewer" },
+          app_version: { type: "string", title: "App version" },
+        },
+      },
+    },
+  };
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const answer = require("./appstore-reviews-answer.fixture.json");
+
+  it("gives every column its own header and keeps every review as a row", () => {
+    const d = describeRows(answer, kindSchema);
+    expect(d).not.toBeNull();
+    expect(new Set(d!.headers).size).toBe(d!.headers.length);
+    expect(d!.rows).toHaveLength(answer.items.length);
+    for (const row of d!.rows) expect(Object.keys(row).sort()).toEqual([...d!.headers].sort());
+    expect(d!.rows.every((r) => String(r[d!.keyHeader]).length > 0)).toBe(true);
+  });
+});
