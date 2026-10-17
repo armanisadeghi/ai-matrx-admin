@@ -214,6 +214,7 @@ export const TableDuplicateDialog = requested("TableDuplicateDialog", dynamic<Pr
 export const TablePage = requested("TablePage", dynamic<Props<"TablePage">>(() => loadFrontDoor().then((m) => provided(m, "TablePage")), { ssr: true, loading: () => <TablePageSkeleton /> }));
 export const TableRenameDialog = requested("TableRenameDialog", dynamic<Props<"TableRenameDialog">>(() => loadFrontDoor().then((m) => provided(m, "TableRenameDialog")), { ssr: true, loading: () => null }));
 export const TableSettings = requested("TableSettings", dynamic<Props<"TableSettings">>(() => loadFrontDoor().then((m) => provided(m, "TableSettings")), { ssr: true, loading: () => null }));
+export const SectionCard = requested("SectionCard", dynamic<Props<"SectionCard">>(() => loadFrontDoor().then((m) => provided(m, "SectionCard")), { ssr: true, loading: () => <RecordsSkeleton layout="list" /> }));
 export const TablesHome = requested("TablesHome", dynamic<Props<"TablesHome">>(() => loadFrontDoor().then((m) => provided(m, "TablesHome")), { ssr: true, loading: () => <RecordsSkeleton layout="home" /> }));
 export const ViewSwitcher = requested("ViewSwitcher", dynamic<Props<"ViewSwitcher">>(() => loadFrontDoor().then((m) => provided(m, "ViewSwitcher")), { ssr: true, loading: () => null }));
 export const WhereItLives = requested("WhereItLives", dynamic<Props<"WhereItLives">>(() => loadFrontDoor().then((m) => provided(m, "WhereItLives")), { ssr: true, loading: () => null }));

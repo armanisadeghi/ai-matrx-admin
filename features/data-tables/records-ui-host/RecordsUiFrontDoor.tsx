@@ -52,6 +52,7 @@ export {
   RefusalLine,
   RefusalNotice,
   SaveToTable,
+  SectionCard,
   SignaturePad,
   StandardRecordForm,
   TableDuplicateDialog,

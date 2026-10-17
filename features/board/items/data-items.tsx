@@ -21,8 +21,8 @@
  */
 
 import { useEffect, useState, type ReactNode } from "react";
-import { Database, DownloadCloud, Rows3 } from "lucide-react";
-import { Peek, RecordsMount, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { Database, DownloadCloud, LayoutList, Rows3, Table2 } from "lucide-react";
+import { Peek, RecordsMount, SectionCard, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { recordsDataSource, rowName } from "@ai-matrx/records-ui/helpers";
 import { useRecords, useTable } from "@ai-matrx/records/react";
 
@@ -56,6 +56,26 @@ const TABLE_ENTITY = "data-table";
 
 function tableSource(id: string | null): NodeSource {
   return { kind: "entity", entity: TABLE_ENTITY, id };
+}
+
+/**
+ * THE TABLE TILE'S TWO LAYOUTS: the table page (default) or a SECTION — the same table drawn as a
+ * titled, grouped, edit-in-place section of a page (records-ui `SectionCard`: a design system's
+ * Colors, a case plan's deadlines). Kept on the tile as `meta.layout`; the table is the same record.
+ */
+export const TABLE_LAYOUT_SECTION = "section";
+
+export function tableLayoutOf(source: NodeSource): "table" | "section" {
+  return source.kind === "entity" && source.meta?.layout === TABLE_LAYOUT_SECTION ? "section" : "table";
+}
+
+function withTableLayout(source: NodeSource, layout: "table" | "section"): NodeSource {
+  if (source.kind !== "entity") return source;
+  const rest = Object.fromEntries(Object.entries(source.meta ?? {}).filter(([k]) => k !== "layout"));
+  const meta = layout === "section" ? { ...rest, layout: TABLE_LAYOUT_SECTION } : rest;
+  const { meta: _old, ...base } = source;
+  void _old;
+  return Object.keys(meta).length > 0 ? { ...base, meta } : base;
 }
 
 function tableIdOf(source: NodeSource): string | null {
@@ -149,6 +169,18 @@ function TablePicker({ onPick, onCancel }: PickerProps) {
   );
 }
 
+/** "Section from a table": the same table picker; the tile lands drawn as a section card. */
+function SectionTablePicker({ onPick, onCancel }: PickerProps) {
+  return (
+    <div className="max-h-[min(560px,70dvh)] overflow-y-auto">
+      <TablesAcrossOrganizations
+        onCancel={onCancel}
+        onChoose={(t) => onPick([{ title: t.table_name, source: withTableLayout(tableSource(t.table_id), "section") }])}
+      />
+    </div>
+  );
+}
+
 /** A new table: the package's own making controls; the table it makes becomes this tile. */
 function TableDraftBody({ onSource }: ItemBodyProps) {
   return (
@@ -170,10 +202,32 @@ function AdoptTableName({ tableId, source, title, onSource }: { tableId: string 
   return null;
 }
 
+/** One quiet switch between the table page and the section card, at the tile's top right. */
+function TableLayoutSwitch({ source, onSource }: Pick<ItemBodyProps, "source" | "onSource">) {
+  const layout = tableLayoutOf(source);
+  const next = layout === "section" ? "table" : "section";
+  const Icon = next === "section" ? LayoutList : Table2;
+  return (
+    <div className="flex justify-end">
+      <Button
+        type="button"
+        variant="quiet"
+        className="gap-1.5 text-xs"
+        data-board-table-layout={layout}
+        onClick={() => onSource(withTableLayout(source, next))}
+      >
+        <Icon className="h-3.5 w-3.5" />
+        {next === "section" ? "Show as section" : "Show as table"}
+      </Button>
+    </div>
+  );
+}
+
 export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBodyProps & { id: string }) {
   const mount = useUnifiedTable({ tableId: id, address: NO_ADDRESS });
   // A table made by "Get data" (anywhere) says where its rows came from, with Refresh and Get more.
   const fetched = (source.kind === "entity" ? readDataFetchMeta(source.meta)?.fetched : undefined) ?? null;
+  const section = tableLayoutOf(source) === "section";
   return (
     <div className={mount.mountsTheTable ? "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1" : "h-full min-h-0 overflow-y-auto p-4"}>
       <UnifiedTableBody
@@ -182,8 +236,10 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
           <>
             <AdoptTableName tableId={id} source={source} title={title} onSource={onSource} />
             <FetchedSourceBar tileId={tileId} tableId={id} source={source} fetched={fetched} onSource={onSource} />
+            <TableLayoutSwitch source={source} onSource={onSource} />
           </>
         }
+        {...(section ? { content: <SectionCard tableId={id} /> } : {})}
       />
     </div>
   );
@@ -304,6 +360,7 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     startNew: [
       { label: "New table", create: () => ({ title: "New table", source: tableSource(null) }) },
       { label: "Get data", icon: DownloadCloud, create: () => ({ title: "Get data", source: getDataSource() }), openAtOnce: true },
+      { label: "Section from a table", icon: LayoutList, Picker: SectionTablePicker },
     ],
     bringIn: { label: "Table", Picker: TablePicker },
     // Tables are not in the search projection: the table picker's own list, matched on the name.
