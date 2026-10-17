@@ -38,6 +38,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
 import { packageKnobClient } from "@/lib/knobs/packageKnobClient";
+import { withAuthDestination } from "@/utils/auth/auth-destination";
 import { supabase } from "@/utils/supabase/client";
 
 let sharedPort: VaultPort | null = null;
@@ -51,8 +52,11 @@ function vaultPort(): VaultPort {
   return sharedPort;
 }
 
+// "Continue with Google" returns through the site's one sign-in callback (the only return address
+// the auth server accepts), which lands the person back on this same vault address.
 const identity = createSupabaseIdentity(supabase.auth, {
-  redirectTo: () => window.location.href,
+  redirectTo: () =>
+    `${window.location.origin}${withAuthDestination("/auth/callback", `${window.location.pathname}${window.location.search}`)}`,
 });
 
 const openUrl = (url: string) => void openOutbound(url, "_blank", "noopener");
