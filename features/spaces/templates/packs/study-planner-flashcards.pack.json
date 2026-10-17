@@ -1,0 +1,1849 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0258",
+  "version": 1,
+  "title": "Study Planner & Flashcards",
+  "description": "Plan study blocks backwards from exam day and drill flashcards in boxes.",
+  "forWho": "Students preparing for exams",
+  "icon": {
+    "emoji": "🧠"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "study",
+    "flashcards",
+    "revision",
+    "exams"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-study-planner-flashcards",
+    "catalogueId": "SP0258",
+    "useCase": "Tamsin Okafor is a pre-med student with three exams in a month and uses this to plan revision and drill cards each morning.",
+    "industry": "education",
+    "vertical": "Study planning",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Linden Hall Learning Centre",
+      "describes": "A university learning centre that gives students a revision planner.",
+      "address": {
+        "line1": "74 Foxglove Parade",
+        "city": "Raleigh",
+        "region": "NC",
+        "postalCode": "27601",
+        "country": "US"
+      },
+      "phone": "(919) 555-0146",
+      "website": "lindenhalllearning.net",
+      "email": "hello@lindenhalllearning.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-study-planner-flashcards",
+    "tables": [
+      {
+        "token": "subject",
+        "name": "Subjects",
+        "labelSingular": "Subject",
+        "labelPlural": "Subjects",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-marked",
+        "titleField": "subject_name",
+        "describes": "Each subject being revised, when its exam is and how much of the plan is done.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "subject_name",
+            "label": "Subject",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "exam_on",
+            "label": "Exam date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_exam",
+            "label": "Days to exam",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Exam date}, 'days')"
+          },
+          {
+            "key": "plan_list",
+            "label": "Study plan",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "multi": true
+          },
+          {
+            "key": "topics_done",
+            "label": "Topics done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "topic",
+            "agg": "count",
+            "filter": {
+              "done": true
+            }
+          },
+          {
+            "key": "minutes_planned",
+            "label": "Minutes planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "minutes",
+            "agg": "sum"
+          },
+          {
+            "key": "cue_list",
+            "label": "Study cards",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "cue",
+            "multi": true
+          },
+          {
+            "key": "cue_count",
+            "label": "Deck size",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cue_list",
+            "pick": "front",
+            "agg": "count"
+          },
+          {
+            "key": "private_notes",
+            "label": "Private notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          }
+        ],
+        "rows": [
+          {
+            "key": "su-anat",
+            "values": {
+              "subject_name": "Human Anatomy",
+              "exam_on": "@today+19d",
+              "plan_list": [
+                "p01",
+                "p02",
+                "p03",
+                "p04"
+              ],
+              "cue_list": [
+                "fc01",
+                "fc02",
+                "fc03",
+                "fc04",
+                "fc05",
+                "fc06",
+                "fc07"
+              ]
+            }
+          },
+          {
+            "key": "su-phys",
+            "values": {
+              "subject_name": "Physics: Mechanics",
+              "exam_on": "@today+26d",
+              "plan_list": [
+                "p05",
+                "p06",
+                "p07",
+                "p08"
+              ],
+              "cue_list": [
+                "fc08",
+                "fc09",
+                "fc10",
+                "fc11",
+                "fc12",
+                "fc13"
+              ]
+            }
+          },
+          {
+            "key": "su-latin",
+            "values": {
+              "subject_name": "Latin Language",
+              "exam_on": "@today+12d",
+              "plan_list": [
+                "p09",
+                "p10",
+                "p11",
+                "p12"
+              ],
+              "cue_list": [
+                "fc14",
+                "fc15",
+                "fc16",
+                "fc17",
+                "fc18",
+                "fc19",
+                "fc20"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "plan",
+        "name": "Study plan",
+        "labelSingular": "Study session",
+        "labelPlural": "Study plan",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "topic",
+        "describes": "Planned study blocks by day, with the method, minutes and how confident you feel afterwards.",
+        "subject": "thing",
+        "independentOf": {
+          "subject": "A session is planned for the day that suits the week; the exam day is separate."
+        },
+        "fields": [
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "subject",
+            "label": "Subject",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "subject",
+            "relationMax": 1
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 5
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Read",
+              "Practice problems",
+              "Flashcards",
+              "Past paper",
+              "Summarise"
+            ],
+            "choiceColors": {
+              "Read": "blue",
+              "Practice problems": "teal",
+              "Flashcards": "violet",
+              "Past paper": "amber",
+              "Summarise": "green"
+            }
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "confidence",
+            "label": "Confidence",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p01",
+            "values": {
+              "topic": "Skeletal system: labelling",
+              "subject": "su-anat",
+              "on": "@today-3d",
+              "minutes": 45,
+              "method": "Flashcards",
+              "done": true,
+              "confidence": "4"
+            }
+          },
+          {
+            "key": "p02",
+            "values": {
+              "topic": "Muscles of the upper limb",
+              "subject": "su-anat",
+              "on": "@today-1d",
+              "minutes": 60,
+              "method": "Summarise",
+              "done": true,
+              "confidence": "3"
+            }
+          },
+          {
+            "key": "p03",
+            "values": {
+              "topic": "Cardiovascular system diagrams",
+              "subject": "su-anat",
+              "on": "@today+1d",
+              "minutes": 50,
+              "method": "Read",
+              "done": false
+            }
+          },
+          {
+            "key": "p04",
+            "values": {
+              "topic": "Past paper: Section A",
+              "subject": "su-anat",
+              "on": "@today+5d",
+              "minutes": 90,
+              "method": "Past paper",
+              "done": false
+            }
+          },
+          {
+            "key": "p05",
+            "values": {
+              "topic": "Newton's laws problem set",
+              "subject": "su-phys",
+              "on": "@today-2d",
+              "minutes": 60,
+              "method": "Practice problems",
+              "done": true,
+              "confidence": "4"
+            }
+          },
+          {
+            "key": "p06",
+            "values": {
+              "topic": "Energy and work worked examples",
+              "subject": "su-phys",
+              "on": "@today+2d",
+              "minutes": 75,
+              "method": "Practice problems",
+              "done": false
+            }
+          },
+          {
+            "key": "p07",
+            "values": {
+              "topic": "Circular motion summary",
+              "subject": "su-phys",
+              "on": "@today+6d",
+              "minutes": 40,
+              "method": "Summarise",
+              "done": false
+            }
+          },
+          {
+            "key": "p08",
+            "values": {
+              "topic": "Past paper: 2022 mechanics",
+              "subject": "su-phys",
+              "on": "@today+14d",
+              "minutes": 120,
+              "method": "Past paper",
+              "done": false
+            }
+          },
+          {
+            "key": "p09",
+            "values": {
+              "topic": "Third declension nouns",
+              "subject": "su-latin",
+              "on": "@today-4d",
+              "minutes": 30,
+              "method": "Flashcards",
+              "done": true,
+              "confidence": "5"
+            }
+          },
+          {
+            "key": "p10",
+            "values": {
+              "topic": "Subjunctive verb forms",
+              "subject": "su-latin",
+              "on": "@today+0d",
+              "minutes": 45,
+              "method": "Practice problems",
+              "done": false
+            }
+          },
+          {
+            "key": "p11",
+            "values": {
+              "topic": "Translate Caesar passage",
+              "subject": "su-latin",
+              "on": "@today+3d",
+              "minutes": 60,
+              "method": "Read",
+              "done": false
+            }
+          },
+          {
+            "key": "p12",
+            "values": {
+              "topic": "Vocabulary revision, unit 6",
+              "subject": "su-latin",
+              "on": "@today+7d",
+              "minutes": 30,
+              "method": "Flashcards",
+              "done": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "cue",
+        "name": "Study cards",
+        "labelSingular": "Study card",
+        "labelPlural": "Study cards",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layers",
+        "titleField": "front",
+        "describes": "Question and answer cards sorted into five boxes; higher boxes are reviewed less often.",
+        "subject": "thing",
+        "independentOf": {
+          "subject": "Cards are reviewed on their own schedule, whenever the exam is."
+        },
+        "fields": [
+          {
+            "key": "front",
+            "label": "Front",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "back",
+            "label": "Back",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "subject",
+            "label": "Subject",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "subject",
+            "relationMax": 1
+          },
+          {
+            "key": "box",
+            "label": "Box",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "last_reviewed",
+            "label": "Last reviewed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_since",
+            "label": "Days since review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Last reviewed}, TODAY(), 'days')"
+          },
+          {
+            "key": "known",
+            "label": "Known",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tags",
+            "label": "Tags",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "multi": true,
+            "choices": [
+              "Adverbs",
+              "Bones",
+              "Circular motion",
+              "Energy",
+              "Grammar",
+              "Heart",
+              "Joints",
+              "Laws",
+              "Muscles",
+              "Nerves",
+              "Nouns",
+              "Translation",
+              "Units",
+              "Verbs"
+            ],
+            "choiceColors": {
+              "Adverbs": "blue",
+              "Bones": "green",
+              "Circular motion": "amber",
+              "Energy": "red",
+              "Grammar": "violet",
+              "Heart": "teal",
+              "Joints": "orange",
+              "Laws": "pink",
+              "Muscles": "slate",
+              "Nerves": "yellow",
+              "Nouns": "brown",
+              "Translation": "gray",
+              "Units": "blue",
+              "Verbs": "green"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "fc01",
+            "values": {
+              "front": "Which bone is the longest in the human body?",
+              "back": "The femur.",
+              "subject": "su-anat",
+              "box": "5",
+              "known": true,
+              "last_reviewed": "@today-2d",
+              "tags": [
+                "Bones"
+              ]
+            }
+          },
+          {
+            "key": "fc02",
+            "values": {
+              "front": "What are the four chambers of the heart?",
+              "back": "Right atrium, right ventricle, left atrium, left ventricle.",
+              "subject": "su-anat",
+              "box": "3",
+              "known": false,
+              "last_reviewed": "@today-1d",
+              "tags": [
+                "Heart"
+              ]
+            }
+          },
+          {
+            "key": "fc03",
+            "values": {
+              "front": "Which muscle flexes the elbow?",
+              "back": "The biceps brachii, with help from the brachialis.",
+              "subject": "su-anat",
+              "box": "2",
+              "known": false,
+              "last_reviewed": "@today-1d",
+              "tags": [
+                "Muscles"
+              ]
+            }
+          },
+          {
+            "key": "fc04",
+            "values": {
+              "front": "What does the median nerve pass through at the wrist?",
+              "back": "The carpal tunnel.",
+              "subject": "su-anat",
+              "box": "1",
+              "known": false,
+              "last_reviewed": "@today-0d",
+              "tags": [
+                "Nerves"
+              ]
+            }
+          },
+          {
+            "key": "fc05",
+            "values": {
+              "front": "How many cranial nerves are there?",
+              "back": "Twelve pairs.",
+              "subject": "su-anat",
+              "box": "4",
+              "known": true,
+              "last_reviewed": "@today-3d",
+              "tags": [
+                "Nerves"
+              ]
+            }
+          },
+          {
+            "key": "fc06",
+            "values": {
+              "front": "Which vessel carries oxygenated blood from the heart to the body?",
+              "back": "The aorta.",
+              "subject": "su-anat",
+              "box": "3",
+              "known": false,
+              "last_reviewed": "@today-2d",
+              "tags": [
+                "Heart"
+              ]
+            }
+          },
+          {
+            "key": "fc07",
+            "values": {
+              "front": "What is the function of the meniscus?",
+              "back": "It cushions the knee and spreads load across the joint.",
+              "subject": "su-anat",
+              "box": "2",
+              "known": false,
+              "last_reviewed": "@today-1d",
+              "tags": [
+                "Joints"
+              ]
+            }
+          },
+          {
+            "key": "fc08",
+            "values": {
+              "front": "State Newton's second law.",
+              "back": "Force equals mass times acceleration.",
+              "subject": "su-phys",
+              "box": "4",
+              "known": true,
+              "last_reviewed": "@today-3d",
+              "tags": [
+                "Laws"
+              ]
+            }
+          },
+          {
+            "key": "fc09",
+            "values": {
+              "front": "What is the SI unit of momentum?",
+              "back": "Kilogram metre per second.",
+              "subject": "su-phys",
+              "box": "3",
+              "known": false,
+              "last_reviewed": "@today-2d",
+              "tags": [
+                "Units"
+              ]
+            }
+          },
+          {
+            "key": "fc10",
+            "values": {
+              "front": "What is kinetic energy in terms of mass and speed?",
+              "back": "One half times mass times speed squared.",
+              "subject": "su-phys",
+              "box": "5",
+              "known": true,
+              "last_reviewed": "@today-5d",
+              "tags": [
+                "Energy"
+              ]
+            }
+          },
+          {
+            "key": "fc11",
+            "values": {
+              "front": "What does centripetal mean?",
+              "back": "Directed towards the centre of the circle.",
+              "subject": "su-phys",
+              "box": "2",
+              "known": false,
+              "last_reviewed": "@today-1d",
+              "tags": [
+                "Circular motion"
+              ]
+            }
+          },
+          {
+            "key": "fc12",
+            "values": {
+              "front": "What is the work done by a force?",
+              "back": "Force times distance moved in the direction of the force.",
+              "subject": "su-phys",
+              "box": "3",
+              "known": false,
+              "last_reviewed": "@today-2d",
+              "tags": [
+                "Energy"
+              ]
+            }
+          },
+          {
+            "key": "fc13",
+            "values": {
+              "front": "When is impulse equal to change in momentum?",
+              "back": "Always; impulse is force times time and equals the change in momentum.",
+              "subject": "su-phys",
+              "box": "1",
+              "known": false,
+              "last_reviewed": "@today-0d",
+              "tags": [
+                "Laws"
+              ]
+            }
+          },
+          {
+            "key": "fc14",
+            "values": {
+              "front": "What is the Latin for \"water\"?",
+              "back": "Aqua.",
+              "subject": "su-latin",
+              "box": "5",
+              "known": true,
+              "last_reviewed": "@today-6d",
+              "tags": [
+                "Nouns"
+              ]
+            }
+          },
+          {
+            "key": "fc15",
+            "values": {
+              "front": "Decline \"rex, regis\" in the genitive plural.",
+              "back": "Regum.",
+              "subject": "su-latin",
+              "box": "2",
+              "known": false,
+              "last_reviewed": "@today-1d",
+              "tags": [
+                "Nouns"
+              ]
+            }
+          },
+          {
+            "key": "fc16",
+            "values": {
+              "front": "What does \"ubi\" mean?",
+              "back": "Where.",
+              "subject": "su-latin",
+              "box": "4",
+              "known": true,
+              "last_reviewed": "@today-3d",
+              "tags": [
+                "Adverbs"
+              ]
+            }
+          },
+          {
+            "key": "fc17",
+            "values": {
+              "front": "Translate \"amat puellam\".",
+              "back": "He or she loves the girl.",
+              "subject": "su-latin",
+              "box": "3",
+              "known": false,
+              "last_reviewed": "@today-2d",
+              "tags": [
+                "Translation"
+              ]
+            }
+          },
+          {
+            "key": "fc18",
+            "values": {
+              "front": "Which case follows the preposition \"in\" for motion?",
+              "back": "The accusative.",
+              "subject": "su-latin",
+              "box": "2",
+              "known": false,
+              "last_reviewed": "@today-1d",
+              "tags": [
+                "Grammar"
+              ]
+            }
+          },
+          {
+            "key": "fc19",
+            "values": {
+              "front": "What is the perfect of \"ire\"?",
+              "back": "Ii or ivi, \"I went\".",
+              "subject": "su-latin",
+              "box": "1",
+              "known": false,
+              "last_reviewed": "@today-0d",
+              "tags": [
+                "Verbs"
+              ]
+            }
+          },
+          {
+            "key": "fc20",
+            "values": {
+              "front": "What does \"tamen\" mean?",
+              "back": "However, nevertheless.",
+              "subject": "su-latin",
+              "box": "4",
+              "known": true,
+              "last_reviewed": "@today-4d",
+              "tags": [
+                "Adverbs"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A subject lists its study sessions.",
+        "fromTable": "subject",
+        "fromField": "plan_list",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "subject_of_plan"
+      },
+      {
+        "describes": "A subject lists its flashcards.",
+        "fromTable": "subject",
+        "fromField": "cue_list",
+        "toTable": "cue",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "subject_of_cue"
+      },
+      {
+        "describes": "Each session is for one subject.",
+        "fromTable": "plan",
+        "fromField": "subject",
+        "toTable": "subject",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "sessions"
+      },
+      {
+        "describes": "Each card belongs to one subject.",
+        "fromTable": "cue",
+        "fromField": "subject",
+        "toTable": "subject",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "cues"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "new_card",
+        "name": "Add a flashcard",
+        "describes": "A fast way to capture a question while reading.",
+        "audience": "staff",
+        "table": "cue",
+        "fields": [
+          {
+            "fieldKey": "front",
+            "ask": "What is the question?",
+            "required": true
+          },
+          {
+            "fieldKey": "back",
+            "ask": "What is the answer?"
+          },
+          {
+            "fieldKey": "subject",
+            "ask": "Which subject?"
+          },
+          {
+            "fieldKey": "box",
+            "ask": "Which box does it start in?"
+          }
+        ],
+        "submitLabel": "Add card",
+        "confirmation": "Added to box 1 of your deck."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_subjects",
+        "name": "All subjects",
+        "table": "subject",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "exam_calendar",
+        "name": "Exam dates",
+        "table": "subject",
+        "kind": "calendar",
+        "dateField": "exam_on"
+      },
+      {
+        "token": "all_plan",
+        "name": "All sessions",
+        "table": "plan",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "plan_calendar",
+        "name": "Calendar",
+        "table": "plan",
+        "kind": "calendar",
+        "dateField": "on"
+      },
+      {
+        "token": "plan_board",
+        "name": "By method",
+        "table": "plan",
+        "kind": "kanban",
+        "groupBy": "method"
+      },
+      {
+        "token": "all_cues",
+        "name": "All cards",
+        "table": "cue",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "cue_boxes",
+        "name": "Boxes",
+        "table": "cue",
+        "kind": "kanban",
+        "groupBy": "box"
+      },
+      {
+        "token": "cue_calendar",
+        "name": "Review dates",
+        "table": "cue",
+        "kind": "calendar",
+        "dateField": "last_reviewed"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Study Planner & Flashcards assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "cue",
+          "describes": "Every flashcard with its box, subject and last review."
+        },
+        {
+          "name": "related_tables",
+          "table": "subject",
+          "describes": "The subjects cards belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many flashcards are in box 1?",
+        "whyItMatters": "Tamsin reviews box 1 first every morning.",
+        "expect": {
+          "table": "cue",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "box": "1"
+          },
+          "answer": 3,
+          "unit": "cues"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the card boxes.",
+        "action": {
+          "kind": "open",
+          "surface": "cue_boxes"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "cue_boxes",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open the study calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open exam dates.",
+        "action": {
+          "kind": "open",
+          "surface": "exam_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "exam_calendar",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lindenhalllearning.net"
+      ],
+      "fictionalStreets": [
+        "Foxglove Parade"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "study-hub",
+      "parent": null,
+      "title": "Study Planner & Flashcards",
+      "icon": {
+        "emoji": "🧠"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan study blocks backwards from each exam, then review flashcards in boxes: miss a card and it returns to box 1, nail it and it moves up."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Brain"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Today's study"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "plan",
+                      "view": "all_plan"
+                    },
+                    "inline": true,
+                    "title": "Study sessions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-t",
+                        "name": "Not done",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "done": false
+                        },
+                        "sorts": [
+                          {
+                            "field": "on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-t"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Exam countdown"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "subject",
+                      "view": "all_subjects"
+                    },
+                    "inline": true,
+                    "title": "Subjects",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-e",
+                        "name": "Exam dates",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "exam_on"
+                      },
+                      {
+                        "id": "v-s",
+                        "name": "Subjects",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "v-e"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_calendar"
+            },
+            "inline": true,
+            "title": "Study sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-pc",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on"
+              },
+              {
+                "id": "v-pb",
+                "name": "By method",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "method"
+              },
+              {
+                "id": "v-pa",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-pc"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Flashcards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cue",
+              "view": "cue_boxes"
+            },
+            "inline": true,
+            "title": "Flashcards",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-cb",
+                "name": "Boxes",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "box"
+              },
+              {
+                "id": "v-cg",
+                "name": "Deck",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-ca",
+                "name": "All cards",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-cu",
+                "name": "Not yet known",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "known": false
+                }
+              }
+            ],
+            "activeViewId": "v-cb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:revision-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:review-routine"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:exam-day"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "revision-dashboard",
+      "parent": "study-hub",
+      "title": "Revision dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "plan",
+                      "view": "all_plan"
+                    },
+                    "inline": true,
+                    "title": "Study sessions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "Minutes by method",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "method",
+                          "op": "sum",
+                          "centerValue": true,
+                          "field": "minutes"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cue",
+                      "view": "all_cues"
+                    },
+                    "inline": true,
+                    "title": "Flashcards",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "Cards by box",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "box",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "plan",
+                      "view": "all_plan"
+                    },
+                    "inline": true,
+                    "title": "Study sessions",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "Minutes by subject",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "subject",
+                          "op": "sum",
+                          "field": "minutes"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weak spots"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cue",
+              "view": "all_cues"
+            },
+            "inline": true,
+            "title": "Flashcards",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-w",
+                "name": "Box 1 and 2",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "box": [
+                    "1",
+                    "2"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-w"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Low confidence sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "all_plan"
+            },
+            "inline": true,
+            "title": "Study sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l",
+                "name": "Low confidence",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "confidence": [
+                    "1",
+                    "2",
+                    "3"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-l"
+          }
+        }
+      ]
+    },
+    {
+      "key": "review-routine",
+      "parent": "study-hub",
+      "title": "How box review works",
+      "icon": {
+        "emoji": "📦"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A simple spaced-review routine."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each day, review every card in box 1, and the cards due from higher boxes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Got it right: move it up one box and set Last reviewed to today."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Got it wrong: move it back to box 1."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Box 5 cards need a look only once every few weeks."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Box"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review how often"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every other day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Twice a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weekly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every two weeks"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Mark Known when you could explain the answer without looking."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Check"
+          }
+        }
+      ]
+    },
+    {
+      "key": "exam-day",
+      "parent": "study-hub",
+      "title": "Exam day checklist",
+      "icon": {
+        "emoji": "🎒"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Admission ticket or student ID"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Two pens and a pencil"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Water and a snack"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Calculator checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Route and arrival time confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "One page of formulae read, then put away"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Read the whole paper before writing anything."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

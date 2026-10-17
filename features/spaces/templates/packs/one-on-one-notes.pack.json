@@ -1,0 +1,1710 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0257",
+  "version": 1,
+  "title": "1:1 Meeting Notes",
+  "description": "Recurring one to ones with mood, agenda and action items per person.",
+  "forWho": "Managers and their direct reports",
+  "icon": {
+    "emoji": "🤝"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "one-to-one",
+    "meetings",
+    "management",
+    "feedback"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-one-on-one-notes",
+    "catalogueId": "SP0257",
+    "useCase": "Ruth Abernathy manages three engineers and uses this to keep a steady one to one rhythm and not lose any promise she made.",
+    "industry": "healthcare",
+    "vertical": "One to one meetings",
+    "job": "team_hr",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Quillstone Health Software",
+      "describes": "A software company building scheduling tools for physical therapy clinics.",
+      "address": {
+        "line1": "45 Marrowby Court",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80202",
+        "country": "US"
+      },
+      "phone": "(720) 555-0170",
+      "website": "quillstone-health.net",
+      "email": "hello@quillstone-health.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-one-on-one-notes",
+    "tables": [
+      {
+        "token": "report",
+        "name": "People",
+        "labelSingular": "Direct report",
+        "labelPlural": "People",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "report_name",
+        "describes": "Each person you meet one to one with, how often and what they are working toward.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "report_name",
+            "label": "Person",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "person",
+            "label": "Team profile",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "cadence",
+            "label": "Cadence",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly",
+              "Biweekly",
+              "Monthly"
+            ],
+            "choiceColors": {
+              "Weekly": "green",
+              "Biweekly": "blue",
+              "Monthly": "violet"
+            }
+          },
+          {
+            "key": "growth",
+            "label": "Growth focus",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "meeting_list",
+            "label": "Meetings",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "meeting",
+            "multi": true
+          },
+          {
+            "key": "last_met",
+            "label": "Last 1:1",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "meeting_list",
+            "pick": "held_on",
+            "agg": "max"
+          },
+          {
+            "key": "meeting_total",
+            "label": "Meetings held",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "meeting_list",
+            "pick": "meeting_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rp-dario",
+            "values": {
+              "report_name": "Dario Fontaine",
+              "person": "tm-dario",
+              "cadence": "Weekly",
+              "growth": "Move toward staff engineer",
+              "meeting_list": [
+                "m01",
+                "m02",
+                "m03",
+                "m04"
+              ]
+            }
+          },
+          {
+            "key": "rp-halima",
+            "values": {
+              "report_name": "Halima Yusuf",
+              "person": "tm-halima",
+              "cadence": "Biweekly",
+              "growth": "Build confidence leading projects",
+              "meeting_list": [
+                "m05",
+                "m06"
+              ]
+            }
+          },
+          {
+            "key": "rp-ollie",
+            "values": {
+              "report_name": "Oliver Brandt",
+              "person": "tm-ollie",
+              "cadence": "Weekly",
+              "growth": "Ramp up on the codebase",
+              "meeting_list": [
+                "m07",
+                "m08",
+                "m09",
+                "m10"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "meeting",
+        "name": "Meetings",
+        "labelSingular": "Meeting",
+        "labelPlural": "Meetings",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "messages-square",
+        "titleField": "meeting_name",
+        "describes": "Every one to one: when it happened, how it felt and when the next one is.",
+        "subject": "thing",
+        "before": [
+          [
+            "held_on",
+            "next_on"
+          ]
+        ],
+        "independentOf": {
+          "report": "A one to one can happen on any day, not only the cadence day."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "meeting_name",
+            "label": "Meeting",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "report",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "report",
+            "relationMax": 1
+          },
+          {
+            "key": "held_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "mood",
+            "label": "Mood",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "agenda",
+            "label": "Agenda",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_on",
+            "label": "Next meeting",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "action_list",
+            "label": "Action items",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "action",
+            "multi": true
+          },
+          {
+            "key": "open_actions",
+            "label": "Open actions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "action_list",
+            "pick": "action_name",
+            "agg": "count",
+            "filter": {
+              "done": false
+            }
+          },
+          {
+            "key": "private_notes",
+            "label": "Private notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "meeting_name": "Dario: planning the migration",
+              "report": "rp-dario",
+              "held_on": "@today-28d",
+              "mood": "4",
+              "agenda": "Migration scope, on-call load",
+              "next_on": "@today-21d",
+              "action_list": [
+                "a01",
+                "a02"
+              ]
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "meeting_name": "Dario: career conversation",
+              "report": "rp-dario",
+              "held_on": "@today-21d",
+              "mood": "5",
+              "agenda": "Staff path, mentoring",
+              "next_on": "@today-14d",
+              "action_list": [
+                "a03",
+                "a04"
+              ]
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "meeting_name": "Dario: check-in",
+              "report": "rp-dario",
+              "held_on": "@today-14d",
+              "mood": "3",
+              "agenda": "Burnout signs, deadline",
+              "next_on": "@today-7d",
+              "action_list": [
+                "a05",
+                "a06"
+              ]
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "meeting_name": "Dario: check-in",
+              "report": "rp-dario",
+              "held_on": "@today-7d",
+              "mood": "4",
+              "agenda": "Handover plan",
+              "next_on": "@today+0d",
+              "action_list": [
+                "a07"
+              ]
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "meeting_name": "Halima: project kickoff 1:1",
+              "report": "rp-halima",
+              "held_on": "@today-24d",
+              "mood": "4",
+              "agenda": "First lead role",
+              "next_on": "@today-10d",
+              "action_list": [
+                "a08"
+              ]
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "meeting_name": "Halima: check-in",
+              "report": "rp-halima",
+              "held_on": "@today-10d",
+              "mood": "3",
+              "agenda": "Feeling stretched, review feedback",
+              "next_on": "@today+4d",
+              "action_list": [
+                "a09",
+                "a10"
+              ]
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "meeting_name": "Oliver: week 1",
+              "report": "rp-ollie",
+              "held_on": "@today-26d",
+              "mood": "4",
+              "agenda": "Setup, who to ask",
+              "next_on": "@today-19d",
+              "action_list": []
+            }
+          },
+          {
+            "key": "m08",
+            "values": {
+              "meeting_name": "Oliver: week 2",
+              "report": "rp-ollie",
+              "held_on": "@today-19d",
+              "mood": "4",
+              "agenda": "First pull request",
+              "next_on": "@today-12d",
+              "action_list": [
+                "a11"
+              ]
+            }
+          },
+          {
+            "key": "m09",
+            "values": {
+              "meeting_name": "Oliver: week 3",
+              "report": "rp-ollie",
+              "held_on": "@today-12d",
+              "mood": "5",
+              "agenda": "Pairing sessions going well",
+              "next_on": "@today-5d",
+              "action_list": [
+                "a12"
+              ]
+            }
+          },
+          {
+            "key": "m10",
+            "values": {
+              "meeting_name": "Oliver: check-in",
+              "report": "rp-ollie",
+              "held_on": "@today-5d",
+              "mood": "4",
+              "agenda": "Testing practices",
+              "next_on": "@today+2d",
+              "action_list": []
+            }
+          }
+        ]
+      },
+      {
+        "token": "action",
+        "name": "Action items",
+        "labelSingular": "Action item",
+        "labelPlural": "Action items",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-todo",
+        "titleField": "action_name",
+        "describes": "What each person agreed to do after a one to one, and whether it is done.",
+        "subject": "thing",
+        "independentOf": {
+          "meeting": "An action can fall due long after the meeting it came from."
+        },
+        "fields": [
+          {
+            "key": "action_name",
+            "label": "Action",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Me",
+              "Them"
+            ],
+            "choiceColors": {
+              "Me": "blue",
+              "Them": "amber"
+            }
+          },
+          {
+            "key": "meeting",
+            "label": "Meeting",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "meeting",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done",
+            "label": "Done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "action_name": "Draft migration plan",
+              "owner": "Them",
+              "meeting": "m01",
+              "due_on": "@today-14d",
+              "done": true
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "action_name": "Review the on-call rota",
+              "owner": "Me",
+              "meeting": "m01",
+              "due_on": "@today-18d",
+              "done": true
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "action_name": "Pair with Oliver on tests",
+              "owner": "Them",
+              "meeting": "m02",
+              "due_on": "@today-7d",
+              "done": true
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "action_name": "Send staff-level expectations",
+              "owner": "Me",
+              "meeting": "m02",
+              "due_on": "@today-14d",
+              "done": true
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "action_name": "Block two focus days a week",
+              "owner": "Them",
+              "meeting": "m03",
+              "due_on": "@today+3d",
+              "done": false
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "action_name": "Ask finance about conference budget",
+              "owner": "Me",
+              "meeting": "m03",
+              "due_on": "@today+2d",
+              "done": false
+            }
+          },
+          {
+            "key": "a07",
+            "values": {
+              "action_name": "Share handover document",
+              "owner": "Them",
+              "meeting": "m04",
+              "due_on": "@today+5d",
+              "done": false
+            }
+          },
+          {
+            "key": "a08",
+            "values": {
+              "action_name": "Introduce Halima to the product lead",
+              "owner": "Me",
+              "meeting": "m05",
+              "due_on": "@today-3d",
+              "done": true
+            }
+          },
+          {
+            "key": "a09",
+            "values": {
+              "action_name": "Write project brief",
+              "owner": "Them",
+              "meeting": "m06",
+              "due_on": "@today+6d",
+              "done": false
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "action_name": "Find a project mentor",
+              "owner": "Me",
+              "meeting": "m06",
+              "due_on": "@today+8d",
+              "done": false
+            }
+          },
+          {
+            "key": "a11",
+            "values": {
+              "action_name": "Finish onboarding checklist",
+              "owner": "Them",
+              "meeting": "m08",
+              "due_on": "@today-5d",
+              "done": true
+            }
+          },
+          {
+            "key": "a12",
+            "values": {
+              "action_name": "Share testing guide",
+              "owner": "Me",
+              "meeting": "m09",
+              "due_on": "@today+1d",
+              "done": false
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each report is one team member.",
+        "fromTable": "report",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "one_to_ones"
+      },
+      {
+        "describes": "A report lists their meetings.",
+        "fromTable": "report",
+        "fromField": "meeting_list",
+        "toTable": "meeting",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "report_of_meeting"
+      },
+      {
+        "describes": "Each meeting is with one person.",
+        "fromTable": "meeting",
+        "fromField": "report",
+        "toTable": "report",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "meetings"
+      },
+      {
+        "describes": "A meeting lists the actions it produced.",
+        "fromTable": "meeting",
+        "fromField": "action_list",
+        "toTable": "action",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "meeting_of_action"
+      },
+      {
+        "describes": "Each action came out of one meeting.",
+        "fromTable": "action",
+        "fromField": "meeting",
+        "toTable": "meeting",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "actions"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-ruth",
+            "values": {
+              "full_name": "Ruth Abernathy",
+              "role": "Engineering manager",
+              "work_email": "ruth@quillstone-health.net",
+              "mobile": "(720) 555-0171",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-dario",
+            "values": {
+              "full_name": "Dario Fontaine",
+              "role": "Senior engineer",
+              "work_email": "dario@quillstone-health.net",
+              "mobile": "(720) 555-0172",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-halima",
+            "values": {
+              "full_name": "Halima Yusuf",
+              "role": "Software engineer",
+              "work_email": "halima@quillstone-health.net",
+              "mobile": "(720) 555-0173",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-ollie",
+            "values": {
+              "full_name": "Oliver Brandt",
+              "role": "Junior engineer",
+              "work_email": "ollie@quillstone-health.net",
+              "mobile": "(720) 555-0174",
+              "start_date": "@today-8m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "add_action",
+        "name": "Add an action item",
+        "describes": "How either person adds a follow-up after a one to one.",
+        "audience": "staff",
+        "table": "action",
+        "fields": [
+          {
+            "fieldKey": "action_name",
+            "ask": "What needs to happen?",
+            "required": true
+          },
+          {
+            "fieldKey": "owner",
+            "ask": "Who does it?"
+          },
+          {
+            "fieldKey": "meeting",
+            "ask": "Which meeting was it from?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "By when?"
+          }
+        ],
+        "submitLabel": "Add",
+        "confirmation": "Thanks. It is on the list."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_reports",
+        "name": "All people",
+        "table": "report",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "report_board",
+        "name": "By cadence",
+        "table": "report",
+        "kind": "kanban",
+        "groupBy": "cadence"
+      },
+      {
+        "token": "all_meetings",
+        "name": "All meetings",
+        "table": "meeting",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "held_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "meeting_calendar",
+        "name": "Calendar",
+        "table": "meeting",
+        "kind": "calendar",
+        "dateField": "held_on"
+      },
+      {
+        "token": "meeting_mood",
+        "name": "By mood",
+        "table": "meeting",
+        "kind": "kanban",
+        "groupBy": "mood"
+      },
+      {
+        "token": "all_actions",
+        "name": "All actions",
+        "table": "action",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "action_board",
+        "name": "By owner",
+        "table": "action",
+        "kind": "kanban",
+        "groupBy": "owner"
+      },
+      {
+        "token": "action_calendar",
+        "name": "Due dates",
+        "table": "action",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "1:1 Meeting Notes assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "action",
+          "describes": "Every action item, its owner, due day and whether it is done."
+        },
+        {
+          "name": "related_tables",
+          "table": "meeting",
+          "describes": "The one to one meetings actions came from."
+        }
+      ],
+      "question": {
+        "ask": "How many action items are still open?",
+        "whyItMatters": "Ruth reads the open list before every 1:1.",
+        "expect": {
+          "table": "action",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "done": false
+          },
+          "answer": 6,
+          "unit": "action items"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the meeting calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "meeting_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "meeting_calendar",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open the action board.",
+        "action": {
+          "kind": "open",
+          "surface": "action_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "action_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open all people.",
+        "action": {
+          "kind": "open",
+          "surface": "all_reports"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_reports",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "quillstone-health.net"
+      ],
+      "fictionalStreets": [
+        "Marrowby Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "one-on-ones",
+      "parent": null,
+      "title": "1:1 Meeting Notes",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A steady rhythm of one to ones beats occasional big talks. Add a meeting after each conversation, write down actions, and check the open list before the next one."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Handshake"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recent 1:1s"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "meeting_calendar"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-c",
+                        "name": "Calendar",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "held_on"
+                      },
+                      {
+                        "id": "v-l",
+                        "name": "Latest first",
+                        "layout": "list",
+                        "icon": "List",
+                        "sorts": [
+                          {
+                            "field": "held_on",
+                            "direction": "desc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-c"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Open action items"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "action",
+                      "view": "all_actions"
+                    },
+                    "inline": true,
+                    "title": "Action items",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-o",
+                        "name": "Not done",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "done": false
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "v-b",
+                        "name": "By owner",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "owner"
+                      }
+                    ],
+                    "activeViewId": "v-o"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "People"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "report",
+              "view": "all_reports"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-p",
+                "name": "People",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-pc",
+                "name": "By cadence",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "cadence"
+              }
+            ],
+            "activeViewId": "v-p"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "All meetings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meetings"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-m",
+                "name": "By person",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-mm",
+                "name": "By mood",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "mood"
+              }
+            ],
+            "activeViewId": "v-m"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:question-bank"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:one-on-one-template"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:mood-trends"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Prep checklist"
+            }
+          ],
+          "children": [
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Read last meeting notes"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            },
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Check open actions"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            },
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Write two topics of my own"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            },
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Ask what is on their mind first"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "question-bank",
+      "parent": "one-on-ones",
+      "title": "Question bank",
+      "icon": {
+        "emoji": "❓"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pick one or two. The best question is often the plainest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-in"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is on your mind this week?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What was the best part of your week?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is draining your energy?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Work"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What would you do differently on the current project?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What is blocking you that I could remove?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Growth"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What do you want to learn in the next three months?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What kind of work do you want more of?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Feedback"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What could I do to be a better manager for you?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What feedback have you been holding back?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "one-on-one-template",
+      "parent": "one-on-ones",
+      "title": "1:1 template",
+      "icon": {
+        "emoji": "📋"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Copy this outline into a meeting page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check-in"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Their topics"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My topics"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Feedback both ways"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Career"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Action items"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Action one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Action two"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "mood-trends",
+      "parent": "one-on-ones",
+      "title": "Mood and follow-through",
+      "icon": {
+        "emoji": "📈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meetings"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "m1",
+                        "name": "Meetings by mood",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "mood",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "m1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "action",
+                      "view": "all_actions"
+                    },
+                    "inline": true,
+                    "title": "Action items",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "m2",
+                        "name": "Actions by owner",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "owner",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "m2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "report",
+                      "view": "all_reports"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "m3",
+                        "name": "People by cadence",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "cadence",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "m3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A run of low moods is a reason to meet sooner, not later."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meetings"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "m4",
+                "name": "Low mood",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "mood": [
+                    "1",
+                    "2",
+                    "3"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "m4"
+          }
+        }
+      ]
+    }
+  ]
+}
