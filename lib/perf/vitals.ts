@@ -201,6 +201,24 @@ export function loadIsSampled(
   return isSampled(draw, effectiveRate(pathname, rate, readStoredRouteRates(storage)));
 }
 
+/**
+ * The document's REAL first byte, in ms from activation. Vercel answers every page with a
+ * `103 Early Hints` from the edge ~30 ms after the request, and Chrome reports that interim
+ * response as `responseStart` (= `firstInterimResponseStart`) — the number web-vitals calls TTFB.
+ * The page's own headers arrive at `finalResponseHeadersStart`, after the server rendered it
+ * (measured live 2026-10-17: responseStart 104 ms, final headers 1356 ms, FCP 1540 ms). Null
+ * without a navigation entry; browsers without the field fall back to `responseStart`.
+ */
+export function documentFirstByteMs(
+  nav: { responseStart?: number; finalResponseHeadersStart?: number; activationStart?: number } | null | undefined,
+): number | null {
+  if (!nav) return null;
+  const finalHeaders = nav.finalResponseHeadersStart ?? 0;
+  const firstByte = finalHeaders > 0 ? finalHeaders : (nav.responseStart ?? 0);
+  if (!Number.isFinite(firstByte) || firstByte <= 0) return null;
+  return Math.max(firstByte - (nav.activationStart ?? 0), 0);
+}
+
 /** web-vitals navigation types that are NOT this page load's own numbers: soft navigations are another route's, a bfcache restore or a discarded-tab restore measures a different moment. */
 export const DROPPED_NAVIGATION_TYPES: readonly string[] = ["soft-navigation", "back-forward-cache", "restore"];
 

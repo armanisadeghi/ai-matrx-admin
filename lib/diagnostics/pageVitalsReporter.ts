@@ -18,6 +18,7 @@ import { onCLS, onFCP, onINP, onLCP, onTTFB, type Metric } from "web-vitals";
 import { createClient } from "@/utils/supabase/client";
 import { getActiveOrgId } from "@/lib/organizations/activeOrg";
 import { APP_VERSION_META } from "@/lib/config-attestation/meta";
+import { documentFirstByteMs } from "@/lib/perf/vitals";
 
 const MAX_WAIT_MS = 5 * 60_000;
 const SAMPLE_CACHE_KEY = "matrx:page-vitals-sample";
@@ -75,7 +76,12 @@ export function startPageVitals(): void {
   let sent = false;
   const take = (metric: Metric) => {
     values[metric.name] = metric.value;
-    if (metric.name === "TTFB") navType = metric.navigationType;
+    if (metric.name === "TTFB") {
+      navType = metric.navigationType;
+      // The page's own first byte, never the edge's 103 Early Hints (lib/perf/vitals.ts).
+      const realFirstByte = documentFirstByteMs(performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined);
+      if (realFirstByte !== null) values.TTFB = Math.max(metric.value, realFirstByte);
+    }
   };
   onTTFB(take);
   onFCP(take);

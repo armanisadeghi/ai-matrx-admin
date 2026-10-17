@@ -124,6 +124,16 @@ describe("PerfVitalsReporter delivery", () => {
     await unmount();
   });
 
+  it("TTFB is the page's own first byte: a 103 Early Hints at 30 ms does not stand in for headers at 3200 ms", async () => {
+    setNavigationEntries([{ responseStart: 30, firstInterimResponseStart: 30, finalResponseHeadersStart: 3200, activationStart: 0, type: "navigate" }]);
+    const unmount = await mountWithDraw(0.01, undefined, undefined, "/", true);
+    callbacks.TTFB({ name: "TTFB", value: 30, navigationType: "navigate" }); // what web-vitals reports: the 103
+    callbacks.FCP({ name: "FCP", value: 3400, navigationType: "navigate" });
+    leavePage(() => undefined);
+    expect(sentSamples().find((s) => s.name === "TTFB")?.value).toBe(3200);
+    await unmount();
+  });
+
   it("a load that started in a hidden tab sends nothing and loads no web-vitals", async () => {
     setVisibility("hidden");
     const unmount = await mountWithDraw(0.01, undefined, undefined, "/", true);
