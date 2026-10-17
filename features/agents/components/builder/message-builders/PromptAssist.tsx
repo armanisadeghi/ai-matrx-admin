@@ -43,6 +43,7 @@ import {
 } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import type { DeclaredVariable } from "@ai-matrx/rich-content/editor/core/variables";
 import type { VariableDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
+import { nextSendConversationId } from "@/features/agents/hooks/agentBuilderContextBundle";
 
 export interface PromptInsertSources {
   variables: string[];
@@ -83,6 +84,8 @@ export function promptVariableDefinitions(
   definitions: readonly VariableDefinition[] | null | undefined,
   messages: readonly { role: string; content?: unknown }[] | null | undefined,
   place?: PromptPlace,
+  /** The Test panel's current values (absent: the test panel has not started, so no value is claimed). */
+  testValues?: Readonly<Record<string, unknown>> | null,
 ): DeclaredVariable[] {
   const boxes: { label: string; text: string; place: PromptPlace }[] = [];
   let ordinal = 0;
@@ -112,6 +115,8 @@ export function promptVariableDefinitions(
         ...(options && options.length ? { options } : {}),
         ...(from ? { filledFrom: from } : {}),
         ...(usedIn.length ? { usedIn } : {}),
+        // The pill's "needs a value" tint and the Peek's input preview read the Test panel's value.
+        ...(testValues ? { value: testValues[definition.name] ?? "" } : {}),
       };
     });
 }
@@ -119,9 +124,14 @@ export function promptVariableDefinitions(
 export function usePromptInsertSources(agentId: string, place?: PromptPlace): PromptInsertSources {
   const variableDefinitions = useAppSelector((state) => selectAgentVariableDefinitions(state, agentId));
   const messages = useAppSelector((state) => selectAgentMessages(state, agentId));
+  // The Test panel's values (its conversation's user values), read as the stored object — no copy.
+  const testValues = useAppSelector((state) => {
+    const conversationId = nextSendConversationId(state, agentId);
+    return conversationId ? (state.instanceVariableValues.byConversationId[conversationId]?.userValues ?? null) : null;
+  });
   const definitions = useMemo(
-    () => promptVariableDefinitions(variableDefinitions, messages, place),
-    [variableDefinitions, messages, place],
+    () => promptVariableDefinitions(variableDefinitions, messages, place, testValues),
+    [variableDefinitions, messages, place, testValues],
   );
   const contextPolicies = useAppSelector((state) => selectAgentContextPolicies(state, agentId));
   const [catalog, setCatalog] = useState<KindCatalogEntry[] | null>(null);

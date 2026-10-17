@@ -50,7 +50,7 @@ type Draft =
   | { kind: "flow"; step: Step };
 
 /** The step kinds the visual flow editor owns. */
-const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms"]);
+const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event"]);
 
 /** AT-AUTO3: the starting shape of each flow step (the editor fills the rest by choosing). */
 const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
@@ -63,6 +63,7 @@ const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
   ["Ask an agent", () => ({ do: "run_mandate", mandate_key: "", variables: {} })],
   ["Send Gmail", () => ({ do: "gmail", to: "", subject: "", body: "" })],
   ["Send a text", () => ({ do: "sms", to: "", message: "" })],
+  ["Google Calendar event", () => ({ do: "google_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" })],
 ];
 
 function scriptInputs(lines: string): Record<string, string> {
