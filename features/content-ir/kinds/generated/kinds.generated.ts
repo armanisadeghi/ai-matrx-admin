@@ -16883,7 +16883,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_faq_raw?: {
+  web_faq_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -16955,7 +16955,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_hashtags?: {
+  web_hashtags?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17038,7 +17038,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_locations?: {
+  web_locations?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17243,7 +17243,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_faq_answers?: {
+  web_faq_answers?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17255,7 +17255,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_infobox_raw?: {
+  web_infobox_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17266,7 +17266,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_name_search?: {
+  web_name_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -17327,7 +17327,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_local_search?: {
+  web_local_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -17346,7 +17346,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_result_dates?: {
+  web_result_dates?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17440,7 +17440,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_domain_search?: {
+  web_domain_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -17459,7 +17459,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_infobox_facts?: {
+  web_infobox_facts?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17547,7 +17547,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_logo_originals?: {
+  web_logo_originals?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17677,7 +17677,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_search_faq?: {
+  web_name_search_faq?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -17691,7 +17691,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_people_mentions?: {
+  web_people_mentions?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17703,7 +17703,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_site_long_names?: {
+  web_site_long_names?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17731,7 +17731,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_local_search_faq?: {
+  web_local_search_faq?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -17744,7 +17744,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_name_news_search?: {
+  web_name_news_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -17763,7 +17763,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_search_news?: {
+  web_name_search_news?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -17852,7 +17852,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_domain_search_faq?: {
+  web_domain_search_faq?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -17866,7 +17866,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_local_search_news?: {
+  web_local_search_news?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -17880,7 +17880,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_organizations_raw?: {
+  web_organizations_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17922,7 +17922,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_domain_search_news?: {
+  web_domain_search_news?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -17936,7 +17936,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_extra_snippets_raw?: {
+  web_extra_snippets_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17948,7 +17948,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_location_cards_raw?: {
+  web_location_cards_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17960,7 +17960,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_logo_originals_raw?: {
+  web_logo_originals_raw?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -17971,7 +17971,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_name_images_search?: {
+  web_name_images_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -17990,7 +17990,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_search_videos?: {
+  web_name_search_videos?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18003,7 +18003,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_name_videos_search?: {
+  web_name_videos_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -18022,7 +18022,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_organization_names?: {
+  web_organization_names?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -18046,7 +18046,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_domain_navigational?: {
+  web_domain_navigational?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -18058,7 +18058,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_local_search_videos?: {
+  web_local_search_videos?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18071,7 +18071,7 @@ export interface BrandIntakeIdentityMatchOffer {
   /**
    * One search's whole provider response, exactly as the engine returned it.
    */
-  brave_name_reviews_search?: {
+  web_name_reviews_search?: {
     query?: string;
     /**
      * The registered kind this payload is an instance of.
@@ -18090,7 +18090,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_search_infobox?: {
+  web_name_search_infobox?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18104,7 +18104,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_search_results?: {
+  web_name_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18118,7 +18118,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_own_domain_mentions?: {
+  web_own_domain_mentions?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -18182,7 +18182,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_domain_search_videos?: {
+  web_domain_search_videos?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18196,7 +18196,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_local_search_infobox?: {
+  web_local_search_infobox?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18210,7 +18210,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_local_search_results?: {
+  web_local_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18315,7 +18315,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_domain_search_infobox?: {
+  web_domain_search_infobox?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18329,7 +18329,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_domain_search_results?: {
+  web_domain_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18343,7 +18343,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_search_locations?: {
+  web_name_search_locations?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18357,7 +18357,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One section of the provider answers available at a point, one row per source, each row naming its source.
    * Raw form: the provider's sub-object exactly as returned. Clean form: only the fields that carry facts.
    */
-  brave_organization_contacts?: {
+  web_organization_contacts?: {
     items?: ProviderSectionRow[];
     /**
      * The registered kind this payload is an instance of.
@@ -18383,7 +18383,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_local_search_locations?: {
+  web_local_search_locations?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18435,7 +18435,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_domain_search_locations?: {
+  web_domain_search_locations?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18449,7 +18449,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_reviews_search_faq?: {
+  web_name_reviews_search_faq?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18463,7 +18463,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_search_discussions?: {
+  web_name_search_discussions?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18477,7 +18477,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_search_results_raw?: {
+  web_name_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18505,7 +18505,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_local_search_discussions?: {
+  web_local_search_discussions?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18519,7 +18519,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_local_search_results_raw?: {
+  web_local_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18533,7 +18533,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_news_search_results?: {
+  web_name_news_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18547,7 +18547,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_reviews_search_news?: {
+  web_name_reviews_search_news?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18629,7 +18629,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_domain_search_discussions?: {
+  web_domain_search_discussions?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18643,7 +18643,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_domain_search_results_raw?: {
+  web_domain_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18727,7 +18727,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_images_search_results?: {
+  web_name_images_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18741,7 +18741,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_reviews_search_videos?: {
+  web_name_reviews_search_videos?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18755,7 +18755,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_videos_search_results?: {
+  web_name_videos_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18825,7 +18825,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_reviews_search_infobox?: {
+  web_name_reviews_search_infobox?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18839,7 +18839,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_reviews_search_results?: {
+  web_name_reviews_search_results?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18895,7 +18895,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_news_search_results_raw?: {
+  web_name_news_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -18951,7 +18951,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_reviews_search_locations?: {
+  web_name_reviews_search_locations?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -18993,7 +18993,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_images_search_results_raw?: {
+  web_name_images_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -19007,7 +19007,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_videos_search_results_raw?: {
+  web_name_videos_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
@@ -19049,7 +19049,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One top-level block of a search response beside its result list (web search: FAQ, infobox, videos,
    * locations, news, discussions; Google: knowledge graph, People also ask, answer box …).
    */
-  brave_name_reviews_search_discussions?: {
+  web_name_reviews_search_discussions?: {
     data?: unknown;
     block: string;
     query?: string;
@@ -19063,7 +19063,7 @@ export interface BrandIntakeIdentityMatchOffer {
    * One search's result list in rank order: the provider's full objects (raw form) or only the
    * fields that carry facts (clean form).
    */
-  brave_name_reviews_search_results_raw?: {
+  web_name_reviews_search_results_raw?: {
     items?: SearchResultRow[];
     query?: string;
     /**
