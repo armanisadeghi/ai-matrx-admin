@@ -458,7 +458,7 @@ function GuidelinesDraftView({ a }: { a: Record<string, unknown> }) {
         {String(a.guidelines_text ?? "")}
       </pre>
       <ArtifactNote
-        text="Not saved — waiting for your approval"
+        text="Waiting for your approval"
         about="This draft is waiting in the approval queue on the Business guidelines screen. Approve it there, or edit it first."
       />
     </div>
