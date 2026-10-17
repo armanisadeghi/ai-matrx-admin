@@ -148,7 +148,13 @@ const FINDERS: Record<string, Finder> = {
     query: (w) => `${w} app site:apps.apple.com`,
     accepts: /^https?:\/\/apps\.apple\.com\/[^?#]*\/id\d+/i,
     site: "App Store",
-    clean: (t) => t.replace(/\s+on the app store\s*$/i, "").replace(/\s+[-–—]\s+apps on.*$/i, "").trim(),
+    clean: (t) =>
+      t
+        .replace(/[\u200e\u200f]/g, "")
+        .replace(/\s+on the app store\s*$/i, "")
+        .replace(/\s*[-–—]\s*(apps on|app store).*$/i, "")
+        .replace(/\s+for (iphone|ipad)\b.*$/i, "")
+        .trim(),
   },
   play: {
     source: "web",

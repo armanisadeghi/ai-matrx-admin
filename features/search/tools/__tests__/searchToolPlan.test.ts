@@ -140,6 +140,9 @@ describe("finding an app or a business by its name", () => {
     expect(pickCandidates("trustpilot", [{ title: "Apple Reviews | Read Customer Service Reviews of apple.com", url: "https://www.trustpilot.com/review/apple.com" }])).toEqual([
       { label: "Apple", caption: "Trustpilot", value: "https://www.trustpilot.com/review/apple.com" },
     ]);
+    const store = (title: string) => pickCandidates("appstore", [{ title, url: "https://apps.apple.com/us/app/x/id123456789" }])[0]?.label;
+    expect(store("Pet Supplies Plus App - App Store")).toBe("Pet Supplies Plus App");
+    expect(store("\u200ePet Supplies Plus LLC for iPhone - App Store - Apple")).toBe("Pet Supplies Plus LLC");
     expect(pickCandidates("maps", hits)).toEqual([]);
   });
 
