@@ -161,10 +161,14 @@ export function ResearchMediaView({
 
   if (rows.length === 0) {
     return (
-      <MediaEmptyState
-        title="No research images for this organization yet"
-        detail="Run a research topic — every image its sources carry lands here as inspiration and reuse material."
-      />
+      <SectionCard title="Research images">
+        <div className="p-3">
+          <MediaEmptyState
+            title="No research images for this organization yet"
+            detail="Run a research topic: every image its sources carry lands here."
+          />
+        </div>
+      </SectionCard>
     );
   }
 

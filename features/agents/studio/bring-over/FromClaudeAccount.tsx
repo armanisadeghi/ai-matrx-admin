@@ -63,7 +63,7 @@ export function FromClaudeAccount() {
   const canRead = Boolean(file) || text.trim().length >= 40;
 
   return (
-    <BringOverFrame title="Bring it over from my Claude account" testId="from-claude-account">
+    <BringOverFrame title="Import from Claude" testId="from-claude-account">
       <p className="text-sm text-muted-foreground">
         Pick a conversation (and a project, if you have one) and we build an agent that does what it did.
       </p>

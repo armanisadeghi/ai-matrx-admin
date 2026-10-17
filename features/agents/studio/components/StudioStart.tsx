@@ -3,21 +3,26 @@
 /**
  * The Studio's start screen — a front door (STYLE-GUIDE "Two kinds of screen"), not a form.
  *
- * Champions (Phase 3a): Claude and ChatGPT's new-chat composer (one big box is the whole page),
- * v0 and Lovable (the prompt is the hero, the ways in are a quiet row under it), Linear's
- * onboarding (calm, dense, nothing extra). So: one `type-display` question, the `hero` composer
- * open on "Describe it" by default, the ways in (`STUDIO_MODES`) as one row of toggles under it,
- * and the person's own recent agents below (each opens "Improve an agent I have" on it).
+ * Champions: Claude and ChatGPT's new chat (one big box is the page; the box's own button names its
+ * action), v0 and Lovable (the prompt is the hero; starters fill the box), Linear's onboarding (calm,
+ * one obvious step). So: the shared `StudioStage` (display question, living light), the ways in as one
+ * row of plain verbs ABOVE the open panel — the row is navigation, the panel is content, so a panel
+ * that grows (examples) only ever grows downward and the row never moves — then the open panel, then
+ * "Keep working on" (the person's recent agents) or, for someone with none yet, starter jobs that fill
+ * the box.
  *
- * "Describe it" starts an Agent Factory build through the `studio` door (always the factory, no
- * knob); "Just do it with me" opens the workspace with the doer; "Improve an agent I have" picks
- * one of the person's editable agents with THE agent picker; "From examples I already have" opens
- * the examples box (`ExamplesStart`); bring-over modes are their own pages.
+ * "Describe it" starts an Agent Factory build through the `studio` door (always the factory, no knob);
+ * "Do it together" opens the workspace with the doer; "Improve an agent" picks one of the person's
+ * editable agents with THE agent picker (or, with none yet, says so and offers Describe it); "From my
+ * examples" opens the examples box (`ExamplesStart`); the two bring-over ways in are their own pages.
+ *
+ * Every in-place panel stays mounted (hidden when closed), so text typed in one survives a switch;
+ * the description is also kept for the tab's session, so leaving and coming back never loses it.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Hammer, Loader2, Plus } from "lucide-react";
 import { AgentListDropdown, useAgentListCore } from "@ai-matrx/agents/catalog/react";
 import { Button, RegionSkeleton, Tile } from "@ai-matrx/design-system/controls";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -27,18 +32,21 @@ import { startAgentBuild } from "@/features/agents/factory/service";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { toast } from "@/lib/toast";
-import { STUDIO_MODES, type StudioMode } from "../modes";
+import { STUDIO_MODES, STUDIO_STARTERS, type StudioMode } from "../modes";
 import { buildNameFrom, type StudioState } from "../studio-state";
 import { canEditAgent } from "../improve";
-import { editedLine, recentAgents, RECENT_AGENTS_SHOWN } from "../recent-agents";
+import { editedLine, recentAgents } from "../recent-agents";
 import { ExamplesStart } from "./ExamplesStart";
-import stage from "./StudioStart.module.css";
+import { StudioStage } from "./StudioStage";
 
 type OpenMode = "describe" | "improve" | "from-examples";
 
 /** The ways in that open here (the rest navigate). */
 const opensInPlace = (mode: StudioMode): mode is StudioMode & { id: OpenMode } =>
   !mode.href && !mode.comingSoonId && (mode.id === "describe" || mode.id === "improve" || mode.id === "from-examples");
+
+/** The description survives leaving the page for this tab's session (a way in that navigates, Back). */
+export const STUDIO_DRAFT_KEY = "agent-studio:start:describe";
 
 interface StudioStartProps {
   onStart: (patch: Partial<StudioState>) => void;
@@ -52,12 +60,47 @@ interface StudioStartProps {
 export function StudioStart({ onStart, onBack, initialJob = "", planLink }: StudioStartProps) {
   const router = useRouter();
   const [open, setOpen] = useState<OpenMode>("describe");
-  const [description, setDescription] = useState(initialJob);
+  const [description, setDescriptionState] = useState(initialJob);
   // Build-first: examples are optional, so none are asked for up front — one quiet
-  // "Add a real example" opens the shared field with a single box.
+  // "Add an example" opens the shared field with a single box.
   const [examples, setExamples] = useState<string[]>([]);
   const [starting, setStarting] = useState(false);
+  // The way in whose navigation is in flight: its chevron becomes a spinner, a second press is ignored.
+  const [leaving, setLeaving] = useState<string | null>(null);
+  const [navigating, startNavigation] = useTransition();
+  const boxRef = useRef<HTMLTextAreaElement>(null);
   const openMode = STUDIO_MODES.find((m) => m.id === open)!;
+
+  const { agents, isLoading } = useAgentListCore({ consumerId: "agent-studio-start", visibleTabs: ["mine", "shared"] });
+  const recent = recentAgents(agents);
+  const hasEditable = agents.some((a) => !a.isArchived && canEditAgent(a));
+
+  const setDescription = (text: string) => {
+    setDescriptionState(text);
+    try {
+      if (text.trim()) sessionStorage.setItem(STUDIO_DRAFT_KEY, text);
+      else sessionStorage.removeItem(STUDIO_DRAFT_KEY);
+    } catch {
+      // Storage refused (private mode): the text still lives in the box for this visit.
+    }
+  };
+
+  // Restore the session's draft after mount (never during render: the server has no session storage).
+  useEffect(() => {
+    if (initialJob) return;
+    try {
+      const kept = sessionStorage.getItem(STUDIO_DRAFT_KEY);
+      if (kept) setDescriptionState(kept);
+    } catch {
+      // No storage: nothing to restore.
+    }
+  }, [initialJob]);
+
+  const go = (id: string, move: () => void) => {
+    if (leaving && navigating) return;
+    setLeaving(id);
+    startNavigation(move);
+  };
 
   const pick = (mode: StudioMode) => {
     if (mode.comingSoonId) {
@@ -65,14 +108,26 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
       return;
     }
     if (mode.href) {
-      router.push(mode.href);
+      const href = mode.href;
+      go(mode.id, () => router.push(href));
       return;
     }
     if (opensInPlace(mode)) {
       setOpen(mode.id);
       return;
     }
-    onStart({ mode: mode.id });
+    go(mode.id, () => onStart({ mode: mode.id }));
+  };
+
+  const fillStarter = (job: string) => {
+    setOpen("describe");
+    setDescription(job);
+    requestAnimationFrame(() => {
+      const box = boxRef.current;
+      if (!box) return;
+      box.focus();
+      box.setSelectionRange(job.length, job.length);
+    });
   };
 
   const build = async () => {
@@ -90,6 +145,7 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
         door: "studio",
         organizationId: await ensureOrgId(null),
       });
+      setDescription("");
       onStart({ mode: "describe", buildId });
     } catch (e) {
       toast.error("The build did not start", { description: e instanceof Error ? e.message : String(e) });
@@ -99,135 +155,140 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   };
 
   return (
-    <div className="relative h-full overflow-y-auto bg-textured" data-matrx-page-scroll>
-      <div className={stage.stage} aria-hidden>
-        <div className={stage.glowA} />
-        <div className={stage.glowB} />
+    <StudioStage headline={openMode.headline ?? openMode.title} headlineKey={`h-${open}`} onBack={onBack} aside={planLink}>
+      <div
+        className="mt-6 grid grid-cols-2 gap-2 @xl:flex @xl:flex-wrap @xl:justify-center"
+        role="group"
+        aria-label="Ways to start"
+        data-testid="studio-modes"
+      >
+        {STUDIO_MODES.map((mode) => {
+          const inPlace = opensInPlace(mode);
+          const pending = !inPlace && leaving === mode.id && navigating;
+          return (
+            <Button
+              key={mode.id}
+              variant="outline"
+              // An in-place way in is a toggle (only the open one is pressed). One that opens another
+              // page is not a toggle: a quiet chevron says "goes somewhere", a spinner while it goes.
+              iconEnd={inPlace ? undefined : pending ? <Loader2 className="animate-spin" /> : <ChevronRight />}
+              pressed={inPlace && open === mode.id}
+              aria-pressed={inPlace ? open === mode.id : undefined}
+              aria-busy={pending || undefined}
+              title={mode.comingSoonId ? `${mode.title} — Coming soon` : mode.line}
+              data-testid={`studio-mode-${mode.id}`}
+              onClick={() => pick(mode)}
+              onPointerEnter={() => {
+                if (mode.href) router.prefetch(mode.href);
+              }}
+            >
+              {mode.label}
+            </Button>
+          );
+        })}
       </div>
-      <div className="relative z-[1] mx-auto flex w-full max-w-5xl flex-col px-4 pt-[var(--shell-header-h)] sm:px-6">
-        <div className="flex h-10 items-center gap-2">
-          <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
-          <span className="type-title text-foreground">Agent Studio</span>
-          {planLink}
-        </div>
 
-        <main className="mx-auto flex w-full max-w-[48rem] flex-col items-stretch @container pt-[clamp(1.5rem,9vh,6rem)]">
-          <h1 key={`h-${open}`} className={`type-display ${stage.enter} text-center text-foreground`} data-testid="studio-headline">
-            {openMode.headline ?? openMode.title}
-          </h1>
-
-          {/* The open way in. Its slot keeps the composer's height, so a switch never moves the row below. */}
-          <div key={`p-${open}`} className={`${stage.enter} mt-8 flex min-h-[11.5rem] flex-col`}>
-            {open === "describe" && (
-              <div className="flex flex-col gap-3" data-testid="studio-describe">
-                <ProTextarea
-                  appearance="hero"
-                  aria-label="What should the agent do?"
-                  placeholder="Turn a messy client intake call into a one-page brief…"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  minHeight={184}
-                  maxHeight={360}
-                  autoGrow
-                  autoFocus={!initialJob}
-                  surfaceName="agent-studio:start"
-                  onSubmit={() => void build()}
-                  submitLabel="Build it"
-                  submitDisabled={!description.trim()}
-                  isSubmitting={starting}
-                  submitOnCmdEnter
-                  leading={
-                    examples.length === 0 ? (
-                      <Button
-                        variant="quiet"
-                        icon={<Plus />}
-                        data-testid="studio-add-example"
-                        onClick={() => setExamples([""])}
-                        disabled={starting}
-                      >
-                        Add a real example
-                      </Button>
-                    ) : null
-                  }
-                />
-                {examples.length > 0 && <ExamplesField examples={examples} onChange={setExamples} disabled={starting} />}
-              </div>
-            )}
-            {open === "improve" && (
-              <div className="flex flex-1 flex-col items-center justify-center" data-testid="studio-improve">
-                <AgentListDropdown
-                  consumerId="agent-studio-improve"
-                  onSelect={(agentId: string) => {
-                    if (agentId) onStart({ mode: "improve", agentId });
-                  }}
-                  label="Choose one of your agents"
-                  visibleTabs={["mine", "shared"]}
-                  agentFilter={{ label: "You can edit", test: canEditAgent }}
-                  triggerSlot={
-                    <Button hero variant="outline" iconEnd={<ChevronDown />}>
-                      Choose one of your agents
-                    </Button>
-                  }
-                />
-              </div>
-            )}
-            {open === "from-examples" && <ExamplesStart onStart={onStart} />}
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2 @lg:grid-cols-3 @3xl:flex @3xl:justify-center" role="group" aria-label="Ways to start" data-testid="studio-modes">
-            {STUDIO_MODES.map((mode) => {
-              const inPlace = opensInPlace(mode);
-              return (
-                <Button
-                  key={mode.id}
-                  variant="outline"
-                  iconEnd={inPlace ? undefined : <ArrowUpRight />}
-                  // Every way in not open reads the same; only the open one is pressed. A navigating
-                  // way in is not a toggle (no aria-pressed), its arrow says it leaves.
-                  pressed={inPlace && open === mode.id}
-                  aria-pressed={inPlace ? open === mode.id : undefined}
-                  title={`${mode.title} — ${mode.comingSoonId ? "Coming soon" : mode.line}`}
-                  data-testid={`studio-mode-${mode.id}`}
-                  onClick={() => pick(mode)}
-                >
-                  {mode.label}
+      {/* The open way in. Closed panels stay mounted (hidden) so what was typed in them survives. */}
+      <div className="mt-6 flex flex-col">
+        <div hidden={open !== "describe"} className={open === "describe" ? "flex flex-col gap-3" : undefined} data-testid="studio-describe">
+          <ProTextarea
+            ref={boxRef}
+            appearance="hero"
+            aria-label="What should the agent do?"
+            placeholder="Turn a messy client intake call into a one-page brief…"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            minHeight={128}
+            maxHeight={360}
+            autoGrow
+            autoFocus={!initialJob}
+            surfaceName="agent-studio:start"
+            onSubmit={() => void build()}
+            submitLabel="Build agent"
+            submitText="Build agent"
+            submitIcon={<Hammer className="h-4 w-4" />}
+            submitDisabled={!description.trim()}
+            isSubmitting={starting}
+            submitOnCmdEnter
+            leading={
+              examples.length === 0 ? (
+                <Button variant="quiet" icon={<Plus />} data-testid="studio-add-example" onClick={() => setExamples([""])} disabled={starting}>
+                  Add an example
                 </Button>
-              );
-            })}
-          </div>
-
-          <RecentAgents onPick={(agentId) => onStart({ mode: "improve", agentId })} />
-        </main>
-      </div>
-    </div>
-  );
-}
-
-/** The person's own recent agents — a press opens "Improve an agent I have" on it. Absent when none. */
-function RecentAgents({ onPick }: { onPick: (agentId: string) => void }) {
-  const { agents, isLoading } = useAgentListCore({ consumerId: "agent-studio-recent", visibleTabs: ["mine"] });
-  const recent = recentAgents(agents);
-  if (!isLoading && recent.length === 0) return null;
-  return (
-    <section className="mt-12 flex sm:mt-16 flex-col gap-2 pb-6" aria-label="Your recent agents" data-testid="studio-recent">
-      <h2 className="type-label px-1">Recent</h2>
-      {isLoading && recent.length === 0 ? (
-        <RegionSkeleton shape="rows" count={RECENT_AGENTS_SHOWN / 2} twoLine aria-label="Loading your agents" />
-      ) : (
-        <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-          {recent.map((a) => (
-            <Tile
-              key={a.id}
-              variant="quiet"
-              icon={<AGENT_ICON />}
-              title={a.name}
-              line={editedLine(a) ?? undefined}
-              data-testid="studio-recent-agent"
-              onClick={() => onPick(a.id)}
-            />
-          ))}
+              ) : null
+            }
+          />
+          {examples.length > 0 && <ExamplesField examples={examples} onChange={setExamples} disabled={starting} />}
         </div>
+
+        <div
+          hidden={open !== "improve"}
+          className={open === "improve" ? "flex min-h-32 flex-col items-center justify-center gap-3" : undefined}
+          data-testid="studio-improve"
+        >
+          {isLoading && !hasEditable ? (
+            <RegionSkeleton shape="rows" count={1} aria-label="Loading your agents" />
+          ) : hasEditable ? (
+            <AgentListDropdown
+              consumerId="agent-studio-improve"
+              onSelect={(agentId: string) => {
+                if (agentId) go("improve", () => onStart({ mode: "improve", agentId }));
+              }}
+              label="Choose one of your agents"
+              visibleTabs={["mine", "shared"]}
+              agentFilter={{ label: "You can edit", test: canEditAgent }}
+              triggerSlot={
+                <Button hero variant="outline" iconEnd={<ChevronDown />}>
+                  Choose one of your agents
+                </Button>
+              }
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-center" data-testid="studio-improve-empty">
+              <p className="type-body text-muted-foreground">You have no agents yet.</p>
+              <Button variant="primary" onClick={() => setOpen("describe")} data-testid="studio-improve-describe">
+                Describe one instead
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div hidden={open !== "from-examples"}>
+          <ExamplesStart onStart={onStart} />
+        </div>
+      </div>
+
+      {isLoading && recent.length === 0 ? (
+        <section className="mt-12 flex flex-col gap-2" aria-label="Loading your agents">
+          <RegionSkeleton shape="rows" count={2} twoLine aria-label="Loading your agents" />
+        </section>
+      ) : recent.length > 0 ? (
+        <section className="mt-12 flex flex-col gap-2" aria-label="Keep working on" data-testid="studio-recent">
+          <h2 className="type-label px-1">Keep working on</h2>
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {recent.map((a) => (
+              <Tile
+                key={a.id}
+                variant="quiet"
+                icon={<AGENT_ICON />}
+                title={a.name}
+                line={editedLine(a) ?? undefined}
+                data-testid="studio-recent-agent"
+                onClick={() => go(`agent:${a.id}`, () => onStart({ mode: "improve", agentId: a.id }))}
+              />
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="mt-12 flex flex-col gap-2" aria-label="Try one of these" data-testid="studio-starters">
+          <h2 className="type-label px-1">Try one of these</h2>
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {STUDIO_STARTERS.map((job) => (
+              <Tile key={job} variant="quiet" icon={<Plus />} title={job} data-testid="studio-starter" onClick={() => fillStarter(job)} />
+            ))}
+          </div>
+        </section>
       )}
-    </section>
+    </StudioStage>
   );
 }

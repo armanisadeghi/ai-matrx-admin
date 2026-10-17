@@ -22,7 +22,6 @@ import type { AssetBasic } from "unsplash-js";
 import {
   ExternalLink,
   FolderPlus,
-  Globe,
   Loader2,
   Plus,
   Search,
@@ -49,7 +48,10 @@ import {
 import {
   LoadingSurface,
   QueryError,
+  SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
+import { ProInput } from "@/components/official/ProInput";
+import { Input } from "@ai-matrx/design-system/controls";
 import { MediaEmptyState } from "@/features/marketing/components/media/SnapshotMediaGallery";
 import type { BrandAsset } from "@/features/marketing/types";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -148,50 +150,51 @@ function BrandPortalsPanel({
   };
 
   return (
-    <section className="space-y-2 rounded-lg border border-border bg-card p-2.5">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1.5">
-          <Globe className="h-3.5 w-3.5 text-foreground/60" />
-          <h3 className="text-[11px] font-semibold text-foreground">
-            Brand portals
-          </h3>
+    <SectionCard
+      title="Brand portals"
+      about="Official press kits and media portals this brand is licensed to pull approved imagery from. Portals also appear in the Library view."
+      headerExtra={
+        <>
           <UntrustedCount
             value={portals.length}
             trustworthy={!assetsQuery.isError}
             label="Brand portals"
-            className="text-[10px] tabular-nums text-muted-foreground"
+            className="type-meta tabular-nums text-muted-foreground"
           />
-        </div>
-        <p className="min-w-0 flex-1 basis-64 text-[10px] text-muted-foreground/70">
-          Official press kits and media portals this brand is licensed to pull
-          approved imagery from. Portals also appear in the Library view.
-        </p>
-        <Button
-          icon={<Plus />}
-          variant="outline"
-          onClick={() => setAdding((prev) => !prev)}
-        >
-          Add portal
-        </Button>
-      </div>
+          <Button
+            icon={<Plus />}
+            variant="outline"
+            onClick={() => setAdding((prev) => !prev)}
+          >
+            Add portal
+          </Button>
+        </>
+      }
+    >
+    <div className="space-y-2 p-3">
 
       {adding ? (
         <div className="flex flex-wrap items-center gap-1.5">
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Label (e.g. Press kit)"
-            className="h-7 w-40 rounded-md border border-border bg-background px-2 text-[11px] text-foreground outline-none placeholder:text-muted-foreground max-md:text-base"
-          />
-          <input
+          <div className="w-48">
+            <ProInput
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Label (e.g. Press kit)"
+              aria-label="Portal label"
+            />
+          </div>
+          <div className="min-w-0 flex-1 basis-56">
+          {/* ui-exception: a URL is a raw value, not writing */}
+          <Input
+            aria-label="Portal URL"
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter") void addPortal();
             }}
             placeholder="https://brand.com/press"
-            className="h-7 min-w-0 flex-1 basis-56 rounded-md border border-border bg-background px-2 text-[11px] text-foreground outline-none placeholder:text-muted-foreground max-md:text-base"
           />
+          </div>
           <Button
             icon={createAsset.isPending ? (
               <Loader2 className="animate-spin" />
@@ -206,9 +209,8 @@ function BrandPortalsPanel({
       ) : null}
 
       {portals.length === 0 && !adding && assetsQuery.isSuccess ? (
-        <p className="text-[10px] text-muted-foreground">
-          No portals yet — add the brand&apos;s press kit, asset portal, or
-          partner media library.
+        <p className="type-secondary text-muted-foreground">
+          No portals yet
         </p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
@@ -219,7 +221,7 @@ function BrandPortalsPanel({
             >
               <OutboundLink
                 href={portal.source_url ?? undefined}
-                className="flex items-center gap-1.5 text-[11px] text-foreground hover:text-primary"
+                className="flex items-center gap-1.5 type-secondary text-foreground hover:text-primary"
                 title={portal.source_url ?? undefined}
               >
                 <ExternalLink className="h-3 w-3 text-muted-foreground" />
@@ -234,7 +236,8 @@ function BrandPortalsPanel({
                 onClick={() => void removePortal(portal)}
                 disabled={deleteAsset.isPending}
                 title="Remove portal"
-                className="rounded p-0.5 text-muted-foreground/60 transition-colors hover:text-destructive"
+                aria-label="Remove portal"
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:text-destructive"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
@@ -242,7 +245,8 @@ function BrandPortalsPanel({
           ))}
         </div>
       )}
-    </section>
+    </div>
+    </SectionCard>
   );
 }
 
@@ -407,17 +411,22 @@ export function StockSourcesView({
     <div className="space-y-3">
       <BrandPortalsPanel brandId={brandId} organizationId={organizationId} />
 
+      <SectionCard
+        title="Stock imagery"
+        about="Free licensed photography from Unsplash. Every result is free for commercial use under the Unsplash License; saving ingests the file into the brand library with the photographer's attribution recorded on the asset."
+      >
+      <div className="space-y-3 p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-0 flex-1 basis-48">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-          <input
+        <div className="min-w-0 flex-1 basis-48">
+          <ProInput
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter") void runSearch(1);
             }}
-            placeholder="Search free stock imagery (Unsplash)…"
-            className="h-7 w-full rounded-md border border-border bg-card pl-7 pr-2 text-[11px] text-foreground outline-none placeholder:text-muted-foreground max-md:text-base"
+            placeholder="Search free stock imagery (Unsplash)"
+            aria-label="Search stock imagery"
+            startIcon={<Search className="h-4 w-4 text-muted-foreground" aria-hidden />}
           />
         </div>
         <Select
@@ -446,16 +455,10 @@ export function StockSourcesView({
         </Button>
       </div>
 
-      <p className="px-1 text-[10px] text-muted-foreground/70">
-        All results are free for commercial use under the Unsplash License.
-        Saving ingests the file into the brand library with photographer
-        attribution recorded on the asset.
-      </p>
-
       {!searched ? (
         <MediaEmptyState
           title="Search licensed-free stock imagery"
-          detail="Find photography for this brand and save it straight into the library — attribution and provenance are recorded automatically."
+          detail="Save photography straight into the library, with attribution recorded."
         />
       ) : photos.length === 0 ? (
         <MediaEmptyState
@@ -483,7 +486,7 @@ export function StockSourcesView({
                   </div>
                   <div className="space-y-0.5 p-1.5">
                     <p
-                      className="truncate text-[10px] text-muted-foreground"
+                      className="truncate type-meta text-muted-foreground"
                       title={
                         photo.description ?? photo.alt_description ?? undefined
                       }
@@ -495,12 +498,12 @@ export function StockSourcesView({
                     <div className="flex items-center justify-between gap-1">
                       <OutboundLink
                         href={photo.user?.links?.html ?? photo.links.html}
-                        className="truncate text-[9px] text-muted-foreground/70 hover:text-primary"
+                        className="truncate type-meta text-muted-foreground hover:text-primary"
                         title="Photographer profile on Unsplash"
                       >
                         {photo.user?.name ?? "Unsplash"}
                       </OutboundLink>
-                      <span className="shrink-0 text-[9px] tabular-nums text-muted-foreground/70">
+                      <span className="shrink-0 type-meta tabular-nums text-muted-foreground">
                         {photo.width}×{photo.height}
                       </span>
                     </div>
@@ -559,6 +562,8 @@ export function StockSourcesView({
           ) : null}
         </>
       )}
+      </div>
+      </SectionCard>
     </div>
   );
 }
