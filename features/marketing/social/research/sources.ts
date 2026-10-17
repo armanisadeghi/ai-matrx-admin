@@ -113,7 +113,7 @@ const CHINA_SOURCES: readonly ResearchSource[] = [
 
 /** Sources people ask for that no Tool serves today; chosen, they say so and offer the closest. */
 export const UNSERVED_SOURCES: ReadonlyArray<{ id: string; label: string; words: string }> = [
-  { id: "weibo", label: "Weibo", words: "Weibo isn't available right now. Xiaohongshu, Douyin and WeChat are." },
+  { id: "weibo", label: "Weibo", words: "Try Xiaohongshu, Douyin or WeChat instead." },
 ];
 
 export const ACCOUNT_SOURCES: readonly ResearchSource[] = [...WEST_PLATFORMS.map(westSource), ...CHINA_SOURCES];

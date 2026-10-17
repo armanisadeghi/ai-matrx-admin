@@ -192,7 +192,7 @@ export function ResearchTab() {
         )}
       </div>
 
-      {unserved ? <EmptyState icon={<SearchX className="h-5 w-5" />} title={`${unserved.label} isn't available`} line={unserved.words} /> : null}
+      {unserved ? <EmptyState icon={<SearchX className="h-5 w-5" />} title={`${unserved.label} isn't available right now`} line={unserved.words} /> : null}
 
       {showResults ? (
         <div className={served.length > 1 ? "grid gap-5 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]" : "flex flex-col gap-5"}>

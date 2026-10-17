@@ -67,7 +67,7 @@ describe("look-up sources", () => {
   });
 
   it("Weibo is named as not served, so the screen says so", () => {
-    expect(unservedFor("weibo")?.words).toMatch(/isn't available/);
+    expect(unservedFor("weibo")?.words).toMatch(/instead/);
     expect(ACCOUNT_SOURCES.some((s) => s.id === "weibo")).toBe(false);
   });
 
