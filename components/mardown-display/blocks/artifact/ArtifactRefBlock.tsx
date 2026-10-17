@@ -8,6 +8,7 @@ import { kindServerDataFromStoredValue } from "@ai-matrx/rich-content/kinds/reac
 import { storedKindValue } from "@/features/canvas/artifact-types/storedKindValue";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import ArtifactBlock from "./ArtifactBlock";
+import { SavedArtifactEdit } from "./SavedArtifactEdit";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const MermaidBlock = lazy(() => import("@ai-matrx/rich-content/display/blocks/mermaid/MermaidBlock"));
@@ -207,20 +208,25 @@ const ArtifactRefBlock: React.FC<ArtifactRefBlockProps> = ({
     );
   }
 
+  // An edit (Controls, an inline edit) saves the answer AND this row.
   return (
-    <ArtifactBlock
-      content={raw}
-      structuredServerData={structuredServerData}
-      metadata={{
-        isComplete: true,
-        artifactId: row.id,
-        artifactType: row.type,
-        artifactTitle: row.title ?? serverData?.title ?? "Artifact",
-      }}
-      messageId={messageId}
-      conversationId={conversationId}
-      taskId={taskId ?? `artifact:${row.id}`}
-    />
+    <SavedArtifactEdit rowId={row.id} raw={raw} stored={stored}>
+      {(shownRaw) => (
+        <ArtifactBlock
+          content={shownRaw}
+          structuredServerData={structuredServerData}
+          metadata={{
+            isComplete: true,
+            artifactId: row.id,
+            artifactType: row.type,
+            artifactTitle: row.title ?? serverData?.title ?? "Artifact",
+          }}
+          messageId={messageId}
+          conversationId={conversationId}
+          taskId={taskId ?? `artifact:${row.id}`}
+        />
+      )}
+    </SavedArtifactEdit>
   );
 };
 
