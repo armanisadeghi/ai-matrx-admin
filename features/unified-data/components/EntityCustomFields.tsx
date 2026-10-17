@@ -224,6 +224,26 @@ function SectionLine({
   );
 }
 
+/**
+ * Whether she is a live member of `organizationId`: `null` until asked (or when there is none). The member-only
+ * reads of a record page (its custom fields, its linked records) wait for a `true` — a record she can open through
+ * another path (shared, a System-organization agent) belongs to an organization whose doors would only refuse her.
+ */
+export function useIsMemberOf(organizationId: string | null): boolean | null {
+  const [membership, setMembership] = useState<{ organizationId: string; isMember: boolean } | null>(null);
+  useEffect(() => {
+    if (!organizationId) return undefined;
+    let live = true;
+    void mayReadAsMember(organizationId).then((isMember) => {
+      if (live) setMembership({ organizationId, isMember });
+    });
+    return () => {
+      live = false;
+    };
+  }, [organizationId]);
+  return organizationId && membership && membership.organizationId === organizationId ? membership.isMember : null;
+}
+
 function EntityCustomFieldsSection({
   entityToken,
   recordId,
@@ -254,22 +274,13 @@ function EntityCustomFieldsSection({
   }));
   const organizationId = home.state === "home" ? home.organizationId : null;
   const recordsConfig = useAppRecordsConfig(organizationId);
-  const { readable, retry: retryRead } = useRecordReadable(entityToken, recordId, organizationId);
   // Whether she is a member of the ROW's organization: `null` until asked. A record shared from
   // an organization she is not in shows that organization's fields as not hers (no store switch
   // is asked any more — the record store is never off, CHAIR-ALWAYS-ON 2026-10-03).
-  const [membership, setMembership] = useState<{ organizationId: string; isMember: boolean } | null>(null);
-  useEffect(() => {
-    if (!organizationId) return undefined;
-    let live = true;
-    void mayReadAsMember(organizationId).then((isMember) => {
-      if (live) setMembership({ organizationId, isMember });
-    });
-    return () => {
-      live = false;
-    };
-  }, [organizationId]);
-  const member = membership && membership.organizationId === organizationId ? membership.isMember : null;
+  const member = useIsMemberOf(organizationId);
+  // W1-STORE 3: the read is a member-only door, so it is asked only once she is known to be a member
+  // (a System-organization agent opened by a platform admin used to ask first and be refused: ~24 rows in 7 days).
+  const { readable, retry: retryRead } = useRecordReadable(entityToken, recordId, member === true ? organizationId : null);
   if (home.state === "absent") return null;
   if (home.state === "refused" && absentWhenNotApplicable && home.reason === "no_table") return null;
   if (home.state === "refused") {
@@ -342,10 +353,12 @@ function EntityCustomFieldsSection({
 export function EntityCustomFields(props: EntityCustomFieldsProps) {
   const { home } = useRecordHome(props.entityToken, props.recordId, props.organizationId ?? null);
   const organizationId = home.state === "home" ? home.organizationId : null;
+  // The linked-records read is member-only too: nothing is asked for an organization she is not in.
+  const member = useIsMemberOf(organizationId);
   return (
     <>
       <EntityCustomFieldsSection {...props} />
-      {props.backLinks === false ? null : <EntityBackLinks entityToken={props.entityToken} recordId={props.recordId} organizationId={organizationId} />}
+      {props.backLinks === false ? null : <EntityBackLinks entityToken={props.entityToken} recordId={props.recordId} organizationId={member === true ? organizationId : null} />}
     </>
   );
 }
