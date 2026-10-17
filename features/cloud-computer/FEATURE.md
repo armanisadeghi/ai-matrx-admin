@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-16`
+**Last updated:** `2026-10-17`
 
 ---
 
@@ -29,7 +29,8 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 | `service.ts` | `GET/POST /browser-manager/cloud-computer[/wake]`; `lastKnownCloudComputer()` caches the last read for the synchronous browser-opener decision. |
 | `useCloudComputer.ts` | One read on mount, 2 s poll only while waking (5 min cap). `autoWake` wakes an off/never-made machine once per mount. |
 | `ComputerView.tsx` | Waking → screen. The screen is the Cloud Browser run ON the machine (`useCloudBrowser(…, "sandbox")`). |
-| `ScaledFrame.tsx` | One live Selkies iframe scaled to any box; measures on the next animation frame. |
+| `ScaledFrame.tsx` | One live Selkies iframe scaled to any box; measures on the next animation frame. `interactive` turns input on in the same frame and makes it own the keyboard (focus on control start / press; a self-focusing field elsewhere hands it back). |
+| `liveStream.ts` | Which held stream is the live picture (`liveStream`): any held stream on a watch-capable server, else only this revision's control stream. |
 | `useOpenCloudComputerCanvas.ts` | Canvas item + `cloudComputerCanvasSourceId(conversationId)`. |
 
 ---
@@ -44,10 +45,22 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 2. **Ready → the machine's Chrome.** Only after `ready`, the screen loads a snapshot limited
    to `execution_target = 'sandbox'` and, if none is live, starts one with that explicit
    target (the server keeps explicit targets). It never adopts or starts a fleet run.
-3. **Watching** = bounded screenshot session; no stills while any person holds control, and a
-   refused still backs off (`useScreenshotSession.paused`).
-4. **Take control** = takeover flow (`useCloudBrowserTakeover`) then ONE control stream,
-   holding the run's viewer seat (`cloud-browser/runViewer.ts`).
+3. **Watching = the live stream.** When the run is live the tab mints ONE `mode:"view"` ticket
+   and renders it in `ScaledFrame` with input off; thumbnail and enlarged view are that same
+   frame. A server that only streams to the controller answers 409 (`isViewStreamUnavailable`):
+   the tab falls back to stills (`useScreenshotSession`) and tries the view again on its next open.
+4. **Take control = instant.** The takeover flow (`useCloudBrowserTakeover`), then input turns on
+   in the already-open frame — no new ticket, no remount (keyed by `streamSessionId`). Stop
+   releases control and keeps watching on the same connection. On the fallback server Take
+   control opens the control stream as before. The renew loop runs only while in control.
+5. **Typing reaches the machine.** Control on focuses the iframe; any editable field in the page
+   that takes focus with no press/key in the page within 600 ms (the composer's autofocus) is
+   refocused back to the iframe. Keys typed into the cross-origin frame never reach the page, so
+   app shortcuts cannot fire. `allow` carries `keyboard-map`. Clicks map 1:1: the scale is a CSS
+   transform on the iframe, the stream page itself is unscaled.
+6. **Chip says Computer.** Host slot `useCloudBrowserSurfaceKind` (registered in
+   `providers/chatUiRegistrationBase.ts`, defined in `cloud-browser/hooks/useOpenCloudBrowserCanvas.ts`)
+   answers "computer" when the slice's run is on the machine or the person has one.
 
 ## Invariants & gotchas
 
@@ -64,6 +77,9 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 - `features/canvas/` — host pane.
 
 ## Change log
+
+- **2026-10-17** — Watching is the live view stream (no white still); Take control turns input on
+  in the same frame; the frame owns the keyboard while in control; composer pill reads Computer.
 
 - **2026-10-16** — Open wakes the machine; screen is the machine's run only (sandbox target);
   one viewer seat per run; browser openers route machine runs here; quiet screenshot back-off;
