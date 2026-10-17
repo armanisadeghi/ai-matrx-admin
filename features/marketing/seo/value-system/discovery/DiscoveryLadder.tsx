@@ -564,12 +564,12 @@ function BusinessModelView({ a }: { a: Record<string, unknown> }) {
         <PropertyRow
           label="Business model"
           value={a.business_model ? String(a.business_model) : undefined}
-          missing="Unknown"
+          missing={a.business_model ? undefined : "Unknown"}
         />
         <PropertyRow
           label="Money flows"
           value={a.revenue_direction ? String(a.revenue_direction) : undefined}
-          missing="Unknown"
+          missing={a.revenue_direction ? undefined : "Unknown"}
         />
       </div>
       <p className="text-muted-foreground">{String(a.model_explanation ?? "")}</p>

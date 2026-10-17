@@ -273,7 +273,7 @@ export function StrategyBriefWorkspace({
           <PropertyRow
             label="Built from"
             value={sources.length > 0 ? sources.join(", ") : undefined}
-            missing={current ? "Not recorded" : "Not yet"}
+            missing={sources.length > 0 ? undefined : current ? "Not recorded" : "Not yet"}
           />
           {scope === "site" ? (
             <PropertyRow
@@ -338,7 +338,7 @@ export function StrategyBriefWorkspace({
                       key={row.key}
                       label={row.label}
                       value={value || undefined}
-                      missing="Not established"
+                      missing={value ? undefined : "Not established"}
                     />
                   );
                 })}
