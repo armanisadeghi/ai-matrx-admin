@@ -26,6 +26,7 @@ import type { Metadata } from "next";
 import { InternalGoogleAnalytics } from "@/lib/product-analytics/InternalGoogleAnalytics";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { startSsrTiming } from "@/lib/perf/ssrTiming.server";
 export const metadata: Metadata = {
   title: {
     default: "AI Matrx",
@@ -50,12 +51,14 @@ export default async function AppLayout({
 }) {
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "/";
+  // Where the time before the first byte goes, one line per slow render (lib/perf/ssrTiming.server.ts).
+  const timing = startSsrTiming("(core)", pathname);
   const sidebarExpanded = await readSidebarExpandedCookie();
 
   // Request-scoped cached auth lookup — child server layouts/pages that also
   // call `getServerAuth()` share this one locally-verified claims read, so the
   // whole tree pays a single identity resolve per request.
-  const { user, isAuthenticated, authUnavailable } = await getServerAuth();
+  const { user, isAuthenticated, authUnavailable } = await timing.step("auth", getServerAuth());
 
   // 🚨 AN AUTHORITY WE COULD NOT REACH IS NOT A SIGNED-OUT PERSON.
   //
@@ -141,15 +144,18 @@ export default async function AppLayout({
       usageSnapshot,
       coreBootSeed,
     ] = await Promise.all([
-      supabase.auth.getSession(),
-      getAdminStatus(supabase, user.id).catch((err) => {
-        console.error("getAdminStatus failed, defaulting to non-admin:", err);
-        return { isAdmin: false, level: null as AdminLevel | null };
-      }),
+      timing.step("session", supabase.auth.getSession()),
+      timing.step(
+        "admin",
+        getAdminStatus(supabase, user.id).catch((err) => {
+          console.error("getAdminStatus failed, defaulting to non-admin:", err);
+          return { isAdmin: false, level: null as AdminLevel | null };
+        }),
+      ),
       // THE USAGE GATE seed (USAGE-GATE.md rule 9): loaded WITH the reads this
       // layout already makes, never as a request on the path of an AI call.
-      readUsageSnapshotServer(supabase),
-      coreBootSeedRead.seed,
+      timing.step("usage", readUsageSnapshotServer(supabase)),
+      timing.step("seed", coreBootSeedRead.seed),
     ]);
 
     const { isAdmin, level: adminLevel } = adminStatus;
@@ -167,6 +173,7 @@ export default async function AppLayout({
       coreBootSeed,
     };
     coreSeedLanded = coreBootSeed !== null;
+    timing.end({ seeded: coreSeedLanded, usage: usageSnapshot !== null });
   } else {
     const guestUserData = mapUserData(null, undefined, false);
     userData = guestUserData;
