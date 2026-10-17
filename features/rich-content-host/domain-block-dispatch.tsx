@@ -1589,7 +1589,15 @@ const SHAPE_BLOCK_DISPATCH = {
 
   // Kind-routed answer-action kinds: same uniform bridge.
   contact: searchKindEntry(BlockComponents.ContactBlock),
-  event: searchKindEntry(BlockComponents.EventBlock),
+  // `event` is ONE shape with two inputs: the kind-routed answer-action (serverData) and the legacy
+  // `<event>` tag (no serverData, just inner markdown). The tag renders as the nested section the
+  // engine's info/task/plan tags use — never the JSON dump.
+  event: ((ctx) => {
+    if (ctx.block.serverData || isBlockLoading(ctx.block)) {
+      return searchKindEntry(BlockComponents.EventBlock)(ctx);
+    }
+    return ENGINE_BLOCK_DISPATCH.info(ctx);
+  }) as BlockRenderFn,
 
   // Kind-routed RAG retrieval + citation family (RAG Kinds Run): identical
   // uniform `{ value, isComplete }` bridge, so the SAME three-branch entry

@@ -14,8 +14,8 @@
   },
   "totals": {
     "items": 1517,
-    "shape": 1460,
-    "protocol": 31,
+    "shape": 1461,
+    "protocol": 30,
     "scalar_generic": 25,
     "intentionally_opaque": 1
   },
@@ -3971,10 +3971,10 @@
         "frontend:typed_render_block"
       ],
       "family": null,
-      "classification": "protocol",
-      "kind": null,
-      "registered": false,
-      "rationale": "control tag (SHAPE_SYSTEM.md R2) — stream control/reasoning plumbing, code-owned, never a Shape"
+      "classification": "shape",
+      "kind": "event",
+      "registered": true,
+      "rationale": "registered kind (content_ir.kind_definition, active)"
     },
     {
       "name": "evidence_source",
