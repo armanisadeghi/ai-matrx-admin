@@ -142,7 +142,7 @@ export function VaultRouteBody() {
   );
 
   return (
-    <div className="h-full overflow-hidden">
+    <div className="h-full overflow-hidden" data-user-content>
       <div className="h-full min-h-0 pt-[var(--shell-header-h)]">
         <WebVault
           location={location}
@@ -170,7 +170,7 @@ export function OrganizationVault({ organizationId }: { organizationId: string }
     vault: organizationId,
   }));
   return (
-    <div className="h-[70dvh] min-h-[480px] overflow-hidden">
+    <div className="h-[70dvh] min-h-[480px] overflow-hidden" data-user-content>
       <WebVault
         location={location}
         onLocationChange={(next) => setLocation(next)}
