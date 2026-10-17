@@ -76,7 +76,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
       else toast.error(result.message);
     });
 
-  const turnOn = (ep: EndpointRow, name: string) =>
+  const turnOn = (ep: EndpointRow) =>
     run(`on:${ep.id}`, async () => {
       const result = await turnOnEndpoint(ep.id);
       if (result.changed) return void toast.success("Turned on");
@@ -85,7 +85,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
         return;
       }
       toast.error(result.message);
-    }).then(() => undefined, () => undefined).finally(() => void name);
+    });
 
   const turnOff = (ep: EndpointRow, name: string) =>
     run(`off:${ep.id}`, async () => {
@@ -146,7 +146,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
                 Turn off
               </Button>
             ) : state !== "verifying" ? (
-              <Button variant="outline" disabled={working} onClick={() => void turnOn(r.ep, r.name)}>
+              <Button variant="outline" disabled={working} onClick={() => void turnOn(r.ep)}>
                 Turn on
               </Button>
             ) : null}
