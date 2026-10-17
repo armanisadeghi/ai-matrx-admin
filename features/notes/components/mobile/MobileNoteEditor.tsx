@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useNotesRedux } from "../../hooks/useNotesRedux";
 import { useNoteAccess } from "../../hooks/useNoteAccess";
 import { useNoteWorkingCopy } from "../../hooks/useNoteWorkingCopy";
+import { useNoteUndoRedo } from "../../hooks/useNoteUndoRedo";
 import { noteWorkingCopy } from "../../utils/noteLiveContent";
 import { NoteEditorDock } from "./NoteEditorDock";
 import { useNoteDelete } from "../../hooks/useNoteDelete";
@@ -334,6 +335,14 @@ export default function MobileNoteEditor({
     applyContent: handleChangeFlush,
   });
 
+  // THE note's undo/redo — the same hook the desktop editor mounts (its menu's Undo / Redo and the
+  // ⌘Z interceptor); the dock's Undo / Redo buttons are the phone's way to it.
+  const { canUndo, canRedo, undo, redo } = useNoteUndoRedo({
+    noteId,
+    scope: () => editorRootRef.current,
+    editorHistoryDepth: () => (richMode ? (richRef.current?.historyDepth() ?? null) : null),
+  });
+
   return (
     <SurfaceRuntimeProvider
       surfaceName={NOTES_EDITOR_CONTEXT_MENU_PROPS.surfaceName}
@@ -501,6 +510,10 @@ export default function MobileNoteEditor({
 
       {/* ── Fixed bottom dock ────────────────────────────────────────────────── */}
       <NoteEditorDock
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         formatResolve={effectiveMode !== "preview" && !readOnly ? () => formatTargetWithin(editorRootRef.current) : null}
         noteId={noteId}
         noteLabel={noteLabel}
