@@ -672,10 +672,11 @@ async function fetchUserRequestsInner(
       .gt("cache_write_tokens", 0)
       .limit(5000);
     if (wErr) throw wErr;
-    for (const w of wr ?? []) {
+    // Generated DB types predate cache_write_tokens; read the rows by their real shape.
+    for (const w of (wr ?? []) as unknown as { user_request_id: string; cache_write_tokens: number }[]) {
       writesByRequest.set(
-        w.user_request_id as string,
-        (writesByRequest.get(w.user_request_id as string) ?? 0) + num(w.cache_write_tokens),
+        w.user_request_id,
+        (writesByRequest.get(w.user_request_id) ?? 0) + num(w.cache_write_tokens),
       );
     }
   }
