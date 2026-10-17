@@ -107,11 +107,17 @@ describe("applyAnnouncement — the stream-driven list update", () => {
   const rows = parseRunListRows([ROW, { ...ROW, id: "run-2", status: "running" }]);
 
   it("patches a listed run's status in place, with no refetch", () => {
-    const result = applyAnnouncement(rows, { run_id: "run-2", status: "failed" });
+    const result = applyAnnouncement(rows, { run_id: "run-2", status: "paused" });
     expect(result.needsRefresh).toBe(false);
-    expect(result.rows[1].status).toBe("failed");
+    expect(result.rows[1].status).toBe("paused");
     // Untouched rows keep their identity so the list does not re-render whole.
     expect(result.rows[0]).toBe(rows[0]);
+  });
+
+  it("refetches once a listed run finishes, to pick up the review flags it raised", () => {
+    const result = applyAnnouncement(rows, { run_id: "run-2", status: "completed" });
+    expect(result.needsRefresh).toBe(true);
+    expect(result.rows[1].status).toBe("completed");
   });
 
   it("stamps a completion instant so a terminal row stops accruing duration", () => {
