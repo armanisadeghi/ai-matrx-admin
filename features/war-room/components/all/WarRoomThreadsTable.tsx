@@ -237,7 +237,7 @@ export function WarRoomThreadsTable({
       {
         accessorKey: "updatedAt",
         header: "Updated",
-        filter: false,
+        format: { id: "datetime" },
         width: 120,
         cell: (row) => (
           <span title={formatAbsoluteDate(row.updatedAt)}>
@@ -248,7 +248,7 @@ export function WarRoomThreadsTable({
       {
         accessorKey: "createdAt",
         header: "Created",
-        filter: false,
+        format: { id: "datetime" },
         width: 120,
         cell: (row) => (
           <span title={formatAbsoluteDate(row.createdAt)}>

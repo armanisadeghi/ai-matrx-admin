@@ -326,6 +326,7 @@ export function DeckCardTable({
     {
       id: "kind",
       header: "Kind",
+      filter: "select",
       accessorFn: (row) =>
         KIND_LABEL[asCardKind(row.card.card_kind)] ?? row.card.card_kind,
       width: 110,

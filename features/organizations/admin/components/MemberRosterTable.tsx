@@ -149,6 +149,7 @@ export function MemberRosterTable({ orgSlug, members }: Props) {
       {
         accessorKey: "role",
         header: "Role",
+        filter: "select",
         sortable: false,
         cell: (member) => (
           <Badge
@@ -164,6 +165,7 @@ export function MemberRosterTable({ orgSlug, members }: Props) {
         id: "status",
         header: "Status",
         accessorFn: (member) => member.status,
+        filter: "select",
         sortable: false,
         cell: (member) =>
           member.status === "suspended" ? (
@@ -215,6 +217,7 @@ export function MemberRosterTable({ orgSlug, members }: Props) {
         id: "tier",
         header: "Tier",
         accessorFn: (member) => member.memberLevel ?? "",
+        filter: "select",
         sortable: false,
         cell: (member) =>
           member.memberLevel ? (

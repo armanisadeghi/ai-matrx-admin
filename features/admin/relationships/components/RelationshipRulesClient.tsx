@@ -49,6 +49,16 @@ import {
 } from "@ai-matrx/kit/url-state";
 import { extractErrorMessage } from "@ai-matrx/api/net";
 
+/** Select options for an entity-type column, taken from the loaded rules. */
+function typeOptions(
+  rules: RelationshipRule[],
+  pick: (rule: RelationshipRule) => string,
+): { value: string; label: string }[] {
+  return [...new Set(rules.map(pick))]
+    .sort()
+    .map((token) => ({ value: token, label: label(token) }));
+}
+
 type RuleFilter = "all" | "conveying" | "known" | "inactive";
 
 interface EditorState {
@@ -171,6 +181,9 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
         header: "Source (content)",
         accessorFn: (r) =>
           `${r.source_type} ${label(r.source_type)} ${r.label ?? ""}`,
+        filter: "select",
+        filterValue: (r) => r.source_type,
+        filterOptions: typeOptions(rules, (r) => r.source_type),
         cell: (rule) => {
           const srcIsContainer = rule.container_side === "source";
           return (
@@ -216,6 +229,9 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
         accessorKey: "target_type",
         header: "Target (container)",
         accessorFn: (r) => `${r.target_type} ${label(r.target_type)}`,
+        filter: "select",
+        filterValue: (r) => r.target_type,
+        filterOptions: typeOptions(rules, (r) => r.target_type),
         cell: (rule) => (
           <EntityTypeChip
             token={rule.target_type}
@@ -230,6 +246,12 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
         header: "Conveys",
         accessorFn: (r) =>
           r.container_side !== "none" && r.is_active ? r.conveys_max : "",
+        filter: "select",
+        filterOptions: [
+          { value: "viewer", label: "viewer" },
+          { value: "editor", label: "editor" },
+          { value: "admin", label: "admin" },
+        ],
         editable: "select",
         editOptions: [
           { value: "viewer", label: "viewer" },
@@ -351,7 +373,7 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
         width: 72,
       },
     ];
-  }, []);
+  }, [rules]);
 
   const editorConveys = editor !== null && editor.containerSide !== "none";
 

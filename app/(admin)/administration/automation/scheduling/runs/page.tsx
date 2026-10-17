@@ -102,6 +102,7 @@ export default function AdminRunsPage() {
         accessorKey: "status",
         header: "Status",
         // The Status picker in the toolbar owns this filter (server-side); a second one would disagree.
+        // table-filter-off: the toolbar Status picker filters on the server
         filter: false,
         width: 110,
         cell: (r) => <StatusPill status={r.status} />,

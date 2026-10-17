@@ -515,6 +515,7 @@ export function CoverageTab({ siteId }: { siteId: string }) {
       id: "published_at",
       accessorKey: "published_at",
       header: "Published",
+      // table-filter-off: marketing URL codec and server query do not carry date filters yet
       filter: false,
       cell: (row) =>
         row.published_at ? (
@@ -527,6 +528,7 @@ export function CoverageTab({ siteId }: { siteId: string }) {
       id: "discovered_at",
       accessorKey: "discovered_at",
       header: "Found",
+      // table-filter-off: marketing URL codec and server query do not carry date filters yet
       filter: false,
       cell: (row) => <DateCell iso={row.discovered_at} />,
     },

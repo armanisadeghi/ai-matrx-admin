@@ -403,6 +403,7 @@ export function UserAcquisitionTableClient() {
         id: "created_at",
         accessorKey: "created_at",
         header: "Created / first seen",
+        format: { id: "datetime" },
         width: 175,
         cell: (row) => (
           <span className="text-xs">{fmtDate(row.created_at)}</span>

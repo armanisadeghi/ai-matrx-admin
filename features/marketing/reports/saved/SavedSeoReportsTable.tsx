@@ -94,7 +94,7 @@ export function SavedSeoReportsTable({
         entityId: (row) => row.id,
         width: 320,
       },
-      { id: "kind", header: "Kind", accessorFn: (row) => kindLabel(row.report_kind), width: 140 },
+      { id: "kind", header: "Kind", filter: "select", accessorFn: (row) => kindLabel(row.report_kind), width: 140 },
       { id: "period", header: "Period", accessorFn: (row) => row.period ?? "—", width: 180 },
       { id: "template", header: "Template", accessorFn: templateLabel, width: 160 },
       {

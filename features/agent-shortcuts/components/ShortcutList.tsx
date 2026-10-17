@@ -262,7 +262,7 @@ export function ShortcutList({
         header: "Category",
         label: "Category",
         width: 160,
-        filter: false,
+        filter: "select",
         accessorFn: (shortcut) =>
           categoryById.get(shortcut.categoryId)?.label ?? "",
         cell: (shortcut) => categoryById.get(shortcut.categoryId)?.label ?? "—",
@@ -296,6 +296,7 @@ export function ShortcutList({
         accessorKey: "displayMode",
         header: "Display",
         label: "Display",
+        filter: "select",
         width: 120,
         cell: (shortcut) => (
           <Badge variant="secondary" className="text-xs">

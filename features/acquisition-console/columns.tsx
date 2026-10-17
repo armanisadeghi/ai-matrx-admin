@@ -87,7 +87,7 @@ export const HAVE_COLUMNS: MatrxColumnDef<HaveRow>[] = [
     accessorKey: "kind",
     header: "What we have",
     label: "What we have",
-    filter: "text",
+    filter: "select",
     href: (row) => row.href,
     cell: (row) => <TextCell value={row.kind} className="font-medium" />,
   },

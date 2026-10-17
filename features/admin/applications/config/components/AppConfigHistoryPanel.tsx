@@ -109,6 +109,7 @@ export function AppConfigHistoryPanel({
         id: "changed_at",
         accessorKey: "changed_at",
         header: "When",
+        format: { id: "datetime" },
         cell: (row) => (
           <span
             className="whitespace-nowrap text-sm font-medium"
@@ -125,7 +126,7 @@ export function AppConfigHistoryPanel({
         id: "timestamp",
         header: "Timestamp",
         accessorFn: (row) => row.changed_at,
-        filter: false,
+        format: { id: "datetime" },
         cell: (row) => (
           <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">
             {format(new Date(row.changed_at), "yyyy-MM-dd HH:mm:ss")}

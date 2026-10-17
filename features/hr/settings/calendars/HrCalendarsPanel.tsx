@@ -485,11 +485,17 @@ function HolidaysSection({
         <span className="text-sm font-medium text-foreground">{row.name}</span>
       ),
     },
-    { id: "observed", accessorKey: "observed_on", header: "Observed" },
+    {
+      id: "observed",
+      accessorKey: "observed_on",
+      header: "Observed",
+      format: { id: "date" },
+    },
     {
       id: "actual",
       accessorKey: "actual_on",
       header: "Actual date",
+      format: { id: "date" },
       mobileHidden: true,
       cell: (row) => (
         <span className="text-sm text-muted-foreground">
@@ -513,6 +519,7 @@ function HolidaysSection({
       accessorFn: (row) =>
         row.location_ids.length === 0 ? "Everywhere" : `${row.location_ids.length} locations`,
       header: "Where it applies",
+      filter: "select",
       mobileHidden: true,
     },
   ];

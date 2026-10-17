@@ -260,7 +260,7 @@ export default function KindAssetsTab({
 
   const componentColumns: MatrxColumnDef<KindComponentAssetRow>[] = [
     { accessorKey: "platform", header: "Platform", filter: "text", width: 105 },
-    { accessorKey: "role", header: "Role", filter: "text", width: 105 },
+    { accessorKey: "role", header: "Role", filter: "select", width: 105 },
     {
       accessorKey: "componentKey",
       header: "Component key",
@@ -275,7 +275,7 @@ export default function KindAssetsTab({
         </span>
       ),
     },
-    { accessorKey: "source", header: "Source", filter: "text", width: 105 },
+    { accessorKey: "source", header: "Source", filter: "select", width: 105 },
     {
       accessorKey: "isActive",
       header: "Active",
@@ -328,7 +328,7 @@ export default function KindAssetsTab({
     {
       accessorKey: "surfaceType",
       header: "Surface type",
-      filter: "text",
+      filter: "select",
       width: 145,
     },
     {
