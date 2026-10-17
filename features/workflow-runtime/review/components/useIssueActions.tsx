@@ -22,10 +22,12 @@ const DONE_WORD: Record<ReviewIssueStatus, string> = {
 
 export function useIssueActions(onChanged: (issue: ReviewIssueRow) => void) {
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [busyAction, setBusyAction] = useState<ReviewIssueStatus | null>(null);
   const [fixing, setFixing] = useState<ReviewIssueRow | null>(null);
 
   const apply = async (issue: ReviewIssueRow, status: ReviewIssueStatus, note?: string | null) => {
     setBusyId(issue.id);
+    setBusyAction(status);
     try {
       const next = await setIssueStatus(issue.id, status, note);
       onChanged(next);
@@ -34,6 +36,7 @@ export function useIssueActions(onChanged: (issue: ReviewIssueRow) => void) {
       toast.error(error instanceof Error ? error.message : "Could not change this issue.");
     } finally {
       setBusyId(null);
+      setBusyAction(null);
     }
   };
 
@@ -68,5 +71,5 @@ export function useIssueActions(onChanged: (issue: ReviewIssueRow) => void) {
     />
   );
 
-  return { act, busyId, dialog };
+  return { act, busyId, busyAction, dialog };
 }

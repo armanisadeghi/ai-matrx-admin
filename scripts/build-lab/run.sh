@@ -22,6 +22,9 @@
 #               FULL app whatever profile you pass. The lab still measures a
 #               real build; it just no longer reproduces production's slice.
 #   --keep      don't remove the export afterward (for iterating by hand)
+#   --maps      emit browser source maps in the export only (turbopackSourceMaps +
+#               productionBrowserSourceMaps), for per-module first-load attribution:
+#               node scripts/check-summon-first-load.mjs --next "$LAB/wt-<label>/.next"
 #
 # Protocol notes (learned 2026-07-28):
 #   • Peak RSS is the trustworthy metric; single-run compile time carries
@@ -42,12 +45,13 @@ if [[ "${1:-}" == "--results" ]]; then
 fi
 
 LABEL="${1:?usage: run.sh <label> [--ref ref] [--profile slim] [--keep] | --results}"; shift
-REF="origin/main"; PROFILE="slim"; KEEP=0
+REF="origin/main"; PROFILE="slim"; KEEP=0; MAPS=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --ref) REF="$2"; shift 2 ;;
     --profile) PROFILE="$2"; shift 2 ;;
     --keep) KEEP=1; shift ;;
+    --maps) MAPS=1; shift ;;
     *) echo "unknown arg $1"; exit 2 ;;
   esac
 done
@@ -68,6 +72,12 @@ else
 fi
 LAB_SHA="$(cat "$WT/.build-lab-ref" 2>/dev/null || echo unknown)"
 [[ -f "$REPO/.env.local" ]] && cp "$REPO/.env.local" "$WT/"
+if [[ $MAPS -eq 1 ]]; then
+  sed -i.bak -e 's/productionBrowserSourceMaps: false,/productionBrowserSourceMaps: true,/' \
+    -e 's/^    turbopackSourceMaps: false,/    turbopackSourceMaps: true,/' "$WT/next.config.js" && rm -f "$WT/next.config.js.bak"
+  grep -q "turbopackSourceMaps: true" "$WT/next.config.js" || { echo "[lab] --maps: could not enable source maps in next.config.js"; exit 2; }
+  echo "[lab] browser source maps ON (export only)"
+fi
 
 cd "$WT"
 echo "[lab] pnpm install…"

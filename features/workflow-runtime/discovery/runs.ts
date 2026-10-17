@@ -163,6 +163,8 @@ export function applyAnnouncement(
   if (index === -1) return { rows, needsRefresh: true };
   const existing = rows[index];
   if (existing.status === announce.status) return { rows, needsRefresh: false };
+  // A run that just finished may have raised review flags the announce frame does not carry.
+  const finished = isTerminalStatus(announce.status);
   const patched = rows.slice();
   patched[index] = {
     ...existing,
@@ -174,5 +176,5 @@ export function applyAnnouncement(
       existing.completedAt ??
       (isTerminalStatus(announce.status) ? new Date().toISOString() : null),
   };
-  return { rows: patched, needsRefresh: false };
+  return { rows: patched, needsRefresh: finished };
 }

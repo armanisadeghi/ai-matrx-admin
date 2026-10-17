@@ -19,7 +19,7 @@
  * away too.
  */
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -41,10 +41,11 @@ import {
 import { runDurationMs, type RunListRow } from "../runs";
 import { useRunsList } from "../useRunsList";
 import { useWorkflowFacts } from "../useWorkflowFacts";
-import { fetchRunFlagCounts } from "../../review/service";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
+import { useListSearchParams } from "@/lib/entity-list/useListSearchParams";
+import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { Button } from "@/components/ui/button";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { StaleDataNotice } from "@ai-matrx/design-system";
@@ -63,15 +64,9 @@ interface RunRowView extends RunListRow {
    * `service.ts` § WorkflowFacts.
    */
   declaredKind: string | null;
-  /** Review flags this run raised; null when the count could not be read (never "0"). */
+  /** Review flags this run raised; null when the server row carries no count (never "0"). */
   flagged: number | null;
 }
-
-const FLAGGED_FILTER_OPTIONS = [
-  { value: "flagged", label: "Flagged" },
-  { value: "clean", label: "Not flagged" },
-  { value: "unknown", label: "Unknown" },
-];
 
 const STATUS_FILTER_OPTIONS = [
   "running",
@@ -84,6 +79,16 @@ const STATUS_FILTER_OPTIONS = [
   "cancelled",
   "pending",
 ].map((value) => ({ value, label: runStatusLabel(value) }));
+
+const FLAGGED_URL_PARAM = "flagged";
+
+/** `?flagged=1` as URL-backed state: survives reload, Back undoes it, absence = every run. */
+function useFlaggedOnlyParam(): [boolean, (on: boolean) => void] {
+  const params = useListSearchParams();
+  const set = (on: boolean) =>
+    commitUrlParams({ [FLAGGED_URL_PARAM]: on ? "1" : null }, "push");
+  return [params.get(FLAGGED_URL_PARAM) === "1", set];
+}
 
 function Muted({ children }: { children: React.ReactNode }) {
   return <span className="text-muted-foreground">{children}</span>;
@@ -98,39 +103,17 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
   // default, passed to the server (`GET /runs?organization_id=`). Never the header's organization.
   const [orgFilter, setOrgFilter] = useOrgFilterParam();
   const organizationFilter = definitionId ? null : orgFilter;
-  const { rows, loading, error, refresh } = useRunsList({
+  // The Flagged view: `?flagged=1`, decided by the SERVER's query (so an old flagged run is
+  // found past the newest-100 window), flagged runs first.
+  const [flaggedOnly, setFlaggedOnly] = useFlaggedOnlyParam();
+  const { rows: listed, loading, error, refresh } = useRunsList({
     definitionId,
     organizationId: organizationFilter,
+    flaggedOnly,
   });
+  // A server that predates the filter ignores it; never show a clean run under "Flagged only".
+  const rows = flaggedOnly ? listed.filter((r) => r.reviewFlagCount !== 0) : listed;
   const facts = useWorkflowFacts(rows.map((row) => row.definitionId));
-  // Review flags: the wire row carries `review_flag_count` once the server
-  // model has it; rows without it are read from workflow.run (row security).
-  const missingFlagIds = rows.filter((r) => r.reviewFlagCount === null).map((r) => r.runId);
-  const missingKey = missingFlagIds.join(",");
-  const [flagCounts, setFlagCounts] = useState<Map<string, number>>(new Map());
-  const [flagRead, setFlagRead] = useState<{ key: string; error: string | null } | null>(null);
-  const [flagAttempt, setFlagAttempt] = useState(0);
-  useEffect(() => {
-    if (!missingKey) return undefined;
-    let live = true;
-    void fetchRunFlagCounts(missingKey.split(","))
-      .then((counts) => {
-        if (!live) return;
-        setFlagCounts(counts);
-        setFlagRead({ key: missingKey, error: null });
-      })
-      .catch((e: unknown) => {
-        if (live)
-          setFlagRead({
-            key: missingKey,
-            error: e instanceof Error ? e.message : "Could not read run flags.",
-          });
-      });
-    return () => {
-      live = false;
-    };
-  }, [missingKey, flagAttempt]);
-  const flagError = flagRead?.key === missingKey ? flagRead.error : null;
   const [clickedRow, setClickedRow] = useState<RunRowView | null>(null);
 
   // The list spans every organization the person belongs to; name each row's.
@@ -147,7 +130,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       // the workflow's declaration — the only source a LIST row can have.
       declaredKind: row.deliverableKind ?? fact?.outputKind ?? null,
       // Unknown (read failed, or the run row could not be read) is never shown as "not flagged".
-      flagged: row.reviewFlagCount ?? flagCounts.get(row.runId) ?? (flagError ? null : 0),
+      flagged: row.reviewFlagCount,
     };
   });
 
@@ -200,10 +183,6 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       header: "Flagged",
       width: 90,
       align: "right",
-      filter: "select",
-      filterOptions: FLAGGED_FILTER_OPTIONS,
-      filterValue: (row) =>
-        row.flagged === null ? "unknown" : row.flagged > 0 ? "flagged" : "clean",
       cell: (row) =>
         row.flagged === null ? (
           <span className="text-destructive" title="Flags could not be read">
@@ -300,15 +279,6 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
           className="mx-3 mb-2"
         />
       ) : null}
-      {flagError && view.length > 0 ? (
-        <StaleDataNotice
-          hasData
-          what="run flags"
-          onRetry={() => setFlagAttempt((n) => n + 1)}
-          detail={flagError}
-          className="mx-3 mb-2"
-        />
-      ) : null}
       {error && view.length === 0 ? (
         <ReadFailure
           error={error}
@@ -317,22 +287,33 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
         />
       ) : (
         <>
-          {definitionId ? null : (
-            <div
-              className="flex items-center gap-2 px-3 pb-2"
-              data-runs-org-filter=""
-            >
+          <div
+            className="flex items-center gap-2 px-3 pb-2"
+            data-runs-org-filter=""
+          >
+            {definitionId ? null : (
               <EntityOrgFilter orgId={orgFilter} onChange={setOrgFilter} />
-              {orgFilter && !loading && view.length === 0 ? (
-                <Button
-                  variant="outline"
-                  onClick={() => setOrgFilter(null)}
-                >
-                  View all organizations
-                </Button>
-              ) : null}
-            </div>
-          )}
+            )}
+            <Button
+              variant={flaggedOnly ? "primary" : "outline"}
+              aria-pressed={flaggedOnly}
+              onClick={() => setFlaggedOnly(!flaggedOnly)}
+              data-runs-flagged-only=""
+            >
+              <Flag className="h-3.5 w-3.5" aria-hidden />
+              Flagged only
+            </Button>
+            {orgFilter && !definitionId && !loading && view.length === 0 ? (
+              <Button variant="outline" onClick={() => setOrgFilter(null)}>
+                View all organizations
+              </Button>
+            ) : null}
+            {flaggedOnly && !loading && view.length === 0 ? (
+              <Button variant="outline" onClick={() => setFlaggedOnly(false)}>
+                Show all runs
+              </Button>
+            ) : null}
+          </div>
           <NonEditableContextMenu
             sourceFeature="workflow_run"
             contentSource={{ type: "raw" }}
@@ -372,10 +353,14 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
                 }}
                 emptyState={{
                   icon: <ListX className="h-5 w-5" />,
-                  title: definitionId
-                    ? "This workflow hasn't run yet"
-                    : "No runs yet",
-                  description: "A run appears here the moment it starts.",
+                  title: flaggedOnly
+                    ? "No flagged runs"
+                    : definitionId
+                      ? "This workflow hasn't run yet"
+                      : "No runs yet",
+                  description: flaggedOnly
+                    ? "A run lands here when it needed something that should never have been needed."
+                    : "A run appears here the moment it starts.",
                 }}
               />
             </div>

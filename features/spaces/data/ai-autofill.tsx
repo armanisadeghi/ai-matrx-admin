@@ -12,6 +12,7 @@ import { readVersionNow, updateRecordAt } from "@/lib/records/record-versions";
 import { Button, Field, Select, Textarea } from "@ai-matrx/design-system/controls";
 import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
+import { presetInstruction, presetsFor, aiFieldPreset, type AiPresetKey } from "@ai-matrx/records";
 import type { RecordsClient } from "@ai-matrx/records/core";
 import type { Field as RecordField } from "@ai-matrx/records/react";
 import { RefreshCw, Wand2 } from "lucide-react";
@@ -26,7 +27,10 @@ import { AUTOFILL_KEY } from "../ai/spaces-ai";
 import { MenuRow } from "./menu-parts";
 import type { AiFieldSpec, AutofillKind } from "./sources";
 
-const KIND_LABEL: Record<AutofillKind, string> = { summary: "Summary", keywords: "Keywords", translation: "Translation", custom: "Custom" };
+// ONE preset list with the table page's "Let AI fill" (@ai-matrx/records AI_FIELD_PRESETS). A Spaces property is always a plain text
+// column, so Categorize (a choice column) and Describe image (an attachment column) are not offered here.
+const PRESETS = presetsFor({ targetIsChoice: false, hasAttachmentColumn: false });
+type PresetPick = AiPresetKey | "custom";
 
 const cell = (v: unknown): string => {
   if (v === null || v === undefined) return "";
@@ -74,7 +78,7 @@ export function AutofillRows({
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [name, setName] = useState("AI summary");
-  const [kind, setKind] = useState<AutofillKind>("summary");
+  const [pick, setPick] = useState<PresetPick>("summarize");
   const [instruction, setInstruction] = useState("");
   if (!AUTOFILL_KEY) return null;
   const key = AUTOFILL_KEY;
@@ -131,7 +135,11 @@ export function AutofillRows({
       toast.error(`${label} could not be added`, { description: made.error.message });
       return;
     }
-    const spec: AiFieldSpec = { key: fieldKey, label, kind, ...(kind === "custom" ? { instruction: instruction.trim() } : {}), ...(kind === "translation" ? { language: instruction.trim() || "Spanish" } : {}) };
+    const preset = pick === "custom" ? undefined : aiFieldPreset(pick);
+    const answer = instruction.trim();
+    const kind: AutofillKind = preset ? preset.autofillKind : "custom";
+    const written = preset && kind === "custom" ? presetInstruction(preset.key, { answer }) : null;
+    const spec: AiFieldSpec = { key: fieldKey, label, kind, ...(kind === "custom" ? { instruction: written ?? answer } : {}), ...(kind === "translation" ? { language: answer || "Spanish" } : {}) };
     onAiFields([...aiFields, spec]);
     setAdding(false);
     setInstruction("");
@@ -154,15 +162,16 @@ export function AutofillRows({
         <DialogContent className="max-w-[min(440px,96vw)] gap-3 p-4">
           <DialogTitle>AI autofill</DialogTitle>
           <Field aria-label="Property name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Property name" />
-          <Select aria-label="Autofill kind" value={kind} onValueChange={setKind} options={(Object.keys(KIND_LABEL) as AutofillKind[]).map((k) => ({ value: k, label: KIND_LABEL[k] }))} />
-          {kind === "custom" || kind === "translation" ? (
-            <Textarea rows={2} aria-label={kind === "custom" ? "Instruction" : "Language"} value={instruction} onChange={(e) => setInstruction(e.target.value)} placeholder={kind === "custom" ? "What should AI write for each row?" : "Spanish"} />
+          <Select aria-label="Autofill kind" value={pick} onValueChange={(v) => setPick(v as PresetPick)} options={[...PRESETS.map((p) => ({ value: p.key, label: p.label })), { value: "custom", label: "Custom" }]} />
+          {pick === "custom" || aiFieldPreset(pick)?.ask ? (
+            <Textarea rows={2} aria-label={pick === "custom" ? "Instruction" : aiFieldPreset(pick)?.ask === "language" ? "Language" : "What to pull out"} value={instruction} onChange={(e) => setInstruction(e.target.value)}
+              placeholder={pick === "custom" ? "What should AI write for each row?" : aiFieldPreset(pick)?.ask === "language" ? "Spanish" : "the invoice number"} />
           ) : null}
           <div className="flex justify-end gap-2">
             <Button variant="quiet" onClick={() => setAdding(false)}>
               Cancel
             </Button>
-            <Button variant="primary" disabled={!name.trim() || (kind === "custom" && !instruction.trim())} onClick={() => void add()}>
+            <Button variant="primary" disabled={!name.trim() || ((pick === "custom" || !!aiFieldPreset(pick)?.ask) && !instruction.trim())} onClick={() => void add()}>
               Add and fill
             </Button>
           </div>

@@ -137,7 +137,12 @@ export function ReviewIssuePage({ definitionId, issueId }: { definitionId: strin
           </div>
           <PropertyRow label="Latest message" value={view.last_message} missing={!view.last_message} />
           {view.resolution_note ? <PropertyRow label="Fix note" value={view.resolution_note} /> : null}
-          <PropertyRow label="Key" value={view.label} mono />
+          <details className="text-xs text-muted-foreground">
+            <summary className="cursor-pointer select-none hover:text-foreground">Details</summary>
+            <div className="pt-2">
+              <PropertyRow label="Key" value={view.label} mono />
+            </div>
+          </details>
         </section>
 
         <section className="overflow-hidden rounded-xl border border-border bg-card">

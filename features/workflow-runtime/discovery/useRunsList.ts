@@ -33,11 +33,14 @@ export interface UseRunsListOptions {
   definitionId?: string;
   /** The on-page organization filter (global list only); null/omitted = All organizations. */
   organizationId?: string | null;
+  /** The server-decided Flagged view (runs that raised review flags, most flags first). */
+  flaggedOnly?: boolean;
 }
 
 export function useRunsList({
   definitionId,
   organizationId,
+  flaggedOnly = false,
 }: UseRunsListOptions = {}): RunsListState {
   const dispatch = useAppDispatch();
   // 🚨 A LIST IS DECIDED BY ACCESS, NEVER BY THE SELECTED ORGANIZATION
@@ -56,7 +59,9 @@ export function useRunsList({
   useEffect(() => {
     let live = true;
     void (async () => {
-      const result = await fetchRuns(dispatch, definitionId, organizationId);
+      const result = await fetchRuns(dispatch, definitionId, organizationId, {
+        flaggedOnly,
+      });
       if (!live) return;
       if (!result.ok) {
         setError(result.message);
@@ -69,7 +74,7 @@ export function useRunsList({
     return () => {
       live = false;
     };
-  }, [dispatch, definitionId, organizationId, generation]);
+  }, [dispatch, definitionId, organizationId, flaggedOnly, generation]);
 
   /** Coalesced refetch — a burst of transitions is one read, not one each. */
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);

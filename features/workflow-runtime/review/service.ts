@@ -50,20 +50,6 @@ export async function fetchRunFlags(runId: string): Promise<RunFlag[]> {
   return data ?? [];
 }
 
-/** Flag counts for a page of runs (runs lists). Absent id = the run could not be read. */
-export async function fetchRunFlagCounts(runIds: string[]): Promise<Map<string, number>> {
-  const out = new Map<string, number>();
-  if (runIds.length === 0) return out;
-  const { data, error } = await supabase
-    .schema("workflow")
-    .from("run")
-    .select("id, review_flag_count")
-    .in("id", runIds);
-  if (error) throw postgrestError(error, { action: "read run flags", fallback: "Could not read run flags." });
-  for (const row of data ?? []) out.set(row.id, row.review_flag_count ?? 0);
-  return out;
-}
-
 const ISSUE_COLUMNS = "*";
 
 /** A capped read: the newest `REVIEW_ISSUE_LIMIT` rows, and whether more exist. */

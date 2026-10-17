@@ -79,17 +79,23 @@ export function ReviewIssuesTable({
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const { act, busyId, dialog } = useIssueActions(onChanged);
+  const { act, busyId, busyAction, dialog } = useIssueActions(onChanged);
 
   const columns: MatrxColumnDef<IssueView>[] = [
     {
       id: "what",
       accessorKey: "what",
       header: "What happened",
+      width: 300,
       href: (row) => reviewIssueHref(row.definition_id, row.id),
       cell: (row) => (
-        <span className="min-w-0 truncate" title={row.last_message ?? row.label}>
-          {row.what}
+        <span className="block min-w-0 whitespace-normal break-words">
+          <span className="block">{row.what}</span>
+          {row.last_message ? (
+            <span className="line-clamp-2 block text-xs text-muted-foreground" title={row.last_message}>
+              {row.last_message}
+            </span>
+          ) : null}
         </span>
       ),
     },
@@ -175,7 +181,7 @@ export function ReviewIssuesTable({
       label: "Mark seen",
       appliesTo: (row) => row.status === "open",
       unavailableTooltip: "Only an open issue",
-      loading: (row) => busyId === row.id,
+      loading: (row) => busyId === row.id && busyAction === "acknowledged",
       onClick: (row) => act(row, "acknowledged"),
     },
     {
@@ -185,7 +191,7 @@ export function ReviewIssuesTable({
       tone: "success",
       appliesTo: (row) => row.status !== "fixed",
       unavailableTooltip: "Already fixed",
-      loading: (row) => busyId === row.id,
+      loading: (row) => busyId === row.id && busyAction === "fixed",
       onClick: (row) => act(row, "fixed"),
     },
     {
@@ -194,7 +200,7 @@ export function ReviewIssuesTable({
       label: "Ignore",
       appliesTo: (row) => row.status !== "ignored",
       unavailableTooltip: "Already ignored",
-      loading: (row) => busyId === row.id,
+      loading: (row) => busyId === row.id && busyAction === "ignored",
       onClick: (row) => act(row, "ignored"),
     },
     {
@@ -203,7 +209,7 @@ export function ReviewIssuesTable({
       label: "Reopen",
       appliesTo: (row) => row.status !== "open",
       unavailableTooltip: "Already open",
-      loading: (row) => busyId === row.id,
+      loading: (row) => busyId === row.id && busyAction === "open",
       onClick: (row) => act(row, "open"),
     },
   ];
