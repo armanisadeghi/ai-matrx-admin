@@ -12,7 +12,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AlertTriangle, Hand, Maximize2, Minimize2, Monitor, Power, RotateCw, Square } from "lucide-react";
+import { AlertTriangle, Hand, Keyboard, Maximize2, Minimize2, Monitor, Power, RotateCw, Square } from "lucide-react";
 import { BackendApiError } from "@ai-matrx/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
@@ -35,7 +35,7 @@ import {
 } from "@/features/cloud-browser/service";
 import type { StreamTicketEnvelope } from "@/features/cloud-browser/types";
 import { useCloudComputer } from "./useCloudComputer";
-import { ScaledFrame } from "./ScaledFrame";
+import { ScaledFrame, type ScaledFrameHandle } from "./ScaledFrame";
 import { liveStream, type HeldStream } from "./liveStream";
 
 const WAITING = "animate-ssr-shimmer-opacity";
@@ -137,6 +137,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const label = agentName ? `${agentName}'s screen` : "Agent's screen";
 
   const [large, setLarge] = useState(false);
+  const frameControl = useRef<ScaledFrameHandle>(null);
   const [held, setHeld] = useState<HeldStream | null>(null);
   // Whether the server streams a live picture to a person who is only
   // watching. "no" = an older server (409 `not_controller`): watching falls
@@ -348,6 +349,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               height={viewport.height}
               title={label}
               interactive={inControl && large}
+              controlRef={frameControl}
             />
           ) : !inControl && frame ? (
             <img
@@ -427,9 +429,20 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         ) : (
           <span className="text-xs font-medium text-foreground">{label}</span>
         )}
+        {/* A plain row, never a hand-drawn bordered capsule around tap
+            buttons (the tap-target guard flagged it off-centre, 2026-10-17):
+            the buttons carry their own spacing and skin. */}
         {inControl ? (
-          <div className="flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs">
+          <div className="flex items-center gap-2 text-xs">
             <span className="font-medium text-foreground">You&apos;re in control</span>
+            <Button
+              variant="outline"
+              icon={<Keyboard />}
+              aria-label="Reconnect keyboard"
+              title="Reconnect keyboard"
+              disabled={!stream}
+              onClick={() => frameControl.current?.reconnectKeyboard()}
+            />
             <Button
               variant="outline"
               icon={<Square />}
@@ -440,14 +453,14 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
             </Button>
           </div>
         ) : takeover.waiting ? (
-          <div className="flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs">
+          <div className="flex items-center gap-2 text-xs">
             <span className={cn("font-medium", WAITING)}>Telling your agent…</span>
             <Button variant="outline" onClick={takeover.takeOverImmediately}>
               Now
             </Button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs">
+          <div className="flex items-center gap-2 text-xs">
             <span className="font-medium text-foreground">Watching</span>
             <Button
               variant="primary"
