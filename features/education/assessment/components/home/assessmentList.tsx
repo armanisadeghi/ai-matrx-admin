@@ -398,8 +398,6 @@ export function buildAssessmentColumns(
         accessorKey: "updated_at",
         header: "Last edited",
         format: { id: "datetime" },
-        // table-filter-off: the entity-list filter bag and the scoped list RPC carry no date bounds, so a date filter would be dropped
-        filter: false,
         cell: (row) => timeCell(row.updated_at),
       },
     },
@@ -412,8 +410,6 @@ export function buildAssessmentColumns(
         accessorKey: "created_at",
         header: "Created",
         format: { id: "datetime" },
-        // table-filter-off: the entity-list filter bag and the scoped list RPC carry no date bounds, so a date filter would be dropped
-        filter: false,
         cell: (row) => timeCell(row.created_at),
       },
     },

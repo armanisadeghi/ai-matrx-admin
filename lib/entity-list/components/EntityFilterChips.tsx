@@ -10,7 +10,8 @@
 
 import { X } from "lucide-react";
 import type { EntityColumnSpec } from "../columns";
-import { NONE_VALUE, type EntityFilters } from "../types";
+import { TIME_RANGE_PRESETS } from "@ai-matrx/design-system/data-table/date-filter";
+import { NONE_VALUE, type EntityDateFilterValue, type EntityFilters } from "../types";
 import { DIMENSION_FILTER_KEY } from "../dimensionFilter";
 
 interface Props<TRow> {
@@ -71,11 +72,22 @@ export function EntityFilterChips<TRow>({
             ? `${name}: ${filter.values.map(word).join(", ")}`
             : filter.kind === "text"
               ? `${name}: ${filter.value}`
-              : toggle
+              : filter.kind === "date"
+                ? `${name}: ${dateRangeWords(filter)}`
+                : toggle
                 ? name
                 : `${name}: ${filter.value ? "Yes" : "No"}`;
         return <Chip key={id} label={label} onRemove={() => onFiltersChange(without(id))} />;
       })}
     </div>
   );
+}
+
+/** A date entry in a chip: the preset's own words, else the custom window as days. */
+function dateRangeWords(filter: EntityDateFilterValue): string {
+  const preset = filter.preset && TIME_RANGE_PRESETS.find((p) => p.value === filter.preset);
+  if (preset) return preset.label;
+  const day = (iso: string | undefined) => (iso ? new Date(iso).toLocaleDateString() : "");
+  if (filter.since && filter.until) return `${day(filter.since)} – ${day(filter.until)}`;
+  return filter.since ? `from ${day(filter.since)}` : `before ${day(filter.until)}`;
 }

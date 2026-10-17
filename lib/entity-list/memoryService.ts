@@ -75,6 +75,16 @@ function matchesFilters<TRow>(
       if (!asText(raw).toLowerCase().includes(filter.value.toLowerCase())) return false;
     } else if (filter.kind === "boolean") {
       if (Boolean(raw) !== filter.value) return false;
+    } else if (filter.kind === "date") {
+      const at =
+        raw instanceof Date
+          ? raw.getTime()
+          : typeof raw === "string" || typeof raw === "number"
+            ? new Date(raw).getTime()
+            : NaN;
+      if (Number.isNaN(at)) return false;
+      if (filter.since && at < new Date(filter.since).getTime()) return false;
+      if (filter.until && at >= new Date(filter.until).getTime()) return false;
     }
   }
   return true;
