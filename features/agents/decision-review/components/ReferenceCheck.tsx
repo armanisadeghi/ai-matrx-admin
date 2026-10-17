@@ -477,6 +477,31 @@ function ItemDrill({
 
 // ── Reliability against the reference ────────────────────────────────────────
 
+/** An agreement row on a phone: which question, how many checked, how often they agree. */
+function AgreementCard({ group, controls }: { group: ReferenceGroup; controls: MatrxDataTableMobileCardControls }) {
+  const open = controls.open;
+  return (
+    <div
+      role={open ? "button" : undefined}
+      tabIndex={open ? 0 : undefined}
+      data-clickable={open ? "" : undefined}
+      onClick={open}
+      onKeyDown={(event) => {
+        if (open && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          open();
+        }
+      }}
+      className="flex w-full min-w-0 items-center gap-2 border-b border-border px-3 py-2 font-mono type-meta"
+    >
+      <span className="shrink-0 text-muted-foreground">v{group.version}</span>
+      <span className="truncate">{group.question}</span>
+      <span className="ml-auto shrink-0">{pct(group.agreementRate)} agree</span>
+      <span className="shrink-0 text-muted-foreground">n={group.n}</span>
+    </div>
+  );
+}
+
 export function ReferenceReliability({ groups }: { groups: ReferenceGroup[] }) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const key = (g: ReferenceGroup) => `${g.version}:${g.question}`;
@@ -505,6 +530,8 @@ export function ReferenceReliability({ groups }: { groups: ReferenceGroup[] }) {
         pageSize={0}
         toolbar={{ title: "Agreement with the reference model (AI)" }}
         emptyState={{ title: "No reference checks yet" }}
+        mobileCards={(g, _index, controls) => <AgreementCard group={g} controls={controls} />}
+        mobileCardsBreakpoint="sm"
       />
       {selected && (
         <div>
