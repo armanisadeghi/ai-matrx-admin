@@ -4610,7 +4610,7 @@ export default function OverlayController() {
             initialSelectedItemId={
               (data?.selectedItemId as string | null) ?? null
             }
-            initialScope={(data?.scope as string | null) ?? null}
+            initialLocation={(data?.location as string | null) ?? null}
           />
         );
       })()}

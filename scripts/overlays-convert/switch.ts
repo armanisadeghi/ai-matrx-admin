@@ -860,7 +860,7 @@ export function OverlayWorldHost() {
  * state). Mounted by the deferred singleton core; an open they trigger loads the overlay world.
  */
 import { Suspense, useEffect } from "react";
-import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, type OverlayId } from "@ai-matrx/summon";
+import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, selectIsOverlayOpen, type OverlayId, type StateWithOverlays } from "@ai-matrx/summon";
 import { OverlayLinkManager } from "@ai-matrx/summon/url";
 import { OverlayPersistence } from "@ai-matrx/summon/persistence";
 import { useAppStore } from "@/lib/redux/hooks";
@@ -893,7 +893,8 @@ export function OverlayServices() {
         return instanceId;
       },
       close: (id) => void store.dispatch(closeAllInstancesOfOverlay({ overlayId: id as OverlayId })),
-      isOpen: (id, instanceId) => !!(store.getState() as { overlays: { overlays: Record<string, Record<string, unknown> | undefined> } }).overlays.overlays[id]?.[instanceId],
+      // a closed singleton keeps its entry with isOpen false: presence is not "open"
+      isOpen: (id, instanceId) => selectIsOverlayOpen(store.getState() as StateWithOverlays, id as OverlayId, instanceId),
     };
     return () => {
       delete window.__overlaysTest;
