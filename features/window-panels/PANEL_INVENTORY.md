@@ -3,6 +3,8 @@
 > Purpose of THIS doc: a complete, structured inventory of every window panel and the current state of each, so we can see gaps and assign parallel work. Three linked tables (A/B/C) share one panel-identity key. Per-category row files live in [`docs/inventory/`](./docs/inventory/); this file holds the model, the column contracts, the system-level build list, and the cross-cutting findings.
 >
 > Status: STRUCTURE AGREED (2026-06-22). Row fill-in across ~120 registered panels in progress.
+>
+> Paths re-pointed 2026-10-17 to the `@ai-matrx/summon` layout. Wherever a row says opener, Controller or catalogue entry, read the overlay's definition: `features/overlays/definitions/<id>.overlay.ts(x)` (metadata, `useOpen…` alias) and `<id>.render.tsx` (what it renders). Row facts otherwise date from their own audit.
 
 ---
 

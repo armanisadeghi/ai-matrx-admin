@@ -36,7 +36,7 @@ cat features/organizations/peek/kinds-list.ts
 ls features/*/browse/*ActionRegistry.tsx components/official/item/
 
 # Does it have an overlay opener or a window panel?
-ls features/overlays/openers/ | grep -i <entity>
+ls features/overlays/definitions/ | grep -i <entity>
 ls features/window-panels/windows/<entity>/
 ```
 
@@ -70,7 +70,7 @@ Health column, and the drawer's identity card).
 |---|---|
 | Route | add `hrefFor` to the token in `features/scopes/registry/entityRegistry.ts` |
 | Peek | add the kind to `features/organizations/peek/registry.ts` **and** `kinds-list.ts` (a dev-time guard screams if they drift) |
-| Window | register an opener under `features/overlays/openers/` (see the `overlay-system` skill) |
+| Window | register an opener under `features/overlays/definitions/` (see the `overlay-system` skill) |
 
 **Never import `features/organizations/peek/registry.ts` for the availability
 check** — it statically imports 19 peek components. Import `hasPeek` from
