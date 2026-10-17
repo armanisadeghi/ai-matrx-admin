@@ -43,7 +43,7 @@ const opensInPlace = (mode: StudioMode): mode is StudioMode & { id: OpenMode } =
 interface StudioStartProps {
   onStart: (patch: Partial<StudioState>) => void;
   onBack: () => void;
-  /** A System Builder step's job: "Describe it" opens prefilled with it. */
+  /** A Orchestra Studio step's job: "Describe it" opens prefilled with it. */
   initialJob?: string;
   /** The "from plan … step n" back-link, when opened from a plan. */
   planLink?: React.ReactNode;
@@ -182,10 +182,12 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
                   key={mode.id}
                   variant="outline"
                   iconEnd={inPlace ? undefined : <ArrowUpRight />}
-                  pressed={inPlace ? open === mode.id : undefined}
+                  // Every way in not open reads the same; only the open one is pressed. A navigating
+                  // way in is not a toggle (no aria-pressed), its arrow says it leaves.
+                  pressed={inPlace && open === mode.id}
+                  aria-pressed={inPlace ? open === mode.id : undefined}
                   title={`${mode.title} — ${mode.comingSoonId ? "Coming soon" : mode.line}`}
                   data-testid={`studio-mode-${mode.id}`}
-                  className="w-full @3xl:w-auto"
                   onClick={() => pick(mode)}
                 >
                   {mode.label}
@@ -207,7 +209,7 @@ function RecentAgents({ onPick }: { onPick: (agentId: string) => void }) {
   const recent = recentAgents(agents);
   if (!isLoading && recent.length === 0) return null;
   return (
-    <section className="mt-16 flex flex-col gap-2 pb-6" aria-label="Your recent agents" data-testid="studio-recent">
+    <section className="mt-12 flex sm:mt-16 flex-col gap-2 pb-6" aria-label="Your recent agents" data-testid="studio-recent">
       <h2 className="type-label px-1">Recent</h2>
       {isLoading && recent.length === 0 ? (
         <RegionSkeleton shape="rows" count={RECENT_AGENTS_SHOWN / 2} twoLine aria-label="Loading your agents" />
