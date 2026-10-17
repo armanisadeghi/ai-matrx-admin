@@ -11,7 +11,7 @@ import {
   answerWithPercent,
   applyRunEvent,
   compareReferenceRows,
-  firstLine,
+  distinctSnippets,
   formatUsd,
   latestPerItem,
   orderReferenceRows,
@@ -63,6 +63,7 @@ function ref(itemId: string, overrides: Partial<ReferenceVerdict> = {}): Referen
     itemId,
     runId: "run",
     referenceModel: "claude-opus",
+    method: "verbalized",
     answer: "false",
     pAnswer: 0.9,
     agree: true,
@@ -93,6 +94,20 @@ describe("answer display", () => {
     expect(answerWithPercent(view, null)).toBe("Yes 80%");
     const no = referenceView(it, ref("a", { answer: "false", pAnswer: 0.65 }));
     expect(answerWithPercent(no, null)).toBe("No 65%");
+  });
+
+  it("says how the reference answered (never 'method not stated' for a recorded method)", () => {
+    expect(referenceView(item("a"), ref("a"))?.method).toBe("verbalized");
+    const stored = readReferenceVerdictRow({
+      id: "r1",
+      subject_ref_id: "a",
+      verdict: "false",
+      confidence: 0.96,
+      model: "claude-sonnet-5-5",
+      created_at: "2026-10-17T01:58:09Z",
+      metadata: { status: "answered", method: "verbalized", p_answer: 0.96 },
+    });
+    expect(stored?.method).toBe("verbalized");
   });
 
   it("reads an unreadable answer as a dash, never a number", () => {
@@ -291,12 +306,14 @@ describe("live run", () => {
         agree: false,
         already_checked: true,
         model: "claude-sonnet-5-5-20261001",
+        method: "verbalized",
         cost_usd: 0.001,
         latency_ms: 800,
       },
     });
     expect(state.verdicts.i1).toMatchObject({
       status: "answered",
+      method: "verbalized",
       probabilities: { keep: 0.2, reject: 0.8 },
       referenceModel: "claude-sonnet-5-5-20261001",
     });
@@ -431,10 +448,45 @@ describe("reliability vs reference", () => {
   });
 });
 
+// The live News Relevance Check turns (2026-10-17), as the judged state reads them.
+const liveTurn = (signal: string, client: string, clock: string) => [
+  `Judge this one news signal against this one client profile and answer the six questions.\n\n## Signal (news_signal)\n${signal}\n\n## Client context (news_client_context)\n${client}\n\n## Run clock (run_generated_at — this is 'now')\n${clock}\n\nAnswer all six questions with calibrated probabilities. Return no prose.`,
+];
+const CLIENT = '{"__kind": "news_client_context", "company": {"name": "All Green Recycling"}, "topics": ["e-waste recycling"]}';
+const REDDIT = liveTurn(
+  '{"id": "be4127f9fb284333", "title": "Just FYI, when they say it\'s built to be recycled, it\'s largely marketing.", "lane": "profile_relevance"}',
+  CLIENT,
+  "2026-10-07T21:10:01Z",
+);
+const WIRE = liveTurn(
+  '{"id": "63857d252704b7dd", "title": "AT-RACK to Highlight Mobile Destruction System | News By Wire", "lane": "profile_relevance"}',
+  CLIENT,
+  "2026-10-07T21:10:01Z",
+);
+const AXIOS = liveTurn(
+  '{"id": "a4431f85f453ae39", "title": "Namespace raised a $42M Series B \\"led\\" by Scale", "lane": "major_news_unmatched"}',
+  CLIENT,
+  "2026-10-05T14:10:05Z",
+);
+
 describe("state snippet", () => {
-  it("takes the first non-empty line and cuts it", () => {
-    expect(firstLine(["\n  \nHello there\nmore"])).toBe("Hello there");
-    expect(firstLine(["x".repeat(200)], 10)).toBe(`${"x".repeat(9)}…`);
-    expect(firstLine([])).toBeNull();
+  it("names what differs between items, never the shared boilerplate", () => {
+    const out = distinctSnippets({ a: REDDIT, b: REDDIT, c: WIRE, d: AXIOS });
+    expect(out.a).toBe("Just FYI, when they say it's built to be recycled, it's largely marketing.");
+    expect(out.b).toBe(out.a); // two questions of the same turn read the same
+    expect(out.c).toBe("AT-RACK to Highlight Mobile Destruction System | News By Wire");
+    expect(out.d).toBe('Namespace raised a $42M Series B "led" by Scale');
+    expect(Object.values(out).some((v) => v?.startsWith("Judge this one"))).toBe(false);
+  });
+
+  it("with one distinct state, still prefers the record's title over the instruction line", () => {
+    expect(distinctSnippets({ a: REDDIT }).a).toMatch(/^Just FYI/);
+  });
+
+  it("falls back to the first differing line, cut; nothing readable is null", () => {
+    const out = distinctSnippets({ a: ["Same intro\nfirst thing " + "x".repeat(200)], b: ["Same intro\nsecond"], c: [] }, 20);
+    expect(out.a).toBe(`first thing ${"x".repeat(7)}…`);
+    expect(out.b).toBe("second");
+    expect(out.c).toBeNull();
   });
 });

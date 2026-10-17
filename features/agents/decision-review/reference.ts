@@ -66,6 +66,8 @@ export interface ReferenceVerdict {
   itemId: string;
   runId: string | null;
   referenceModel: string | null;
+  /** How the reference produced its probabilities ("native" | "verbalized"), as recorded. */
+  method: string | null;
   /** The reference's answer in label vocabulary (noul true|false, choice key, score level). */
   answer: string | null;
   /** Probability the reference gave its own answer. */
@@ -121,6 +123,7 @@ export function readReferenceVerdictRow(row: ReferenceVerdictRow): ReferenceVerd
     itemId: row.subject_ref_id,
     runId: str(meta.run_id),
     referenceModel: modelName(meta.reference_model) ?? row.model,
+    method: str(meta.method),
     answer: answered ? (str(row.verdict) ?? answerKey(meta.answer)) : null,
     pAnswer: answered ? (num(meta.p_answer) ?? num(row.confidence)) : null,
     agree: answered ? bool(meta.agree) : null,
@@ -163,7 +166,7 @@ export function referenceView(item: ReviewItem, ref: ReferenceVerdict): Decision
   }
   return readDecisionAnswers({
     model: ref.referenceModel,
-    method: null,
+    method: ref.method,
     answers: {
       [item.question]: {
         type: item.answerType === "unknown" ? null : item.answerType,
@@ -221,7 +224,7 @@ export interface ReferenceResultRow {
   failure: ReferenceFailure | null;
   /** In the current run and not answered yet. */
   pending: boolean;
-  /** First line of the judged user turn, when readable. */
+  /** What sets this item's judged state apart from the others (see `distinctSnippets`). */
   snippet: string | null;
 }
 
@@ -259,13 +262,56 @@ export function orderReferenceRows(rows: ReferenceResultRow[]): ReferenceResultR
   return [...rows].sort(compareReferenceRows);
 }
 
-/** The first non-empty line of the judged state, cut for a table cell. */
-export function firstLine(parts: string[], max = 120): string | null {
-  for (const part of parts) {
-    const line = part.split("\n").map((l) => l.trim()).find(Boolean);
-    if (line) return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+/** A record field that names the thing judged, in a JSON line of the state. */
+const TITLE_FIELD = /"(?:title|headline|name|subject|question|summary)"\s*:\s*"((?:[^"\\]|\\.)+)"/;
+
+function titleIn(line: string): string | null {
+  const match = TITLE_FIELD.exec(line);
+  if (!match?.[1]) return null;
+  try {
+    return (JSON.parse(`"${match[1]}"`) as string).trim() || null;
+  } catch {
+    return match[1].trim() || null;
   }
-  return null;
+}
+
+function cut(line: string, max: number): string {
+  return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
+/**
+ * One line per item that tells the items apart. An agent's judged turns share
+ * their boilerplate (the instruction line, the section headings), so the first
+ * line is the same on every row. The lines every distinct state carries are
+ * dropped; of what is left, a JSON line's title-like field wins (the record the
+ * agent was given), else the first remaining line. With a single distinct state
+ * nothing can be told apart, so the first titled line, else the first line.
+ */
+export function distinctSnippets(
+  states: Record<string, string[] | null | undefined>,
+  max = 120,
+): Record<string, string | null> {
+  const lines: Record<string, string[]> = {};
+  for (const [id, parts] of Object.entries(states)) {
+    lines[id] = (parts ?? []).flatMap((p) => p.split("\n")).map((l) => l.trim()).filter(Boolean);
+  }
+  const distinct = [...new Map(Object.values(lines).map((l) => [l.join("\n"), l])).values()].filter(
+    (l) => l.length > 0,
+  );
+  const shared = new Set<string>();
+  if (distinct.length > 1) {
+    const [first, ...rest] = distinct;
+    for (const line of first ?? []) if (rest.every((other) => other.includes(line))) shared.add(line);
+  }
+  const out: Record<string, string | null> = {};
+  for (const [id, all] of Object.entries(lines)) {
+    const own = all.filter((l) => !shared.has(l));
+    const pool = own.length > 0 ? own : all;
+    const titled = pool.map(titleIn).find((t): t is string => t != null);
+    const line = titled ?? pool[0] ?? null;
+    out[id] = line == null ? null : cut(line, max);
+  }
+  return out;
 }
 
 // ── Money ────────────────────────────────────────────────────────────────────
@@ -410,6 +456,7 @@ export function applyRunEvent(
             itemId,
             runId: str(data.run_id) ?? state.runId,
             referenceModel: str(data.model) ?? state.referenceModel,
+            method: str(data.method),
             answer: str(data.reference_verdict) ?? answerKey(data.reference_answer),
             pAnswer: num(data.reference_p),
             agree: bool(data.agree),
