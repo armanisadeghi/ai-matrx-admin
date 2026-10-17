@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 1,
+  "version": 2,
   "title": "Task Manager",
   "description": "Capture tasks, sort by status and priority, and work from smart lists and a calendar.",
   "forWho": "Anyone with too many things to do",
@@ -84,15 +84,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "tasks",
-            "label": "Tasks",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "task",
-            "multi": true
-          },
-          {
             "key": "open_tasks",
             "label": "Open tasks",
             "parityType": "rollup",
@@ -169,7 +160,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -182,7 +173,12 @@
               "In progress": "blue",
               "Done": "green"
             },
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "priority",
@@ -234,6 +230,13 @@
             "relationMax": 1
           },
           {
+            "key": "assignee",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "due_on",
             "label": "Due",
             "parityType": "datetime",
@@ -269,7 +272,7 @@
           },
           {
             "key": "minutes",
-            "label": "Minutes needed",
+            "label": "Estimate (min)",
             "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -300,6 +303,39 @@
             "formula": "DATEDIFF(TODAY(), {Due}, 'days')",
             "source": "formula",
             "computeOn": "read"
+          },
+          {
+            "key": "due_flag",
+            "label": "Due flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Done} = TRUE, \"\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 2, \"Due soon\", \"\")))"
+          },
+          {
+            "key": "created",
+            "label": "Created",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "finish_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_finish"
+            }
           }
         ],
         "rows": [
@@ -341,7 +377,7 @@
               "priority": "Low",
               "category": "Home",
               "context": "c-errand",
-              "due_on": "@today+1d",
+              "due_on": "@today",
               "done": false,
               "repeats": "Monthly",
               "minutes": 20,
@@ -371,7 +407,7 @@
               "priority": "High",
               "category": "Admin",
               "context": "c-desk",
-              "due_on": "@today+2d",
+              "due_on": "@today",
               "done": false,
               "repeats": "Yearly",
               "minutes": 10,
@@ -543,6 +579,96 @@
               "notes": "Check the spare key"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What needs to happen"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write the task as a verb: \"Call the plumber\", not \"Plumber\"."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who is involved"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where it happens (the context)"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What you need before starting"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done when"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "The result you can point to"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -555,17 +681,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "tasks_in"
-      },
-      {
-        "describes": "A context lists its tasks.",
-        "fromTable": "context",
-        "fromField": "tasks",
-        "toTable": "task",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "context_tasks"
+        "inverseKey": "tasks"
       }
     ],
     "sharedBlocks": [],
@@ -600,7 +716,28 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_finish",
+        "table": "task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          },
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_tasks",
@@ -643,6 +780,70 @@
         "table": "context",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_today",
+        "name": "Today",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "task_overdue",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "This week",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assignee"
+        ]
       }
     ],
     "agent": {
@@ -731,7 +932,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -762,162 +963,133 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Not started"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Not started",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Not started",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": "Not started"
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "In progress"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "In progress",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-2",
-                        "name": "In progress",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": "In progress"
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-2"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Finished"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Finished",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-3",
-                        "name": "Finished",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": "Done"
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-3"
-                  }
-                }
-              ]
+              "text": "Not started"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Not started",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Not started",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Not started"
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "In progress",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-2",
+                "name": "In progress",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "In progress"
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Finished"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Finished",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-3",
+                "name": "Finished",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Done"
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-3"
+          }
         },
         {
           "type": "divider"
@@ -946,6 +1118,49 @@
             "linked": true,
             "showTitle": true,
             "views": [
+              {
+                "id": "view-u11",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u10",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u9",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
               {
                 "id": "view-4",
                 "name": "All tasks",
@@ -1086,119 +1301,136 @@
       },
       "blocks": [
         {
-          "type": "columnList",
-          "children": [
+          "type": "callout",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-11",
-                        "name": "By status",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-11"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.33
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-12",
-                        "name": "By category",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "category",
-                          "op": "count"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-12"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-13",
-                        "name": "Minutes by context",
-                        "layout": "chart",
-                        "icon": "ChartBar",
-                        "chart": {
-                          "type": "hbar",
-                          "groupBy": "context",
-                          "op": "sum",
-                          "field": "minutes"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-13"
-                  }
-                }
-              ]
+              "text": "Three questions every morning: what is overdue, what is due today, what is coming this week. Clear the first list before adding to the third."
             }
-          ]
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Sun"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u12",
+                "name": "Open tasks",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u13",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u14",
+                "name": "Due this week",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u15",
+                "name": "Mine",
+                "layout": "grid",
+                "icon": "Table",
+                "me": [
+                  "assignee"
+                ]
+              }
+            ],
+            "activeViewId": "view-u12"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-12",
+                "name": "By category",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "category",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "view-12"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-13",
+                "name": "Minutes by context",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "context",
+                  "op": "sum",
+                  "field": "minutes"
+                }
+              }
+            ],
+            "activeViewId": "view-13"
+          }
         },
         {
           "type": "heading",
@@ -1390,6 +1622,81 @@
                 ]
               }
             ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Inbox item: \"Dentist\". Not a task yet. Rewritten: \"Book dentist cleaning\" (two minutes, do it now). Inbox item: \"Taxes\". Rewritten: \"Gather last year's receipts\" with a due date two weeks out and the Admin category."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly tidy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Delete tasks you no longer believe in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Give every open task a due date or a someday label"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the Overdue list is empty or renegotiated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Renegotiating a due date is fine. Leaving it overdue silently is what erodes trust in the list."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Scale"
           }
         }
       ]

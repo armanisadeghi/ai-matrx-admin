@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 1,
+  "version": 2,
   "title": "Meal Planner",
   "description": "Weekly meal plan from a recipe library with a shopping list by aisle.",
   "forWho": "Home cooks and families",
@@ -217,15 +217,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "plan_slots",
-            "label": "Planned meals",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "meal_plan",
-            "multi": true
-          },
-          {
             "key": "times_planned",
             "label": "Times planned",
             "parityType": "rollup",
@@ -236,13 +227,14 @@
             "agg": "count"
           },
           {
-            "key": "ingredients",
-            "label": "Ingredients",
-            "parityType": "relation",
+            "key": "last_planned",
+            "label": "Last planned",
+            "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "relationTarget": "shopping",
-            "multi": true
+            "via": "plan_slots",
+            "pick": "on",
+            "agg": "max"
           },
           {
             "key": "ingredient_count",
@@ -253,6 +245,13 @@
             "via": "ingredients",
             "pick": "item_name",
             "agg": "count"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -406,6 +405,102 @@
               "source": "https://kitchen.lifeledger.net/rc10"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New recipe",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Ingredients"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Quantity and item, one per line"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Method"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "First step"
+                    }
+                  ]
+                },
+                {
+                  "type": "numbered",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Substitutions, how it keeps, what the family said."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Planning"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Add it to the meal plan and the shopping list will follow."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -517,6 +612,32 @@
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "planned_at",
+            "label": "Planned at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "overdue_flag",
+            "label": "Missed?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Cooked} = FALSE, DATEDIFF(TODAY(), {Date}, 'days') < 0), \"Not cooked\", \"\")"
+          },
+          {
+            "key": "cooked_btn",
+            "label": "Mark cooked",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "plan_cooked"
+            }
           }
         ],
         "rows": [
@@ -811,6 +932,17 @@
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "bought_btn",
+            "label": "Mark bought",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shop_bought"
+            }
           }
         ],
         "rows": [
@@ -1112,7 +1244,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "planned_for"
+        "inverseKey": "plan_slots"
       },
       {
         "describes": "A shopping item is for one recipe.",
@@ -1122,27 +1254,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "needed_for"
-      },
-      {
-        "describes": "A recipe lists where it is planned.",
-        "fromTable": "recipe",
-        "fromField": "plan_slots",
-        "toTable": "meal_plan",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "recipe_slots"
-      },
-      {
-        "describes": "A recipe lists its ingredients.",
-        "fromTable": "recipe",
-        "fromField": "ingredients",
-        "toTable": "shopping",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "recipe_items"
+        "inverseKey": "ingredients"
       }
     ],
     "sharedBlocks": [],
@@ -1181,7 +1293,38 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "plan_cooked",
+        "table": "meal_plan",
+        "name": "Mark cooked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "cooked",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      },
+      {
+        "kind": "row_action",
+        "token": "shop_bought",
+        "table": "shopping",
+        "name": "Mark bought",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "bought",
+            "set": "value",
+            "value": true
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_recipes",
@@ -1251,6 +1394,49 @@
         "table": "shopping",
         "kind": "kanban",
         "groupBy": "aisle"
+      },
+      {
+        "token": "plan_today",
+        "name": "Today",
+        "table": "meal_plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "plan_week",
+        "name": "This week",
+        "table": "meal_plan",
+        "kind": "calendar",
+        "dateField": "on",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "plan_tomorrow",
+        "name": "Tomorrow",
+        "table": "meal_plan",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "tomorrow"
+          }
+        }
+      },
+      {
+        "token": "shop_tobuy",
+        "name": "To buy",
+        "table": "shopping",
+        "kind": "grid",
+        "filters": {
+          "bought": false
+        }
       }
     ],
     "agent": {
@@ -1339,7 +1525,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1394,6 +1580,17 @@
             "showTitle": false,
             "views": [
               {
+                "id": "view-u6",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
                 "id": "view-1",
                 "name": "Calendar",
                 "layout": "calendar",
@@ -1418,127 +1615,129 @@
                     "direction": "asc"
                   }
                 ]
+              },
+              {
+                "id": "view-u7",
+                "name": "Tomorrow",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "tomorrow"
+                  }
+                }
+              },
+              {
+                "id": "view-u8",
+                "name": "Next 7 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
               }
             ],
             "activeViewId": "view-1"
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Shopping list"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "shopping",
-                      "view": "all_shopping"
-                    },
-                    "inline": true,
-                    "title": "Shopping list",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-4",
-                        "name": "To buy by aisle",
-                        "layout": "kanban",
-                        "icon": "SquareKanban",
-                        "groupField": "aisle",
-                        "filters": {
-                          "bought": false
-                        }
-                      },
-                      {
-                        "id": "view-5",
-                        "name": "All items",
-                        "layout": "grid",
-                        "icon": "Table"
-                      }
-                    ],
-                    "activeViewId": "view-4"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Planned by meal"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "meal_plan",
-                      "view": "all_plan"
-                    },
-                    "inline": true,
-                    "title": "Meal plan",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-6",
-                        "name": "Meals by type",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "meal",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      },
-                      {
-                        "id": "view-7",
-                        "name": "Servings by day",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "day",
-                          "op": "sum",
-                          "field": "servings"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-6"
-                  }
-                }
-              ]
+              "text": "Shopping list"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shopping",
+              "view": "all_shopping"
+            },
+            "inline": true,
+            "title": "Shopping list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-4",
+                "name": "To buy by aisle",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "aisle",
+                "filters": {
+                  "bought": false
+                }
+              },
+              {
+                "id": "view-5",
+                "name": "All items",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "view-4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Planned by meal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meal_plan",
+              "view": "all_plan"
+            },
+            "inline": true,
+            "title": "Meal plan",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-6",
+                "name": "Meals by type",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "meal",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "view-7",
+                "name": "Servings by day",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "day",
+                  "op": "sum",
+                  "field": "servings"
+                }
+              }
+            ],
+            "activeViewId": "view-6"
+          }
         },
         {
           "type": "heading",
@@ -1650,6 +1849,18 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One focused hour on a quiet day saves a week of decisions. Use the list below, then mark the meals cooked as you go."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "ChefHat"
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
@@ -1743,6 +1954,121 @@
             ],
             "activeViewId": "view-13"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A sample prep hour"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Feeds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "0-10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Start the slow-cooker meal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two dinners"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "10-30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wash and chop vegetables"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three dinners"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30-45"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cook grains and portion breakfast jars"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Five breakfasts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "45-60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Label, freeze and clean up"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next week"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -1808,7 +2134,17 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-14",
+                "id": "view-u9",
+                "name": "Pantry items to buy",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "aisle": "Pantry",
+                  "bought": false
+                }
+              },
+              {
+                "id": "view-u10",
                 "name": "Pantry items",
                 "layout": "grid",
                 "icon": "Table",
@@ -1817,7 +2153,7 @@
                 }
               }
             ],
-            "activeViewId": "view-14"
+            "activeViewId": "view-u9"
           }
         },
         {
@@ -1831,6 +2167,41 @@
           "props": {
             "icon": "ShoppingBasket"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Restocking rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the pantry shelf before writing the shopping list, not after."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Buy a second one the day you open the last one of anything you use weekly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a short list of five meals that need only pantry items for the nights the plan falls apart."
+            }
+          ]
         }
       ]
     }

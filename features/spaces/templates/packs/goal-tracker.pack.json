@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0203",
-  "version": 1,
+  "version": 2,
   "title": "Goal Tracker",
   "description": "Turn yearly goals into steps and quarterly check-ins with live progress counts.",
   "forWho": "Planners and goal setters",
@@ -91,7 +91,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -106,7 +106,13 @@
               "Achieved": "green",
               "Dropped": "amber"
             },
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "In progress": "in_progress",
+              "Achieved": "done",
+              "Dropped": "done"
+            }
           },
           {
             "key": "target_on",
@@ -131,26 +137,8 @@
             "contextPolicy": "include"
           },
           {
-            "key": "milestones",
-            "label": "Milestones",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "milestone",
-            "multi": true
-          },
-          {
-            "key": "reviews",
-            "label": "Check-ins",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "review",
-            "multi": true
-          },
-          {
             "key": "steps_total",
-            "label": "Step count",
+            "label": "Steps",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -160,7 +148,7 @@
           },
           {
             "key": "steps_done",
-            "label": "Steps finished",
+            "label": "Steps done",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -172,14 +160,30 @@
             }
           },
           {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Steps} > 0, ROUND({Steps done} / {Steps} * 100, 0), 0)"
+          },
+          {
             "key": "avg_score",
-            "label": "Average score",
+            "label": "Average check-in score",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "reviews",
             "pick": "score",
             "agg": "avg"
+          },
+          {
+            "key": "days_left",
+            "label": "Days to target",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Target date}, 'days')"
           }
         ],
         "rows": [
@@ -338,6 +342,21 @@
               "Medium": "blue",
               "Large": "green"
             }
+          },
+          {
+            "key": "step_flag",
+            "label": "Flag",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Done} = TRUE, \"Done\", IF(DATEDIFF(TODAY(), {Due}, 'days') < 0, \"Overdue\", IF(DATEDIFF(TODAY(), {Due}, 'days') <= 14, \"Due soon\", \"Later\")))"
+          },
+          {
+            "key": "created",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -366,7 +385,7 @@
             "values": {
               "milestone_name": "Reach the first quarter of the deposit",
               "goal": "g1",
-              "due_on": "@today+60d",
+              "due_on": "@today+20d",
               "done": false,
               "effort": "Large"
             }
@@ -396,7 +415,7 @@
             "values": {
               "milestone_name": "Complete the SQL project",
               "goal": "g2",
-              "due_on": "@today+40d",
+              "due_on": "@today+5d",
               "done": false,
               "effort": "Large"
             }
@@ -466,7 +485,7 @@
             "values": {
               "milestone_name": "Throw ten test mugs",
               "goal": "g5",
-              "due_on": "@today+50d",
+              "due_on": "@today+12d",
               "done": false,
               "effort": "Small"
             }
@@ -519,6 +538,67 @@
               "due_on": "@today+130d",
               "done": false,
               "effort": "Large"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New step",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What exactly will you do, and how will you know it is finished?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Time and effort"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How long will it take? When will you do it?"
+                    }
+                  ]
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Schedule it in the calendar"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
             }
           }
         ]
@@ -578,7 +658,7 @@
           },
           {
             "key": "score",
-            "label": "Score (1-5)",
+            "label": "Score (1-10)",
             "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -607,6 +687,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -676,6 +763,116 @@
               "held_on": "@today-126d"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Quarterly check-in",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where the goal stands"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two sentences: what moved since the last check-in."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Score and why"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pick a score from 1 to 10 and name the single biggest reason for it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What I learned"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What worked"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What did not"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next quarter"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One step with a date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One thing to stop doing"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -688,7 +885,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "steps_of"
+        "inverseKey": "milestones"
       },
       {
         "describes": "A check-in is about one goal.",
@@ -698,27 +895,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "checkins_of"
-      },
-      {
-        "describes": "A goal lists its steps.",
-        "fromTable": "goal",
-        "fromField": "milestones",
-        "toTable": "milestone",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "goal_steps"
-      },
-      {
-        "describes": "A goal lists its check-ins.",
-        "fromTable": "goal",
-        "fromField": "reviews",
-        "toTable": "review",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "goal_checkins"
+        "inverseKey": "reviews"
       }
     ],
     "sharedBlocks": [],
@@ -811,6 +988,59 @@
         "table": "review",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "step_overdue",
+        "name": "Overdue steps",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "step_30",
+        "name": "Next 30 days",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "step_month",
+        "name": "This month",
+        "table": "milestone",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "within": {
+          "due_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "checkin_recent",
+        "name": "Last 90 days",
+        "table": "review",
+        "kind": "grid",
+        "within": {
+          "held_on": {
+            "relative": "past_days",
+            "n": 90
+          }
+        }
       }
     ],
     "agent": {
@@ -899,7 +1129,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -985,6 +1215,12 @@
                 "name": "All goals",
                 "layout": "grid",
                 "icon": "Table"
+              },
+              {
+                "id": "view-u19",
+                "name": "Progress",
+                "layout": "grid",
+                "icon": "Table"
               }
             ],
             "activeViewId": "view-1"
@@ -994,127 +1230,106 @@
           "type": "divider"
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Upcoming steps"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "milestone",
-                      "view": "all_steps"
-                    },
-                    "inline": true,
-                    "title": "Steps",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-6",
-                        "name": "Not done",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "done": false
-                        },
-                        "sorts": [
-                          {
-                            "field": "due_on",
-                            "direction": "asc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "view-7",
-                        "name": "Calendar",
-                        "layout": "calendar",
-                        "icon": "Calendar",
-                        "dateField": "due_on"
-                      }
-                    ],
-                    "activeViewId": "view-6"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Quarterly check-ins"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "review",
-                      "view": "all_checkins"
-                    },
-                    "inline": true,
-                    "title": "Check-ins",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-8",
-                        "name": "Latest",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "held_on",
-                            "direction": "desc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "view-9",
-                        "name": "Score by quarter",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "quarter",
-                          "op": "avg",
-                          "field": "score"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-8"
-                  }
-                }
-              ]
+              "text": "Upcoming steps"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "all_steps"
+            },
+            "inline": true,
+            "title": "Steps",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-6",
+                "name": "Not done",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "done": false
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "view-7",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "view-6"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quarterly check-ins"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "review",
+              "view": "all_checkins"
+            },
+            "inline": true,
+            "title": "Check-ins",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-8",
+                "name": "Latest",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-9",
+                "name": "Score by quarter",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "quarter",
+                  "op": "avg",
+                  "field": "score"
+                }
+              }
+            ],
+            "activeViewId": "view-8"
+          }
         },
         {
           "type": "divider"
@@ -1312,22 +1527,48 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-13",
-                "name": "Open steps",
+                "id": "view-u16",
+                "name": "Overdue",
                 "layout": "list",
                 "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
                 "filters": {
                   "done": false
-                },
-                "sorts": [
-                  {
-                    "field": "due_on",
-                    "direction": "asc"
+                }
+              },
+              {
+                "id": "view-u17",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
                   }
-                ]
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u18",
+                "name": "This month",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "within": {
+                  "due_on": {
+                    "relative": "this_month"
+                  }
+                }
               }
             ],
-            "activeViewId": "view-13"
+            "activeViewId": "view-u16"
           }
         }
       ]
@@ -1506,6 +1747,60 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example of a good goal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "\"Save an emergency fund of three months of expenses by the end of the year.\" It names an outcome, a number and a date. Its steps: set up a separate account, automate a monthly transfer, review the balance each quarter."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a goal stalls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shrink the next step until it takes under an hour."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check whether the date is the problem, not the goal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Decide on purpose: keep, reshape or drop."
+            }
+          ]
         }
       ]
     }

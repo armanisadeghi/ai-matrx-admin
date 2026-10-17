@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0205",
-  "version": 1,
+  "version": 2,
   "title": "Weekly Planner",
   "description": "Plan the week by day with time blocks, weekly goals and a calendar.",
   "forWho": "Students and professionals planning their week",
@@ -112,7 +112,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -125,7 +125,12 @@
               "In progress": "blue",
               "Done": "green"
             },
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "priority",
@@ -168,6 +173,15 @@
             }
           },
           {
+            "key": "goal",
+            "label": "Weekly goal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "weekly_goal",
+            "relationMax": 1
+          },
+          {
             "key": "done",
             "label": "Done",
             "parityType": "checkbox",
@@ -176,7 +190,7 @@
           },
           {
             "key": "minutes",
-            "label": "Minutes",
+            "label": "Minutes planned",
             "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -197,6 +211,32 @@
             "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "overdue_flag",
+            "label": "Carried over?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Done} = FALSE, DATEDIFF(TODAY(), {Date}, 'days') < 0), \"Overdue\", \"\")"
+          },
+          {
+            "key": "created",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_done"
+            }
           }
         ],
         "rows": [
@@ -212,7 +252,8 @@
               "category": "Work",
               "done": true,
               "minutes": 30,
-              "notes": "Bring the printed notes"
+              "notes": "Bring the printed notes",
+              "goal": "wg1"
             }
           },
           {
@@ -227,7 +268,8 @@
               "category": "Work",
               "done": true,
               "minutes": 90,
-              "notes": "Leave early if traffic"
+              "notes": "Leave early if traffic",
+              "goal": "wg1"
             }
           },
           {
@@ -242,7 +284,8 @@
               "category": "Home",
               "done": true,
               "minutes": 45,
-              "notes": "Pack a water bottle"
+              "notes": "Pack a water bottle",
+              "goal": "wg4"
             }
           },
           {
@@ -257,7 +300,8 @@
               "category": "Money",
               "done": false,
               "minutes": 60,
-              "notes": "Check the calendar invite"
+              "notes": "Check the calendar invite",
+              "goal": "wg6"
             }
           },
           {
@@ -272,7 +316,8 @@
               "category": "Health",
               "done": false,
               "minutes": 60,
-              "notes": "Bring the printed notes"
+              "notes": "Bring the printed notes",
+              "goal": "wg2"
             }
           },
           {
@@ -287,7 +332,8 @@
               "category": "Fun",
               "done": false,
               "minutes": 120,
-              "notes": "Leave early if traffic"
+              "notes": "Leave early if traffic",
+              "goal": "wg3"
             }
           },
           {
@@ -302,7 +348,8 @@
               "category": "Work",
               "done": false,
               "minutes": 45,
-              "notes": "Pack a water bottle"
+              "notes": "Pack a water bottle",
+              "goal": "wg1"
             }
           },
           {
@@ -317,7 +364,8 @@
               "category": "Health",
               "done": false,
               "minutes": 60,
-              "notes": "Check the calendar invite"
+              "notes": "Check the calendar invite",
+              "goal": "wg2"
             }
           },
           {
@@ -332,7 +380,8 @@
               "category": "Work",
               "done": false,
               "minutes": 75,
-              "notes": "Bring the printed notes"
+              "notes": "Bring the printed notes",
+              "goal": "wg1"
             }
           },
           {
@@ -347,7 +396,8 @@
               "category": "Family",
               "done": false,
               "minutes": 30,
-              "notes": "Leave early if traffic"
+              "notes": "Leave early if traffic",
+              "goal": "wg5"
             }
           },
           {
@@ -362,7 +412,8 @@
               "category": "Home",
               "done": false,
               "minutes": 90,
-              "notes": "Pack a water bottle"
+              "notes": "Pack a water bottle",
+              "goal": "wg4"
             }
           },
           {
@@ -377,7 +428,8 @@
               "category": "Work",
               "done": false,
               "minutes": 60,
-              "notes": "Check the calendar invite"
+              "notes": "Check the calendar invite",
+              "goal": "wg1"
             }
           },
           {
@@ -392,7 +444,8 @@
               "category": "Home",
               "done": false,
               "minutes": 75,
-              "notes": "Bring the printed notes"
+              "notes": "Bring the printed notes",
+              "goal": "wg4"
             }
           },
           {
@@ -407,7 +460,8 @@
               "category": "Health",
               "done": false,
               "minutes": 80,
-              "notes": "Leave early if traffic"
+              "notes": "Leave early if traffic",
+              "goal": "wg2"
             }
           },
           {
@@ -422,7 +476,8 @@
               "category": "Home",
               "done": false,
               "minutes": 100,
-              "notes": "Pack a water bottle"
+              "notes": "Pack a water bottle",
+              "goal": "wg4"
             }
           },
           {
@@ -437,7 +492,114 @@
               "category": "Work",
               "done": false,
               "minutes": 30,
-              "notes": "Check the calendar invite"
+              "notes": "Check the calendar invite",
+              "goal": "wg1"
+            }
+          },
+          {
+            "key": "pt90",
+            "values": {
+              "task_name": "Return library books",
+              "day": "Friday",
+              "on": "@today-3d",
+              "time_block": "17:00",
+              "status": "Not started",
+              "priority": "Low",
+              "category": "Home",
+              "done": false,
+              "minutes": 20,
+              "notes": "Carried over from last week",
+              "goal": "wg4"
+            }
+          },
+          {
+            "key": "pt91",
+            "values": {
+              "task_name": "Book the dentist check-up",
+              "day": "Thursday",
+              "on": "@today-2d",
+              "time_block": "12:00",
+              "status": "In progress",
+              "priority": "Medium",
+              "category": "Health",
+              "done": false,
+              "minutes": 15,
+              "notes": "Call before noon",
+              "goal": "wg4"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New planned task",
+            "values": {
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence, starting with a verb."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "When and how long"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pick a day and a time block. If it will take more than two hours, split it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Done when"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "The result you can point to"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
             }
           }
         ]
@@ -518,6 +680,47 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "tasks_total",
+            "label": "Tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count"
+          },
+          {
+            "key": "tasks_done",
+            "label": "Tasks done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "done": true
+            }
+          },
+          {
+            "key": "minutes_planned",
+            "label": "Minutes planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "minutes",
+            "agg": "sum"
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Tasks} > 0, ROUND({Tasks done} / {Tasks} * 100, 0), 0)"
           }
         ],
         "rows": [
@@ -581,10 +784,90 @@
               "week_of": "@mon"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New weekly goal",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The goal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What will be true by Sunday night if the week goes well?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tasks that serve it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "List two to four tasks and link them from the Planned tasks table."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why this week"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence on why it can not wait."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
-    "relationships": [],
+    "relationships": [
+      {
+        "describes": "Each planned_task row belongs to one weekly_goal.",
+        "fromTable": "planned_task",
+        "fromField": "goal",
+        "toTable": "weekly_goal",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks"
+      }
+    ],
     "sharedBlocks": [],
     "forms": [
       {
@@ -617,7 +900,28 @@
       }
     ],
     "dimensions": [],
-    "extras": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "task_done",
+        "table": "planned_task",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "done",
+            "set": "value",
+            "value": true
+          },
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ],
+        "color": "green"
+      }
+    ],
     "views": [
       {
         "token": "all_tasks",
@@ -660,6 +964,68 @@
         "table": "weekly_goal",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "task_today",
+        "name": "Today",
+        "table": "planned_task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "This week",
+        "table": "planned_task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "task_overdue",
+        "name": "Overdue",
+        "table": "planned_task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "planned_task",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "goal_week",
+        "name": "This week",
+        "table": "weekly_goal",
+        "kind": "grid",
+        "within": {
+          "week_of": {
+            "relative": "this_week"
+          }
+        }
       }
     ],
     "agent": {
@@ -748,7 +1114,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -779,108 +1145,112 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Weekly goals"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "weekly_goal",
-                      "view": "all_goals"
-                    },
-                    "inline": true,
-                    "title": "Weekly goals",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Goals",
-                        "layout": "list",
-                        "icon": "List"
-                      },
-                      {
-                        "id": "view-2",
-                        "name": "Open",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "achieved": false
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Load by day"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "planned_task",
-                      "view": "all_tasks"
-                    },
-                    "inline": true,
-                    "title": "Planned tasks",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-3",
-                        "name": "Minutes by day",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "day",
-                          "op": "sum",
-                          "field": "minutes"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-3"
-                  }
-                }
-              ]
+              "text": "Weekly goals"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "weekly_goal",
+              "view": "all_goals"
+            },
+            "inline": true,
+            "title": "Weekly goals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Goals",
+                "layout": "list",
+                "icon": "List"
+              },
+              {
+                "id": "view-2",
+                "name": "Open",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "achieved": false
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Load by day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "planned_task",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Planned tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u1",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "view-3",
+                "name": "Minutes by day",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "day",
+                  "op": "sum",
+                  "field": "minutes"
+                }
+              },
+              {
+                "id": "view-u2",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              }
+            ],
+            "activeViewId": "view-3"
+          }
         },
         {
           "type": "divider"
@@ -910,40 +1280,46 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-4",
-                "name": "By day",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "day"
-              },
-              {
-                "id": "view-5",
-                "name": "Calendar",
-                "layout": "calendar",
-                "icon": "Calendar",
-                "dateField": "on"
-              },
-              {
-                "id": "view-6",
-                "name": "By category",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "category"
-              },
-              {
-                "id": "view-7",
-                "name": "All planned tasks",
+                "id": "view-u3",
+                "name": "Overdue",
                 "layout": "grid",
                 "icon": "Table",
-                "sorts": [
-                  {
-                    "field": "on",
-                    "direction": "asc"
+                "within": {
+                  "on": {
+                    "relative": "before_today"
                   }
-                ]
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u4",
+                "name": "Next 7 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              },
+              {
+                "id": "view-u5",
+                "name": "Low priority",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Not started",
+                  "priority": "Low"
+                }
               }
             ],
-            "activeViewId": "view-4"
+            "activeViewId": "view-u3"
           }
         },
         {
@@ -1039,6 +1415,18 @@
           ]
         },
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Fifteen quiet minutes before the week starts. The Overdue list shows what slid; decide for each item whether to schedule it or let it go."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "CalendarClock"
+          }
+        },
+        {
           "type": "todo",
           "text": [
             {
@@ -1113,6 +1501,68 @@
             ],
             "activeViewId": "view-9"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Weekly goals: finish the quarterly report, three runs, meal prep Sunday."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday: stand-up and inbox sweep (30 min), report outline (90 min)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wednesday: long run, one hour, early."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If the week is already full"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Drop the lowest priority task of each day, not a whole day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move anything Low to the backlog list until Thursday."
+            }
+          ]
         }
       ]
     },
@@ -1247,6 +1697,152 @@
                 ]
               }
             ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A sample day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Block"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "8:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stand-up and inbox sweep"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clears the small things first"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "9:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deep work: report"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Best energy, no meetings"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "12:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lunch and a walk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Real break"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "14:00"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Calls and errands"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lower-energy work"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "16:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan tomorrow"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ten minutes, then stop"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Two hours of focused work per day is a strong day. Plan for that, not for eight."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Timer"
           }
         }
       ]

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0202",
-  "version": 1,
+  "version": 2,
   "title": "Habit Tracker",
   "description": "Check habits off daily, see streaks and completion, and review the month at a glance.",
   "forWho": "Anyone building routines",
@@ -139,7 +139,7 @@
           },
           {
             "key": "minutes",
-            "label": "Minutes",
+            "label": "Minutes per day",
             "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -163,17 +163,8 @@
             "format": "date"
           },
           {
-            "key": "logs",
-            "label": "Log entries",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "habit_log",
-            "multi": true
-          },
-          {
             "key": "days_logged",
-            "label": "Days logged",
+            "label": "Check-ins",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -193,6 +184,61 @@
             "filter": {
               "done": true
             }
+          },
+          {
+            "key": "completion",
+            "label": "Completion (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Check-ins} > 0, ROUND({Days done} / {Check-ins} * 100, 0), 0)"
+          },
+          {
+            "key": "logged_month",
+            "label": "Check-ins this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "logs",
+            "pick": "log_name",
+            "agg": "count",
+            "filter": {
+              "logged_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "done_month",
+            "label": "Done this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "logs",
+            "pick": "log_name",
+            "agg": "count",
+            "filter": {
+              "logged_on": {
+                "relative": "this_month"
+              },
+              "done": true
+            }
+          },
+          {
+            "key": "month_pct",
+            "label": "This month (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Check-ins this month} > 0, ROUND({Done this month} / {Check-ins this month} * 100, 0), 0)"
+          },
+          {
+            "key": "streak_flag",
+            "label": "Standing",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Completion (%)} >= 80, \"Solid\", IF({Completion (%)} >= 50, \"Building\", \"Needs a reset\"))"
           }
         ],
         "rows": [
@@ -300,6 +346,126 @@
               "started_on": "@today-30d"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New habit",
+            "values": {
+              "active": true
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Make it small"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write the two-minute version of this habit: the smallest thing that still counts."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Cue"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "After I [existing routine], I will do this habit. Name the exact moment, place and trigger."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reward"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What do you do straight afterwards that feels good? Something tiny is enough."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Obstacles"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What usually gets in the way?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What is your plan B on a bad day?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review date"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Look at the completion figure after four weeks and adjust"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -355,6 +521,13 @@
             "key": "note",
             "label": "Note",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checked_in",
+            "label": "Checked in at",
+            "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
           }
@@ -1143,17 +1316,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "entries_for"
-      },
-      {
-        "describes": "A habit lists its check-ins.",
-        "fromTable": "habit",
-        "fromField": "logs",
-        "toTable": "habit_log",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "entries_of"
+        "inverseKey": "logs"
       }
     ],
     "sharedBlocks": [],
@@ -1224,6 +1387,54 @@
         "kind": "calendar",
         "dateField": "logged_on",
         "allDay": true
+      },
+      {
+        "token": "log_today",
+        "name": "Today",
+        "table": "habit_log",
+        "kind": "grid",
+        "within": {
+          "logged_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "log_week",
+        "name": "This week",
+        "table": "habit_log",
+        "kind": "grid",
+        "within": {
+          "logged_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "log_missed_week",
+        "name": "Missed this week",
+        "table": "habit_log",
+        "kind": "grid",
+        "within": {
+          "logged_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "done": false
+        }
+      },
+      {
+        "token": "log_month",
+        "name": "This month",
+        "table": "habit_log",
+        "kind": "calendar",
+        "dateField": "logged_on",
+        "within": {
+          "logged_on": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -1312,7 +1523,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1343,125 +1554,125 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Check in"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "habit_log",
-                      "view": "all_logs"
-                    },
-                    "inline": true,
-                    "title": "Recent check-ins",
-                    "linked": true,
-                    "showTitle": true,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Done",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "done": true
-                        }
-                      },
-                      {
-                        "id": "view-2",
-                        "name": "Recent",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "logged_on",
-                            "direction": "desc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Progress by habit"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "habit_log",
-                      "view": "all_logs"
-                    },
-                    "inline": true,
-                    "title": "Done by habit",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-3",
-                        "name": "Done by habit",
-                        "layout": "chart",
-                        "icon": "ChartBar",
-                        "chart": {
-                          "type": "hbar",
-                          "groupBy": "habit",
-                          "op": "count"
-                        }
-                      },
-                      {
-                        "id": "view-4",
-                        "name": "Done vs missed",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "done",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-3"
-                  }
-                }
-              ]
+              "text": "Check in"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "habit_log",
+              "view": "all_logs"
+            },
+            "inline": true,
+            "title": "Recent check-ins",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "view-u1",
+                "name": "Today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "logged_on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "view-u2",
+                "name": "This week",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "logged_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "logged_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-u3",
+                "name": "Missed this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "logged_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "done": false
+                }
+              }
+            ],
+            "activeViewId": "view-u1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Progress by habit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "habit_log",
+              "view": "all_logs"
+            },
+            "inline": true,
+            "title": "Done by habit",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-3",
+                "name": "Done by habit",
+                "layout": "chart",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "habit",
+                  "op": "count"
+                }
+              },
+              {
+                "id": "view-4",
+                "name": "Done vs missed",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "done",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-3"
+          }
         },
         {
           "type": "divider"
@@ -1490,6 +1701,12 @@
             "linked": true,
             "showTitle": true,
             "views": [
+              {
+                "id": "view-u4",
+                "name": "Completion",
+                "layout": "grid",
+                "icon": "Table"
+              },
               {
                 "id": "view-5",
                 "name": "All habits",
@@ -1537,6 +1754,18 @@
             "linked": true,
             "showTitle": true,
             "views": [
+              {
+                "id": "view-u5",
+                "name": "This month",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "logged_on",
+                "within": {
+                  "logged_on": {
+                    "relative": "this_month"
+                  }
+                }
+              },
               {
                 "id": "view-8",
                 "name": "Calendar",
@@ -1649,6 +1878,18 @@
         "emoji": "🔁"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Do this once a week, ten minutes, at the same time. The misses below are your data, not your report card."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "CalendarCheck"
+          }
+        },
         {
           "type": "text",
           "text": [
@@ -1770,23 +2011,72 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-12",
-                "name": "Missed",
+                "id": "view-u6",
+                "name": "Missed this week",
                 "layout": "grid",
                 "icon": "Table",
+                "within": {
+                  "logged_on": {
+                    "relative": "this_week"
+                  }
+                },
                 "filters": {
                   "done": false
-                },
-                "sorts": [
-                  {
-                    "field": "logged_on",
-                    "direction": "desc"
+                }
+              },
+              {
+                "id": "view-u7",
+                "name": "Missed in the last 14 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "logged_on": {
+                    "relative": "past_days",
+                    "n": 14
                   }
-                ]
+                },
+                "filters": {
+                  "done": false
+                }
               }
             ],
-            "activeViewId": "view-12"
+            "activeViewId": "view-u6"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read your misses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A miss on one habit only: the habit is probably too big or sits at the wrong time of day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Misses across every habit on one weekday: that day needs a lighter plan, not more willpower."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A run of misses after a disruption (travel, illness): restart with the two-minute version."
+            }
+          ]
         }
       ]
     },
@@ -1932,6 +2222,60 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Habit: stretch for five minutes. Cue: right after brushing teeth. Minimum version: touch your toes once. Reward: a glass of water. After four weeks the Completion column shows whether it stuck; below 50 percent, shrink it rather than quitting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting up your own"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the habit with its cue and a minutes-per-day number that is honest."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check in on the Habit log every day, even for misses. Honest misses make the completion figure useful."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review Completion and This month (%) each week and change one thing."
+            }
+          ]
         }
       ]
     }

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0206",
-  "version": 1,
+  "version": 2,
   "title": "Reading List",
   "description": "A book shelf with status, ratings, a reading log and genre roll-ups.",
   "forWho": "Readers who like to track",
@@ -118,15 +118,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "books",
-            "label": "Books",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "book",
-            "multi": true
-          },
-          {
             "key": "book_count",
             "label": "Book count",
             "parityType": "rollup",
@@ -135,6 +126,16 @@
             "via": "books",
             "pick": "title",
             "agg": "count"
+          },
+          {
+            "key": "avg_rating",
+            "label": "Average rating",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "books",
+            "pick": "rating",
+            "agg": "avg"
           }
         ],
         "rows": [
@@ -240,7 +241,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -255,7 +256,13 @@
               "Finished": "green",
               "Abandoned": "amber"
             },
-            "default": "To read"
+            "default": "To read",
+            "statusGroups": {
+              "To read": "todo",
+              "Reading": "in_progress",
+              "Finished": "done",
+              "Abandoned": "done"
+            }
           },
           {
             "key": "rating",
@@ -309,6 +316,14 @@
             ]
           },
           {
+            "key": "pct_read",
+            "label": "Read (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Pages} > 0, ROUND({Pages read} / {Pages} * 100, 0), 0)"
+          },
+          {
             "key": "format",
             "label": "Format",
             "parityType": "select",
@@ -349,15 +364,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "sessions",
-            "label": "Reading sessions",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "reading_log",
-            "multi": true
-          },
-          {
             "key": "logged_pages",
             "label": "Pages logged",
             "parityType": "rollup",
@@ -365,6 +371,16 @@
             "contextPolicy": "include",
             "via": "sessions",
             "pick": "pages",
+            "agg": "sum"
+          },
+          {
+            "key": "minutes_read",
+            "label": "Minutes logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sessions",
+            "pick": "minutes",
             "agg": "sum"
           },
           {
@@ -376,6 +392,13 @@
             "formula": "{Pages} - {Pages read}",
             "source": "formula",
             "computeOn": "read"
+          },
+          {
+            "key": "added",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -550,6 +573,131 @@
               "format": "Ebook"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Book notes",
+            "values": {
+              "status": "To read"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why I picked it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who recommended it, or what made you want it?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Summary"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two or three sentences in your own words, written after finishing."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quotes worth keeping"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "quote",
+                  "text": [
+                    {
+                      "text": "A line that stayed with you."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Takeaways"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What changed my mind"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What I will try"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who should read this"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rating"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pick a rating from 1 to 5 and say in a line what moved it up or down."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       },
       {
@@ -627,6 +775,13 @@
                 "value": 600
               }
             ]
+          },
+          {
+            "key": "logged_at",
+            "label": "Logged at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -749,6 +904,16 @@
               "pages": 70,
               "minutes": 151
             }
+          },
+          {
+            "key": "rl90",
+            "values": {
+              "session_name": "Evening chapters",
+              "book": "b04",
+              "read_on": "@today",
+              "pages": 22,
+              "minutes": 35
+            }
           }
         ]
       }
@@ -762,7 +927,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "books_in"
+        "inverseKey": "books"
       },
       {
         "describes": "A session belongs to one book.",
@@ -772,27 +937,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "sessions_of"
-      },
-      {
-        "describes": "A genre lists its books.",
-        "fromTable": "genre",
-        "fromField": "books",
-        "toTable": "book",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "genre_books"
-      },
-      {
-        "describes": "A book lists its sessions.",
-        "fromTable": "book",
-        "fromField": "sessions",
-        "toTable": "reading_log",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "book_sessions"
+        "inverseKey": "sessions"
       }
     ],
     "sharedBlocks": [],
@@ -885,6 +1030,42 @@
         "table": "genre",
         "kind": "grid",
         "isDefault": true
+      },
+      {
+        "token": "book_recent",
+        "name": "Finished recently",
+        "table": "book",
+        "kind": "grid",
+        "within": {
+          "finished_on": {
+            "relative": "past_days",
+            "n": 90
+          }
+        }
+      },
+      {
+        "token": "log_week",
+        "name": "This week",
+        "table": "reading_log",
+        "kind": "grid",
+        "within": {
+          "read_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "log_last30",
+        "name": "Last 30 days",
+        "table": "reading_log",
+        "kind": "calendar",
+        "dateField": "read_on",
+        "within": {
+          "read_on": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
       }
     ],
     "agent": {
@@ -973,7 +1154,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1059,111 +1240,105 @@
                 "name": "All books",
                 "layout": "grid",
                 "icon": "Table"
+              },
+              {
+                "id": "view-u6",
+                "name": "Finished in 90 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "finished_on": {
+                    "relative": "past_days",
+                    "n": 90
+                  }
+                },
+                "filters": {
+                  "status": "Finished"
+                }
               }
             ],
             "activeViewId": "view-1"
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Reading now"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "book",
-                      "view": "all_books"
-                    },
-                    "inline": true,
-                    "title": "Books",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-6",
-                        "name": "Reading",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": "Reading"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-6"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Finished"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "book",
-                      "view": "all_books"
-                    },
-                    "inline": true,
-                    "title": "Books",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-7",
-                        "name": "Finished",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "filters": {
-                          "status": "Finished"
-                        },
-                        "sorts": [
-                          {
-                            "field": "finished_on",
-                            "direction": "desc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-7"
-                  }
-                }
-              ]
+              "text": "Reading now"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "book",
+              "view": "all_books"
+            },
+            "inline": true,
+            "title": "Books",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-6",
+                "name": "Reading",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Reading"
+                }
+              }
+            ],
+            "activeViewId": "view-6"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Finished"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "book",
+              "view": "all_books"
+            },
+            "inline": true,
+            "title": "Books",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-7",
+                "name": "Finished",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Finished"
+                },
+                "sorts": [
+                  {
+                    "field": "finished_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-7"
+          }
         },
         {
           "type": "heading",
@@ -1189,6 +1364,17 @@
             "linked": true,
             "showTitle": false,
             "views": [
+              {
+                "id": "view-u7",
+                "name": "This week",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "read_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
               {
                 "id": "view-8",
                 "name": "Pages by book",
@@ -1228,37 +1414,10 @@
           "type": "divider"
         },
         {
-          "type": "columnList",
-          "children": [
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:year-in-books"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "page",
-                  "props": {
-                    "spaceId": "page:book-notes"
-                  }
-                }
-              ]
-            }
-          ]
+          "type": "page",
+          "props": {
+            "spaceId": "page:year-in-books"
+          }
         }
       ]
     },
@@ -1274,83 +1433,92 @@
       },
       "blocks": [
         {
-          "type": "columnList",
-          "children": [
+          "type": "callout",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "book",
-                      "view": "all_books"
-                    },
-                    "inline": true,
-                    "title": "Books",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-11",
-                        "name": "Books by status",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "status",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-11"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "book",
-                      "view": "all_books"
-                    },
-                    "inline": true,
-                    "title": "Books",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-12",
-                        "name": "Pages by format",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "format",
-                          "op": "sum",
-                          "field": "pages"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-12"
-                  }
-                }
-              ]
+              "text": "A shelf of finished books is a record of what you were curious about. Look for the pattern: which genres rate highest, which formats you actually finish."
             }
-          ]
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "BookOpen"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "book",
+              "view": "all_books"
+            },
+            "inline": true,
+            "title": "Books",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u8",
+                "name": "Finished in the last 90 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "finished_on": {
+                    "relative": "past_days",
+                    "n": 90
+                  }
+                },
+                "filters": {
+                  "status": "Finished"
+                }
+              },
+              {
+                "id": "view-u9",
+                "name": "Highest rated",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Finished"
+                },
+                "sorts": [
+                  {
+                    "field": "rating",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-u8"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "book",
+              "view": "all_books"
+            },
+            "inline": true,
+            "title": "Books",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-12",
+                "name": "Pages by format",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "format",
+                  "op": "sum",
+                  "field": "pages"
+                }
+              }
+            ],
+            "activeViewId": "view-12"
+          }
         },
         {
           "type": "heading",
@@ -1428,30 +1596,12 @@
             ],
             "activeViewId": "view-14"
           }
-        }
-      ]
-    },
-    {
-      "key": "book-notes",
-      "parent": "reading-list",
-      "title": "Book notes template",
-      "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Copy this layout into a note for any book you want to remember."
-            }
-          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Summary"
+              "text": "Questions for the year"
             }
           ],
           "props": {
@@ -1459,170 +1609,36 @@
           }
         },
         {
-          "type": "text",
+          "type": "numbered",
           "text": [
             {
-              "text": "Two or three sentences in your own words."
+              "text": "Which three books changed how I think?"
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Quotes worth keeping"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "quote",
-          "text": [
-            {
-              "text": "Paste a line that stayed with you."
+              "text": "Which genre do I rate highest, and do I read enough of it?"
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Takeaways"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "What changed my mind"
+              "text": "Which books did I abandon, and was it the book or the moment?"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "What I will try"
+              "text": "What do I want to read more of next?"
             }
           ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Who should read this"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Rating guide"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Stars"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Meaning"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "5"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Will reread"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "4"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Would recommend"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "3"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Fine, not essential"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "2"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Struggled"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "1"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Regret finishing"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
         }
       ]
     }

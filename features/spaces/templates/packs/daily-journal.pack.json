@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0204",
-  "version": 1,
+  "version": 2,
   "title": "Daily Journal",
   "description": "One page a day with mood, energy and gratitude, plus calendar and mood charts.",
   "forWho": "Journalers and reflective planners",
@@ -175,6 +175,20 @@
             "key": "reviewed",
             "label": "Reviewed on Sunday",
             "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "created",
+            "label": "Written at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
           }
@@ -404,6 +418,145 @@
               "reviewed": true
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Daily page",
+            "values": {
+              "reviewed": false
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Morning"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One intention for today"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Top three priorities"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Anything on the calendar to prepare for"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Evening"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What gave me energy?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What drained me?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who made my day better?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "What would I do differently?"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Gratitude"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Three small things, in full sentences."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "One line to remember"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "If you only write one thing, write this."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -473,6 +626,52 @@
         "table": "entry",
         "kind": "kanban",
         "groupBy": "mood"
+      },
+      {
+        "token": "day_today",
+        "name": "Today",
+        "table": "entry",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "day_week",
+        "name": "This week",
+        "table": "entry",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "day_last7",
+        "name": "Last 7 days",
+        "table": "entry",
+        "kind": "grid",
+        "within": {
+          "on": {
+            "relative": "past_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "day_month",
+        "name": "This month",
+        "table": "entry",
+        "kind": "calendar",
+        "dateField": "on",
+        "within": {
+          "on": {
+            "relative": "this_month"
+          }
+        }
       }
     ],
     "agent": {
@@ -561,7 +760,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -592,132 +791,140 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Mood trend"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "entry",
-                      "view": "all_days"
-                    },
-                    "inline": true,
-                    "title": "Journal",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Mood mix",
-                        "layout": "chart",
-                        "icon": "ChartPie",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "mood",
-                          "op": "count",
-                          "centerValue": true
-                        }
-                      },
-                      {
-                        "id": "view-2",
-                        "name": "Energy by mood",
-                        "layout": "chart",
-                        "icon": "ChartColumn",
-                        "chart": {
-                          "type": "bar",
-                          "groupBy": "mood",
-                          "op": "avg",
-                          "field": "energy"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Recent days"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "entry",
-                      "view": "all_days"
-                    },
-                    "inline": true,
-                    "title": "Journal",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-3",
-                        "name": "Latest",
-                        "layout": "list",
-                        "icon": "List",
-                        "sorts": [
-                          {
-                            "field": "on",
-                            "direction": "desc"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "view-4",
-                        "name": "Highlights",
-                        "layout": "grid",
-                        "icon": "Table",
-                        "sorts": [
-                          {
-                            "field": "on",
-                            "direction": "desc"
-                          }
-                        ],
-                        "hiddenFields": [
-                          "gratitude"
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-3"
-                  }
-                }
-              ]
+              "text": "Mood trend"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "entry",
+              "view": "all_days"
+            },
+            "inline": true,
+            "title": "Journal",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-u21",
+                "name": "This week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "view-u20",
+                "name": "Last 7 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "on": {
+                    "relative": "past_days",
+                    "n": 7
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-1",
+                "name": "Mood mix",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "mood",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "view-2",
+                "name": "Energy by mood",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "mood",
+                  "op": "avg",
+                  "field": "energy"
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recent days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "entry",
+              "view": "all_days"
+            },
+            "inline": true,
+            "title": "Journal",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-3",
+                "name": "Latest",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "view-4",
+                "name": "Highlights",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "on",
+                    "direction": "desc"
+                  }
+                ],
+                "hiddenFields": [
+                  "gratitude"
+                ]
+              }
+            ],
+            "activeViewId": "view-3"
+          }
         },
         {
           "type": "divider"
@@ -823,60 +1030,28 @@
     {
       "key": "daily-template",
       "parent": "daily-journal",
-      "title": "Daily page prompts",
+      "title": "Writing prompts",
       "icon": {
         "emoji": "📝"
       },
       "blocks": [
         {
-          "type": "heading",
+          "type": "callout",
           "text": [
             {
-              "text": "Morning"
+              "text": "Every new journal entry already opens with a Morning, Evening and Gratitude layout. This page is the idea bank for days when you stare at a blank line."
             }
           ],
+          "background": "green",
           "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Set one intention"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Write the top three priorities"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check the schedule"
-            }
-          ],
-          "props": {
-            "checked": false
+            "icon": "PenLine"
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Evening"
+              "text": "Prompts by mood"
             }
           ],
           "props": {
@@ -887,7 +1062,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "What gave me energy?"
+              "text": "Low: What is the smallest kind thing I can do for myself today?"
             }
           ]
         },
@@ -895,7 +1070,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "What drained me?"
+              "text": "Restless: What am I avoiding, and what is one step toward it?"
             }
           ]
         },
@@ -903,7 +1078,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Who made my day better?"
+              "text": "Great: What made today work, and how can I repeat it?"
             }
           ]
         },
@@ -911,7 +1086,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "What would I do differently?"
+              "text": "Flat: Describe the most ordinary moment of the day in detail."
             }
           ]
         },
@@ -919,7 +1094,42 @@
           "type": "heading",
           "text": [
             {
-              "text": "Gratitude"
+              "text": "Prompts by season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start of the week: what would make this week a good one?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "End of the month: what surprised me?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Before a decision: what would I advise a friend?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A good entry, for reference"
             }
           ],
           "props": {
@@ -930,21 +1140,9 @@
           "type": "text",
           "text": [
             {
-              "text": "Three small things, written in full sentences."
+              "text": "Slow morning, coffee on the porch. Meeting ran long and drained me, but the walk at lunch fixed it. Grateful for the neighbour who returned the ladder, the quiet train ride, and a text from my sister. Tomorrow: protect the lunch walk."
             }
           ]
-        },
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "Short and honest beats long and rare."
-            }
-          ],
-          "background": "purple",
-          "props": {
-            "icon": "PenLine"
-          }
         }
       ]
     },

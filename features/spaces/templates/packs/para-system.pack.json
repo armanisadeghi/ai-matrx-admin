@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0207",
-  "version": 1,
+  "version": 2,
   "title": "PARA System",
   "description": "Projects, areas, resources and archive with an inbox and a weekly review.",
   "forWho": "People organising a second brain",
@@ -117,6 +117,22 @@
             "format": "date"
           },
           {
+            "key": "since_review",
+            "label": "Days since review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Last reviewed}, TODAY(), 'days')"
+          },
+          {
+            "key": "review_flag",
+            "label": "Review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({State} = \"Paused\", \"Paused\", IF({Days since review} > IF({Review cadence} = \"Weekly\", 7, IF({Review cadence} = \"Monthly\", 30, 90)), \"Due\", \"Fresh\"))"
+          },
+          {
             "key": "importance",
             "label": "Importance",
             "parityType": "select",
@@ -134,15 +150,6 @@
             }
           },
           {
-            "key": "projects",
-            "label": "Projects",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "project",
-            "multi": true
-          },
-          {
             "key": "project_count",
             "label": "Project count",
             "parityType": "rollup",
@@ -151,6 +158,19 @@
             "via": "projects",
             "pick": "project_name",
             "agg": "count"
+          },
+          {
+            "key": "active_projects",
+            "label": "Active projects",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "projects",
+            "pick": "project_name",
+            "agg": "count",
+            "filter": {
+              "archived": false
+            }
           }
         ],
         "rows": [
@@ -250,7 +270,7 @@
           {
             "key": "status",
             "label": "Status",
-            "parityType": "select",
+            "parityType": "status",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
@@ -265,7 +285,13 @@
               "Waiting": "green",
               "Done": "amber"
             },
-            "default": "Not started"
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "In progress": "in_progress",
+              "Waiting": "in_progress",
+              "Done": "done"
+            }
           },
           {
             "key": "area",
@@ -283,6 +309,22 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "days_left",
+            "label": "Days to deadline",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Deadline}, 'days')"
+          },
+          {
+            "key": "deadline_flag",
+            "label": "Deadline status",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Done\", \"\", IF({Days to deadline} < 0, \"Overdue\", IF({Days to deadline} <= 14, \"Soon\", \"\")))"
           },
           {
             "key": "effort",
@@ -307,15 +349,6 @@
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
-          },
-          {
-            "key": "notes",
-            "label": "Notes",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "note",
-            "multi": true
           },
           {
             "key": "note_count",
@@ -415,6 +448,121 @@
               "deadline": "@today-12d",
               "effort": "Small",
               "archived": true
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New project",
+            "values": {
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outcome"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Finish this sentence: this project is done when..."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Deadline and effort"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Set the deadline in the field above, then size the effort honestly."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First three actions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "The easiest first step"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "The next one"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "The one that needs someone else"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Area it belongs to"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Link the area so the project shows on its review."
+                    }
+                  ]
+                }
+              ]
             }
           }
         ]
@@ -691,6 +839,20 @@
               "Meeting": "green",
               "Task": "amber"
             }
+          },
+          {
+            "key": "created",
+            "label": "Captured at",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "edited",
+            "label": "Last edited",
+            "parityType": "modified_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -802,6 +964,82 @@
               "kind": "Reference"
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Inbox capture",
+            "values": {
+              "stage": "Inbox"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Capture"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write the thought as you had it. Do not file it yet."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Where could it live?"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Project: does it help finish something with a deadline?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Area: does it support a standard you maintain?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Resource: is it a topic you want to keep for later?"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Archive: is it done or no longer relevant?"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         ]
       }
     ],
@@ -814,7 +1052,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "projects_in"
+        "inverseKey": "projects"
       },
       {
         "describes": "A note can belong to a project.",
@@ -824,27 +1062,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "notes_in"
-      },
-      {
-        "describes": "An area lists its projects.",
-        "fromTable": "area",
-        "fromField": "projects",
-        "toTable": "project",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "area_projects"
-      },
-      {
-        "describes": "A project lists its notes.",
-        "fromTable": "project",
-        "fromField": "notes",
-        "toTable": "note",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "project_notes"
+        "inverseKey": "notes"
       }
     ],
     "sharedBlocks": [],
@@ -939,6 +1157,78 @@
         "table": "note",
         "kind": "kanban",
         "groupBy": "stage"
+      },
+      {
+        "token": "proj_overdue",
+        "name": "Overdue",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "deadline": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress",
+            "Waiting"
+          ]
+        }
+      },
+      {
+        "token": "proj_30",
+        "name": "Next 30 days",
+        "table": "project",
+        "kind": "grid",
+        "within": {
+          "deadline": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "In progress",
+            "Waiting"
+          ]
+        }
+      },
+      {
+        "token": "note_week",
+        "name": "This week",
+        "table": "note",
+        "kind": "grid",
+        "within": {
+          "captured_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "note_inbox_week",
+        "name": "Inbox, last 7 days",
+        "table": "note",
+        "kind": "grid",
+        "within": {
+          "captured_on": {
+            "relative": "past_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "stage": "Inbox"
+        }
+      },
+      {
+        "token": "area_due",
+        "name": "Review due",
+        "table": "area",
+        "kind": "grid",
+        "filters": {
+          "state": "Active"
+        }
       }
     ],
     "agent": {
@@ -1027,7 +1317,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -1058,195 +1348,158 @@
           }
         },
         {
-          "type": "columnList",
-          "children": [
+          "type": "heading",
+          "text": [
             {
-              "type": "column",
-              "props": {
-                "width": 0.25
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Projects"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "project",
-                      "view": "all_projects"
-                    },
-                    "inline": true,
-                    "title": "Projects",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-1",
-                        "name": "Active",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "status": [
-                            "In progress",
-                            "Waiting"
-                          ]
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.25
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Areas"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "area",
-                      "view": "all_areas"
-                    },
-                    "inline": true,
-                    "title": "Areas",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-2",
-                        "name": "Active",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "state": "Active"
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-2"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.25
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Resources"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "resource",
-                      "view": "all_resources"
-                    },
-                    "inline": true,
-                    "title": "Resources",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-3",
-                        "name": "By topic",
-                        "layout": "list",
-                        "icon": "List",
-                        "sorts": [
-                          {
-                            "field": "topic",
-                            "direction": "asc"
-                          }
-                        ]
-                      }
-                    ],
-                    "activeViewId": "view-3"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.25
-              },
-              "children": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Archive"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "project",
-                      "view": "all_projects"
-                    },
-                    "inline": true,
-                    "title": "Projects",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-4",
-                        "name": "Archived",
-                        "layout": "list",
-                        "icon": "List",
-                        "filters": {
-                          "archived": true
-                        }
-                      }
-                    ],
-                    "activeViewId": "view-4"
-                  }
-                }
-              ]
+              "text": "Projects"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_projects"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-1",
+                "name": "Active",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "In progress",
+                    "Waiting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Areas"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "area",
+              "view": "all_areas"
+            },
+            "inline": true,
+            "title": "Areas",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-2",
+                "name": "Active",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "state": "Active"
+                }
+              }
+            ],
+            "activeViewId": "view-2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Resources"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "resource",
+              "view": "all_resources"
+            },
+            "inline": true,
+            "title": "Resources",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-3",
+                "name": "By topic",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "topic",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Archive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_projects"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-4",
+                "name": "Archived",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "archived": true
+                }
+              }
+            ],
+            "activeViewId": "view-4"
+          }
         },
         {
           "type": "divider"
@@ -1302,6 +1555,17 @@
                 "name": "All notes",
                 "layout": "grid",
                 "icon": "Table"
+              },
+              {
+                "id": "view-u3",
+                "name": "This week",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "captured_on": {
+                    "relative": "this_week"
+                  }
+                }
               }
             ],
             "activeViewId": "view-5"
@@ -1350,6 +1614,43 @@
                 "name": "All projects",
                 "layout": "grid",
                 "icon": "Table"
+              },
+              {
+                "id": "view-u1",
+                "name": "Overdue",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "deadline": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress",
+                    "Waiting"
+                  ]
+                }
+              },
+              {
+                "id": "view-u2",
+                "name": "Next 30 days",
+                "layout": "grid",
+                "icon": "Table",
+                "within": {
+                  "deadline": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "In progress",
+                    "Waiting"
+                  ]
+                }
               }
             ],
             "activeViewId": "view-8"
@@ -1548,6 +1849,25 @@
             ],
             "activeViewId": "view-14"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check the Review column"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Areas marked Due on the Areas table have gone longer than their cadence without a look. Open each, read the standard, and set the last-reviewed date to today."
+            }
+          ]
         }
       ]
     },
@@ -1654,6 +1974,176 @@
             }
           ],
           "background": "orange",
+          "props": {
+            "icon": "Folder"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Four questions to place anything"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Does it help finish something with an end date? File it under that project."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Does it support a responsibility with no end date (health, money, home)? File it under that area."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is it a topic of general interest? Put it in resources."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is it finished or stale? Move it to the archive."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Examples"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Goes in"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Paint swatches for the hallway"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Project: Hallway repaint"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ends when the wall is painted"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monthly budget notes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Area: Money"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never \"finishes\""
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Article on composition"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Resource: Photography"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Interesting, no deadline"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Last year's tax return"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Archive"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Done, kept for reference"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "When in doubt put it in the more actionable place; you can always move it later."
+            }
+          ],
+          "background": "blue",
           "props": {
             "icon": "Folder"
           }
