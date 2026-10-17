@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
-import SystemBuilderPage from "@/features/agents/system-builder/SystemBuilderPage";
+import OrchestraStudioPage from "@/features/agents/orchestra-studio/OrchestraStudioPage";
 
-// "System Builder" is a working label: no canonical name exists yet (common-docs/operations/conflicts.md).
+// Renamed from "System Builder" (owner ruling 2026-10-17); /agents/system-builder redirects here.
 export const metadata: Metadata = {
-  title: "System Builder",
+  title: "Orchestra Studio",
   description: "Plan a multi-agent system, then build each agent.",
 };
 
@@ -15,7 +15,7 @@ export default async function Page() {
   if (!isAuthenticated) redirect("/agents");
   return (
     <Suspense>
-      <SystemBuilderPage />
+      <OrchestraStudioPage />
     </Suspense>
   );
 }

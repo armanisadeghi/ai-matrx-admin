@@ -284,8 +284,8 @@ export interface StartAgentBuildInput {
  * runs detached). Every door's UI starts builds through this one call.
  */
 /**
- * The key family a person's build runs under. A Studio build opened from a System Builder plan
- * (`?from=system-plan`) is `system-plan`, so the factory page can count System Builder's builds
+ * The key family a person's build runs under. A Studio build opened from an Orchestra Studio plan
+ * (`?from=system-plan`) is `system-plan`, so the factory page can count Orchestra Studio's builds
  * from what each build recorded rather than guess.
  */
 export function personBuildKeyFamily(door: string | null | undefined, search?: string): string {

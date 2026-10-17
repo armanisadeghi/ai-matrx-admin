@@ -12,7 +12,7 @@ export interface StudioState {
   agentId: string | null;
   /** The assistant's conversation (LEFT). */
   chatId: string | null;
-  /** Opened from a System Builder plan step: the plan (a Note id) and the step number. */
+  /** Opened from an Orchestra Studio plan step: the plan (a Note id) and the step number. */
   planId: string | null;
   planStep: string | null;
   /** Mode "Improve": the agent's run shown in the center (its latest real run, preloaded). */
@@ -35,7 +35,7 @@ const KEYS = {
   assistantId: "assistant",
 } as const;
 
-/** The job a System Builder step hands the Studio (`?job=`), prefilled into "Describe it". */
+/** The job an Orchestra Studio step hands the Studio (`?job=`), prefilled into "Describe it". */
 export function studioJobParam(params: URLSearchParams): string {
   return (params.get("job") ?? "").trim();
 }

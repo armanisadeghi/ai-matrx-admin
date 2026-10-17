@@ -74,7 +74,7 @@ function StepRow({
             </Link>
           </Button>
           <AgentListDropdown
-            consumerId="system-builder-step-agent"
+            consumerId="orchestra-studio-step-agent"
             activeAgentId={step.usesAgentId}
             onSelect={onUseAgent}
             showPinnedAgent={false}
@@ -90,7 +90,7 @@ function StepRow({
   );
 }
 
-export default function SystemBuilderPage() {
+export default function OrchestraStudioPage() {
   const router = useRouter();
   const params = useSearchParams();
   const dispatch = useAppDispatch();
@@ -146,7 +146,7 @@ export default function SystemBuilderPage() {
       const id = await saveNewPlan(parsed);
       justCreated.current = id;
       setPlan(parsed);
-      router.replace(`/agents/system-builder?plan=${id}`);
+      router.replace(`/agents/orchestra-studio?plan=${id}`);
     } catch (e) {
       setFailure(e instanceof Error ? e.message : "The plan could not be made.");
     } finally {
@@ -174,18 +174,18 @@ export default function SystemBuilderPage() {
       <PageHeader>
         <div className="flex w-full min-w-0 items-center">
           <ChevronLeftTapButton
-            onClick={() => (plan ? router.push("/agents/system-builder") : router.push("/agents/new"))}
+            onClick={() => (plan ? router.push("/agents/orchestra-studio") : router.push("/agents/new"))}
             variant="transparent"
             ariaLabel="Back"
           />
           <Network className="ml-1 h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="ml-2 truncate type-title text-foreground">
-            {plan ? plan.title : "System Builder"}
+            {plan ? plan.title : "Orchestra Studio"}
           </span>
           <div className="ml-auto flex items-center">
             {plan ? (
               <Button asChild size="sm" variant="ghost">
-                <Link href="/agents/system-builder" aria-label="New plan">
+                <Link href="/agents/orchestra-studio" aria-label="New plan">
                   <Plus className="h-3.5 w-3.5 sm:mr-1" />
                   <span className="hidden sm:inline">New</span>
                 </Link>
@@ -262,7 +262,7 @@ export default function SystemBuilderPage() {
                     {saved.map((p) => (
                       <li key={p.id}>
                         <Link
-                          href={`/agents/system-builder?plan=${p.id}`}
+                          href={`/agents/orchestra-studio?plan=${p.id}`}
                           className={cn(
                             "flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2",
                             "hover:border-primary/40",

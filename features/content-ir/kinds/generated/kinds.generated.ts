@@ -13120,7 +13120,7 @@ export interface AgentFactorySystemPlanOffer {
    */
   __kind?: "agent_factory.system_plan.offer";
   /**
-   * The person's plain-language description of the job the system should do, exactly as typed on the System Builder page.
+   * The person's plain-language description of the job the system should do, exactly as typed on the Orchestra Studio page.
    */
   intelligence_description: string;
 }

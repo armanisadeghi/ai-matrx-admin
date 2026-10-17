@@ -5,7 +5,7 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 const PLANNER_SOURCE = readFileSync(join(__dirname, "..", "planner.ts"), "utf8");
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
-describe("the System Builder planner is a Mandate, not an agent id", () => {
+describe("the Orchestra Studio planner is a Mandate, not an agent id", () => {
   it("names no agent id in code (the Holder lives in the mandate's seed)", () => {
     expect(PLANNER_SOURCE).not.toMatch(UUID);
     expect(PLANNER_SOURCE).not.toMatch(/agentId\s*:/);

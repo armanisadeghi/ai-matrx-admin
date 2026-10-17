@@ -98,13 +98,13 @@ describe("where a build came from", () => {
     expect(buildPlaceLabel({ door: null, origin: null, keyFamily: "admin-factory" })).toBe("Admin page");
     expect(buildPlaceLabel({ door: null, origin: null, keyFamily: "auto" })).toBe("Not recorded");
   });
-  it("System Builder builds are counted from their recorded key, on their own row and on Studio", () => {
+  it("Orchestra Studio builds are counted from their recorded key, on their own row and on Studio", () => {
     const counts = factoryDoorCounts([
       build({ door: "studio", keyFamily: "system-plan" }),
       build({ door: "studio", keyFamily: "person-build" }),
     ]);
-    expect(counts.system_builder.people.d30).toBe(1);
+    expect(counts.orchestra_studio.people.d30).toBe(1);
     expect(counts.studio.people.d30).toBe(2);
-    expect(buildPlaceLabel({ door: "studio", origin: null, keyFamily: "system-plan" })).toMatch(/System Builder/);
+    expect(buildPlaceLabel({ door: "studio", origin: null, keyFamily: "system-plan" })).toMatch(/Orchestra Studio/);
   });
 });

@@ -14,7 +14,7 @@ import {
 /**
  * A planned system is a Note — the platform's existing record for a person's saved text —
  * tagged `system-plan`, readable as markdown in Notes, with the structured plan in
- * `custom_fields`. No new table: the System Builder is a working label and its home moves soon.
+ * `custom_fields`. No new table: the stored tag stays `system-plan` so plans saved under the old name keep loading.
  */
 
 export interface SavedPlanSummary {

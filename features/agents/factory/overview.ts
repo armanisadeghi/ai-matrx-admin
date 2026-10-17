@@ -42,7 +42,7 @@ export interface DoorInfo {
   oldBuilderMandate: AnyMandateKey | null;
   /** True when the door always builds through the factory and has no knob (aidream `ALWAYS_PIPELINE_DOORS`). */
   alwaysFactory?: boolean;
-  /** Not a door code of its own: builds go through this other door (System Builder → studio). */
+  /** Not a door code of its own: builds go through this other door (Orchestra Studio → studio). */
   via?: DoorKey;
 }
 
@@ -136,11 +136,11 @@ export const DOORS: readonly DoorInfo[] = [
 export const STRUCTURE_BUILDER_MANDATE = MANDATE_KEYS.agent_factory__structure_builder;
 
 /**
- * Rows that are not a door code: System Builder plans several agents and builds each one through
+ * Rows that are not a door code: Orchestra Studio plans several agents and builds each one through
  * the Agent Studio door, so its builds are counted on the Agent Studio row.
  */
 export const VIA_STUDIO_PLACES: readonly { id: string; place: string; href: string }[] = [
-  { id: "system_builder", place: "System Builder (builds through Agent Studio)", href: "/agents/system-builder" },
+  { id: "orchestra_studio", place: "Orchestra Studio (builds through Agent Studio)", href: "/agents/orchestra-studio" },
 ];
 
 /** The human label of a door code; an unknown code reads as itself so nothing is hidden. */
@@ -149,9 +149,9 @@ export function doorLabel(door: string | null | undefined): string {
   return DOORS.find((d) => d.key === door)?.place ?? door;
 }
 
-/** Key family a Studio build carries when it was opened from a System Builder plan. */
+/** Key family a Studio build carries when it was opened from an Orchestra Studio plan. */
 export const SYSTEM_PLAN_KEY_FAMILY = "system-plan";
-/** The day builds began recording that they came from a System Builder plan. */
+/** The day builds began recording that they came from an Orchestra Studio plan. */
 export const SYSTEM_PLAN_STAMP_SINCE = "2026-10-17";
 
 /**
@@ -164,7 +164,7 @@ export function buildPlaceLabel(
 ): string {
   if (b.door) {
     return b.door === "studio" && b.keyFamily === SYSTEM_PLAN_KEY_FAMILY
-      ? "System Builder (via Agent Studio)"
+      ? "Orchestra Studio (via Agent Studio)"
       : doorLabel(b.door);
   }
   if (b.origin === "admin_page" || b.keyFamily === "admin-factory") return "Admin page";
@@ -331,8 +331,8 @@ export function factoryDoorCounts(
   for (const b of builds) {
     if (!b.door) continue;
     const keys = [b.door];
-    // A Studio build opened from a System Builder plan also counts on System Builder's own row.
-    if (b.door === "studio" && b.keyFamily === SYSTEM_PLAN_KEY_FAMILY) keys.push("system_builder");
+    // A Studio build opened from an Orchestra Studio plan also counts on Orchestra Studio's own row.
+    if (b.door === "studio" && b.keyFamily === SYSTEM_PLAN_KEY_FAMILY) keys.push("orchestra_studio");
     for (const key of keys) {
       const door = (out[key] ??= { people: emptyCounts(), test: emptyCounts() });
       const c = b.userId && testUserIds.has(b.userId) ? door.test : door.people;

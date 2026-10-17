@@ -778,6 +778,12 @@ const nextConfig = {
         destination: "/api/admin/mandates/agent-identity",
         permanent: true,
       },
+      // System Builder was renamed Orchestra Studio (2026-10-17); saved links keep working.
+      {
+        source: "/agents/system-builder",
+        destination: "/agents/orchestra-studio",
+        permanent: true,
+      },
       // Mandates detached from the agent namespace (2026-08-30): a mandate is
       // fulfilled by an Agent, an Orchestra, or a Workflow, so it is no longer
       // a child of /agents. Permanent redirects because every doc, handoff,
