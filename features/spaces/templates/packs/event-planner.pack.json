@@ -1,0 +1,2527 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0314",
+ "version": 1,
+ "title": "Event Planner",
+ "description": "Plan an event end to end: guests and RSVPs, vendors, tasks, budget and run-of-show.",
+ "forWho": "Small organisers and event planners",
+ "icon": {
+  "emoji": "🎉"
+ },
+ "cover": {
+  "url": "gallery:photo-lavender-dusk",
+  "offsetY": 50
+ },
+ "category": "operations",
+ "tags": [
+  "events",
+  "guests",
+  "vendors",
+  "budget"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-event-planner",
+  "catalogueId": "SP0314",
+  "useCase": "Ottilie Marlowe plans fundraisers and parties and uses this to see RSVPs, vendor bookings, open tasks and how much of each budget is spent.",
+  "industry": "events_weddings",
+  "vertical": "Event planning",
+  "job": "scheduling",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Marlowe & Finch Events",
+   "describes": "A two-person event studio planning fundraisers, milestone parties and small corporate gatherings.",
+   "address": {
+    "line1": "117 Starling Passage",
+    "city": "Savannah",
+    "region": "GA",
+    "postalCode": "31401",
+    "country": "US"
+   },
+   "phone": "(912) 555-0166",
+   "website": "marlowefinchevents.net",
+   "email": "plan@marlowefinchevents.net",
+   "timezone": "America/New_York"
+  },
+  "cleanupTag": "use-case:spaces-event-planner",
+  "tables": [
+   {
+    "token": "event",
+    "name": "Events",
+    "labelSingular": "Event",
+    "labelPlural": "Events",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "calendar-heart",
+    "titleField": "event_name",
+    "describes": "Each event you are planning.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "event_name",
+      "label": "Event",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "type",
+      "label": "Type",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Fundraiser",
+       "Party",
+       "Corporate",
+       "Wedding"
+      ],
+      "choiceColors": {
+       "Fundraiser": "slate",
+       "Party": "blue",
+       "Corporate": "amber",
+       "Wedding": "violet"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Planning",
+       "Confirmed",
+       "Done",
+       "Cancelled"
+      ],
+      "choiceColors": {
+       "Planning": "slate",
+       "Confirmed": "green",
+       "Done": "blue",
+       "Cancelled": "red"
+      },
+      "required": true,
+      "default": "Planning"
+     },
+     {
+      "key": "event_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "venue",
+      "label": "Venue",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "budget",
+      "label": "Budget",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000
+       }
+      ]
+     },
+     {
+      "key": "planner",
+      "label": "Planner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "guests",
+      "label": "Guests",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "guest",
+      "multi": true
+     },
+     {
+      "key": "vendors",
+      "label": "Vendors",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "vendor",
+      "multi": true
+     },
+     {
+      "key": "tasks",
+      "label": "Tasks",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "task",
+      "multi": true
+     },
+     {
+      "key": "lines",
+      "label": "Budget lines",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "budget",
+      "multi": true
+     },
+     {
+      "key": "run",
+      "label": "Run of show",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "run_item",
+      "multi": true
+     },
+     {
+      "key": "guest_count",
+      "label": "Guests invited",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "guests",
+      "pick": "party",
+      "agg": "sum"
+     },
+     {
+      "key": "confirmed",
+      "label": "Confirmed guests",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "guests",
+      "pick": "party",
+      "agg": "sum",
+      "filter": {
+       "rsvp": "Yes"
+      }
+     },
+     {
+      "key": "spent",
+      "label": "Spent so far",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "lines",
+      "pick": "actual",
+      "agg": "sum"
+     }
+    ],
+    "rows": [
+     {
+      "key": "ev1",
+      "values": {
+       "event_name": "Harbour Lights Charity Gala",
+       "type": "Fundraiser",
+       "status": "Confirmed",
+       "budget": 18000,
+       "event_on": "@today+35d",
+       "venue": "Lantern Hall",
+       "planner": "tm-ottilie",
+       "guests": [
+        "gu1",
+        "gu2",
+        "gu3",
+        "gu4",
+        "gu5",
+        "gu6",
+        "gu7",
+        "gu8"
+       ],
+       "vendors": [
+        "vn1",
+        "vn2",
+        "vn3"
+       ],
+       "tasks": [
+        "tk1",
+        "tk2",
+        "tk3",
+        "tk4",
+        "tk5"
+       ],
+       "lines": [
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5"
+       ],
+       "run": [
+        "sc1",
+        "sc2",
+        "sc3",
+        "sc4"
+       ]
+      }
+     },
+     {
+      "key": "ev2",
+      "values": {
+       "event_name": "Dessa Okafor's 40th Birthday Dinner",
+       "type": "Party",
+       "status": "Planning",
+       "budget": 6500,
+       "event_on": "@today+62d",
+       "venue": "Tidewater Terrace",
+       "planner": "tm-ottilie",
+       "guests": [
+        "gu9",
+        "gu10",
+        "gu11",
+        "gu12",
+        "gu13",
+        "gu14"
+       ],
+       "vendors": [
+        "vn4",
+        "vn5"
+       ],
+       "tasks": [
+        "tk6",
+        "tk7",
+        "tk8",
+        "tk9"
+       ],
+       "lines": [
+        "b6",
+        "b7",
+        "b8",
+        "b9"
+       ],
+       "run": [
+        "sc5",
+        "sc6",
+        "sc7"
+       ]
+      }
+     },
+     {
+      "key": "ev3",
+      "values": {
+       "event_name": "Calloway Group Spring Client Reception",
+       "type": "Corporate",
+       "status": "Done",
+       "budget": 9200,
+       "event_on": "@today-24d",
+       "venue": "Lantern Hall",
+       "planner": "tm-ottilie",
+       "guests": [
+        "gu15",
+        "gu16"
+       ],
+       "vendors": [],
+       "tasks": [
+        "tk10"
+       ],
+       "lines": [],
+       "run": []
+      }
+     }
+    ],
+    "independentOf": {
+     "planner": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "guest",
+    "name": "Guests",
+    "labelSingular": "Guest",
+    "labelPlural": "Guests",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "users",
+    "titleField": "guest_name",
+    "describes": "Invitees and their RSVPs.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "guest_name",
+      "label": "Guest",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "rsvp",
+      "label": "RSVP",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Pending",
+       "Yes",
+       "Maybe",
+       "No"
+      ],
+      "choiceColors": {
+       "Pending": "slate",
+       "Yes": "green",
+       "Maybe": "blue",
+       "No": "red"
+      },
+      "required": true,
+      "default": "Pending"
+     },
+     {
+      "key": "party",
+      "label": "Party size",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 20
+       }
+      ]
+     },
+     {
+      "key": "dietary",
+      "label": "Dietary",
+      "parityType": "multi_select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Vegetarian",
+       "Vegan",
+       "Gluten free",
+       "Nut allergy",
+       "Dairy free"
+      ],
+      "choiceColors": {
+       "Vegetarian": "slate",
+       "Vegan": "blue",
+       "Gluten free": "amber",
+       "Nut allergy": "violet",
+       "Dairy free": "teal"
+      }
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "event",
+      "label": "Event",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "event",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "gu1",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Prudence Aldworth",
+       "rsvp": "Yes",
+       "party": 2,
+       "dietary": [
+        "Vegetarian"
+       ],
+       "email": "prudence@guestlist.net"
+      }
+     },
+     {
+      "key": "gu2",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Teodoro Raines",
+       "rsvp": "Yes",
+       "party": 1,
+       "dietary": [],
+       "email": "teodoro@guestlist.net"
+      }
+     },
+     {
+      "key": "gu3",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Imani Cartwright",
+       "rsvp": "Yes",
+       "party": 2,
+       "dietary": [
+        "Gluten free"
+       ],
+       "email": "imani@guestlist.net"
+      }
+     },
+     {
+      "key": "gu4",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Lowell Varga",
+       "rsvp": "Pending",
+       "party": 2,
+       "dietary": [],
+       "email": "lowell@guestlist.net"
+      }
+     },
+     {
+      "key": "gu5",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Saoirse Dunmore",
+       "rsvp": "Maybe",
+       "party": 1,
+       "dietary": [
+        "Vegan"
+       ],
+       "email": "saoirse@guestlist.net"
+      }
+     },
+     {
+      "key": "gu6",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Ambrose Teller",
+       "rsvp": "No",
+       "party": 0,
+       "dietary": [],
+       "email": "ambrose@guestlist.net"
+      }
+     },
+     {
+      "key": "gu7",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Noor Haddad",
+       "rsvp": "Yes",
+       "party": 4,
+       "dietary": [
+        "Nut allergy"
+       ],
+       "email": "noor@guestlist.net"
+      }
+     },
+     {
+      "key": "gu8",
+      "values": {
+       "event": "ev1",
+       "guest_name": "Bettina Quill",
+       "rsvp": "Pending",
+       "party": 1,
+       "dietary": [],
+       "email": "bettina@guestlist.net"
+      }
+     },
+     {
+      "key": "gu9",
+      "values": {
+       "event": "ev2",
+       "guest_name": "Kofi Mbeki",
+       "rsvp": "Yes",
+       "party": 2,
+       "dietary": [],
+       "email": "kofi@guestlist.net"
+      }
+     },
+     {
+      "key": "gu10",
+      "values": {
+       "event": "ev2",
+       "guest_name": "Rosalind Aberdeen",
+       "rsvp": "Yes",
+       "party": 1,
+       "dietary": [
+        "Vegetarian"
+       ],
+       "email": "rosalind@guestlist.net"
+      }
+     },
+     {
+      "key": "gu11",
+      "values": {
+       "event": "ev2",
+       "guest_name": "Thaddeus Okoye",
+       "rsvp": "Maybe",
+       "party": 2,
+       "dietary": [],
+       "email": "thaddeus@guestlist.net"
+      }
+     },
+     {
+      "key": "gu12",
+      "values": {
+       "event": "ev2",
+       "guest_name": "Philippa Strand",
+       "rsvp": "Pending",
+       "party": 2,
+       "dietary": [
+        "Dairy free"
+       ],
+       "email": "philippa@guestlist.net"
+      }
+     },
+     {
+      "key": "gu13",
+      "values": {
+       "event": "ev2",
+       "guest_name": "Mateusz Wiśniewski",
+       "rsvp": "Yes",
+       "party": 1,
+       "dietary": [],
+       "email": "mateusz@guestlist.net"
+      }
+     },
+     {
+      "key": "gu14",
+      "values": {
+       "event": "ev2",
+       "guest_name": "Clementine Odu",
+       "rsvp": "No",
+       "party": 0,
+       "dietary": [],
+       "email": "clementine@guestlist.net"
+      }
+     },
+     {
+      "key": "gu15",
+      "values": {
+       "event": "ev3",
+       "guest_name": "Barnaby Quist",
+       "rsvp": "Yes",
+       "party": 2,
+       "dietary": [],
+       "email": "barnaby@guestlist.net"
+      }
+     },
+     {
+      "key": "gu16",
+      "values": {
+       "event": "ev3",
+       "guest_name": "Odalys Nkemelu",
+       "rsvp": "Yes",
+       "party": 1,
+       "dietary": [
+        "Vegetarian"
+       ],
+       "email": "odalys@guestlist.net"
+      }
+     }
+    ],
+    "independentOf": {
+     "event": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "vendor",
+    "name": "Vendors",
+    "labelSingular": "Vendor",
+    "labelPlural": "Vendors",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "store",
+    "titleField": "vendor_name",
+    "describes": "Everyone you hire for an event.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "vendor_name",
+      "label": "Vendor",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "service",
+      "label": "Service",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Venue",
+       "Catering",
+       "Music",
+       "Photo",
+       "Decor",
+       "Other"
+      ],
+      "choiceColors": {
+       "Venue": "slate",
+       "Catering": "blue",
+       "Music": "amber",
+       "Photo": "violet",
+       "Decor": "teal",
+       "Other": "orange"
+      },
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Quote",
+       "Booked",
+       "Paid"
+      ],
+      "choiceColors": {
+       "Quote": "slate",
+       "Booked": "green",
+       "Paid": "blue"
+      },
+      "required": true,
+      "default": "Quote"
+     },
+     {
+      "key": "quote",
+      "label": "Quote",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "contact",
+      "label": "Contact",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "event",
+      "label": "Event",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "event",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "vn1",
+      "values": {
+       "event": "ev1",
+       "vendor_name": "Lantern Hall",
+       "service": "Venue",
+       "status": "Booked",
+       "quote": 6200,
+       "contact": "info@lanternhallsavannah.net"
+      }
+     },
+     {
+      "key": "vn2",
+      "values": {
+       "event": "ev1",
+       "vendor_name": "Tidewater Bites",
+       "service": "Catering",
+       "status": "Booked",
+       "quote": 5400,
+       "contact": "events@tidewaterbites.net"
+      }
+     },
+     {
+      "key": "vn3",
+      "values": {
+       "event": "ev1",
+       "vendor_name": "Riverside Tunes Quartet",
+       "service": "Music",
+       "status": "Quote",
+       "quote": 1800,
+       "contact": "book@riversidetunes.net"
+      }
+     },
+     {
+      "key": "vn4",
+      "values": {
+       "event": "ev2",
+       "vendor_name": "Petal & Vine",
+       "service": "Decor",
+       "status": "Quote",
+       "quote": 900,
+       "contact": "studio@petalandvine.net"
+      }
+     },
+     {
+      "key": "vn5",
+      "values": {
+       "event": "ev2",
+       "vendor_name": "Snapframe Booth",
+       "service": "Photo",
+       "status": "Booked",
+       "quote": 650,
+       "contact": "hello@snapframebooth.net"
+      }
+     }
+    ],
+    "independentOf": {
+     "event": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "task",
+    "name": "Tasks",
+    "labelSingular": "Task",
+    "labelPlural": "Tasks",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "list-checks",
+    "titleField": "task_name",
+    "describes": "What needs doing for each event.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "task_name",
+      "label": "Task",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "To do",
+       "In progress",
+       "Done"
+      ],
+      "choiceColors": {
+       "To do": "slate",
+       "In progress": "blue",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "To do"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "event",
+      "label": "Event",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "event",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "tk1",
+      "values": {
+       "event": "ev1",
+       "task_name": "Send save-the-dates",
+       "status": "Done",
+       "owner": "tm-june",
+       "due_on": "@today-14d"
+      }
+     },
+     {
+      "key": "tk2",
+      "values": {
+       "event": "ev1",
+       "task_name": "Finalise seating chart",
+       "status": "In progress",
+       "owner": "tm-ottilie",
+       "due_on": "@today+14d"
+      }
+     },
+     {
+      "key": "tk3",
+      "values": {
+       "event": "ev1",
+       "task_name": "Collect auction item donations",
+       "status": "In progress",
+       "owner": "tm-caspian",
+       "due_on": "@today+20d"
+      }
+     },
+     {
+      "key": "tk4",
+      "values": {
+       "event": "ev1",
+       "task_name": "Print programmes",
+       "status": "To do",
+       "owner": "tm-june",
+       "due_on": "@today+28d"
+      }
+     },
+     {
+      "key": "tk5",
+      "values": {
+       "event": "ev1",
+       "task_name": "Confirm quartet song list",
+       "status": "To do",
+       "owner": "tm-caspian",
+       "due_on": "@today+22d"
+      }
+     },
+     {
+      "key": "tk6",
+      "values": {
+       "event": "ev2",
+       "task_name": "Book floral designer",
+       "status": "In progress",
+       "owner": "tm-caspian",
+       "due_on": "@today+10d"
+      }
+     },
+     {
+      "key": "tk7",
+      "values": {
+       "event": "ev2",
+       "task_name": "Send invitations",
+       "status": "To do",
+       "owner": "tm-june",
+       "due_on": "@today+7d"
+      }
+     },
+     {
+      "key": "tk8",
+      "values": {
+       "event": "ev2",
+       "task_name": "Tasting menu appointment",
+       "status": "To do",
+       "owner": "tm-ottilie",
+       "due_on": "@today+25d"
+      }
+     },
+     {
+      "key": "tk9",
+      "values": {
+       "event": "ev2",
+       "task_name": "Order custom cake",
+       "status": "To do",
+       "owner": "tm-ottilie",
+       "due_on": "@today+40d"
+      }
+     },
+     {
+      "key": "tk10",
+      "values": {
+       "event": "ev3",
+       "task_name": "Collect client feedback survey",
+       "status": "Done",
+       "owner": "tm-june",
+       "due_on": "@today-18d"
+      }
+     }
+    ],
+    "independentOf": {
+     "owner": "Either record can be created or change status before the other.",
+     "event": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "budget",
+    "name": "Budget",
+    "labelSingular": "Budget line",
+    "labelPlural": "Budget lines",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "calculator",
+    "titleField": "line",
+    "describes": "Planned and actual cost for every item.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "line",
+      "label": "Cost line",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "category",
+      "label": "Category",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Venue",
+       "Food",
+       "Entertainment",
+       "Print",
+       "Rentals",
+       "Decor"
+      ],
+      "choiceColors": {
+       "Venue": "slate",
+       "Food": "blue",
+       "Entertainment": "amber",
+       "Print": "violet",
+       "Rentals": "teal",
+       "Decor": "orange"
+      }
+     },
+     {
+      "key": "estimated",
+      "label": "Estimated",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000
+       }
+      ]
+     },
+     {
+      "key": "actual",
+      "label": "Actual",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 1000000
+       }
+      ]
+     },
+     {
+      "key": "variance",
+      "label": "Left to spend",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "{Estimated} - {Actual}"
+     },
+     {
+      "key": "paid",
+      "label": "Paid in full",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "event",
+      "label": "Event",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "event",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "b1",
+      "values": {
+       "event": "ev1",
+       "line": "Venue rental",
+       "category": "Venue",
+       "estimated": 6200,
+       "actual": 6200,
+       "paid": true
+      }
+     },
+     {
+      "key": "b2",
+      "values": {
+       "event": "ev1",
+       "line": "Catering, 120 guests",
+       "category": "Food",
+       "estimated": 5400,
+       "actual": 5400,
+       "paid": false
+      }
+     },
+     {
+      "key": "b3",
+      "values": {
+       "event": "ev1",
+       "line": "Live quartet",
+       "category": "Entertainment",
+       "estimated": 1800,
+       "actual": 0,
+       "paid": false
+      }
+     },
+     {
+      "key": "b4",
+      "values": {
+       "event": "ev1",
+       "line": "Printing and signage",
+       "category": "Print",
+       "estimated": 650,
+       "actual": 0,
+       "paid": false
+      }
+     },
+     {
+      "key": "b5",
+      "values": {
+       "event": "ev1",
+       "line": "Auction display rentals",
+       "category": "Rentals",
+       "estimated": 900,
+       "actual": 300,
+       "paid": false
+      }
+     },
+     {
+      "key": "b6",
+      "values": {
+       "event": "ev2",
+       "line": "Floral design",
+       "category": "Decor",
+       "estimated": 900,
+       "actual": 0,
+       "paid": false
+      }
+     },
+     {
+      "key": "b7",
+      "values": {
+       "event": "ev2",
+       "line": "Photo booth",
+       "category": "Entertainment",
+       "estimated": 650,
+       "actual": 325,
+       "paid": true
+      }
+     },
+     {
+      "key": "b8",
+      "values": {
+       "event": "ev2",
+       "line": "Dinner for 28",
+       "category": "Food",
+       "estimated": 3100,
+       "actual": 0,
+       "paid": false
+      }
+     },
+     {
+      "key": "b9",
+      "values": {
+       "event": "ev2",
+       "line": "Cake and desserts",
+       "category": "Food",
+       "estimated": 480,
+       "actual": 0,
+       "paid": false
+      }
+     }
+    ],
+    "independentOf": {
+     "event": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "run_item",
+    "name": "Run of show",
+    "labelSingular": "Run-of-show item",
+    "labelPlural": "Run of show",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "clock",
+    "titleField": "segment",
+    "describes": "The schedule for the day of each event.",
+    "subject": "thing",
+    "before": [
+     [
+      "starts",
+      "ends"
+     ]
+    ],
+    "fields": [
+     {
+      "key": "segment",
+      "label": "Segment",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "starts",
+      "label": "Starts",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "datetime"
+     },
+     {
+      "key": "ends",
+      "label": "Ends",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "datetime"
+     },
+     {
+      "key": "lead",
+      "label": "Lead",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "event",
+      "label": "Event",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "event",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "sc1",
+      "values": {
+       "event": "ev1",
+       "segment": "Doors and welcome drinks",
+       "starts": "@today+35d 17:30",
+       "ends": "@today+35d 18:15",
+       "lead": "tm-june"
+      }
+     },
+     {
+      "key": "sc2",
+      "values": {
+       "event": "ev1",
+       "segment": "Seated dinner",
+       "starts": "@today+35d 18:15",
+       "ends": "@today+35d 19:45",
+       "lead": "tm-june"
+      }
+     },
+     {
+      "key": "sc3",
+      "values": {
+       "event": "ev1",
+       "segment": "Live auction",
+       "starts": "@today+35d 19:45",
+       "ends": "@today+35d 20:45",
+       "lead": "tm-ottilie"
+      }
+     },
+     {
+      "key": "sc4",
+      "values": {
+       "event": "ev1",
+       "segment": "Dancing and close",
+       "starts": "@today+35d 20:45",
+       "ends": "@today+35d 22:30",
+       "lead": "tm-june"
+      }
+     },
+     {
+      "key": "sc5",
+      "values": {
+       "event": "ev2",
+       "segment": "Arrival and cocktails",
+       "starts": "@today+62d 18:00",
+       "ends": "@today+62d 19:00",
+       "lead": "tm-june"
+      }
+     },
+     {
+      "key": "sc6",
+      "values": {
+       "event": "ev2",
+       "segment": "Dinner and toasts",
+       "starts": "@today+62d 19:00",
+       "ends": "@today+62d 21:00",
+       "lead": "tm-ottilie"
+      }
+     },
+     {
+      "key": "sc7",
+      "values": {
+       "event": "ev2",
+       "segment": "Cake and photo booth",
+       "starts": "@today+62d 21:00",
+       "ends": "@today+62d 22:00",
+       "lead": "tm-june"
+      }
+     }
+    ],
+    "independentOf": {
+     "lead": "Either record can be created or change status before the other.",
+     "event": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each guest belongs to one event.",
+    "fromTable": "guest",
+    "fromField": "event",
+    "toTable": "event",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "guest_by_event"
+   },
+   {
+    "describes": "A event lists its guests.",
+    "fromTable": "event",
+    "fromField": "guests",
+    "toTable": "guest",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "event_from_guests"
+   },
+   {
+    "describes": "Each vendor belongs to one event.",
+    "fromTable": "vendor",
+    "fromField": "event",
+    "toTable": "event",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "vendor_by_event"
+   },
+   {
+    "describes": "A event lists its vendors.",
+    "fromTable": "event",
+    "fromField": "vendors",
+    "toTable": "vendor",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "event_from_vendors"
+   },
+   {
+    "describes": "Each task belongs to one event.",
+    "fromTable": "task",
+    "fromField": "event",
+    "toTable": "event",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "task_by_event"
+   },
+   {
+    "describes": "A event lists its tasks.",
+    "fromTable": "event",
+    "fromField": "tasks",
+    "toTable": "task",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "event_from_tasks"
+   },
+   {
+    "describes": "Each budget line belongs to one event.",
+    "fromTable": "budget",
+    "fromField": "event",
+    "toTable": "event",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "budget_by_event"
+   },
+   {
+    "describes": "A event lists its budget lines.",
+    "fromTable": "event",
+    "fromField": "lines",
+    "toTable": "budget",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "event_from_lines"
+   },
+   {
+    "describes": "Each run-of-show item belongs to one event.",
+    "fromTable": "run_item",
+    "fromField": "event",
+    "toTable": "event",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "run_item_by_event"
+   },
+   {
+    "describes": "A event lists its run of show.",
+    "fromTable": "event",
+    "fromField": "run",
+    "toTable": "run_item",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "event_from_run"
+   },
+   {
+    "describes": "Each event belongs to one team member.",
+    "fromTable": "event",
+    "fromField": "planner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "event_by_planner"
+   },
+   {
+    "describes": "Each task belongs to one team member.",
+    "fromTable": "task",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "task_by_owner"
+   },
+   {
+    "describes": "Each run-of-show item belongs to one team member.",
+    "fromTable": "run_item",
+    "fromField": "lead",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "run_item_by_lead"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-ottilie",
+      "values": {
+       "full_name": "Ottilie Marlowe",
+       "role": "Lead planner",
+       "work_email": "ottilie@marlowefinchevents.net",
+       "mobile": "(912) 555-0171",
+       "start_date": "@today-6y"
+      }
+     },
+     {
+      "key": "tm-caspian",
+      "values": {
+       "full_name": "Caspian Finch",
+       "role": "Vendor coordinator",
+       "work_email": "caspian@marlowefinchevents.net",
+       "mobile": "(912) 555-0172",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-june",
+      "values": {
+       "full_name": "June Adeyinka",
+       "role": "Day-of coordinator",
+       "work_email": "june@marlowefinchevents.net",
+       "mobile": "(912) 555-0173",
+       "start_date": "@today-1y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "rsvp_form",
+    "name": "RSVP",
+    "describes": "Capture a guest's reply.",
+    "audience": "staff",
+    "table": "guest",
+    "fields": [
+     {
+      "fieldKey": "guest_name",
+      "ask": "What is your name?",
+      "required": true
+     },
+     {
+      "fieldKey": "event",
+      "ask": "Which event?",
+      "required": true
+     },
+     {
+      "fieldKey": "rsvp",
+      "ask": "Will you attend?",
+      "required": true
+     },
+     {
+      "fieldKey": "party",
+      "ask": "How many people are coming?"
+     },
+     {
+      "fieldKey": "dietary",
+      "ask": "Any dietary needs?"
+     }
+    ],
+    "submitLabel": "Send the RSVP",
+    "confirmation": "Thanks. The reply is recorded."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_run_item",
+    "name": "All run of show",
+    "table": "run_item",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_budget",
+    "name": "All budget lines",
+    "table": "budget",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_task",
+    "name": "All tasks",
+    "table": "task",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_vendor",
+    "name": "All vendors",
+    "table": "vendor",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_guest",
+    "name": "All guests",
+    "table": "guest",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_event",
+    "name": "All events",
+    "table": "event",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "event_board",
+    "name": "Events by status",
+    "table": "event",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "event_cal",
+    "name": "Event calendar",
+    "table": "event",
+    "kind": "calendar",
+    "dateField": "event_on",
+    "allDay": true
+   },
+   {
+    "token": "guest_board",
+    "name": "RSVP board",
+    "table": "guest",
+    "kind": "kanban",
+    "groupBy": "rsvp"
+   },
+   {
+    "token": "vendor_board",
+    "name": "Vendor board",
+    "table": "vendor",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "task_board",
+    "name": "Task board",
+    "table": "task",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "run_tl",
+    "name": "Run of show",
+    "table": "run_item",
+    "kind": "timeline",
+    "startField": "starts",
+    "endField": "ends"
+   },
+   {
+    "token": "budget_cat",
+    "name": "Budget by category",
+    "table": "budget",
+    "kind": "kanban",
+    "groupBy": "category"
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Event assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "guest",
+     "describes": "Every invitee with their RSVP and party size."
+    },
+    {
+     "name": "related_tables",
+     "table": "event",
+     "describes": "The events guests are invited to."
+    }
+   ],
+   "question": {
+    "ask": "How many guests have said yes?",
+    "whyItMatters": "Ottilie sends the final headcount to caterers once this stops changing.",
+    "expect": {
+     "table": "guest",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "rsvp": "Yes"
+     },
+     "answer": 9,
+     "unit": "guests"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open events by status.",
+    "action": {
+     "kind": "open",
+     "surface": "event_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "event_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open event calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "event_cal"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "event_cal",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open rsvp board.",
+    "action": {
+     "kind": "open",
+     "surface": "guest_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "guest_board",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "marlowefinchevents.net",
+    "guestlist.net",
+    "lanternhallsavannah.net",
+    "tidewaterbites.net",
+    "riversidetunes.net",
+    "petalandvine.net",
+    "snapframebooth.net"
+   ],
+   "fictionalStreets": [
+    "Starling Passage"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "event-planner",
+   "parent": null,
+   "title": "Event Planner",
+   "icon": {
+    "emoji": "🎉"
+   },
+   "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Each event has its own guests, vendors, tasks, budget and run-of-show. Filter any list by the event you are working on."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:event-checklist"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:vendor-brief"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:after-event"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Events"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "event",
+       "view": "event_board"
+      },
+      "inline": true,
+      "title": "Events",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "event_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All events",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Guests and RSVPs"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "guest",
+       "view": "guest_board"
+      },
+      "inline": true,
+      "title": "Guests and RSVPs",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By RSVP",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "rsvp"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All guests",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "guest_name",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Vendors"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "vendor",
+       "view": "vendor_board"
+      },
+      "inline": true,
+      "title": "Vendors",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All vendors",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Tasks"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "task",
+       "view": "task_board"
+      },
+      "inline": true,
+      "title": "Tasks",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-tbl",
+        "name": "By due date",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Budget"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "budget",
+       "view": "budget_cat"
+      },
+      "inline": true,
+      "title": "Budget",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-cat",
+        "name": "By category",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "category"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All lines",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "view-open",
+        "name": "Unpaid",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "paid": false
+        }
+       }
+      ],
+      "activeViewId": "view-cat"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Run of show"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "run_item",
+       "view": "run_tl"
+      },
+      "inline": true,
+      "title": "Run of show",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tl",
+        "name": "Timeline",
+        "layout": "timeline",
+        "icon": "ChartGantt",
+        "dateField": "starts"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All segments",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "starts",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-tl"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "event-planner",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "guest",
+           "view": "all_guest"
+          },
+          "inline": true,
+          "title": "RSVPs",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "RSVPs",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "rsvp",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "budget",
+           "view": "all_budget"
+          },
+          "inline": true,
+          "title": "Cost by category",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Cost by category",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "category",
+             "op": "sum",
+             "field": "actual"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "task",
+           "view": "all_task"
+          },
+          "inline": true,
+          "title": "Tasks by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Tasks by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Vendors still at quote"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "vendor",
+       "view": "all_vendor"
+      },
+      "inline": true,
+      "title": "Vendors still at quote",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-q",
+        "name": "Awaiting booking",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": "Quote"
+        }
+       }
+      ],
+      "activeViewId": "view-q"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Unpaid budget lines"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "budget",
+       "view": "all_budget"
+      },
+      "inline": true,
+      "title": "Unpaid budget lines",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-u",
+        "name": "Unpaid",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "paid": false
+        }
+       }
+      ],
+      "activeViewId": "view-u"
+     }
+    }
+   ]
+  },
+  {
+   "key": "event-checklist",
+   "parent": "event-planner",
+   "title": "Event countdown",
+   "icon": {
+    "emoji": "⏳"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Eight weeks out"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Venue and caterer booked"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Guest list drafted"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Four weeks out"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Invitations sent"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Run of show first draft"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "One week out"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Final headcount to caterer"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Vendor arrival times confirmed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Day-of kit packed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "vendor-brief",
+   "parent": "event-planner",
+   "title": "Vendor brief",
+   "icon": {
+    "emoji": "📋"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Arrival and load-in time"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Contact on the day"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Setup needs: power, tables, space"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Payment schedule and cancellation terms"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "after-event",
+   "parent": "event-planner",
+   "title": "After-event wrap-up",
+   "icon": {
+    "emoji": "🧹"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Thank-you notes sent"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Vendors paid and receipts filed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Budget variance reviewed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Photos shared with guests"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Lessons noted for next time"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ]
+}
