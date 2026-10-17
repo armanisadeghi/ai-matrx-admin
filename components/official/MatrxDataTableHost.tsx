@@ -4,7 +4,6 @@
 // and row-window contents belong to the design-system package. No startup IO.
 // Table UI feedback: /Users/armanisadeghi/code/common-docs/projects/npm-package-extraction/TABLE-UI-ISSUES.md
 // Read and update that checklist before fixing table UI feedback in any host.
-import { JsonViewer } from "@/components/ui/JsonComponents/JsonViewerComponent";
 import { useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -46,6 +45,20 @@ export function tableDensityFromKnob(value: unknown): TableDensity {
 }
 
 const WindowPanel = dynamic(() => import("@ai-matrx/summon/window").then((module) => module.WindowPanel), { ssr: false });
+
+// THE ONE JSON DISPLAY for every table (Arman, 2026-10-17: the row window "is not properly handling
+// json — use our nice json component"): the canonical JsonInspector, fetched only when a person
+// opens a JSON value (a cell's JSON window, an expanded field in the record window).
+const TableJsonViewer = dynamic(
+  () =>
+    import("@/components/official-candidate/json-inspector/JsonInspector").then((module) => {
+      const Inspector = module.JsonInspector;
+      return function TableJsonInspector({ data }: { data: object | string }) {
+        return <Inspector data={data} />;
+      };
+    }),
+  { ssr: false, loading: () => <div className="h-24 animate-pulse rounded-md bg-muted/50" /> },
+);
 
 // The sole Next dynamic front door for package-owned row windows. Its callers
 // preserve the existing open-on-demand behavior without reintroducing a host implementation.
@@ -142,7 +155,7 @@ const TableSavedViews = clientLazy<TableSavedViewsProps>(() =>
 
 const ports: TableHost = {
   ...readPorts,
-  JsonViewer,
+  JsonViewer: TableJsonViewer,
   Link,
   CopyControls: CopyButtons,
   ToolbarAction: TableToolbarAction,

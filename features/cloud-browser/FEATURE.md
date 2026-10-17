@@ -303,6 +303,12 @@ The frontend never receives a password, seed, or generated code from that path.
 
 ## Change log
 
+- **2026-10-17** — `claimStreamTicket` returns the claim's one-use entry code (server answers
+  200 `{enter}`); `mintStreamTicket` stores it as `entryCode`, and every stream frame
+  (TakeoverCanvas, Cloud Computer) loads `streamFrameAddress(ticket)` so the frame's own
+  request sets its cookie. A cookie set by the page's fetch is never sent on a cross-site
+  frame's navigation (Chrome partitions by the frame's cross-site ancestry): local embeds 401'd.
+
 - **2026-10-17** — `listProfiles` no longer asks `get_resource_access` for every visible profile on every
   snapshot load (~250 calls when an admin opened the Computer tab): one's own profile is admin with no
   call; anyone else's goes through `profileAccess` (one call per profile per minute, shared in flight,
