@@ -562,6 +562,11 @@ export function useSerpProspects(input: {
           }
           return;
         }
+        if (report.stopped_at_time_budget && report.notice) {
+          // A partial pass is never reported as a finished one.
+          toast.info(report.notice);
+          return;
+        }
         toast.success(
           report.dead_links === 0
             ? `Checked ${report.outbound_checked} links on ${report.pages_checked} page${report.pages_checked === 1 ? "" : "s"} — nothing broken this time.`
