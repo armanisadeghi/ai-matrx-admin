@@ -33,6 +33,7 @@ import {
   type OldRunCounts,
   type RunCounts,
 } from "../overview";
+import { listFactoryBuildsSince } from "../service";
 import type { FactoryBuildRow } from "../types";
 
 interface DoorRow {
@@ -90,13 +91,9 @@ function Count({ value }: { value: number | null | undefined }) {
   );
 }
 
-export function FactoryDoorsTable({
-  builds,
-  buildsLoaded,
-}: {
-  builds: FactoryBuildRow[];
-  buildsLoaded: boolean;
-}) {
+export function FactoryDoorsTable() {
+  const [builds, setBuilds] = useState<FactoryBuildRow[]>([]);
+  const [buildsLoaded, setBuildsLoaded] = useState(false);
   const [builders, setBuilders] = useState<Record<string, Builder> | null>(
     null,
   );
@@ -107,7 +104,7 @@ export function FactoryDoorsTable({
 
   const load = useCallback(async () => {
     try {
-      const [b, r] = await Promise.all([
+      const [b, r, recent] = await Promise.all([
         loadDoorBuilders(),
         loadOldBuilderRuns([
           STRUCTURE_BUILDER_MANDATE,
@@ -115,7 +112,11 @@ export function FactoryDoorsTable({
           HOLDER_DRAFT_MANDATE,
           GENERATOR_SHORTCUT_MANDATE,
         ]),
+        // Every build of the last 30 days, not a page: the counts must cover all of them.
+        listFactoryBuildsSince(30),
       ]);
+      setBuilds(recent);
+      setBuildsLoaded(true);
       setBuilders(b);
       setOldRuns(r);
       setError(null);
@@ -158,12 +159,15 @@ export function FactoryDoorsTable({
 
   const rows = useMemo((): DoorRow[] => {
     const factory = factoryDoorCounts(builds, testUserIds);
+    const zero = () => ({
+      people: { d7: 0, d30: 0, last: null },
+      test: { d7: 0, d30: 0, last: null },
+    });
+    // A real zero once the builds are loaded; "—" only while they are not.
+    const factoryFor = (id: string) => (buildsLoaded ? (factory[id] ?? zero()) : null);
     const doorRows: DoorRow[] = DOORS.map((d) => {
       const f = buildsLoaded
-        ? (factory[d.key] ?? {
-            people: { d7: 0, d30: 0, last: null },
-            test: { d7: 0, d30: 0, last: null },
-          })
+        ? (factory[d.key] ?? zero())
         : null;
       const o = oldCountsForDoor(d, oldRuns);
       const lasts = [f?.people.last, f?.test.last, o?.counts.last]
@@ -188,9 +192,9 @@ export function FactoryDoorsTable({
           place: v.place,
           href: v.href,
           builder: "factory",
-          factory: null,
+          factory: factoryFor(v.id),
           old: null,
-          last: null,
+          last: factoryFor(v.id)?.people.last ?? factoryFor(v.id)?.test.last ?? null,
         },
       );
     }

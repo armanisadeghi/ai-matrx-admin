@@ -145,8 +145,31 @@ export const VIA_STUDIO_PLACES: readonly { id: string; place: string; href: stri
 
 /** The human label of a door code; an unknown code reads as itself so nothing is hidden. */
 export function doorLabel(door: string | null | undefined): string {
-  if (!door) return "Admin page";
+  if (!door) return "Not recorded";
   return DOORS.find((d) => d.key === door)?.place ?? door;
+}
+
+/** Key family a Studio build carries when it was opened from a System Builder plan. */
+export const SYSTEM_PLAN_KEY_FAMILY = "system-plan";
+/** The day builds began recording that they came from a System Builder plan. */
+export const SYSTEM_PLAN_STAMP_SINCE = "2026-10-17";
+
+/**
+ * Where a build came from, in words, from what the build itself recorded: its door; else the
+ * origin it stamped (admin page / script); else the key family the admin page and old scripts
+ * left; else "Not recorded". Never a guess.
+ */
+export function buildPlaceLabel(
+  b: Pick<FactoryBuildRow, "door" | "origin" | "keyFamily">,
+): string {
+  if (b.door) {
+    return b.door === "studio" && b.keyFamily === SYSTEM_PLAN_KEY_FAMILY
+      ? "System Builder (via Agent Studio)"
+      : doorLabel(b.door);
+  }
+  if (b.origin === "admin_page" || b.keyFamily === "admin-factory") return "Admin page";
+  if (b.origin === "script") return "Script";
+  return "Not recorded";
 }
 
 /** Request-metadata key the server stamps on every old-builder run it makes for a door (aidream `door_stamp`). */
@@ -307,13 +330,18 @@ export function factoryDoorCounts(
   const month = Date.now() - 30 * 86_400_000;
   for (const b of builds) {
     if (!b.door) continue;
-    const door = (out[b.door] ??= { people: emptyCounts(), test: emptyCounts() });
-    const c = b.userId && testUserIds.has(b.userId) ? door.test : door.people;
-    if (!c.last || b.createdAt > c.last) c.last = b.createdAt;
-    if (!b.agentId || !b.outcome || !KEPT_OUTCOMES.has(b.outcome)) continue;
-    const t = new Date(b.createdAt).getTime();
-    if (t >= month) c.d30 += 1;
-    if (t >= week) c.d7 += 1;
+    const keys = [b.door];
+    // A Studio build opened from a System Builder plan also counts on System Builder's own row.
+    if (b.door === "studio" && b.keyFamily === SYSTEM_PLAN_KEY_FAMILY) keys.push("system_builder");
+    for (const key of keys) {
+      const door = (out[key] ??= { people: emptyCounts(), test: emptyCounts() });
+      const c = b.userId && testUserIds.has(b.userId) ? door.test : door.people;
+      if (!c.last || b.createdAt > c.last) c.last = b.createdAt;
+      if (!b.agentId || !b.outcome || !KEPT_OUTCOMES.has(b.outcome)) continue;
+      const t = new Date(b.createdAt).getTime();
+      if (t >= month) c.d30 += 1;
+      if (t >= week) c.d7 += 1;
+    }
   }
   return out;
 }

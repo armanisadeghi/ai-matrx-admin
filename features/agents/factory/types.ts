@@ -105,6 +105,7 @@ export const KEPT_OUTCOMES: ReadonlySet<string> = new Set(["passed", "saved_unpr
 export interface FactoryBuildRequest {
   unproven?: boolean;
   door?: string | null;
+  origin?: string | null;
   spec?: Record<string, unknown> & {
     name?: string;
     display_name?: string | null;
@@ -163,6 +164,12 @@ export interface FactoryBuildRow {
   door: string | null;
   /** `pipeline` (code) unless the build recorded `workflow`. */
   engine: string;
+  /** Where a door-less build came from (`request.origin`: admin_page | script); null = older build, nothing recorded. */
+  origin: string | null;
+  /** The key family the build ran under (`request.idempotency_key` up to its first colon), e.g. `system-plan`. */
+  keyFamily: string | null;
+  /** `context.origin_class` of the root row: `system` = no signed-in person started it. */
+  originClass: string | null;
   /** Who started it (`context.user_id` on the root row). */
   userId: string | null;
   /** Real cost in dollars: the sum of the build's child executions. null = not loaded / failed to load. */

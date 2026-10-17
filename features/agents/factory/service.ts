@@ -14,11 +14,11 @@ import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 import { postJson } from "@/lib/python-client";
 import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { applyServerTableState, type ServerTableSpec } from "@/features/admin/shared/server-table/postgrest";
+import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import type { FactoryBuildDetail, FactoryBuildRow, FactoryBuildState } from "./types";
 
 export const AGENT_FACTORY_BUILD_TYPE = "agent_factory_build";
-/** Newest builds the list loads. Builds are minutes-long jobs; this is weeks of them. */
-export const FACTORY_BUILD_LIST_CAP = 200;
 
 function str(value: unknown): string | null {
   return typeof value === "string" && value.trim() !== "" ? value : null;
@@ -38,6 +38,8 @@ interface CheckpointSummary {
   error: unknown;
   door: unknown;
   engine: unknown;
+  origin: unknown;
+  idem: unknown;
 }
 
 /**
@@ -47,7 +49,7 @@ interface CheckpointSummary {
  * generated select parser can instantiate (TS2589); the row is read below.
  */
 const LIST_SELECT: string =
-  "id, status, created_at, started_at, ended_at, user_id:context->>user_id, global_execution_checkpoint(created_at, status:state->>status, current_step:state->>current_step, outcome:state->>outcome, send_backs:state->send_backs, agent_id:state->>agent_id, mandate_key:state->request->>mandate_key, name:state->request->spec->>name, display_name:state->request->spec->>display_name, verdict:state->steps->proof_review->answer->>verdict, error:state->>error, door:state->request->>door, engine:state->>engine)";
+  "id, status, created_at, started_at, ended_at, user_id:context->>user_id, origin_class:context->>origin_class, global_execution_checkpoint(created_at, status:state->>status, current_step:state->>current_step, outcome:state->>outcome, send_backs:state->send_backs, agent_id:state->>agent_id, mandate_key:state->request->>mandate_key, name:state->request->spec->>name, display_name:state->request->spec->>display_name, verdict:state->steps->proof_review->answer->>verdict, error:state->>error, door:state->request->>door, engine:state->>engine, origin:state->request->>origin, idem:state->request->>idempotency_key)";
 
 interface ListRow {
   id: string;
@@ -56,26 +58,19 @@ interface ListRow {
   started_at: string | null;
   ended_at: string | null;
   user_id: string | null;
+  origin_class: string | null;
   global_execution_checkpoint: CheckpointSummary[] | null;
 }
 
-export async function listFactoryBuilds(
-  signal?: AbortSignal,
-): Promise<{ rows: FactoryBuildRow[]; total: number | null }> {
-  const supabase = createClient();
-  let query = supabase
-    .schema("runtime")
-    .from("global_execution")
-    .select(LIST_SELECT, { count: "exact" })
-    .eq("type", AGENT_FACTORY_BUILD_TYPE)
-    .order("created_at", { ascending: false })
-    .order("created_at", { referencedTable: "global_execution_checkpoint", ascending: false })
-    .limit(1, { referencedTable: "global_execution_checkpoint" })
-    .limit(FACTORY_BUILD_LIST_CAP);
-  if (signal) query = query.abortSignal(signal);
-  const { data, error, count } = await query;
-  if (error) throw operationFailed("load the Agent Factory builds", error);
-  const rows = ((data ?? []) as unknown as ListRow[]).map((row) => {
+/** The key family: the part of an idempotency key before its first colon (`system-plan`, `admin-factory`, `person-build`). */
+function keyFamilyOf(key: string | null): string | null {
+  if (!key) return null;
+  const head = key.split(":")[0];
+  return head || null;
+}
+
+function mapRows(rows: ListRow[]): FactoryBuildRow[] {
+  return (rows as ListRow[]).map((row) => {
     const checkpoints = row.global_execution_checkpoint ?? [];
     const cp = checkpoints[0];
     const sendBacks = cp && typeof cp.send_backs === "number" ? cp.send_backs : 0;
@@ -97,11 +92,56 @@ export async function listFactoryBuilds(
       error: str(cp?.error),
       door: str(cp?.door),
       engine: str(cp?.engine) ?? "pipeline",
+      origin: str(cp?.origin),
+      keyFamily: keyFamilyOf(str(cp?.idem)),
+      originClass: str(row.origin_class),
       userId: str(row.user_id),
       cost: null,
     };
   });
-  return { rows, total: count ?? null };
+}
+
+/** Builds this admin query state asks for, one page; search/filter/sort/page are answered by the database. */
+export const FACTORY_BUILD_TABLE_SPEC: ServerTableSpec = {
+  searchColumns: [],
+  select: { status: "status" },
+  date: { started: "created_at" },
+  sort: { started: "created_at", status: "status" },
+  defaultSort: { column: "created_at", ascending: false },
+};
+
+export async function listFactoryBuildsPage(
+  state: MatrxDataTableQueryState,
+): Promise<{ rows: FactoryBuildRow[]; total: number }> {
+  const supabase = createClient();
+  const base = supabase
+    .schema("runtime")
+    .from("global_execution")
+    .select(LIST_SELECT, { count: "exact" })
+    .eq("type", AGENT_FACTORY_BUILD_TYPE)
+    .order("created_at", { referencedTable: "global_execution_checkpoint", ascending: false })
+    .limit(1, { referencedTable: "global_execution_checkpoint" });
+  const { data, error, count } = await applyServerTableState(base, state, FACTORY_BUILD_TABLE_SPEC);
+  if (error) throw operationFailed("load the Agent Factory builds", error);
+  return { rows: mapRows((data ?? []) as unknown as ListRow[]), total: count ?? 0 };
+}
+
+/** Every build started in the last `days` days, for the doors table's counts (not a page: counts must cover them all). */
+export async function listFactoryBuildsSince(days: number): Promise<FactoryBuildRow[]> {
+  const supabase = createClient();
+  const since = new Date(Date.now() - days * 86_400_000).toISOString();
+  const { data, error } = await supabase
+    .schema("runtime")
+    .from("global_execution")
+    .select(LIST_SELECT)
+    .eq("type", AGENT_FACTORY_BUILD_TYPE)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .order("created_at", { referencedTable: "global_execution_checkpoint", ascending: false })
+    .limit(1, { referencedTable: "global_execution_checkpoint" })
+    .limit(5000);
+  if (error) throw operationFailed("load the Agent Factory builds", error);
+  return mapRows((data ?? []) as unknown as ListRow[]);
 }
 
 export async function getFactoryBuild(buildId: string, signal?: AbortSignal): Promise<FactoryBuildDetail | null> {
@@ -227,6 +267,17 @@ export interface StartAgentBuildInput {
  * POST /agent-factory/builds for the signed-in person (202; the build is theirs and
  * runs detached). Every door's UI starts builds through this one call.
  */
+/**
+ * The key family a person's build runs under. A Studio build opened from a System Builder plan
+ * (`?from=system-plan`) is `system-plan`, so the factory page can count System Builder's builds
+ * from what each build recorded rather than guess.
+ */
+export function personBuildKeyFamily(door: string | null | undefined, search?: string): string {
+  const query = search ?? (typeof window === "undefined" ? "" : window.location.search);
+  if (door === "studio" && new URLSearchParams(query).get("from") === "system-plan") return "system-plan";
+  return "person-build";
+}
+
 export async function startAgentBuild(input: StartAgentBuildInput): Promise<string> {
   const { data } = await postJson<{ build_id: string }>(
     "/agent-factory/builds",
@@ -234,7 +285,7 @@ export async function startAgentBuild(input: StartAgentBuildInput): Promise<stri
       spec: input.spec,
       mandate_key: input.mandateKey ?? null,
       unproven: input.unproven ?? false,
-      idempotency_key: input.idempotencyKey ?? `person-build:${crypto.randomUUID()}`,
+      idempotency_key: input.idempotencyKey ?? `${personBuildKeyFamily(input.door)}:${crypto.randomUUID()}`,
       ...(input.door ? { door: input.door } : {}),
       ...(input.builtin ? { builtin: true } : {}),
     },

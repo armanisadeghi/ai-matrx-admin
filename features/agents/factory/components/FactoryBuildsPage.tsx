@@ -11,7 +11,7 @@
  */
 
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { Plus } from "lucide-react";
@@ -20,13 +20,13 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@ai-matrx/design-system/controls";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { readOf } from "@ai-matrx/design-system";
 import {
   outcomeChip,
   outcomeLabel,
   verdictChip,
 } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
-import { FACTORY_BUILD_LIST_CAP, listFactoryBuilds } from "../service";
+import { listFactoryBuildsPage } from "../service";
+import { serverTableInitialState, useServerTable } from "@/features/admin/shared/server-table/useServerTable";
 import {
   STEP_LABEL,
   spineIsOver,
@@ -37,7 +37,7 @@ import { StartBuildDialog } from "./StartBuildDialog";
 import { SpineStatusChip, formatDuration } from "./factory-shared";
 import { FactoryDoorsTable } from "./FactoryDoorsTable";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import { doorLabel, formatDollars, loadBuildCosts } from "../overview";
+import { buildPlaceLabel, formatDollars, loadBuildCosts } from "../overview";
 
 export const FACTORY_BASE_PATH = "/administration/agents/factory";
 
@@ -45,56 +45,59 @@ export function factoryBuildHref(id: string): string {
   return `${FACTORY_BASE_PATH}/${id}`;
 }
 
+const STATUS_OPTIONS = [
+  { value: "running", label: "Running" },
+  { value: "completed", label: "Completed" },
+  { value: "failed", label: "Failed" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "pending", label: "Queued" },
+];
+
+const INITIAL_STATE = serverTableInitialState({ id: "started", direction: "desc" }, 50);
+
 export function FactoryBuildsPage() {
   const router = useRouter();
-  const [rows, setRows] = useState<FactoryBuildRow[]>([]);
-  const [total, setTotal] = useState<number | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [fetching, setFetching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [startOpen, setStartOpen] = useState(false);
   const [costs, setCosts] = useState<Map<string, number> | null>(null);
   const [costError, setCostError] = useState(false);
+  const { rows, reload, tableProps } = useServerTable<FactoryBuildRow>(
+    listFactoryBuildsPage,
+    INITIAL_STATE,
+    "builds",
+    "",
+    "agent-factory-builds",
+  );
 
-  const load = useCallback(async () => {
-    setFetching(true);
-    try {
-      const result = await listFactoryBuilds();
-      setRows(result.rows);
-      setTotal(result.total ?? undefined);
-      setError(null);
-      try {
-        setCosts(await loadBuildCosts(result.rows.map((r) => r.id)));
-        setCostError(false);
-      } catch (e) {
-        console.error("[agent-factory] could not load build costs", e);
-        setCostError(true);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load the builds");
-    } finally {
-      setLoading(false);
-      setFetching(false);
-    }
-  }, []);
-
+  const rowIds = useMemo(() => rows.map((r) => r.id).join(","), [rows]);
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!rowIds) return undefined;
+    let live = true;
+    loadBuildCosts(rowIds.split(","))
+      .then((c) => {
+        if (!live) return;
+        setCosts(c);
+        setCostError(false);
+      })
+      .catch((e) => {
+        console.error("[agent-factory] could not load build costs", e);
+        if (live) setCostError(true);
+      });
+    return () => {
+      live = false;
+    };
+  }, [rowIds]);
 
   const anyRunning = rows.some((r) => !spineIsOver(r.spineStatus));
   useEffect(() => {
     if (!anyRunning) return undefined;
-    const timer = setInterval(() => void load(), 5000);
+    const timer = setInterval(reload, 5000);
     return () => clearInterval(timer);
-  }, [anyRunning, load]);
+  }, [anyRunning, reload]);
 
   const buildRows = useMemo(
-    () =>
-      rows.map((r) => ({ ...r, cost: costs ? (costs.get(r.id) ?? 0) : null })),
+    () => rows.map((r) => ({ ...r, cost: costs ? (costs.get(r.id) ?? 0) : null })),
     [rows, costs],
   );
-  const doorPlace = useCallback((door: string | null) => doorLabel(door), []);
 
   const columns = useMemo(
     (): MatrxColumnDef<FactoryBuildRow>[] => [
@@ -117,29 +120,42 @@ export function FactoryBuildsPage() {
         id: "who",
         accessorFn: (r) => r.userId ?? "",
         header: "Who",
-        width: 170,
+        width: 230,
+        filter: false,
+        sortable: false,
         cell: (r) =>
           r.userId ? (
-            <AdminUserRef userId={r.userId} hideEmail />
+            <div className="min-w-0">
+              <AdminUserRef userId={r.userId} />
+              {r.originClass === "system" ? (
+                <div className="truncate text-[11px] text-muted-foreground">
+                  {r.origin === "script"
+                    ? "Started by a script"
+                    : "No person recorded"}
+                </div>
+              ) : null}
+            </div>
           ) : (
             <span className="type-secondary text-muted-foreground">—</span>
           ),
       },
       {
         id: "door",
-        accessorFn: (r) => doorPlace(r.door),
+        accessorFn: (r) => buildPlaceLabel(r),
         header: "Door",
-        filter: "select",
+        filter: false,
+        sortable: false,
         width: 230,
         cell: (r) => (
-          <span className="truncate type-secondary">{doorPlace(r.door)}</span>
+          <span className="truncate type-secondary">{buildPlaceLabel(r)}</span>
         ),
       },
       {
         id: "outcome",
+        filter: false,
+        sortable: false,
         accessorFn: (r) => (r.outcome ? outcomeLabel(r.outcome) : ""),
         header: "Outcome",
-        filter: "select",
         width: 175,
         cell: (r) =>
           outcomeChip(r.outcome) ?? (
@@ -148,9 +164,10 @@ export function FactoryBuildsPage() {
       },
       {
         id: "cost",
+        filter: false,
+        sortable: false,
         accessorFn: (r) => r.cost ?? 0,
         header: costError ? "Cost (not loaded)" : "Cost",
-        filter: "number",
         format: { id: "currency", options: { precision: 2 } },
         width: 100,
         cell: (r) => (
@@ -161,6 +178,8 @@ export function FactoryBuildsPage() {
       },
       {
         id: "agent",
+        filter: false,
+        sortable: false,
         accessorFn: (r) => r.agentId ?? "",
         header: "Agent",
         width: 130,
@@ -178,17 +197,19 @@ export function FactoryBuildsPage() {
       },
       {
         id: "engine",
+        filter: false,
+        sortable: false,
         accessorKey: "engine",
         header: "Engine",
-        filter: "select",
         width: 95,
         cell: (r) => <span className="type-secondary">{r.engine}</span>,
       },
       {
         id: "mandate",
+        filter: false,
+        sortable: false,
         accessorFn: (r) => r.mandateKey ?? "",
         header: "Job",
-        filter: "select",
         width: 230,
         cell: (r) =>
           r.mandateKey ? (
@@ -209,17 +230,19 @@ export function FactoryBuildsPage() {
         accessorKey: "spineStatus",
         header: "Status",
         filter: "select",
+        filterOptions: STATUS_OPTIONS,
         width: 110,
         cell: (r) => <SpineStatusChip status={r.spineStatus} />,
       },
       {
         id: "current_step",
+        filter: false,
+        sortable: false,
         accessorFn: (r) =>
           r.currentStep
             ? (STEP_LABEL[r.currentStep as FactoryStepName] ?? r.currentStep)
             : "",
         header: "Step",
-        filter: "select",
         width: 110,
         cell: (r) => (
           <span className="type-secondary">
@@ -231,9 +254,10 @@ export function FactoryBuildsPage() {
       },
       {
         id: "send_backs",
+        filter: false,
+        sortable: false,
         accessorKey: "sendBacks",
         header: "Send-backs",
-        filter: "number",
         width: 100,
         cell: (r) => (
           <span className="type-secondary tabular-nums">{r.sendBacks}</span>
@@ -241,9 +265,10 @@ export function FactoryBuildsPage() {
       },
       {
         id: "verdict",
+        filter: false,
+        sortable: false,
         accessorFn: (r) => r.verdict ?? "",
         header: "Judge",
-        filter: "select",
         width: 100,
         cell: (r) =>
           verdictChip(r.verdict) ?? (
@@ -252,13 +277,14 @@ export function FactoryBuildsPage() {
       },
       {
         id: "duration",
+        filter: false,
+        sortable: false,
         accessorFn: (r) =>
           r.endedAt
             ? new Date(r.endedAt).getTime() -
               new Date(r.startedAt ?? r.createdAt).getTime()
             : 0,
         header: "Took",
-        filter: "number",
         width: 90,
         cell: (r) => (
           <span className="type-secondary tabular-nums text-muted-foreground">
@@ -270,51 +296,37 @@ export function FactoryBuildsPage() {
       },
       {
         id: "build_id",
+        filter: false,
+        sortable: false,
         accessorKey: "id",
         header: "Build",
         cellKind: "uuid",
         width: 110,
       },
     ],
-    [costError, doorPlace],
+    [costError],
   );
 
   return (
-    <div className="flex h-[calc(100dvh-2.5rem)] min-h-0 flex-col gap-3 overflow-y-auto">
+    <div className="flex h-[calc(100dvh-2.5rem)] min-h-0 flex-col gap-3 overflow-y-auto pb-16">
       <div className="flex h-[36rem] shrink-0 flex-col overflow-hidden">
-        <FactoryDoorsTable builds={rows} buildsLoaded={!loading && !error} />
+        <FactoryDoorsTable />
       </div>
       <div className="flex h-[calc(100dvh-4rem)] min-h-[28rem] shrink-0 flex-col overflow-hidden">
         <MatrxDataTable
-          urlState={{ id: "agent-factory-builds" }}
+          {...tableProps}
           data={buildRows}
           columns={columns}
-          drill={{ local: true }}
           getRowId={(r) => r.id}
           getRowHref={(r) => factoryBuildHref(r.id)}
           onRowOpen={(r) => router.push(factoryBuildHref(r.id))}
-          isLoading={loading}
-          isFetching={fetching}
-          pageSize={50}
-          coverage={{
-            cap: FACTORY_BUILD_LIST_CAP,
-            total,
-            answeredBy: "client",
-            noun: "build",
-          }}
-          read={readOf(
-            { loading, error },
-            { what: "builds", onRetry: () => void load() },
-          )}
           emptyState={{
             title: "No builds yet",
             description: "Start a build to see its steps here.",
           }}
           toolbar={{
             title: "Agent Factory",
-            search: true,
-            searchPlaceholder: "Search builds…",
-            refresh: { onRefresh: load },
+            refresh: { onRefresh: reload },
             actions: (
               <Button
                 variant="primary"
@@ -332,12 +344,12 @@ export function FactoryBuildsPage() {
             rowKind: "agent-factory-build",
             listKind: "agent-factory-builds",
             listDescription:
-              "The newest builds; search and filters apply to this loaded window.",
+              "The builds on this page of the list; filters and paging are answered by the database.",
             humanRow: (r) =>
               [
                 `Build ${r.id} — ${r.mandateKey ?? "new agent"}`,
                 `Status: ${r.spineStatus}; step: ${r.currentStep ?? "—"}; outcome: ${r.outcome ? `${outcomeLabel(r.outcome)} (${r.outcome})` : "—"}`,
-                `Door: ${r.door ?? "admin page"}; engine: ${r.engine}; cost: ${formatDollars(r.cost)}`,
+                `Door: ${buildPlaceLabel(r)}; engine: ${r.engine}; cost: ${formatDollars(r.cost)}`,
                 `Send-backs: ${r.sendBacks}; judge: ${r.verdict ?? "—"}; agent: ${r.agentId ?? "—"}`,
                 r.error ? `Error: ${r.error}` : "",
               ]

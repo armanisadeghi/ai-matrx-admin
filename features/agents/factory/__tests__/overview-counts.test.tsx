@@ -6,7 +6,7 @@ jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}), supabase
 
 import { outcomeLabel } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { usableLabel } from "@/features/admin/users/useAdminUserLabel";
-import { DOORS, FACTORY_DOOR_STAMP_SINCE, doorLabel, factoryDoorCounts, oldCountsForDoor } from "../overview";
+import { DOORS, FACTORY_DOOR_STAMP_SINCE, buildPlaceLabel, doorLabel, factoryDoorCounts, oldCountsForDoor } from "../overview";
 import type { FactoryBuildRow } from "../types";
 
 const now = new Date().toISOString();
@@ -14,7 +14,7 @@ function build(over: Partial<FactoryBuildRow>): FactoryBuildRow {
   return {
     id: "b", spineStatus: "completed", createdAt: now, startedAt: null, endedAt: null, mandateKey: null, name: null,
     currentStep: null, outcome: "passed", sendBacks: 0, verdict: null, agentId: "a", error: null, door: "generate",
-    engine: "pipeline", userId: "tester", cost: null, ...over,
+    engine: "pipeline", origin: null, keyFamily: null, originClass: null, userId: "tester", cost: null, ...over,
   };
 }
 
@@ -78,7 +78,7 @@ describe("door labels", () => {
   });
   it("studio is always the factory, with no knob", () => {
     expect(DOORS.find((d) => d.key === "studio")?.alwaysFactory).toBe(true);
-    expect(doorLabel(null)).toBe("Admin page");
+    expect(doorLabel(null)).toBe("Not recorded");
   });
 });
 
@@ -87,5 +87,24 @@ describe("who label", () => {
     expect(usableLabel("test", "test@test.com")).toBe("test@test.com");
     expect(usableLabel("User", "a@b.com")).toBe("a@b.com");
     expect(usableLabel("Cora Diaz", "cora@x.com")).toBe("Cora Diaz");
+  });
+});
+
+describe("where a build came from", () => {
+  it("names the door, else what the build recorded, else says not recorded", () => {
+    expect(buildPlaceLabel({ door: "studio", origin: null, keyFamily: null })).toBe("Agent Studio");
+    expect(buildPlaceLabel({ door: null, origin: "admin_page", keyFamily: null })).toBe("Admin page");
+    expect(buildPlaceLabel({ door: null, origin: "script", keyFamily: null })).toBe("Script");
+    expect(buildPlaceLabel({ door: null, origin: null, keyFamily: "admin-factory" })).toBe("Admin page");
+    expect(buildPlaceLabel({ door: null, origin: null, keyFamily: "auto" })).toBe("Not recorded");
+  });
+  it("System Builder builds are counted from their recorded key, on their own row and on Studio", () => {
+    const counts = factoryDoorCounts([
+      build({ door: "studio", keyFamily: "system-plan" }),
+      build({ door: "studio", keyFamily: "person-build" }),
+    ]);
+    expect(counts.system_builder.people.d30).toBe(1);
+    expect(counts.studio.people.d30).toBe(2);
+    expect(buildPlaceLabel({ door: "studio", origin: null, keyFamily: "system-plan" })).toMatch(/System Builder/);
   });
 });
