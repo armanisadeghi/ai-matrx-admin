@@ -1,4 +1,18 @@
-import { adaptInput, adaptInputs, detectReviewLane, isToolTab, laneOf, TOOL_LANES, TOOL_TABS } from "../searchToolPlan";
+import {
+  adaptInput,
+  adaptInputs,
+  detectReviewLane,
+  finderQuery,
+  finderSource,
+  isToolTab,
+  laneCanFind,
+  laneOf,
+  needsFinder,
+  pickCandidates,
+  pickPlaces,
+  TOOL_LANES,
+  TOOL_TABS,
+} from "../searchToolPlan";
 
 describe("which review lane a pasted link belongs to", () => {
   it.each([
@@ -66,5 +80,60 @@ describe("the catalog tabs", () => {
     for (const vendor of ["DataForSEO", "Bright Data", "treg", "Apify", "Litescrape", "Cloro", "Crawl4ai"]) {
       expect(labels.join(" ").toLowerCase()).not.toContain(vendor.toLowerCase());
     }
+  });
+});
+
+describe("finding an app or a business by its name", () => {
+  it("asks for choices only when words stand where a link or id was wanted", () => {
+    expect(needsFinder("appstore", "Gumroad")).toBe(true);
+    expect(needsFinder("appstore", "916819108")).toBe(false);
+    expect(needsFinder("appstore", "https://apps.apple.com/us/app/gumroad/id916819108")).toBe(false);
+    expect(needsFinder("play", "com.spotify.music")).toBe(false);
+    expect(needsFinder("play", "Spotify")).toBe(true);
+    expect(needsFinder("trustpilot", "example.com")).toBe(false);
+    expect(needsFinder("trustpilot", "Ten Thousand")).toBe(true);
+    expect(needsFinder("maps", "Epoch Coffee Austin")).toBe(true);
+    expect(needsFinder("maps", "ChIJG-gJw2vKRIYROWi2uwOp8QE")).toBe(false);
+    expect(needsFinder("maps", "https://www.google.com/maps/place/Epoch+Coffee")).toBe(false);
+    expect(needsFinder("appstore", "   ")).toBe(false);
+  });
+
+  it("looks only where the thing lives", () => {
+    expect(laneCanFind("appstore")).toBe(true);
+    expect(laneCanFind("maps")).toBe(true);
+    expect(finderSource("maps")).toBe("places");
+    expect(finderSource("appstore")).toBe("web");
+    expect(finderQuery("appstore", " Gumroad ")).toBe("Gumroad app site:apps.apple.com");
+    expect(finderQuery("nope", "x")).toBeNull();
+  });
+
+  it("keeps only the pages that are the app itself, once each, with the site's own suffix dropped", () => {
+    const hits = [
+      { title: "Gumroad on the App Store", url: "https://apps.apple.com/us/app/gumroad/id916819108" },
+      { title: "Gumroad on the App Store", url: "https://apps.apple.com/us/app/gumroad/id916819108?uo=4" },
+      { title: "Top creator apps", url: "https://apps.apple.com/us/charts/iphone" },
+      { title: "Linktree: Link in Bio Creator on the App Store", url: "https://apps.apple.com/us/app/linktree/id1593515263" },
+      { title: "Not a store", url: "https://example.com/id12345" },
+    ];
+    expect(pickCandidates("appstore", hits)).toEqual([
+      { label: "Gumroad", caption: "App Store", value: "https://apps.apple.com/us/app/gumroad/id916819108" },
+      { label: "Linktree: Link in Bio Creator", caption: "App Store", value: "https://apps.apple.com/us/app/linktree/id1593515263" },
+    ]);
+    expect(pickCandidates("trustpilot", [{ title: "Apple Reviews | Read Customer Service Reviews of apple.com", url: "https://www.trustpilot.com/review/apple.com" }])).toEqual([
+      { label: "Apple", caption: "Trustpilot", value: "https://www.trustpilot.com/review/apple.com" },
+    ]);
+    expect(pickCandidates("maps", hits)).toEqual([]);
+  });
+
+  it("offers the businesses Google knows, each with the id the reviews Tool takes", () => {
+    const places = [
+      { name: "Epoch Coffee", place_id: "ChIJG-gJw2vKRIYROWi2uwOp8QE", address: { display: "221 W North Loop Blvd, Austin, TX 78751, United States" } },
+      { name: "Epoch Coffee", place_id: "ChIJG-gJw2vKRIYROWi2uwOp8QE" },
+      { name: "A cafe", place_id: "brave-123" },
+      { name: "No id" },
+    ];
+    expect(pickPlaces(places)).toEqual([
+      { label: "Epoch Coffee", caption: "221 W North Loop Blvd, Austin, TX 78751", value: "ChIJG-gJw2vKRIYROWi2uwOp8QE" },
+    ]);
   });
 });
