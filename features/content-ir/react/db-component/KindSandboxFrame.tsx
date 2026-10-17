@@ -58,6 +58,7 @@ import type {
     ResolveKindValue,
 } from "./dbKindComponentCache";
 import { reportKindComponentIncident } from "./kindComponentIncident";
+import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import type { KindSandboxCeilings } from "./useKindSandboxKnob";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -238,6 +239,18 @@ export interface KindSandboxFrameProps {
     ceilings: KindSandboxCeilings;
 }
 
+/**
+ * WHEN THE FRAME CANNOT DRAW, THE ANSWER STILL DOES (2026-10-17, G4 finding). A failed frame used to
+ * leave a blank box and a notice, so a person who had paid for an answer saw none of it. The same data
+ * is shown through the platform's generic structured viewer (its floor), under the notice.
+ */
+const KindFrameFallback: React.FC<{ data: unknown }> = ({ data }) =>
+    data == null ? null : (
+        <div className="mt-2" data-matrx-kind-frame-fallback="">
+            <StructuredValueView value={data} />
+        </div>
+    );
+
 export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
     kind,
     resolution,
@@ -289,6 +302,20 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                         ? `loaded but never answered within ${formatDurationMs(SILENT_FRAME_MS, { style: "compact" })}`
                         : `document never loaded within ${formatDurationMs(NEVER_LOADED_MS, { style: "compact" })}`),
                 raw: { kind, attempt: frameAttempt, loaded },
+            });
+            // THE DURABLE HALF (2026-10-17, G4 finding): the Inspector is local, so a person who saw
+            // "did not load" left no row anyone could read. The component author's queue hears it too,
+            // deduped per kind, with the two causes apart: the document never arrived (a blocked
+            // frame: a client that refuses /kind-sandbox, a CSP) or arrived and never answered.
+            reportKindComponentIncident({
+                kind,
+                errorType: loaded ? "frame_silent" : "frame_blocked",
+                message: loaded
+                    ? `The sandbox frame loaded but never answered within ${formatDurationMs(SILENT_FRAME_MS, { style: "compact" })}.`
+                    : `The sandbox frame document never loaded within ${formatDurationMs(NEVER_LOADED_MS, { style: "compact" })} (blocked or unreachable).`,
+                componentKey: latest.current.resolution.componentKey,
+                componentUpdatedAt: latest.current.resolution.updatedAt,
+                data: latest.current.data,
             });
         }, loaded ? SILENT_FRAME_MS : NEVER_LOADED_MS);
         return () => window.clearTimeout(timer);
@@ -679,6 +706,7 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
             transformError ??
             "This component has no body to render, so the sandbox has nothing to show.";
         return (
+            <>
             <div
                 role="alert"
                 className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-foreground"
@@ -689,6 +717,8 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 <span className="text-muted-foreground">{sentence}</span>
               <ErrorAlchemyMenu className="ml-auto" />
             </div>
+            <KindFrameFallback data={data} />
+            </>
         );
     }
 
@@ -711,7 +741,10 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 // element: in a flex or grid parent the default automatic
                 // minimum is the content's, and the column would be stretched
                 // to the reader's whole window instead of clipping.
-                style={{ overflow: "hidden", minWidth: 0, height: decision.height }}
+                style={{ overflow: "hidden", minWidth: 0, height: silent && !heard ? 0 : decision.height }}
+                // A frame that never spoke is hidden, not removed: a late answer still lands, and
+                // Try again reuses it. The person reads the generic view of the same data below.
+                aria-hidden={silent && !heard ? true : undefined}
             >
                 <iframe
                     key={frameAttempt}
@@ -779,6 +812,7 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                     }
                 />
             ) : null}
+            {(silent && !heard) || bodyFailed ? <KindFrameFallback data={data} /> : null}
             {oversize ? (
                 <ErrorNotice size="inline" className="mt-2 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-muted-foreground" message={oversize} />
             ) : null}

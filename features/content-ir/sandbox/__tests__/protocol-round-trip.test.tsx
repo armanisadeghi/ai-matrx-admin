@@ -242,6 +242,21 @@ describe("a frame that never speaks is heard by the Error Inspector", () => {
         );
         expect(captured).toHaveLength(1);
     }, 20_000);
+
+    // 2026-10-17 (G4): a person who paid for an answer saw a blank box and a notice.
+    it("shows the answer's own data under the notice, and files a durable incident naming why", async () => {
+        reportKindComponentIncident.mockClear();
+        const h = await stand({ connect: false, data: { title: "Visible answer" } });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 8_400));
+        });
+        const fallback = h.hostEl.querySelector("[data-matrx-kind-frame-fallback]");
+        expect(fallback?.textContent ?? "").toContain("Visible answer");
+        const filed = reportKindComponentIncident.mock.calls.map((c: unknown[]) => c[0] as { kind: string; errorType: string });
+        expect(filed).toHaveLength(1);
+        expect(filed[0].kind).toBe("round_trip_kind");
+        expect(["frame_silent", "frame_blocked"]).toContain(filed[0].errorType);
+    }, 20_000);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

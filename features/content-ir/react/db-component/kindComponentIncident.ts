@@ -88,7 +88,18 @@ export type KindComponentIncidentType =
    * completely silent: twenty of twenty-one production reads on 2026-09-14
    * rendered the wrong component and not one of them recorded anything.
    */
-  | "stale_route_render";
+  | "stale_route_render"
+  /**
+   * The sandbox frame's document loaded but the frame never answered the handshake, so the reader got
+   * the generic view of the data instead of the component. Not a content defect: a frame that cannot
+   * speak (a script error in the frame, a handshake race) — the author's component never ran.
+   */
+  | "frame_silent"
+  /**
+   * The sandbox frame's document never arrived (the client refused `/kind-sandbox`, a CSP, an
+   * unreachable origin). The component is not at fault; the reader got the generic view of the data.
+   */
+  | "frame_blocked";
 
 export interface KindComponentIncidentInput {
   kind: string;
