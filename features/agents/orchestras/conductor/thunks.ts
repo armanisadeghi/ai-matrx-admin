@@ -20,7 +20,10 @@
 import { isRecordsErr } from "@ai-matrx/records";
 import type { ThunkAction, UnknownAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/rootReducer";
-import { launchAgentExecution } from "@ai-matrx/chat/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
+import {
+  launchAgentExecution,
+  launchFailureMessage,
+} from "@ai-matrx/chat/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { destroyInstanceIfAllowed } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.thunks";
 import { openLiveRunWindowAction } from "@/features/overlays/openers/liveRunWindow";
 import { selectRequest } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
@@ -195,6 +198,8 @@ export function syncConductorPrompt(args: {
     }
 
     const DESCRIBE_ATTEMPTS = 3;
+    /** The server refused the run itself (4xx) — retrying sends the same refused call. */
+    let refusedByServer = false;
     let responseText = "";
     let lastDetail = "the AI run didn't execute";
     for (let attempt = 1; attempt <= DESCRIBE_ATTEMPTS; attempt++) {
@@ -256,7 +261,21 @@ export function syncConductorPrompt(args: {
         responseText = launch.responseText ?? "";
         requestId = launch.requestId;
       } catch (e) {
-        lastDetail = e instanceof Error ? e.message : "the describe run threw";
+        // The launch rejects with the server's own sentence (`user_message`,
+        // e.g. 422 mandate_inputs_rejected) — say it, never a generic "threw".
+        lastDetail =
+          launchFailureMessage(e) ?? "the describe run could not start";
+        const status = (e as { status?: unknown } | null)?.status;
+        if (
+          typeof status === "number" &&
+          status >= 400 &&
+          status < 500 &&
+          status !== 408 &&
+          status !== 429
+        ) {
+          refusedByServer = true;
+          break;
+        }
       }
 
       if (responseText.trim().length > 0) break;
@@ -279,6 +298,12 @@ export function syncConductorPrompt(args: {
     // member writes, no prompt injection) so the UI and the prompt can never
     // diverge — better a clear error the user can retry than a prompt quietly
     // filled with the wrong data.
+    if (refusedByServer) {
+      return {
+        ok: false,
+        error: `The role describer could not start — ${lastDetail}. Nothing was changed.`,
+      };
+    }
     if (responseText.trim().length === 0) {
       return {
         ok: false,
