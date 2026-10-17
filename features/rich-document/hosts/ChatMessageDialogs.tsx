@@ -15,6 +15,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { selectMessagePosition } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { DeleteMessageDialog } from "@ai-matrx/chat/agents/components/messages-display/message-options/DeleteMessageDialog";
 import { EditHistoryDialog } from "@ai-matrx/chat/agents/components/messages-display/message-options/EditHistoryDialog";
+import { useDeleteMessageWithReply } from "@ai-matrx/chat/agents/components/messages-display/message-options/use-delete-message-with-reply";
 
 function errorText(error: unknown): string {
   if (error instanceof Error) return error.message || "Save failed";
@@ -47,6 +48,10 @@ export function ChatMessageDialogs({
 }: ChatMessageDialogsProps): React.ReactElement {
   const dispatch = useAppDispatch();
   const store = useAppStore();
+  const { hasReply, confirmDeleteWithReply } = useDeleteMessageWithReply(
+    conversationId,
+    messageId,
+  );
   const messagePosition =
     selectMessagePosition(conversationId, messageId)(store.getState()) ?? 0;
 
@@ -127,6 +132,7 @@ export function ChatMessageDialogs({
       canFork={messagePosition > 0}
       onConfirmDelete={confirmDelete}
       onConfirmFork={confirmDeleteFork}
+      onConfirmDeleteWithReply={hasReply ? confirmDeleteWithReply : undefined}
     />
   );
 }
