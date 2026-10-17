@@ -17,6 +17,11 @@ for (let i = 0; i < 80; i++) {
 await page.waitForTimeout(8000);
 await page.getByRole("button", { name: "Save to a table" }).last().click();
 await page.waitForTimeout(6000);
+if (process.argv[4] === "make") {
+  await page.getByRole("input").first().catch(() => {});
+  await page.getByRole("button", { name: /Make the table with/ }).click();
+  await page.waitForTimeout(12000);
+}
 await page.screenshot({ path: out });
 console.log(JSON.stringify({ out, buttons: await page.getByRole("button").allInnerTexts().then((t) => t.filter(Boolean).slice(-25)) }));
 await browser.close();
