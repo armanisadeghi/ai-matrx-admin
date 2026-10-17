@@ -435,7 +435,7 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
               catch (err) { setNote(err instanceof Error ? err.message : "The schedule could not be changed."); }
             }} />
         </label>
-        <Words>{scheduleOn ? "A snapshot is taken every week." : "Off until you turn it on."} Snapshots you remove stay recoverable for 90 days.</Words>
+        <Words>{`${scheduleOn ? "A snapshot is taken every week." : "Off until you turn it on."} Snapshots you remove stay recoverable for 90 days.`}</Words>
         <span hidden data-home={homeId} />
       </DialogContent>
     </Dialog>

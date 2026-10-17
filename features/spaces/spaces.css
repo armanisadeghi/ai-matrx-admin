@@ -1339,6 +1339,19 @@
   }
 }
 
+/* A page narrower than 560px (a phone, or a tablet beside the sidebar) stacks its columns like the phone does:
+   SpacePage sets data-narrow from the content's own width, never the window's. */
+.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group {
+  flex-direction: column;
+}
+.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group > .bn-block-outer {
+  padding: 0;
+  flex-grow: 1 !important;
+}
+.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-column) > .react-renderer > .bn-block-content {
+  display: none;
+}
+
 /* The app's global h1–h3 rules must not reach block headings. */
 .spaces-editor [data-content-type="heading"] .bn-inline-content {
   font-weight: 600;
@@ -1428,7 +1441,14 @@
 .spaces-db-title { display: flex; align-items: center; gap: 4px; font-size: 20px; font-weight: 700; padding: 2px 2px 4px; }
 .spaces-db-linked { color: var(--spaces-ink-soft); }
 .spaces-db-bar { display: flex; align-items: center; gap: 8px; min-height: 32px; min-width: 0; }
-.spaces-db-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
+.spaces-db-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1 1 auto; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.spaces-db-tabs::-webkit-scrollbar { display: none; }
+/* A VIEW TAB KEEPS ITS NAME (NARROW-FIXES 2): beside the sidebar at 768 and at 375 the tabs shrank until the open
+   view was a blank pill or one letter. A tab never shrinks below its name (it ends in an ellipsis at its own
+   max width); a strip with more tabs than fit scrolls sideways and the open tab scrolls into view. A chart
+   tile's single title keeps its own shrink rule below. */
+.spaces-db-frame:not([data-layout="chart"]) .spaces-db-tabs > * { flex: none; }
+.spaces-db-frame:not([data-layout="chart"]) .spaces-db-tabs > [role="tab"] { max-width: min(220px, 70cqw); }
 /* A chart tile's view name is Notion's grey pill (screenshot 1): the view's icon + the name as typed at
    14px / 600, cut with an ellipsis at the pill's edge, the view-settings icon right after it at rest. */
 .spaces-db-frame[data-layout="chart"] .spaces-db-tabs { gap: 6px; }
