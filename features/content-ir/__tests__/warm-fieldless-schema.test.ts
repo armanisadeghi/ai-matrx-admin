@@ -35,7 +35,7 @@ async function coldFetchWith(dbSchema: KindSchema | null) {
   jest.resetModules();
   const captureError = jest.fn();
   jest.doMock("@/lib/diagnostics/errorCaptureStore", () => ({ captureError }));
-  jest.doMock("../registry/schema-source-kind-tables", () => ({
+  jest.doMock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => ({
     listKindCatalogFromTables: jest.fn(async () => [
       { slug: "kind_under_test", loadingComponent: null },
     ]),
@@ -56,6 +56,9 @@ async function coldFetchWith(dbSchema: KindSchema | null) {
       },
     ],
   }));
+  // The kind registry is the package's page singleton (Symbol.for): fresh modules need a fresh one
+  // (reset after the mocks above, so the fresh registry reads through them).
+  (await import("@ai-matrx/rich-content/kinds/registry/package-kind-registry")).resetPackageKindRegistry();
   const { kindRegistry } = await import("../registry/kind-registry");
   await kindRegistry.ensureWarm();
   // The cold path is fire-and-forget; wait for its arrival notification.

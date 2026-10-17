@@ -8,7 +8,7 @@
  */
 
 const mockGetKindInputContract = jest.fn();
-jest.mock("@/features/content-ir/registry/schema-source-kind-tables", () => ({
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => ({
   getKindInputContractBySlug: (kind: string) => mockGetKindInputContract(kind),
 }));
 

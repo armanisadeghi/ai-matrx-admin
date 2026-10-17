@@ -14,6 +14,8 @@ import {
   kindFamilyFromMetadata,
 } from "@/features/content-ir/registry/schema-source-kind-tables";
 import type { Json } from "@/types/database.types";
+// The package reader types the row JSON structurally (it has no app database types).
+import type { KindDataJson } from "@ai-matrx/rich-content/kinds/registry/kind-data-source";
 
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 export interface ShapeDetail {
@@ -96,9 +98,9 @@ export const getShapeDetail = cache(async function getShapeDetail(
     titleKey: kindTitleKeyFromMetadata(data.metadata),
     loadingComponent: metadataString(data.metadata, "loading_component"),
     dataOnly: GENERATED_CONTRACT_FAMILY_VALUES.has(
-      kindFamilyFromMetadata(data.metadata) ?? "",
+      kindFamilyFromMetadata(data.metadata as KindDataJson) ?? "",
     ),
-    family: kindFamilyFromMetadata(data.metadata),
+    family: kindFamilyFromMetadata(data.metadata as KindDataJson),
     isOwnedByViewer: data.created_by === session.user.id,
   };
 });

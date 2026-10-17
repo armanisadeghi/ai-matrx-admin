@@ -202,6 +202,8 @@ const lightCatalogRead = (op: string) =>
 
 beforeEach(() => {
   jest.resetModules();
+  // The kind registry is the package's page singleton (Symbol.for): fresh modules need a fresh one.
+  (jest.requireActual("@ai-matrx/rich-content/kinds/registry/package-kind-registry") as typeof import("@ai-matrx/rich-content/kinds/registry/package-kind-registry")).resetPackageKindRegistry();
   mockOperations.length = 0;
 });
 

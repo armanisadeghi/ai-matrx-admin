@@ -29,7 +29,7 @@ import {
   type StudyNotes,
   type StudyNotesData,
   type StudyNotesSection,
-} from "@/features/content-ir/kinds/study-notes";
+} from "@ai-matrx/rich-content/kinds/definitions/study-notes";
 import { cn } from "@/lib/utils";
 
 import { DisclosureHeader } from "@ai-matrx/design-system/controls";

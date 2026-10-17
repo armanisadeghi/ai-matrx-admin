@@ -20,14 +20,12 @@
  */
 
 import type { KindDefinition } from "@ai-matrx/content-ir";
-import {
-  flashcardsServerDataFromEnvelope,
-  flashcardsMarkdownFromValue,
-} from "../kinds/flashcard-set";
-import {
-  quizServerDataFromEnvelope,
-  quizMarkdownFromValue,
-} from "../kinds/quiz-set";
+// The core kinds are the package's (shared with Matrx 2); this list carries them so every reader of
+// SYSTEM_KIND_DEFINITIONS (the component floor, the catalog, the registry) sees the whole compiled set.
+import { FLASHCARD_AND_QUIZ_KIND_DEFINITIONS } from "@ai-matrx/rich-content/kinds/definitions/core-kind-definitions";
+import { STUDY_NOTES_KIND_DEFINITIONS } from "@ai-matrx/rich-content/kinds/definitions/study-notes";
+import { LESSON_SCRIPTS_KIND_DEFINITIONS } from "@ai-matrx/rich-content/kinds/definitions/lesson-scripts";
+import { STUDY_PACK_KIND_DEFINITIONS } from "@ai-matrx/rich-content/kinds/definitions/study-pack";
 import {
   presentationServerDataFromEnvelope,
   presentationMarkdownFromValue,
@@ -107,9 +105,6 @@ import { CMS_HTML_PAGE_RESULT_KIND_DEFINITIONS } from "../kinds/cms-html-page-re
 import { APPLET_BUILD_RESULT_KIND_DEFINITIONS } from "../kinds/applet-build-result";
 import { SPACES_RESULT_KIND_DEFINITIONS } from "../kinds/spaces-results";
 import { INGESTED_SOURCES_KIND_DEFINITIONS } from "../kinds/ingested-sources";
-import { STUDY_NOTES_KIND_DEFINITIONS } from "../kinds/study-notes";
-import { LESSON_SCRIPTS_KIND_DEFINITIONS } from "../kinds/lesson-scripts";
-import { STUDY_PACK_KIND_DEFINITIONS } from "../kinds/study-pack";
 import { SEARCH_RESULTS_KIND_DEFINITIONS } from "../kinds/search-results";
 import { RANK_KINDS_KIND_DEFINITIONS } from "../kinds/rank-kinds";
 import { RAG_KINDS_KIND_DEFINITIONS } from "../kinds/rag-kinds";
@@ -215,9 +210,10 @@ export const SYSTEM_KIND_DEFINITIONS: KindDefinition[] = [
   // The Spaces agents' answers (spaces.build / design_database / move_in): complete-only.
   ...SPACES_RESULT_KIND_DEFINITIONS,
   ...INGESTED_SOURCES_KIND_DEFINITIONS,
+  // The package's core study kinds (@ai-matrx/rich-content): study notes, and study_pack_v2
+  // (2026-08-22) — the spoken-lesson artifact + the composed pack root that delegates each member
+  // to its own kind's component.
   ...STUDY_NOTES_KIND_DEFINITIONS,
-  // study_pack_v2 (2026-08-22): the spoken-lesson artifact + the composed
-  // pack root that delegates each member to its own kind's component.
   ...LESSON_SCRIPTS_KIND_DEFINITIONS,
   ...STUDY_PACK_KIND_DEFINITIONS,
   // Search kind family (Search Kinds Pilot, 2026-08-20): the merged
@@ -267,193 +263,9 @@ export const SYSTEM_KIND_DEFINITIONS: KindDefinition[] = [
   // REFERENCES the one shape instead of inlining a copy — see
   // kinds/trust-envelope.ts.
   ...TRUST_ENVELOPE_KIND_DEFINITIONS,
-  {
-    kind: "flashcard_set",
-    schemaSource: "system",
-    tier: "eager",
-    legacyBlockType: "flashcards",
-    toLegacyServerData: flashcardsServerDataFromEnvelope,
-    toMarkdown: flashcardsMarkdownFromValue,
-    artifact: { canvasType: "flashcards" },
-    persistence: { persistStructured: true },
-    // A slide-deck skeleton described the wrong thing: a flashcard set is
-    // ONE card face plus the deck pager, which is what `flashcards` draws.
-    loadingComponent: "flashcards",
-    // Streaming partial kinds: a provisional flashcard_set routes to the real
-    // FlashcardsBlock and grows card by card (the component was streaming-
-    // first from day one — a card whose back hasn't arrived renders its
-    // per-card loader). The bridge is hand-written and never gates on
-    // status, so no `{ provisional: true }` wrapper option applies.
-    partialReady: true,
-    schema: {
-      kind: "flashcard_set",
-      fields: {
-        title: { type: "string", required: true },
-        // Transition alias — the OLD agent payload key; optional so both
-        // shapes validate until every producer emits `title`.
-        set_title: { type: "string" },
-        cards: {
-          type: "array",
-          itemKinds: ["flashcard", "enhanced_flashcard", "tiered_flashcard"],
-          required: true,
-        },
-        additionalDetails: { type: "inline_object", open: true, fields: {} },
-      },
-    },
-  },
-  {
-    kind: "flashcard",
-    schemaSource: "system",
-    tier: "eager",
-    schema: {
-      kind: "flashcard",
-      fields: {
-        front: { type: "string", required: true },
-        back: { type: "string", required: true, nullable: true },
-        card_kind: { type: "string" },
-        difficulty: { type: "string" },
-        topic: { type: "string" },
-        tags: { type: "string[]" },
-        // P0 TrustEnvelope (features/education/trust) — a REFERENCE to the
-        // registered `trust_envelope` kind, so `citations[]` is declared
-        // structure instead of residue. The live source-deck producer
-        // (agent 4b4a7d28, "Flashcard Source Deck Composer") REQUIRES this on
-        // every card and emits it with `__kind:"trust_envelope"`; the consumer
-        // has always read it (coerce-card → fc_card.metadata.trust →
-        // <SourceCitations/>). OPTIONAL because the topic-deck producer
-        // (flashcards.generate_cards) grounds nothing and emits no envelope.
-        trust: { type: "object", kind: "trust_envelope" },
-        additionalDetails: { type: "inline_object", open: true, fields: {} },
-      },
-    },
-  },
-  {
-    kind: "enhanced_flashcard",
-    schemaSource: "system",
-    tier: "eager",
-    schema: {
-      kind: "enhanced_flashcard",
-      fields: {
-        front: { type: "string", required: true },
-        back: { type: "string", required: true },
-        card_kind: { type: "string" },
-        difficulty: { type: "string" },
-        topic: { type: "string" },
-        tags: { type: "string[]" },
-        audio_explanation: { type: "string" },
-        detailed_explanation: { type: "string" },
-        // P0 TrustEnvelope — see the `flashcard` kind above.
-        trust: { type: "object", kind: "trust_envelope" },
-      },
-    },
-  },
-  {
-    kind: "tiered_flashcard",
-    schemaSource: "system",
-    tier: "eager",
-    schema: {
-      kind: "tiered_flashcard",
-      fields: {
-        front: { type: "string", required: true },
-        back: { type: "string", required: true },
-        card_kind: { type: "string" },
-        difficulty: { type: "string" },
-        topic: { type: "string" },
-        tags: { type: "string[]" },
-        subcards: { type: "array", itemKinds: ["basic_card"], required: true },
-        // P0 TrustEnvelope — see the `flashcard` kind above.
-        trust: { type: "object", kind: "trust_envelope" },
-      },
-    },
-  },
-  {
-    kind: "basic_card",
-    schemaSource: "system",
-    tier: "eager",
-    schema: {
-      kind: "basic_card",
-      fields: {
-        front: { type: "string", required: true },
-        back: { type: "string", required: true },
-        topic: { type: "string" },
-        difficulty: { type: "string" },
-      },
-    },
-  },
-
-  // ── quiz (legacy root key `quiz_title`) ─────────────────────────────────
-  // quiz_set / quiz_question are USER-AUTHORED flexible_data rows (reused as
-  // the successor kinds, not re-created). Shapes mirror those rows;
-  // `additionalDetails` follows the flashcard_set compiled-def precedent.
-  {
-    kind: "quiz_set",
-    schemaSource: "system",
-    tier: "eager",
-    legacyBlockType: "quiz",
-    toLegacyServerData: quizServerDataFromEnvelope,
-    toMarkdown: quizMarkdownFromValue,
-    artifact: { canvasType: "quiz" },
-    persistence: { persistStructured: true },
-    // Was UNDECLARED, so a quiz announced but not yet answerable fell back to
-    // the generic skeleton — the "generic loading component that was not for
-    // the specific individual kinds" Arman reported on the 2026-08-21 run.
-    loadingComponent: "quiz",
-    // Streaming partial kinds: a provisional quiz_set routes to the real
-    // MultipleChoiceQuiz and fills in question by question instead of sitting
-    // behind QuizLoading for the whole stream. Paired with `{ provisional:
-    // true }` on quizServerDataFromEnvelope — a test pins the pair.
-    partialReady: true,
-    schema: {
-      kind: "quiz_set",
-      fields: {
-        title: { type: "string", required: true },
-        // Nullable: the live Assessment agents type description ["string","null"].
-        description: { type: "string", nullable: true },
-        questions: {
-          type: "array",
-          itemKinds: ["quiz_question"],
-          required: true,
-        },
-        additionalDetails: { type: "inline_object", open: true, fields: {} },
-      },
-    },
-  },
-  {
-    kind: "quiz_question",
-    schemaSource: "system",
-    tier: "eager",
-    schema: {
-      kind: "quiz_question",
-      fields: {
-        type: { type: "string", required: true },
-        question: { type: "string", required: true },
-        options: { type: "string[]" },
-        // Nullable: written_response questions have no single canonical
-        // answer (the live Assessment agents emit null there); forcing a
-        // string made the kind-bound path fabricate one.
-        correct_answer: { type: "string", required: true, nullable: true },
-        explanation: { type: "string" },
-        // ── Registry correction, 2026-08-25 (feedback 499a460f) ──────────
-        // The live Assessment Quiz agents (education.quiz_generate /
-        // quiz_generate_from_source, also bound by the study_pack_v2 quiz +
-        // practice_test nodes) REQUIRE these per question; the kind had no
-        // room for them, so `ai.agent.produce` — which binds the KIND schema
-        // above the agent's own — silently deleted every citation. Same
-        // correction flashcard_set got on 2026-08-22. All optional: the
-        // study-pack quiz agents (Study Quiz Generator/Composer) do not
-        // ground and emit none of them.
-        acceptable_answers: { type: "string[]", nullable: true },
-        rubric: { type: "string", nullable: true },
-        depth: { type: "string" },
-        topic: { type: "string", nullable: true },
-        points: { type: "number" },
-        // P0 TrustEnvelope — a REFERENCE to the registered `trust_envelope`
-        // kind, exactly as on `flashcard`.
-        trust: { type: "object", kind: "trust_envelope" },
-        additionalDetails: { type: "inline_object", open: true, fields: {} },
-      },
-    },
-  },
+  // flashcard_set / flashcard / enhanced_flashcard / tiered_flashcard / basic_card and quiz_set /
+  // quiz_question: the package's core kinds (@ai-matrx/rich-content), listed here in their place.
+  ...FLASHCARD_AND_QUIZ_KIND_DEFINITIONS,
 
   // ── presentation (legacy root key `presentation`) ───────────────────────
   {

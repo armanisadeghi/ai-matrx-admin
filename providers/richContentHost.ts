@@ -19,7 +19,9 @@ import { useTableDoors } from "@/features/rich-content-host/useTableDoors";
 import { withIrEnvelope } from "@ai-matrx/rich-content/kinds/registry/region-envelope-memo";
 import { envelopeForCompletedFenceRegion, envelopeForCompletedXmlRegion } from "@/features/content-ir/surfaces/xml-finalize";
 import { registerKindCorrector } from "@ai-matrx/rich-content/kinds/registry/kind-correctors";
-import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
+// The app's compiled kinds register into the package's ONE kind registry at this import.
+import "@/features/content-ir/registry/kind-registry";
+import { registerKindHost } from "@ai-matrx/rich-content/kinds/register-kind-host";
 import { componentRegistry } from "@/features/content-ir/registry/component-registry";
 import { matrxContentIrHost } from "@/features/content-ir/host/ContentIrHostBoundary";
 // Fills the content-ir host's directive slot (Apply / open / copy on every directive card) before any kind renders.
@@ -63,10 +65,18 @@ configureRichContent({
     const router = useRouter();
     return (tableId: string) => router.push(`/data/${encodeURIComponent(tableId)}`);
   },
-  kindRegistry: kindRegistry as never,
   componentRegistry,
   contentIrHost: matrxContentIrHost,
   reportKindComponentIncident: reportKindComponentIncident as never,
+});
+
+// THE SAME CALL Matrx 2 makes: the package's one kind registry becomes this host's `kindRegistry`, its
+// database tiers read through this app's browser client (the signed-in person's RLS), table kinds
+// through this app's table-kind source, and its invalidation + identity-flush refreshes install once.
+// After the app bindings (above) registered the domain block dispatch, so no domain block is shadowed.
+registerKindHost({
+  kindDataClient: async () => (await import("@/utils/supabase/client")).supabase,
+  loadTableKindSource: () => import("@/features/content-ir/registry/table-kind-source"),
 });
 
 // This app's own kind correctors (the package ships none).

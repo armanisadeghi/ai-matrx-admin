@@ -14,7 +14,7 @@
 import {
   coerceStudyNotes,
   studyNotesMarkdownFromValue,
-} from "../kinds/study-notes";
+} from "@ai-matrx/rich-content/kinds/definitions/study-notes";
 
 const WIRE = {
   __kind: "study_notes",

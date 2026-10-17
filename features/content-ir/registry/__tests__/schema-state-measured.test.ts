@@ -10,8 +10,8 @@
 
 const schemaReads = new Map<string, () => Promise<unknown>>();
 
-jest.mock("../schema-source-kind-tables", () => {
-  const actual = jest.requireActual("../schema-source-kind-tables");
+jest.mock("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables", () => {
+  const actual = jest.requireActual("@ai-matrx/rich-content/kinds/registry/schema-source-kind-tables");
   return {
     ...actual,
     listKindCatalogFromTables: jest.fn(async () => [

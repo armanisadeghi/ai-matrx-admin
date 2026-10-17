@@ -35,7 +35,7 @@ import {
   selectRequestStatus,
 } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { StreamBlockAccumulator } from "@ai-matrx/chat/agents/redux/execution-system/utils/stream-block-accumulator";
-import { flashcardsServerDataFromEnvelope } from "@/features/content-ir/kinds/flashcard-set";
+import { flashcardsServerDataFromEnvelope } from "@ai-matrx/rich-content/kinds/definitions/flashcard-set";
 import { generatedSetFromEnvelope } from "../data/generated-set-from-envelope";
 
 // The user's exact payload shape: pretty-printed, __kind at BOTH levels,

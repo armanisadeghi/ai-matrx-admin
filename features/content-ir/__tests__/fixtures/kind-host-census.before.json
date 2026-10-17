@@ -1,0 +1,3175 @@
+{
+ "dispatch": {
+  "ad_creative": "domain",
+  "agent_result": "domain",
+  "ai_answer": "domain",
+  "applet_build_result": "domain",
+  "asset_grading": "domain",
+  "case_disclosure": "domain",
+  "cms_html_page_result": "domain",
+  "cms_page_build": "domain",
+  "code_block": "domain",
+  "comparison_table": "engine",
+  "contact": "domain",
+  "content_fingerprint": "domain",
+  "cooking_recipe": "engine",
+  "data_table": "domain",
+  "decision_answers": "domain",
+  "decision_tree": "engine",
+  "diagram": "engine",
+  "discussion_result": "domain",
+  "enrichment_verification": "domain",
+  "entity_card": "domain",
+  "episode_title_options": "domain",
+  "event": "domain",
+  "faq_item": "domain",
+  "flashcards": "engine",
+  "generated_audio": "domain",
+  "generated_image_set": "domain",
+  "generated_video_set": "domain",
+  "geo_coordinates": "domain",
+  "image_result": "domain",
+  "ingested_sources": "domain",
+  "intake_photo_grouping": "domain",
+  "item_presentation": "domain",
+  "item_vision_extraction": "domain",
+  "keyword_classification_batch": "domain",
+  "keyword_research": "domain",
+  "keyword_serp_intent_analysis": "domain",
+  "lesson_scripts": "domain",
+  "link_buckets": "domain",
+  "list_change_proposal": "domain",
+  "listing_draft": "domain",
+  "local_place": "domain",
+  "lot_detection": "domain",
+  "lulu_cover_dimensions": "domain",
+  "lulu_print_cost_calculation": "domain",
+  "lulu_print_job": "domain",
+  "lulu_print_product_matches": "domain",
+  "lulu_shipping_options": "domain",
+  "map_topic_proposal": "domain",
+  "masterwork_checkup_finding": "domain",
+  "masterwork_result": "domain",
+  "math_problem": "engine",
+  "media_asset": "domain",
+  "media_candidate_verdict": "domain",
+  "media_chapters": "domain",
+  "media_list_ranking_result": "domain",
+  "memory_aid": "domain",
+  "memory_hint": "domain",
+  "mermaid": "engine",
+  "news_monitor_kind": "domain",
+  "news_result": "domain",
+  "node_outcome": "domain",
+  "opening_hours": "domain",
+  "outlier_row": "domain",
+  "page_audio": "domain",
+  "page_block": "domain",
+  "page_brief": "domain",
+  "page_cleaning_report": "domain",
+  "page_heading": "domain",
+  "page_image": "domain",
+  "page_link": "domain",
+  "page_list": "domain",
+  "page_metadata": "domain",
+  "page_removal": "domain",
+  "page_section": "domain",
+  "page_video": "domain",
+  "pick_list": "domain",
+  "plan_page_draft": "domain",
+  "plan_page_outline": "domain",
+  "plan_page_research": "domain",
+  "plan_page_review": "domain",
+  "podcast_episode": "domain",
+  "post_transcript": "domain",
+  "postal_address": "domain",
+  "pr_play_menu": "domain",
+  "presentation": "engine",
+  "pricing_proposal": "domain",
+  "product_research": "domain",
+  "progress_tracker": "engine",
+  "provider_run_receipt": "domain",
+  "publish_preflight": "domain",
+  "questionnaire": "engine",
+  "quiz": "engine",
+  "rag_cross_doc_search_result": "domain",
+  "rag_search_result": "domain",
+  "rag_synthesize_result": "domain",
+  "rating": "domain",
+  "redirect_hop": "domain",
+  "refusal": "domain",
+  "relation": "domain",
+  "research": "engine",
+  "resources": "engine",
+  "retrieved_chunk": "domain",
+  "review_verdict": "domain",
+  "run_result": "domain",
+  "schema_proposal": "domain",
+  "scraped_page": "domain",
+  "scraper_batch_result": "domain",
+  "scraper_crawl_result": "domain",
+  "seo_keyword_research_result": "domain",
+  "seo_package": "domain",
+  "seo_rank_portfolio": "domain",
+  "seo_rank_reading": "domain",
+  "seo_rank_serp_landscape": "domain",
+  "seo_rank_target": "domain",
+  "seo_rank_target_removal": "domain",
+  "serial_observation_timeline": "domain",
+  "serp_placement": "domain",
+  "social_post": "domain",
+  "social_profile": "domain",
+  "source_ref": "domain",
+  "space_build_result": "domain",
+  "space_database_design": "domain",
+  "space_notion_import": "domain",
+  "structured_info": "domain",
+  "study_notes": "domain",
+  "study_pack": "domain",
+  "swipe_collection": "domain",
+  "tasks": "engine",
+  "timeline": "engine",
+  "transcript": "domain",
+  "troubleshooting": "engine",
+  "unfolding_ruling": "domain",
+  "value_assessment": "domain",
+  "video_prompt_options": "domain",
+  "video_result": "domain",
+  "web_result": "domain",
+  "web_search_results": "domain"
+ },
+ "kinds": {
+  "ad_creative": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "ad_creative",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "agent_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "agent_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "ai_answer": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "ai_answer",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "analogy": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "applet_build_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "applet_build_result",
+   "loadingComponent": null,
+   "partialReady": true,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "asset_grading": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "asset_grading",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "basic_card": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "case_disclosure": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "case_disclosure",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "checklist": {
+   "artifact": {
+    "canvasType": "tasks"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "tasks",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "checklist_item": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "citation": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "claim_evidence": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "cms_html_page_result": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "cms_html_page_result",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "cms_page_build": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "cms_page_build",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "code_block": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "code_block",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "comparison_criterion": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "comparison_set": {
+   "artifact": {
+    "canvasType": "comparison"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "comparison_table",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "contact": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "contact",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "content_fingerprint": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "content_fingerprint",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "cooking_recipe": {
+   "artifact": {
+    "canvasType": "recipe"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "cooking_recipe",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "data_table": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "data_table",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "decision_answers": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "decision_answers",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "decision_node": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "decision_tree": {
+   "artifact": {
+    "canvasType": "decision-tree"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "decision_tree",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "diagram_edge": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "diagram_node": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "diagram_spec": {
+   "artifact": {
+    "canvasType": "diagram"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "diagram",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "discussion_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "discussion_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "enhanced_flashcard": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "enrichment_verification": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "enrichment_verification",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "entity_card": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "entity_card",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "entity_mention": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "episode_title_option": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "episode_title_options": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "episode_title_options",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "event": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "event",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "evidence_source": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "faq_item": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "faq_item",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "flashcard": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "flashcard_card_ref_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "flashcard_deck_cards_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "flashcard_set": {
+   "artifact": {
+    "canvasType": "flashcards"
+   },
+   "declaredLoading": "flashcards",
+   "known": true,
+   "legacyBlockType": "flashcards",
+   "loadingComponent": "flashcards",
+   "partialReady": true,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "generated_audio": {
+   "artifact": null,
+   "declaredLoading": "media",
+   "known": true,
+   "legacyBlockType": "generated_audio",
+   "loadingComponent": "media",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "generated_image": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "generated_image_set": {
+   "artifact": null,
+   "declaredLoading": "gallery",
+   "known": true,
+   "legacyBlockType": "generated_image_set",
+   "loadingComponent": "gallery",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "generated_video": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "generated_video_set": {
+   "artifact": null,
+   "declaredLoading": "media",
+   "known": true,
+   "legacyBlockType": "generated_video_set",
+   "loadingComponent": "media",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "geo_coordinates": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "geo_coordinates",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "glossary_term": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "image_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "image_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "ingested_chunk": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "ingested_sources": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "ingested_sources",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "intake_photo_grouping": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "intake_photo_grouping",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "item_presentation": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "item_presentation",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": true
+  },
+  "item_vision_extraction": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "item_vision_extraction",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "keyword_classification_batch_v1": {
+   "artifact": null,
+   "declaredLoading": "table",
+   "known": true,
+   "legacyBlockType": "keyword_classification_batch",
+   "loadingComponent": "table",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "keyword_classification_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "keyword_list": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "keyword_relationship_research": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "keyword_research",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "keyword_serp_intent_analysis_v1": {
+   "artifact": null,
+   "declaredLoading": "document",
+   "known": true,
+   "legacyBlockType": "keyword_serp_intent_analysis",
+   "loadingComponent": "document",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "lesson_script_section": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "lesson_script_set": {
+   "artifact": null,
+   "declaredLoading": "document",
+   "known": true,
+   "legacyBlockType": "lesson_scripts",
+   "loadingComponent": "document",
+   "partialReady": true,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "link_buckets": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "link_buckets",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "list_change_proposal_item_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": true
+  },
+  "list_change_proposal_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "list_change_proposal",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "list_change_target_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "listing_draft": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "listing_draft",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "local_place": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "local_place",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "locus": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "lot_detection": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "lot_detection",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "lulu_cover_dimensions": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "lulu_cover_dimensions",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "lulu_print_cost_calculation": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "lulu_print_cost_calculation",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "lulu_print_job": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "lulu_print_job",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "lulu_print_product_matches": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "lulu_print_product_matches",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "lulu_shipping_options": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "lulu_shipping_options",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "map_topic_node_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "map_topic_proposal_v1": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "map_topic_proposal",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "masterwork_checkup_finding": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "masterwork_checkup_finding",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "masterwork_checkup_rule": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "masterwork_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "masterwork_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "masterwork_rule_draft": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "math_problem": {
+   "artifact": {
+    "canvasType": "math_problem"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "math_problem",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "math_solution": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "math_solution_step": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "media_asset": {
+   "artifact": null,
+   "declaredLoading": "media",
+   "known": true,
+   "legacyBlockType": "media_asset",
+   "loadingComponent": "media",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "media_candidate_verdict": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "media_candidate_verdict",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "media_chapter": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "media_chapters": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "media_chapters",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "media_list_ranking_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "media_list_ranking_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "memory_aid": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "memory_aid",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "memory_hint": {
+   "artifact": null,
+   "declaredLoading": "card",
+   "known": true,
+   "legacyBlockType": "memory_hint",
+   "loadingComponent": "card",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "memory_palace": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "mermaid_diagram": {
+   "artifact": {
+    "canvasType": "mermaid"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "mermaid",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "mnemonic": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "news_angle_set": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_monitor_kind",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "news_client_context": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_monitor_kind",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "news_digest": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_monitor_kind",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "news_opportunity_report": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_monitor_kind",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "news_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "news_triage": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_monitor_kind",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "newsworthiness_verdict": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "news_monitor_kind",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "node_outcome": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "node_outcome",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "notable_timestamp": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "opening_hours": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "opening_hours",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "outlier_row": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "outlier_row",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_audio": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_audio",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_block": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_block",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_brief": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "page_brief",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "page_cleaning_report": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_cleaning_report",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_heading": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_heading",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_image": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_image",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_link": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_link",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_list": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_list",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_metadata": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_metadata",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_removal": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_removal",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_section": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_section",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "page_video": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "page_video",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "pick_list": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "pick_list",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_concept_name": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_deferred_topic": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_draft_section": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_family_count": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_page_draft": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "plan_page_draft",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "plan_page_outline": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "plan_page_outline",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "plan_page_research": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "plan_page_research",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "plan_page_review": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "plan_page_review",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "plan_planned_link": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_research_source": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_review_issue": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "plan_shape_recommendation": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "podcast_episode": {
+   "artifact": null,
+   "declaredLoading": "media",
+   "known": true,
+   "legacyBlockType": "podcast_episode",
+   "loadingComponent": "media",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "podcast_speaker": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "post_transcript": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "post_transcript",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "postal_address": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "postal_address",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "pr_diagnosis": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "pr_peg_check": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "pr_play": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "pr_play_action": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "pr_play_menu": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "pr_play_menu",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "presentation_deck": {
+   "artifact": {
+    "canvasType": "presentation"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "presentation",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "presentation_slide": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "pricing_proposal": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "pricing_proposal",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "product_research": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "product_research",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "progress_phase": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "progress_step": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "progress_tracker": {
+   "artifact": {
+    "canvasType": "progress"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "progress_tracker",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "provider_run_receipt": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "provider_run_receipt",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "publish_preflight": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "publish_preflight",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "questionnaire": {
+   "artifact": {
+    "canvasType": "questionnaire"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "questionnaire",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "questionnaire_option": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "questionnaire_question": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "quiz_question": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "quiz_set": {
+   "artifact": {
+    "canvasType": "quiz"
+   },
+   "declaredLoading": "quiz",
+   "known": true,
+   "legacyBlockType": "quiz",
+   "loadingComponent": "quiz",
+   "partialReady": true,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "rag_cross_doc_search_result": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "rag_cross_doc_search_result",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "rag_search_result": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "rag_search_result",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "rag_synthesize_result": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "rag_synthesize_result",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "rating": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "rating",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "recipe_ingredient": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "recipe_step": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "redirect_hop": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "redirect_hop",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "refusal": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "refusal",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "relation": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "relation",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "research_challenge": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "research_finding": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "research_recommendation": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "research_report": {
+   "artifact": {
+    "canvasType": "research"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "research",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "research_section": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "research_theme": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "resource_category": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "resource_collection": {
+   "artifact": {
+    "canvasType": "resources"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "resources",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "resource_item": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "retrieved_chunk": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "retrieved_chunk",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "review_verdict": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "review_verdict",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "run_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "run_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "schema_proposal": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "schema_proposal",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "scraped_page": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "scraped_page",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "scraper_batch_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "scraper_batch_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "scraper_crawl_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "scraper_crawl_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "seo_authority_route_analysis": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "seo_keyword_relationship_research_result": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "seo_keyword_research_result",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "seo_package": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "seo_package",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "seo_rank_portfolio": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "seo_rank_portfolio",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "seo_rank_reading": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "seo_rank_reading",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "seo_rank_serp_landscape": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "seo_rank_serp_landscape",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "seo_rank_target": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "seo_rank_target",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "seo_rank_target_removal": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "seo_rank_target_removal",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "serial_observation_timeline": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "serial_observation_timeline",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "serp_placement": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "serp_placement",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "social_post": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "social_post",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "social_profile": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "social_profile",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "source_ref": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "source_ref",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "space_build_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "space_build_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "space_database_design": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "space_database_design",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "space_notion_import": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "space_notion_import",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "structured_info": {
+   "artifact": {
+    "canvasType": "structured_info"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "structured_info",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "structured_info_item": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "structured_info_section": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "study_notes": {
+   "artifact": null,
+   "declaredLoading": "notes",
+   "known": true,
+   "legacyBlockType": "study_notes",
+   "loadingComponent": "notes",
+   "partialReady": true,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "study_notes_section": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "study_pack_set": {
+   "artifact": null,
+   "declaredLoading": "document",
+   "known": true,
+   "legacyBlockType": "study_pack",
+   "loadingComponent": "document",
+   "partialReady": true,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "swipe_collection": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "swipe_collection",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "task_item": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "task_list": {
+   "artifact": {
+    "canvasType": "tasks"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "tasks",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "tiered_flashcard": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "timeline": {
+   "artifact": {
+    "canvasType": "timeline"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "timeline",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "timeline_event": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "timeline_period": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "topic_relevance": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "transcript": {
+   "artifact": {
+    "canvasType": "transcript"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "transcript",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "transcript_segment": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "transcript_usage": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "troubleshooting_guide": {
+   "artifact": {
+    "canvasType": "troubleshooting"
+   },
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "troubleshooting",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "troubleshooting_issue": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "troubleshooting_link": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "troubleshooting_solution": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "troubleshooting_step": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "trust_envelope": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "unfolding_ruling": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "unfolding_ruling",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "value_assessment": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "value_assessment",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "video_prompt_options": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "video_prompt_options",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  },
+  "video_prompt_variation": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": null,
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "video_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "video_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "video_transcript_research": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": null,
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": false,
+   "toMarkdown": false
+  },
+  "web_result": {
+   "artifact": null,
+   "declaredLoading": null,
+   "known": true,
+   "legacyBlockType": "web_result",
+   "loadingComponent": null,
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": false
+  },
+  "web_search_results": {
+   "artifact": null,
+   "declaredLoading": "list",
+   "known": true,
+   "legacyBlockType": "web_search_results",
+   "loadingComponent": "list",
+   "partialReady": null,
+   "persistence": {
+    "persistStructured": true
+   },
+   "renderable": true,
+   "toLegacyServerData": true,
+   "toMarkdown": true
+  }
+ },
+ "render": {
+  "flashcard_set": {
+   "buttons": [
+    "1",
+    "Canvas",
+    "Full",
+    "Fullscreen mode",
+    "Open in canvas",
+    "Print",
+    "Print flashcards",
+    "Save deck",
+    "Save deck"
+   ]
+  },
+  "quiz_set": {
+   "buttons": [
+    "Cells(1 question)",
+    "Download quiz as file",
+    "Focus mode",
+    "Import quiz from file",
+    "Make flashcards from this quiz",
+    "Mitochondria",
+    "Nucleus",
+    "Open in Canvas",
+    "Print quiz",
+    "View Results \u2192",
+    "\u2190 Previous"
+   ]
+  }
+ }
+}

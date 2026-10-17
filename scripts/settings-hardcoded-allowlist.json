@@ -4949,10 +4949,6 @@
       "name": "POLL_INTERVAL_MS"
     },
     {
-      "file": "matrx-frontend/features/content-ir/registry/kind-registry.ts",
-      "name": "MISS_TTL_MS"
-    },
-    {
       "file": "matrx-frontend/features/content-ir/studio/components/ShapeStreamTab.tsx",
       "name": "TICK_MS"
     },

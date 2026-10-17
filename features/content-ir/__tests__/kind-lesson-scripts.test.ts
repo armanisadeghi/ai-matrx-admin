@@ -18,8 +18,8 @@ import { ParseSession } from "@ai-matrx/content-ir";
 import type { KindSchema } from "@ai-matrx/content-ir";
 import type { SchemaResolver } from "@ai-matrx/content-ir";
 import { SYSTEM_KIND_DEFINITIONS } from "../registry/system-kinds";
-import { lessonScriptsServerDataFromEnvelope } from "../kinds/lesson-scripts";
-import { studyPackServerDataFromEnvelope } from "../kinds/study-pack";
+import { lessonScriptsServerDataFromEnvelope } from "@ai-matrx/rich-content/kinds/definitions/lesson-scripts";
+import { studyPackServerDataFromEnvelope } from "@ai-matrx/rich-content/kinds/definitions/study-pack";
 
 const resolver: SchemaResolver = {
   get: (kind: string): KindSchema | undefined =>
