@@ -17,7 +17,6 @@
 import type { paths } from "@ai-matrx/api/types";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
-import { selectOrganizationIds } from "@/features/scopes/redux/selectors/tree";
 
 /**
  * 🚨 LOCAL PATH LITERAL — the generated api-types do not carry the system lane
@@ -44,17 +43,6 @@ function parseRun(value: unknown): SystemRun | null {
     : null;
 }
 
-/** The subject's organization when the caller belongs to it, else undefined (the active organization applies); unknown membership keeps it. */
-export function lookupOrganizationScope(
-  organizationId: string | undefined,
-  memberOrganizationIds: readonly string[],
-): string | undefined {
-  if (!organizationId) return undefined;
-  // The organization list not loaded yet is "unknown", not "none": keep naming it.
-  if (memberOrganizationIds.length === 0) return organizationId;
-  return memberOrganizationIds.includes(organizationId) ? organizationId : undefined;
-}
-
 /** The latest (active or finished) run of `key` about `subject`, or null. */
 export async function lookupSystemRun(
   dispatch: AppDispatch,
@@ -65,20 +53,14 @@ export async function lookupSystemRun(
 ): Promise<SystemRun | null> {
   // The run lives in the SUBJECT's organization's copy of the workflow, so the
   // lookup names it (a GET otherwise goes out with no organization and the
-  // server cannot tell which copy to read) - but only an organization the
-  // caller belongs to. The server refuses a request naming any other with
-  // `organization_forbidden`, and the lookup only ever answers the caller's OWN
-  // runs, so a viewer outside the subject's organization (a public brand, a
-  // platform admin) asks under their own active organization and gets "no run".
-  const memberOrgIds = dispatch((_dispatch, getState) => selectOrganizationIds(getState()));
-  const scopeOrganizationId = lookupOrganizationScope(organizationId, memberOrgIds);
+  // server cannot tell which copy to read).
   const result = await dispatch(
     callApi({
       path: SYSTEM_RUNS_PATH,
       method: "GET",
       pathParams: { key } as never,
       queryParams: { subject },
-      ...(scopeOrganizationId ? { scopeOverrides: { organization_id: scopeOrganizationId } } : {}),
+      ...(organizationId ? { scopeOverrides: { organization_id: organizationId } } : {}),
     }),
   );
   if (result.error) throw new Error(result.error.message || failure);
