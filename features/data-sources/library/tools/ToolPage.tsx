@@ -170,6 +170,15 @@ export function ToolPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.data, callId]);
 
+  // A stored call page refills the form with what that call was asked (once, from its own inputs).
+  const refilled = useRef<string | null>(null);
+  useEffect(() => {
+    const id = callId && view?.call_id === callId ? callId : null;
+    if (!id || refilled.current === id || !view?.inputs) return;
+    refilled.current = id;
+    setValues(view.inputs);
+  }, [callId, view]);
+
   const stop = call.stop;
   const clientError = call.clientError;
 
