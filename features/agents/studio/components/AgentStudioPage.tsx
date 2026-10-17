@@ -163,9 +163,14 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   useEffect(() => {
     if (!state.buildId) return;
     let live = true;
-    void getFactoryBuild(state.buildId).then((d) => {
-      if (live) setBuild(d?.state ?? null);
-    });
+    void getFactoryBuild(state.buildId).then(
+      (d) => {
+        if (live) setBuild(d?.state ?? null);
+      },
+      (e: unknown) => {
+        if (live) toast.error("The build's cases did not load", { description: e instanceof Error ? e.message : String(e) });
+      },
+    );
     return () => {
       live = false;
     };
