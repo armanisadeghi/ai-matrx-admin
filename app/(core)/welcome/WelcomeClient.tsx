@@ -20,6 +20,7 @@ import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
 import { WelcomeDoor } from "@/features/marketing/smart-add/welcome/WelcomeDoor";
+import { MeetMatrx } from "@/features/onboarding/meet-matrx/meetMatrx";
 
 interface WelcomeOption {
   label: string;
@@ -137,20 +138,17 @@ export function WelcomeClient({ firstName, newUser }: { firstName: string | null
   return (
     <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
       <div className="h-full overflow-y-auto">
-        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-center px-5 py-10">
+        <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col justify-center px-5 py-12 sm:py-16">
           {/* A new account: "here's what we found" from the login alone, the tiles below it. */}
           <WelcomeDoor showDoor={newUser}>
-          <div className="mx-auto w-full max-w-3xl">
+          {/* Meet Matrx: the studios and building blocks first (Arman, 2026-10-17), then a place to start. */}
+          <MeetMatrx eyebrow={firstName ? `Welcome, ${firstName}` : "Welcome to AI Matrx"} />
+          <div className="mx-auto mt-14 w-full max-w-3xl">
           <header className="text-center">
-            <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">
-              {firstName ? `Welcome, ${firstName}` : "Welcome to AI Matrx"}
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-              Pick a place to start. You can explore everything else later.
-            </p>
+            <h2 className="text-xl font-semibold text-foreground">Or pick a place to start</h2>
           </header>
 
-          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {OPTIONS.map((option) => {
               const Icon = option.icon;
               const isTarget = navigatingTo === option.href && isNavPending;
