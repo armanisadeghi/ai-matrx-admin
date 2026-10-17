@@ -1,0 +1,1837 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0312",
+ "version": 1,
+ "title": "Course Creator Hub",
+ "description": "Build, film, sell and launch an online course with modules, lessons and students.",
+ "forWho": "Educators selling courses and cohorts",
+ "icon": {
+  "emoji": "🎓"
+ },
+ "cover": {
+  "url": "gallery:photo-golden-palms",
+  "offsetY": 50
+ },
+ "category": "education",
+ "tags": [
+  "course",
+  "lessons",
+  "students",
+  "launch"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-course-creator-hub",
+  "catalogueId": "SP0312",
+  "useCase": "Lorna Fitzgerald-Okeke teaches adult beginners and uses this to see which lessons still need filming, how students are progressing and where the next launch stands.",
+  "industry": "education",
+  "vertical": "Course production",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Cadence Keyboard Academy",
+   "describes": "A small online school teaching adult beginners to play piano through short video lessons.",
+   "address": {
+    "line1": "26 Beckett Alley",
+    "city": "Nashville",
+    "region": "TN",
+    "postalCode": "37203",
+    "country": "US"
+   },
+   "phone": "(615) 555-0142",
+   "website": "cadencekeys.net",
+   "email": "learn@cadencekeys.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-course-creator-hub",
+  "tables": [
+   {
+    "token": "course",
+    "name": "Courses",
+    "labelSingular": "Course",
+    "labelPlural": "Courses",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "graduation-cap",
+    "titleField": "course_name",
+    "describes": "Each course you sell.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "course_name",
+      "label": "Course",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Planning",
+       "Producing",
+       "Live",
+       "Retired"
+      ],
+      "choiceColors": {
+       "Planning": "slate",
+       "Producing": "blue",
+       "Live": "green",
+       "Retired": "red"
+      },
+      "required": true,
+      "default": "Planning"
+     },
+     {
+      "key": "price",
+      "label": "Price",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000
+       }
+      ]
+     },
+     {
+      "key": "promise",
+      "label": "Promise",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "modules",
+      "label": "Modules",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "module",
+      "multi": true
+     },
+     {
+      "key": "students",
+      "label": "Students",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "student",
+      "multi": true
+     },
+     {
+      "key": "launches",
+      "label": "Launches",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "launch",
+      "multi": true
+     },
+     {
+      "key": "student_count",
+      "label": "Enrolled count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "students",
+      "pick": "student_name",
+      "agg": "count"
+     },
+     {
+      "key": "module_count",
+      "label": "Module count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "modules",
+      "pick": "module_title",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "co1",
+      "values": {
+       "course_name": "Piano From Scratch",
+       "status": "Live",
+       "price": 197,
+       "promise": "Play three songs in eight weeks",
+       "modules": [
+        "m1",
+        "m2",
+        "m3"
+       ],
+       "students": [
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5"
+       ],
+       "launches": [
+        "ln1"
+       ]
+      }
+     },
+     {
+      "key": "co2",
+      "values": {
+       "course_name": "Chords for Songwriters",
+       "status": "Producing",
+       "price": 129,
+       "promise": "Write a song using only four chords",
+       "modules": [
+        "m4",
+        "m5"
+       ],
+       "students": [
+        "s6"
+       ],
+       "launches": [
+        "ln2"
+       ]
+      }
+     },
+     {
+      "key": "co3",
+      "values": {
+       "course_name": "Sight Reading Bootcamp",
+       "status": "Planning",
+       "price": 89,
+       "promise": "Read simple scores without counting lines",
+       "modules": [],
+       "students": [],
+       "launches": [
+        "ln3"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "token": "module",
+    "name": "Modules",
+    "labelSingular": "Module",
+    "labelPlural": "Modules",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "layers",
+    "titleField": "module_title",
+    "describes": "Groups of lessons inside a course.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "module_title",
+      "label": "Module",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "order",
+      "label": "Order",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 1
+       },
+       {
+        "kind": "max",
+        "value": 50
+       }
+      ]
+     },
+     {
+      "key": "course",
+      "label": "Course",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "course",
+      "relationMax": 1
+     },
+     {
+      "key": "lessons",
+      "label": "Lessons",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "lesson",
+      "multi": true
+     },
+     {
+      "key": "lesson_count",
+      "label": "Lesson count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "lessons",
+      "pick": "lesson_title",
+      "agg": "count",
+      "filter": {
+       "status": "Published"
+      }
+     }
+    ],
+    "rows": [
+     {
+      "key": "m1",
+      "values": {
+       "course": "co1",
+       "order": 1,
+       "module_title": "Hands, posture and the keyboard",
+       "lessons": [
+        "l1",
+        "l2",
+        "l3"
+       ]
+      }
+     },
+     {
+      "key": "m2",
+      "values": {
+       "course": "co1",
+       "order": 2,
+       "module_title": "Your first scales",
+       "lessons": [
+        "l4",
+        "l5"
+       ]
+      }
+     },
+     {
+      "key": "m3",
+      "values": {
+       "course": "co1",
+       "order": 3,
+       "module_title": "Playing a real song",
+       "lessons": [
+        "l6",
+        "l7"
+       ]
+      }
+     },
+     {
+      "key": "m4",
+      "values": {
+       "course": "co2",
+       "order": 1,
+       "module_title": "The four chords",
+       "lessons": [
+        "l8",
+        "l9"
+       ]
+      }
+     },
+     {
+      "key": "m5",
+      "values": {
+       "course": "co2",
+       "order": 2,
+       "module_title": "Turning chords into a song",
+       "lessons": [
+        "l10",
+        "l11",
+        "l12"
+       ]
+      }
+     }
+    ],
+    "independentOf": {
+     "course": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "lesson",
+    "name": "Lessons",
+    "labelSingular": "Lesson",
+    "labelPlural": "Lessons",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "play-circle",
+    "titleField": "lesson_title",
+    "describes": "Each lesson with its format and production status.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "lesson_title",
+      "label": "Lesson",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "format",
+      "label": "Format",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Video",
+       "Text",
+       "Quiz",
+       "Worksheet"
+      ],
+      "choiceColors": {
+       "Video": "slate",
+       "Text": "blue",
+       "Quiz": "amber",
+       "Worksheet": "violet"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Idea",
+       "Scripting",
+       "Filming",
+       "Editing",
+       "Published"
+      ],
+      "choiceColors": {
+       "Idea": "slate",
+       "Scripting": "blue",
+       "Filming": "amber",
+       "Editing": "violet",
+       "Published": "green"
+      },
+      "required": true,
+      "default": "Idea"
+     },
+     {
+      "key": "length",
+      "label": "Length",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "module",
+      "label": "Module",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "module",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "l1",
+      "values": {
+       "module": "m1",
+       "lesson_title": "Finding middle C",
+       "format": "Video",
+       "status": "Published",
+       "length": "3:40",
+       "due_on": "@today-90d"
+      }
+     },
+     {
+      "key": "l2",
+      "values": {
+       "module": "m1",
+       "lesson_title": "Sitting at the keyboard",
+       "format": "Video",
+       "status": "Published",
+       "length": "4:15",
+       "due_on": "@today-88d"
+      }
+     },
+     {
+      "key": "l3",
+      "values": {
+       "module": "m1",
+       "lesson_title": "Hand position worksheet",
+       "format": "Worksheet",
+       "status": "Published",
+       "length": "—",
+       "due_on": "@today-86d"
+      }
+     },
+     {
+      "key": "l4",
+      "values": {
+       "module": "m2",
+       "lesson_title": "The C major scale",
+       "format": "Video",
+       "status": "Published",
+       "length": "6:20",
+       "due_on": "@today-70d"
+      }
+     },
+     {
+      "key": "l5",
+      "values": {
+       "module": "m2",
+       "lesson_title": "Scale speed quiz",
+       "format": "Quiz",
+       "status": "Published",
+       "length": "—",
+       "due_on": "@today-68d"
+      }
+     },
+     {
+      "key": "l6",
+      "values": {
+       "module": "m3",
+       "lesson_title": "Reading your first melody",
+       "format": "Video",
+       "status": "Published",
+       "length": "7:05",
+       "due_on": "@today-50d"
+      }
+     },
+     {
+      "key": "l7",
+      "values": {
+       "module": "m3",
+       "lesson_title": "Left hand basics",
+       "format": "Video",
+       "status": "Editing",
+       "length": "5:50",
+       "due_on": "@today+2d"
+      }
+     },
+     {
+      "key": "l8",
+      "values": {
+       "module": "m4",
+       "lesson_title": "I, IV, V and vi explained",
+       "format": "Video",
+       "status": "Filming",
+       "length": "8:10",
+       "due_on": "@today+9d"
+      }
+     },
+     {
+      "key": "l9",
+      "values": {
+       "module": "m4",
+       "lesson_title": "Chord inversions practice",
+       "format": "Worksheet",
+       "status": "Scripting",
+       "length": "—",
+       "due_on": "@today+12d"
+      }
+     },
+     {
+      "key": "l10",
+      "values": {
+       "module": "m5",
+       "lesson_title": "Finding a melody over chords",
+       "format": "Video",
+       "status": "Scripting",
+       "length": "9:00",
+       "due_on": "@today+18d"
+      }
+     },
+     {
+      "key": "l11",
+      "values": {
+       "module": "m5",
+       "lesson_title": "Song structure quiz",
+       "format": "Quiz",
+       "status": "Idea",
+       "length": "—",
+       "due_on": "@today+24d"
+      }
+     },
+     {
+      "key": "l12",
+      "values": {
+       "module": "m5",
+       "lesson_title": "Recording your demo",
+       "format": "Text",
+       "status": "Idea",
+       "length": "—",
+       "due_on": "@today+28d"
+      }
+     }
+    ],
+    "independentOf": {
+     "module": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "student",
+    "name": "Students",
+    "labelSingular": "Student",
+    "labelPlural": "Students",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "users",
+    "titleField": "student_name",
+    "describes": "People enrolled in a course.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "student_name",
+      "label": "Student",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "state",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Active",
+       "Completed",
+       "Refunded"
+      ],
+      "choiceColors": {
+       "Active": "green",
+       "Completed": "slate",
+       "Refunded": "red"
+      },
+      "required": true,
+      "default": "Active"
+     },
+     {
+      "key": "progress",
+      "label": "Progress",
+      "parityType": "percent",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "enrolled_on",
+      "label": "Enrolled",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "course",
+      "label": "Course",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "course",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "s1",
+      "values": {
+       "course": "co1",
+       "student_name": "Beatrix Halloran",
+       "state": "Active",
+       "progress": 64,
+       "enrolled_on": "@today-60d",
+       "email": "beatrix@learnmail.net"
+      }
+     },
+     {
+      "key": "s2",
+      "values": {
+       "course": "co1",
+       "student_name": "Kwame Dlamini",
+       "state": "Completed",
+       "progress": 100,
+       "enrolled_on": "@today-100d",
+       "email": "kwame@learnmail.net"
+      }
+     },
+     {
+      "key": "s3",
+      "values": {
+       "course": "co1",
+       "student_name": "Oksana Peltier",
+       "state": "Active",
+       "progress": 38,
+       "enrolled_on": "@today-30d",
+       "email": "oksana@learnmail.net"
+      }
+     },
+     {
+      "key": "s4",
+      "values": {
+       "course": "co1",
+       "student_name": "Reuben Castellanos",
+       "state": "Active",
+       "progress": 82,
+       "enrolled_on": "@today-75d",
+       "email": "reuben@learnmail.net"
+      }
+     },
+     {
+      "key": "s5",
+      "values": {
+       "course": "co1",
+       "student_name": "Linnea Abara",
+       "state": "Refunded",
+       "progress": 12,
+       "enrolled_on": "@today-45d",
+       "email": "linnea@learnmail.net"
+      }
+     },
+     {
+      "key": "s6",
+      "values": {
+       "course": "co2",
+       "student_name": "Fitzgerald Moon",
+       "state": "Active",
+       "progress": 20,
+       "enrolled_on": "@today-10d",
+       "email": "fitzgerald@learnmail.net"
+      }
+     }
+    ],
+    "independentOf": {
+     "course": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "launch",
+    "name": "Launches",
+    "labelSingular": "Launch",
+    "labelPlural": "Launches",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "rocket",
+    "titleField": "launch_name",
+    "describes": "Time-boxed sales pushes.",
+    "subject": "thing",
+    "before": [
+     [
+      "opens_on",
+      "closes_on"
+     ]
+    ],
+    "fields": [
+     {
+      "key": "launch_name",
+      "label": "Launch",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "opens_on",
+      "label": "Opens",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "closes_on",
+      "label": "Closes",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "target",
+      "label": "Target sales",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "course",
+      "label": "Course",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "course",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "ln1",
+      "values": {
+       "course": "co1",
+       "launch_name": "Autumn enrolment round",
+       "opens_on": "@today-120d",
+       "closes_on": "@today-100d",
+       "target": 80
+      }
+     },
+     {
+      "key": "ln2",
+      "values": {
+       "course": "co2",
+       "launch_name": "Chords pre-launch",
+       "opens_on": "@today+14d",
+       "closes_on": "@today+28d",
+       "target": 60
+      }
+     },
+     {
+      "key": "ln3",
+      "values": {
+       "course": "co3",
+       "launch_name": "Waitlist and beta",
+       "opens_on": "@today+60d",
+       "closes_on": "@today+80d",
+       "target": 40
+      }
+     }
+    ],
+    "independentOf": {
+     "course": "Either record can be created or change status before the other."
+    }
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each module belongs to one course.",
+    "fromTable": "module",
+    "fromField": "course",
+    "toTable": "course",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "module_by_course"
+   },
+   {
+    "describes": "A course lists its modules.",
+    "fromTable": "course",
+    "fromField": "modules",
+    "toTable": "module",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "course_from_modules"
+   },
+   {
+    "describes": "Each lesson belongs to one module.",
+    "fromTable": "lesson",
+    "fromField": "module",
+    "toTable": "module",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "lesson_by_module"
+   },
+   {
+    "describes": "A module lists its lessons.",
+    "fromTable": "module",
+    "fromField": "lessons",
+    "toTable": "lesson",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "module_from_lessons"
+   },
+   {
+    "describes": "Each student belongs to one course.",
+    "fromTable": "student",
+    "fromField": "course",
+    "toTable": "course",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "student_by_course"
+   },
+   {
+    "describes": "A course lists its students.",
+    "fromTable": "course",
+    "fromField": "students",
+    "toTable": "student",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "course_from_students"
+   },
+   {
+    "describes": "Each launch belongs to one course.",
+    "fromTable": "launch",
+    "fromField": "course",
+    "toTable": "course",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "launch_by_course"
+   },
+   {
+    "describes": "A course lists its launches.",
+    "fromTable": "course",
+    "fromField": "launches",
+    "toTable": "launch",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "course_from_launches"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "student_signup",
+    "name": "Enrol a student",
+    "describes": "Add a new student to a course.",
+    "audience": "staff",
+    "table": "student",
+    "fields": [
+     {
+      "fieldKey": "student_name",
+      "ask": "Who is the student?",
+      "required": true
+     },
+     {
+      "fieldKey": "course",
+      "ask": "Which course?",
+      "required": true
+     },
+     {
+      "fieldKey": "email",
+      "ask": "What email do they use?",
+      "required": true
+     }
+    ],
+    "submitLabel": "Enrol",
+    "confirmation": "Thanks. They are enrolled as Active."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_launch",
+    "name": "All launches",
+    "table": "launch",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_student",
+    "name": "All students",
+    "table": "student",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_lesson",
+    "name": "All lessons",
+    "table": "lesson",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_module",
+    "name": "All modules",
+    "table": "module",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_course",
+    "name": "All courses",
+    "table": "course",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "course_board",
+    "name": "Courses by status",
+    "table": "course",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "lesson_board",
+    "name": "Production board",
+    "table": "lesson",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "lesson_tl",
+    "name": "Production calendar",
+    "table": "lesson",
+    "kind": "calendar",
+    "dateField": "due_on",
+    "allDay": true
+   },
+   {
+    "token": "launch_tl",
+    "name": "Launch timeline",
+    "table": "launch",
+    "kind": "timeline",
+    "startField": "opens_on",
+    "endField": "closes_on"
+   },
+   {
+    "token": "student_board",
+    "name": "Students by status",
+    "table": "student",
+    "kind": "kanban",
+    "groupBy": "state"
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Course assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "lesson",
+     "describes": "Every lesson with its module, format and status."
+    },
+    {
+     "name": "related_tables",
+     "table": "module",
+     "describes": "The modules the lessons sit inside."
+    }
+   ],
+   "question": {
+    "ask": "How many lessons are published?",
+    "whyItMatters": "Lorna counts published lessons before announcing a course update.",
+    "expect": {
+     "table": "lesson",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Published"
+     },
+     "answer": 6,
+     "unit": "lessons"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open courses by status.",
+    "action": {
+     "kind": "open",
+     "surface": "course_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "course_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open production board.",
+    "action": {
+     "kind": "open",
+     "surface": "lesson_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "lesson_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open production calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "lesson_tl"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "lesson_tl",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "cadencekeys.net",
+    "learnmail.net"
+   ],
+   "fictionalStreets": [
+    "Beckett Alley"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "course-creator-hub",
+   "parent": null,
+   "title": "Course Creator Hub",
+   "icon": {
+    "emoji": "🎓"
+   },
+   "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Plan the course, produce lessons module by module, enrol students and time your launches. Open Production for what still needs filming."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:lesson-script"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:launch-plan"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:student-support"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Courses"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "course",
+       "view": "course_board"
+      },
+      "inline": true,
+      "title": "Courses",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All courses",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Lesson production"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "lesson",
+       "view": "lesson_board"
+      },
+      "inline": true,
+      "title": "Lesson production",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Pipeline",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "due_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "By module",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Students"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "student",
+       "view": "student_board"
+      },
+      "inline": true,
+      "title": "Students",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "state"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All students",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Launches"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "launch",
+       "view": "launch_tl"
+      },
+      "inline": true,
+      "title": "Launches",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tl",
+        "name": "Timeline",
+        "layout": "timeline",
+        "icon": "ChartGantt",
+        "dateField": "opens_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All launches",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-tl"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Modules"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "module",
+       "view": "all_module"
+      },
+      "inline": true,
+      "title": "Modules",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tbl",
+        "name": "All modules",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "order",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-tbl"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "course-creator-hub",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "lesson",
+           "view": "all_lesson"
+          },
+          "inline": true,
+          "title": "Lessons by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Lessons by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "lesson",
+           "view": "all_lesson"
+          },
+          "inline": true,
+          "title": "Lessons by format",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Lessons by format",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "format",
+             "op": "count"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "student",
+           "view": "all_student"
+          },
+          "inline": true,
+          "title": "Students by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Students by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "state",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "To produce"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "lesson",
+       "view": "all_lesson"
+      },
+      "inline": true,
+      "title": "To produce",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-p",
+        "name": "Not yet published",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": [
+          "Idea",
+          "Scripting",
+          "Filming",
+          "Editing"
+         ]
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-p"
+     }
+    }
+   ]
+  },
+  {
+   "key": "lesson-script",
+   "parent": "course-creator-hub",
+   "title": "Lesson script outline",
+   "icon": {
+    "emoji": "🎬"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Open with the result the student will have in five minutes."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Show the move once at full speed, then slowly."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Let them try it while you wait on screen."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Name the one common mistake."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "End with the next lesson's hook."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "launch-plan",
+   "parent": "course-creator-hub",
+   "title": "Launch plan",
+   "icon": {
+    "emoji": "🚀"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Before"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Waitlist email series written"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Sales page proofed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Bonus ready"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Open cart"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Launch email sent"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Live Q and A booked"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Daily check of replies"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "After"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Close cart and thank buyers"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Send the welcome sequence"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Review what worked"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "student-support",
+   "parent": "course-creator-hub",
+   "title": "Student support routine",
+   "icon": {
+    "emoji": "🤝"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Reply to questions within one working day."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Check students stuck under 25 percent progress each Friday."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Refund requests: answer kindly and process in two days."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

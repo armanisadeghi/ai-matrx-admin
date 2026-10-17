@@ -1,0 +1,1701 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0311",
+ "version": 1,
+ "title": "Newsletter Growth OS",
+ "description": "Write issues, sell sponsor slots and watch subscriber growth and open rates week by week.",
+ "forWho": "Independent newsletter writers",
+ "icon": {
+  "emoji": "✉️"
+ },
+ "cover": {
+  "url": "gallery:photo-misty-mountains",
+  "offsetY": 50
+ },
+ "category": "marketing",
+ "tags": [
+  "newsletter",
+  "sponsors",
+  "growth",
+  "issues"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-newsletter-growth-os",
+  "catalogueId": "SP0311",
+  "useCase": "Annika Strand writes a weekly newsletter and uses this to see which issue is next, which sponsor slots are sold and whether subscribers and open rates are growing.",
+  "industry": "media_creators",
+  "vertical": "Newsletter publishing",
+  "job": "content",
+  "audience": "organization",
+  "teaches": "relations_rollups",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "The Small Ledger",
+   "describes": "A weekly newsletter about small-town economies and local business, written by one editor with occasional freelance help.",
+   "address": {
+    "line1": "18 Quillfeather Road",
+    "city": "Duluth",
+    "region": "MN",
+    "postalCode": "55802",
+    "country": "US"
+   },
+   "phone": "(218) 555-0119",
+   "website": "thesmallledger.net",
+   "email": "editor@thesmallledger.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-newsletter-growth-os",
+  "tables": [
+   {
+    "token": "sponsor",
+    "name": "Sponsors",
+    "labelSingular": "Sponsor",
+    "labelPlural": "Sponsors",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "badge-dollar",
+    "titleField": "brand",
+    "describes": "Brands that buy a slot in the issue.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "brand",
+      "label": "Brand",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "slot",
+      "label": "Slot",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Header",
+       "Mid",
+       "Footer"
+      ],
+      "choiceColors": {
+       "Header": "slate",
+       "Mid": "blue",
+       "Footer": "amber"
+      },
+      "required": true
+     },
+     {
+      "key": "rate",
+      "label": "Rate",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 50000
+       }
+      ]
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Open",
+       "Booked",
+       "Paid"
+      ],
+      "choiceColors": {
+       "Open": "slate",
+       "Booked": "green",
+       "Paid": "blue"
+      },
+      "required": true,
+      "default": "Open"
+     },
+     {
+      "key": "email",
+      "label": "Contact",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "issues",
+      "label": "Issues",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "issue",
+      "multi": true
+     },
+     {
+      "key": "issue_count",
+      "label": "Issue count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "issues",
+      "pick": "title",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "sp1",
+      "values": {
+       "brand": "Maple & Mill Bank",
+       "slot": "Header",
+       "rate": 900,
+       "status": "Booked",
+       "email": "ads@mapleandmill.net",
+       "issues": [
+        "is1",
+        "is4"
+       ]
+      }
+     },
+     {
+      "key": "sp2",
+      "values": {
+       "brand": "Harbour Books",
+       "slot": "Mid",
+       "rate": 450,
+       "status": "Booked",
+       "email": "ads@harbourbooks.net",
+       "issues": [
+        "is2",
+        "is5"
+       ]
+      }
+     },
+     {
+      "key": "sp3",
+      "values": {
+       "brand": "Field Notes Co.",
+       "slot": "Footer",
+       "rate": 300,
+       "status": "Open",
+       "email": "ads@fieldnotesco.net",
+       "issues": []
+      }
+     },
+     {
+      "key": "sp4",
+      "values": {
+       "brand": "Linden Street Mutual",
+       "slot": "Mid",
+       "rate": 450,
+       "status": "Open",
+       "email": "ads@lindenmutual.net",
+       "issues": [
+        "is6"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "token": "issue",
+    "name": "Issues",
+    "labelSingular": "Issue",
+    "labelPlural": "Issues",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "mail",
+    "titleField": "title",
+    "describes": "Each weekly issue from idea to sent.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "title",
+      "label": "Title",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "number",
+      "label": "Issue number",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 1
+       },
+       {
+        "kind": "max",
+        "value": 1000
+       }
+      ]
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Idea",
+       "Outline",
+       "Draft",
+       "Edit",
+       "Scheduled",
+       "Sent"
+      ],
+      "choiceColors": {
+       "Idea": "slate",
+       "Outline": "blue",
+       "Draft": "amber",
+       "Edit": "violet",
+       "Scheduled": "green",
+       "Sent": "teal"
+      },
+      "required": true,
+      "default": "Idea"
+     },
+     {
+      "key": "send_on",
+      "label": "Send on",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "open_rate",
+      "label": "Open rate (%)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "key": "click_rate",
+      "label": "Click rate (%)",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "key": "subject",
+      "label": "Subject line",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "sections",
+      "label": "Sections",
+      "parityType": "multi_select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Lead story",
+       "Data point",
+       "Reader mailbag",
+       "Links",
+       "Sponsor"
+      ],
+      "choiceColors": {
+       "Lead story": "slate",
+       "Data point": "blue",
+       "Reader mailbag": "amber",
+       "Links": "violet",
+       "Sponsor": "teal"
+      }
+     },
+     {
+      "key": "sponsor",
+      "label": "Sponsor",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "sponsor",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "is1",
+      "values": {
+       "number": 31,
+       "title": "Why the hardware store survived",
+       "status": "Sent",
+       "send_on": "@today-27d",
+       "open_rate": 54.1,
+       "click_rate": 6.2,
+       "sponsor": "sp1",
+       "subject": "Why the hardware store survived",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links",
+        "Sponsor"
+       ]
+      }
+     },
+     {
+      "key": "is2",
+      "values": {
+       "number": 32,
+       "title": "Four-day weeks on Main Street",
+       "status": "Sent",
+       "send_on": "@today-20d",
+       "open_rate": 55.3,
+       "click_rate": 7.0,
+       "sponsor": "sp2",
+       "subject": "Four-day weeks on Main Street",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links",
+        "Sponsor"
+       ]
+      }
+     },
+     {
+      "key": "is3",
+      "values": {
+       "number": 33,
+       "title": "The bakery lease problem",
+       "status": "Sent",
+       "send_on": "@today-13d",
+       "open_rate": 52.8,
+       "click_rate": 5.4,
+       "subject": "The bakery lease problem",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links"
+       ]
+      }
+     },
+     {
+      "key": "is4",
+      "values": {
+       "number": 34,
+       "title": "Farmers market math",
+       "status": "Sent",
+       "send_on": "@today-6d",
+       "open_rate": 56.7,
+       "click_rate": 6.6,
+       "sponsor": "sp1",
+       "subject": "Farmers market math",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links",
+        "Sponsor"
+       ]
+      }
+     },
+     {
+      "key": "is5",
+      "values": {
+       "number": 35,
+       "title": "What a rural broadband grant really buys",
+       "status": "Scheduled",
+       "send_on": "@today+1d",
+       "open_rate": 0,
+       "click_rate": 0,
+       "sponsor": "sp2",
+       "subject": "What a rural broadband grant really buys",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links",
+        "Sponsor"
+       ]
+      }
+     },
+     {
+      "key": "is6",
+      "values": {
+       "number": 36,
+       "title": "Co-ops, explained",
+       "status": "Draft",
+       "send_on": "@today+8d",
+       "open_rate": 0,
+       "click_rate": 0,
+       "sponsor": "sp4",
+       "subject": "Co-ops, explained",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links",
+        "Sponsor"
+       ]
+      }
+     },
+     {
+      "key": "is7",
+      "values": {
+       "number": 37,
+       "title": "Interview: a third-generation tailor",
+       "status": "Outline",
+       "send_on": "@today+15d",
+       "open_rate": 0,
+       "click_rate": 0,
+       "subject": "Interview: a third-generation tailor",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links"
+       ]
+      }
+     },
+     {
+      "key": "is8",
+      "values": {
+       "number": 38,
+       "title": "Reader mailbag",
+       "status": "Idea",
+       "send_on": "@today+22d",
+       "open_rate": 0,
+       "click_rate": 0,
+       "subject": "Reader mailbag",
+       "sections": [
+        "Lead story",
+        "Data point",
+        "Links"
+       ]
+      }
+     }
+    ],
+    "independentOf": {
+     "sponsor": "Either record can be created or change status before the other."
+    }
+   },
+   {
+    "token": "idea",
+    "name": "Ideas",
+    "labelSingular": "Idea",
+    "labelPlural": "Ideas",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "lightbulb",
+    "titleField": "idea",
+    "describes": "Story ideas waiting for an issue.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "idea",
+      "label": "Idea",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "topic",
+      "label": "Topic",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Marketing",
+       "Retail",
+       "Jobs",
+       "Finance",
+       "Policy"
+      ],
+      "choiceColors": {
+       "Marketing": "slate",
+       "Retail": "blue",
+       "Jobs": "amber",
+       "Finance": "violet",
+       "Policy": "teal"
+      }
+     },
+     {
+      "key": "state",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Open",
+       "Used"
+      ],
+      "choiceColors": {
+       "Open": "slate",
+       "Used": "blue"
+      },
+      "required": true,
+      "default": "Open"
+     },
+     {
+      "key": "source",
+      "label": "Source link",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "id0",
+      "values": {
+       "idea": "Why local radio ads still work",
+       "topic": "Marketing",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/100"
+      }
+     },
+     {
+      "key": "id1",
+      "values": {
+       "idea": "Gift card float, explained",
+       "topic": "Retail",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/101"
+      }
+     },
+     {
+      "key": "id2",
+      "values": {
+       "idea": "Shop-local campaigns that backfired",
+       "topic": "Marketing",
+       "state": "Used",
+       "source": "https://notes.thesmallledger.net/102"
+      }
+     },
+     {
+      "key": "id3",
+      "values": {
+       "idea": "What happens to a main street after a plant closes",
+       "topic": "Jobs",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/103"
+      }
+     },
+     {
+      "key": "id4",
+      "values": {
+       "idea": "Seasonal hiring trends",
+       "topic": "Jobs",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/104"
+      }
+     },
+     {
+      "key": "id5",
+      "values": {
+       "idea": "Cooperative grocery startups",
+       "topic": "Retail",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/105"
+      }
+     },
+     {
+      "key": "id6",
+      "values": {
+       "idea": "Tax lessons from a pop-up market",
+       "topic": "Finance",
+       "state": "Used",
+       "source": "https://notes.thesmallledger.net/106"
+      }
+     },
+     {
+      "key": "id7",
+      "values": {
+       "idea": "The rise of the four-person restaurant",
+       "topic": "Retail",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/107"
+      }
+     },
+     {
+      "key": "id8",
+      "values": {
+       "idea": "Small business insurance mistakes",
+       "topic": "Finance",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/108"
+      }
+     },
+     {
+      "key": "id9",
+      "values": {
+       "idea": "A day inside a county permit office",
+       "topic": "Policy",
+       "state": "Open",
+       "source": "https://notes.thesmallledger.net/109"
+      }
+     }
+    ]
+   },
+   {
+    "token": "growth",
+    "name": "Growth log",
+    "labelSingular": "Growth entry",
+    "labelPlural": "Growth log",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "trending-up",
+    "titleField": "week",
+    "describes": "Weekly subscriber counts.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "week",
+      "label": "Week",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "logged_on",
+      "label": "Week of",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "subscribers",
+      "label": "Subscribers",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 5000000
+       }
+      ]
+     },
+     {
+      "key": "net_new",
+      "label": "Net new",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "note",
+      "label": "Note",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "lg0",
+      "values": {
+       "week": "Spring push",
+       "logged_on": "@mon-7w",
+       "subscribers": 9200,
+       "net_new": 130,
+       "note": "Spring referral push"
+      }
+     },
+     {
+      "key": "lg1",
+      "values": {
+       "week": "Baseline",
+       "logged_on": "@mon-6w",
+       "subscribers": 9380,
+       "net_new": 158,
+       "note": ""
+      }
+     },
+     {
+      "key": "lg2",
+      "values": {
+       "week": "Podcast mention",
+       "logged_on": "@mon-5w",
+       "subscribers": 9560,
+       "net_new": 126,
+       "note": "Podcast mention"
+      }
+     },
+     {
+      "key": "lg3",
+      "values": {
+       "week": "Holiday dip",
+       "logged_on": "@mon-4w",
+       "subscribers": 9740,
+       "net_new": 154,
+       "note": ""
+      }
+     },
+     {
+      "key": "lg4",
+      "values": {
+       "week": "Cross-promo with a paper",
+       "logged_on": "@mon-3w",
+       "subscribers": 9920,
+       "net_new": 182,
+       "note": "Cross-promo with a regional paper"
+      }
+     },
+     {
+      "key": "lg5",
+      "values": {
+       "week": "Steady climb",
+       "logged_on": "@mon-2w",
+       "subscribers": 10100,
+       "net_new": 150,
+       "note": ""
+      }
+     },
+     {
+      "key": "lg6",
+      "values": {
+       "week": "Slow patch",
+       "logged_on": "@mon-1w",
+       "subscribers": 10280,
+       "net_new": 178,
+       "note": "Quiet week"
+      }
+     },
+     {
+      "key": "lg7",
+      "values": {
+       "week": "Record growth",
+       "logged_on": "@mon-0w",
+       "subscribers": 10460,
+       "net_new": 206,
+       "note": "Best week yet"
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each issue belongs to one sponsor.",
+    "fromTable": "issue",
+    "fromField": "sponsor",
+    "toTable": "sponsor",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "issue_by_sponsor"
+   },
+   {
+    "describes": "A sponsor lists its issues.",
+    "fromTable": "sponsor",
+    "fromField": "issues",
+    "toTable": "issue",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "sponsor_from_issues"
+   }
+  ],
+  "sharedBlocks": [],
+  "forms": [
+   {
+    "token": "idea_form",
+    "name": "Reader tip",
+    "describes": "Capture a story tip from a reader.",
+    "audience": "staff",
+    "table": "idea",
+    "fields": [
+     {
+      "fieldKey": "idea",
+      "ask": "What should we cover?",
+      "required": true
+     },
+     {
+      "fieldKey": "topic",
+      "ask": "Which topic fits?"
+     },
+     {
+      "fieldKey": "source",
+      "ask": "A link, if you have one"
+     }
+    ],
+    "submitLabel": "Send the tip",
+    "confirmation": "Thanks. It is in the idea list as Open."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_growth",
+    "name": "All growth log",
+    "table": "growth",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_idea",
+    "name": "All ideas",
+    "table": "idea",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_issue",
+    "name": "All issues",
+    "table": "issue",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_sponsor",
+    "name": "All sponsors",
+    "table": "sponsor",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "issue_board",
+    "name": "Issue board",
+    "table": "issue",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "send_cal",
+    "name": "Send calendar",
+    "table": "issue",
+    "kind": "calendar",
+    "dateField": "send_on",
+    "allDay": true
+   },
+   {
+    "token": "sponsor_board",
+    "name": "Slot board",
+    "table": "sponsor",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "idea_board",
+    "name": "Idea topics",
+    "table": "idea",
+    "kind": "kanban",
+    "groupBy": "topic"
+   },
+   {
+    "token": "growth_log",
+    "name": "Growth by week",
+    "table": "growth",
+    "kind": "grid",
+    "sorts": [
+     {
+      "field": "logged_on",
+      "direction": "desc"
+     }
+    ]
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Newsletter assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "issue",
+     "describes": "Every issue with its status, send day and results."
+    },
+    {
+     "name": "related_tables",
+     "table": "sponsor",
+     "describes": "The sponsors for each issue."
+    }
+   ],
+   "question": {
+    "ask": "How many issues have been sent?",
+    "whyItMatters": "Annika reports total issues sent to sponsors every quarter.",
+    "expect": {
+     "table": "issue",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Sent"
+     },
+     "answer": 4,
+     "unit": "issues"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open issue board.",
+    "action": {
+     "kind": "open",
+     "surface": "issue_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "issue_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open send calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "send_cal"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "send_cal",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open slot board.",
+    "action": {
+     "kind": "open",
+     "surface": "sponsor_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "sponsor_board",
+     "minItems": 3
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "thesmallledger.net",
+    "mapleandmill.net",
+    "harbourbooks.net",
+    "fieldnotesco.net"
+   ],
+   "fictionalStreets": [
+    "Quillfeather Road"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "newsletter-growth-os",
+   "parent": null,
+   "title": "Newsletter Growth OS",
+   "icon": {
+    "emoji": "✉️"
+   },
+   "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Move each issue from idea to sent, link the sponsor who bought the slot and log subscribers every Monday."
+      }
+     ],
+     "background": "blue",
+     "props": {
+      "icon": "Lightbulb"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:dashboard"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:issue-template"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:send-checklist"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:monday-metrics"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Issues"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "issue",
+       "view": "issue_board"
+      },
+      "inline": true,
+      "title": "Issues",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Pipeline",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-cal",
+        "name": "Send calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "send_on"
+       },
+       {
+        "id": "view-tbl",
+        "name": "Results",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": "Sent"
+        },
+        "sorts": [
+         {
+          "field": "open_rate",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Sponsor slots"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "sponsor",
+       "view": "sponsor_board"
+      },
+      "inline": true,
+      "title": "Sponsor slots",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By status",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-tbl",
+        "name": "All slots",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Idea list"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "idea",
+       "view": "idea_board"
+      },
+      "inline": true,
+      "title": "Idea list",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "By topic",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "topic"
+       },
+       {
+        "id": "view-open",
+        "name": "Open ideas",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "state": "Open"
+        }
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Growth"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "growth",
+       "view": "growth_log"
+      },
+      "inline": true,
+      "title": "Growth",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-tbl",
+        "name": "Weekly",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "logged_on",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-tbl"
+     }
+    }
+   ]
+  },
+  {
+   "key": "dashboard",
+   "parent": "newsletter-growth-os",
+   "title": "Dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "issue",
+           "view": "all_issue"
+          },
+          "inline": true,
+          "title": "Issues by status",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c1",
+            "name": "Issues by status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-c1"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "issue",
+           "view": "all_issue"
+          },
+          "inline": true,
+          "title": "Open rate by issue",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c2",
+            "name": "Open rate by issue",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "number",
+             "op": "avg",
+             "field": "open_rate"
+            }
+           }
+          ],
+          "activeViewId": "view-c2"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "growth",
+           "view": "all_growth"
+          },
+          "inline": true,
+          "title": "Subscribers by week",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-c3",
+            "name": "Subscribers by week",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "week",
+             "op": "sum",
+             "field": "subscribers"
+            }
+           }
+          ],
+          "activeViewId": "view-c3"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Open sponsor slots"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "sponsor",
+       "view": "all_sponsor"
+      },
+      "inline": true,
+      "title": "Open sponsor slots",
+      "linked": true,
+      "showTitle": false,
+      "views": [
+       {
+        "id": "view-o",
+        "name": "Open",
+        "layout": "list",
+        "icon": "List",
+        "filters": {
+         "status": "Open"
+        }
+       }
+      ],
+      "activeViewId": "view-o"
+     }
+    }
+   ]
+  },
+  {
+   "key": "issue-template",
+   "parent": "newsletter-growth-os",
+   "title": "Issue template",
+   "icon": {
+    "emoji": "📝"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Lead story"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "One idea, 400 words, one number."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Data point"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "A chart or figure with a single sentence."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Links"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Link one with a reason"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Link two with a reason"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Sponsor"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Header, mid or footer, labelled clearly."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Sign-off"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "A question readers can reply to."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "send-checklist",
+   "parent": "newsletter-growth-os",
+   "title": "Send checklist",
+   "icon": {
+    "emoji": "✅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Subject line tested aloud"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Preview text written"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Every link clicked"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Sponsor copy approved"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Test sent to two inboxes"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Scheduled for the usual hour"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "monday-metrics",
+   "parent": "newsletter-growth-os",
+   "title": "Monday metrics routine",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Log subscribers and net new in the growth log."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Enter last issue's open and click rates."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Note one thing that moved the numbers."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Pick the next issue and set its send date."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
