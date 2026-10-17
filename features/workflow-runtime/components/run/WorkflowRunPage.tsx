@@ -190,6 +190,8 @@ export function WorkflowRunPage({
   // Open review issues on this workflow → a header door to its review page.
   // "unreadable" keeps the door visible (to the review page, which shows the read's own failure).
   const [openIssues, setOpenIssues] = useState<number | "unreadable">(0);
+  // The run's own flag count: flags land as the run settles, which opens/updates issues — re-count.
+  const [runFlagTotal, setRunFlagTotal] = useState(0);
   useEffect(() => {
     if (!definitionId) return undefined;
     let live = true;
@@ -204,7 +206,7 @@ export function WorkflowRunPage({
     return () => {
       live = false;
     };
-  }, [definitionId, runId]);
+  }, [definitionId, runId, runFlagTotal]);
 
   /**
    * ADOPTED (Volley 5): a started run is announced by ID, whichever branch of
@@ -346,6 +348,7 @@ export function WorkflowRunPage({
         workflowName={workflow.name}
         config={workflow.config}
         onRetry={runAgain}
+        onFlagCount={setRunFlagTotal}
       />
     );
   } else {
