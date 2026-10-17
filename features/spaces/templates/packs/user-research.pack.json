@@ -1,0 +1,1869 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0352",
+ "version": 1,
+ "title": "User Research Repository",
+ "description": "Studies, sessions, participants and insights linked so every finding has evidence.",
+ "forWho": "Product and research teams",
+ "icon": {
+  "emoji": "🔬"
+ },
+ "cover": {
+  "url": "gallery:photo-misty-mountains",
+  "offsetY": 50
+ },
+ "category": "projects",
+ "tags": [
+  "research",
+  "interviews",
+  "insights",
+  "studies"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-user-research",
+  "catalogueId": "SP0352",
+  "useCase": "Ines Marchetti plans studies, schedules sessions and keeps the proof behind each finding.",
+  "industry": "cross_industry",
+  "vertical": "Product research",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Copperfinch Labs",
+   "describes": "A product studio running regular research for its field-service software.",
+   "address": {
+    "line1": "115 Wren Hollow Street",
+    "city": "Chicago",
+    "region": "IL",
+    "postalCode": "60614",
+    "country": "US"
+   },
+   "phone": "(312) 555-0140",
+   "website": "copperfinch.net",
+   "email": "hello@copperfinch.net",
+   "timezone": "America/Chicago"
+  },
+  "cleanupTag": "use-case:spaces-user-research",
+  "tables": [
+   {
+    "token": "study",
+    "name": "Studies",
+    "labelSingular": "Study",
+    "labelPlural": "Studies",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "flask-conical",
+    "titleField": "study_name",
+    "describes": "Each research study, its method, owner and the questions it answers.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "study_name",
+      "label": "Study",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Planning",
+       "Fieldwork",
+       "Analysis",
+       "Done"
+      ],
+      "choiceColors": {
+       "Planning": "blue",
+       "Fieldwork": "violet",
+       "Analysis": "teal",
+       "Done": "green"
+      }
+     },
+     {
+      "key": "method",
+      "label": "Method",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Interview",
+       "Survey",
+       "Usability test",
+       "Diary"
+      ],
+      "choiceColors": {
+       "Interview": "blue",
+       "Survey": "violet",
+       "Usability test": "teal",
+       "Diary": "orange"
+      }
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "starts_on",
+      "label": "Starts",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "ends_on",
+      "label": "Ends",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "questions",
+      "label": "Research questions",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "sessions",
+      "label": "Sessions",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "session",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "insights",
+      "label": "Insights",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "insight",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "session_count",
+      "label": "Session count",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "sessions",
+      "pick": "session_title",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "s1",
+      "values": {
+       "study_name": "Onboarding friction interviews",
+       "status": "Analysis",
+       "method": "Interview",
+       "owner": "tm-ines",
+       "starts_on": "@today-35d",
+       "ends_on": "@today+5d",
+       "questions": "Where do new teams stall in their first week, and what do they expect to see first?"
+      }
+     },
+     {
+      "key": "s2",
+      "values": {
+       "study_name": "Invoice screen usability test",
+       "status": "Fieldwork",
+       "method": "Usability test",
+       "owner": "tm-dev",
+       "starts_on": "@today-8d",
+       "ends_on": "@today+14d",
+       "questions": "Can a new user find and send an invoice without help?"
+      }
+     },
+     {
+      "key": "s3",
+      "values": {
+       "study_name": "Field crew diary study",
+       "status": "Planning",
+       "method": "Diary",
+       "owner": "tm-ines",
+       "starts_on": "@today+7d",
+       "ends_on": "@today+42d",
+       "questions": "How do crews record work on site when signal is poor?"
+      }
+     }
+    ],
+    "before": [
+     [
+      "starts_on",
+      "ends_on"
+     ]
+    ]
+   },
+   {
+    "token": "session",
+    "name": "Sessions",
+    "labelSingular": "Session",
+    "labelPlural": "Sessions",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "calendar-check",
+    "titleField": "session_title",
+    "describes": "Every session held or scheduled, with who took part.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "session_title",
+      "label": "Session",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "study",
+      "label": "Study",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "study",
+      "relationMax": 1
+     },
+     {
+      "key": "participant",
+      "label": "Participant",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "participant",
+      "relationMax": 1
+     },
+     {
+      "key": "held_on",
+      "label": "Date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Scheduled",
+       "Done",
+       "No-show"
+      ],
+      "choiceColors": {
+       "Scheduled": "blue",
+       "Done": "green",
+       "No-show": "red"
+      }
+     },
+     {
+      "key": "recording",
+      "label": "Recording",
+      "parityType": "url",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "actions_done",
+      "label": "Action items done",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "moderator",
+      "label": "Moderator",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "x1",
+      "values": {
+       "session_title": "Onboarding call: first week at a plumbing firm",
+       "study": "s1",
+       "participant": "p2",
+       "held_on": "@today-30d",
+       "status": "Done",
+       "moderator": "tm-ines",
+       "actions_done": true,
+       "recording": "https://recordings.copperfinch.net/x1"
+      }
+     },
+     {
+      "key": "x2",
+      "values": {
+       "session_title": "Onboarding call: dental clinic admin",
+       "study": "s1",
+       "participant": "p3",
+       "held_on": "@today-27d",
+       "status": "Done",
+       "moderator": "tm-ines",
+       "actions_done": true,
+       "recording": "https://recordings.copperfinch.net/x2"
+      }
+     },
+     {
+      "key": "x3",
+      "values": {
+       "session_title": "Onboarding call: roofing owner",
+       "study": "s1",
+       "participant": "p8",
+       "held_on": "@today-24d",
+       "status": "Done",
+       "moderator": "tm-dev",
+       "actions_done": true,
+       "recording": "https://recordings.copperfinch.net/x3"
+      }
+     },
+     {
+      "key": "x4",
+      "values": {
+       "session_title": "Onboarding call: HVAC dispatcher",
+       "study": "s1",
+       "participant": "p1",
+       "held_on": "@today-20d",
+       "status": "No-show",
+       "moderator": "tm-ines",
+       "actions_done": false
+      }
+     },
+     {
+      "key": "x5",
+      "values": {
+       "session_title": "Invoice test: contractor on a laptop",
+       "study": "s2",
+       "participant": "p4",
+       "held_on": "@today-6d",
+       "status": "Done",
+       "moderator": "tm-dev",
+       "actions_done": true,
+       "recording": "https://recordings.copperfinch.net/x5"
+      }
+     },
+     {
+      "key": "x6",
+      "values": {
+       "session_title": "Invoice test: vet practice manager",
+       "study": "s2",
+       "participant": "p7",
+       "held_on": "@today-3d",
+       "status": "Done",
+       "moderator": "tm-dev",
+       "actions_done": true,
+       "recording": "https://recordings.copperfinch.net/x6"
+      }
+     },
+     {
+      "key": "x7",
+      "values": {
+       "session_title": "Invoice test: landscaping owner",
+       "study": "s2",
+       "participant": "p5",
+       "held_on": "@today+2d",
+       "status": "Scheduled",
+       "moderator": "tm-dev",
+       "actions_done": false
+      }
+     },
+     {
+      "key": "x8",
+      "values": {
+       "session_title": "Invoice test: electrician on a phone",
+       "study": "s2",
+       "participant": "p6",
+       "held_on": "@today+5d",
+       "status": "Scheduled",
+       "moderator": "tm-dev",
+       "actions_done": false
+      }
+     }
+    ],
+    "independentOf": {
+     "study": "A session is held inside its study window by plan, and sessions are rescheduled freely.",
+     "participant": "A participant joins sessions in many studies on their own schedule."
+    },
+    "statusAgrees": []
+   },
+   {
+    "token": "participant",
+    "name": "Participants",
+    "labelSingular": "Participant",
+    "labelPlural": "Participants",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "users",
+    "titleField": "participant_name",
+    "describes": "The people who take part, their consent and the date of last contact.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "participant_name",
+      "label": "Participant",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "email",
+      "label": "Email",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "askOfSubject": true
+     },
+     {
+      "key": "segment",
+      "label": "Segment",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Small business",
+       "Clinic",
+       "Contractor"
+      ],
+      "choiceColors": {
+       "Small business": "blue",
+       "Clinic": "violet",
+       "Contractor": "teal"
+      }
+     },
+     {
+      "key": "company",
+      "label": "Company",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "consent",
+      "label": "Consent given",
+      "parityType": "checkbox",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "last_contacted",
+      "label": "Last contacted",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     }
+    ],
+    "rows": [
+     {
+      "key": "p1",
+      "values": {
+       "participant_name": "Gwen Alderidge",
+       "email": "gwen@alderidge-hvac.net",
+       "segment": "Small business",
+       "company": "Alderidge HVAC",
+       "consent": true,
+       "last_contacted": "@today-2d"
+      }
+     },
+     {
+      "key": "p2",
+      "values": {
+       "participant_name": "Tomas Beaulieu",
+       "email": "tomas@beaulieuplumbing.net",
+       "segment": "Small business",
+       "company": "Beaulieu Plumbing",
+       "consent": true,
+       "last_contacted": "@today-5d"
+      }
+     },
+     {
+      "key": "p3",
+      "values": {
+       "participant_name": "Priyanka Desai",
+       "email": "priyanka@northpierdental.net",
+       "segment": "Clinic",
+       "company": "North Pier Dental",
+       "consent": true,
+       "last_contacted": "@today-8d"
+      }
+     },
+     {
+      "key": "p4",
+      "values": {
+       "participant_name": "Marcus Whitlock",
+       "email": "marcus@whitlockbuilders.net",
+       "segment": "Contractor",
+       "company": "Whitlock Builders",
+       "consent": true,
+       "last_contacted": "@today-11d"
+      }
+     },
+     {
+      "key": "p5",
+      "values": {
+       "participant_name": "Alina Petrova",
+       "email": "alina@sagebrushlandscape.net",
+       "segment": "Small business",
+       "company": "Sagebrush Landscape",
+       "consent": true,
+       "last_contacted": "@today-14d"
+      }
+     },
+     {
+      "key": "p6",
+      "values": {
+       "participant_name": "Hector Villanueva",
+       "email": "hector@villanuevaelectric.net",
+       "segment": "Contractor",
+       "company": "Villanueva Electric",
+       "consent": true,
+       "last_contacted": "@today-17d"
+      }
+     },
+     {
+      "key": "p7",
+      "values": {
+       "participant_name": "Noor Haddad",
+       "email": "noor@cedarlanevet.net",
+       "segment": "Clinic",
+       "company": "Cedar Lane Vet",
+       "consent": true,
+       "last_contacted": "@today-20d"
+      }
+     },
+     {
+      "key": "p8",
+      "values": {
+       "participant_name": "Dale Kowalczyk",
+       "email": "dale@kowalczykroofing.net",
+       "segment": "Contractor",
+       "company": "Kowalczyk Roofing",
+       "consent": true,
+       "last_contacted": "@today-23d"
+      }
+     }
+    ]
+   },
+   {
+    "token": "insight",
+    "name": "Insights",
+    "labelSingular": "Insight",
+    "labelPlural": "Insights",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "sparkles",
+    "titleField": "insight",
+    "describes": "Findings, their confidence level and the sessions that show them.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "insight",
+      "label": "Insight",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "theme",
+      "label": "Theme",
+      "parityType": "multi_select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Onboarding",
+       "Usability",
+       "Habits",
+       "Pricing"
+      ],
+      "choiceColors": {
+       "Onboarding": "blue",
+       "Usability": "violet",
+       "Habits": "teal",
+       "Pricing": "orange"
+      },
+      "multi": true
+     },
+     {
+      "key": "confidence",
+      "label": "Confidence",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High"
+      ],
+      "choiceColors": {
+       "Low": "blue",
+       "Medium": "violet",
+       "High": "teal"
+      }
+     },
+     {
+      "key": "impact",
+      "label": "Impact",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High"
+      ],
+      "choiceColors": {
+       "Low": "blue",
+       "Medium": "violet",
+       "High": "teal"
+      }
+     },
+     {
+      "key": "evidence",
+      "label": "Evidence",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "session",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "study",
+      "label": "Study",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "study",
+      "relationMax": 1
+     }
+    ],
+    "rows": [
+     {
+      "key": "i1",
+      "values": {
+       "insight": "New teams look for a sample project before inviting anyone",
+       "theme": [
+        "Onboarding"
+       ],
+       "confidence": "High",
+       "impact": "High",
+       "evidence": [
+        "x1",
+        "x2"
+       ],
+       "study": "s1"
+      }
+     },
+     {
+      "key": "i2",
+      "values": {
+       "insight": "Admins want to import customers before anything else",
+       "theme": [
+        "Onboarding"
+       ],
+       "confidence": "High",
+       "impact": "High",
+       "evidence": [
+        "x2",
+        "x3"
+       ],
+       "study": "s1"
+      }
+     },
+     {
+      "key": "i3",
+      "values": {
+       "insight": "The invite email lands in spam for small domains",
+       "theme": [
+        "Onboarding"
+       ],
+       "confidence": "Medium",
+       "impact": "Medium",
+       "evidence": [
+        "x3"
+       ],
+       "study": "s1"
+      }
+     },
+     {
+      "key": "i4",
+      "values": {
+       "insight": "Owners skim the dashboard once a day, mostly on a phone",
+       "theme": [
+        "Habits"
+       ],
+       "confidence": "Medium",
+       "impact": "Medium",
+       "evidence": [
+        "x1",
+        "x3"
+       ],
+       "study": "s1"
+      }
+     },
+     {
+      "key": "i5",
+      "values": {
+       "insight": "The Send button hides below the fold on small laptops",
+       "theme": [
+        "Usability"
+       ],
+       "confidence": "High",
+       "impact": "High",
+       "evidence": [
+        "x5"
+       ],
+       "study": "s2"
+      }
+     },
+     {
+      "key": "i6",
+      "values": {
+       "insight": "People expect to edit a line item by clicking its price",
+       "theme": [
+        "Usability"
+       ],
+       "confidence": "Medium",
+       "impact": "Medium",
+       "evidence": [
+        "x5",
+        "x6"
+       ],
+       "study": "s2"
+      }
+     },
+     {
+      "key": "i7",
+      "values": {
+       "insight": "Tax fields confuse clinics that do not charge tax",
+       "theme": [
+        "Usability"
+       ],
+       "confidence": "Medium",
+       "impact": "Low",
+       "evidence": [
+        "x6"
+       ],
+       "study": "s2"
+      }
+     },
+     {
+      "key": "i8",
+      "values": {
+       "insight": "Crews photograph receipts first and enter them later",
+       "theme": [
+        "Habits"
+       ],
+       "confidence": "Low",
+       "impact": "Medium",
+       "evidence": [
+        "x3"
+       ],
+       "study": "s1"
+      }
+     },
+     {
+      "key": "i9",
+      "values": {
+       "insight": "Draft status is mistaken for sent by the customer",
+       "theme": [
+        "Usability"
+       ],
+       "confidence": "High",
+       "impact": "Medium",
+       "evidence": [
+        "x5",
+        "x6"
+       ],
+       "study": "s2"
+      }
+     },
+     {
+      "key": "i10",
+      "values": {
+       "insight": "Pricing questions come up before feature questions",
+       "theme": [
+        "Pricing"
+       ],
+       "confidence": "Medium",
+       "impact": "Medium",
+       "evidence": [
+        "x1",
+        "x2",
+        "x3"
+       ],
+       "study": "s1"
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Each study has one owner.",
+    "fromTable": "study",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "studies_owned"
+   },
+   {
+    "describes": "A study gathers its sessions.",
+    "fromTable": "study",
+    "fromField": "sessions",
+    "toTable": "session",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "in_studies"
+   },
+   {
+    "describes": "A study produces insights.",
+    "fromTable": "study",
+    "fromField": "insights",
+    "toTable": "insight",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "from_studies"
+   },
+   {
+    "describes": "Each session belongs to one study.",
+    "fromTable": "session",
+    "fromField": "study",
+    "toTable": "study",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "session_study"
+   },
+   {
+    "describes": "Each session has one participant.",
+    "fromTable": "session",
+    "fromField": "participant",
+    "toTable": "participant",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "sessions_attended"
+   },
+   {
+    "describes": "Each session has one moderator.",
+    "fromTable": "session",
+    "fromField": "moderator",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "sessions_moderated"
+   },
+   {
+    "describes": "An insight points at the sessions that show it.",
+    "fromTable": "insight",
+    "fromField": "evidence",
+    "toTable": "session",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "supports"
+   },
+   {
+    "describes": "Each insight belongs to one study.",
+    "fromTable": "insight",
+    "fromField": "study",
+    "toTable": "study",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "insight_study"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-ines",
+      "values": {
+       "full_name": "Ines Marchetti",
+       "role": "Research lead",
+       "work_email": "ines@copperfinch.net",
+       "mobile": "(312) 555-0141",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-dev",
+      "values": {
+       "full_name": "Devansh Rao",
+       "role": "Researcher",
+       "work_email": "devansh@copperfinch.net",
+       "mobile": "(312) 555-0142",
+       "start_date": "@today-18m"
+      }
+     },
+     {
+      "key": "tm-kay",
+      "values": {
+       "full_name": "Kaylee Brandt",
+       "role": "Product designer",
+       "work_email": "kaylee@copperfinch.net",
+       "mobile": "(312) 555-0143",
+       "start_date": "@today-2y"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "sign_up",
+    "name": "Join our research panel",
+    "describes": "How customers volunteer to take part.",
+    "audience": "public",
+    "table": "participant",
+    "fields": [
+     {
+      "fieldKey": "participant_name",
+      "ask": "What is your name?",
+      "required": true
+     },
+     {
+      "fieldKey": "email",
+      "ask": "What email should we reach you on?",
+      "required": true
+     },
+     {
+      "fieldKey": "segment",
+      "ask": "Which best describes your work?"
+     },
+     {
+      "fieldKey": "company",
+      "ask": "What is your company called?"
+     }
+    ],
+    "submitLabel": "Join the panel",
+    "confirmation": "Thanks. We will email you when a study fits."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_studies",
+    "name": "All studies",
+    "table": "study",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "study_board",
+    "name": "By status",
+    "table": "study",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "all_sessions",
+    "name": "All sessions",
+    "table": "session",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "held_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "session_calendar",
+    "name": "Calendar",
+    "table": "session",
+    "kind": "calendar",
+    "dateField": "held_on",
+    "allDay": true
+   },
+   {
+    "token": "all_participants",
+    "name": "Participants",
+    "table": "participant",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_insights",
+    "name": "Insights",
+    "table": "insight",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Research assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "insight",
+     "describes": "Every insight with theme, confidence and impact."
+    },
+    {
+     "name": "related_tables",
+     "table": "study",
+     "describes": "The studies behind them."
+    }
+   ],
+   "question": {
+    "ask": "How many insights have high confidence?",
+    "whyItMatters": "Ines shares only well-supported findings.",
+    "expect": {
+     "table": "insight",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "confidence": "High"
+     },
+     "answer": 4,
+     "unit": "insights"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open studies by status.",
+    "action": {
+     "kind": "open",
+     "surface": "study_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "study_board",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open the session calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "session_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "session_calendar",
+     "minItems": 6
+    }
+   },
+   {
+    "says": "Open the insights.",
+    "action": {
+     "kind": "open",
+     "surface": "all_insights"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_insights",
+     "minItems": 8
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "copperfinch.net",
+    "alderidge-hvac.net",
+    "beaulieuplumbing.net",
+    "northpierdental.net",
+    "whitlockbuilders.net",
+    "sagebrushlandscape.net",
+    "villanuevaelectric.net",
+    "cedarlanevet.net",
+    "kowalczykroofing.net",
+    "recordings.copperfinch.net"
+   ],
+   "fictionalStreets": [
+    "Wren Hollow Street"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "user-research",
+   "parent": null,
+   "title": "User Research",
+   "icon": {
+    "emoji": "🔬"
+   },
+   "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Plan a study, schedule sessions, and log what you learn. Insights link back to the sessions that show them, so anyone can check the evidence."
+      }
+     ],
+     "background": "purple",
+     "props": {
+      "icon": "FlaskConical"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "heading",
+         "text": [
+          {
+           "text": "Active studies"
+          }
+         ],
+         "props": {
+          "level": 3
+         }
+        },
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "study",
+           "view": "study_board"
+          },
+          "inline": true,
+          "title": "Studies",
+          "linked": true,
+          "showTitle": true,
+          "views": [
+           {
+            "id": "v-b",
+            "name": "By status",
+            "layout": "kanban",
+            "icon": "SquareKanban",
+            "groupField": "status"
+           },
+           {
+            "id": "v-t",
+            "name": "All studies",
+            "layout": "grid",
+            "icon": "Table"
+           }
+          ],
+          "activeViewId": "v-b"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "heading",
+         "text": [
+          {
+           "text": "Upcoming sessions"
+          }
+         ],
+         "props": {
+          "level": 3
+         }
+        },
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "session",
+           "view": "session_calendar"
+          },
+          "inline": true,
+          "title": "Sessions",
+          "linked": true,
+          "showTitle": true,
+          "views": [
+           {
+            "id": "v-c",
+            "name": "Calendar",
+            "layout": "calendar",
+            "icon": "Calendar",
+            "dateField": "held_on"
+           },
+           {
+            "id": "v-l",
+            "name": "Next up",
+            "layout": "list",
+            "icon": "Clock",
+            "filters": {
+             "status": "Scheduled"
+            }
+           }
+          ],
+          "activeViewId": "v-c"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Insights"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "insight",
+       "view": "all_insights"
+      },
+      "inline": true,
+      "title": "Insights",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-g",
+        "name": "All insights",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-th",
+        "name": "By theme",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "theme",
+         "op": "count",
+         "centerValue": true
+        }
+       },
+       {
+        "id": "v-hi",
+        "name": "High confidence",
+        "layout": "list",
+        "icon": "BadgeCheck",
+        "filters": {
+         "confidence": "High"
+        }
+       }
+      ],
+      "activeViewId": "v-g"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:research-dashboard"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:interview-guide"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:participant-care"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Participants"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "participant",
+       "view": "all_participants"
+      },
+      "inline": true,
+      "title": "Participants",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-p",
+        "name": "Participants",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-s",
+        "name": "By segment",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "segment",
+         "op": "count"
+        }
+       }
+      ],
+      "activeViewId": "v-p"
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "All sessions"
+      }
+     ],
+     "children": [
+      {
+       "type": "database",
+       "props": {
+        "source": {
+         "kind": "template",
+         "table": "session",
+         "view": "all_sessions"
+        },
+        "inline": true,
+        "title": "Sessions",
+        "linked": true,
+        "showTitle": true,
+        "views": [
+         {
+          "id": "v-a",
+          "name": "All sessions",
+          "layout": "grid",
+          "icon": "Table",
+          "sorts": [
+           {
+            "field": "held_on",
+            "direction": "asc"
+           }
+          ]
+         }
+        ],
+        "activeViewId": "v-a"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "research-dashboard",
+   "parent": "user-research",
+   "title": "Research dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "session",
+           "view": "all_sessions"
+          },
+          "inline": true,
+          "title": "Sessions",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Session status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "insight",
+           "view": "all_insights"
+          },
+          "inline": true,
+          "title": "Insights",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Impact",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "impact",
+             "op": "count"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "study",
+           "view": "all_studies"
+          },
+          "inline": true,
+          "title": "Studies",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Method",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "method",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Follow-ups still open"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "session",
+       "view": "all_sessions"
+      },
+      "inline": true,
+      "title": "Sessions",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-o",
+        "name": "Done, actions open",
+        "layout": "list",
+        "icon": "ListTodo",
+        "filters": {
+         "status": "Done",
+         "actions_done": false
+        }
+       }
+      ],
+      "activeViewId": "v-o"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Studies in fieldwork"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "study",
+       "view": "all_studies"
+      },
+      "inline": true,
+      "title": "Studies",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-f",
+        "name": "Fieldwork",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": "Fieldwork"
+        }
+       }
+      ],
+      "activeViewId": "v-f"
+     }
+    }
+   ]
+  },
+  {
+   "key": "interview-guide",
+   "parent": "user-research",
+   "title": "Interview session guide",
+   "icon": {
+    "emoji": "🎙️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Before"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Consent confirmed and recording agreed"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Goals for the session written down"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Questions"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Tell me about the last time you did this task."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "What did you try first? What happened?"
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "What would make this easier?"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Observations"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Write what you saw, not what you assume."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Quotes"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "quote",
+     "text": [
+      {
+       "text": "Paste a short quote here."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Follow-up"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Thank-you email sent"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Insight rows added"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  },
+  {
+   "key": "participant-care",
+   "parent": "user-research",
+   "title": "Looking after participants",
+   "icon": {
+    "emoji": "🤝"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Always confirm consent before the first session."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Offer the thank-you gift when the session ends, not later."
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Wait at least eight weeks before asking the same person again."
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "No-shows happen. Reschedule once, then move on."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Clock"
+     }
+    }
+   ]
+  }
+ ]
+}

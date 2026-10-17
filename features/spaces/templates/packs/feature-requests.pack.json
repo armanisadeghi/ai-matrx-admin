@@ -1,0 +1,1409 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0351",
+ "version": 1,
+ "title": "Feature Requests",
+ "description": "Collect requests, count votes and customers, and triage them to a decision.",
+ "forWho": "Product and support teams",
+ "icon": {
+  "emoji": "💡"
+ },
+ "cover": {
+  "url": "gallery:photo-lavender-dusk",
+  "offsetY": 50
+ },
+ "category": "projects",
+ "tags": [
+  "product",
+  "requests",
+  "triage",
+  "votes"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-feature-requests",
+  "catalogueId": "SP0351",
+  "useCase": "Lena Okonkwo reviews what customers ask for each week and decides what to plan.",
+  "industry": "cross_industry",
+  "vertical": "Product management",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Brightvane Software",
+   "describes": "A small company selling scheduling and invoicing software to service businesses.",
+   "address": {
+    "line1": "902 Alder Lantern Way",
+    "city": "San Francisco",
+    "region": "CA",
+    "postalCode": "94110",
+    "country": "US"
+   },
+   "phone": "(415) 555-0130",
+   "website": "brightvane.net",
+   "email": "hello@brightvane.net",
+   "timezone": "America/Los_Angeles"
+  },
+  "cleanupTag": "use-case:spaces-feature-requests",
+  "tables": [
+   {
+    "token": "request",
+    "name": "Requests",
+    "labelSingular": "Request",
+    "labelPlural": "Requests",
+    "type": "entity",
+    "display": "board",
+    "weight": "light",
+    "ordered": false,
+    "icon": "lightbulb",
+    "titleField": "request_name",
+    "describes": "Every feature request, how many people want it and where it stands.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "request_name",
+      "label": "Request",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "New",
+       "Under review",
+       "Planned",
+       "In progress",
+       "Shipped",
+       "Declined"
+      ],
+      "choiceColors": {
+       "New": "slate",
+       "Under review": "amber",
+       "Planned": "blue",
+       "In progress": "violet",
+       "Shipped": "green",
+       "Declined": "red"
+      }
+     },
+     {
+      "key": "priority",
+      "label": "Priority",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Medium",
+       "High",
+       "Critical"
+      ],
+      "choiceColors": {
+       "Low": "slate",
+       "Medium": "amber",
+       "High": "orange",
+       "Critical": "red"
+      }
+     },
+     {
+      "key": "votes",
+      "label": "Votes",
+      "parityType": "integer",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 100000
+       }
+      ]
+     },
+     {
+      "key": "customers",
+      "label": "Asked by",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "customer",
+      "relationMax": 50,
+      "multi": true
+     },
+     {
+      "key": "customer_count",
+      "label": "Customers asking",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "customers",
+      "pick": "customer_name",
+      "agg": "count"
+     },
+     {
+      "key": "arr_affected",
+      "label": "ARR affected",
+      "parityType": "rollup",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "via": "customers",
+      "pick": "arr",
+      "agg": "sum"
+     },
+     {
+      "key": "area",
+      "label": "Area",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Reporting",
+       "Integrations",
+       "Mobile",
+       "Billing",
+       "Admin",
+       "Notifications"
+      ],
+      "choiceColors": {
+       "Reporting": "blue",
+       "Integrations": "green",
+       "Mobile": "amber",
+       "Billing": "red",
+       "Admin": "violet",
+       "Notifications": "teal"
+      }
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "submitted_on",
+      "label": "Submitted",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "details",
+      "label": "Details",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "r1",
+      "values": {
+       "request_name": "Export reports to spreadsheet files",
+       "status": "Planned",
+       "priority": "High",
+       "votes": 34,
+       "customers": [
+        "c1",
+        "c4"
+       ],
+       "area": "Reporting",
+       "owner": "tm-lena",
+       "submitted_on": "@today-40d",
+       "details": "Teams want every report as a file they can open in a spreadsheet."
+      }
+     },
+     {
+      "key": "r2",
+      "values": {
+       "request_name": "Single sign-on with company accounts",
+       "status": "In progress",
+       "priority": "Critical",
+       "votes": 51,
+       "customers": [
+        "c4",
+        "c6"
+       ],
+       "area": "Admin",
+       "owner": "tm-raj",
+       "submitted_on": "@today-75d",
+       "details": "Large customers will not roll out without it."
+      }
+     },
+     {
+      "key": "r3",
+      "values": {
+       "request_name": "Dark mode for the mobile app",
+       "status": "New",
+       "priority": "Low",
+       "votes": 12,
+       "customers": [
+        "c3",
+        "c5"
+       ],
+       "area": "Mobile",
+       "owner": "tm-owen",
+       "submitted_on": "@today-3d",
+       "details": "Night shift staff asked for a darker screen."
+      }
+     },
+     {
+      "key": "r4",
+      "values": {
+       "request_name": "Split an invoice across two payers",
+       "status": "Under review",
+       "priority": "Medium",
+       "votes": 9,
+       "customers": [
+        "c2"
+       ],
+       "area": "Billing",
+       "owner": "tm-lena",
+       "submitted_on": "@today-12d",
+       "details": "Two companies split one job bill."
+      }
+     },
+     {
+      "key": "r5",
+      "values": {
+       "request_name": "Calendar sync for job schedules",
+       "status": "Shipped",
+       "priority": "High",
+       "votes": 27,
+       "customers": [
+        "c1",
+        "c2"
+       ],
+       "area": "Integrations",
+       "owner": "tm-raj",
+       "submitted_on": "@today-120d",
+       "details": "Dispatchers wanted jobs to show next to their other appointments."
+      }
+     },
+     {
+      "key": "r6",
+      "values": {
+       "request_name": "Quiet hours for push notifications",
+       "status": "New",
+       "priority": "Medium",
+       "votes": 18,
+       "customers": [
+        "c5",
+        "c3"
+       ],
+       "area": "Notifications",
+       "owner": "tm-mia",
+       "submitted_on": "@today-5d",
+       "details": "People get alerts during meetings and at night."
+      }
+     },
+     {
+      "key": "r7",
+      "values": {
+       "request_name": "Bulk edit on the customer list",
+       "status": "Planned",
+       "priority": "Medium",
+       "votes": 22,
+       "customers": [
+        "c6",
+        "c1"
+       ],
+       "area": "Admin",
+       "owner": "tm-lena",
+       "submitted_on": "@today-30d",
+       "details": "Cleaning up hundreds of records one at a time is slow."
+      }
+     },
+     {
+      "key": "r8",
+      "values": {
+       "request_name": "Custom report column order",
+       "status": "Declined",
+       "priority": "Low",
+       "votes": 3,
+       "customers": [
+        "c5"
+       ],
+       "area": "Reporting",
+       "owner": "tm-lena",
+       "submitted_on": "@today-90d",
+       "details": "One customer wanted a fixed order; not enough interest."
+      }
+     },
+     {
+      "key": "r9",
+      "values": {
+       "request_name": "Offline mode for field staff",
+       "status": "Under review",
+       "priority": "High",
+       "votes": 41,
+       "customers": [
+        "c4",
+        "c1",
+        "c6"
+       ],
+       "area": "Mobile",
+       "owner": "tm-raj",
+       "submitted_on": "@today-20d",
+       "details": "Crews work in basements and rural sites with no signal."
+      }
+     },
+     {
+      "key": "r10",
+      "values": {
+       "request_name": "Webhooks for payment events",
+       "status": "In progress",
+       "priority": "High",
+       "votes": 16,
+       "customers": [
+        "c4"
+       ],
+       "area": "Integrations",
+       "owner": "tm-raj",
+       "submitted_on": "@today-45d",
+       "details": "Finance teams want to react to payments in their own tools."
+      }
+     },
+     {
+      "key": "r11",
+      "values": {
+       "request_name": "Recurring invoice templates",
+       "status": "New",
+       "priority": "Medium",
+       "votes": 14,
+       "customers": [
+        "c2",
+        "c3"
+       ],
+       "area": "Billing",
+       "owner": "tm-owen",
+       "submitted_on": "@today-2d",
+       "details": "The same invoice is rebuilt every month."
+      }
+     },
+     {
+      "key": "r12",
+      "values": {
+       "request_name": "Role-based access to saved views",
+       "status": "Planned",
+       "priority": "High",
+       "votes": 29,
+       "customers": [
+        "c6",
+        "c4"
+       ],
+       "area": "Admin",
+       "owner": "tm-lena",
+       "submitted_on": "@today-18d",
+       "details": "Managers should see only the views meant for them."
+      }
+     }
+    ]
+   },
+   {
+    "token": "customer",
+    "name": "Customers",
+    "labelSingular": "Customer",
+    "labelPlural": "Customers",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "building-2",
+    "titleField": "customer_name",
+    "describes": "The customers who ask for things, with their plan and yearly value.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "customer_name",
+      "label": "Customer",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "company",
+      "label": "Company",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "arr",
+      "label": "ARR",
+      "parityType": "currency",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "unit": "USD",
+      "format": "currency",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 2000000
+       }
+      ]
+     },
+     {
+      "key": "plan",
+      "label": "Plan",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Starter",
+       "Team",
+       "Business",
+       "Enterprise"
+      ],
+      "choiceColors": {
+       "Starter": "blue",
+       "Team": "green",
+       "Business": "amber",
+       "Enterprise": "red"
+      }
+     },
+     {
+      "key": "contact",
+      "label": "Contact",
+      "parityType": "email",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "c1",
+      "values": {
+       "customer_name": "Ardent Freight Co.",
+       "company": "Ardent Freight",
+       "arr": 48000,
+       "plan": "Business",
+       "contact": "dispatch@ardentfreight.net"
+      }
+     },
+     {
+      "key": "c2",
+      "values": {
+       "customer_name": "Pellam Dental Group",
+       "company": "Pellam Dental",
+       "arr": 22400,
+       "plan": "Team",
+       "contact": "ops@pellamdental.net"
+      }
+     },
+     {
+      "key": "c3",
+      "values": {
+       "customer_name": "Juniper & Vale Studio",
+       "company": "Juniper & Vale",
+       "arr": 9600,
+       "plan": "Team",
+       "contact": "hello@junipervale.net"
+      }
+     },
+     {
+      "key": "c4",
+      "values": {
+       "customer_name": "Tidewell Logistics",
+       "company": "Tidewell",
+       "arr": 86000,
+       "plan": "Enterprise",
+       "contact": "it@tidewell.net"
+      }
+     },
+     {
+      "key": "c5",
+      "values": {
+       "customer_name": "Marisol Cafe Collective",
+       "company": "Marisol Cafes",
+       "arr": 5400,
+       "plan": "Starter",
+       "contact": "owner@marisolcafes.net"
+      }
+     },
+     {
+      "key": "c6",
+      "values": {
+       "customer_name": "Hollis Orthotics",
+       "company": "Hollis",
+       "arr": 31200,
+       "plan": "Business",
+       "contact": "admin@hollisortho.net"
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Many customers can ask for the same request.",
+    "fromTable": "request",
+    "fromField": "customers",
+    "toTable": "customer",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "set_null",
+    "inverseKey": "requests"
+   },
+   {
+    "describes": "Each request has one owner.",
+    "fromTable": "request",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "requests_owned"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-lena",
+      "values": {
+       "full_name": "Lena Okonkwo",
+       "role": "Product manager",
+       "work_email": "lena@brightvane.net",
+       "mobile": "(415) 555-0131",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-raj",
+      "values": {
+       "full_name": "Raj Venkataraman",
+       "role": "Engineering lead",
+       "work_email": "raj@brightvane.net",
+       "mobile": "(415) 555-0132",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-mia",
+      "values": {
+       "full_name": "Mia Castellanos",
+       "role": "Support lead",
+       "work_email": "mia@brightvane.net",
+       "mobile": "(415) 555-0133",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-owen",
+      "values": {
+       "full_name": "Owen Fitzgerald",
+       "role": "Designer",
+       "work_email": "owen@brightvane.net",
+       "mobile": "(415) 555-0134",
+       "start_date": "@today-18m"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "submit_request",
+    "name": "Submit a request",
+    "describes": "How customers and support suggest a feature.",
+    "audience": "public",
+    "table": "request",
+    "fields": [
+     {
+      "fieldKey": "request_name",
+      "ask": "What would you like us to add?",
+      "required": true
+     },
+     {
+      "fieldKey": "details",
+      "ask": "What problem does it solve for you?"
+     },
+     {
+      "fieldKey": "area",
+      "ask": "Which part of the product is it about?"
+     }
+    ],
+    "submitLabel": "Send request",
+    "confirmation": "Thank you. We read every request."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_requests",
+    "name": "All requests",
+    "table": "request",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "votes",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "request_board",
+    "name": "Board",
+    "table": "request",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "needs_triage",
+    "name": "Needs triage",
+    "table": "request",
+    "kind": "grid",
+    "filters": {
+     "status": "New"
+    }
+   },
+   {
+    "token": "all_customers",
+    "name": "Customers",
+    "table": "customer",
+    "kind": "grid",
+    "isDefault": true
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Requests assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "request",
+     "describes": "Every request with votes, status, area and owner."
+    },
+    {
+     "name": "related_tables",
+     "table": "customer",
+     "describes": "Customers and their yearly value."
+    }
+   ],
+   "question": {
+    "ask": "How many requests are still new?",
+    "whyItMatters": "Lena triages new ones first.",
+    "expect": {
+     "table": "request",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "New"
+     },
+     "answer": 3,
+     "unit": "requests"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the request board.",
+    "action": {
+     "kind": "open",
+     "surface": "request_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "request_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open requests needing triage.",
+    "action": {
+     "kind": "open",
+     "surface": "needs_triage"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "needs_triage",
+     "minItems": 3
+    }
+   },
+   {
+    "says": "Open the customers.",
+    "action": {
+     "kind": "open",
+     "surface": "all_customers"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_customers",
+     "minItems": 5
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library author (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "brightvane.net",
+    "ardentfreight.net",
+    "pellamdental.net",
+    "junipervale.net",
+    "tidewell.net",
+    "marisolcafes.net",
+    "hollisortho.net"
+   ],
+   "fictionalStreets": [
+    "Alder Lantern Way"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "feature-requests",
+   "parent": null,
+   "title": "Feature Requests",
+   "icon": {
+    "emoji": "💡"
+   },
+   "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Every idea gets a row. Add votes and the customers who asked, triage the new ones each week, and move requests to Planned when they earn it."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "Inbox"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:triage-guide"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:request-dashboard"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:request-writing-guide"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Requests"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "request",
+       "view": "request_board"
+      },
+      "inline": true,
+      "title": "Requests",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-b",
+        "name": "Board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "v-v",
+        "name": "Most wanted",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "votes",
+          "direction": "desc"
+         }
+        ]
+       },
+       {
+        "id": "v-n",
+        "name": "Needs triage",
+        "layout": "list",
+        "icon": "Inbox",
+        "filters": {
+         "status": "New"
+        },
+        "sorts": [
+         {
+          "field": "submitted_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "v-a",
+        "name": "By area",
+        "layout": "chart",
+        "icon": "ChartPie",
+        "chart": {
+         "type": "donut",
+         "groupBy": "area",
+         "op": "count",
+         "centerValue": true
+        }
+       }
+      ],
+      "activeViewId": "v-b"
+     }
+    },
+    {
+     "type": "divider"
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Customers"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "customer",
+       "view": "all_customers"
+      },
+      "inline": true,
+      "title": "Customers",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-c",
+        "name": "Customers",
+        "layout": "grid",
+        "icon": "Table"
+       },
+       {
+        "id": "v-g",
+        "name": "Value by plan",
+        "layout": "chart",
+        "icon": "ChartColumn",
+        "chart": {
+         "type": "bar",
+         "groupBy": "plan",
+         "op": "sum",
+         "field": "arr"
+        }
+       }
+      ],
+      "activeViewId": "v-c"
+     }
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Declined"
+      }
+     ],
+     "children": [
+      {
+       "type": "database",
+       "props": {
+        "source": {
+         "kind": "template",
+         "table": "request",
+         "view": "all_requests"
+        },
+        "inline": true,
+        "title": "Requests",
+        "linked": true,
+        "showTitle": true,
+        "views": [
+         {
+          "id": "v-d",
+          "name": "Declined",
+          "layout": "list",
+          "icon": "Ban",
+          "filters": {
+           "status": "Declined"
+          }
+         }
+        ],
+        "activeViewId": "v-d"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "request-dashboard",
+   "parent": "feature-requests",
+   "title": "Demand dashboard",
+   "icon": {
+    "emoji": "📊"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "request",
+           "view": "all_requests"
+          },
+          "inline": true,
+          "title": "Requests",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "By status",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "status",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "request",
+           "view": "all_requests"
+          },
+          "inline": true,
+          "title": "Requests",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "Votes by area",
+            "layout": "chart",
+            "icon": "ChartColumn",
+            "chart": {
+             "type": "bar",
+             "groupBy": "area",
+             "op": "sum",
+             "field": "votes"
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "request",
+           "view": "all_requests"
+          },
+          "inline": true,
+          "title": "Requests",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-chart",
+            "name": "By priority",
+            "layout": "chart",
+            "icon": "ChartPie",
+            "chart": {
+             "type": "donut",
+             "groupBy": "priority",
+             "op": "count",
+             "centerValue": true
+            }
+           }
+          ],
+          "activeViewId": "view-chart"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Top voted"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "request",
+       "view": "all_requests"
+      },
+      "inline": true,
+      "title": "Requests",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-t",
+        "name": "Most votes",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "votes",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "v-t"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Waiting for a decision"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "request",
+       "view": "all_requests"
+      },
+      "inline": true,
+      "title": "Requests",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "v-w",
+        "name": "Under review",
+        "layout": "list",
+        "icon": "Clock",
+        "filters": {
+         "status": "Under review"
+        }
+       }
+      ],
+      "activeViewId": "v-w"
+     }
+    }
+   ]
+  },
+  {
+   "key": "triage-guide",
+   "parent": "feature-requests",
+   "title": "Weekly triage",
+   "icon": {
+    "emoji": "🧭"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Triage in four moves"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Open Needs triage and read each request."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Merge repeats: add the customer to the existing request instead of a new row."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Set priority from votes, customers asking and ARR affected."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Move to Under review or Declined, and tell the person who asked."
+      }
+     ]
+    },
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Declined is a fine answer. Write one line on why, so it can be reopened if it comes up again."
+      }
+     ],
+     "background": "gray",
+     "props": {
+      "icon": "MessageSquare"
+     }
+    }
+   ]
+  },
+  {
+   "key": "request-writing-guide",
+   "parent": "feature-requests",
+   "title": "Writing a good request",
+   "icon": {
+    "emoji": "✍️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "What to capture"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "The problem in the customer's own words"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "What they do today to work around it"
+      }
+     ]
+    },
+    {
+     "type": "bulleted",
+     "text": [
+      {
+       "text": "Who is affected and how often"
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Request template"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Problem"
+      }
+     ],
+     "props": {
+      "level": 3
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Describe what is hard."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Proposed solution"
+      }
+     ],
+     "props": {
+      "level": 3
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Describe what would help."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Impact"
+      }
+     ],
+     "props": {
+      "level": 3
+     }
+    },
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Who benefits, and what it is worth."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
