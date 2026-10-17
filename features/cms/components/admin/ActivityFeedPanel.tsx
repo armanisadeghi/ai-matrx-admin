@@ -84,7 +84,7 @@ export default function ActivityFeedPanel({ sites }: { sites: ClientSiteSummary[
     const siteName = (id: string | null) => sites.find((s) => s.id === id)?.name ?? id ?? '—';
 
     const columns = useMemo((): MatrxColumnDef<ActivityRow>[] => [
-        { id: 'created_at', header: 'Time', accessorFn: (row) => row.created_at, width: 150,
+        { id: 'created_at', header: 'Time', accessorFn: (row) => row.created_at, format: { id: 'datetime' }, width: 150,
           cell: (row) => <span className="whitespace-nowrap text-muted-foreground">{formatDistanceToNow(new Date(row.created_at), { addSuffix: true })}</span> },
         { id: 'actor', header: 'Actor', accessorFn: (row) => row.changes?.actor ?? 'unknown', filter: 'select', width: 110,
           cell: (row) => <ActorBadge actor={row.changes?.actor} /> },

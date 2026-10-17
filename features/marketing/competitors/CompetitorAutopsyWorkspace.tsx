@@ -829,7 +829,7 @@ export default function CompetitorAutopsyWorkspace({
       {
         accessorKey: "last_observed_at",
         header: "Last observed",
-        filter: "text",
+        format: { id: "datetime" },
         cell: (row) => dateCell(row.last_observed_at),
       },
     ],
@@ -915,13 +915,13 @@ export default function CompetitorAutopsyWorkspace({
       {
         accessorKey: "created_at",
         header: "Started",
-        filter: "text",
+        format: { id: "datetime" },
         cell: (row) => dateCell(row.created_at),
       },
       {
         accessorKey: "completed_at",
         header: "Completed",
-        filter: "text",
+        format: { id: "datetime" },
         cell: (row) => dateCell(row.completed_at),
       },
       {

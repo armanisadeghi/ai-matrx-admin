@@ -161,6 +161,7 @@ export function CollectionStatusPanel({
       id: "lastRunAt",
       accessorFn: (row) => row.lastRunAt ?? "",
       header: "Last run",
+      format: { id: "datetime" },
       cell: (row) => (
         <span
           className={cn(
@@ -176,6 +177,7 @@ export function CollectionStatusPanel({
       id: "lastSuccessAt",
       accessorFn: (row) => row.lastSuccessAt ?? "",
       header: "Last success",
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="text-muted-foreground">
           {row.lastSuccessAt ? formatCompactDate(row.lastSuccessAt) : "never"}

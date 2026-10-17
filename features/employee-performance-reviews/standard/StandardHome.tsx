@@ -159,7 +159,7 @@ export function StandardHome() {
       id: "status",
       header: "Status",
       accessorFn: (r) => statusLabel(r.status),
-      filter: "text",
+      filter: "select",
       width: 150,
       cell: (r) => <Badge tone={statusTone(r.status)}>{statusLabel(r.status)}</Badge>,
     },
@@ -181,7 +181,7 @@ export function StandardHome() {
         </Link>
       ),
     },
-    { id: "status", header: "Status", accessorFn: (c) => c.status, filter: "text", width: 110, cell: (c) => <Badge tone={c.status === "open" ? "primary" : "neutral"}>{c.status}</Badge> },
+    { id: "status", header: "Status", accessorFn: (c) => c.status, filter: "select", width: 110, cell: (c) => <Badge tone={c.status === "open" ? "primary" : "neutral"}>{c.status}</Badge> },
     { id: "period", header: "Period", accessorFn: (c) => c.periodEnd, filter: "date", width: 240, cell: (c) => periodLabel(c.periodStart, c.periodEnd) },
     { id: "reviews", header: "Reviews", accessorFn: (c) => c.reviewCount, filter: "number", width: 100 },
     { id: "done", header: "Acknowledged", accessorFn: (c) => c.acknowledgedCount, filter: "number", width: 130 },
@@ -264,7 +264,7 @@ export function StandardHome() {
     },
     { id: "cycle", header: "Cycle", accessorFn: (r) => r.cycleName, filter: "text", width: 220 },
     { id: "due", header: "Due", accessorFn: (r) => r.dueOn, filter: "date", width: 130, cell: (r) => formatDay(r.dueOn) },
-    { id: "status", header: "Status", accessorFn: (r) => (r.responseStatus === "submitted" ? "Sent" : "To do"), filter: "text", width: 110, cell: (r) => <Badge tone={r.responseStatus === "submitted" ? "success" : "warning"}>{r.responseStatus === "submitted" ? "Sent" : "To do"}</Badge> },
+    { id: "status", header: "Status", accessorFn: (r) => (r.responseStatus === "submitted" ? "Sent" : "To do"), filter: "select", filterOptions: [{ value: "Sent", label: "Sent" }, { value: "To do", label: "To do" }], width: 110, cell: (r) => <Badge tone={r.responseStatus === "submitted" ? "success" : "warning"}>{r.responseStatus === "submitted" ? "Sent" : "To do"}</Badge> },
   ];
   const requestCopy: MatrxDataTableCopyConfig<PeerRequest> = {
     label: "feedback request",

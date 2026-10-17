@@ -602,7 +602,7 @@ export function ImpactBatchPanel({
         id: "resultStatus",
         accessorKey: "resultStatus",
         header: mode === "dry_run" ? "Why not in the batch" : "Result",
-        filter: "text",
+        filter: "select",
         width: 260,
         cell: (r) => {
           const result = writes.resultByRung.get(r.id);

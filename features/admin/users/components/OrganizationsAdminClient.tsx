@@ -523,6 +523,7 @@ export function OrganizationsAdminClient() {
       id: "joined_at",
       accessorKey: "joined_at",
       header: "Joined",
+      format: { id: "datetime" },
       cell: (member) => (
         <span className="text-xs text-muted-foreground">
           {new Date(member.joined_at).toLocaleDateString()}

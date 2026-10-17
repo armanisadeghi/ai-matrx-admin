@@ -168,7 +168,7 @@ export function OutreachListsPage() {
       accessorKey: "started_at",
       header: "Started",
       sortable: true,
-      filter: false,
+      format: { id: "datetime" },
       width: 110,
       cell: (row) => (
         <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
@@ -181,7 +181,7 @@ export function OutreachListsPage() {
       accessorKey: "updated_at",
       header: "Updated",
       sortable: true,
-      filter: false,
+      format: { id: "datetime" },
       width: 110,
       cell: (row) => (
         <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">

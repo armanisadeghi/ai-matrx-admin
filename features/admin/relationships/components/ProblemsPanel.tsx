@@ -64,6 +64,8 @@ const problemColumns: MatrxColumnDef<ProblemTableRow>[] = [
     accessorKey: "kind",
     header: "Problem",
     accessorFn: (row) => PROBLEM_TITLES[row.kind] ?? row.kind,
+    filter: "select",
+    filterOptions: Object.values(PROBLEM_TITLES).map((v) => ({ value: v, label: v })),
     cell: (row) => (
       <span className="whitespace-nowrap text-xs font-medium">
         {PROBLEM_TITLES[row.kind] ?? row.kind}
@@ -75,6 +77,7 @@ const problemColumns: MatrxColumnDef<ProblemTableRow>[] = [
     id: "source_type",
     accessorKey: "source_type",
     header: "Source",
+    filter: "select",
     cell: (row) => <EntityTypeChip token={row.source_type} />,
     width: 160,
   },
@@ -82,6 +85,7 @@ const problemColumns: MatrxColumnDef<ProblemTableRow>[] = [
     id: "target_type",
     accessorKey: "target_type",
     header: "Target",
+    filter: "select",
     cell: (row) => <EntityTypeChip token={row.target_type} />,
     width: 160,
   },

@@ -158,7 +158,7 @@ export function SeoSpendPanel() {
       id: "occurred_at",
       accessorKey: "occurred_at",
       header: "When",
-      filter: "text",
+      format: { id: "datetime" },
       cell: (row) =>
         new Date(row.occurred_at).toLocaleString(undefined, {
           dateStyle: "medium",

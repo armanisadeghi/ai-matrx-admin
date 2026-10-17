@@ -89,7 +89,7 @@ const DRIFT_COLUMNS: MatrxColumnDef<DriftRow>[] = [
   {
     accessorKey: "originalType",
     header: "Original",
-    filter: "text",
+    filter: "select",
     width: 150,
     cell: (row) => (
       <span className="block truncate text-[11px] text-muted-foreground" title={row.originalType}>
@@ -101,7 +101,7 @@ const DRIFT_COLUMNS: MatrxColumnDef<DriftRow>[] = [
     id: "reconstructedType",
     accessorFn: (row) => row.reconstructedType ?? "(field dropped)",
     header: "Reconstructed",
-    filter: "text",
+    filter: "select",
     width: 190,
     cell: (row) => {
       const value = row.reconstructedType ?? "(field dropped)";

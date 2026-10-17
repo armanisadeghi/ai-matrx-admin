@@ -585,6 +585,7 @@ export default function CollectionItemsPage() {
       filter: "date",
       width: 150,
     },
+    // table-filter-off: computed from seen/spam/archived flags, not a stored status column
     {
       id: "status",
       header: "Status",

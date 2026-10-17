@@ -437,6 +437,8 @@ const PROJECT_TASK_QUERY_COLUMNS: MatrxColumnDef<DatabaseTask>[] = [
     id: "priority",
     header: "Priority",
     accessorFn: (t) => t.priority ?? "none",
+    filter: "select",
+    filterOptions: [...Object.keys(PRIORITY_RANK), "none"].map((v) => ({ value: v, label: v })),
     sortValue: (t) => PRIORITY_RANK[t.priority ?? ""] ?? 3,
   },
   {
