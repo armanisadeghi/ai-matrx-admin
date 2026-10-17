@@ -5049,3 +5049,5 @@ write, not this one's to guess. It is the `check:settings-unregistered` class: a
 key has no live `platform.feature_knob` row RAISES at run time by design.
 
 - 2026-09-28 (page-pass coordinator): Extension code-login — `/api/auth/extension/generate-code` now REQUIRES the organization (X-Organization-Id) and refuses with `organization_required` without it (ebaa48062f). No caller sends it yet: `utils/auth/extensionAuthHelper.ts` is unused and sends no org; whoever wires the extension login must send the org via `fetchWithOrganization`. Owner: extension-auth lane (see c714776110).
+
+- (L12c, 2026-10-17) Save to a table: every save makes a stray "<column> choices" table (Platform, Format, Account) because low-cardinality text columns are typed as Choice; the preview grid in the save dialog wraps headers letter by letter at narrow widths. Both live in `features/save-to-table` / data-tables.
