@@ -104,9 +104,8 @@ export interface HealthFinding {
 interface DefinitionFacts {
   label: string | null;
   origin: string | null;
-  /** Some rung answers the job (`jobAnswersSomewhere`); enabled jobs only matter. */
-  answers: boolean;
-  enabled: boolean;
+  /** Some enabled system row of this key has no rung that answers it. */
+  nothingAnswers: boolean;
 }
 
 type DefinitionRead = Pick<
@@ -183,8 +182,9 @@ async function readDefinitions(): Promise<Map<string, DefinitionFacts>> {
     out.set(row.mandate_key, {
       label: prev?.label ?? row.label,
       origin: prev?.origin === "code" ? "code" : row.origin,
-      answers: (prev?.answers ?? false) || answers,
-      enabled: (prev?.enabled ?? false) || row.is_enabled !== false,
+      // Judged per row, as the list does: a disabled row that answers never
+      // hides an enabled row that does not.
+      nothingAnswers: (prev?.nothingAnswers ?? false) || (row.is_enabled !== false && !answers),
     });
   }
   return out;
@@ -335,7 +335,7 @@ export async function fetchMandateHealth(dispatch: AppDispatch): Promise<HealthL
   // every request — the Agent Studio assistant sat here with no finding.
   if (definitions.status === "fulfilled") {
     for (const [rawKey, def] of defs) {
-      if (!def.enabled || def.answers) continue;
+      if (!def.nothingAnswers) continue;
       const key = storedMandateKey(rawKey);
       findings.push({
         id: `records:${rawKey}:nothing-answers`,
