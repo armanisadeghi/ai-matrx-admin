@@ -241,11 +241,15 @@ export function partyToKeep(
       firstName: first ?? undefined,
       lastName: last ?? undefined,
       jobTitle: text(o, "position") ?? undefined,
-      primaryDomain: text(o, "domain") ?? typed("domain") ?? undefined,
+      // A person carries no company website of their own (the party table refuses it), so the company's
+      // website rides on the record's data beside where the address was found.
       emails: confirmed ? [confirmed] : [],
       phones: [],
       unconfirmedEmail: confirmed ? null : email,
-      attributes: confirmed ? {} : { found_work_email: { address: email, status: "not_confirmed" } },
+      attributes: {
+        works_at_domain: text(o, "domain") ?? typed("domain"),
+        ...(confirmed ? {} : { found_work_email: { address: email, status: "not_confirmed" } }),
+      },
       note: confirmed
         ? "Saved the person and their confirmed email."
         : "Saved the person. The email is not attached until a check confirms it.",

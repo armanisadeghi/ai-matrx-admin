@@ -25,9 +25,11 @@ export function AddressStatus({ output, verdict }: { output: unknown; verdict: u
   const checked = emailVerdictWords(verdict);
   const text = checked?.text ?? foundEmailWords(output);
   if (!text) return null;
+  const address = String((output as Record<string, unknown>).email ?? "");
   const tone = checked ? (checked.tone === "good" ? "success" : checked.tone === "warn" ? "warning" : "destructive") : "neutral";
   return (
     <div className="flex items-center gap-2" data-address-status={checked?.tone ?? "found"}>
+      {address ? <span className="text-sm font-medium text-foreground">{address}</span> : null}
       <Badge tone={tone}>{text}</Badge>
     </div>
   );
