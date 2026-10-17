@@ -171,16 +171,19 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
   /** The one write: send, reload, and say a refusal in words (a stale stamp reloads the list). */
   const edit = useCallback(
     async (model: CuratedModel, change: ListingEdit) => {
+      let words: string | undefined;
       try {
-        await discoveryApi.editListing(auth, model.id, change);
+        words = (await discoveryApi.editListing(auth, model.id, change)).words;
       } catch (err) {
         await load();
         throw new Error(extractErrorMessage(err));
       }
       await load();
+      // The server says what it changed ("Saved: order." / "No changes.") — shown as it said it.
+      if (words) toast({ title: model.common_name || model.name, description: words });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [auth.accessToken, auth.baseUrl, auth.organizationId, load],
+    [auth.accessToken, auth.baseUrl, auth.organizationId, load, toast],
   );
 
   const toggleActive = useCallback(
