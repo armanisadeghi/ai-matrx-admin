@@ -28,6 +28,7 @@ import {
   type OperationDescriptor,
 } from "@ai-matrx/api";
 import { serverApi } from "@/lib/api/server-api";
+import { followServerWork } from "@/features/ai-watch/followed-work";
 import { isTestVerdict } from "./verdicts";
 import { fetchTestCaseRows } from "./cases";
 import type {
@@ -442,6 +443,8 @@ function readLaunched(data: unknown): LaunchedRun {
   if (!isJsonObject(data) || typeof data.run_id !== "string") {
     throw new Error("The server started the run but answered in an unexpected shape.");
   }
+  // The server runs the cases and the judge detached: Watch AI and the Builder follow the run.
+  followServerWork({ kind: "test_run", id: data.run_id, label: "Eval run", source: "agent tests" });
   return {
     runId: data.run_id,
     status: str(data.status) || "queued",

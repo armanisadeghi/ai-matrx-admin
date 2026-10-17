@@ -29,6 +29,8 @@
  */
 
 import { useEffect, useState } from "react";
+import { useFollowedRunSummaries, useResolvedFollowed } from "./followed-work-store";
+import { useFollowedWork } from "./followed-work";
 import { RunTestReplaysStrip } from "@/features/ai-test-mode/RunTestReplaysStrip";
 import Link from "next/link";
 import { Eye, Send, Wrench } from "lucide-react";
@@ -200,7 +202,12 @@ export function useAiWatchPanel({
     };
   }, [canWatch, legacy, historyScope, listConversation, anyLive]);
 
-  const groups = buildRail(registry, records);
+  // Followed server work (factory builds, eval runs): their recorded calls join the rail as their own groups.
+  const followedRuns = useFollowedRunSummaries();
+  const followedWork = useFollowedWork();
+  const followedState = useResolvedFollowed();
+  const followedIds = new Set(followedRuns.map((r) => r.userRequestId));
+  const groups = buildRail(registry, [...records.filter((r) => !followedIds.has(r.userRequestId)), ...followedRuns]);
 
   // Selection: a door's target, else the person's pick, else the newest live call. A new run
   // on the page clears the pick, so the window always moves to the round being watched.
@@ -236,6 +243,13 @@ export function useAiWatchPanel({
           </div>
         ) : null}
         {callCount === 0 && !listError ? <div className="p-2 text-muted-foreground">No AI calls on this page yet</div> : null}
+        {followedWork
+          .filter((w) => !groups.some((g) => g.followKey === w.key))
+          .map((w) => (
+            <div key={w.key} className="border-b border-border px-2 py-1.5 text-muted-foreground" data-testid="ai-watch-followed-pending">
+              {w.label} · {followedState[w.key]?.done ? "no AI call recorded" : "running, no AI call recorded yet"}
+            </div>
+          ))}
         {newestRun && !groups.some((g) => g.workflowRunId === newestRun || g.id === UNRECORDED_GROUP) ? (
           <div className="border-b border-border px-2 py-1.5 text-muted-foreground">This run · no AI call yet</div>
         ) : null}

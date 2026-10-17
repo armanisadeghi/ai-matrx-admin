@@ -20,6 +20,7 @@ import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWra
 import CredentialExpiryNotifier from "@/components/admin/CredentialExpiryNotifier";
 import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import AutoWatch from "@/features/ai-watch/AutoWatch";
+import FollowedWorkSync from "@/features/ai-watch/FollowedWorkSync";
 import ErrorInspectorBadge from "@/features/admin/error-inspector/ErrorInspectorBadge";
 import AdminAttentionDock from "@/features/admin/attention/AdminAttentionDock";
 
@@ -40,6 +41,7 @@ export default function AdminFeatureProviderCore({
   return (
     <>
       {canDebug ? <AutoWatch /> : null}
+      {canDebug ? <FollowedWorkSync /> : null}
       {isAdmin ? (
         <>
           <AdminIndicatorWrapper />
