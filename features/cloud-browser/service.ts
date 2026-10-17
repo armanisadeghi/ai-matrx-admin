@@ -698,7 +698,10 @@ export async function listProfiles(): Promise<CloudBrowserProfile[]> {
   if (error) throw error;
   const profiles = await Promise.all(
     data.map(async (row) => {
-      const access = await getResourceAccess("browser_profile", row.id);
+      // The owner of a profile is its admin: no round trip. Anyone else's
+      // profile asks the database once per profile per minute (`profileAccess`).
+      if (row.owner_user_id === me) return mapProfile(row, me, "admin");
+      const access = await profileAccess(row.id);
       if (!canViewAccess(access.level)) return null;
       const level =
         access.level === "admin"
@@ -710,6 +713,33 @@ export async function listProfiles(): Promise<CloudBrowserProfile[]> {
     }),
   );
   return profiles.filter((profile) => profile !== null);
+}
+
+/**
+ * ONE ACCESS CALL PER PROFILE (2026-10-17): every snapshot load lists the
+ * profiles, and each listing asked `get_resource_access` for EVERY visible
+ * profile — ~250 calls each time the Computer tab opened for an admin. The
+ * answer is kept per profile for a minute (in-flight calls shared), and a
+ * failed call is never kept.
+ */
+const PROFILE_ACCESS_TTL_MS = 60_000;
+const profileAccessCache = new Map<
+  string,
+  { at: number; access: Promise<Awaited<ReturnType<typeof getResourceAccess>>> }
+>();
+export function profileAccess(
+  profileId: string,
+): Promise<Awaited<ReturnType<typeof getResourceAccess>>> {
+  const hit = profileAccessCache.get(profileId);
+  if (hit && Date.now() - hit.at < PROFILE_ACCESS_TTL_MS) return hit.access;
+  const access = getResourceAccess("browser_profile", profileId);
+  profileAccessCache.set(profileId, { at: Date.now(), access });
+  access.catch(() => profileAccessCache.delete(profileId));
+  return access;
+}
+/** Test seam: forget every kept access answer. */
+export function forgetProfileAccess(): void {
+  profileAccessCache.clear();
 }
 
 /**
