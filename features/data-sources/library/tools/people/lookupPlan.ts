@@ -252,7 +252,7 @@ export function partyToKeep(
       },
       note: confirmed
         ? "Saved the person and their confirmed email."
-        : "Saved the person. The email is not attached until a check confirms it.",
+        : "Saved. The email waits until a check confirms it.",
     };
   }
   return null;

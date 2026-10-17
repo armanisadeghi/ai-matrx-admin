@@ -36,7 +36,7 @@ describe("found is not verified", () => {
   it("never attaches a found address to the CRM until a check confirmed that very address", () => {
     const unconfirmed = partyToKeep(found);
     expect(unconfirmed).toMatchObject({ kind: "person", displayName: "Ari Weinzweig", emails: [], unconfirmedEmail: "ari@zingermans.com" });
-    expect(unconfirmed?.note).toMatch(/not attached/);
+    expect(unconfirmed?.note).toMatch(/waits until a check/);
     expect(partyToKeep(found, { confirmedEmail: "someone@else.com" })?.emails).toEqual([]);
     expect(partyToKeep(found, { confirmedEmail: "ARI@zingermans.com" })).toMatchObject({ emails: ["ari@zingermans.com"], unconfirmedEmail: null });
   });
