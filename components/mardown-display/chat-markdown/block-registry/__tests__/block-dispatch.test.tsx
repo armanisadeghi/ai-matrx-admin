@@ -259,6 +259,24 @@ describe("block-dispatch registry", () => {
     }
   });
 
+  it("a legacy <event> tag (no serverData) renders the nested section, never the JSON dump", () => {
+    const ctx = {
+      block: { type: "event", content: "Dinner at 7 with **Sam**", isStreamingBlock: false },
+      index: 0,
+      isStreamActive: false,
+      hideReasoning: false,
+      hideToolResults: false,
+      replaceBlockContent: jest.fn(),
+      renderBasicMarkdown: (content: string) => React.createElement("div", null, content),
+    };
+    const rendered = resolveBlockDispatch("event")?.(ctx as never);
+    expect(React.isValidElement(rendered)).toBe(true);
+    const text = JSON.stringify(rendered?.props);
+    expect(text).toContain("Dinner at 7 with **Sam**");
+    expect(text).not.toContain("```json");
+    expect(text).not.toContain('"type":"event"');
+  });
+
   it("has NO registration for an unknown type — and the loud path screams", () => {
     expect(resolveBlockDispatch("__definitely_not_a_block_type__")).toBeNull();
 
