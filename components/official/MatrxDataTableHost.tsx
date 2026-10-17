@@ -4,7 +4,7 @@
 // and row-window contents belong to the design-system package. No startup IO.
 // Table UI feedback: /Users/armanisadeghi/code/common-docs/projects/npm-package-extraction/TABLE-UI-ISSUES.md
 // Read and update that checklist before fixing table UI feedback in any host.
-import { useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -213,6 +213,8 @@ export function MatrxDataTableHost({ children }: { children: ReactNode }) {
         const menu = hostEntityMenu(token, id, pathname, (to) => router.push(to));
         return menu && menu.length > 0 ? { ...doors, menu } : doors;
       },
+      // `rowClick="page"` moves through the app router (no full page load).
+      navigate: (href: string) => startTransition(() => router.push(href)),
       defaultDensity,
     }),
     [defaultDensity, pathname, router],
