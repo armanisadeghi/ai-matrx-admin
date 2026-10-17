@@ -20,6 +20,7 @@ import { useOrganizationRequired } from "@/features/organizations/useOrganizatio
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
+import { listOrgMembers } from "@/features/organizations/admin/service";
 import type { ReactNode } from "react";
 
 /** The mine lane's first screen: the last 30 days by model, costliest first. */
@@ -46,6 +47,29 @@ const yourself: DrillNameResolver = {
   missingLabel: "Reading the name…",
   resolve: async (ids) => ({ ok: true, names: Object.fromEntries(ids.map((id) => [id, "You"])) }),
 };
+
+/** The organization lane's people are named from the organization's own roster (the admin's door), never the platform names door. */
+function organizationPeople(organizationId: string): DrillNameResolver {
+  return {
+    emptyLabel: "No person",
+    missingLabel: "Reading the name…",
+    unreadLabel: "A person who is not in this organization",
+    resolve: async (ids) => {
+      try {
+        const members = await listOrgMembers(organizationId);
+        const byId = new Map(members.map((m) => [m.userId, m.displayName ?? m.email ?? null]));
+        const names: Record<string, string> = {};
+        for (const id of ids) {
+          const name = byId.get(id);
+          if (name) names[id] = name;
+        }
+        return { ok: true, names };
+      } catch (error) {
+        return { ok: false, message: error instanceof Error ? error.message : "The members could not be read." };
+      }
+    },
+  };
+}
 
 const loading = (
   <div className="p-4">
@@ -103,6 +127,7 @@ export function OrganizationUsageExplorer({ organizationId, headerExtras }: { or
       title="Organization usage"
       rootLabel="All organization usage"
       firstQuestion={ORG_USAGE_FIRST_QUESTION}
+      names={{ person: organizationPeople(organizationId) }}
       headline={{ measure: "cost", also: ["requests"] }}
       rowNoun="request"
       countMeasure="requests"
