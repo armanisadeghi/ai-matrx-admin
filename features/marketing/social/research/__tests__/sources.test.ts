@@ -40,6 +40,16 @@ describe("look-up sources", () => {
     expect(stepInputs(source!.steps[1], { ...values, limit: 20 })).toEqual({ account: "@duolingo", platform: "tiktok", limit: 20 });
   });
 
+  it("each ad library is a chip that answers the Tool's library input, so the box never asks twice", () => {
+    for (const id of ["meta", "tiktok", "google"]) {
+      const source = sourceFor("ads", id)!;
+      expect(source.fixed).toEqual({ library: id });
+      expect(source.hide).toContain("library");
+      expect(stepInputs(source.steps[0], { query: " Massage Envy ", library: id, cursor: "x" })).toEqual({ query: "Massage Envy", library: id });
+    }
+    expect(sourceFor("ads", null)?.id).toBe("meta");
+  });
+
   it("a source whose Tool the catalog lacks is reported, not run empty", () => {
     const xhs = sourceFor("account", "xiaohongshu")!;
     const { served, missing } = stepsServed(xhs, tools);

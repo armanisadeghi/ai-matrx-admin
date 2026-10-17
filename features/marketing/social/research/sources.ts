@@ -118,7 +118,7 @@ export const UNSERVED_SOURCES: ReadonlyArray<{ id: string; label: string; words:
 
 export const ACCOUNT_SOURCES: readonly ResearchSource[] = [...WEST_PLATFORMS.map(westSource), ...CHINA_SOURCES];
 
-const SIMPLE_MODES: Record<Exclude<ResearchMode, "account">, ResearchSource> = {
+const SIMPLE_MODES: Record<Exclude<ResearchMode, "account" | "ads">, ResearchSource> = {
   topic: {
     id: "topic",
     label: "Search a topic",
@@ -128,16 +128,6 @@ const SIMPLE_MODES: Record<Exclude<ResearchMode, "account">, ResearchSource> = {
     fixed: {},
     hide: ["cursor"],
     steps: [{ id: "posts", job: "social_keyword_search", title: "Posts", send: ["query", "platform", "search_type"] }],
-  },
-  ads: {
-    id: "ads",
-    label: "Ads",
-    region: "west",
-    formJob: "ads_library_search",
-    submit: "",
-    fixed: {},
-    hide: ["cursor"],
-    steps: [{ id: "ads", job: "ads_library_search", title: "Ads", send: ["query", "library", "advertiser"] }],
   },
   comments: {
     id: "comments",
@@ -151,10 +141,30 @@ const SIMPLE_MODES: Record<Exclude<ResearchMode, "account">, ResearchSource> = {
   },
 };
 
+const AD_LIBRARIES: ReadonlyArray<[string, string]> = [
+  ["meta", "Meta"],
+  ["tiktok", "TikTok"],
+  ["google", "Google"],
+  ["linkedin", "LinkedIn"],
+];
+
+export const AD_SOURCES: readonly ResearchSource[] = AD_LIBRARIES.map(([id, label]) => ({
+  id,
+  label,
+  region: "west" as const,
+  formJob: "ads_library_search",
+  submit: "Search ads",
+  fixed: { library: id },
+  hide: ["library", "cursor"],
+  steps: [{ id: "ads", job: "ads_library_search", title: "Ads", send: ["query", "library", "advertiser"] }],
+}));
+
 export const DEFAULT_ACCOUNT_SOURCE = "instagram";
+export const DEFAULT_AD_SOURCE = "meta";
 
 /** The source behind a mode and a chip. Null = a chip nothing serves. */
 export function sourceFor(mode: ResearchMode, sourceId: string | null): ResearchSource | null {
+  if (mode === "ads") return AD_SOURCES.find((s) => s.id === sourceId) ?? AD_SOURCES[0];
   if (mode !== "account") return SIMPLE_MODES[mode];
   return ACCOUNT_SOURCES.find((s) => s.id === sourceId) ?? null;
 }
@@ -165,7 +175,7 @@ export function unservedFor(sourceId: string | null): { id: string; label: strin
 
 /** Every job key a mode may need, so one catalog read answers for all of them. */
 export const RESEARCH_JOBS: readonly string[] = Array.from(
-  new Set([...ACCOUNT_SOURCES, ...Object.values(SIMPLE_MODES)].flatMap((s) => s.steps.map((x) => x.job))),
+  new Set([...ACCOUNT_SOURCES, ...AD_SOURCES, ...Object.values(SIMPLE_MODES)].flatMap((s) => s.steps.map((x) => x.job))),
 );
 
 /** The steps of a source whose Tool the catalog carries, and the titles of those it does not. */

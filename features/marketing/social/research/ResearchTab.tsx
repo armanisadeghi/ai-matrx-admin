@@ -25,7 +25,9 @@ import { PlatformMark } from "../components/PlatformMark";
 import { ResearchStepCard } from "./ResearchStepCard";
 import {
   ACCOUNT_SOURCES,
+  AD_SOURCES,
   DEFAULT_ACCOUNT_SOURCE,
+  DEFAULT_AD_SOURCE,
   RESEARCH_MODES,
   UNSERVED_SOURCES,
   chipForPaste,
@@ -56,7 +58,7 @@ export function ResearchTab() {
 
   const initialMode = params.get("mode");
   const [mode, setMode] = useState<ResearchMode>(isResearchMode(initialMode) ? initialMode : "account");
-  const [sourceId, setSourceId] = useState<string>(params.get("source") ?? DEFAULT_ACCOUNT_SOURCE);
+  const [sourceId, setSourceId] = useState<string>(params.get("source") ?? (initialMode === "ads" ? DEFAULT_AD_SOURCE : DEFAULT_ACCOUNT_SOURCE));
   const source = sourceFor(mode, sourceId);
   const unserved = mode === "account" ? unservedFor(sourceId) : null;
 
@@ -88,13 +90,14 @@ export function ResearchTab() {
   const pinAddress = (next: { mode: ResearchMode; source: string; calls: Array<string | null> | null }) => {
     const query = new URLSearchParams(params.toString());
     query.set("mode", next.mode);
-    if (next.mode === "account") query.set("source", next.source);
+    if (next.mode === "account" || next.mode === "ads") query.set("source", next.source);
     else query.delete("source");
     if (next.calls && next.calls.some(Boolean)) query.set("calls", encodeCalls(next.calls));
     else query.delete("calls");
     replaceAddressWithoutNavigating(`${window.location.pathname}?${query.toString()}`);
   };
 
+  const defaultSourceOf = (m: ResearchMode) => (m === "ads" ? DEFAULT_AD_SOURCE : DEFAULT_ACCOUNT_SOURCE);
   const choose = (nextMode: ResearchMode, nextSource: string) => {
     setMode(nextMode);
     setSourceId(nextSource);
@@ -147,9 +150,10 @@ export function ResearchTab() {
           variant="capsule"
           value={mode}
           data={RESEARCH_MODES.map((m) => ({ value: m.id, label: m.label }))}
-          onValueChange={(v) => choose(v as ResearchMode, sourceId)}
+          onValueChange={(v) => choose(v as ResearchMode, defaultSourceOf(v as ResearchMode))}
         />
         {mode === "account" ? <PlatformChips value={sourceId} onChange={(id) => choose("account", id)} /> : null}
+        {mode === "ads" ? <AdLibraryChips value={source?.id ?? DEFAULT_AD_SOURCE} onChange={(id) => choose("ads", id)} /> : null}
         {tools.isLoading ? (
           <RegionSkeleton />
         ) : tools.error ? (
@@ -213,6 +217,18 @@ function PlatformChips({ value, onChange }: { value: string; onChange: (id: stri
         {china.map((s) => chip(s.id, s.label))}
         {UNSERVED_SOURCES.map((s) => chip(s.id, s.label))}
       </div>
+    </div>
+  );
+}
+
+function AdLibraryChips({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Ad libraries">
+      {AD_SOURCES.map((s) => (
+        <Chip key={s.id} asChild label={s.label} pressed={s.id === value} icon={<PlatformMark platform={s.id === "meta" ? "facebook" : s.id === "google" ? "youtube" : s.id} size={14} />}>
+          <button type="button" onClick={() => onChange(s.id)} />
+        </Chip>
+      ))}
     </div>
   );
 }
