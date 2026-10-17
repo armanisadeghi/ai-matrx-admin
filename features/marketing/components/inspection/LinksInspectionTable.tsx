@@ -380,8 +380,7 @@ export function LinksInspectionTable({
       id: "created_at",
       accessorKey: "created_at",
       header: "Recorded",
-      // table-filter-off: the row count comes from web.count_link_edges, which has no date bounds; a date filter would narrow rows but not the total
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.snapshot?.captured_at ?? row.created_at)}

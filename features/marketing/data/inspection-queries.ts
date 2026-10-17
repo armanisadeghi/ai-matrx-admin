@@ -178,6 +178,9 @@ async function listLinks(
   const internal = booleanFilter(state, "is_internal");
   const httpStatus = numberFilter(state, "http_status");
   const position = numberFilter(state, "position");
+  const created = dateFilter(state, "created_at");
+  if (created?.since) query = query.gte("created_at", created.since);
+  if (created?.until) query = query.lt("created_at", created.until);
   if (targetUrl) query = query.ilike("target_url", `%${targetUrl}%`);
   if (anchorText) query = query.ilike("anchor_text", `%${anchorText}%`);
   if (rel) query = query.ilike("rel", `%${rel}%`);
@@ -207,6 +210,8 @@ async function listLinks(
             p_http_status_max: 0,
             p_position_min: position?.min,
             p_position_max: position?.max,
+            p_created_since: created?.since,
+            p_created_until: created?.until,
           })
           .abortSignal(abortSignal),
         db
@@ -221,6 +226,8 @@ async function listLinks(
             p_http_status_min: 400,
             p_position_min: position?.min,
             p_position_max: position?.max,
+            p_created_since: created?.since,
+            p_created_until: created?.until,
           })
           .abortSignal(abortSignal),
       ]).then(
@@ -241,6 +248,8 @@ async function listLinks(
           p_http_status_max: httpStatus?.max,
           p_position_min: position?.min,
           p_position_max: position?.max,
+          p_created_since: created?.since,
+          p_created_until: created?.until,
         })
         .abortSignal(abortSignal)
         .then((countResponse) =>
