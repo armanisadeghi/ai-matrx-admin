@@ -40,6 +40,7 @@ import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcar
 import { useOpenNoteInWindow } from "@/features/notes/actions/useOpenNoteInWindow";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { noteIdentityContentSource } from "@/features/notes/richDocumentSource";
+import { useNoteRenderHost } from "@/features/notes/hooks/useNoteRenderHost";
 import type { Note, NoteListItem } from "@/features/notes/types";
 import { parseNoteOutline } from "@/features/notes/utils/noteOutline";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
@@ -202,6 +203,8 @@ function useStudyPassageActions(guide: Note): { actions: Action[]; tutor: React.
 }
 
 function ReaderContent({ guide, onEdit, onDelete, canDelete, jumpRequest, canEdit, onBodySaved }: { guide: Note; onEdit: () => void; onDelete: () => void; canDelete: boolean; jumpRequest: { index: number; nonce: number } | null; canEdit: boolean; onBodySaved: () => void }) {
+  // The guide's view key reads the "note" source adapter, which the lazy rich-content host registers.
+  const hostLanded = useNoteRenderHost();
   const readerRef = useRef<HTMLDivElement>(null);
   // EDIT IN PLACE (components/rich-editor/in-place): the guide's owner
   // double-clicks the text (or presses the pencil) and THE ONE editor opens
@@ -240,7 +243,7 @@ function ReaderContent({ guide, onEdit, onDelete, canDelete, jumpRequest, canEdi
   return <main className="relative flex h-full min-h-0 flex-col bg-background">
     <div className="absolute right-3 top-2 z-20 flex gap-1">
       {/* THE content action set: Copy, Plain, Export, Print, Transform — one click each. */}
-      <RichCopySplit size="sm" label={`Study guide "${guide.label || "Untitled guide"}"`} human={() => guide.content ?? ""} contentFlavor="markdown" exportTitle={guide.label || "Study guide"} viewKey={richDocumentViewKey(noteIdentityContentSource(guide.id), "")} className="rounded-md border border-border bg-background" />
+      <RichCopySplit size="sm" label={`Study guide "${guide.label || "Untitled guide"}"`} human={() => guide.content ?? ""} contentFlavor="markdown" exportTitle={guide.label || "Study guide"} viewKey={hostLanded ? richDocumentViewKey(noteIdentityContentSource(guide.id), "") : undefined} className="rounded-md border border-border bg-background" />
       <Button icon={<Search aria-hidden />} variant="outline" aria-label="Search this guide" title="Search this guide" onClick={openFind} />
       <Button icon={<Pencil aria-hidden />} variant="outline" aria-label="Edit study guide" title="Edit study guide" onClick={canEdit ? () => setEditingBody(true) : onEdit} />
       {canEdit && <Button icon={<TextCursorInput aria-hidden />} variant="outline" aria-label="Rename study guide" title="Rename study guide" onClick={() => setEditingTitle(true)} />}
