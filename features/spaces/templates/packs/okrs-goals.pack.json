@@ -1,0 +1,1665 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0103",
+  "version": 1,
+  "title": "OKRs & Goals",
+  "description": "Objectives and key results with live progress rollups, weekly check-ins, cycle review.",
+  "forWho": "Leadership teams setting quarterly goals",
+  "icon": {
+    "emoji": "🎯"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "planning",
+  "tags": [
+    "okr",
+    "goals",
+    "strategy",
+    "quarterly"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-okrs-goals",
+    "catalogueId": "SP0103",
+    "useCase": "Hollis Beaumont-Park leads a member-owned credit cooperative and uses this to see which objectives are on track and which key results are slipping.",
+    "industry": "cross_industry",
+    "vertical": "Goal setting",
+    "job": "reporting",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Copperfield Cooperative",
+      "describes": "A member-owned credit cooperative serving a mid-sized city.",
+      "address": {
+        "line1": "900 Wrenhall Avenue",
+        "city": "Minneapolis",
+        "region": "MN",
+        "postalCode": "55408",
+        "country": "US"
+      },
+      "phone": "(612) 555-0120",
+      "website": "copperfield-coop.net",
+      "email": "hello@copperfield-coop.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-okrs-goals",
+    "tables": [
+      {
+        "token": "objective",
+        "name": "Objectives",
+        "labelSingular": "Objective",
+        "labelPlural": "Objectives",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "objective_name",
+        "describes": "The few outcomes the cooperative is aiming for this cycle and the next.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "objective_name",
+            "label": "Objective",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cycle",
+            "label": "Cycle",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "This cycle",
+              "Next cycle"
+            ],
+            "choiceColors": {
+              "This cycle": "blue",
+              "Next cycle": "slate"
+            },
+            "required": true,
+            "default": "This cycle"
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Member services",
+              "Lending",
+              "Technology",
+              "Marketing"
+            ],
+            "choiceColors": {
+              "Member services": "green",
+              "Lending": "amber",
+              "Technology": "violet",
+              "Marketing": "pink"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "confidence",
+            "label": "Confidence",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "On track",
+              "At risk",
+              "Off track"
+            ],
+            "choiceColors": {
+              "On track": "green",
+              "At risk": "amber",
+              "Off track": "red"
+            },
+            "required": true,
+            "default": "On track"
+          },
+          {
+            "key": "key_results",
+            "label": "Key results",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "key_result",
+            "relationMax": 8,
+            "multi": true
+          },
+          {
+            "key": "kr_count",
+            "label": "Key result count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "key_results",
+            "pick": "kr_name",
+            "agg": "count"
+          },
+          {
+            "key": "avg_progress",
+            "label": "Average progress (%)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "key_results",
+            "pick": "progress",
+            "agg": "avg"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ob-1",
+            "values": {
+              "objective_name": "Members feel looked after from the first day",
+              "cycle": "This cycle",
+              "team": "Member services",
+              "owner": "tm-yara",
+              "confidence": "On track",
+              "key_results": [
+                "kr-01",
+                "kr-02",
+                "kr-03"
+              ]
+            }
+          },
+          {
+            "key": "ob-2",
+            "values": {
+              "objective_name": "Make borrowing simple and quick",
+              "cycle": "This cycle",
+              "team": "Lending",
+              "owner": "tm-desmond",
+              "confidence": "At risk",
+              "key_results": [
+                "kr-04",
+                "kr-05",
+                "kr-06"
+              ]
+            }
+          },
+          {
+            "key": "ob-3",
+            "values": {
+              "objective_name": "A website and app that members trust",
+              "cycle": "This cycle",
+              "team": "Technology",
+              "owner": "tm-sunita",
+              "confidence": "On track",
+              "key_results": [
+                "kr-07",
+                "kr-08",
+                "kr-09"
+              ]
+            }
+          },
+          {
+            "key": "ob-4",
+            "values": {
+              "objective_name": "Grow through members telling their friends",
+              "cycle": "This cycle",
+              "team": "Marketing",
+              "owner": "tm-bjorn",
+              "confidence": "Off track",
+              "key_results": [
+                "kr-10",
+                "kr-11"
+              ]
+            }
+          },
+          {
+            "key": "ob-5",
+            "values": {
+              "objective_name": "Get the systems ready for double the members",
+              "cycle": "Next cycle",
+              "team": "Technology",
+              "owner": "tm-sunita",
+              "confidence": "On track",
+              "key_results": [
+                "kr-12",
+                "kr-13"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Any leader can own an objective.",
+          "key_results": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "key_result",
+        "name": "Key results",
+        "labelSingular": "Key result",
+        "labelPlural": "Key results",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "goal",
+        "titleField": "kr_name",
+        "describes": "The measurable results under each objective, with where they started and where they are.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "kr_name",
+            "label": "Key result",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "start_value",
+            "label": "Start value",
+            "parityType": "number",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": -1000000
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "current_value",
+            "label": "Current value",
+            "parityType": "number",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": -1000000
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "target_value",
+            "label": "Target value",
+            "parityType": "number",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": -1000000
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND(({Current value} - {Start value}) / ({Target value} - {Start value}) * 100, 0)"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "updated_on",
+            "label": "Last updated",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "trend",
+            "label": "Trend",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Up",
+              "Flat",
+              "Down"
+            ],
+            "choiceColors": {
+              "Up": "green",
+              "Flat": "slate",
+              "Down": "red"
+            },
+            "required": true,
+            "default": "Flat"
+          }
+        ],
+        "rows": [
+          {
+            "key": "kr-01",
+            "values": {
+              "kr_name": "Median first-reply time to a member message (hours)",
+              "start_value": 20,
+              "current_value": 9,
+              "target_value": 4,
+              "owner": "tm-yara",
+              "updated_on": "@today-1d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-02",
+            "values": {
+              "kr_name": "New-member welcome calls completed (%)",
+              "start_value": 40,
+              "current_value": 78,
+              "target_value": 95,
+              "owner": "tm-yara",
+              "updated_on": "@today-2d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-03",
+            "values": {
+              "kr_name": "Member satisfaction score (out of 100)",
+              "start_value": 72,
+              "current_value": 81,
+              "target_value": 88,
+              "owner": "tm-yara",
+              "updated_on": "@today-3d",
+              "trend": "Flat"
+            }
+          },
+          {
+            "key": "kr-04",
+            "values": {
+              "kr_name": "Median days from application to decision",
+              "start_value": 6,
+              "current_value": 5,
+              "target_value": 2,
+              "owner": "tm-desmond",
+              "updated_on": "@today-4d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-05",
+            "values": {
+              "kr_name": "Applications finished online (%)",
+              "start_value": 35,
+              "current_value": 52,
+              "target_value": 80,
+              "owner": "tm-desmond",
+              "updated_on": "@today-5d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-06",
+            "values": {
+              "kr_name": "Documents collected without a branch visit (%)",
+              "start_value": 20,
+              "current_value": 24,
+              "target_value": 70,
+              "owner": "tm-desmond",
+              "updated_on": "@today-6d",
+              "trend": "Flat"
+            }
+          },
+          {
+            "key": "kr-07",
+            "values": {
+              "kr_name": "App crash-free sessions (%)",
+              "start_value": 96,
+              "current_value": 98,
+              "target_value": 99,
+              "owner": "tm-sunita",
+              "updated_on": "@today-7d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-08",
+            "values": {
+              "kr_name": "Pages that load in under two seconds (%)",
+              "start_value": 55,
+              "current_value": 83,
+              "target_value": 90,
+              "owner": "tm-sunita",
+              "updated_on": "@today-8d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-09",
+            "values": {
+              "kr_name": "Members using the app each month (thousands)",
+              "start_value": 4,
+              "current_value": 6,
+              "target_value": 9,
+              "owner": "tm-sunita",
+              "updated_on": "@today-9d",
+              "trend": "Flat"
+            }
+          },
+          {
+            "key": "kr-10",
+            "values": {
+              "kr_name": "Members who joined from a referral (per month)",
+              "start_value": 12,
+              "current_value": 14,
+              "target_value": 60,
+              "owner": "tm-bjorn",
+              "updated_on": "@today-1d",
+              "trend": "Down"
+            }
+          },
+          {
+            "key": "kr-11",
+            "values": {
+              "kr_name": "Referral links shared (per month)",
+              "start_value": 80,
+              "current_value": 95,
+              "target_value": 400,
+              "owner": "tm-bjorn",
+              "updated_on": "@today-2d",
+              "trend": "Flat"
+            }
+          },
+          {
+            "key": "kr-12",
+            "values": {
+              "kr_name": "Core banking migration plan approved (steps done of 10)",
+              "start_value": 0,
+              "current_value": 4,
+              "target_value": 10,
+              "owner": "tm-sunita",
+              "updated_on": "@today-3d",
+              "trend": "Up"
+            }
+          },
+          {
+            "key": "kr-13",
+            "values": {
+              "kr_name": "Load test passed at three times current traffic (runs passed)",
+              "start_value": 0,
+              "current_value": 1,
+              "target_value": 3,
+              "owner": "tm-sunita",
+              "updated_on": "@today-4d",
+              "trend": "Flat"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Any leader can own a result."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "objective",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "objectives_owned"
+      },
+      {
+        "describes": "An objective is measured by its key results.",
+        "fromTable": "objective",
+        "fromField": "key_results",
+        "toTable": "key_result",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "objective"
+      },
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "key_result",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "key_results_owned"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-hollis",
+            "values": {
+              "full_name": "Hollis Beaumont-Park",
+              "role": "Chief executive",
+              "work_email": "hollis@copperfield-coop.net",
+              "mobile": "(612) 555-0121",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-yara",
+            "values": {
+              "full_name": "Yara Mansour",
+              "role": "Head of member services",
+              "work_email": "yara@copperfield-coop.net",
+              "mobile": "(612) 555-0122",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-desmond",
+            "values": {
+              "full_name": "Desmond Okafor-Lind",
+              "role": "Head of lending",
+              "work_email": "desmond@copperfield-coop.net",
+              "mobile": "(612) 555-0123",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-sunita",
+            "values": {
+              "full_name": "Sunita Raghavan",
+              "role": "Head of technology",
+              "work_email": "sunita@copperfield-coop.net",
+              "mobile": "(612) 555-0124",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-bjorn",
+            "values": {
+              "full_name": "Bjorn Haugland",
+              "role": "Marketing manager",
+              "work_email": "bjorn@copperfield-coop.net",
+              "mobile": "(612) 555-0125",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "kr_update",
+        "name": "Update a key result",
+        "describes": "How an owner reports this week’s number.",
+        "audience": "staff",
+        "table": "key_result",
+        "fields": [
+          {
+            "fieldKey": "kr_name",
+            "ask": "Which key result?",
+            "required": true
+          },
+          {
+            "fieldKey": "current_value",
+            "ask": "What is the number now?",
+            "required": true
+          },
+          {
+            "fieldKey": "trend",
+            "ask": "Is it going up, flat or down?"
+          }
+        ],
+        "submitLabel": "Save the update",
+        "confirmation": "Thanks. The objective’s progress has been updated."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_objective",
+        "name": "All objectives",
+        "table": "objective",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "objective_by_team",
+        "name": "By team",
+        "table": "objective",
+        "kind": "kanban",
+        "groupBy": "team"
+      },
+      {
+        "token": "objective_by_confidence",
+        "name": "By confidence",
+        "table": "objective",
+        "kind": "kanban",
+        "groupBy": "confidence"
+      },
+      {
+        "token": "all_key_result",
+        "name": "All key results",
+        "table": "key_result",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "updated_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "kr_by_trend",
+        "name": "By trend",
+        "table": "key_result",
+        "kind": "kanban",
+        "groupBy": "trend"
+      },
+      {
+        "token": "kr_updates",
+        "name": "Updates",
+        "table": "key_result",
+        "kind": "calendar",
+        "dateField": "updated_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Goals assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "objective",
+          "describes": "Every objective, its team, owner and confidence."
+        },
+        {
+          "name": "related_tables",
+          "table": "key_result",
+          "describes": "The key results under each objective."
+        }
+      ],
+      "question": {
+        "ask": "How many objectives are at risk?",
+        "whyItMatters": "Hollis opens the Monday leadership meeting with this.",
+        "expect": {
+          "table": "objective",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "confidence": "At risk"
+          },
+          "answer": 1,
+          "unit": "objectives"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open objectives by confidence.",
+        "action": {
+          "kind": "open",
+          "surface": "objective_by_confidence"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "objective_by_confidence",
+          "minItems": 5
+        }
+      },
+      {
+        "says": "Open key results by trend.",
+        "action": {
+          "kind": "open",
+          "surface": "kr_by_trend"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "kr_by_trend",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the update calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "kr_updates"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "kr_updates",
+          "minItems": 10
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperfield-coop.net"
+      ],
+      "fictionalStreets": [
+        "Wrenhall Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "okrs",
+      "parent": null,
+      "title": "Objectives & Key Results",
+      "icon": {
+        "emoji": "🎯"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Set a few objectives each cycle, measure each with two or three key results, and update the numbers every week. Progress rolls up by itself."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:okr-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-check-in"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:writing-good-okrs"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:cycle-review"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "This cycle"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "objective",
+              "view": "all_objective"
+            },
+            "inline": true,
+            "title": "Objectives",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By confidence",
+                "icon": "SquareKanban",
+                "groupField": "confidence",
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By team",
+                "icon": "SquareKanban",
+                "groupField": "team",
+                "id": "view-1"
+              },
+              {
+                "layout": "grid",
+                "name": "All objectives",
+                "icon": "Table",
+                "id": "view-2"
+              },
+              {
+                "layout": "list",
+                "name": "This cycle",
+                "icon": "List",
+                "filters": {
+                  "cycle": "This cycle"
+                },
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Key results"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "key_result",
+              "view": "all_key_result"
+            },
+            "inline": true,
+            "title": "Key results",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All key results",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "updated_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By trend",
+                "icon": "SquareKanban",
+                "groupField": "trend",
+                "id": "view-1"
+              },
+              {
+                "layout": "calendar",
+                "name": "Updates",
+                "icon": "Calendar",
+                "dateField": "updated_on",
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "okr-dashboard",
+      "parent": "okrs",
+      "title": "OKR dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "objective",
+                      "view": "all_objective"
+                    },
+                    "inline": true,
+                    "title": "Objectives",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Objectives by confidence",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "confidence",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "objective",
+                      "view": "all_objective"
+                    },
+                    "inline": true,
+                    "title": "Objectives",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Average progress by team",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "team",
+                          "op": "avg",
+                          "field": "avg_progress"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "key_result",
+                      "view": "all_key_result"
+                    },
+                    "inline": true,
+                    "title": "Key results",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Key results by trend",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "trend",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Objectives at risk or off track"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "objective",
+              "view": "all_objective"
+            },
+            "inline": true,
+            "title": "Objectives",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Needs attention",
+                "icon": "CircleAlert",
+                "filters": {
+                  "confidence": [
+                    "At risk",
+                    "Off track"
+                  ]
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Results that went down"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "key_result",
+              "view": "all_key_result"
+            },
+            "inline": true,
+            "title": "Key results",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Trending down",
+                "icon": "List",
+                "filters": {
+                  "trend": "Down"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stale numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "key_result",
+              "view": "all_key_result"
+            },
+            "inline": true,
+            "title": "Key results",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Oldest updates first",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "updated_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-check-in",
+      "parent": "okrs",
+      "title": "Weekly check-in",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ten minutes on Monday. Each owner updates their numbers before the meeting, not during it."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update the current value of each key result you own"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set the trend: up, flat or down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "If an objective is at risk, write what would change it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick one result the whole team should help with this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "objective",
+              "view": "all_objective"
+            },
+            "inline": true,
+            "title": "Objectives",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "At risk and off track",
+                "icon": "List",
+                "filters": {
+                  "confidence": [
+                    "At risk",
+                    "Off track"
+                  ]
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "writing-good-okrs",
+      "parent": "okrs",
+      "title": "Writing good OKRs",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "An objective"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Says what better looks like, in plain words."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Is something a team can influence this cycle."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Does not contain a number."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A key result"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Has a start value, a target and a real way to measure it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Describes an outcome, not an activity."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Is ambitious: reaching about seven tenths is a good cycle."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weak"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stronger"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Launch the new referral page"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Raise monthly referral signups from 12 to 60"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Improve loan speed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cut median days to a decision from 6 to 2"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Do more member calls"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Raise welcome calls completed from 40% to 95%"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "How many per team"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Two or three objectives, each with two or three key results. More than that and nothing gets finished."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "What to do with a result that is already met"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Raise the target or replace it. A result that is already green teaches nothing."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cycle-review",
+      "parent": "okrs",
+      "title": "Cycle review",
+      "icon": {
+        "emoji": "🏁"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Run this at the end of every cycle with the whole leadership group."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Score"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Read the average progress for each objective on the dashboard. Do not argue about decimals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What did we learn about how we set targets?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which result surprised us, up or down?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Which objective do we carry into the next cycle, and why?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What do we stop doing?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Next cycle objectives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "objective",
+              "view": "all_objective"
+            },
+            "inline": true,
+            "title": "Objectives",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Next cycle",
+                "icon": "List",
+                "filters": {
+                  "cycle": "Next cycle"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "okrs",
+      "title": "Team",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Team",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

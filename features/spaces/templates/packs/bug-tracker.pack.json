@@ -1,0 +1,1810 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0104",
+  "version": 1,
+  "title": "Bug Tracker",
+  "description": "Report, triage and fix bugs by severity, with a board, a triage guide and release rollups.",
+  "forWho": "Engineering and support teams",
+  "icon": {
+    "emoji": "🐞"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "projects",
+  "tags": [
+    "bugs",
+    "issues",
+    "triage",
+    "engineering"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-bug-tracker",
+    "catalogueId": "SP0104",
+    "useCase": "Wilhelmina Strand manages engineering for a note-taking app and uses this to triage reports from support and keep critical bugs from waiting.",
+    "industry": "cross_industry",
+    "vertical": "Software teams",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Quillpoint Apps",
+      "describes": "A small company making a collaborative notes app for students and teams.",
+      "address": {
+        "line1": "315 Tamarack Lane",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80205",
+        "country": "US"
+      },
+      "phone": "(303) 555-0130",
+      "website": "quillpoint-apps.net",
+      "email": "hello@quillpoint-apps.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-bug-tracker",
+    "tables": [
+      {
+        "token": "release",
+        "name": "Releases",
+        "labelSingular": "Release",
+        "labelPlural": "Releases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "version",
+        "describes": "Shipped and upcoming versions, and the bugs each one fixes.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "version",
+            "label": "Version",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Rolling out",
+              "Released"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Rolling out": "amber",
+              "Released": "green"
+            },
+            "required": true,
+            "default": "Planned"
+          },
+          {
+            "key": "release_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "fixes",
+            "label": "Bugs fixed",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "bug",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "fixed_count",
+            "label": "Bugs fixed (count)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "fixes",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "critical_fixed",
+            "label": "Critical fixed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "fixes",
+            "pick": "title",
+            "agg": "count",
+            "filter": {
+              "severity": "Critical"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "rl-0",
+            "values": {
+              "version": "v4.8.0",
+              "state": "Released",
+              "release_on": "@today-40d",
+              "fixes": [
+                "bg-01",
+                "bg-02"
+              ]
+            }
+          },
+          {
+            "key": "rl-1",
+            "values": {
+              "version": "v4.9.0",
+              "state": "Released",
+              "release_on": "@today-12d",
+              "fixes": [
+                "bg-03",
+                "bg-04",
+                "bg-05"
+              ]
+            }
+          },
+          {
+            "key": "rl-2",
+            "values": {
+              "version": "v4.9.1",
+              "state": "Rolling out",
+              "release_on": "@today+3d",
+              "fixes": [
+                "bg-07",
+                "bg-08",
+                "bg-09"
+              ]
+            }
+          },
+          {
+            "key": "rl-3",
+            "values": {
+              "version": "v5.0.0",
+              "state": "Planned",
+              "release_on": "@today+35d",
+              "fixes": []
+            }
+          }
+        ],
+        "independentOf": {
+          "fixes": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "bug",
+        "name": "Bugs",
+        "labelSingular": "Bug",
+        "labelPlural": "Bugs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "bug",
+        "titleField": "title",
+        "describes": "Every reported problem: how bad it is, who is on it and when it was found.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reported",
+              "Triaged",
+              "In progress",
+              "In review",
+              "Fixed",
+              "Duplicate",
+              "Won’t fix"
+            ],
+            "choiceColors": {
+              "Reported": "slate",
+              "Triaged": "violet",
+              "In progress": "blue",
+              "In review": "amber",
+              "Fixed": "green",
+              "Duplicate": "gray",
+              "Won’t fix": "brown"
+            },
+            "required": true,
+            "default": "Reported"
+          },
+          {
+            "key": "severity",
+            "label": "Severity",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Critical",
+              "Major",
+              "Minor",
+              "Trivial"
+            ],
+            "choiceColors": {
+              "Critical": "red",
+              "Major": "orange",
+              "Minor": "amber",
+              "Trivial": "slate"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "P0",
+              "P1",
+              "P2",
+              "P3"
+            ],
+            "choiceColors": {
+              "P0": "red",
+              "P1": "orange",
+              "P2": "amber",
+              "P3": "slate"
+            }
+          },
+          {
+            "key": "assignee",
+            "label": "Assignee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "reporter",
+            "label": "Reporter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "environment",
+            "label": "Environment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prod",
+              "Staging",
+              "Dev"
+            ],
+            "choiceColors": {
+              "Prod": "red",
+              "Staging": "amber",
+              "Dev": "slate"
+            }
+          },
+          {
+            "key": "component",
+            "label": "Component",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Web",
+              "API",
+              "Mobile",
+              "Auth",
+              "Search"
+            ],
+            "choiceColors": {
+              "Web": "blue",
+              "API": "violet",
+              "Mobile": "green",
+              "Auth": "red",
+              "Search": "teal"
+            }
+          },
+          {
+            "key": "link",
+            "label": "Log or pull request",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "age_days",
+            "label": "Age (days)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Reported}, TODAY(), 'days')"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bg-01",
+            "values": {
+              "title": "Calendar export drops events with emoji titles",
+              "status": "Fixed",
+              "severity": "Major",
+              "priority": "P1",
+              "assignee": "tm-darius",
+              "reporter": "tm-thea",
+              "reported_on": "@today-55d",
+              "environment": "Prod",
+              "component": [
+                "API"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1200"
+            }
+          },
+          {
+            "key": "bg-02",
+            "values": {
+              "title": "Login loop after password reset on Safari",
+              "status": "Fixed",
+              "severity": "Critical",
+              "priority": "P0",
+              "assignee": "tm-chiara",
+              "reporter": "tm-thea",
+              "reported_on": "@today-48d",
+              "environment": "Prod",
+              "component": [
+                "Web",
+                "Auth"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1201"
+            }
+          },
+          {
+            "key": "bg-03",
+            "values": {
+              "title": "Push notifications arrive twice on Android",
+              "status": "Fixed",
+              "severity": "Minor",
+              "priority": "P2",
+              "assignee": "tm-ravi",
+              "reporter": "tm-obinna",
+              "reported_on": "@today-30d",
+              "environment": "Prod",
+              "component": [
+                "Mobile"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1202"
+            }
+          },
+          {
+            "key": "bg-04",
+            "values": {
+              "title": "Search ignores accented letters",
+              "status": "Fixed",
+              "severity": "Minor",
+              "priority": "P2",
+              "assignee": "tm-darius",
+              "reporter": "tm-thea",
+              "reported_on": "@today-26d",
+              "environment": "Prod",
+              "component": [
+                "API",
+                "Search"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1203"
+            }
+          },
+          {
+            "key": "bg-05",
+            "values": {
+              "title": "Invite email shows the wrong workspace name",
+              "status": "Fixed",
+              "severity": "Minor",
+              "priority": "P3",
+              "assignee": "tm-chiara",
+              "reporter": "tm-thea",
+              "reported_on": "@today-20d",
+              "environment": "Prod",
+              "component": [
+                "Web"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1204"
+            }
+          },
+          {
+            "key": "bg-06",
+            "values": {
+              "title": "Duplicate of the calendar export bug",
+              "status": "Duplicate",
+              "severity": "Major",
+              "priority": "P1",
+              "assignee": null,
+              "reporter": "tm-thea",
+              "reported_on": "@today-18d",
+              "environment": "Prod",
+              "component": [
+                "API"
+              ]
+            }
+          },
+          {
+            "key": "bg-07",
+            "values": {
+              "title": "Upload fails over 25 MB on slow connections",
+              "status": "In review",
+              "severity": "Major",
+              "priority": "P1",
+              "assignee": "tm-darius",
+              "reporter": "tm-obinna",
+              "reported_on": "@today-9d",
+              "environment": "Prod",
+              "component": [
+                "API",
+                "Web"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1206"
+            }
+          },
+          {
+            "key": "bg-08",
+            "values": {
+              "title": "Dark mode hides the cursor in comments",
+              "status": "In review",
+              "severity": "Trivial",
+              "priority": "P3",
+              "assignee": "tm-chiara",
+              "reporter": "tm-obinna",
+              "reported_on": "@today-7d",
+              "environment": "Staging",
+              "component": [
+                "Web"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1207"
+            }
+          },
+          {
+            "key": "bg-09",
+            "values": {
+              "title": "App crashes when rotating during sign-in",
+              "status": "In progress",
+              "severity": "Critical",
+              "priority": "P0",
+              "assignee": "tm-ravi",
+              "reporter": "tm-thea",
+              "reported_on": "@today-5d",
+              "environment": "Prod",
+              "component": [
+                "Mobile",
+                "Auth"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1208"
+            }
+          },
+          {
+            "key": "bg-10",
+            "values": {
+              "title": "Weekly digest sent at the wrong hour for UTC+13",
+              "status": "In progress",
+              "severity": "Minor",
+              "priority": "P2",
+              "assignee": "tm-darius",
+              "reporter": "tm-thea",
+              "reported_on": "@today-4d",
+              "environment": "Prod",
+              "component": [
+                "API"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1209"
+            }
+          },
+          {
+            "key": "bg-11",
+            "values": {
+              "title": "Drag and drop jumps when the list is long",
+              "status": "Triaged",
+              "severity": "Major",
+              "priority": "P2",
+              "assignee": "tm-chiara",
+              "reporter": "tm-obinna",
+              "reported_on": "@today-3d",
+              "environment": "Prod",
+              "component": [
+                "Web"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1210"
+            }
+          },
+          {
+            "key": "bg-12",
+            "values": {
+              "title": "Export button does nothing on empty projects",
+              "status": "Triaged",
+              "severity": "Minor",
+              "priority": "P3",
+              "assignee": null,
+              "reporter": "tm-thea",
+              "reported_on": "@today-2d",
+              "environment": "Staging",
+              "component": [
+                "Web"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1211"
+            }
+          },
+          {
+            "key": "bg-13",
+            "values": {
+              "title": "Avatar upload keeps the old image in cache",
+              "status": "Reported",
+              "severity": "Minor",
+              "priority": "P3",
+              "assignee": null,
+              "reporter": "tm-thea",
+              "reported_on": "@today-1d",
+              "environment": "Prod",
+              "component": [
+                "Web",
+                "Mobile"
+              ]
+            }
+          },
+          {
+            "key": "bg-14",
+            "values": {
+              "title": "Rate limit message shows raw error code",
+              "status": "Reported",
+              "severity": "Trivial",
+              "priority": "P3",
+              "assignee": null,
+              "reporter": "tm-obinna",
+              "reported_on": "@today-1d",
+              "environment": "Dev",
+              "component": [
+                "API"
+              ]
+            }
+          },
+          {
+            "key": "bg-15",
+            "values": {
+              "title": "Won’t fix: legacy IE11 layout glitch",
+              "status": "Won’t fix",
+              "severity": "Trivial",
+              "priority": "P3",
+              "assignee": null,
+              "reporter": "tm-thea",
+              "reported_on": "@today-70d",
+              "environment": "Prod",
+              "component": [
+                "Web"
+              ],
+              "link": "https://code.quillpoint-apps.net/issues/1214"
+            }
+          }
+        ],
+        "independentOf": {
+          "assignee": "Anyone can take a bug.",
+          "reporter": "Anyone can report a bug."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Triaged",
+              "In progress",
+              "In review",
+              "Fixed"
+            ],
+            "filled": [
+              "priority"
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A release fixes several bugs.",
+        "fromTable": "release",
+        "fromField": "fixes",
+        "toTable": "bug",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "fixed_in"
+      },
+      {
+        "describes": "Assignee links to team_member.",
+        "fromTable": "bug",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bugs_assigned"
+      },
+      {
+        "describes": "Reporter links to team_member.",
+        "fromTable": "bug",
+        "fromField": "reporter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bugs_reported"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-wilhelmina",
+            "values": {
+              "full_name": "Wilhelmina Strand",
+              "role": "Engineering manager",
+              "work_email": "wilhelmina@quillpoint-apps.net",
+              "mobile": "(303) 555-0131",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-darius",
+            "values": {
+              "full_name": "Darius Pahlavi",
+              "role": "Backend engineer",
+              "work_email": "darius@quillpoint-apps.net",
+              "mobile": "(303) 555-0132",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-chiara",
+            "values": {
+              "full_name": "Chiara Lombardi",
+              "role": "Frontend engineer",
+              "work_email": "chiara@quillpoint-apps.net",
+              "mobile": "(303) 555-0133",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-obinna",
+            "values": {
+              "full_name": "Obinna Eze-Park",
+              "role": "QA engineer",
+              "work_email": "obinna@quillpoint-apps.net",
+              "mobile": "(303) 555-0134",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-thea",
+            "values": {
+              "full_name": "Thea Marchetti",
+              "role": "Support engineer",
+              "work_email": "thea@quillpoint-apps.net",
+              "mobile": "(303) 555-0135",
+              "start_date": "@today-18m"
+            }
+          },
+          {
+            "key": "tm-ravi",
+            "values": {
+              "full_name": "Ravi Subramanian",
+              "role": "Mobile engineer",
+              "work_email": "ravi@quillpoint-apps.net",
+              "mobile": "(303) 555-0136",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "bug_report",
+        "name": "Report a bug",
+        "describes": "How anyone, including support, files a problem.",
+        "audience": "staff",
+        "table": "bug",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What went wrong, in one line?",
+            "required": true
+          },
+          {
+            "fieldKey": "severity",
+            "ask": "How bad is it?"
+          },
+          {
+            "fieldKey": "environment",
+            "ask": "Where did you see it?"
+          },
+          {
+            "fieldKey": "component",
+            "ask": "Which part of the product?"
+          },
+          {
+            "fieldKey": "link",
+            "ask": "Link to a log or screenshot, if you have one"
+          }
+        ],
+        "submitLabel": "Send the report",
+        "confirmation": "Thanks. It is in the triage queue as Reported."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_bug",
+        "name": "All bugs",
+        "table": "bug",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "reported_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "bug_board",
+        "name": "Board",
+        "table": "bug",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "bug_by_severity",
+        "name": "By severity",
+        "table": "bug",
+        "kind": "kanban",
+        "groupBy": "severity"
+      },
+      {
+        "token": "bug_calendar",
+        "name": "Reported",
+        "table": "bug",
+        "kind": "calendar",
+        "dateField": "reported_on",
+        "allDay": true
+      },
+      {
+        "token": "all_release",
+        "name": "All releases",
+        "table": "release",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "release_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "release_calendar",
+        "name": "Calendar",
+        "table": "release",
+        "kind": "calendar",
+        "dateField": "release_on",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Bug assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "bug",
+          "describes": "Every bug, its severity, status and owner."
+        },
+        {
+          "name": "related_tables",
+          "table": "release",
+          "describes": "The releases that fix the bugs."
+        }
+      ],
+      "question": {
+        "ask": "How many critical bugs have we logged?",
+        "whyItMatters": "Wilhelmina reviews critical bugs first every morning.",
+        "expect": {
+          "table": "bug",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "severity": "Critical"
+          },
+          "answer": 2,
+          "unit": "bugs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the bug board.",
+        "action": {
+          "kind": "open",
+          "surface": "bug_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "bug_board",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open bugs by severity.",
+        "action": {
+          "kind": "open",
+          "surface": "bug_by_severity"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "bug_by_severity",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open the reported calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "bug_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "bug_calendar",
+          "minItems": 12
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "quillpoint-apps.net"
+      ],
+      "fictionalStreets": [
+        "Tamarack Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "bug-tracker",
+      "parent": null,
+      "title": "Bug Tracker",
+      "icon": {
+        "emoji": "🐞"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Report a bug, triage it, fix it, ship it. The board shows where every bug is; the dashboard shows what needs attention first."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:bug-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:triage-guide"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:bug-report-outline"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:release-log"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Triage queue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
+            },
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "To triage",
+                "icon": "List",
+                "filters": {
+                  "status": "Reported"
+                },
+                "sorts": [
+                  {
+                    "field": "reported_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "Board",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-1"
+              },
+              {
+                "layout": "kanban",
+                "name": "By severity",
+                "icon": "SquareKanban",
+                "groupField": "severity",
+                "id": "view-2"
+              },
+              {
+                "layout": "grid",
+                "name": "All bugs",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "reported_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-3"
+              },
+              {
+                "layout": "calendar",
+                "name": "Reported",
+                "icon": "Calendar",
+                "dateField": "reported_on",
+                "id": "view-4"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Releases",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "release_on",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "bug-dashboard",
+      "parent": "bug-tracker",
+      "title": "Bug dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "bug",
+                      "view": "all_bug"
+                    },
+                    "inline": true,
+                    "title": "Bugs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Bugs by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "bug",
+                      "view": "all_bug"
+                    },
+                    "inline": true,
+                    "title": "Bugs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Bugs by severity",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "severity",
+                          "op": "count"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "bug",
+                      "view": "all_bug"
+                    },
+                    "inline": true,
+                    "title": "Bugs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Bugs by environment",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "environment",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Critical and major, still open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
+            },
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Urgent",
+                "icon": "CircleAlert",
+                "filters": {
+                  "severity": [
+                    "Critical",
+                    "Major"
+                  ],
+                  "status": [
+                    "Reported",
+                    "Triaged",
+                    "In progress",
+                    "In review"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "reported_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unassigned"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
+            },
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Needs an owner",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Reported",
+                    "Triaged"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "reported_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Oldest open bugs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug",
+              "view": "all_bug"
+            },
+            "inline": true,
+            "title": "Bugs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Oldest first",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Reported",
+                    "Triaged",
+                    "In progress",
+                    "In review"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "reported_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "triage-guide",
+      "parent": "bug-tracker",
+      "title": "Triage guide",
+      "icon": {
+        "emoji": "🩺"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Triage happens every weekday at ten. Each bug leaves the Reported column that day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Severity"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Severity"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix target"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Critical"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Data loss, security, or nobody can sign in"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Major"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A main feature is broken for many people"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "This week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Minor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Something is wrong but there is a workaround"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next release"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Trivial"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cosmetic or very rare"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When convenient"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Priority"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Severity says how bad it is. Priority says when we fix it, which also depends on how many people it touches and how hard it is."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reproduce it, or ask the reporter for more."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set severity, priority and component."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look for a duplicate; link it and set the status to Duplicate."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign an owner and move it to Triaged."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "When to say Won’t fix"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "When the cost is far larger than the harm and the product owner agrees. Write the reason in the bug."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "bug-report-outline",
+      "parent": "bug-tracker",
+      "title": "Bug report outline",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Paste this into any bug before it is triaged."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps to reproduce"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Go to …"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Click …"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What you expected"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Describe the result you were counting on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What happened instead"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Include the exact message, and a screenshot if you can."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Environment and version"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Browser or device"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Account used (not the password)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "release-log",
+      "parent": "bug-tracker",
+      "title": "Release log",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Releases",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "release_on",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "bug-tracker",
+      "title": "Team",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Team",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}
