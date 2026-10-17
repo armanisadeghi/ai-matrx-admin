@@ -39,7 +39,7 @@ import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@ai-matrx/summon/window";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 // Legacy openFilePreview removed in Phase 11 — we just open the source URL
 // in a new tab now (signed / share URLs are browser-loadable directly).
 import { useAppDispatch } from "@/lib/redux/hooks";

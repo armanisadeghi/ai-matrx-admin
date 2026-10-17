@@ -9,13 +9,13 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import {
   createResourcePickerWindowCallbackGroup,
   type ResourcePickerWindowCallbackGroup,
 } from "./callbacks/resourcePickerWindow";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 export interface OpenResourcePickerWindowOptions extends ResourcePickerWindowCallbackGroup {
@@ -43,7 +43,7 @@ export function useOpenResourcePickerWindow() {
 
 export type ResourcePickerWindowDefinitionData = OpenResourcePickerWindowOptions;
 
-export const resourcePickerWindowOverlay = defineOverlay<ResourcePickerWindowDefinitionData>()({
+export const resourcePickerWindowOverlay = /* @__PURE__ */ defineOverlay<ResourcePickerWindowDefinitionData>()({
   id: "resourcePickerWindow",
   label: "Resource Picker Window",
   instance: "single",

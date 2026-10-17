@@ -20,7 +20,7 @@ import {
 } from "@/features/admin/constants/admin-navigation";
 import { ADMIN_APP_URL } from "@/features/shell/constants/nav-data";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { toggleOverlay } from "@ai-matrx/summon";
+import { toggleOverlay } from "@ai-matrx/summon/open";
 import { ERROR_INSPECTOR_OVERLAY_ID } from "@/features/admin/error-inspector/useOpenErrorInspector";
 import { BUILDER_PANEL_OVERLAY_ID } from "@/features/overlays/definitions/builderPanelWindow.overlay";
 import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMenu";

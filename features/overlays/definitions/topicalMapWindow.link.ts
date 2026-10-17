@@ -1,7 +1,7 @@
 import { getRestorableResourceId } from "./link-helpers";
 import type { TopicalMapWindowDefinitionData } from "./topicalMapWindow.overlay";
-import { openOverlay } from "@ai-matrx/summon";
-import type { LinkHydrateContext } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
+import type { LinkHydrateContext } from "@ai-matrx/summon/open";
 
 export function hydrate({ dispatch, id, args, open }: LinkHydrateContext<TopicalMapWindowDefinitionData>) {
     const mapId = getRestorableResourceId(id, "picker") ?? "";

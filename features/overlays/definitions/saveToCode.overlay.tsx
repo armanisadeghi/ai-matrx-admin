@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "saveToCode" as const;
@@ -77,7 +77,7 @@ export function QuickSaveCodeDialogController(props: OpenQuickSaveCodeDialogOpti
 
 export type SaveToCodeDefinitionData = OpenQuickSaveCodeDialogOptions;
 
-export const saveToCodeOverlay = defineOverlay<SaveToCodeDefinitionData>()({
+export const saveToCodeOverlay = /* @__PURE__ */ defineOverlay<SaveToCodeDefinitionData>()({
   id: "saveToCode",
   label: "Save To Code",
   instance: "multi",

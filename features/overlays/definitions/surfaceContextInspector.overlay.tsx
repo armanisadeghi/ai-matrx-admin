@@ -14,8 +14,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "surfaceContextInspector" as const;
@@ -82,7 +82,7 @@ export function SurfaceContextInspectorController(
 
 export type SurfaceContextInspectorDefinitionData = OpenSurfaceContextInspectorOptions;
 
-export const surfaceContextInspectorOverlay = defineOverlay<SurfaceContextInspectorDefinitionData>()({
+export const surfaceContextInspectorOverlay = /* @__PURE__ */ defineOverlay<SurfaceContextInspectorDefinitionData>()({
   id: "surfaceContextInspector",
   label: "Surface Context Admin",
   instance: "single",

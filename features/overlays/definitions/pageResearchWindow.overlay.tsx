@@ -2,8 +2,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "pageResearchWindow" as const;
@@ -58,7 +58,7 @@ export function useOpenPageResearchWindow() {
 
 export type PageResearchWindowDefinitionData = OpenPageResearchWindowOptions;
 
-export const pageResearchWindowOverlay = defineOverlay<PageResearchWindowDefinitionData>()({
+export const pageResearchWindowOverlay = /* @__PURE__ */ defineOverlay<PageResearchWindowDefinitionData>()({
   id: "pageResearchWindow",
   label: "Research for this page",
   instance: "single",

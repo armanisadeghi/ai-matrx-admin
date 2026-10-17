@@ -8,8 +8,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteTrackingWindow" as const;
@@ -43,7 +43,7 @@ export function useOpenSiteTrackingWindow() {
 
 export type SiteTrackingWindowDefinitionData = OpenSiteTrackingWindowOptions;
 
-export const siteTrackingWindowOverlay = defineOverlay<SiteTrackingWindowDefinitionData>()({
+export const siteTrackingWindowOverlay = /* @__PURE__ */ defineOverlay<SiteTrackingWindowDefinitionData>()({
   id: "siteTrackingWindow",
   label: "Tracking",
   instance: "single",

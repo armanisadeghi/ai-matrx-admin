@@ -92,6 +92,11 @@ export interface DataHomeRow {
    * Its menu offers Open and Restore; `isArchivedRow` keeps its cells read-only.
    */
   archived?: boolean;
+  /**
+   * An archived form or booking page the store will not bring back now (`can_restore` false): why, in a person's
+   * words, so its menu says it instead of offering a Restore that refuses.
+   */
+  restoreBlockedReason?: string;
 }
 
 /**
@@ -157,6 +162,12 @@ export function archivedPortalRow(portal: ArchivedPortalEverywhereRow): DataHome
   };
 }
 
+/** Why an archived form cannot come back now (`custom.forms_archived`'s `can_restore` false), or null when it can. */
+export function formRestoreBlockedReason(form: Pick<ArchivedFormEverywhereRow, "can_restore" | "table_archived">): string | null {
+  if (form.can_restore) return null;
+  return form.table_archived ? "Restore its table first" : "Only an admin of its table can restore it";
+}
+
 /** ONE ARCHIVED FORM OR BOOKING PAGE AS A ROW: it is brought back with Restore (`custom.form_restore`). */
 export function archivedFormRow(form: ArchivedFormEverywhereRow): DataHomeRow {
   const when = form.archived_at ? new Date(form.archived_at).toLocaleDateString() : null;
@@ -175,6 +186,7 @@ export function archivedFormRow(form: ArchivedFormEverywhereRow): DataHomeRow {
     kind: form.kind === "booking" ? "booking" : "form",
     parentName: form.table_name,
     details: ["Archived", when].filter(Boolean).join(" "),
+    ...(formRestoreBlockedReason(form) ? { restoreBlockedReason: formRestoreBlockedReason(form) as string } : {}),
     href: `/data/${form.table_id}?rail=${form.kind === "booking" ? "bookings" : "forms"}`,
   };
 }

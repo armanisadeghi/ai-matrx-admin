@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "chatDebugWindow" as const;
@@ -65,7 +65,7 @@ export function ChatDebugWindowController(props: OpenChatDebugWindowOptions): nu
 
 export type ChatDebugWindowDefinitionData = OpenChatDebugWindowOptions;
 
-export const chatDebugWindowOverlay = defineOverlay<ChatDebugWindowDefinitionData>()({
+export const chatDebugWindowOverlay = /* @__PURE__ */ defineOverlay<ChatDebugWindowDefinitionData>()({
   id: "chatDebugWindow",
   label: "Chat Debug Window",
   instance: "single",

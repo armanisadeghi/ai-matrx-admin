@@ -19,9 +19,9 @@
 import { useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon";
-import { focusWindow, restoreWindow } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "topicalMapWindow" as const;
@@ -101,7 +101,7 @@ export function TopicalMapWindowController(props: OpenTopicalMapWindowOptions): 
 
 export type TopicalMapWindowDefinitionData = OpenTopicalMapWindowOptions;
 
-export const topicalMapWindowOverlay = defineOverlay<TopicalMapWindowDefinitionData>()({
+export const topicalMapWindowOverlay = /* @__PURE__ */ defineOverlay<TopicalMapWindowDefinitionData>()({
   id: "topicalMapWindow",
   label: "Topical map",
   instance: "multi",

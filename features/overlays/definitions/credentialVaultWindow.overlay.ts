@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 export type CredentialVaultWindowDefinitionData = Record<string, unknown>;
 
-export const credentialVaultWindowOverlay = defineOverlay<CredentialVaultWindowDefinitionData>()({
+export const credentialVaultWindowOverlay = /* @__PURE__ */ defineOverlay<CredentialVaultWindowDefinitionData>()({
   id: "credentialVaultWindow",
   label: "Vault Window",
   instance: "single",

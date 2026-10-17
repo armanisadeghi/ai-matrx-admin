@@ -36,7 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import AudioOutputBlock from "@/components/mardown-display/blocks/audio/AudioOutputBlock";
 import { useAudioRecovery } from "../providers/AudioRecoveryProvider";
 import { SafetyRecord } from "../services/audioSafetyStore";

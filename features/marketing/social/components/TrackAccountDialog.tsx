@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { closeAllInstancesOfOverlay, selectOpenInstances } from "@ai-matrx/summon";
+import { closeAllInstancesOfOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
 import { toast } from "@/lib/toast";
 
 import { useInvalidateSocial } from "../hooks";

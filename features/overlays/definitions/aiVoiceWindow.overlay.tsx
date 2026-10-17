@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "aiVoiceWindow" as const;
@@ -65,7 +65,7 @@ export function AiVoiceWindowController(props: OpenAiVoiceWindowOptions): null {
 
 export type AiVoiceWindowDefinitionData = OpenAiVoiceWindowOptions;
 
-export const aiVoiceWindowOverlay = defineOverlay<AiVoiceWindowDefinitionData>()({
+export const aiVoiceWindowOverlay = /* @__PURE__ */ defineOverlay<AiVoiceWindowDefinitionData>()({
   id: "aiVoiceWindow",
   label: "Ai Voice Window",
   instance: "single",

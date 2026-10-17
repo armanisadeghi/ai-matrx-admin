@@ -11,12 +11,12 @@
 
 import { useCallback, useContext } from "react";
 import { ReactReduxContext } from "react-redux";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createSaveToTableCallbackGroup,
   type SaveToTableHandlers,
 } from "./callbacks/saveToTable";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "saveToTable" as const;
@@ -90,7 +90,7 @@ export function useOpenSaveToTable(): ((options: OpenSaveToTableOptions) => Save
 
 export type SaveToTableDefinitionData = OpenSaveToTableOptions;
 
-export const saveToTableOverlay = defineOverlay<SaveToTableDefinitionData>()({
+export const saveToTableOverlay = /* @__PURE__ */ defineOverlay<SaveToTableDefinitionData>()({
   id: "saveToTable",
   label: "Save to a table",
   instance: "multi",

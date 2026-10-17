@@ -10,8 +10,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const CONTACTS_OVERLAY_ID = "googleContactsImportWindow" as const;
@@ -104,7 +104,7 @@ export function useOpenGoogleTasksImport() {
 
 export type GoogleContactsImportWindowDefinitionData = OpenGoogleContactsImportOptions;
 
-export const googleContactsImportWindowOverlay = defineOverlay<GoogleContactsImportWindowDefinitionData>()({
+export const googleContactsImportWindowOverlay = /* @__PURE__ */ defineOverlay<GoogleContactsImportWindowDefinitionData>()({
   id: "googleContactsImportWindow",
   label: "Import from Google Contacts",
   instance: "single",

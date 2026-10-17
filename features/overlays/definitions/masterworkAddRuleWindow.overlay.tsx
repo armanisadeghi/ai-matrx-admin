@@ -8,13 +8,13 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createAddRuleCallbackGroup,
   type AddRuleWindowData,
   type AddRuleWindowHandlers,
 } from "@/features/window-panels/windows/masterwork/callbacks";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "masterworkAddRuleWindow" as const;
@@ -71,7 +71,7 @@ export function useOpenAddRuleWindow() {
 
 export type MasterworkAddRuleWindowDefinitionData = OpenAddRuleWindowOptions;
 
-export const masterworkAddRuleWindowOverlay = defineOverlay<MasterworkAddRuleWindowDefinitionData>()({
+export const masterworkAddRuleWindowOverlay = /* @__PURE__ */ defineOverlay<MasterworkAddRuleWindowDefinitionData>()({
   id: "masterworkAddRuleWindow",
   label: "Add a rule",
   instance: "single",

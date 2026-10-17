@@ -12,7 +12,7 @@ import {
   type OpenCuratedIconPickerOptions,
   type CuratedIconPickerHandle,
 } from "@/features/window-panels/windows/icons/useOpenCuratedIconPickerWindow";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -37,7 +37,7 @@ export function CuratedIconPickerWindowController(
 
 export type CuratedIconPickerWindowDefinitionData = OpenCuratedIconPickerOptions;
 
-export const curatedIconPickerWindowOverlay = defineOverlay<CuratedIconPickerWindowDefinitionData>()({
+export const curatedIconPickerWindowOverlay = /* @__PURE__ */ defineOverlay<CuratedIconPickerWindowDefinitionData>()({
   id: "curatedIconPickerWindow",
   label: "Curated Icon Picker Window",
   instance: "multi",

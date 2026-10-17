@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickChatHistory" as const;
@@ -68,7 +68,7 @@ export function ChatHistoryWindowController(props: OpenChatHistoryWindowOptions)
 
 export type QuickChatHistoryDefinitionData = OpenChatHistoryWindowOptions;
 
-export const quickChatHistoryOverlay = defineOverlay<QuickChatHistoryDefinitionData>()({
+export const quickChatHistoryOverlay = /* @__PURE__ */ defineOverlay<QuickChatHistoryDefinitionData>()({
   id: "quickChatHistory",
   label: "Quick Chat History",
   instance: "single",
