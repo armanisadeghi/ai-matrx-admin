@@ -12,7 +12,7 @@ import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { requestBaseUrl } from "@/app/api/github/oauth/session";
-import { HUGGING_FACE_OAUTH_COOKIE, type HuggingFaceOAuthSession } from "../session";
+import { HUGGING_FACE_OAUTH_COOKIE, refusalWords, type HuggingFaceOAuthSession } from "../session";
 
 function failed(request: NextRequest, returnUrl: string, message: string): NextResponse {
   const url = new URL("/api/hugging-face/oauth/complete", requestBaseUrl(request));
@@ -63,9 +63,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!backend.ok) {
       // aidream's refusals here are written for the person ("not set up yet; paste a token").
       const said =
-        started && typeof started === "object" && "detail" in started && typeof started.detail === "string"
-          ? started.detail
-          : null;
+        refusalWords(started);
       console.error("[huggingface-oauth:start]", { status: backend.status });
       return failed(request, returnUrl, said ?? detail);
     }
