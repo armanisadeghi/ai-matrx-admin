@@ -148,7 +148,7 @@ function LaneBox({
         submitLabel={form.facts.submitLabel || undefined}
         size="standard"
         autoFocus
-        footer={price ? <span className="text-xs text-muted-foreground" data-tool-price="">{price}</span> : undefined}
+        footer={price && !view ? <span className="text-xs text-muted-foreground" data-tool-price="">{price}</span> : undefined}
       />
       {finder.state.phase !== "idle" ? (
         <div className="flex flex-wrap items-center gap-2" role="status" aria-live="polite" data-tool-finder={finder.state.phase}>
