@@ -2,6 +2,9 @@
  * First-paint contract V6: the "Connect Google" card on a new chat must not read
  * `integration_connections` / resources / the capability catalog at first paint. It reads once,
  * together, when the person first engages the page, and shows (or stays away) from that answer.
+ * A page nobody touches reads nothing at all (late idle is not engagement, 2026-10-17). The
+ * person's organizations are asked BY ID for the organizations the connections name — never the
+ * scope tree.
  * Asserted on the REAL host and the REAL query hooks; only the network service and the card's
  * chrome are stand-ins.
  */
@@ -39,10 +42,15 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectIsAuthenticated: () => true,
   selectUserId: () => "11111111-1111-4111-8111-111111111111",
 }));
-// The scope tree (a ~1 s shared read) starts on the first `state.scopesTree` read: counted here.
+// The scope tree (a ~1 s shared read, 4 requests) starts on the first `state.scopesTree` read: counted here.
 const mockSelectOrganizationIds = jest.fn(() => []);
 jest.mock("@/features/scopes/redux/selectors/tree", () => ({
   selectOrganizationIds: () => mockSelectOrganizationIds(),
+}));
+// Membership by id: counted, answered "o1 is hers".
+const mockLiveOrganizationIdsAmong = jest.fn(async (ids: readonly string[]) => ids.filter((id) => id === "o1"));
+jest.mock("@/features/organizations/organizationsIAmIn", () => ({
+  liveOrganizationIdsAmong: (ids: readonly string[]) => mockLiveOrganizationIdsAmong(ids),
 }));
 jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({
   useOpenConnectorConsentDialog: () => jest.fn(),
@@ -110,34 +118,25 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
   await act(async () => root.unmount());
 });
 
-it("a page nobody touches still settles: late idle opens the one read and the card shows, no engagement needed", async () => {
+it("a page nobody touches reads nothing: late idle is not engagement", async () => {
   listInventory.mockClear();
   listCapabilities.mockClear();
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
-  const tree = (
-    <QueryClientProvider client={new QueryClient()}>
-      <ConnectorPromptHost />
-    </QueryClientProvider>
-  );
-  mockLateIdle = false;
-  await act(async () => root.render(tree));
-  await settle();
-  // Before settling: nothing read, nothing drawn (not even a placeholder).
-  expect(listInventory).not.toHaveBeenCalled();
-  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
-
   mockLateIdle = true;
-  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost key="settled" /></QueryClientProvider>));
+  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost /></QueryClientProvider>));
   await settle();
-  expect(listInventory).toHaveBeenCalledTimes(1);
-  expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
+  expect(listInventory).not.toHaveBeenCalled();
+  expect(listCapabilities).not.toHaveBeenCalled();
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
+  mockLateIdle = false;
   await act(async () => root.unmount());
 });
 
-it("reads the person's organizations (the scope tree) only once an organization-owned connection came back", async () => {
+it("an organization-owned connection asks membership by id for ITS organization — never the scope tree", async () => {
   mockSelectOrganizationIds.mockClear();
+  mockLiveOrganizationIdsAmong.mockClear();
   listInventory.mockImplementationOnce(async () => ({
     connections: [{ id: "c1", owner_type: "organization", owner_user_id: null, organization_id: "o1", provider: "google", scopes: [], status: "active", metadata: {}, capability_health: {} }],
     resources: [],
@@ -148,10 +147,12 @@ it("reads the person's organizations (the scope tree) only once an organization-
   mockLateIdle = false;
   await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost /></QueryClientProvider>));
   await settle();
-  expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
+  expect(mockLiveOrganizationIdsAmong).not.toHaveBeenCalled();
   await act(async () => engageForTest());
   await settle();
-  expect(mockSelectOrganizationIds).toHaveBeenCalled();
+  expect(mockLiveOrganizationIdsAmong).toHaveBeenCalledTimes(1);
+  expect(mockLiveOrganizationIdsAmong).toHaveBeenCalledWith(["o1"]);
+  expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
   await act(async () => root.unmount());
 });
 

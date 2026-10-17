@@ -17,7 +17,6 @@ import { ConnectorPromptCard } from "./ConnectorPromptCard";
 import { accountHealth, anyProductConnected } from "./health";
 import { useGoogleConnectorState } from "./google-adapter";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 
@@ -33,10 +32,11 @@ import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/c
  * the person starts interacting, never at first paint. Focus is not an engagement here: the
  * new-chat composer takes focus by itself.)
  *
- * NEVER A PERPETUAL LOADING STATE: a person who only reads the page never engages, so the page
- * settling (the late idle tier, seconds after the idle flush) opens the same one batched read.
- * Until then, and while the read is in flight or has failed, the host draws no card:
- * no skeleton, no placeholder box, no layout to shift when the card does or does not apply.
+ * ENGAGEMENT ONLY (owner contract 2026-10-17: nothing else until engaged). A person who only reads
+ * the page never engages, so the card never reads and never shows for her — there is no loading
+ * state to get stuck in, because until the answer lands (and while it is in flight or has failed)
+ * the host draws nothing: no skeleton, no placeholder box, no layout to shift. (Before 2026-10-17
+ * the late idle tier also opened the read; that cost every untouched new chat 2–6 reads.)
  */
 export function ConnectorPromptHost({
   className,
@@ -50,9 +50,7 @@ export function ConnectorPromptHost({
   variant?: "float" | "card" | "bare";
 }) {
   const provider = GOOGLE_CONNECTOR_PROVIDER;
-  const engaged = useHasEngaged();
-  const settled = useLateIdleReady();
-  const ready = engaged || settled;
+  const ready = useHasEngaged();
   const state = useGoogleConnectorState({ enabled: ready });
   const openConsent = useOpenConnectorConsentDialog();
 

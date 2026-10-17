@@ -48,6 +48,30 @@ export async function recentOrganizationIds(): Promise<{ ids: Set<string>; hasMo
 }
 
 /**
+ * Which of THESE organizations is she a live member of? For a screen holding records that name
+ * their organization (an organization-owned connection) — never the scope tree, never all of her
+ * organizations. The boot-seeded first page answers for free; only ids it cannot answer (it has
+ * more pages, or it failed) are asked by id (`iam.my_organizations_by_ids`, shared + cached).
+ * An id whose read failed is left out (unknown is not "hers").
+ */
+export async function liveOrganizationIdsAmong(ids: readonly (string | null | undefined)[]): Promise<string[]> {
+  const wanted = [...new Set(ids.filter((id): id is string => Boolean(id)))];
+  if (wanted.length === 0) return [];
+  const page = await recentOrganizationIds();
+  const mine = new Set<string>();
+  const ask: string[] = [];
+  for (const id of wanted) {
+    if (page?.ids.has(id)) mine.add(id);
+    else if (!page || page.hasMore) ask.push(id);
+  }
+  if (ask.length > 0) {
+    const found = await lookupOrganizations(ask);
+    for (const [id, org] of found) if (!org.archivedAt) mine.add(id);
+  }
+  return wanted.filter((id) => mine.has(id));
+}
+
+/**
  * Ask a member-only door ONLY when she is a member of `organizationId`; otherwise
  * answer `otherwise` without a request. Used for reads keyed by a RECORD's
  * organization (a record page's custom fields, its record chat): a record shared

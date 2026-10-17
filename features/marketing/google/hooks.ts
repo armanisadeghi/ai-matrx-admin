@@ -7,7 +7,7 @@ import {
   selectIsAuthenticated,
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
-import { selectOrganizationIds } from "@/features/scopes/redux/selectors/tree";
+import { liveOrganizationIdsAmong } from "@/features/organizations/organizationsIAmIn";
 import {
   connectGoogle,
   disconnectGoogle,
@@ -47,9 +47,7 @@ export function useGoogleCapabilities(options: { enabled?: boolean } = {}) {
   });
 }
 
-/** No organization-owned connection came back: the person's organizations are not needed. */
 const NO_ORGANIZATION_IDS: readonly string[] = [];
-const selectNoOrganizationIds = () => NO_ORGANIZATION_IDS;
 
 export function useGoogleConnectionInventory(options: { enabled?: boolean } = {}) {
   const authReady = useAppSelector(selectAuthReady);
@@ -64,17 +62,26 @@ export function useGoogleConnectionInventory(options: { enabled?: boolean } = {}
     enabled: (options.enabled ?? true) && authReady && isAuthenticated && Boolean(userId),
     staleTime: 30_000,
   };
-  // The person's organizations come from the scope tree (a ~1 s shared read that starts on the
-  // first `state.scopesTree` read). Only an organization-owned connection needs them, so they are
-  // read only once the inventory holds one — never at mount, never for a disabled caller
-  // (2026-10-16: the new-chat connector card read them on first paint and pulled the whole tree).
-  // Same key, same cache entry: this observer adds no second request.
+  // An organization-owned connection is hers only when she is a live member of THAT organization.
+  // Asked by id for the organizations the connections name (the boot-seeded membership page answers
+  // first, `iam.my_organizations_by_ids` the rest) — never the scope tree (2026-10-17: the new-chat
+  // connector card pulled the whole tree, 4 reads / ~23 KB, just for these ids). Same inventory key,
+  // same cache entry: the observers below add no second inventory request.
   const raw = useQuery(base);
-  const needsOrganizations =
-    raw.data?.connections.some((connection) => connection.owner_user_id === null) ?? false;
-  const organizationIds = useAppSelector(
-    needsOrganizations ? selectOrganizationIds : selectNoOrganizationIds,
-  );
+  const organizationIdsNamed = [
+    ...new Set(
+      (raw.data?.connections ?? [])
+        .filter((connection) => connection.owner_user_id === null && connection.organization_id)
+        .map((connection) => connection.organization_id as string),
+    ),
+  ].sort();
+  const membership = useQuery({
+    queryKey: [...googleConnectionKeys.inventory, userId, "organizations", organizationIdsNamed.join(",")],
+    queryFn: () => liveOrganizationIdsAmong(organizationIdsNamed),
+    enabled: base.enabled && organizationIdsNamed.length > 0,
+    staleTime: 30_000,
+  });
+  const organizationIds = membership.data ?? NO_ORGANIZATION_IDS;
   return useQuery({
     ...base,
     select: (inventory) =>
