@@ -849,13 +849,26 @@ after_watch_rollout() {
     local rc=0
     release_outcome_report "$TARGET" "$RELEASE_COMMIT_MSG" "$RELEASE_SHA" "$NEW_VERSION" || rc=$?
     case "$rc" in
-        0) after_publish_route_manifest; after_publish_config_attestation ;;
+        0) after_warm_routes; after_publish_route_manifest; after_publish_config_attestation ;;
         2) SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" "NOT ATTESTED — ${NEW_TAG} (${RELEASE_SHA:0:10}) rollout was not confirmed, so its config manifest was not attested" "pnpm -s config:manifest --sha $RELEASE_SHA --out tmp/config-manifest/$RELEASE_SHA.json && (cd ../aidream && uv run python scripts/attest_config_manifest.py --app ai-matrx --manifest \$PWD/tmp/config-manifest/$RELEASE_SHA.json)"
            SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Rollout" "UNVERIFIED — ${NEW_TAG} was pushed but no Vercel credential could confirm the build" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA" ;;
         *) SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "WARNING" "Config attestation" "NOT ATTESTED — ${NEW_TAG} (${RELEASE_SHA:0:10}) did not roll out, so its config manifest was not attested" ""
            SHIP_FINDINGS_JSON="$ROLLOUT_JSON" ship_finding "ERROR" "Rollout" "ROLLOUT FAILED: ${NEW_TAG} (${RELEASE_SHA:0:10}) is pushed but NOT live — see the release log" "bash scripts/release-outcome.sh --report $TARGET \"$RELEASE_COMMIT_MSG\" $RELEASE_SHA" ;;
     esac
 }
+# ── Route warm-up: THE FIRST VISITOR NEVER PAYS THE COLD START ─────────────
+# Measured 2026-10-17: the first request to a route after a deployment takes 2.8–6.1 s of server
+# time (route code loads on first hit; Next does not preload routes on Vercel); warm hits 0.3–0.8 s.
+# Releases ship about every 30 minutes, so without this every route is cold for whoever opens it
+# first. Runs only on a green rollout of the main project: one GET per core route, bounded and
+# timed, no retries, never a finding that blocks anything (scripts/warm-routes.mjs).
+after_warm_routes() {
+    [[ "$TARGET" == "main" || "$TARGET" == "all" ]] || return 0
+    local out
+    out="$(cd "$REPO_ROOT" && node scripts/warm-routes.mjs 2>&1)" || true
+    printf '%s\n' "$out" >>"${RELEASE_LOG_FILE:-/dev/null}"
+}
+
 # ── Route manifest: THE DEPLOY THAT CHANGES THE ROUTES PUBLISHES THEM ───────
 #
 # 🚨 A LINK THE PLATFORM BELIEVES IS DEAD IS NEVER TEXTED. aidream's
