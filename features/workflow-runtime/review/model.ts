@@ -80,9 +80,12 @@ const ENGINE_LABEL: Record<string, string> = {
   "engine.output_shape": "Output shape off",
   "engine.human_handoff": "Handed to a person",
   "engine.stall_recovery": "Recovered from a stall",
+  run_resumed_after_worker_silence: "Recovered from a stall",
   "response_check.revised": "Answer revised",
   "response_check.off_target": "Answer off target",
   "response_check.not_revisable": "Answer not revisable",
+  "response_check.failed": "Answer check failed",
+  "response_check.missed": "Answer check missed",
 };
 
 function humanize(key: string): string {
@@ -92,7 +95,9 @@ function humanize(key: string): string {
 
 /**
  * What happened, in words. `flagged_step.<node>` / `flagged_path.<edge>` are the
- * author's "review if this runs" marks — the step or connection name says it.
+ * author's "review if this runs" marks — the step's display name says it.
+ * Engine and Check and Revise labels map to words; any other label is the
+ * author's own and is shown as written.
  */
 export function reviewLabelText(
   label: string,
@@ -101,8 +106,8 @@ export function reviewLabelText(
   if (ENGINE_LABEL[label]) return ENGINE_LABEL[label];
   if (label.startsWith("flagged_step.")) return stepName ? `${stepName} ran` : "Flagged step ran";
   if (label.startsWith("flagged_path.")) return stepName ? `Path to ${stepName} taken` : "Flagged path taken";
-  const tail = label.includes(".") ? label.slice(label.indexOf(".") + 1) : label;
-  return humanize(tail);
+  // An author's own label (Record a Problem, a review.label) is shown as written.
+  return label;
 }
 
 /** A workflow's node id → its step name, from the definition's `nodes` array. */

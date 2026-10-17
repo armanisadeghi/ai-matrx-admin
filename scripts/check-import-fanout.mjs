@@ -46,6 +46,16 @@ export const HOST_ONLY = [
     hosts: ["features/overlays/definitions/register.ts", "features/overlays/host/OverlayWorldHost.tsx"],
   },
   { module: /^features\/overlays\/definitions\/[^/]+\.render\.tsx$/, hosts: [] },
+  // Registering every definition loads all ~224 definition modules. Never in the boot graph: only
+  // the idle-loaded overlay services and lazily imported open paths may reach it (2026-10-17: the
+  // extension bridge subscriber, mounted in every tab, pulled the whole list into first load).
+  {
+    module: "features/overlays/definitions/register.ts",
+    hosts: ["features/overlays/host/OverlayServices.tsx", "features/notifications/openPanelsInPlace.ts"],
+  },
+  { module: "features/notifications/openPanelsInPlace.ts", hosts: [] },
+  { module: "features/overlays/host/OverlayServices.tsx", hosts: ["app/DeferredSingletonCore.tsx"] },
+  { module: "app/DeferredSingletonCore.tsx", hosts: [] },
 ];
 
 const STATIC_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^'"`;]*?\sfrom\s*)?(["'])([^"']+)\1/gm;

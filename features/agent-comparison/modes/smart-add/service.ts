@@ -15,13 +15,17 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { resolveMandateDefaultAgentId } from "@/features/mandates/admin/service";
 import { mandateDefinitions } from "@/lib/supabase/mandateStorage";
 import { createComparisonSet, mergeComparisonSetMetadata } from "../../service/comparisonSetsService";
-import { runMatrixCells } from "../matrix/service";
+import { MATRIX_RUN_PATH } from "../matrix/service";
+import type { MatrixCellResult } from "../matrix/types";
+import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
+import { consumeStream } from "@/lib/api/stream-parser";
 import { setupToMetadata } from "../matrix/model";
 import {
   BENCH_KEY,
   buildSetup,
   cellsToRun,
   mergeResults,
+  type BenchResult,
   type BenchState,
   type Engine,
   type RelationKind,
@@ -45,12 +49,16 @@ export async function castNet(
   pages: number,
   onProgress: (p: NetProgress) => void,
   signal?: AbortSignal,
+  onResults?: (results: BenchResult[]) => void,
 ) {
   const jobs = queries.flatMap((query) =>
     (["google", "brave"] as Engine[]).flatMap((engine) =>
       Array.from({ length: pages }, (_, i) => ({ query, engine, page: i + 1 })),
     ),
   );
+  // Stable order: by query, engine, page — the order a person reads the plan in.
+  const order = (c: { query: string; engine: Engine; page: number }) =>
+    `${queries.indexOf(c.query).toString().padStart(3, "0")}:${c.engine}:${c.page.toString().padStart(2, "0")}`;
   const calls: { engine: Engine; query: string; page: number; pageSize: number; result: unknown }[] = [];
   const failures: string[] = [];
   let done = 0;
@@ -65,7 +73,11 @@ export async function castNet(
           count: PAGE_SIZE[job.engine],
           options: { vertical: "web", page: job.page },
           signal,
-          onOutcome: (o) => calls.push({ ...job, pageSize: PAGE_SIZE[job.engine], result: o.result }),
+          onOutcome: (o) => {
+            calls.push({ ...job, pageSize: PAGE_SIZE[job.engine], result: o.result });
+            // Stream: every engine page that lands shows at once, merged and in plan order.
+            onResults?.(mergeResults([...calls].sort((a, b) => order(a).localeCompare(order(b)))));
+          },
         });
       } catch (err) {
         failures.push(`${job.engine} "${job.query}" page ${job.page}: ${err instanceof Error ? err.message : String(err)}`);
@@ -75,9 +87,6 @@ export async function castNet(
       }
     }),
   );
-  // Stable order: by query, engine, page — the order a person reads the plan in.
-  const order = (c: { query: string; engine: Engine; page: number }) =>
-    `${queries.indexOf(c.query).toString().padStart(3, "0")}:${c.engine}:${c.page.toString().padStart(2, "0")}`;
   calls.sort((a, b) => order(a).localeCompare(order(b)));
   return { results: mergeResults(calls), failures };
 }
@@ -143,16 +152,14 @@ export async function loadRelationKinds(): Promise<RelationKind[]> {
 }
 
 /**
- * Create the battle (a matrix set carrying the bench) and start every needed cell on the server.
- * Resolves as soon as the battle exists; `finished` settles when the server's run stream ends —
- * the cells keep running on the server even if the page goes away, and the page reads them by poll.
+ * File the battle (a matrix set carrying the bench) and return the cells its run will make. The page
+ * shows every cell as Waiting at once, then {@link streamRun} moves each one live.
  */
-export async function createAndRun(
-  dispatch: AppDispatch,
+export async function prepareRun(
   bench: BenchState,
   userId: string,
   organizationId: string,
-): Promise<{ setId: string; finished: Promise<string | null> }> {
+): Promise<{ setId: string; bench: BenchState; cells: CellRef[] }> {
   const kinds = await loadRelationKinds();
   const stances = Object.fromEntries(kinds.map((k) => [k.key, k.stance ?? ""]));
   const frozen: BenchState = { ...bench, stances, ranAt: new Date().toISOString() };
@@ -163,11 +170,61 @@ export async function createAndRun(
     organizationId,
     metadata: { ...setupToMetadata(setup), [BENCH_KEY]: frozen as unknown as Record<string, unknown> },
   });
-  const finished = runMatrixCells(dispatch, set.id, organizationId, {
-    cells: cellsToRun(setup, bench.systems),
-    scope: "all",
-  }).then((outcome) => outcome.error ?? (outcome.streamErrors.join(" · ") || null));
-  return { setId: set.id, finished };
+  return { setId: set.id, bench: frozen, cells: cellsToRun(setup, bench.systems) };
+}
+
+export type CellRef = { row_id: string; column_id: string; repeat: number };
+
+/** One live event from the battle runner (`matrx_connect` MatrixBattle*Event). */
+export type RunEvent =
+  | { type: "matrix_battle_cell_started"; entry_id: string; row_id: string; column_id: string; conversation_id: string }
+  | {
+      type: "matrix_battle_cell_finished";
+      entry_id: string;
+      row_id: string;
+      column_id: string;
+      status: string;
+      error?: string | null;
+      conversation_id?: string | null;
+      result?: MatrixCellResult | null;
+    }
+  | { type: "matrix_battle_finished"; counts: Record<string, number> };
+
+/**
+ * Run the cells and hand every event to the page AS IT ARRIVES (the server streams one per cell
+ * start and finish). Resolves with the run's error, if any, once the stream ends; the cells keep
+ * running on the server if the page goes away, and a reopened bench reads them from the rows.
+ */
+export async function streamRun(
+  dispatch: AppDispatch,
+  setId: string,
+  organizationId: string,
+  cells: CellRef[],
+  onEvent: (e: RunEvent) => void,
+): Promise<string | null> {
+  const errors: string[] = [];
+  const config: ApiCallConfig<typeof MATRIX_RUN_PATH, "POST"> = {
+    path: MATRIX_RUN_PATH,
+    method: "POST",
+    pathParams: { set_id: setId } as never,
+    body: { cells, scope: "all" } as never,
+    stream: true,
+    scopeOverrides: { organization_id: organizationId },
+    consumeStream: async (response: Response) => {
+      await consumeStream(response, {
+        onData: (data) => {
+          const d = data as { type?: unknown };
+          if (typeof d.type === "string" && d.type.startsWith("matrix_battle_")) onEvent(data as unknown as RunEvent);
+        },
+        onError: (e) => {
+          errors.push(e.user_message || e.message || "The run reported an error.");
+        },
+      });
+    },
+  };
+  const result = await dispatch(callApi(config));
+  if (result.error) return result.error.message || "The run could not start.";
+  return errors.length ? errors.join(" · ") : null;
 }
 
 /**

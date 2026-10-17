@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { FlaskConical, Play, RotateCcw, Square, StepForward } from "lucide-react";
+import { FlaskConical, Play, Plus, RotateCcw, Square, StepForward } from "lucide-react";
 import {
   Button,
   EmptyState,
@@ -55,6 +55,7 @@ import {
   type TestRunView,
 } from "../types";
 import { ResultDetail } from "./ResultDetail";
+import { TestCaseForm } from "./TestCaseForm";
 import { RunProgress } from "./RunProgress";
 import { ResultsTable, RunsTable } from "./AgentTestTables";
 
@@ -207,18 +208,28 @@ function CaseList({
   );
 }
 
-function SelectedRun({
+/**
+ * One test run: progress, cancel/resume/re-check, its results and the open
+ * result's checks + judge. The ONE run view — the Agent Studio's Cases tab
+ * mounts it too (`stacked`: its pane is narrow at every viewport).
+ */
+export function TestRunPanel({
   runId,
   cases,
   declarations,
   seat,
   onOpenRun,
+  onSettled,
+  stacked = false,
 }: {
   runId: string;
   cases: TestCaseView[];
   declarations: readonly AgentVariableDeclaration[];
   seat: AgentTestSeat;
   onOpenRun: (id: string) => void;
+  /** Called when a live run stops being live (its results are final). */
+  onSettled?: () => void;
+  stacked?: boolean;
 }) {
   const [runRead, rereadRun] = useRead<TestRunView | null>(
     () => fetchRun(runId),
@@ -239,6 +250,7 @@ function SelectedRun({
     rereadRun();
     rereadResults();
   });
+  const settled = useEffectEvent(() => onSettled?.());
   // A live run follows the server's run stream: each stored result and the final
   // status re-read the rows (RLS). The stream ends when the run finishes or pauses.
   useEffect(() => {
@@ -253,7 +265,10 @@ function SelectedRun({
         if (!controller.signal.aborted)
           setActionError({ error: err, what: "Lost the run's live updates" });
       }
-      if (!controller.signal.aborted) reread();
+      if (!controller.signal.aborted) {
+        reread();
+        settled();
+      }
     })();
     return () => controller.abort();
   }, [live, runId]);
@@ -351,7 +366,7 @@ function SelectedRun({
           ) : null}
         </div>
       ) : null}
-      <div className="flex min-h-0 flex-col gap-3 xl:flex-row">
+      <div className={stacked ? "flex min-h-0 flex-col gap-3" : "flex min-h-0 flex-col gap-3 xl:flex-row"}>
         <div className="min-w-0 flex-1">
           <ResultsTable
             results={results}
@@ -361,7 +376,7 @@ function SelectedRun({
           />
         </div>
         {openResult ? (
-          <div className="xl:w-[28rem] xl:shrink-0">
+          <div className={stacked ? "min-w-0" : "xl:w-[28rem] xl:shrink-0"}>
             <ResultDetail
               result={openResult}
               testCase={casesById.get(openResult.caseId) ?? null}
@@ -399,7 +414,7 @@ export function AgentTestPage({
   const searchParams = useSearchParams();
   const runId = searchParams?.get("run") ?? null;
 
-  const [casesRead] = useRead(
+  const [casesRead, rereadCases] = useRead(
     () => fetchTestCases(agentId),
     `cases:${agentId}`,
   );
@@ -419,6 +434,7 @@ export function AgentTestPage({
     `head:${agentId}`,
   );
   const [options, setOptions] = useState<RunOptions>(DEFAULT_RUN_OPTIONS);
+  const [adding, setAdding] = useState(false);
 
   const cases = casesRead.state === "ready" ? casesRead.data : [];
   const declarations =
@@ -449,7 +465,25 @@ export function AgentTestPage({
       />
       <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto px-[var(--matrx-page-gutter)] pt-[calc(var(--shell-header-h)+var(--matrx-page-top))] lg:flex-row">
         <aside className="flex flex-col gap-2 lg:w-72 lg:shrink-0">
-          <span className="type-label">Test cases</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="type-label">Test cases</span>
+            {seat === "user" && !adding ? (
+              <Button variant="quiet" icon={<Plus />} onClick={() => setAdding(true)}>
+                Add
+              </Button>
+            ) : null}
+          </div>
+          {adding && headRead.state !== "loading" ? (
+            <TestCaseForm
+              agentId={agentId}
+              head={headRead.state === "ready" ? headRead.data : null}
+              onCreated={() => {
+                setAdding(false);
+                rereadCases();
+              }}
+              onCancel={() => setAdding(false)}
+            />
+          ) : null}
           <CaseList read={casesRead} selectedCaseIds={new Set<string>()} />
         </aside>
         <main className="flex min-w-0 flex-1 flex-col gap-4">
@@ -488,7 +522,7 @@ export function AgentTestPage({
             />
           )}
           {runId ? (
-            <SelectedRun
+            <TestRunPanel
               key={runId}
               runId={runId}
               cases={cases}

@@ -28,7 +28,11 @@ As admin@admin.com on the shared preview, an organization the account owns (made
 
 Managed preview `/dashboard` returns 500 with `ReferenceError: Cannot access 'matrxDirectiveHost' before initialization` from the shared rich-content host loader. Owner: content host integration; reproduce with managed preview and repair the initialization cycle. `check:surface-routes` separately reports the published `/p -> matrx-public/p` mapping without a manifest; owner: public route/resolver integration, reconcile the retired route and installed mapping. Direct surface sync uses an unavailable legacy `SUPABASE_MATRIX_*` database host; correct production direct-host credentials also fail authentication, while the connected production Supabase MCP works. Owner: local environment configuration; repair noninteractive database credentials without printing secrets or touching CLI Keychain authentication. Exact surface verification receipt: `docs/verification/surfaces/2026-10-07-five-pages.json`.
 
-### D357 — Making a booking page pauses every write to custom.record (lane HANDOVER, 2026-09-29)
+### D357 — FIXED 2026-09-30 (FOLLOW-BATCH-3 d62725f5fce, 61a8ea5905f; re-proved GREEN on live 2026-10-17, W1-STORE) — Making a booking page pauses every write to custom.record (lane HANDOVER, 2026-09-29)
+
+**Fixed:** `field_declare` builds no index; the booking slots Table's `slot_key` carries the store's unique rule instead of an index, and `promote_table` builds nothing in the person's save (it answers `indexes_owed`, non-blocking `CONCURRENTLY` statements run outside any transaction). Only `custom.promote_field` still builds an index (route A), and EXECUTE on it is revoked from every client role. Suites: `scripts/campaign-tests/followbatch3_*_red_green.sql`.
+
+Original report:
 
 `custom.booking_declare` declares the page's `slot` column through `custom.field_declare`, which builds a plain `CREATE INDEX` on `custom.record` under a table-wide ShareLock: every insert/update to the record store, platform-wide, waits while an owner saves a booking page (seen on the clone: the guard's declare waited on other lanes' writers until lock timeout). Fix: build the slot index `CONCURRENTLY` outside the declare transaction (or a partial index created once per table by a queued job), and never on a re-declare of an existing page. Owner: whoever owns the booking door (DOOR-17); HANDOVER moved the Status check ahead of it so a refused page costs nothing (`migrations/campaign/handover_a_field_is_found_on_its_own_table.sql`).
 

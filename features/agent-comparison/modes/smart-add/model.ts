@@ -8,7 +8,7 @@
  * Every number on the scoreboard is measured against that truth, never against confidence.
  */
 
-import type { MatrixCell, MatrixPatch, MatrixSetup, MatrixVariant } from "../matrix/types";
+import type { MatrixCell, MatrixCellResult, MatrixPatch, MatrixSetup, MatrixVariant } from "../matrix/types";
 
 /** Production batch size for the holder (`web_classifier_provision.CALL_BATCH`). */
 export const HOLDER_BATCH = 25;
@@ -475,4 +475,82 @@ export function readBench(metadata: Record<string, unknown> | null | undefined):
   const raw = metadata?.[BENCH_KEY];
   if (!raw || typeof raw !== "object") return null;
   return { ...emptyBench(), ...(raw as Partial<BenchState>) };
+}
+
+// ---------------------------------------------------------------------------
+// Live run: placeholder cells, events applied as they stream, per-row status
+// ---------------------------------------------------------------------------
+
+/** Every cell the run will make, as Waiting — shown the moment the person clicks Judge. */
+export function placeholderCells(refs: { row_id: string; column_id: string; repeat: number }[]): MatrixCell[] {
+  return refs.map((r) => ({
+    entryId: `pending:${r.row_id}:${r.column_id}`,
+    conversationId: "",
+    rowId: r.row_id,
+    columnId: r.column_id,
+    repeat: r.repeat,
+    status: "queued",
+    stalled: false,
+    attempt: 1,
+    startedAt: null,
+    finishedAt: null,
+    error: null,
+    request: null,
+    result: null,
+    history: [],
+  }));
+}
+
+type LiveEvent =
+  | { type: "matrix_battle_cell_started"; entry_id: string; row_id: string; column_id: string; conversation_id: string }
+  | {
+      type: "matrix_battle_cell_finished";
+      entry_id: string;
+      row_id: string;
+      column_id: string;
+      status: string;
+      error?: string | null;
+      conversation_id?: string | null;
+      result?: MatrixCellResult | null;
+    }
+  | { type: "matrix_battle_finished"; counts: Record<string, number> };
+
+/** One streamed event applied to the cells (pure; unknown cells are added). */
+export function applyRunEvent(cells: MatrixCell[], e: LiveEvent, now: string): MatrixCell[] {
+  if (e.type === "matrix_battle_finished") return cells;
+  const i = cells.findIndex((c) => c.rowId === e.row_id && c.columnId === e.column_id);
+  const base: MatrixCell = i >= 0 ? cells[i] : placeholderCells([{ row_id: e.row_id, column_id: e.column_id, repeat: 0 }])[0];
+  const next: MatrixCell =
+    e.type === "matrix_battle_cell_started"
+      ? { ...base, entryId: e.entry_id, conversationId: e.conversation_id, status: "running", startedAt: now }
+      : {
+          ...base,
+          entryId: e.entry_id,
+          conversationId: e.conversation_id ?? base.conversationId,
+          status: (["completed", "failed", "cancelled"].includes(e.status) ? e.status : "failed") as MatrixCell["status"],
+          error: e.error ?? null,
+          result: e.result ?? null,
+          finishedAt: now,
+        };
+  const out = [...cells];
+  if (i >= 0) out[i] = next;
+  else out.push(next);
+  return out;
+}
+
+export type RowStatus = "idle" | "waiting" | "judging" | "done" | "failed";
+
+/** Where one result stands with one system: Jev by its own cell, the batch systems by its batch's cell. */
+export function rowStatus(cells: MatrixCell[], bench: BenchState, key: string, system: SystemKey): RowStatus {
+  let rowId = key;
+  if (system !== "jev") {
+    const index = bench.results.findIndex((r) => r.key === key);
+    if (index < 0) return "idle";
+    rowId = `${BATCH_ROW_PREFIX}${Math.floor(index / HOLDER_BATCH)}`;
+  }
+  const cell = cells.find((c) => c.rowId === rowId && c.columnId === COLUMN_ID[system]);
+  if (!cell) return "idle";
+  if (cell.status === "completed") return "done";
+  if (cell.status === "failed" || cell.status === "cancelled" || cell.stalled) return "failed";
+  return cell.status === "running" ? "judging" : "waiting";
 }

@@ -29,6 +29,7 @@ import {
 } from "@ai-matrx/api";
 import { serverApi } from "@/lib/api/server-api";
 import { isTestVerdict } from "./verdicts";
+import { fetchTestCaseRows } from "./cases";
 import type {
   CheckOutcome,
   OutcomeView,
@@ -193,6 +194,7 @@ export function toResultView(row: ResultRow): TestResultView {
     identityMode: row.identity_mode,
     originClass: row.origin_class,
     conversationId: row.conversation_id,
+    agentVersionId: row.agent_version_id,
     userRequestIds: row.user_request_ids ?? [],
     status: row.status,
     verdict: isTestVerdict(row.verdict) ? row.verdict : null,
@@ -232,22 +234,42 @@ function toCaseView(row: ExemplarRow): TestCaseView {
 
 /** Every live test case of one agent. */
 export async function fetchTestCases(agentId: string): Promise<TestCaseView[]> {
-  const supabase = createClient();
-  const rows = await readAllRows<ExemplarRow>(
-    ({ from, to }) =>
-      supabase
-        .schema("agent")
-        .from("exemplar")
-        .select("*", { count: "exact" })
-        .eq("agent_id", agentId)
-        .eq("kind", "test_case")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true })
-        .range(from, to),
-    { label: "agent.exemplar test cases" },
-  );
-  return rows.map(toCaseView);
+  return (await fetchTestCaseRows(agentId)).map(toCaseView);
+}
+
+/**
+ * The newest results of these cases across every run (newest first, capped):
+ * the Studio's per-case verdicts and its cases × versions grid read these.
+ */
+export async function fetchCaseResults(
+  caseIds: readonly string[],
+  limit = 500,
+): Promise<TestResultView[]> {
+  if (caseIds.length === 0) return [];
+  const { data, error } = await createClient()
+    .schema("agent")
+    .from("test_result")
+    .select("*")
+    .in("case_id", [...caseIds])
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map(toResultView);
+}
+
+/** Version numbers of an agent's saved versions, by version id. */
+export async function fetchVersionNumbers(
+  agentId: string,
+): Promise<Map<string, number>> {
+  const { data, error } = await createClient()
+    .schema("agent")
+    .from("definition_version")
+    .select("id, version_number")
+    .eq("agent_id", agentId)
+    .order("version_number", { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  return new Map((data ?? []).map((r) => [r.id, r.version_number]));
 }
 
 /** The most recent runs that include this agent (a battle run lists every setup agent). */

@@ -485,5 +485,20 @@ is_read_only tells you whether you may write at all; on a shared table you can r
       autoRun: "never",
       sortOrder: 110,
     },
+    {
+      // THE TABLE'S OWN CHAT: the Data Table Assistant (mandate data.table_chat) answers about the whole
+      // open table and proposes the page's two writes (table_description, one cell) for a confirm.
+      // Already runs from the per-record chat (RecordScopedChat); disclosed here so it shows in the top
+      // Agents menu on the table page.
+      name: "table_chat",
+      label: "Table chat",
+      description:
+        "Answers questions about this whole table from what is on screen, and proposes a table description or a single-cell edit for you to confirm.",
+      kind: "single",
+      mandateKey: MANDATE_KEYS.data__table_chat,
+      defaultAgentId: null,
+      autoRun: "never",
+      sortOrder: 90,
+    },
   ],
 };

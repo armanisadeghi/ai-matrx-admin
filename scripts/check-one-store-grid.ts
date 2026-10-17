@@ -19,6 +19,11 @@ import { existsSync, readFileSync } from "node:fs";
 const SELF = "scripts/check-one-store-grid.ts";
 const THE_TABLE_PAGE = "features/unified-data/table-page/UnifiedTable.tsx";
 
+// The one sanctioned wrapper: UnifiedTable renders `OpeningTablePage`, which renders the same lazy `TablePage`
+// (opening-columns look). Accepted only while UnifiedTable imports it and no other file does.
+const THE_OPENING_WRAPPER = "features/unified-data/table-page/OpeningTablePage.tsx";
+const WRAPPER_IMPORT = /from\s+["'][^"']*\/OpeningTablePage["']|import\(\s*["'][^"']*\/OpeningTablePage["']\s*\)/;
+
 type Rule = "old-grid" | "table-page" | "second-host";
 export type Finding = { file: string; line: number; rule: Rule; text: string };
 
@@ -33,6 +38,8 @@ function mountsOnlyEntitySources(text: string): boolean {
 
 export function scan(files: ReadonlyArray<{ path: string; text: string }>): Finding[] {
   const out: Finding[] = [];
+  const importers = files.filter((f) => f.path !== SELF && !/(^|\/)__tests__\//.test(f.path) && !/\.test\.[tj]sx?$/.test(f.path) && WRAPPER_IMPORT.test(f.text)).map((f) => f.path);
+  const wrapperIsCanonical = importers.length === 1 && importers[0] === THE_TABLE_PAGE;
   for (const { path, text } of files) {
     if (path === SELF || /(^|\/)__tests__\//.test(path) || /\.test\.[tj]sx?$/.test(path)) continue;
     // Whole import statements (they may span lines), with the line each starts on.
@@ -53,6 +60,7 @@ export function scan(files: ReadonlyArray<{ path: string; text: string }>): Find
         !/^import\s+type\b/.test(stmt) &&
         /[{,]\s*TablePage\s*[,}]/.test(stmt.replace(/\btype\s+TablePage\b/g, "")) &&
         path !== THE_TABLE_PAGE &&
+        !(path === THE_OPENING_WRAPPER && wrapperIsCanonical) &&
         !mountsOnlyEntitySources(text)
       ) {
         out.push({ file: path, line, rule: "table-page", text: say });
@@ -90,8 +98,14 @@ function selfTest(): void {
     { path: "features/x/__tests__/a.test.tsx", text: 'jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => ({ RecordStoreTableHost: () => null }));' },
     { path: "features/x/b.tsx", text: 'import { LocatedTableViewer } from "@/features/data-tables/components/LocatedTableViewer";' },
   ]);
-  const ok = red.length === 6 && green.length === 0;
-  console.log(ok ? "self-test: PASS (6 red, 0 green)" : `self-test: FAIL red=${JSON.stringify(red)} green=${JSON.stringify(green)}`);
+  const wrapper = { path: THE_OPENING_WRAPPER, text: 'import { TablePage } from "@/features/data-tables/records-ui-host/recordsUiLazy";' };
+  const viaTable = { path: THE_TABLE_PAGE, text: 'import { OpeningTablePage } from "./OpeningTablePage";' };
+  const wrapperGreen = scan([wrapper, viaTable]);
+  const wrapperUnused = scan([wrapper]);
+  const wrapperShared = scan([wrapper, viaTable, { path: "features/x/Other.tsx", text: 'import { OpeningTablePage } from "@/features/unified-data/table-page/OpeningTablePage";' }]);
+  const otherLazy = scan([viaTable, { path: "features/x/Second.tsx", text: wrapper.text }]);
+  const ok = red.length === 6 && green.length === 0 && wrapperGreen.length === 0 && wrapperUnused.length === 1 && wrapperShared.length === 1 && otherLazy.length === 1;
+  console.log(ok ? "self-test: PASS (6 red, 0 green, wrapper accepted only via UnifiedTable)" : `self-test: FAIL red=${JSON.stringify(red)} green=${JSON.stringify(green)}`);
   process.exit(ok ? 0 : 1);
 }
 

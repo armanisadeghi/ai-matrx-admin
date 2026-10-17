@@ -62,12 +62,16 @@ function ExtensionBridgeChannel(): null {
       // every envelope here is genuinely inbound.
       if (envelope.action !== "openPanel") return;
 
-      // Translate + dispatch. The handler is synchronous — Redux work
-      // happens immediately, the result is what we publish back.
-      const result: OpenPanelResult = handleExtensionOpenPanel(
-        dispatch,
-        envelope.payload,
-      );
+      // Translate + dispatch. The first envelope loads the link door and the
+      // overlay definitions (never in the boot graph); the result is published back.
+      // A door that fails to load answers with its error, never silence.
+      void handleExtensionOpenPanel(dispatch, envelope.payload)
+        .catch((error: unknown): OpenPanelResult => ({
+          ok: false,
+          error: "open_failed",
+          details: error instanceof Error ? error.message : String(error),
+        }))
+        .then((result) => reply(envelope, result));
 
       // Publish the reply on the same Broadcast channel, echoing the inbound
       // requestId — the hook's `reply` exists for exactly that, because a
@@ -76,7 +80,6 @@ function ExtensionBridgeChannel(): null {
       // by `@ai-matrx/data/realtime`'s diagnostics (`channel.send.not-connected`),
       // not swallowed here; the extension retries or falls back to its
       // same-machine `chrome.runtime.sendMessage` path.
-      reply(envelope, result);
     });
 
     return unsubscribe;

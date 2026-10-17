@@ -28,9 +28,12 @@
  */
 
 import type { Dispatch, UnknownAction } from "@reduxjs/toolkit";
-import { openPanelRequest } from "@ai-matrx/summon/url";
 import { OpenPanelPayloadSchema } from "@/lib/types/bridge-envelope";
-import { ensureAppOverlaysRegistered } from "@/features/overlays/definitions/register";
+
+// The subscriber is mounted in every signed-in tab, so this module is in the boot graph. The link
+// door and the full definition list (every overlay's metadata) load on the first envelope only.
+const loadOpenDoor = () =>
+  Promise.all([import("@ai-matrx/summon/url"), import("@/features/overlays/definitions/register")]);
 
 /**
  * Result returned to the extension over the bridge. Mirrors the
@@ -46,14 +49,15 @@ export type OpenPanelResult =
  * link door (`openPanelRequest`: registered-id check, default instance, same open path every
  * in-app caller takes). The envelope is validated against the bridge schema first.
  */
-export function handleExtensionOpenPanel(
+export async function handleExtensionOpenPanel(
   dispatch: Dispatch<UnknownAction>,
   rawPayload: unknown,
-): OpenPanelResult {
+): Promise<OpenPanelResult> {
   const parsed = OpenPanelPayloadSchema.safeParse(rawPayload);
   if (!parsed.success) {
     return { ok: false, error: "invalid_payload", details: parsed.error.issues };
   }
+  const [{ openPanelRequest }, { ensureAppOverlaysRegistered }] = await loadOpenDoor();
   ensureAppOverlaysRegistered();
   const result = openPanelRequest(parsed.data, { dispatch });
   if (!result.ok) return { ok: false, error: result.error, details: result.details };

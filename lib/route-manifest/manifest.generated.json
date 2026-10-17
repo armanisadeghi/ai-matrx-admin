@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1464,
+  "routeCount": 1466,
   "routes": [
     {
       "pattern": "/",
@@ -4943,6 +4943,16 @@
       "pattern": "/marketing/[brandId]/socials/videos",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/socials/videos/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/socials/videos/[projectId]",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/socials/videos/[projectId]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/socials/videos/new",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/socials/videos/new/page.tsx"
     },
     {
       "pattern": "/marketing/[brandId]/websites",

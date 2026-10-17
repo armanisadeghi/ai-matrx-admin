@@ -51,6 +51,10 @@ cheap, fast simple agent." When a test needs any AI reply, run **Test Reply**
 no tools, about $0.00002 a reply): `agent_run agent_id=8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f
 user_message="ok"`. The test seats' new-chat default is already Test Reply (user binding of
 `chat.default_new_chat`). General Chat stays held for agent seats.
+A test that needs an agent to WORK WITH DATA (tables, records, a connected app such as Notion) runs **Test
+Data Agent** (`5f533f4f-325a-4983-8702-d3a824394e68`, Claude Haiku 5.5, reasoning low, tools: records,
+table, ask_person). The plumbing 20B model could not drive the records tool (it asked for an export), so
+this one is the cheapest that does.
 
 ## 3. Never a restricted model
 

@@ -95,8 +95,11 @@ const DeferredOverlayWorld = dynamic(
 );
 
 /** Any overlay currently in the slice (a key is added on open; closing the last instance removes it). */
-const selectAnyOverlayTouched = (state: RootState) =>
-  Object.keys(state.overlays.overlays).length > 0;
+const selectAnyOverlayTouched = (state: RootState): boolean => {
+  // Runs on every app dispatch: no allocation (Object.keys built an array each time).
+  for (const _ in state.overlays.overlays) return true;
+  return false;
+};
 
 /** Latches true on the first overlay open or person-peek request. */
 export function useOverlayWorldWanted(): boolean {

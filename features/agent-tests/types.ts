@@ -143,6 +143,8 @@ export interface TestResultView {
   identityMode: string | null;
   originClass: string | null;
   conversationId: string | null;
+  /** The agent version the case ran on (`agent.definition_version.id`). */
+  agentVersionId: string | null;
   userRequestIds: string[];
   status: string;
   verdict: TestVerdict | null;
