@@ -344,7 +344,7 @@ export function LibraryCatalogPage() {
           type="checkbox"
           checked={!entitledOnly}
           onChange={(e) => setEntitledOnly(!e.target.checked)}
-          className="h-3 w-3 accent-[var(--primary)]"
+          className="h-3 w-3 accent-[hsl(var(--primary))]"
         />
         Show everything in the Library, not just my industry
       </label>

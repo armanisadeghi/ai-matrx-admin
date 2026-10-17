@@ -20,7 +20,7 @@ import { formatPoints } from "@ai-matrx/kit/format";
 import { cn } from "@/lib/utils";
 
 import type { CompareField, ComparedItem, ComparisonResult } from "../contract";
-import { barFraction, comparedItems, isNumeric, headlineOf, verdictOf, whyLine } from "../verdict";
+import { barFraction, comparedItems, fieldGroups, isNumeric, headlineOf, verdictOf, whyLine } from "../verdict";
 import { ItemLogo } from "./ItemLogo";
 
 export interface ComparisonViewProps {
@@ -35,14 +35,14 @@ export interface ComparisonViewProps {
   onPick?: (item: ComparedItem, pick: string) => void;
 }
 
-const isPhoto = (kind: string) => kind === "local_business";
+/** Kinds whose picture is a photo (a place, a product, an avatar) and fills its square. */
+const isPhoto = (kind: string) => kind === "local_business" || kind === "products" || kind === "social_accounts";
 
 export function ComparisonView({ result, seesDollars = false, factsHref, actions, onPick }: ComparisonViewProps) {
   const verdict = verdictOf(result);
   const compared = comparedItems(result);
   const primary = result.fields.find((f) => f.is_primary) ?? null;
-  const numericFields = result.fields.filter(isNumeric);
-  const textFields = result.fields.filter((f) => !isNumeric(f));
+  const groups = fieldGroups(result.fields);
   const leader = verdict.leader;
   const headline = headlineOf(result);
 
@@ -86,40 +86,22 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
         ))}
       </section>
 
-      {/* ── field by field ────────────────────────────────────── */}
-      {compared.length > 0 && numericFields.length > 0 ? (
-        <section className="grid gap-3 md:grid-cols-2" aria-label="Field by field">
-          {numericFields.map((f) => (
-            <FieldCard key={f.key} field={f} result={result} />
-          ))}
-        </section>
-      ) : null}
-
-      {compared.length > 0 && textFields.length > 0 ? (
-        <section className="rounded-xl border border-border bg-card" aria-label="Details">
-          {textFields.map((f, i) => (
-            <div key={f.key} className={cn("grid gap-3 px-4 py-3 sm:grid-cols-[9rem_1fr]", i > 0 && "border-t border-border")}>
-              <div className="type-label pt-0.5" title={f.help}>{f.label}</div>
-              <div className="grid gap-x-6 gap-y-2" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(12rem, 1fr))` }}>
-                {compared.map((it) => {
-                  const v = it.values[f.key];
-                  return (
-                    <div key={it.item_id} className="min-w-0">
-                      <div className="type-meta truncate text-muted-foreground">{it.name}</div>
-                      <div className="flex items-start gap-1">
-                        <div className="type-body line-clamp-3 min-w-0 text-foreground" title={v?.basis || undefined}>
-                          {v && v.display !== "—" ? v.display : <span className="text-muted-foreground">—</span>}
-                        </div>
-                        <SourceMarker basis={v?.basis} what={`${f.label} for ${it.name}`} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </section>
-      ) : null}
+      {/* ── field by field, grouped by source (a company's facets each get their own group) ── */}
+      {compared.length > 0 ? groups.map((g) => {
+        const numeric = g.fields.filter(isNumeric);
+        const text = g.fields.filter((f) => !isNumeric(f));
+        return (
+          <div key={g.key || "own"} className="space-y-3">
+            {g.label ? <FacetHeading result={result} facetKey={g.key} label={g.label} /> : null}
+            {numeric.length > 0 ? (
+              <section className="grid gap-3 md:grid-cols-2" aria-label={g.label || "Field by field"}>
+                {numeric.map((f) => <FieldCard key={f.key} field={f} result={result} />)}
+              </section>
+            ) : null}
+            {text.length > 0 ? <DetailsTable fields={text} items={compared} label={g.label || "Details"} /> : null}
+          </div>
+        );
+      }) : null}
 
       {/* ── what it cost ──────────────────────────────────────── */}
       <section className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-4">
@@ -130,9 +112,66 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
         {result.generated_at ? (
           <span className="type-meta text-muted-foreground">{new Date(result.generated_at).toLocaleString()}</span>
         ) : null}
+        <HiddenNote result={result} />
       </section>
     </div>
   );
+}
+
+/** A facet group's title and, when it could not be read for some items, which ones and why. */
+function FacetHeading({ result, facetKey, label }: { result: ComparisonResult; facetKey: string; label: string }) {
+  const rows = comparedItems(result).map((i) => ({ item: i, f: i.facets?.find((x) => x.key === facetKey) }));
+  const failed = rows.filter((r) => r.f?.status === "failed");
+  const slowest = Math.max(0, ...rows.map((r) => r.f?.seconds ?? 0));
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2">
+      <h2 className="type-title text-foreground">{label}</h2>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        {failed.map(({ item, f }) => (
+          <span key={item.item_id} className="type-meta text-muted-foreground" title={f?.error ?? undefined}>
+            Not found for {item.name}
+          </span>
+        ))}
+        {slowest >= 1 ? <span className="type-meta tabular-nums text-muted-foreground">{Math.round(slowest)} s</span> : null}
+      </div>
+    </div>
+  );
+}
+
+function DetailsTable({ fields, items, label }: { fields: CompareField[]; items: ComparedItem[]; label: string }) {
+  return (
+    <section className="rounded-xl border border-border bg-card" aria-label={label}>
+      {fields.map((f, i) => (
+        <div key={f.key} className={cn("grid gap-3 px-4 py-3 sm:grid-cols-[9rem_1fr]", i > 0 && "border-t border-border")}>
+          <div className="type-label pt-0.5" title={f.help}>{f.label}</div>
+          <div className="grid gap-x-6 gap-y-2" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(12rem, 1fr))` }}>
+            {items.map((it) => {
+              const v = it.values[f.key];
+              return (
+                <div key={it.item_id} className="min-w-0">
+                  <div className="type-meta truncate text-muted-foreground">{it.name}</div>
+                  <div className="flex items-start gap-1">
+                    <div className="type-body line-clamp-3 min-w-0 text-foreground" title={v?.basis || undefined}>
+                      {v && v.display !== "—" ? v.display : <span className="text-muted-foreground">—</span>}
+                    </div>
+                    <SourceMarker basis={v?.basis} what={`${f.label} for ${it.name}`} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+/** Fields left out because every item shares them — named once, so nothing is silently dropped. */
+function HiddenNote({ result }: { result: ComparisonResult }) {
+  const same = (result.hidden_fields ?? []).filter((h) => h.reason === "constant");
+  if (!same.length) return null;
+  const all = same.map((h) => h.label).join(", ");
+  return <span className="type-meta truncate text-muted-foreground" title={all}>Same for all · {all}</span>;
 }
 
 /** Where a number came from, reachable by tap or click (a `title` alone never shows on touch). */
@@ -170,6 +209,8 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
     >
       <div className="flex items-start justify-between gap-2">
         <ItemLogo name={item.name} logoUrl={item.logo_url} website={item.website} size={44} fill={isPhoto(kind)} />
+        <div className="flex items-center gap-1.5">
+        {item.source_label ? <Badge>{item.source_label}</Badge> : null}
         {!failed && !choosing ? (
           <span className={cn("flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-sm font-semibold tabular-nums",
             lead ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground")}
@@ -177,6 +218,7 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
             {item.rank}
           </span>
         ) : null}
+        </div>
       </div>
 
       <div className="min-w-0">

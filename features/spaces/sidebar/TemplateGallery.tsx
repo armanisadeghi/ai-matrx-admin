@@ -1,47 +1,75 @@
 "use client";
 
-// features/spaces/sidebar/TemplateGallery.tsx — Notion's template picker (I2): the templates the person
-// can open (Spaces carrying the template label, one read) plus the built-in Traveling SMM™ OS sample;
-// picking one shows its page in the preview pane, "Use template" copies it (with its sub-pages) to the
-// top level of the active organization and opens the copy.
+// features/spaces/sidebar/TemplateGallery.tsx — the Spaces template gallery (Notion's template picker).
+//
+// Left: search, the categories that hold templates, and "Your templates" (pages carrying the template
+// label). Right: the cards of the picked category, or — once a card is picked — the template's real pages
+// drawn read-only by the editor over its tables in memory (`templatePreview`, nothing written), with its
+// page list to walk them, and "Use template" (SpacesProvider.packs.use: tables into the active
+// organization, the pages made there, the root opened). The library is the ONE template catalogue
+// (custom.space_templates over custom.template; features/spaces/templates/use-pack.ts).
 
-import { LayoutTemplate, TreePalm } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Badge, Button, RegionSkeleton, SearchField } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { ArrowLeft, FileText, LayoutGrid, LayoutTemplate } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 
-import { TemplateGalleryShell, type TemplateEntry, type TemplateGalleryClasses } from "./TemplateGalleryShell";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
 
-import type { SpaceDoc } from "../contract";
+import type { SpaceDoc, SpaceSummary } from "../contract";
+import { SpaceEditor } from "../editor/SpaceEditor";
+import { Cover } from "../page/Cover";
 import { Preview } from "../page/PageHistory";
-import { SpaceIcon } from "../page/SpaceIcon";
-import { useSpaces } from "../state/SpacesProvider";
-import { previewAgencyTables } from "../data/sources";
-import { seedSpaces, SEED_ROOT_ID } from "../store/seed";
-import { SAMPLE_TITLE } from "../store/sample";
+import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
+import { StaticSpacesProvider, useSpaces } from "../state/SpacesProvider";
+import { listSpaceTemplates, previewPages, readSpaceTemplate, type SpaceTemplateCard, type SpaceTemplateFull } from "../templates/use-pack";
 
-const SAMPLE_KEY = "builtin:traveling-smm-os";
+const ALL = "all";
+const MINE = "mine";
+const READ_ONLY = () => {
+  throw new Error("This is a preview.");
+};
 
 export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const spaces = useSpaces();
-  const { templates, store, sample } = spaces;
-  const [picked, setPicked] = useState<string>(SAMPLE_KEY);
-  const [docs, setDocs] = useState<Record<string, SpaceDoc | null>>({});
-  const [using, setUsing] = useState(false);
+  const { templates, store, packs } = spaces;
+  // org-filter: write-target "Use template" files into the active organization; the cards mark what it already has
+  const activeOrg = useAppSelector(selectActiveOrganizationId);
+  const [cards, setCards] = useState<SpaceTemplateCard[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>(ALL);
+  const [q, setQ] = useState("");
+  const [picked, setPicked] = useState<string | null>(null);
+  const [mine, setMine] = useState<Record<string, SpaceDoc | null>>({});
 
   useEffect(() => {
-    if (open) templates.refresh();
-    // Read the list each time the gallery opens.
+    if (!open) return;
+    templates.refresh();
+    let live = true;
+    setError(null);
+    listSpaceTemplates(activeOrg).then(
+      (c) => live && setCards(c),
+      (e: unknown) => live && setError(e instanceof Error ? e.message : "We couldn't list the templates."),
+    );
+    return () => {
+      live = false;
+    };
+    // Read each time the gallery opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, activeOrg]);
 
+  // The person's own labelled pages, each read once (title, icon, blocks).
   const ids = templates.ids ?? [];
-  // Each template is read once (title, icon and blocks for the preview).
   useEffect(() => {
     let live = true;
     for (const id of ids) {
-      if (id in docs) continue;
+      if (id in mine) continue;
       void store.get(id).then(
-        (d) => live && setDocs((prev) => ({ ...prev, [id]: d })),
-        () => live && setDocs((prev) => ({ ...prev, [id]: null })),
+        (d) => live && setMine((prev) => ({ ...prev, [id]: d })),
+        () => live && setMine((prev) => ({ ...prev, [id]: null })),
       );
     }
     return () => {
@@ -50,73 +78,201 @@ export function TemplateGallery({ open, onOpenChange }: { open: boolean; onOpenC
     // Keyed on the id list.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids.join(",")]);
+  const ownPages = ids.filter((id) => mine[id] && !mine[id]!.isArchived);
 
-  const listed = ids.filter((id) => docs[id] && !docs[id]!.isArchived);
-  const seed = picked === SAMPLE_KEY ? seedSpaces(previewAgencyTables()) : [];
-  const sampleRoot = seed.find((s) => s.id === SEED_ROOT_ID) ?? null;
-  const sampleTitles = new Map(seed.map((s) => [s.id, s.title]));
-  const current = picked === SAMPLE_KEY ? sampleRoot : (docs[picked] ?? null);
+  const needle = q.trim().toLowerCase();
+  const matches = (c: SpaceTemplateCard) =>
+    !needle || [c.space.title, c.space.description, c.space.forWho, ...(c.space.tags ?? [])].some((s) => s?.toLowerCase().includes(needle));
+  const counts = new Map<string, number>();
+  for (const c of cards ?? []) counts.set(c.space.category, (counts.get(c.space.category) ?? 0) + 1);
+  const shown = (cards ?? []).filter((c) => (category === ALL || c.space.category === category) && matches(c));
+  const ownShown = ownPages.filter((id) => !needle || (mine[id]?.title ?? "").toLowerCase().includes(needle));
 
-  const use = async () => {
-    setUsing(true);
-    try {
-      if (picked === SAMPLE_KEY) {
-        onOpenChange(false);
-        await sample.add({ asTemplate: true });
-      } else if (current) {
-        await templates.use(current.id, current.title);
-        onOpenChange(false);
-      }
-    } finally {
-      setUsing(false);
-    }
+  const pick = (key: string | null) => setPicked(key);
+  const close = (next: boolean) => {
+    onOpenChange(next);
+    if (!next) setPicked(null);
   };
 
-  const entries: TemplateEntry[] = [
-    { key: SAMPLE_KEY, title: SAMPLE_TITLE, icon: <TreePalm size={16} /> },
-    ...listed.map((id) => ({
-      key: id,
-      title: docs[id]?.title || "Untitled",
-      icon: docs[id]?.icon ? <SpaceIcon media={docs[id]!.icon} size={16} /> : <LayoutTemplate size={16} />,
-    })),
-  ];
-
   return (
-    <TemplateGalleryShell
-      open={open}
-      onOpenChange={onOpenChange}
-      entries={entries}
-      loading={templates.ids === null && !templates.error}
-      error={templates.error}
-      picked={picked}
-      onPick={setPicked}
-      previewTitle={current?.title ?? null}
-      previewLoading={!current && picked !== SAMPLE_KEY && !(picked in docs)}
-      preview={
-        current ? (
-          <>
-            <h1 className="spaces-templates-title">{current.title || "Untitled"}</h1>
-            <Preview blocks={current.blocks} titleOf={(id) => sampleTitles.get(id) ?? spaces.byId.get(id)?.title ?? null} />
-          </>
-        ) : null
-      }
-      usable={!!current && !sample.adding}
-      using={using || sample.adding}
-      onUse={() => void use()}
-      extraClassName="spaces-history spaces-templates"
-      classes={SPACES_GALLERY_CLASSES}
-    />
+    <Dialog open={open} onOpenChange={close}>
+      <DialogContent className="max-w-[min(1180px,96vw)] h-[86dvh] gap-0 p-0 overflow-hidden spaces-tg">
+        <DialogTitle className="sr-only">Templates</DialogTitle>
+        <div className="spaces-tg-body">
+          <aside className="spaces-tg-rail">
+            <div className="spaces-tg-search">
+              <SearchField placeholder="Search templates" value={q} onChange={(e) => setQ(e.target.value)} className="w-full" />
+            </div>
+            <nav className="spaces-tg-cats" aria-label="Template categories">
+              <RailRow icon={<LayoutGrid size={16} />} label="All templates" count={cards?.length} active={category === ALL && !picked} onClick={() => (setCategory(ALL), pick(null))} />
+              {SPACE_TEMPLATE_CATEGORIES.filter((c) => counts.get(c.key)).map((c) => (
+                <RailRow key={c.key} label={c.label} count={counts.get(c.key)} active={category === c.key && !picked} onClick={() => (setCategory(c.key), pick(null))} />
+              ))}
+              {ownPages.length ? <RailRow icon={<LayoutTemplate size={16} />} label="Your templates" count={ownPages.length} active={category === MINE && !picked} onClick={() => (setCategory(MINE), pick(null))} /> : null}
+            </nav>
+          </aside>
+          <section className="spaces-tg-main">
+            {picked?.startsWith("mine:") ? (
+              <OwnPreview doc={mine[picked.slice(5)] ?? null} onBack={() => pick(null)} onUse={async (d) => (await templates.use(d.id, d.title), close(false))} titleOf={(id) => spaces.byId.get(id)?.title ?? null} />
+            ) : picked ? (
+              <PackPreview card={(cards ?? []).find((c) => c.id === picked)!} onBack={() => pick(null)} stage={packs.stage} onUse={async () => (close(false), await packs.use(picked))} />
+            ) : (
+              <div className="spaces-tg-scroll">
+                <h2 className="type-title spaces-tg-heading">{category === ALL ? "All templates" : category === MINE ? "Your templates" : (SPACE_TEMPLATE_CATEGORIES.find((c) => c.key === category)?.label ?? "Templates")}</h2>
+                {error ? <ErrorNotice title="Templates could not be listed" message={error} size="compact" /> : null}
+                {cards === null && !error ? <RegionSkeleton shape="cards" count={6} aria-label="Loading templates" /> : null}
+                <div className="spaces-tg-grid">
+                  {category !== MINE
+                    ? shown.map((c) => (
+                        <button key={c.id} type="button" className="spaces-tg-card" onClick={() => pick(c.id)}>
+                          <span className="spaces-tg-card-icon">
+                            <SpaceIcon media={c.space.icon} size={28} />
+                          </span>
+                          <span className="spaces-tg-card-title">{c.space.title}</span>
+                          <span className="spaces-tg-card-line type-secondary text-muted-foreground">{c.space.description}</span>
+                          <span className="spaces-tg-card-foot type-secondary text-muted-foreground">
+                            {c.space.pages === 1 ? "1 page" : `${c.space.pages} pages`}
+                            {c.installed ? <Badge tone="success">In this organization</Badge> : null}
+                          </span>
+                        </button>
+                      ))
+                    : null}
+                  {category === MINE || (category === ALL && needle)
+                    ? ownShown.map((id) => (
+                        <button key={id} type="button" className="spaces-tg-card" onClick={() => pick(`mine:${id}`)}>
+                          <span className="spaces-tg-card-icon">{mine[id]?.icon ? <SpaceIcon media={mine[id]!.icon} size={28} /> : <LayoutTemplate size={26} />}</span>
+                          <span className="spaces-tg-card-title">{mine[id]?.title || "Untitled"}</span>
+                          <span className="spaces-tg-card-foot type-secondary text-muted-foreground">Your template</span>
+                        </button>
+                      ))
+                    : null}
+                </div>
+                {cards && !shown.length && !(category === MINE && ownShown.length) ? <p className="type-secondary text-muted-foreground">No templates match.</p> : null}
+              </div>
+            )}
+          </section>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-const SPACES_GALLERY_CLASSES: TemplateGalleryClasses = {
-  content: "max-w-[min(1100px,96vw)] h-[82dvh] gap-0 p-0 overflow-hidden",
-  body: "spaces-templates-body",
-  list: "spaces-templates-list",
-  head: "spaces-history-head type-secondary text-muted-foreground",
-  rows: "spaces-history-rows",
-  preview: "spaces-templates-preview",
-  bar: "spaces-templates-bar",
-  page: "spaces-templates-page",
-  row: "spaces-db-menurow",
-};
+function RailRow({ icon, label, count, active, onClick }: { icon?: ReactNode; label: string; count?: number; active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" className="spaces-tg-rail-row" data-active={active ? "true" : undefined} onClick={onClick}>
+      {icon ? <span className="spaces-menu-row-icon">{icon}</span> : null}
+      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+      {count ? <span className="type-secondary text-muted-foreground">{count}</span> : null}
+    </button>
+  );
+}
+
+/** A pack's real pages, read-only, over its tables in memory; page links walk the preview. */
+function PackPreview({ card, onBack, onUse, stage }: { card: SpaceTemplateCard; onBack: () => void; onUse: () => void; stage: string | null }) {
+  const spaces = useSpaces();
+  const [full, setFull] = useState<SpaceTemplateFull | null>(null);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [pageKey, setPageKey] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    readSpaceTemplate(card.id).then(
+      (t) => live && setFull(t),
+      (e: unknown) => live && setFailed(e instanceof Error ? e.message : "We couldn't open this template."),
+    );
+    return () => {
+      live = false;
+    };
+  }, [card.id]);
+  const pages = full ? previewPages(full) : [];
+  const current = pages.find((p) => p.key === pageKey) ?? pages[0];
+  const summaries = new Map<string, SpaceSummary>(pages.map((p) => [`preview-${p.key}`, { id: `preview-${p.key}`, parentId: null, position: "0", title: p.title, icon: p.doc.icon ?? null, isArchived: false, updatedAt: "" }]));
+  const value = {
+    ...spaces,
+    linkTarget: (id: string) => summaries.get(id) ?? null,
+    requestLink: () => undefined,
+    open: (id: string) => (id.startsWith("preview-") ? setPageKey(id.slice("preview-".length)) : undefined),
+    pageHref: () => "#",
+  };
+  return (
+    <div className="spaces-tg-preview">
+      <div className="spaces-tg-bar">
+        <Button variant="quiet" icon={<ArrowLeft size={15} />} onClick={onBack} aria-label="Back to templates" />
+        <span className="spaces-tg-bar-icon">
+          <SpaceIcon media={card.space.icon} size={18} />
+        </span>
+        <span className="min-w-0 flex-1 truncate type-title">{card.space.title}</span>
+        <Button variant="primary" disabled={!full || !!stage} onClick={onUse}>
+          {stage ? "Adding…" : "Use template"}
+        </Button>
+      </div>
+      <div className="spaces-tg-preview-body">
+        <aside className="spaces-tg-pages">
+          <p className="type-secondary text-muted-foreground spaces-tg-pages-head">{card.space.forWho}</p>
+          {pages.map((p) => (
+            <button key={p.key} type="button" className="spaces-tg-rail-row" data-active={current?.key === p.key ? "true" : undefined} onClick={() => setPageKey(p.key)}>
+              <span className="spaces-menu-row-icon">{p.doc.icon ? <SpaceIcon media={p.doc.icon} size={16} /> : <FileText size={16} />}</span>
+              <span className="min-w-0 flex-1 truncate text-left">{p.title}</span>
+            </button>
+          ))}
+        </aside>
+        <div className="spaces-tg-page" data-matrx-page-scroll="">
+          {failed ? <ErrorNotice title="This template could not be opened" message={failed} size="compact" /> : null}
+          {!full && !failed ? <RegionSkeleton shape="rows" count={8} aria-label="Loading the template" /> : null}
+          {current ? (
+            <StaticSpacesProvider value={value}>
+              {current.doc.cover ? <Cover cover={current.doc.cover} editable={false} onChange={() => {}} /> : null}
+              <div className="spaces-content">
+                <div className="spaces-header" data-has-cover={current.doc.cover ? "true" : undefined} data-has-icon={current.doc.icon ? "true" : undefined}>
+                  {current.doc.icon ? (
+                    <span className="spaces-page-icon" data-image={isImageMedia(current.doc.icon) ? "true" : undefined}>
+                      <SpaceIcon media={current.doc.icon} size={isImageMedia(current.doc.icon) ? 136 : 78} />
+                    </span>
+                  ) : null}
+                  <h1 className="spaces-title">{current.title}</h1>
+                </div>
+                <SpaceEditor
+                  key={`${card.id}:${current.key}`}
+                  spaceId={`preview-${current.key}`}
+                  initialBlocks={current.doc.blocks}
+                  editable={false}
+                  onChange={() => {}}
+                  slash={{ createSubpage: READ_ONLY, pickPage: async () => null, pickSource: async () => null, newDatabase: async () => null }}
+                  menu={{ moveBlocksTo: READ_ONLY, turnIntoPageIn: READ_ONLY, askAi: () => {} }}
+                />
+              </div>
+            </StaticSpacesProvider>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** One of the person's own labelled pages: its text outline, and Use template = copy it. */
+function OwnPreview({ doc, onBack, onUse, titleOf }: { doc: SpaceDoc | null; onBack: () => void; onUse: (d: SpaceDoc) => Promise<void>; titleOf: (id: string) => string | null }) {
+  const [using, setUsing] = useState(false);
+  return (
+    <div className="spaces-tg-preview">
+      <div className="spaces-tg-bar">
+        <Button variant="quiet" icon={<ArrowLeft size={15} />} onClick={onBack} aria-label="Back to templates" />
+        <span className="min-w-0 flex-1 truncate type-title">{doc?.title || "Untitled"}</span>
+        <Button
+          variant="primary"
+          disabled={!doc || using}
+          onClick={async () => {
+            if (!doc) return;
+            setUsing(true);
+            try {
+              await onUse(doc);
+            } finally {
+              setUsing(false);
+            }
+          }}
+        >
+          {using ? "Adding…" : "Use template"}
+        </Button>
+      </div>
+      <div className="spaces-tg-page">{doc ? <Preview blocks={doc.blocks} titleOf={titleOf} /> : <RegionSkeleton shape="rows" count={8} aria-label="Loading the template" />}</div>
+    </div>
+  );
+}

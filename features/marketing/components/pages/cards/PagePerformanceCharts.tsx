@@ -113,21 +113,21 @@ export function PerformanceHistoryChart({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="var(--border)"
+            stroke="hsl(var(--border))"
             vertical={false}
           />
           <XAxis
             dataKey="observedAt"
             tickFormatter={chartDate}
             interval={tickInterval}
-            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
             tickLine={false}
-            axisLine={{ stroke: "var(--border)" }}
+            axisLine={{ stroke: "hsl(var(--border))" }}
           />
           <YAxis
             domain={[0, 100]}
             ticks={[0, 50, 90, 100]}
-            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
             tickLine={false}
             axisLine={false}
           />

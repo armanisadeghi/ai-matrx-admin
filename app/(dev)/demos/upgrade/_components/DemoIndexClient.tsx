@@ -67,7 +67,7 @@ export function DemoIndexClient() {
       <header className="relative overflow-hidden rounded-3xl border border-border/60 bg-card px-7 py-10 lg:px-12 lg:py-14">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle_at_15%_20%,var(--foreground),transparent_45%),radial-gradient(circle_at_85%_75%,var(--foreground),transparent_50%)]"
+          className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle_at_15%_20%,hsl(var(--foreground)),transparent_45%),radial-gradient(circle_at_85%_75%,hsl(var(--foreground)),transparent_50%)]"
         />
         <div className="relative flex flex-col gap-5">
           <div className="flex items-center gap-2">

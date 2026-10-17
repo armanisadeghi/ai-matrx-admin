@@ -90,6 +90,7 @@ function useStaticValue(
       setTemplate: async () => refuse(),
       use: async () => refuse(),
     },
+    packs: { stage: null, use: async () => refuse() },
     summaries: [...byId.values()],
     archived: [],
     loadTrash: noop,

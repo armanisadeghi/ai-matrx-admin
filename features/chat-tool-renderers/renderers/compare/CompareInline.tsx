@@ -129,7 +129,7 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
               </>
             ) : null}
           </span>
-          <Button variant="primary" loading={run.phase === "checking"} disabled={run.phase === "checking" || !organizationId} onClick={run.confirm} data-compare-confirm-button="">
+          <Button variant="primary" disabled={run.phase === "checking" || !organizationId} onClick={run.confirm} data-compare-confirm-button="">
             Compare {data.request && typeof data.request === "object" && Array.isArray((data.request as { items?: unknown[] }).items) ? (data.request as { items: unknown[] }).items.length : ""}
           </Button>
         </div>

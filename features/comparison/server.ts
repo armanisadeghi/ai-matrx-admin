@@ -21,6 +21,7 @@ import {
   type LookupResult,
 } from "./contract";
 import { pollRun, settleComparison, type RunWatch } from "./settle";
+import { withFacets } from "./facet-choice";
 
 const BASE = "/comparison";
 
@@ -65,8 +66,8 @@ function itemBody(it: ComparisonItemInput) {
   };
 }
 
-function body(kind: string, items: ComparisonItemInput[]) {
-  return { kind, items: items.map(itemBody) };
+function body(kind: string, items: ComparisonItemInput[], discovery?: Record<string, unknown> | null) {
+  return { kind, items: items.map(itemBody), ...(discovery ? { discovery } : {}) };
 }
 
 /** "Here's what we found": each typed item matched to the real thing. Links are free. */
@@ -79,7 +80,7 @@ export async function lookupItems(kind: string, items: ComparisonItemInput[], op
 }
 
 export async function quoteComparison(kind: string, items: ComparisonItemInput[], opts: Ctx): Promise<ComparisonQuote> {
-  const { data } = await postJson<unknown>(`${BASE}/quote`, body(kind, items), {
+  const { data } = await postJson<unknown>(`${BASE}/quote`, withFacets(body(kind, items)), {
     organizationId: org(opts.organizationId),
     signal: opts.signal,
   });
@@ -123,11 +124,14 @@ async function refusalFromResponse(response: Response): Promise<ComparisonRefusa
 export async function runComparison(
   kind: string,
   items: ComparisonItemInput[],
-  opts: Ctx & RunWatch,
+  opts: Ctx & RunWatch & {
+    /** How the list was found, when it came from a discovery (branch A/C) — the run keeps it. */
+    discovery?: Record<string, unknown> | null;
+  },
 ): Promise<ComparisonResult> {
   const response = await requestRaw(
     `${BASE}/run`,
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body(kind, items)) },
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(withFacets(body(kind, items, opts.discovery))) },
     { organizationId: org(opts.organizationId), signal: opts.signal, allowHttpError: true },
   );
   if (!response.ok) throw await refusalFromResponse(response);

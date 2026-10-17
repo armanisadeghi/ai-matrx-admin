@@ -298,6 +298,8 @@
     "check:raw-storage:self-test": "node scripts/check-raw-storage/check-raw-storage.mjs --self-test",
     "check:writing-boxes:strict": "node scripts/writing-boxes/check-writing-boxes.mjs --strict",
     "check:writing-boxes:self-test": "node scripts/writing-boxes/check-writing-boxes.mjs --self-test",
+    "spaces:templates:check": "tsx features/spaces/templates/check.ts",
+    "spaces:templates:publish": "tsx --env-file=.env --env-file=.env.local features/spaces/templates/publish.ts",
     "check:spaces-fence": "node scripts/check-spaces-fence.mjs",
     "check:spaces-fence:self-test": "node scripts/check-spaces-fence.mjs --self-test",
     "check:page-top:strict": "node scripts/page-top/check-page-top.mjs --strict",

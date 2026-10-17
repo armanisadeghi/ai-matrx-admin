@@ -6,7 +6,7 @@
 
 import type { CompareField, ComparedItem, ComparisonResult } from "./contract";
 
-const NUMERIC = new Set(["rating", "number", "int", "percent"]);
+const NUMERIC = new Set(["rating", "number", "int", "percent", "money"]);
 
 export function isRankable(f: CompareField): boolean {
   return NUMERIC.has(f.type) && f.direction !== "none";
@@ -106,6 +106,9 @@ export function whyLine(field: CompareField, result: ComparisonResult): string {
   if (field.type === "percent") {
     return `${names(best)} leads · ${shown} to ${runner.values[field.key]?.display ?? "—"} for ${runner.name}`;
   }
+  if (field.type === "money") {
+    return `${names(best)} costs least · ${shown} to ${runner.values[field.key]?.display ?? "—"} for ${runner.name}`;
+  }
   const gap = gapText(field, numberOf(best[0].values[field.key]?.value), numberOf(runner.values[field.key]?.value));
   return gap ? `${names(best)} leads · ${gap} ahead of ${runner.name}` : `${names(best)} leads at ${shown}`;
 }
@@ -115,6 +118,7 @@ function gapText(field: CompareField, a: number | null, b: number | null): strin
   const d = Math.abs(a - b);
   if (field.type === "rating") return d.toFixed(1);
   if (field.type === "int") return Math.round(d).toLocaleString("en-US");
+  if (field.type === "money") return d.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return Number.isInteger(d) ? d.toLocaleString("en-US") : d.toFixed(1);
 }
 
@@ -124,8 +128,29 @@ export function barFraction(field: CompareField, value: unknown, result: Compari
   if (n === null) return null;
   if (field.type === "rating") return clamp(n / 5);
   if (field.type === "percent") return clamp(n);
-  const max = Math.max(...comparedItems(result).map((i) => numberOf(i.values[field.key]?.value) ?? 0), 0);
+  const nums = comparedItems(result).map((i) => numberOf(i.values[field.key]?.value)).filter((x): x is number => x !== null);
+  if (field.direction === "lower_better") {
+    // the cheapest (best) is the full bar; dearer ones shrink in proportion
+    const min = Math.min(...nums.filter((x) => x > 0));
+    return n > 0 && Number.isFinite(min) ? clamp(min / n) : 0;
+  }
+  const max = Math.max(...nums, 0);
   return max > 0 ? clamp(n / max) : 0;
+}
+
+/** Fields grouped as the result reads: the kind's own first (no title), then one group per facet. */
+export function fieldGroups(fields: CompareField[]): { key: string; label: string; fields: CompareField[] }[] {
+  const groups: { key: string; label: string; fields: CompareField[] }[] = [];
+  for (const f of fields) {
+    const key = f.facet ?? "";
+    let g = groups.find((x) => x.key === key);
+    if (!g) {
+      g = { key, label: f.facet_label ?? "", fields: [] };
+      groups.push(g);
+    }
+    g.fields.push(f);
+  }
+  return groups.sort((a, b) => (a.key === "" ? -1 : b.key === "" ? 1 : 0));
 }
 
 const clamp = (x: number) => Math.max(0, Math.min(1, x));

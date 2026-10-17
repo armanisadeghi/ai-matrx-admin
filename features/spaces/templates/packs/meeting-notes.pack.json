@@ -1,0 +1,1585 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0003",
+ "version": 1,
+ "title": "Meeting Notes",
+ "description": "Every meeting's notes, decisions and action items, with agendas ready to copy.",
+ "forWho": "Teams that meet every week and want nothing to slip",
+ "icon": {
+  "emoji": "📝"
+ },
+ "cover": {
+  "url": "gallery:photo-lavender-dusk",
+  "offsetY": 50
+ },
+ "category": "meetings",
+ "tags": [
+  "meetings",
+  "notes",
+  "action items",
+  "agenda",
+  "one-to-one"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-meeting-notes",
+  "catalogueId": "SP0003",
+  "useCase": "Elena Marchetti runs operations at a five-person web studio and keeps every meeting's notes, decisions and action items in one place so nothing promised gets lost.",
+  "industry": "cross_industry",
+  "vertical": "Meeting notes",
+  "job": "projects",
+  "audience": "organization",
+  "teaches": "boards",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Brightmeadow Studio",
+   "describes": "A five-person web studio that builds and runs websites for local businesses.",
+   "address": {
+    "line1": "77 Larkspur Bend",
+    "city": "Oakland",
+    "region": "CA",
+    "postalCode": "94607",
+    "country": "US"
+   },
+   "phone": "(415) 555-0139",
+   "website": "brightmeadowstudio.net",
+   "email": "hello@brightmeadowstudio.net",
+   "timezone": "America/Los_Angeles"
+  },
+  "cleanupTag": "use-case:spaces-meeting-notes",
+  "tables": [
+   {
+    "token": "meeting",
+    "name": "Meetings",
+    "labelSingular": "Meeting",
+    "labelPlural": "Meetings",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "calendar-days",
+    "titleField": "meeting_title",
+    "describes": "Every standup, planning session, one-to-one and client call: when, who ran it and what was decided.",
+    "subject": "thing",
+    "independentOf": {
+     "facilitator": "Anyone on the team can run a meeting, whenever they joined."
+    },
+    "statusImplies": [
+     {
+      "field": "status",
+      "when": [
+       "Notes sent"
+      ],
+      "filled": [
+       "decision"
+      ]
+     }
+    ],
+    "fields": [
+     {
+      "key": "meeting_title",
+      "label": "Meeting",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "kind",
+      "label": "Kind",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Standup",
+       "One-to-one",
+       "Planning",
+       "Retro",
+       "Client call",
+       "All-hands"
+      ],
+      "choiceColors": {
+       "Standup": "blue",
+       "One-to-one": "violet",
+       "Planning": "teal",
+       "Retro": "amber",
+       "Client call": "orange",
+       "All-hands": "pink"
+      },
+      "required": true
+     },
+     {
+      "key": "held_on",
+      "label": "When",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "datetime",
+      "required": true
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Planned",
+       "Held",
+       "Notes sent",
+       "Cancelled"
+      ],
+      "choiceColors": {
+       "Planned": "slate",
+       "Held": "blue",
+       "Notes sent": "green",
+       "Cancelled": "red"
+      },
+      "required": true,
+      "default": "Planned"
+     },
+     {
+      "key": "facilitator",
+      "label": "Facilitator",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "attended",
+      "label": "Attendance",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 1
+       },
+       {
+        "kind": "max",
+        "value": 40
+       }
+      ],
+      "unit": "people"
+     },
+     {
+      "key": "decision",
+      "label": "What was decided",
+      "parityType": "text",
+      "sensitivity": "confidential",
+      "contextPolicy": "include"
+     }
+    ],
+    "rows": [
+     {
+      "key": "m01",
+      "values": {
+       "meeting_title": "Standup: pricing page week",
+       "kind": "Standup",
+       "held_on": "@today-21d 09:30",
+       "status": "Notes sent",
+       "facilitator": "tm-elena",
+       "attended": 5,
+       "decision": "Owen pairs with Lucía on the pricing page."
+      }
+     },
+     {
+      "key": "m02",
+      "values": {
+       "meeting_title": "Q4 planning",
+       "kind": "Planning",
+       "held_on": "@today-19d 13:00",
+       "status": "Notes sent",
+       "facilitator": "tm-elena",
+       "attended": 5,
+       "decision": "Three goals for the quarter: launch the portal, two new retainers, cut response time to a day."
+      }
+     },
+     {
+      "key": "m03",
+      "values": {
+       "meeting_title": "Fernbrook menu redesign call",
+       "kind": "Client call",
+       "held_on": "@today-16d 11:00",
+       "status": "Notes sent",
+       "facilitator": "tm-kwame",
+       "attended": 3,
+       "decision": "Fernbrook approves the menu redesign; the photo shoot is booked for the following Tuesday."
+      }
+     },
+     {
+      "key": "m04",
+      "values": {
+       "meeting_title": "Elena and Owen one-to-one",
+       "kind": "One-to-one",
+       "held_on": "@today-14d 15:00",
+       "status": "Notes sent",
+       "facilitator": "tm-elena",
+       "attended": 2,
+       "decision": "Owen leads the portal build; review in four weeks."
+      }
+     },
+     {
+      "key": "m05",
+      "values": {
+       "meeting_title": "Standup: portal kickoff week",
+       "kind": "Standup",
+       "held_on": "@today-14d 09:30",
+       "status": "Notes sent",
+       "facilitator": "tm-elena",
+       "attended": 5,
+       "decision": "Portal kickoff moved to Wednesday."
+      }
+     },
+     {
+      "key": "m06",
+      "values": {
+       "meeting_title": "September retro",
+       "kind": "Retro",
+       "held_on": "@today-12d 16:00",
+       "status": "Notes sent",
+       "facilitator": "tm-mira",
+       "attended": 5,
+       "decision": "Keep Friday demos; drop the second weekly status email."
+      }
+     },
+     {
+      "key": "m07",
+      "values": {
+       "meeting_title": "Client call: Harlow Physio",
+       "kind": "Client call",
+       "held_on": "@today-9d 10:00",
+       "status": "Held",
+       "facilitator": "tm-kwame",
+       "attended": 3,
+       "decision": "Harlow wants online booking before January."
+      }
+     },
+     {
+      "key": "m08",
+      "values": {
+       "meeting_title": "Standup: Lucía out Thursday",
+       "kind": "Standup",
+       "held_on": "@today-7d 09:30",
+       "status": "Notes sent",
+       "facilitator": "tm-elena",
+       "attended": 4,
+       "decision": "Lucía out Thursday; Kwame covers the Fernbrook check-in."
+      }
+     },
+     {
+      "key": "m09",
+      "values": {
+       "meeting_title": "All-hands: autumn update",
+       "kind": "All-hands",
+       "held_on": "@today-5d 12:00",
+       "status": "Held",
+       "facilitator": "tm-elena",
+       "attended": 5,
+       "decision": "New retainer with Harlow Physio signed; hiring a part-time copywriter."
+      }
+     },
+     {
+      "key": "m10",
+      "values": {
+       "meeting_title": "Kwame and Elena one-to-one",
+       "kind": "One-to-one",
+       "held_on": "@today-2d 14:00",
+       "status": "Held",
+       "facilitator": "tm-elena",
+       "attended": 2,
+       "decision": "Kwame takes over billing questions from Mira."
+      }
+     },
+     {
+      "key": "m11",
+      "values": {
+       "meeting_title": "Standup: Harlow booking sprint",
+       "kind": "Standup",
+       "held_on": "@today+1d 09:30",
+       "status": "Planned",
+       "facilitator": "tm-elena",
+       "attended": 5
+      }
+     },
+     {
+      "key": "m12",
+      "values": {
+       "meeting_title": "Fernbrook photo review",
+       "kind": "Client call",
+       "held_on": "@today+3d 11:00",
+       "status": "Planned",
+       "facilitator": "tm-kwame",
+       "attended": 3
+      }
+     },
+     {
+      "key": "m13",
+      "values": {
+       "meeting_title": "Portal sprint planning",
+       "kind": "Planning",
+       "held_on": "@today+4d 13:30",
+       "status": "Planned",
+       "facilitator": "tm-owen",
+       "attended": 4
+      }
+     },
+     {
+      "key": "m14",
+      "values": {
+       "meeting_title": "October retro",
+       "kind": "Retro",
+       "held_on": "@today+10d 16:00",
+       "status": "Planned",
+       "facilitator": "tm-mira",
+       "attended": 5
+      }
+     },
+     {
+      "key": "m15",
+      "values": {
+       "meeting_title": "Vendor call: printing quote",
+       "kind": "Client call",
+       "held_on": "@today-11d 10:30",
+       "status": "Cancelled",
+       "facilitator": "tm-mira",
+       "attended": 2
+      }
+     }
+    ]
+   },
+   {
+    "token": "action_item",
+    "name": "Action items",
+    "labelSingular": "Action item",
+    "labelPlural": "Action items",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "list-todo",
+    "titleField": "item",
+    "describes": "What someone promised in a meeting, who owns it and by when.",
+    "subject": "thing",
+    "childDates": [
+     {
+      "relation": "meeting",
+      "field": "due_on",
+      "parentField": "held_on"
+     }
+    ],
+    "statusAgrees": [
+     {
+      "relation": "meeting",
+      "field": "status",
+      "childStatus": [
+       "Open",
+       "Done"
+      ],
+      "parentField": "status",
+      "parentStatus": [
+       "Held",
+       "Notes sent"
+      ]
+     }
+    ],
+    "independentOf": {
+     "owner": "Anyone on the team can own an action, whenever they joined."
+    },
+    "fields": [
+     {
+      "key": "item",
+      "label": "Action",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "meeting",
+      "label": "Meeting",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "meeting",
+      "relationMax": 1
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Open",
+       "Done"
+      ],
+      "choiceColors": {
+       "Open": "amber",
+       "Done": "green"
+      },
+      "required": true,
+      "default": "Open"
+     },
+     {
+      "key": "priority",
+      "label": "Priority",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Low",
+       "Normal",
+       "High"
+      ],
+      "choiceColors": {
+       "Low": "slate",
+       "Normal": "blue",
+       "High": "red"
+      }
+     },
+     {
+      "key": "due_on",
+      "label": "Due",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     }
+    ],
+    "rows": [
+     {
+      "key": "a01",
+      "values": {
+       "item": "Send Q4 goals to the whole team",
+       "meeting": "m02",
+       "owner": "tm-elena",
+       "status": "Done",
+       "due_on": "@today-18d",
+       "priority": "Normal"
+      }
+     },
+     {
+      "key": "a02",
+      "values": {
+       "item": "Draft the portal scope",
+       "meeting": "m02",
+       "owner": "tm-owen",
+       "status": "Done",
+       "due_on": "@today-12d",
+       "priority": "High"
+      }
+     },
+     {
+      "key": "a03",
+      "values": {
+       "item": "Book the Fernbrook photo shoot",
+       "meeting": "m03",
+       "owner": "tm-kwame",
+       "status": "Done",
+       "due_on": "@today-10d",
+       "priority": "Normal"
+      }
+     },
+     {
+      "key": "a04",
+      "values": {
+       "item": "Share menu proofs with Fernbrook",
+       "meeting": "m03",
+       "owner": "tm-lucia",
+       "status": "Done",
+       "due_on": "@today-8d",
+       "priority": "High"
+      }
+     },
+     {
+      "key": "a05",
+      "values": {
+       "item": "Set the four-week portal review",
+       "meeting": "m04",
+       "owner": "tm-elena",
+       "status": "Done",
+       "due_on": "@today-13d",
+       "priority": "Low"
+      }
+     },
+     {
+      "key": "a06",
+      "values": {
+       "item": "Write the Friday demo checklist",
+       "meeting": "m06",
+       "owner": "tm-mira",
+       "status": "Done",
+       "due_on": "@today-6d",
+       "priority": "Low"
+      }
+     },
+     {
+      "key": "a07",
+      "values": {
+       "item": "Cancel the second status email",
+       "meeting": "m06",
+       "owner": "tm-elena",
+       "status": "Done",
+       "due_on": "@today-11d",
+       "priority": "Low"
+      }
+     },
+     {
+      "key": "a08",
+      "values": {
+       "item": "Price the online booking add-on",
+       "meeting": "m07",
+       "owner": "tm-kwame",
+       "status": "Open",
+       "due_on": "@today+3d",
+       "priority": "High"
+      }
+     },
+     {
+      "key": "a09",
+      "values": {
+       "item": "Sketch the Harlow booking screens",
+       "meeting": "m07",
+       "owner": "tm-lucia",
+       "status": "Open",
+       "due_on": "@today+5d",
+       "priority": "High"
+      }
+     },
+     {
+      "key": "a10",
+      "values": {
+       "item": "Check calendar sync options",
+       "meeting": "m07",
+       "owner": "tm-owen",
+       "status": "Open",
+       "due_on": "@today+4d",
+       "priority": "Normal"
+      }
+     },
+     {
+      "key": "a11",
+      "values": {
+       "item": "Cover the Fernbrook check-in",
+       "meeting": "m08",
+       "owner": "tm-kwame",
+       "status": "Done",
+       "due_on": "@today-4d",
+       "priority": "Normal"
+      }
+     },
+     {
+      "key": "a12",
+      "values": {
+       "item": "Post the copywriter role",
+       "meeting": "m09",
+       "owner": "tm-mira",
+       "status": "Open",
+       "due_on": "@today+2d",
+       "priority": "Normal"
+      }
+     },
+     {
+      "key": "a13",
+      "values": {
+       "item": "Send the Harlow welcome pack",
+       "meeting": "m09",
+       "owner": "tm-kwame",
+       "status": "Open",
+       "due_on": "@today+1d",
+       "priority": "High"
+      }
+     },
+     {
+      "key": "a14",
+      "values": {
+       "item": "Hand billing notes to Kwame",
+       "meeting": "m10",
+       "owner": "tm-mira",
+       "status": "Open",
+       "due_on": "@today+6d",
+       "priority": "Normal"
+      }
+     },
+     {
+      "key": "a15",
+      "values": {
+       "item": "List open invoices for Kwame",
+       "meeting": "m10",
+       "owner": "tm-mira",
+       "status": "Open",
+       "due_on": "@today+3d",
+       "priority": "Low"
+      }
+     },
+     {
+      "key": "a16",
+      "values": {
+       "item": "Update the client contact sheet",
+       "meeting": "m01",
+       "owner": "tm-mira",
+       "status": "Done",
+       "due_on": "@today-19d",
+       "priority": "Low"
+      }
+     },
+     {
+      "key": "a17",
+      "values": {
+       "item": "Pair on pricing page layout",
+       "meeting": "m01",
+       "owner": "tm-owen",
+       "status": "Done",
+       "due_on": "@today-17d",
+       "priority": "Normal"
+      }
+     }
+    ]
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-elena",
+      "values": {
+       "full_name": "Elena Marchetti",
+       "role": "Operations lead",
+       "work_email": "elena@brightmeadowstudio.net",
+       "mobile": "(415) 555-0140",
+       "start_date": "@today-7y"
+      }
+     },
+     {
+      "key": "tm-kwame",
+      "values": {
+       "full_name": "Kwame Asante",
+       "role": "Account manager",
+       "work_email": "kwame@brightmeadowstudio.net",
+       "mobile": "(415) 555-0141",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-lucia",
+      "values": {
+       "full_name": "Lucía Herrera",
+       "role": "Designer",
+       "work_email": "lucia@brightmeadowstudio.net",
+       "mobile": "(415) 555-0142",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-owen",
+      "values": {
+       "full_name": "Owen Fairbanks",
+       "role": "Developer",
+       "work_email": "owen@brightmeadowstudio.net",
+       "mobile": "(415) 555-0143",
+       "start_date": "@today-18m"
+      }
+     },
+     {
+      "key": "tm-mira",
+      "values": {
+       "full_name": "Mira Takahashi",
+       "role": "Office manager",
+       "work_email": "mira@brightmeadowstudio.net",
+       "mobile": "(415) 555-0144",
+       "start_date": "@today-5y"
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "One teammate runs each meeting.",
+    "fromTable": "meeting",
+    "fromField": "facilitator",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "meetings_run"
+   },
+   {
+    "describes": "Each action item came out of one meeting.",
+    "fromTable": "action_item",
+    "fromField": "meeting",
+    "toTable": "meeting",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "actions"
+   },
+   {
+    "describes": "Each action item has one owner.",
+    "fromTable": "action_item",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "actions_owned"
+   }
+  ],
+  "forms": [
+   {
+    "token": "add_action",
+    "name": "Add an action item",
+    "describes": "How anyone adds a promise made outside a meeting to the shared list.",
+    "audience": "staff",
+    "table": "action_item",
+    "fields": [
+     {
+      "fieldKey": "item",
+      "ask": "What needs to happen?",
+      "required": true
+     },
+     {
+      "fieldKey": "owner",
+      "ask": "Who is doing it?"
+     },
+     {
+      "fieldKey": "due_on",
+      "ask": "By what day?"
+     },
+     {
+      "fieldKey": "priority",
+      "ask": "How urgent is it?"
+     }
+    ],
+    "submitLabel": "Add to the list",
+    "confirmation": "Thanks. It is on the shared list."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_meetings",
+    "name": "All meetings",
+    "table": "meeting",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "held_on",
+      "direction": "desc"
+     }
+    ]
+   },
+   {
+    "token": "meeting_calendar",
+    "name": "Calendar",
+    "table": "meeting",
+    "kind": "calendar",
+    "dateField": "held_on"
+   },
+   {
+    "token": "meetings_by_kind",
+    "name": "By kind",
+    "table": "meeting",
+    "kind": "kanban",
+    "groupBy": "kind"
+   },
+   {
+    "token": "all_actions",
+    "name": "All action items",
+    "table": "action_item",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "due_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "action_board",
+    "name": "Board",
+    "table": "action_item",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Meeting assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "action_item",
+     "describes": "Every action item, its owner, status and due day."
+    },
+    {
+     "name": "related_tables",
+     "table": "meeting",
+     "describes": "The meetings the actions came from."
+    }
+   ],
+   "question": {
+    "ask": "How many action items are still open?",
+    "whyItMatters": "Elena reads the open list aloud at the start of every standup.",
+    "expect": {
+     "table": "action_item",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Open"
+     },
+     "answer": 7,
+     "unit": "action items"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the meeting calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "meeting_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "meeting_calendar",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the action board.",
+    "action": {
+     "kind": "open",
+     "surface": "action_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "action_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open all meetings.",
+    "action": {
+     "kind": "open",
+     "surface": "all_meetings"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_meetings",
+     "minItems": 10
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-16",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "brightmeadowstudio.net"
+   ],
+   "fictionalStreets": [
+    "Larkspur Bend"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "meeting-notes",
+   "parent": null,
+   "title": "Meeting Notes",
+   "icon": {
+    "emoji": "📝"
+   },
+   "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "Every meeting gets a row: open it to write the notes. Promises go in Action items with an owner and a day."
+      }
+     ],
+     "background": "yellow",
+     "props": {
+      "icon": "NotebookPen"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:agenda-templates"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:action-items"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:meeting-habits"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Coming up"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "meeting",
+       "view": "all_meetings"
+      },
+      "inline": true,
+      "title": "Meetings",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-upcoming",
+        "name": "Coming up",
+        "layout": "list",
+        "filters": {
+         "status": "Planned"
+        },
+        "sorts": [
+         {
+          "field": "held_on",
+          "direction": "asc"
+         }
+        ],
+        "icon": "CalendarClock"
+       }
+      ],
+      "activeViewId": "view-upcoming"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "All meetings"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "meeting",
+       "view": "all_meetings"
+      },
+      "inline": true,
+      "title": "Meetings",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-table",
+        "name": "All",
+        "layout": "grid",
+        "sorts": [
+         {
+          "field": "held_on",
+          "direction": "desc"
+         }
+        ],
+        "icon": "Table"
+       },
+       {
+        "id": "view-calendar",
+        "name": "Calendar",
+        "layout": "calendar",
+        "dateField": "held_on",
+        "icon": "Calendar"
+       },
+       {
+        "id": "view-kind",
+        "name": "By kind",
+        "layout": "kanban",
+        "groupField": "kind",
+        "icon": "SquareKanban"
+       }
+      ],
+      "activeViewId": "view-table"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Open action items"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "action_item",
+       "view": "all_actions"
+      },
+      "inline": true,
+      "title": "Action items",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-open",
+        "name": "Open",
+        "layout": "grid",
+        "filters": {
+         "status": "Open"
+        },
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ],
+        "icon": "ListTodo"
+       }
+      ],
+      "activeViewId": "view-open"
+     }
+    }
+   ]
+  },
+  {
+   "key": "agenda-templates",
+   "parent": "meeting-notes",
+   "title": "Agenda templates",
+   "icon": {
+    "emoji": "📋"
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Copy the agenda for your meeting kind into the meeting's page, then fill it in as you go."
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Standup (15 minutes)"
+      }
+     ],
+     "props": {
+      "level": 3,
+      "toggleable": true
+     },
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Each person, two minutes, in the same order every time."
+        }
+       ]
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What I finished since last time"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What I am doing next"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Anything in my way"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "One-to-one (30 minutes)"
+      }
+     ],
+     "props": {
+      "level": 3,
+      "toggleable": true
+     },
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Their agenda first; yours only if time is left."
+        }
+       ]
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "How are things going, really?"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What is going well"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What is getting in the way"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "One thing to try before next time"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Planning (60 minutes)"
+      }
+     ],
+     "props": {
+      "level": 3,
+      "toggleable": true
+     },
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Bring the numbers; leave with owners."
+        }
+       ]
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Last period's results"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Three goals for the next period"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Who owns each goal"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What we are saying no to"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Retro (45 minutes)"
+      }
+     ],
+     "props": {
+      "level": 3,
+      "toggleable": true
+     },
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Everyone writes first, then the room discusses."
+        }
+       ]
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What went well"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What did not"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "What we will try differently"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Who checks it worked"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Client call (30 minutes)"
+      }
+     ],
+     "props": {
+      "level": 3,
+      "toggleable": true
+     },
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Open with the decision you need; close with the next date."
+        }
+       ]
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Where the work stands"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Decisions we need from the client"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Next deliverable and its date"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      },
+      {
+       "type": "todo",
+       "text": [
+        {
+         "text": "Send the recap the same day"
+        }
+       ],
+       "props": {
+        "checked": false
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "action-items",
+   "parent": "meeting-notes",
+   "title": "Action items",
+   "icon": {
+    "emoji": "✅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "action_item",
+       "view": "all_actions"
+      },
+      "inline": true,
+      "title": "Action items",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "groupField": "status",
+        "icon": "SquareKanban"
+       },
+       {
+        "id": "view-table",
+        "name": "All",
+        "layout": "grid",
+        "sorts": [
+         {
+          "field": "due_on",
+          "direction": "asc"
+         }
+        ],
+        "icon": "Table"
+       },
+       {
+        "id": "view-calendar",
+        "name": "By due day",
+        "layout": "calendar",
+        "dateField": "due_on",
+        "icon": "Calendar"
+       }
+      ],
+      "activeViewId": "view-board"
+     }
+    }
+   ]
+  },
+  {
+   "key": "meeting-habits",
+   "parent": "meeting-notes",
+   "title": "Meeting habits",
+   "icon": {
+    "emoji": "⏱️"
+   },
+   "blocks": [
+    {
+     "type": "text",
+     "text": [
+      {
+       "text": "Short rules the studio keeps so meetings stay useful."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "No agenda, no meeting: the agenda goes in the meeting's page a day ahead."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Start on time, end five minutes early."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Every decision is written in What was decided before the call ends."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Every promise becomes an action item with one owner and a due day."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Notes go out the same day; set the status to Notes sent."
+      }
+     ]
+    },
+    {
+     "type": "quote",
+     "text": [
+      {
+       "text": "If it is not written down, it was not decided."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

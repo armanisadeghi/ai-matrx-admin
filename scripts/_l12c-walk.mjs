@@ -16,7 +16,8 @@ page.on("response", (r) => { if (/\/tools\/calls/.test(r.url())) net.push(`${r.r
 await page.goto(open, { waitUntil: "commit", timeout: 180000 }).catch(() => {});
 await page.waitForTimeout(4000);
 await page.goto(`${origin}${base}`, { waitUntil: "domcontentloaded", timeout: 180000 });
-await page.waitForTimeout(8000);
+await page.getByRole("tab", { name: "Account & posts", exact: true }).waitFor({ timeout: 170000 });
+await page.waitForTimeout(3000);
 const mode = flag("mode");
 if (mode) { await page.getByRole("tab", { name: mode, exact: true }).click(); await page.waitForTimeout(2500); }
 const chip = flag("chip");

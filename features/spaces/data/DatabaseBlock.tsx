@@ -65,7 +65,7 @@ import { NewPropertyPanel } from "./NewProperty";
 import { LAYOUTS, viewIcon, type Layout } from "./view-icons";
 import { useUrlView } from "./url-view";
 import { useStructureEdit } from "../page/structure";
-import { AGENCY_SAMPLE_ID, newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
+import { newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
 
 export interface DatabaseBlockViewProps {
   blockId: string;
@@ -95,7 +95,7 @@ export function DatabaseBlock({ blockId, props: stored, onChange: write, editabl
   const tableId = props.source.tableId;
   return (
     <DataMount
-      sample={props.sample === AGENCY_SAMPLE_ID}
+      sample={props.sample ?? null}
       tableId={tableId}
       held={(line, retry) => (
         <div className="spaces-db-frame spaces-db-note">
@@ -109,7 +109,7 @@ export function DatabaseBlock({ blockId, props: stored, onChange: write, editabl
       )}
     >
       <BlockRecordsSeed>
-        <DatabaseFrame tableId={tableId} props={props} raw={raw} onChange={onChange} editable={editable} sample={props.sample === AGENCY_SAMPLE_ID} />
+        <DatabaseFrame tableId={tableId} props={props} raw={raw} onChange={onChange} editable={editable} sample={Boolean(props.sample)} />
       </BlockRecordsSeed>
     </DataMount>
   );

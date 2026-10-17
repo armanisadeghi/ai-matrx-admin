@@ -16,7 +16,7 @@
 
 import type { ValidateFunction } from "ajv";
 import { Ajv2020 } from "ajv/dist/2020";
-import { validateTemplate, type AgentSnapshotRow, type TemplateSpec } from "@ai-matrx/records/templates";
+import { allTables, validateTemplate, type AgentSnapshotRow, type TemplateSpec } from "@ai-matrx/records/templates";
 
 import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
@@ -97,10 +97,17 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   }
   if (spec.catalogueId !== pack.catalogueId) say("spec.catalogueId", `Must equal the pack's catalogueId "${pack.catalogueId}".`);
   if (spec.version !== pack.version) say("spec.version", `Must equal the pack's version ${pack.version}.`);
-  const tables = new Map((spec.tables ?? []).map((t) => [t.token, t] as const));
+  // The spec's own tables and the shared blocks it seeds (a Team table is a table too).
+  let every: TemplateSpec["tables"] = [];
+  try {
+    every = allTables(spec);
+  } catch (error) {
+    say("spec.sharedBlocks", `The shared blocks could not be read: ${(error as Error).message}`);
+  }
+  const tables = new Map(every.map((t) => [t.token, t] as const));
   const views = new Map((spec.views ?? []).map((v) => [v.token, v] as const));
-  for (const [i, t] of (spec.tables ?? []).entries()) {
-    if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables[${i}] (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
+  for (const t of every) {
+    if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
   }
 
   // ── 3. the page tree ───────────────────────────────────────────────────────

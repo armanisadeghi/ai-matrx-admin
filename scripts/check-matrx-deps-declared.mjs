@@ -27,7 +27,31 @@ const SOURCE = /\.(?:[cm]?[jt]sx?)$/;
 const IMPORT = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*|\bvi\.mock\s*\(\s*|\bjest\.mock\s*\(\s*)["'](@ai-matrx\/[a-z0-9][a-z0-9._-]*)(?:\/[^"']*)?["']/g;
 
 const fromDisk = (root) => (file) => readFileSync(join(root, file), "utf8");
-const fromIndex = (root) => (file) => execFileSync("git", ["show", `:${file}`], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+// ONE `git cat-file --batch` for every file: a `git show` per file is ~15k process spawns when
+// package.json is staged (every tracked source is read), which held the shared index lock 10+ min.
+const fromIndex = (root, files) => {
+  const names = ["package.json", ...files];
+  const out = execFileSync("git", ["cat-file", "--batch"], {
+    cwd: root,
+    input: names.map((f) => `:${f}`).join("\n") + "\n",
+    maxBuffer: 1024 * 1024 * 1024,
+  });
+  const blobs = new Map();
+  let at = 0;
+  for (const name of names) {
+    const nl = out.indexOf(10, at);
+    const header = out.subarray(at, nl).toString("utf8");
+    at = nl + 1;
+    if (header.endsWith(" missing")) continue;
+    const size = Number(header.split(" ")[2]);
+    blobs.set(name, out.subarray(at, at + size).toString("utf8"));
+    at += size + 1;
+  }
+  return (file) => {
+    if (!blobs.has(file)) throw new Error(`not in the index: ${file}`);
+    return blobs.get(file);
+  };
+};
 
 function undeclared(root, files, read = fromDisk(root)) {
   const manifest = JSON.parse(read("package.json"));
@@ -100,7 +124,7 @@ let missing;
 if (process.argv.includes("--staged")) {
   const staged = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"], { cwd: root, encoding: "utf8" }).split("\0");
   const files = staged.includes("package.json") ? trackedSources(root, ["ls-files", "-z", "--cached"]) : trackedSources(root, ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"]);
-  missing = undeclared(root, files, fromIndex(root));
+  missing = undeclared(root, files, fromIndex(root, files));
 } else {
   missing = undeclared(root, trackedSources(root));
 }

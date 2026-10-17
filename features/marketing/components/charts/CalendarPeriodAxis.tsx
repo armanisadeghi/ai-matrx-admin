@@ -73,7 +73,7 @@ function CalendarPeriodTick({
         x2={0}
         y1={0}
         y2={tickLength}
-        stroke="var(--muted-foreground)"
+        stroke="hsl(var(--muted-foreground))"
         strokeOpacity={mark.weight === "month" ? 0.45 : 0.8}
         strokeWidth={mark.weight === "year" ? 1.5 : 1}
       />
@@ -81,7 +81,7 @@ function CalendarPeriodTick({
         <text
           x={0}
           y={26}
-          fill="var(--foreground)"
+          fill="hsl(var(--foreground))"
           fontSize={11}
           fontWeight={600}
           textAnchor="middle"
@@ -112,7 +112,7 @@ export function CalendarPeriodAxis({
       interval={0}
       height={36}
       tick={<CalendarPeriodTick marks={marks} />}
-      axisLine={{ stroke: "var(--border)" }}
+      axisLine={{ stroke: "hsl(var(--border))" }}
       tickLine={false}
     />
   );

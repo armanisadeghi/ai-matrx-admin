@@ -69,12 +69,12 @@ export function paintCss(instance: string): string {
     (c) => `${at(L.color(c))}{background-color:color-mix(in srgb, ${colorVar[c]} 55%, transparent);color:inherit;}`,
   );
   rules.push(
-    `${at(L.comment)}{background-color:color-mix(in srgb, var(--primary) 16%, transparent);text-decoration:underline;text-decoration-color:var(--primary);text-decoration-thickness:2px;}`,
-    `${at(L.suggestion)}{text-decoration:line-through;text-decoration-color:var(--destructive);text-decoration-thickness:2px;background-color:color-mix(in srgb, var(--destructive) 10%, transparent);}`,
-    `${at(L.link)}{text-decoration:underline dotted;text-decoration-color:var(--primary);text-decoration-thickness:2px;}`,
+    `${at(L.comment)}{background-color:color-mix(in srgb, hsl(var(--primary)) 16%, transparent);text-decoration:underline;text-decoration-color:hsl(var(--primary));text-decoration-thickness:2px;}`,
+    `${at(L.suggestion)}{text-decoration:line-through;text-decoration-color:hsl(var(--destructive));text-decoration-thickness:2px;background-color:color-mix(in srgb, hsl(var(--destructive)) 10%, transparent);}`,
+    `${at(L.link)}{text-decoration:underline dotted;text-decoration-color:hsl(var(--primary));text-decoration-thickness:2px;}`,
     // A refused or not-yet-confirmed mark must never look saved.
-    `${at(L.unsaved)}{text-decoration:underline wavy;text-decoration-color:var(--destructive);background-color:transparent;}`,
-    `${at(L.active)}{background-color:color-mix(in srgb, var(--primary) 30%, transparent);}`,
+    `${at(L.unsaved)}{text-decoration:underline wavy;text-decoration-color:hsl(var(--destructive));background-color:transparent;}`,
+    `${at(L.active)}{background-color:color-mix(in srgb, hsl(var(--primary)) 30%, transparent);}`,
   );
   return rules.join("\n");
 }

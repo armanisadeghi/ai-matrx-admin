@@ -51,7 +51,7 @@ export function CompareHero({ runRequiresAccount }: { runRequiresAccount: boolea
             Sign in
           </a>
         ) : null}
-        <Button type="submit" variant="primary" size="lg" disabled={!ready} icon={<ArrowRight className="h-4 w-4" />}>
+        <Button type="submit" variant="primary" disabled={!ready} icon={<ArrowRight className="h-4 w-4" />}>
           Compare
         </Button>
       </div>

@@ -217,3 +217,33 @@ export async function discover(req: DiscoverRequest, opts: Ctx & { onStage?: (la
   }
   throw new ComparisonRefusal("stream_ended", "The search stopped before it answered. Try again.");
 }
+
+// ── what a run keeps about how its list was found ───────────────────────────
+
+const METHOD: Record<DiscoveryMode, string> = {
+  places: "Map search", services: "Review-site web search",
+  competitors: "Review-site web search from its own description", products: "Shopping search",
+  social: "Social keyword search",
+};
+
+export interface DiscoveryRecordRow {
+  match: LookupMatch;
+  rank: number | null;
+  picked: boolean;
+}
+
+/**
+ * `ComparisonRequest.discovery` (aidream `discover.DiscoveryRecord`): the reading, the disclosure and
+ * "how we picked" the person saw, and every candidate with whether they kept it or added it.
+ */
+export function discoveryRecord(concept: string, result: DiscoverResult, rows: DiscoveryRecordRow[]): Record<string, unknown> {
+  const r = result.reading;
+  return {
+    branch: r.branch, mode: r.mode, method: METHOD[r.mode], concept: concept.trim(), topic: r.topic, area: r.area,
+    platform: r.platform, handle: r.handle, of: r.of, disclosure: result.disclosure, how: result.how,
+    guessed: result.guessed, searches: result.searches, points: result.points,
+    candidates: rows.map((row) => ({
+      rank: row.rank, name: row.match.name, detail: row.match.detail, kept: row.picked, added: row.rank === null,
+    })),
+  };
+}

@@ -74,7 +74,7 @@ export function SourceItem({
           <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
         ) : null}
       </button>
-      <div className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md bg-[var(--matrx-glass-bg,var(--background))] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
+      <div className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md bg-[var(--matrx-glass-bg,hsl(var(--background)))] opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:static [@media(hover:none)]:translate-y-0 [@media(hover:none)]:opacity-100">
         <SourceActions sourceKey={source.key} state={state} />
       </div>
     </div>

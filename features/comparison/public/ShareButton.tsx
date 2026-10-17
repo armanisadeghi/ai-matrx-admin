@@ -74,7 +74,7 @@ export function ShareButton() {
   }
 
   if (!link) {
-    return <Button variant="outline" busy={busy} icon={<Share2 className="h-4 w-4" />} onClick={() => void share()}>Share</Button>;
+    return <Button variant="outline" disabled={busy} icon={<Share2 className="h-4 w-4" />} onClick={() => void share()}>Share</Button>;
   }
   return (
     <>
@@ -85,7 +85,7 @@ export function ShareButton() {
           Open
         </a>
       </Button>
-      <Button variant="ghost" busy={busy} onClick={() => void stop()}>Stop sharing</Button>
+      <Button variant="quiet" disabled={busy} onClick={() => void stop()}>Stop sharing</Button>
     </>
   );
 }

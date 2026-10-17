@@ -125,6 +125,7 @@ import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
 import { BrandSocialProfilesCard } from "@/features/marketing/components/brands/BrandSocialProfilesCard";
 import { BrandRelationsCard } from "@/features/marketing/components/brands/BrandRelationsCard";
+import { BrandWebDecisionsSection } from "@/features/marketing/components/brands/BrandWebDecisionsSection";
 import { BrandFirmographicSection, BrandPresenceSection, BrandRecognitionSection } from "./BrandTempHomes";
 import { BrandBackgroundWork } from "@/features/marketing/components/brands/BrandBackgroundWork";
 import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
@@ -349,12 +350,13 @@ const FACT_KIND_ORDER: BusinessFactKind[] = [
 ];
 
 /** The brand home's tabs. Each tab renders (and fetches) only its own areas. */
-type BrandTab = "overview" | "facts" | "social" | "web" | "relationships" | "profile" | "assets" | "activity";
+type BrandTab = "overview" | "facts" | "social" | "web" | "on_the_web" | "relationships" | "profile" | "assets" | "activity";
 const BRAND_TABS: ReadonlyArray<{ value: BrandTab; label: string }> = [
   { value: "overview", label: "Overview" },
   { value: "facts", label: "Facts" },
   { value: "social", label: "Social" },
   { value: "web", label: "Web & search" },
+  { value: "on_the_web", label: "On the web" },
   { value: "relationships", label: "Relationships" },
   { value: "profile", label: "Profile" },
   { value: "assets", label: "Assets" },
@@ -1330,6 +1332,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
 
             </>
           ) : null}
+
+          {tab === "on_the_web" ? <BrandWebDecisionsSection brand={current} canEdit={canEdit} /> : null}
 
           {tab === "relationships" ? (
           <BrandRelationsCard brand={current} canEdit={canEdit} />

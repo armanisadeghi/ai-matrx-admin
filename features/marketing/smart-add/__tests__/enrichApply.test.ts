@@ -8,6 +8,7 @@ const created: Array<Record<string, unknown>> = [];
 const persistCtx: Array<{ organizationId: string }> = [];
 
 jest.mock("@/features/marketing/data/service", () => ({
+  getBrand: jest.fn(async () => ({ id: "b1", organization_id: "org-brand", version: 3, kind: "company", name: "Ritual", logo_url: "https://old/logo.png" })),
   createBrandAsset: jest.fn(async (input: Record<string, unknown>) => {
     calls.push("createBrandAsset");
     created.push(input);

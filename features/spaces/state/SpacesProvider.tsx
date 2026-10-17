@@ -25,6 +25,7 @@ import { hasSignedInSession, isRefusal, onSignedIn, type LoadAccess } from "./lo
 import { sampleTemplatePlan } from "./template-plan";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
+import { installTemplateTables, makeTemplatePages, readSpaceTemplate } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
 /** The sidebar's open rows (written by SpacesSidebar): the tree's first read loads their children too. */
@@ -98,6 +99,9 @@ interface SpacesContextValue {
     setTemplate: (id: SpaceId, on: boolean) => Promise<void>;
     use: (id: SpaceId, title: string) => Promise<void>;
   };
+  /** The template library (custom.space_templates): "Use template" installs its tables in the active
+   *  organization and makes its pages there. `stage` = what it is doing now; null = idle. */
+  packs: { stage: string | null; use: (templateId: string) => Promise<void> };
   /** The live pages loaded so far (the sidebar loads lazily, like Notion): never the whole tree. */
   summaries: SpaceSummary[];
   /** Trash: empty until `loadTrash` (Trash opened) has read it. */
@@ -191,6 +195,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [templateIds, setTemplateIds] = useState<string[] | null>(null);
   const [templatesError, setTemplatesError] = useState<string | null>(null);
+  const [packStage, setPackStage] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -511,6 +516,38 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       toast.error(err instanceof Error ? err.message : "We couldn't use this template.");
     }
   };
+  const applyPack = async (templateId: string) => {
+    if (packStage) return;
+    setPackStage("Planning…");
+    try {
+      const template = await readSpaceTemplate(templateId);
+      // org-filter: write-target the template's tables and pages are filed in the active organization
+      const orgId = await ensureOrgId(orgRef.current);
+      const tables = await installTemplateTables(template, orgId, dispatch, setPackStage);
+      setPackStage("Making pages…");
+      const root = await makeTemplatePages(
+        store,
+        async (title) => {
+          const doc = await createDatabaseSpacesStore(orgId).create({ parentId: null, title });
+          store.notifyTree();
+          return doc;
+        },
+        template,
+        tables,
+        (done, total) => setPackStage(`Pages ${done}/${total}`),
+      );
+      store.notifyTree();
+      reopenWith(root);
+      open(root.id);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "We couldn't use this template.", {
+        duration: Infinity,
+        action: { label: "Try again", onClick: () => void applyPack(templateId) },
+      });
+    } finally {
+      setPackStage(null);
+    }
+  };
   const archiveSpace = (id: SpaceId) => store.archive(id);
   /** A position after every top-level page (top-level order is created order). */
   const topLevelLast = (list: SpaceSummary[]) => list.filter((s) => !s.parentId).map((s) => s.position).sort().at(-1)?.concat("z") ?? "z";
@@ -597,6 +634,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     reopenPage: (id) => setEpochs((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 })),
     sample: { adding: sampleProgress !== null, progress: sampleProgress, add: addSample },
     templates: { ids: templateIds, error: templatesError, refresh: refreshTemplates, setTemplate: markTemplate, use: applyTemplate },
+    packs: { stage: packStage, use: applyPack },
     summaries: visible,
     archived,
     loadTrash,

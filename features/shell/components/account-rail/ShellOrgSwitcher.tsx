@@ -19,7 +19,10 @@
  * `OrganizationPickerPanel` (search, your own first, "Keep it at the top").
  *
  * Every organization state shows HERE:
- *   - none chosen (boot answered with none) → a primary ring and "Choose organization";
+ *   - the load ladder always picks one for a person who has one (STATE rule
+ *     12: never none, nothing prompts), so the control NEVER asks. The only
+ *     way to reach none is belonging to no organization at all → it says
+ *     "Create an organization" quietly and its header opens /organizations;
  *   - the memberships could not be read → a red dot and a label that says so
  *     (the picker's own notice explains and retries);
  *   - the page's object lives in another of the person's organizations → a
@@ -27,15 +30,13 @@
  *     (the offer the header chip used to make — `pageObjectOrganization.ts`);
  *     an object in an organization she is not in is named, quietly.
  *
- * 🚨 THE ADMIN SEAT NEVER ACTS AS ITSELF (common-docs/policies/admin-seat-
- * never-acts-as-itself.md): on /administration/* the control still names the
- * active organization (it is where new things are saved) but never ASKS for
- * one — admin pages act at each record's owner level.
+ * The "Switch to X" offer is the person's own click in the sidebar control
+ * (rule 12: "where the person sees and switches it"); opening the record never
+ * switches anything — the record already acts in its own organization.
  */
 
 import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { ArrowRightLeft, Building2, ChevronRight } from "lucide-react";
 import { SelectChevron } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
@@ -58,14 +59,12 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
   const { activeOrgId, activeOrgName, organizations, belongsToNone, loadFailed } =
     useActiveOrganizationPicker({ load: open });
   const objectOrganization = usePageObjectOrganization();
-  const pathname = usePathname() ?? "";
-  const adminSeat = pathname === "/administration" || pathname.startsWith("/administration/");
 
   const active = organizations.find((org) => org.id === activeOrgId) ?? null;
   const name = active?.name ?? activeOrgName ?? null;
-  // An object page names its own organization, and the admin seat never acts
-  // as itself: nothing there waits on a choice.
-  const asking = belongsToNone && !activeOrgId && objectOrganization === null && !adminSeat;
+  // Never a prompt: the ladder answered with no organization only because the
+  // person belongs to none — say so and point at creating one.
+  const noOrganization = belongsToNone && !activeOrgId && !name;
 
   const offer =
     objectOrganization &&
@@ -85,11 +84,11 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
       ? objectOrganization.name
       : null;
 
-  // Never "no organization" and never a placeholder word: the name is the
-  // painted/cached one, or "Choose organization" when boot truly answered
-  // none, or — while the name is still on its way — a skeleton in its place.
-  const nameLoading = !name && !asking;
-  const label: string | null = name ?? (asking ? "Choose organization" : null);
+  // Never a placeholder word: the name is the painted/cached one, or "Create
+  // an organization" when the person belongs to none, or — while the name is
+  // still on its way — a skeleton in its place.
+  const nameLoading = !name && !noOrganization;
+  const label: string | null = name ?? (noOrganization ? "Create an organization" : null);
   const labelNode = label ?? (
     <span
       className="block h-3 w-24 animate-pulse rounded bg-muted"
@@ -103,8 +102,8 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
       ? `Organization: ${name ?? "unknown"}. This page lives in ${offer.name}`
       : name
         ? `Organization: ${name}. Change organization`
-        : asking
-          ? "Choose an organization"
+        : noOrganization
+          ? "You belong to no organization. Create one"
           : "Organization name is loading";
 
   const mark = (
@@ -119,10 +118,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
         />
       ) : (
         <span
-          className={cn(
-            "flex h-6 w-6 shrink-0 items-center justify-center rounded-md",
-            asking ? "bg-primary/10 text-primary-ink ring-2 ring-primary" : "bg-muted text-muted-foreground",
-          )}
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground"
           aria-hidden="true"
         >
           <Building2 className="h-3.5 w-3.5" strokeWidth={2} />
@@ -162,7 +158,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
           </span>
         )
       }
-      title={name ?? (asking ? "Choose organization" : "")}
+      title={name ?? (noOrganization ? "Create an organization" : "")}
       titleNode={
         nameLoading ? (
           <span
@@ -172,7 +168,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
           />
         ) : undefined
       }
-      subtitle={name ? "Organization" : asking ? "Pick one below" : null}
+      subtitle={name ? "Organization" : null}
       href={active ? `/organizations/${active.slug || active.id}` : "/organizations"}
       onNavigate={() => setOpen(false)}
     />
@@ -219,7 +215,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
         className="shell-nav-item shell-nav-stable shell-tactile-subtle"
       >
         <span className="shell-nav-icon">{mark}</span>
-        <span className={cn("shell-nav-label", asking && "text-primary")}>{labelNode}</span>
+        <span className="shell-nav-label">{labelNode}</span>
         <ChevronRight size={14} strokeWidth={1.75} className="shell-nav-flyout-caret" aria-hidden="true" />
       </button>
     ) : (
@@ -230,7 +226,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
         className="shell-mobile-nav-item w-full"
       >
         <span className="shell-nav-icon">{mark}</span>
-        <span className={cn("min-w-0 flex-1 truncate text-left", asking && "text-primary")}>{labelNode}</span>
+        <span className="min-w-0 flex-1 truncate text-left">{labelNode}</span>
         <SelectChevron size="sm" />
       </button>
     );

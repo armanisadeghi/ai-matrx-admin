@@ -61,10 +61,19 @@ export function ResearchStepCard({
   }, [call.view]);
 
   const approval = call.view?.status === "needs_approval" ? (call.view.approval as ScreenRunApproval | null) : null;
+  // An answer's own view names itself; the title is only for the states that have no view yet.
+  const waiting = call.view == null && call.clientError == null && (submission != null || callId != null);
 
   return (
     <section className="flex min-w-0 flex-col gap-2" data-research-step={title}>
-      <h2 className="type-title text-foreground">{title}</h2>
+      {call.view?.status === "succeeded" ? null : <h2 className="type-title text-foreground">{title}</h2>}
+      {waiting ? (
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5" data-research-waiting="">
+          <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+        </div>
+      ) : (
       <ToolResult
         view={call.view}
         clientError={call.clientError}
@@ -72,6 +81,7 @@ export function ResearchStepCard({
         onRunAgain={() => submission && void call.run({}, submission.inputs)}
         onCancel={call.stop}
       />
+      )}
       {approval ? (
         <ToolActionApprovalDialog
           approval={approval}

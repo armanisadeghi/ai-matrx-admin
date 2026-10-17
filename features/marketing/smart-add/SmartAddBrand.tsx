@@ -189,6 +189,7 @@ import { knownDecided, withSuggestions, type WeThinkSuggestion } from "./weThink
 import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
 import { ChangesReview } from "./enrich/ChangesReview";
+import { useEnrichWebDecisions } from "./enrich/useEnrichWebDecisions";
 import { browserImageUrl } from "@/lib/media/external-image";
 import type { SmartAddAddressBinding } from "./useSmartAddAddress";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
@@ -1152,6 +1153,16 @@ export function SmartAddBrand({
     return (webPersonNames[key] ?? row?.guess ?? "").trim();
   };
   const webSuggestions = Object.fromEntries(webItems.map((i) => [i.key, suggestKind(i, relationKinds, webCtx)]));
+  // Enrich: the brand exists, so every web answer is saved on it the moment it is given, and its earlier answers show
+  // again on the results they match (enrich/useEnrichWebDecisions.ts). Create keeps its own path (routeWebChoices).
+  const enrichWeb = useEnrichWebDecisions({
+    brand: enrich?.snapshot.brand ?? null,
+    kinds: relationKinds,
+    suggest: webCtx,
+    webItems,
+    choices: webChoices,
+    setChoices: setWebChoices,
+  });
   useEffect(() => {
     if (!builder.isActive) return;
     // The publisher is admin-only code: it loads on first use, never for anyone else.
@@ -2042,6 +2053,11 @@ export function SmartAddBrand({
           snapshot={enrich.snapshot}
           changes={enrichDiff}
           kinds={relationKinds}
+          web={
+            enrichWeb
+              ? { choices: webItems.flatMap((i) => (webChoices[i.key] ? [webChoices[i.key]] : [])), statuses: enrichWeb.statuses, flush: () => enrichWeb.flush(webPersonName) }
+              : undefined
+          }
           onBack={() => setReviewing(false)}
           onBrand={() => onCreated?.(enrich.snapshot.brand)}
         />
@@ -2388,9 +2404,10 @@ export function SmartAddBrand({
         kinds={relationKinds}
         choices={webChoices}
         ctx={webCtx}
-        onChoose={(item, choice) =>
-          setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest))
-        }
+        onChoose={(item, choice) => {
+          setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest));
+          enrichWeb?.decide(item, choice);
+        }}
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}
         backlinks={allBacklinks}

@@ -172,7 +172,7 @@ export function BacklinkTrendChart({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="var(--border)"
+            stroke="hsl(var(--border))"
             vertical={false}
           />
           <CalendarPeriodAxis
@@ -182,7 +182,7 @@ export function BacklinkTrendChart({
           <YAxis
             yAxisId="delta"
             width={44}
-            tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(value: number) => compactCount(Math.abs(value))}
@@ -199,7 +199,7 @@ export function BacklinkTrendChart({
           <ReferenceLine
             yAxisId="delta"
             y={0}
-            stroke="var(--border)"
+            stroke="hsl(var(--border))"
             strokeWidth={1}
           />
           <Tooltip content={<ChartTooltip />} />

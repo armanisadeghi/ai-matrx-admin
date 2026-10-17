@@ -78,7 +78,7 @@ export function RefreshButton({ kind, items }: { kind: string; items: Comparison
   }
 
   return (
-    <Button variant="primary" busy={busy} disabled={!organizationId} icon={<RefreshCw className="h-4 w-4" />} onClick={() => void refresh()}>
+    <Button variant="primary" disabled={busy || !organizationId} icon={<RefreshCw className={busy ? "h-4 w-4 animate-spin" : "h-4 w-4"} />} onClick={() => void refresh()}>
       {points != null ? `Refresh · ${formatPoints(points)}` : "Refresh"}
     </Button>
   );
