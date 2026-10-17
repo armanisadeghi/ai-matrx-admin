@@ -4,7 +4,7 @@
 // Feature: features/comparison/public/.
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getServerAuth } from "@/utils/supabase/getServerAuth";
 import { INDEXED_ROBOTS, NOT_INDEXED_ROBOTS } from "@/lib/seo/search-engine-indexed";
@@ -39,5 +39,9 @@ export default async function SharedComparisonPage({ params }: PageProps) {
   const shared = await getSharedComparison(slug);
   if (!shared) notFound();
   const { isAuthenticated } = await getServerAuth();
+  // comparison.public.view_requires_account: an organization may keep its shared comparisons behind an account.
+  if (shared.policy.viewRequiresAccount && !isAuthenticated) {
+    redirect(`/sign-up?redirectTo=${encodeURIComponent(`/compare/s/${shared.slug}`)}`);
+  }
   return <SharedComparison shared={shared} signedIn={isAuthenticated} />;
 }
