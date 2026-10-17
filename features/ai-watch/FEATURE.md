@@ -110,3 +110,4 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
   recorded snapshot labelled and never a silent replacement, mandate/provision/goal/version
   sections, admin+debug gate on the window and every button, orange sidebar light, Applet job
   Watch door, Improve this agent / Send to developers, runs-list errors shown.
+- 2026-10-17 — Everything view (`EverythingFeed.tsx`, `everything-feed.ts`): platform-wide recent runs from `chat.user_request`, server-side filters (person, organization, door, mandate, agent, background) and keyset paging, loaded only when switched on; a row opens in the same detail. The eval fact judge's call (`outcome.judge.conversation_id/request_id`, aidream `agent_tests`) is a followed step. Watch AI lives in one place (`watch-ai-one-place.ts`, enforced in `AutoWatch`). Scalars that quote a kind key render through the answer pipeline (`RowText`). The from-chat door follows each sub-run conversation.

@@ -42,7 +42,7 @@ function PromptToCopy() {
     window.setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <BringOverFrame title="Build it with Claude Code" testId="with-claude-code">
+    <BringOverFrame title="Use Claude Code" testId="with-claude-code">
       <p className="text-sm text-muted-foreground">
         Give this to Claude Code in the project where you do the work. It sends us what defines the job, and you
         finish here.

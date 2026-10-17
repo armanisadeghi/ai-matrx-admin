@@ -425,6 +425,14 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
   isSubmitting?: boolean;
   /** Accessible/tooltip label for the submit button. Default: "Send". */
   submitLabel?: string;
+  /**
+   * The submit button's VISIBLE word ("Build agent"), drawn as a labelled solid pill instead of
+   * the bare send glyph — for a box whose submit is not "send a message" (it starts a build, a
+   * run). Pair with `submitIcon`. Absent: the round send button.
+   */
+  submitText?: string;
+  /** The submit button's glyph. Default: the send arrow. */
+  submitIcon?: React.ReactNode;
   /** Submit on Cmd/Ctrl + Enter. Defaults to true when `onSubmit` is provided. */
   submitOnCmdEnter?: boolean;
   /** Submit on plain Enter (Shift+Enter still inserts newline). Default: false. */
@@ -549,6 +557,8 @@ export const ProTextarea = React.forwardRef<
       allowEmptySubmit = false,
       isSubmitting = false,
       submitLabel = "Send",
+      submitText,
+      submitIcon,
       submitOnCmdEnter,
       submitOnEnter = false,
       onEnterKey,
@@ -1319,8 +1329,10 @@ export const ProTextarea = React.forwardRef<
     // never while the user is typing.
     // Also while the field has focus — so a keyboard user who Tabs in sees the
     // mic and "…" (they sit in a reserved row, never over text).
+    // A `hero` composer is the page's one box: its mic and "…" are always shown, so a keyboard
+    // user never tabs onto an invisible control (critique 2026-10-17: Tab landed on a 0-opacity mic).
     const showControls =
-      (isHovered || isFocused || isRecording || isTranscribing) && !disabled;
+      (appearance === "hero" || isHovered || isFocused || isRecording || isTranscribing) && !disabled;
     const isVoiceDisabled =
       !isAudioAvailable || disabled || (isTranscribing && !isRecording);
 
@@ -1848,11 +1860,12 @@ export const ProTextarea = React.forwardRef<
                   disabled={!canSubmit}
                   ariaLabel={submitLabel}
                   tooltip={submitLabel}
+                  label={submitText}
                   icon={
                     isSubmitting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <Send className="h-4 w-4" />
+                      submitIcon ?? <Send className="h-4 w-4" />
                     )
                   }
                 />

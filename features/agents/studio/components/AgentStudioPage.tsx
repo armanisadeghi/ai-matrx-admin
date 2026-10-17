@@ -81,6 +81,7 @@ import {
 import { STUDIO_ASSISTANT_MANDATE, STUDIO_SURFACE_NAME, buildFromWorkspace, checkMissedInputs } from "../workspace-api";
 import { codeApprove, type WorkspaceInput } from "../workspace";
 import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
+import { useStudioBuilderFeed } from "../studio-builder-feed";
 import { StudioStart } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls } from "./StudioControls";
@@ -314,6 +315,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   };
 
   const { ws, edit } = useStudioWorkspace(state.chatId ?? null);
+  useStudioBuilderFeed(state.chatId ?? null, ws);
   const [dropped, setDropped] = useState<ReadonlySet<string>>(new Set());
 
   /** "Make this an agent": approve (code), optional missed-inputs check, then the workspace goes to the factory. */

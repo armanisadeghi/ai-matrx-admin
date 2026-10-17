@@ -18,7 +18,12 @@ export type StudioModeId =
 export interface StudioMode {
   id: StudioModeId;
   title: string;
-  /** The selector's compact label (≤16 chars); the full `title` is its tooltip. */
+  /**
+   * The selector's label (≤18 chars), a plain verb a first-timer reads without help: "Describe it",
+   * "Do it together", "Improve an agent", "From my examples", "Import from Claude", "Use Claude Code".
+   * "Examples" is the one word for what a person already made (the composer's "Add an example", the
+   * examples panel's "Example 1"), never "samples" or "proof".
+   */
   label: string;
   /** One line under the title (≤60 chars). */
   line: string;
@@ -45,39 +50,39 @@ export const STUDIO_MODES: readonly StudioMode[] = [
   },
   {
     id: "do-with-me",
-    title: "Just do it with me",
-    label: "Do it with me",
+    title: "Do it together",
+    label: "Do it together",
     line: "Get the result first, then make it an agent",
     icon: Handshake,
   },
   {
     id: "improve",
-    title: "Improve an agent I have",
-    label: "Improve one",
+    title: "Improve an agent",
+    label: "Improve an agent",
     headline: "Which agent should get better?",
     line: "Try, give feedback, save a better version",
     icon: Wrench,
   },
   {
     id: "from-examples",
-    title: "From examples I already have",
-    label: "From examples",
+    title: "From my examples",
+    label: "From my examples",
     headline: "Show it what you already made",
     line: "Paste 2–5 you made; get an agent that makes them",
     icon: Files,
   },
   {
     id: "from-claude-account",
-    title: "Bring it over from my Claude account",
-    label: "From Claude",
+    title: "Import from Claude",
+    label: "Import from Claude",
     line: "Upload your Claude export; pick the chat to copy",
     icon: ArrowDownToLine,
     href: "/agents/new/studio/from-claude",
   },
   {
     id: "with-claude-code",
-    title: "Build it with Claude Code",
-    label: "Claude Code",
+    title: "Use Claude Code",
+    label: "Use Claude Code",
     line: "Copy a prompt; Claude Code sends us the job",
     icon: TerminalSquare,
     href: "/agents/new/studio/with-claude-code",
@@ -88,3 +93,15 @@ export function studioMode(id: string | null | undefined): StudioMode | null {
   const mode = STUDIO_MODES.find((m) => m.id === id);
   return mode && !mode.comingSoonId && !mode.href ? mode : null;
 }
+
+/**
+ * Starter jobs a first-timer can press to fill the box (the empty state when a person has no agents
+ * yet). Plain, cross-industry, each a real one-agent job; pressing one fills "Describe it" — it never
+ * starts a build by itself.
+ */
+export const STUDIO_STARTERS: readonly string[] = [
+  "Turn a messy client intake call into a one-page brief",
+  "Reply to a customer complaint in our voice, ready to send",
+  "Summarize a long contract into the five things that matter",
+  "Write a weekly update for my team from my rough notes",
+];

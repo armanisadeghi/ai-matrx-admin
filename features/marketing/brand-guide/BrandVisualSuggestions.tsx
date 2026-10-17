@@ -20,6 +20,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { extractErrorMessage } from "@/utils/errors";
 import { useBrandAssets, useDeleteBrandAsset, useUpdateBrandAsset } from "@/features/marketing/data/hooks";
 import { isJsonRecord, type BrandAsset } from "@/features/marketing/types";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 function field(asset: BrandAsset, key: string): string | null {
   const v = isJsonRecord(asset.data) ? asset.data[key] : null;
@@ -39,7 +40,7 @@ function Swatch({ asset }: { asset: BrandAsset }) {
     <span className="flex min-w-0 items-center gap-2">
       {/* ui-exception: a colour swatch renders the brand's own colour value */}
       <span className="size-5 shrink-0 rounded border border-border" style={{ backgroundColor: hex }} aria-hidden />
-      <span className="font-mono text-xs text-foreground">{hex}</span>
+      <span className="font-mono type-meta text-foreground">{hex}</span>
     </span>
   );
 }
@@ -47,7 +48,7 @@ function Swatch({ asset }: { asset: BrandAsset }) {
 function FontName({ asset }: { asset: BrandAsset }) {
   const family = field(asset, "family") ?? asset.title ?? "";
   return (
-    <span className="truncate text-sm text-foreground" style={{ fontFamily: `"${family}", inherit` }}>
+    <span className="truncate type-body text-foreground" style={{ fontFamily: `"${family}", inherit` }}>
       {family}
     </span>
   );
@@ -66,7 +67,7 @@ function Evidence({ asset }: { asset: BrandAsset }) {
     names.length ? `named ${names.join(", ")}` : null,
   ].filter(Boolean);
   return (
-    <div className="min-w-0 text-xs text-muted-foreground" data-testid="brand-visual-evidence">
+    <div className="min-w-0 type-meta text-muted-foreground" data-testid="brand-visual-evidence">
       <div className="truncate" title={parts.join(" · ")}>{parts.join(" · ") || "Found on your site"}</div>
       {asset.source_url ? (
         <a href={asset.source_url} target="_blank" rel="noreferrer" className="truncate hover:underline">
@@ -146,55 +147,57 @@ export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: s
     else void assets.refetch();
   };
 
+  // Every state of the body is one row of the same height (ROW), so the card never changes height when the read lands.
+  const ROW = "flex min-h-[52px] flex-wrap items-center gap-3 px-3 py-2";
   return (
-    <section className="mb-4 rounded-xl border border-border bg-card p-3" data-testid="brand-visual-suggestions">
-      <div className="mb-2 flex items-center gap-2">
-        <h2 className="text-sm font-semibold text-foreground">Colours and fonts</h2>
-        {open.length > 0 ? <span className="text-xs text-muted-foreground">{open.length} to check</span> : null}
-        {/* The wrapper owns the right edge: the button's own margin class is not applied, which left it riding the "N to check" text. */}
-        <span className="ml-auto flex">
+    <SectionCard
+      title="Colours and fonts"
+      className="mb-3"
+      about="Colours and fonts read from the brand's own site, one at a time with the evidence beside it. Yes keeps it, No is remembered and never asked again, Skip moves it to the back. Read from site looks again at no cost."
+      headerExtra={
+        <>
+          {open.length > 0 ? <span className="type-meta text-muted-foreground">{open.length} to check</span> : null}
           <Button variant="outline" onClick={read} disabled={reading}>
             {reading ? "Reading site" : "Read from site"}
           </Button>
-        </span>
+        </>
+      }
+    >
+      <div className="divide-y divide-border" data-testid="brand-visual-suggestions">
+        {error ? <div className="px-3 py-2 type-secondary text-destructive">{error}</div> : null}
+        {assets.isLoading ? (
+          <div key="loading" className={ROW}>
+            <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+          </div>
+        ) : current ? (
+          <div key="question" className={ROW} data-testid={`brand-visual-${current.kind}`}>
+            <div className="w-40 shrink-0">
+              <div className="type-label">{current.kind === "color" ? "Is this your colour?" : "Is this your font?"}</div>
+              <Kept asset={current} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <Evidence asset={current} />
+            </div>
+            {/* Three equal answers: none is styled to pull the person toward Yes. */}
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Button variant="outline" onClick={() => void answer("yes")} disabled={busy}>Yes</Button>
+              <Button variant="outline" onClick={() => void answer("no")} disabled={busy}>No</Button>
+              <Button variant="outline" onClick={() => void answer("skip")} disabled={busy}>Skip</Button>
+            </div>
+          </div>
+        ) : kept.length === 0 ? (
+          <div className={ROW}>
+            <span className="type-secondary text-muted-foreground">None found yet</span>
+          </div>
+        ) : null}
+        {kept.length > 0 ? (
+          <div className={`${ROW} gap-x-4 gap-y-1`} data-testid="brand-visual-kept">
+            {kept.map((a) => (
+              <Kept key={a.id} asset={a} />
+            ))}
+          </div>
+        ) : null}
       </div>
-      {error ? <div className="mb-2 text-xs text-destructive">{error}</div> : null}
-      {/* Question card + kept swatches (54 + 8 + 24) reserved for every state, so the section never changes height. */}
-      <div className="min-h-[86px]">
-      {assets.isLoading ? (
-        // The question card's exact height (p-2 + a 36px label/value stack + borders), so it never changes when the row arrives.
-        <div key="loading" className="h-[54px] animate-pulse rounded-lg bg-muted" />
-      ) : current ? (
-        <div
-          key="question"
-          className="flex min-h-[54px] flex-wrap items-center gap-3 rounded-lg border border-border p-2"
-          data-testid={`brand-visual-${current.kind}`}
-        >
-          <div className="w-40 shrink-0">
-            <div className="text-xs text-muted-foreground">{current.kind === "color" ? "Is this your colour?" : "Is this your font?"}</div>
-            <Kept asset={current} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <Evidence asset={current} />
-          </div>
-          {/* Three equal answers: none is styled to pull the person toward Yes. */}
-          <div className="flex shrink-0 items-center gap-1.5">
-            <Button variant="outline" onClick={() => void answer("yes")} disabled={busy}>Yes</Button>
-            <Button variant="outline" onClick={() => void answer("no")} disabled={busy}>No</Button>
-            <Button variant="outline" onClick={() => void answer("skip")} disabled={busy}>Skip</Button>
-          </div>
-        </div>
-      ) : rows.length === 0 ? (
-        <div className="text-xs text-muted-foreground">None yet</div>
-      ) : null}
-      {kept.length > 0 ? (
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1" data-testid="brand-visual-kept">
-          {kept.map((a) => (
-            <Kept key={a.id} asset={a} />
-          ))}
-        </div>
-      ) : null}
-      </div>
-    </section>
+    </SectionCard>
   );
 }

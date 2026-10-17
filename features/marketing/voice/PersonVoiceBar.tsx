@@ -13,7 +13,7 @@
 import { useState } from "react";
 import { Loader2, UserRound } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
-import { Card } from "@/components/ui/card";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -51,15 +51,24 @@ export function PersonVoiceBar({
     }
   };
 
+  const title = isMe ? "This is you" : personUserId ? `Spokesperson: ${brandName}` : `Are you ${brandName}?`;
   return (
-    <Card className="flex flex-wrap items-center gap-2 p-3" data-testid="person-voice-bar">
+    <section
+      className="flex min-h-10 flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-1"
+      data-testid="person-voice-bar"
+    >
       <UserRound className="h-4 w-4 text-muted-foreground" aria-hidden />
-      <span className="text-sm text-foreground">
-        {isMe ? "This is you" : personUserId ? `Spokesperson: ${brandName}` : `Are you ${brandName}?`}
-      </span>
-      <span className="text-xs text-muted-foreground">
-        {isMe ? "Your own voice is this brand's voice" : personUserId ? "Measured from their posts and talks" : "Make this voice your own"}
-      </span>
+      <span className="type-title text-foreground">{title}</span>
+      <AboutPeek
+        title={title}
+        about={
+          isMe
+            ? "Your own voice is this brand's voice."
+            : personUserId
+              ? "This brand's voice is measured from their posts and talks."
+              : "Mark this person brand as you, then measure your own voice as its voice."
+        }
+      />
       <div className="ml-auto">
         {isMe ? (
           <Button variant="outline" onClick={onMeasureMine}>
@@ -76,6 +85,6 @@ export function PersonVoiceBar({
           </Button>
         ) : null}
       </div>
-    </Card>
+    </section>
   );
 }

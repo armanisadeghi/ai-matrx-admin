@@ -27,7 +27,9 @@ import {
 import {
   LoadingSurface,
   QueryError,
+  SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
+import { ProInput } from "@/components/official/ProInput";
 import { MediaEmptyState } from "@/features/marketing/components/media/SnapshotMediaGallery";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import {
@@ -159,23 +161,36 @@ export function ResearchMediaView({
 
   if (rows.length === 0) {
     return (
-      <MediaEmptyState
-        title="No research images for this organization yet"
-        detail="Run a research topic — every image its sources carry lands here as inspiration and reuse material."
-      />
+      <SectionCard title="Research images">
+        <div className="p-3">
+          <MediaEmptyState
+            title="No research images for this organization yet"
+            detail="Run a research topic: every image its sources carry lands here."
+          />
+        </div>
+      </SectionCard>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <SectionCard
+      title="Research images"
+      about="Images from this brand's own websites can be reused directly. External images are competitor or reference material: use them as inspiration for a generated original, never verbatim."
+      headerExtra={
+        <span className="type-meta tabular-nums text-muted-foreground">
+          {filtered.length}/{rows.length}
+        </span>
+      }
+    >
+    <div className="space-y-3 p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-0 flex-1 basis-48">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-          <input
+        <div className="min-w-0 flex-1 basis-48">
+          <ProInput
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search alt, caption, host…"
-            className="h-7 w-full rounded-md border border-border bg-card pl-7 pr-2 text-[11px] text-foreground outline-none placeholder:text-muted-foreground max-md:text-base"
+            placeholder="Search alt, caption, host"
+            aria-label="Search research images"
+            startIcon={<Search className="h-4 w-4 text-muted-foreground" aria-hidden />}
           />
         </div>
         <Select value={topicFilter} onValueChange={setTopicFilter}>
@@ -206,21 +221,12 @@ export function ResearchMediaView({
             <SelectItem value="external">External (inspiration)</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-[10px] tabular-nums text-muted-foreground">
-          {filtered.length}/{rows.length}
-        </span>
       </div>
-
-      <p className="px-1 text-[10px] text-muted-foreground/70">
-        Images from this brand&apos;s own websites can be reused directly.
-        External images are competitor/reference material — use them as
-        inspiration for a generated original, never verbatim.
-      </p>
 
       {filtered.length === 0 ? (
         <MediaEmptyState
           title="No research images matched the current filters"
-          detail="Clear the topic/origin filters or the search to see the full pool."
+          detail="Clear the topic, origin or search to see the full pool."
         />
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -262,21 +268,21 @@ export function ResearchMediaView({
                       {own ? "own domain" : (row.sourceHostname ?? "external")}
                     </Badge>
                     {row.width && row.height ? (
-                      <span className="text-[9px] tabular-nums text-muted-foreground/70">
+                      <span className="type-meta tabular-nums text-muted-foreground">
                         {row.width}×{row.height}
                       </span>
                     ) : null}
                   </div>
                   {row.alt || row.caption ? (
                     <p
-                      className="truncate text-[10px] text-muted-foreground"
+                      className="truncate type-meta text-muted-foreground"
                       title={row.alt ?? row.caption ?? undefined}
                     >
                       {row.alt ?? row.caption}
                     </p>
                   ) : null}
                   {row.topicName ? (
-                    <p className="truncate text-[9px] text-muted-foreground/70">
+                    <p className="truncate type-meta text-muted-foreground">
                       {row.topicName}
                     </p>
                   ) : null}
@@ -318,5 +324,6 @@ export function ResearchMediaView({
         </div>
       )}
     </div>
+    </SectionCard>
   );
 }

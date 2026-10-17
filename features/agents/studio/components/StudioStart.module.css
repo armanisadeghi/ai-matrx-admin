@@ -106,3 +106,15 @@
     top: 6rem;
   }
 }
+
+/* The headline reserves its lines, so a swap ("What should…" ↔ "Which agent…") never moves the
+   ways-in row under it: two lines on a phone, one from 40rem up (every headline fits one line there). */
+.headline {
+  min-height: calc(2lh);
+}
+
+@media (min-width: 640px) {
+  .headline {
+    min-height: calc(1lh);
+  }
+}

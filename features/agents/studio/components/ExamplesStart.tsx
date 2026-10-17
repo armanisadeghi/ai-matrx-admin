@@ -163,7 +163,7 @@ export function ExamplesStart({ onStart }: { onStart: (patch: Partial<StudioStat
           onClick={() => void build()}
           disabled={given.length < EXAMPLES_MIN || starting}
         >
-          {starting ? "Starting…" : "Build it"}
+          {starting ? "Starting…" : "Build agent"}
         </Button>
       </div>
     </div>

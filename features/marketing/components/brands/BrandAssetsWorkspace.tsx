@@ -36,7 +36,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Globe2, Images, Ruler } from "lucide-react";
+import { ArrowRight, Globe2, Ruler } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -79,6 +79,7 @@ import {
   QueryError,
 } from "@/features/marketing/components/shared/MarketingUi";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 
 export function BrandAssetsWorkspace({
   brandId,
@@ -239,18 +240,16 @@ export function BrandAssetsWorkspace({
       <BrandAssetsWriteTargets onOrderChange={setOrder} />
       {/* No RouteHeader — the [brandId] layout's breadcrumb trail is the
           header for the whole client tree (Arman, 2026-08-30). */}
-      <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
-        <div className="grid w-full gap-3">
-          <header className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0">
-              <h1
-                className="flex items-center gap-2 text-base font-semibold text-foreground"
-                title={`Everything ${current.name} owns or can draw on, usable by every website under this brand. What a single website serves lives in that site's Media section.`}
-              >
-                <Images className="h-4 w-4 text-muted-foreground" />
-                Brand assets
-              </h1>
-            </div>
+      <main className="h-full overflow-y-auto bg-textured">
+        <div className="mx-auto w-full max-w-6xl space-y-3 px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="flex items-center gap-1 type-title text-foreground">
+              {current.name} · Media
+              <AboutPeek
+                title="Media"
+                about={`Everything ${current.name} owns or can draw on, usable by every website under this brand. What a single website serves lives in that site's Media section.`}
+              />
+            </h1>
             <div className="flex items-center gap-1.5">
               {standardsSite ? (
                 <Button asChild variant="outline">
@@ -276,7 +275,7 @@ export function BrandAssetsWorkspace({
           <div className="flex flex-wrap items-center gap-2">
             <nav
               aria-label="Brand asset views"
-              className="flex items-center gap-1 rounded-md border border-border bg-card p-0.5"
+              className="flex h-7 items-center gap-0.5 rounded-md border border-border bg-card p-0.5"
             >
               {MARKETING_BRAND_ASSETS_VIEWS.map((item) => {
                 const Icon = MARKETING_BRAND_ASSETS_VIEW_ICONS[item.id];
@@ -288,7 +287,7 @@ export function BrandAssetsWorkspace({
                     scroll={false}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors",
+                      "flex h-full items-center gap-1.5 rounded px-2.5 type-secondary font-medium transition-colors",
                       active
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:text-foreground",
@@ -308,7 +307,7 @@ export function BrandAssetsWorkspace({
                 onClick={() => goToView("generate", order.brief)}
                 title={order.brief}
               >
-                Image order drafted — review
+                Review drafted image order
               </ControlButton>
             ) : null}
           </div>

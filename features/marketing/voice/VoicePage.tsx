@@ -19,9 +19,15 @@ import Link from "next/link";
 import { Check, Loader2, Search, ShieldAlert, Wand2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import {
+  Button,
+  PropertyRow,
+  SegmentedControl,
+  Select,
+} from "@ai-matrx/design-system/controls";
+import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
+import { ProInput } from "@/components/official/ProInput";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { sourceHref } from "@/features/sources/api/sourcesApi";
@@ -290,21 +296,30 @@ export function VoicePage({
     }
   };
 
+  const startMeasureMine = () => {
+    setTarget("me");
+    setAllSources(true);
+    setPicked([]);
+    document.getElementById("voice-samples")?.scrollIntoView({ block: "start" });
+  };
+  const whoWrote = scope !== "brand" ? "you wrote" : personBrand ? "they wrote" : "the brand published";
+
   return (
     <div className={embedded ? undefined : "h-full overflow-y-auto bg-textured"}>
       <div
         className={
           embedded
-            ? "mx-auto w-full max-w-4xl space-y-4"
-            : "mx-auto w-full max-w-4xl space-y-4 px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4"
+            ? "mx-auto w-full max-w-6xl space-y-3"
+            : "mx-auto w-full max-w-6xl space-y-3 px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4"
         }
       >
-        <header>
-          <h1
-            className="text-base font-semibold text-foreground"
-            title={`${scope === "brand" ? brandKindCopy(brandKind).voiceLine : "How you actually write"}, measured from real writing. Every pitch, reply, subject line and statement written in ${scope === "brand" ? brandKindCopy(brandKind).possessive : "your"} name is checked against it, and the AI tells are rewritten before you see the draft.`}
-          >
+        <header className="flex items-center justify-between gap-3">
+          <h1 className="flex items-center gap-1 type-title text-foreground">
             {ownerName} · Voice
+            <AboutPeek
+              title="Voice"
+              about={`${scope === "brand" ? brandKindCopy(brandKind).voiceLine : "How you actually write"}, measured from real writing. Every pitch, reply, subject line and statement written in ${scope === "brand" ? brandKindCopy(brandKind).possessive : "your"} name is checked against it, and the AI tells are rewritten before you see the draft.`}
+            />
           </h1>
         </header>
 
@@ -314,218 +329,205 @@ export function VoicePage({
             brandName={ownerName}
             personUserId={selfUserId}
             onClaimed={setSelfUserId}
-            onMeasureMine={() => {
-              setTarget("me");
-              setAllSources(true);
-              setPicked([]);
-              document.getElementById("voice-samples")?.scrollIntoView({ block: "start" });
-            }}
+            onMeasureMine={startMeasureMine}
           />
         ) : null}
 
-        {scope === "brand" ? <SpokespeoplePanel
-            key={spokesNonce}
-            brandId={ownerId}
-            brandName={ownerName}
-            organizationId={organizationId}
-            onMeasureMine={() => {
-              setTarget("me");
-              setAllSources(true);
-              setPicked([]);
-              document.getElementById("voice-samples")?.scrollIntoView({ block: "start" });
-            }}
-          /> : null}
-
-        <Card className="p-4" data-testid="voice-current">
-          <h2 className="text-sm font-medium text-foreground">Current voice</h2>
-          {listError ? (
-            <p className="mt-2 text-sm text-destructive">{listError}<ErrorAlchemyMenu error={listError} /></p>
-          ) : rows === null ? (
-            <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Reading saved voices
-            </p>
-          ) : current === null ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              No voice measured yet. Pick {MIN_SAMPLES} to {MAX_SAMPLES} samples below; drafts are not voice-checked until one
-              is confirmed.
-            </p>
-          ) : (
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-              <Badge variant={current.status === "confirmed" ? "default" : "secondary"}>
-                {current.status === "confirmed" ? "Confirmed" : "Needs your confirmation"}
-              </Badge>
-              <span className="text-muted-foreground">Confidence {current.confidence}</span>
-              <span className="text-muted-foreground">
-                {current.sample_count} samples · {formatCount(current.sample_word_count)} words
-              </span>
-              <span className="text-muted-foreground">
-                Measured {new Date(current.last_extracted_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              </span>
-              <span className="text-muted-foreground" data-testid="voice-refresh">
-                {refreshLabel(current.refresh_due_at)}
-              </span>
+        <div className="grid items-start gap-3 lg:grid-cols-2">
+          <SectionCard
+            title="Current voice"
+            about={`The newest measured voice. Drafts are voice-checked only once a voice is confirmed. Measure one from ${MIN_SAMPLES} to ${MAX_SAMPLES} samples below.`}
+          >
+            <div className="p-3" data-testid="voice-current">
+              {listError ? (
+                <p className="type-secondary text-destructive">{listError}<ErrorAlchemyMenu error={listError} /></p>
+              ) : rows === null ? (
+                <p className="flex items-center gap-2 type-secondary text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Reading saved voices
+                </p>
+              ) : current === null ? (
+                <p className="type-secondary text-muted-foreground">No voice measured yet</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <PropertyRow label="Status">
+                    <Badge variant={current.status === "confirmed" ? "default" : "secondary"}>
+                      {current.status === "confirmed" ? "Confirmed" : "Needs your confirmation"}
+                    </Badge>
+                  </PropertyRow>
+                  <PropertyRow label="Confidence" value={String(current.confidence)} />
+                  <PropertyRow
+                    label="Samples"
+                    value={`${current.sample_count} · ${formatCount(current.sample_word_count)} words`}
+                  />
+                  <PropertyRow
+                    label="Measured"
+                    value={new Date(current.last_extracted_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  />
+                  <PropertyRow label="Refresh" data-testid="voice-refresh" value={refreshLabel(current.refresh_due_at)} />
+                </div>
+              )}
+              {saved ? (
+                <div className="mt-3 border-t border-border pt-3" data-testid="voice-saved">
+                  <PropertyRow label={scope === "brand" ? "Saved · the brand's voice line" : "Saved · summary"} value={saved.summary_line} />
+                </div>
+              ) : null}
             </div>
-          )}
-          {saved ? (
-            <p className="mt-2 text-sm text-foreground" data-testid="voice-saved">
-              Saved. {scope === "brand" ? "The brand's voice line now reads: " : "Summary: "}
-              <span className="text-muted-foreground">{saved.summary_line}</span>
-            </p>
-          ) : null}
-        </Card>
+          </SectionCard>
 
-        <Card className="p-4" id="voice-samples">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-sm font-medium text-foreground">Samples from Sources</h2>
-            {scope === "brand" ? (
-              <div className="ml-auto flex flex-wrap gap-1" data-testid="voice-source-scope">
-                <Button
-                  variant={target === "brand" ? "primary" : "quiet"}
-                  onClick={() => {
-                    setTarget("brand");
-                    setAllSources(false);
-                    setPicked([]);
-                  }}
-                >
-                  Brand voice
-                </Button>
-                <Button
-                  variant={target === "me" ? "primary" : "quiet"}
-                  onClick={() => {
-                    setTarget("me");
-                    setAllSources(true);
-                    setPicked([]);
-                  }}
-                >
-                  My voice
-                </Button>
+          {scope === "brand" ? (
+            <SpokespeoplePanel
+              key={spokesNonce}
+              brandId={ownerId}
+              brandName={ownerName}
+              organizationId={organizationId}
+              onMeasureMine={startMeasureMine}
+            />
+          ) : null}
+        </div>
+
+        <SectionCard
+          title="Samples from Sources"
+          anchor="voice-samples"
+          about={`Pick ${MIN_SAMPLES} to ${MAX_SAMPLES} short, recent, unedited pieces ${whoWrote} (emails, posts, Slack). The voice is measured from exactly these.`}
+          headerExtra={
+            scope === "brand" ? (
+              <div className="flex items-center gap-2" data-testid="voice-source-scope">
                 {target === "brand" ? (
                   <Button variant="quiet" onClick={() => setAllSources((v) => !v)}>
                     {allSources ? "This brand's sources" : "All my sources"}
                   </Button>
                 ) : null}
+                <SegmentedControl<"brand" | "me">
+                  aria-label="Whose voice"
+                  value={target}
+                  onValueChange={(next) => {
+                    setTarget(next);
+                    setAllSources(next === "me");
+                    setPicked([]);
+                  }}
+                  data={[
+                    { value: "brand", label: "Brand voice" },
+                    { value: "me", label: "My voice" },
+                  ]}
+                />
               </div>
-            ) : null}
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Pick {MIN_SAMPLES} to {MAX_SAMPLES} short, recent, unedited pieces{" "}
-            {scope !== "brand" ? "you wrote" : personBrand ? "they wrote" : "the brand published"} (emails, posts, Slack).
-          </p>
-          <div className="relative mt-3">
-            <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-muted-foreground" aria-hidden />
-            <Input adornment="start"
+            ) : null
+          }
+        >
+          <div className="space-y-3 p-3">
+            <ProInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search your Sources by name"
               aria-label="Search Sources"
+              startIcon={<Search className="h-4 w-4 text-muted-foreground" aria-hidden />}
             />
-          </div>
-          {sourceError ? <p className="mt-2 text-sm text-destructive">{sourceError}<ErrorAlchemyMenu error={sourceError} /></p> : null}
-          <ul className="mt-2 max-h-64 divide-y divide-border overflow-y-auto rounded-md border border-border" data-testid="voice-sources">
-            {sources === null ? (
-              <li className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Listing Sources
-              </li>
-            ) : sources.length === 0 ? (
-              <li className="p-2 text-sm text-muted-foreground">
-                {brandScoped
-                  // read-gate-exempt: sources stay null when the read fails; sourceError shows above
-                  ? "No Sources for this brand yet. Try All my sources."
-                  : "No Sources match. Add writing to Knowledge first."}
-              </li>
-            ) : (
-              sources.map((source) => {
-                const chosen = picked.find((p) => p.source.id === source.id);
-                return (
-                  <li key={source.id} className="flex items-center gap-2 p-2 text-sm">
-                    <input
-                      type="checkbox"
-                      aria-label={`Use ${source.name}`}
-                      checked={Boolean(chosen)}
-                      onChange={() =>
-                        setPicked((list) =>
-                          chosen
-                            ? list.filter((p) => p.source.id !== source.id)
-                            : list.length >= MAX_SAMPLES
-                              ? list
-                              : [...list, { source, kind: "other" }],
-                        )
-                      }
-                    />
-                    <Link href={sourceHref(source.id)} className="min-w-0 flex-1 truncate hover:underline" target="_blank">
-                      {source.name}
-                    </Link>
-                    {chosen ? (
-                      <Select<VoiceSampleKind>
-                        aria-label={`Kind of ${source.name}`}
-                        value={chosen.kind}
-                        onValueChange={(kind) =>
+            {sourceError ? <p className="type-secondary text-destructive">{sourceError}<ErrorAlchemyMenu error={sourceError} /></p> : null}
+            <ul className="max-h-64 divide-y divide-border overflow-y-auto rounded-md border border-border" data-testid="voice-sources">
+              {sources === null ? (
+                <li className="flex items-center gap-2 px-3 py-2 type-secondary text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Listing Sources
+                </li>
+              ) : sources.length === 0 ? (
+                <li className="px-3 py-2 type-secondary text-muted-foreground">
+                  {brandScoped
+                    // read-gate-exempt: sources stay null when the read fails; sourceError shows above
+                    ? "No Sources for this brand yet. Try All my sources."
+                    : "No Sources match. Add writing to Knowledge first."}
+                </li>
+              ) : (
+                sources.map((source) => {
+                  const chosen = picked.find((p) => p.source.id === source.id);
+                  return (
+                    <li key={source.id} className="flex min-h-10 items-center gap-2 px-3 py-1.5 type-body">
+                      <input
+                        type="checkbox"
+                        aria-label={`Use ${source.name}`}
+                        checked={Boolean(chosen)}
+                        onChange={() =>
                           setPicked((list) =>
-                            list.map((p) =>
-                              p.source.id === source.id ? { ...p, kind } : p,
-                            ),
+                            chosen
+                              ? list.filter((p) => p.source.id !== source.id)
+                              : list.length >= MAX_SAMPLES
+                                ? list
+                                : [...list, { source, kind: "other" }],
                           )
                         }
-                        options={SAMPLE_KINDS.map((k) => ({ value: k, label: k }))}
                       />
-                    ) : null}
-                  </li>
-                );
-              })
-            )}
-          </ul>
-          {scope === "brand" && target === "brand" ? (
-            <div className="mt-3" data-testid="voice-social-samples">
-              <h3 className="text-xs font-medium text-foreground">The brand&apos;s own social posts</h3>
-              {socialError ? <p className="mt-1 text-sm text-destructive">{socialError}<ErrorAlchemyMenu error={socialError} /></p> : null}
-              <ul className="mt-1 max-h-64 divide-y divide-border overflow-y-auto rounded-md border border-border">
-                {socialPosts === null ? (
-                  <li className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Listing posts
-                  </li>
-                ) : socialPosts.length === 0 ? (
-                  <li className="p-2 text-sm text-muted-foreground">
-                    {/* read-gate-exempt: socialPosts stay null when the read fails; socialError shows above */}
-                    No tracked posts to measure yet.{" "}
-                    <Link href={marketingRoutes.brandSocials(ownerId)} className="underline">
-                      Track the brand&apos;s accounts
-                    </Link>{" "}
-                    and their captions and transcripts appear here.
-                  </li>
-                ) : (
-                  socialPosts.map((post) => {
-                    const id = `social:${post.postId}`;
-                    const chosen = picked.find((p) => p.source.id === id);
-                    return (
-                      <li key={post.postId} className="flex items-center gap-2 p-2 text-sm">
-                        <input
-                          type="checkbox"
-                          aria-label={`Use ${post.platform} post ${post.preview.slice(0, 40)}`}
-                          checked={Boolean(chosen)}
-                          onChange={() => togglePost(post)}
+                      <Link href={sourceHref(source.id)} className="min-w-0 flex-1 truncate text-foreground hover:underline" target="_blank">
+                        {source.name}
+                      </Link>
+                      {chosen ? (
+                        <Select<VoiceSampleKind>
+                          aria-label={`Kind of ${source.name}`}
+                          value={chosen.kind}
+                          onValueChange={(kind) =>
+                            setPicked((list) =>
+                              list.map((p) =>
+                                p.source.id === source.id ? { ...p, kind } : p,
+                              ),
+                            )
+                          }
+                          options={SAMPLE_KINDS.map((k) => ({ value: k, label: k }))}
                         />
-                        <span className="min-w-0 flex-1 truncate">{post.preview}</span>
-                        <Badge variant="outline">{post.platform} {post.textKind}</Badge>
-                      </li>
-                    );
-                  })
-                )}
-              </ul>
+                      ) : null}
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+            {scope === "brand" && target === "brand" ? (
+              <div className="space-y-1.5" data-testid="voice-social-samples">
+                <h3 className="type-label">The brand&apos;s own social posts</h3>
+                {socialError ? <p className="type-secondary text-destructive">{socialError}<ErrorAlchemyMenu error={socialError} /></p> : null}
+                <ul className="max-h-64 divide-y divide-border overflow-y-auto rounded-md border border-border">
+                  {socialPosts === null ? (
+                    <li className="flex items-center gap-2 px-3 py-2 type-secondary text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Listing posts
+                    </li>
+                  ) : socialPosts.length === 0 ? (
+                    <li className="flex flex-wrap items-center gap-x-2 px-3 py-2 type-secondary text-muted-foreground">
+                      {/* read-gate-exempt: socialPosts stay null when the read fails; socialError shows above */}
+                      No tracked posts yet
+                      <Link href={marketingRoutes.brandSocials(ownerId)} className="text-foreground underline">
+                        Track the brand&apos;s accounts
+                      </Link>
+                    </li>
+                  ) : (
+                    socialPosts.map((post) => {
+                      const id = `social:${post.postId}`;
+                      const chosen = picked.find((p) => p.source.id === id);
+                      return (
+                        <li key={post.postId} className="flex min-h-10 items-center gap-2 px-3 py-1.5 type-body">
+                          <input
+                            type="checkbox"
+                            aria-label={`Use ${post.platform} post ${post.preview.slice(0, 40)}`}
+                            checked={Boolean(chosen)}
+                            onChange={() => togglePost(post)}
+                          />
+                          <span className="min-w-0 flex-1 truncate text-foreground">{post.preview}</span>
+                          <Badge variant="outline">{post.platform} {post.textKind}</Badge>
+                        </li>
+                      );
+                    })
+                  )}
+                </ul>
+              </div>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button icon={measuring ? <Loader2 className="animate-spin" aria-hidden /> : null} variant="primary" onClick={measure} disabled={measuring || picked.length < MIN_SAMPLES}>
+                Measure voice
+              </Button>
+              <span className="type-secondary text-muted-foreground" data-testid="voice-picked">
+                {picked.length} of {MIN_SAMPLES}–{MAX_SAMPLES} picked
+                {picked.length < MIN_SAMPLES ? ` · ${MIN_SAMPLES - picked.length} more to measure` : ""}
+                {picked.length >= MAX_SAMPLES ? " · the most one voice uses" : ""}
+              </span>
             </div>
-          ) : null}
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <Button icon={measuring ? <Loader2 className="animate-spin" aria-hidden /> : null} variant="primary" onClick={measure} disabled={measuring || picked.length < MIN_SAMPLES}>
-              Measure voice
-            </Button>
-            <span className="text-xs text-muted-foreground" data-testid="voice-picked">
-              {picked.length} of {MIN_SAMPLES}–{MAX_SAMPLES} picked
-              {picked.length < MIN_SAMPLES ? ` — pick ${MIN_SAMPLES - picked.length} more to measure` : ""}
-              {picked.length >= MAX_SAMPLES ? " — that is the most one voice uses" : ""}
-            </span>
+            {measureError ? <p className="type-secondary text-destructive">{measureError}<ErrorAlchemyMenu error={measureError} /></p> : null}
+            {measured?.triage ? <Triage result={measured} /> : null}
           </div>
-          {measureError ? <p className="mt-2 text-sm text-destructive">{measureError}<ErrorAlchemyMenu error={measureError} /></p> : null}
-          {measured?.triage ? <Triage result={measured} /> : null}
-        </Card>
+        </SectionCard>
 
         {toConfirm ? (
           <ConfirmCard
@@ -561,41 +563,26 @@ function Triage({ result }: { result: VoiceMeasureResult }) {
   const t = result.triage!;
   const ai = Math.round((t.ai_tell_share ?? 0) * 100);
   return (
-    <div className="mt-3 rounded-md border border-border p-3 text-sm" data-testid="voice-triage">
-      <h3 className="font-medium text-foreground">What the samples show</h3>
-      <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-5">
-        <div>
-          <dt className="text-xs text-muted-foreground">Samples</dt>
-          <dd>{t.sample_count}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">Words</dt>
-          <dd>{formatCount(t.total_words)}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">AI-edited share</dt>
-          <dd>{ai}%</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">Register</dt>
-          <dd>{t.register_split ? "Split in two" : "One register"}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">Confidence</dt>
-          <dd>{t.confidence}</dd>
-        </div>
-      </dl>
+    <div className="space-y-2 border-t border-border pt-3" data-testid="voice-triage">
+      <h3 className="type-label">What the samples show</h3>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <PropertyRow label="Samples" value={String(t.sample_count)} />
+        <PropertyRow label="Words" value={formatCount(t.total_words)} />
+        <PropertyRow label="AI-edited share" value={`${ai}%`} />
+        <PropertyRow label="Register" value={t.register_split ? "Split in two" : "One register"} />
+        <PropertyRow label="Confidence" value={String(t.confidence)} />
+      </div>
       {(t.warnings ?? []).length > 0 ? (
-        <ul className="mt-2 space-y-1">
+        <ul className="space-y-1">
           {(t.warnings ?? []).map((w) => (
-            <li key={w} className="flex gap-2 text-xs text-amber-700 dark:text-amber-400">
+            <li key={w} className="flex gap-2 type-secondary text-warning-ink">
               <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden /> {w}
             </li>
           ))}
         </ul>
       ) : null}
       {result.fingerprint_id ? null : (
-        <p className="mt-2 text-xs text-muted-foreground">Nothing was saved: this is too little writing to measure a voice.</p>
+        <p className="type-secondary text-muted-foreground">Nothing saved: too little writing to measure</p>
       )}
     </div>
   );
@@ -615,14 +602,14 @@ function CheckList({
   empty: string;
 }) {
   return (
-    <fieldset className="text-sm">
-      <legend className="font-medium text-foreground">{label}</legend>
+    <fieldset className="space-y-1 px-3 py-2">
+      <legend className="float-left mb-1 w-full type-label">{label}</legend>
       {items.length === 0 ? (
-        <p className="mt-1 text-xs text-muted-foreground">{empty}</p>
+        <p className="clear-left type-secondary text-muted-foreground">{empty}</p>
       ) : (
-        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+        <div className="clear-left flex flex-wrap gap-x-4 gap-y-1">
           {items.map((item) => (
-            <label key={item} className="flex items-center gap-1.5">
+            <label key={item} className="flex items-center gap-1.5 type-body text-foreground">
               <input type="checkbox" checked={kept.includes(item)} onChange={() => onToggle(item)} />
               {item}
             </label>
@@ -678,72 +665,75 @@ function ConfirmCard({
   };
 
   return (
-    <Card className="space-y-3 p-4" data-testid="voice-confirm">
-      <div>
-        <h2 className="text-sm font-medium text-foreground">Confirm before it is used</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          These are the fields that make drafts sound AI-written when they are wrong. Nothing checks drafts against
-          this voice until you save.
-        </p>
-      </div>
-      <label className="flex items-center gap-2 text-sm">
-        <span className="font-medium text-foreground">Em dashes</span>
-        <Select<(typeof EM_DASH)[number]>
-          aria-label="Em dashes"
-          value={emDash}
-          onValueChange={setEmDash}
-          options={EM_DASH.map((v) => ({ value: v, label: v }))}
+    <SectionCard
+      title="Confirm before it is used"
+      about="These are the fields that make drafts sound AI-written when they are wrong. Nothing checks drafts against this voice until you save."
+    >
+      <div className="divide-y divide-border" data-testid="voice-confirm">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-3 py-2">
+          <label className="flex items-center gap-2">
+            <span className="type-label">Em dashes</span>
+            <Select<(typeof EM_DASH)[number]>
+              aria-label="Em dashes"
+              value={emDash}
+              onValueChange={setEmDash}
+              options={EM_DASH.map((v) => ({ value: v, label: v }))}
+            />
+          </label>
+          <label className="flex items-center gap-2">
+            <span className="type-label">Register</span>
+            <Select<(typeof REGISTERS)[number]>
+              aria-label="Register"
+              value={register}
+              onValueChange={setRegister}
+              options={REGISTERS.map((v) => ({ value: v, label: v }))}
+            />
+          </label>
+          {emDash !== "never" && fp.mechanics?.em_dash_usage === "never" ? (
+            <span
+              className="type-secondary text-warning-ink"
+              title="Allowing em dashes the samples never use is the most common way a draft reads as AI."
+            >
+              Your samples never use an em dash
+            </span>
+          ) : null}
+        </div>
+        <CheckList
+          label="Openers you use"
+          items={openers}
+          kept={keptOpeners}
+          onToggle={(i) => setKeptOpeners((l) => toggle(l, i))}
+          empty="No repeated openers found."
         />
-        {emDash !== "never" && fp.mechanics?.em_dash_usage === "never" ? (
-          <span className="text-xs text-amber-700 dark:text-amber-400">
-            The samples never use one; allowing them is the most common way a draft reads as AI.
-          </span>
-        ) : null}
-      </label>
-      <CheckList
-        label="Openers you use"
-        items={openers}
-        kept={keptOpeners}
-        onToggle={(i) => setKeptOpeners((l) => toggle(l, i))}
-        empty="No repeated openers found."
-      />
-      <CheckList
-        label="Closers you use"
-        items={closers}
-        kept={keptClosers}
-        onToggle={(i) => setKeptClosers((l) => toggle(l, i))}
-        empty="No repeated closers found."
-      />
-      <CheckList
-        label="Signature phrases that really are yours"
-        items={signature}
-        kept={keptSignature}
-        onToggle={(i) => setKeptSignature((l) => toggle(l, i))}
-        empty="No signature phrases stood out."
-      />
-      <CheckList
-        label="Words on the banned list you genuinely use"
-        items={globals}
-        kept={allowed}
-        onToggle={(i) => setAllowed((l) => toggle(l, i))}
-        empty="None of the globally banned words appear in the samples."
-      />
-      <label className="flex items-center gap-2 text-sm">
-        <span className="font-medium text-foreground">Register</span>
-        <Select<(typeof REGISTERS)[number]>
-          aria-label="Register"
-          value={register}
-          onValueChange={setRegister}
-          options={REGISTERS.map((v) => ({ value: v, label: v }))}
+        <CheckList
+          label="Closers you use"
+          items={closers}
+          kept={keptClosers}
+          onToggle={(i) => setKeptClosers((l) => toggle(l, i))}
+          empty="No repeated closers found."
         />
-      </label>
-      <div className="flex items-center gap-3">
-        <Button icon={saving ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} variant="primary" onClick={save} disabled={saving}>
-          Save voice
-        </Button>
-        {error ? <span className="text-sm text-destructive">{error}<ErrorAlchemyMenu error={error} /></span> : null}
+        <CheckList
+          label="Signature phrases that really are yours"
+          items={signature}
+          kept={keptSignature}
+          onToggle={(i) => setKeptSignature((l) => toggle(l, i))}
+          empty="No signature phrases stood out."
+        />
+        <CheckList
+          label="Words on the banned list you genuinely use"
+          items={globals}
+          kept={allowed}
+          onToggle={(i) => setAllowed((l) => toggle(l, i))}
+          empty="No globally banned words in the samples."
+        />
+        <div className="flex items-center gap-3 px-3 py-2">
+          <Button icon={saving ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} variant="primary" onClick={save} disabled={saving}>
+            Save voice
+          </Button>
+          {error ? <span className="type-secondary text-destructive">{error}<ErrorAlchemyMenu error={error} /></span> : null}
+        </div>
       </div>
-    </Card>
+    </SectionCard>
   );
 }
 
@@ -768,51 +758,48 @@ function TryDraft({ fingerprintId, org }: { fingerprintId: string; org: () => Pr
   };
 
   return (
-    <Card className="space-y-3 p-4" data-testid="voice-try">
-      <div>
-        <h2 className="text-sm font-medium text-foreground">Fix a draft&apos;s voice</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          The same check every drafting job runs: the tells are found, rewritten span by span with every fact kept,
-          and re-checked. A draft that still fails comes back with a header naming what is left.
-        </p>
-      </div>
-      <ProTextarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} placeholder="Paste a draft" aria-label="Draft" />
-      <div className="flex flex-wrap items-center gap-3">
-        <Select<VoiceSurface>
-          aria-label="Where it will appear"
-          value={surface}
-          onValueChange={setSurface}
-          options={SURFACES.map((s) => ({ value: s, label: s }))}
-        />
-        <Button icon={running ? <Loader2 className="animate-spin" aria-hidden /> : <Wand2 aria-hidden />} variant="primary" onClick={run} disabled={running || !draft.trim()}>
-          Fix voice
-        </Button>
-        {!draft.trim() ? <span className="text-xs text-muted-foreground">Paste a draft to check it.</span> : null}
-        {error ? <span className="text-sm text-destructive">{error}<ErrorAlchemyMenu error={error} /></span> : null}
-      </div>
-      {outcome ? (
-        <div className="space-y-2 rounded-md border border-border p-3 text-sm" data-testid="voice-outcome">
-          <p className="font-medium text-foreground">
-            {outcome.status === "passed"
-              ? "Passes the voice check as written."
-              : outcome.status === "fixed"
-                ? `Fixed in ${outcome.retries} ${outcome.retries === 1 ? "rewrite" : "rewrites"}.`
-                : "Still fails after the allowed rewrites; returned anyway for you to review."}
-          </p>
-          {(outcome.initial_tells ?? []).length > 0 ? (
-            <p className="text-xs text-muted-foreground">Tells found: {(outcome.initial_tells ?? []).join(", ")}</p>
-          ) : null}
-          {(outcome.rounds ?? []).map((r) => (
-            <p key={r.attempt} className="text-xs text-muted-foreground">
-              Rewrite {r.attempt}:{" "}
-              {r.error
-                ? `failed (${r.error})`
-                : `${(r.changes ?? []).length} change(s)${(r.unfixable ?? []).length ? `; could not fix ${(r.unfixable ?? []).map((u) => String(u.rule_id)).join(", ")}` : ""}`}
-            </p>
-          ))}
-          <pre className="whitespace-pre-wrap rounded bg-muted p-2 font-sans text-sm text-foreground">{outcome.text}</pre>
+    <SectionCard
+      title="Fix a draft's voice"
+      about="The same check every drafting job runs: the tells are found, rewritten span by span with every fact kept, and re-checked. A draft that still fails comes back with a header naming what is left."
+    >
+      <div className="space-y-3 p-3" data-testid="voice-try">
+        <ProTextarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={6} placeholder="Paste a draft" aria-label="Draft" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Select<VoiceSurface>
+            aria-label="Where it will appear"
+            value={surface}
+            onValueChange={setSurface}
+            options={SURFACES.map((s) => ({ value: s, label: s }))}
+          />
+          <Button icon={running ? <Loader2 className="animate-spin" aria-hidden /> : <Wand2 aria-hidden />} variant="primary" onClick={run} disabled={running || !draft.trim()}>
+            Fix voice
+          </Button>
+          {error ? <span className="type-secondary text-destructive">{error}<ErrorAlchemyMenu error={error} /></span> : null}
         </div>
-      ) : null}
-    </Card>
+        {outcome ? (
+          <div className="space-y-2 border-t border-border pt-3" data-testid="voice-outcome">
+            <p className="type-title text-foreground">
+              {outcome.status === "passed"
+                ? "Passes the voice check as written."
+                : outcome.status === "fixed"
+                  ? `Fixed in ${outcome.retries} ${outcome.retries === 1 ? "rewrite" : "rewrites"}.`
+                  : "Still fails after the allowed rewrites; returned for review."}
+            </p>
+            {(outcome.initial_tells ?? []).length > 0 ? (
+              <p className="type-secondary text-muted-foreground">Tells found: {(outcome.initial_tells ?? []).join(", ")}</p>
+            ) : null}
+            {(outcome.rounds ?? []).map((r) => (
+              <p key={r.attempt} className="type-secondary text-muted-foreground">
+                Rewrite {r.attempt}:{" "}
+                {r.error
+                  ? `failed (${r.error})`
+                  : `${(r.changes ?? []).length} change(s)${(r.unfixable ?? []).length ? `; could not fix ${(r.unfixable ?? []).map((u) => String(u.rule_id)).join(", ")}` : ""}`}
+              </p>
+            ))}
+            <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 font-sans type-body text-foreground">{outcome.text}</pre>
+          </div>
+        ) : null}
+      </div>
+    </SectionCard>
   );
 }

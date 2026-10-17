@@ -13,6 +13,7 @@
  * those kinds — never a second list.
  */
 
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { ApprovalQueue } from "@/features/approvals/ApprovalQueue";
 import { ValueDoors } from "../ValueDoors";
 import { DiscoveryLadder } from "./DiscoveryLadder";
@@ -38,14 +39,28 @@ export function DiscoveryWorkspace({
   siteLabel,
 }: DiscoveryWorkspaceProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">
-          Let AI read{" "}
-          <span className="font-medium text-foreground">{siteLabel}</span> cold
-          and propose what it is, who pays it, what it offers and what each
-          offering is worth — you rule every step.
-        </p>
+    <div className="flex flex-col gap-3">
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-1">
+          <h2 className="min-w-0 truncate type-title text-foreground">
+            Business discovery · {siteLabel}
+          </h2>
+          <AboutPeek
+            title="Business discovery"
+            about={`AI reads ${siteLabel} cold — its own crawled pages, nothing else — and proposes what it is, who pays it, what it offers and what each offering is worth. You rule every step.`}
+            more={[
+              {
+                section: "How it runs",
+                items: [
+                  "Read a step's result, then run the next one.",
+                  "Re-run any step to redo it; later steps use the newest result.",
+                  "Step 5 proposes points from the 100-point baseline.",
+                  "Step 6 hands each one to you to approve or reject.",
+                ],
+              },
+            ]}
+          />
+        </div>
         {/* Discovery is what this surface IS — its own door is omitted. */}
         <ValueDoors brandId={brandId} siteId={siteId} showDiscovery={false} />
       </div>
