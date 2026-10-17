@@ -159,6 +159,9 @@ export interface ListingResult {
   active: boolean;
   offered_variants: unknown[];
   updated_at: string;
+  /** The fields that really changed (empty = nothing did). */
+  changed?: string[];
+  /** "Saved: …" or "No changes." — what the server did, in words. */
   words: string;
 }
 
