@@ -298,6 +298,21 @@ export function cellsToRun(setup: MatrixSetup, systems: SystemKey[]): { row_id: 
   return out;
 }
 
+/**
+ * How many cells a bench's run makes: Jev on every result, the holder (and the reference, when a
+ * model was picked) on every batch. The page keeps reading until this many exist — the run queues
+ * them a moment after the page has already moved to the bench, so "none yet" is not "done".
+ */
+export function expectedCells(bench: BenchState): number {
+  const { holder, jev, referenceModel } = bench.agents;
+  const batches = batchesOf(bench.results).length;
+  let n = 0;
+  if (jev && bench.systems.includes("jev")) n += bench.results.length;
+  if (holder && bench.systems.includes("holder")) n += batches;
+  if (holder && referenceModel && bench.systems.includes("reference")) n += batches;
+  return n;
+}
+
 // ---------------------------------------------------------------------------
 // Reading answers
 // ---------------------------------------------------------------------------

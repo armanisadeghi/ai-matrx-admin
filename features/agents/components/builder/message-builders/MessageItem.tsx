@@ -741,7 +741,7 @@ export function MessageItem({
             />
           </div>
         )}
-        <div className={cn("flex items-center gap-1", HOVER_REVEAL)}>
+        <div className={cn("flex items-center gap-1", HOVER_REVEAL)} data-matrx-row-actions="">
           {showsTextTools(viewMode) && (
             <MessageInsertMenu
               variables={insertSources.variables}

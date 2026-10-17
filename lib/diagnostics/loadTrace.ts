@@ -34,6 +34,15 @@
 import { registerIdleTask } from "@ai-matrx/kit/idle-scheduler";
 import { loadTraceEnabled } from "./loadTraceFlag";
 
+/**
+ * The trace's own console. Production builds strip every `console.log/table/group*` call
+ * (`compiler.removeConsole` in next.config.js keeps only error/warn), which silently deleted this
+ * whole timeline on aimatrx.com — it only ever printed on localhost. The compiler matches the
+ * literal `console.<method>(` form, so the trace writes through this alias: its lines survive,
+ * every other `console.log` in the app is still stripped.
+ */
+const traceConsole: Console = globalThis.console;
+
 const SETTLE_CAP_MS = 15_000;
 const STALL_MS = 100;
 const SHIFT_MIN = 0.005;
@@ -182,7 +191,7 @@ function line(e: LoadTraceEvent): { text: string; style: string } {
 
 function print(e: LoadTraceEvent): void {
   const { text, style } = line(e);
-  console.log(`%c[load] +${String(e.at).padStart(6)}ms  ${text}`, style);
+  out.log(`%c[load] +${String(e.at).padStart(6)}ms  ${text}`, style);
 }
 
 function push(event: LoadTraceEvent): void {
@@ -252,13 +261,13 @@ function printTimelineAndSummary(): void {
   const lazy = report.violations.filter((v) => v.kind === "lazy-before-settle").length;
   const shifts = report.violations.filter((v) => v.kind === "shift").length;
   const smoke = heavy + lazy + shifts;
-  console.log(
+  out.log(
     `%c[load] SUMMARY ${report.route} · settled +${report.settledAt}ms · ${report.requests.length} requests · ${report.scripts.count} scripts ${report.scripts.wireKB} KB wire / ${report.scripts.unpackedKB} KB unpacked · TTFB ${report.ttfb ?? "?"}ms · FCP ${report.fcp ?? "?"}ms · LCP ${report.lcp ? `${report.lcp.at}ms ${report.lcp.element}` : "?"} · CLS ${report.cls} · smoke ${smoke ? `🔴 ${heavy} heavy, ${lazy} lazy, ${shifts} shifts` : "clean"}`,
     smoke ? STYLE.red : STYLE.milestone,
   );
-  console.groupCollapsed("[load] biggest scripts");
-  console.table(report.scripts.biggest);
-  console.groupEnd();
+  out.groupCollapsed("[load] biggest scripts");
+  out.table(report.scripts.biggest);
+  out.groupEnd();
 }
 
 function markKind(name: string): { kind: LoadTraceKind; label: string } {
@@ -279,7 +288,7 @@ export function installLoadTrace(): void {
     /* older browser */
   }
   (window as unknown as { __matrxLoadTrace: () => LoadTraceReport }).__matrxLoadTrace = loadTraceReport;
-  console.log("%c[load] trace ON — timeline prints when the page settles (?trace=off to silence)", STYLE.milestone);
+  out.log("%c[load] trace ON — timeline prints when the page settles (?trace=off to silence)", STYLE.milestone);
 
   push({ at: 0, kind: "nav", name: "navigation start", detail: window.location.pathname });
   const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;

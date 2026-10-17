@@ -44,6 +44,7 @@ import {
   TRUTH_LABEL,
   defaultQueries,
   emptyBench,
+  expectedCells,
   readBench,
   readRuns,
   score,
@@ -178,8 +179,10 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   useEffect(() => {
     lastChange.current = Date.now();
   }, [signature]);
+  // Also live until every expected cell exists: the page arrives a moment before the run queues them.
+  const awaiting = Boolean(setId) && cells.length < expectedCells(bench);
   useEffect(() => {
-    if (!setId || (!live && !busy)) return undefined;
+    if (!setId || (!live && !busy && !awaiting)) return undefined;
     const t = setInterval(() => {
       if (Date.now() - lastChange.current > 5 * 60_000) return;
       listMatrixEntries(setId)
@@ -196,7 +199,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
         );
     }, POLL_MS);
     return () => clearInterval(t);
-  }, [setId, live, busy]);
+  }, [setId, live, busy, awaiting]);
 
   // Jev's answers from the decision answer store, for finished cells that carry no answer text.
   const [jevStore, setJevStore] = useState<Map<string, SystemAnswer>>(

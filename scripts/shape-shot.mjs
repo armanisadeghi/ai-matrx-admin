@@ -29,7 +29,15 @@ const bad = [];
 page.on("console", (m) => m.type() === "error" && bad.push(m.text().slice(0, 200)));
 await page.goto(open, { waitUntil: "commit", timeout: 180000 }).catch(() => {});
 await page.waitForTimeout(4000);
-await page.goto(`${origin}${path}`, { waitUntil: "domcontentloaded", timeout: 180000 });
+for (let attempt = 0; attempt < 4; attempt++) {
+  try {
+    await page.goto(`${origin}${path}`, { waitUntil: "domcontentloaded", timeout: 180000 });
+    break;
+  } catch (e) {
+    if (attempt === 3 || !String(e).includes("ERR_ABORTED")) throw e;
+    await page.waitForTimeout(5000);
+  }
+}
 await page.waitForTimeout(Number(flag("wait", 12000)));
 const typed = flag("type", "");
 if (typed) {

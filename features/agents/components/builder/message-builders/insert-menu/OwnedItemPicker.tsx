@@ -35,6 +35,9 @@ export function ownerLaneOf(owner: Ownership, meId: string | null): Exclude<Owne
 }
 
 export interface OwnedPickerItem {
+  /** Unique per row (two rows may insert the same `id`, e.g. a block overridden per level). */
+  key: string;
+  /** What picking it inserts (a kind slug, a block name). */
   id: string;
   /** The row's one line. */
   label: string;
@@ -102,7 +105,7 @@ export function OwnedItemPicker({ items, error, searchLabel, onPick, footer }: O
         ) : (
           shown.map((item) => (
             <PeekHoverCard
-              key={item.id}
+              key={item.key}
               side="right"
               trigger={
                 <button
@@ -114,7 +117,7 @@ export function OwnedItemPicker({ items, error, searchLabel, onPick, footer }: O
                 >
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
                   {item.detail && item.detail !== item.label ? (
-                    <span className="max-w-[45%] shrink-0 truncate font-mono text-xs text-muted-foreground">{item.detail}</span>
+                    <span className="max-w-[38%] shrink-0 truncate font-mono text-xs text-muted-foreground">{item.detail}</span>
                   ) : null}
                 </button>
               }

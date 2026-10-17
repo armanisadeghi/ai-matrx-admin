@@ -22,7 +22,7 @@ import {
 } from "@/features/content-ir/registry/kind-catalog";
 import { loadBlocks } from "@/features/prompt-blocks/blocksCache";
 import type { PromptBlockRow } from "@/features/prompt-blocks/types";
-import { SYSTEM_ORG_ID, ownerLaneOf, type OwnedPickerItem } from "./OwnedItemPicker";
+import { ownerLaneOf, type OwnedPickerItem } from "./OwnedItemPicker";
 
 interface KindOwnerRow {
   kind: string;
@@ -114,6 +114,7 @@ export function useInsertMenuLists() {
           .map((entry) => {
             const owner = kindOwners.get(entry.kind);
             return {
+              key: entry.kind,
               id: entry.kind,
               label: entry.label,
               detail: entry.kind,
@@ -129,6 +130,7 @@ export function useInsertMenuLists() {
 
   const blocks: OwnedPickerItem[] | null = blockRows
     ? blockRows.map((row) => ({
+        key: row.id,
         id: row.name,
         label: row.label || row.name,
         detail: row.name,
@@ -146,5 +148,5 @@ export function useInsertMenuLists() {
     return kindSchemaToJsonSchema(kind, catalogResolver(catalog))?.schema ?? null;
   };
 
-  return { load, kinds, kindsError, blocks, blocksError, kindSchema, systemOrgId: SYSTEM_ORG_ID };
+  return { load, kinds, kindsError, blocks, blocksError, kindSchema };
 }

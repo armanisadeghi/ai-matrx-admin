@@ -2,6 +2,7 @@ import {
   buildSetup,
   cellsToRun,
   emptyBench,
+  expectedCells,
   mergeResults,
   normalizeUrl,
   readBatchCell,
@@ -92,4 +93,13 @@ test("the score counts only marked results, against the truth", () => {
   const holder = score(runs.holder, b.truth);
   expect([holder.right, holder.wrong, holder.calls]).toEqual([3, 0, 1]);
   expect(runs.jev.conversations.get("owencyclery.com")).toBe("conv-owencyclery.com");
+});
+
+test("the page waits for every cell the run will make", () => {
+  const b = bench();
+  expect(expectedCells(b)).toBe(3 + 1);
+  b.systems = ["holder", "jev", "reference"];
+  expect(expectedCells(b)).toBe(4); // no reference model picked: no reference cells
+  b.agents.referenceModel = "m";
+  expect(expectedCells(b)).toBe(5);
 });
