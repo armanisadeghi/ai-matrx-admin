@@ -33,7 +33,7 @@ export function CoveragePanel({
     <section className="flex flex-col gap-2" aria-label="Field coverage">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">
-          Fields <span className="ml-1 font-normal text-muted-foreground">{differing.length} differ of {rows.length}</span>
+          Fields{unlike ? null : <span className="ml-1 font-normal text-muted-foreground">{differing.length} differ of {rows.length}</span>}
         </h2>
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
           Differences only

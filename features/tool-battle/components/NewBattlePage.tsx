@@ -256,7 +256,9 @@ export function NewBattlePage() {
               Blind
             </label>
             <p className="text-xs tabular-nums text-muted-foreground">
-              {picked.length} sources × {subjects.length} subjects = {lookups} lookups
+              {picked.length} {picked.length === 1 ? "source" : "sources"} × {subjects.length}{" "}
+              {subjects.length === 1 ? "subject" : "subjects"}
+              {subjects.length > 0 ? ` = ${lookups} lookups` : ""}
             </p>
           </Section>
         )}
