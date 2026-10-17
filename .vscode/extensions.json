@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "weiskopfsodefa.vercel-vscode-by-sodefa",
-    "anthropic.claude-code"
+    "anthropic.claude-code",
+    "TypeScriptTeam.native-preview"
   ]
 }

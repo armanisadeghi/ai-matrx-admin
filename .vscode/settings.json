@@ -32,5 +32,6 @@
   },
   "js/ts.tsserver.maxMemory": 4096,
   "terminal.integrated.scrollback": 20000,
-  "references.preferredLocation": "view"
+  "references.preferredLocation": "view",
+  "typescript.experimental.useTsgo": true
 }
