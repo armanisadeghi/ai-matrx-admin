@@ -4,7 +4,7 @@
 // Database blocks become { kind: "template", table, view } tokens, page links become "page:<key>", block ids
 // are dropped (each use makes fresh ones).
 
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { PackBlock, PackPage, SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
@@ -84,5 +84,13 @@ const pack: SpaceTemplatePack = {
 };
 
 const file = join(PACKS_DIR, "traveling-smm-os.pack.json");
+// The pack file was upgraded past the TypeScript sample (v4, 2026-10-17: two-way links, status groups, row
+// templates, formulas over rollups). Regenerating would silently drop that work, so a newer file wins: edit
+// the JSON, or bring the sample's TypeScript up to it first.
+const onDisk = existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as { version?: number }).version ?? 0 : 0;
+if (onDisk > pack.version) {
+  console.error(`${file} is version ${onDisk}, newer than the sample's ${pack.version}; refusing to overwrite it. Edit the pack JSON instead.`);
+  process.exit(1);
+}
 writeFileSync(file, JSON.stringify(pack, null, 1) + "\n");
 console.log(`wrote ${file}: ${pages.length} pages`);
