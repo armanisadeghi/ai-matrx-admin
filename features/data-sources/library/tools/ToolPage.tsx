@@ -118,7 +118,7 @@ export function ToolPage({
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     if (typeof window === "undefined" || !userId) return {};
     // A stored call page starts with an empty box: the typed draft belongs to a different question than the answer shown.
-    return { ...(callId ? {} : readDraft(userId, toolId)), ...readWith(params.get("with")) };
+    return { ...(callId ? readCallInputs(userId, callId) : readDraft(userId, toolId)), ...readWith(params.get("with")) };
   });
   const [giving, setGiving] = useState(false);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
