@@ -1,0 +1,1856 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0112",
+  "version": 1,
+  "title": "Weekly Agenda",
+  "description": "Plan the week by day with tasks and meetings side by side, then review on Friday.",
+  "forWho": "Solo consultants and small teams",
+  "icon": {
+    "emoji": "🗓️"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "planning",
+  "tags": [
+    "weekly",
+    "agenda",
+    "planning",
+    "review"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-weekly-agenda",
+    "catalogueId": "SP0112",
+    "useCase": "Celeste Abernathy-Voss runs a small advisory practice and uses this to lay out each week by day, with tasks and meetings together, and review it on Friday.",
+    "industry": "cross_industry",
+    "vertical": "Consulting",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Windrose Advisory",
+      "describes": "A small advisory firm helping farm co-ops plan and fund their next stage.",
+      "address": {
+        "line1": "74 Sumac Hollow Road",
+        "city": "Burlington",
+        "region": "VT",
+        "postalCode": "05401",
+        "country": "US"
+      },
+      "phone": "(802) 555-0110",
+      "website": "windrose-advisory.net",
+      "email": "hello@windrose-advisory.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-weekly-agenda",
+    "tables": [
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "What needs doing each weekday, who has it and how long it will take.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "day",
+            "label": "Day",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri"
+            ],
+            "choiceColors": {
+              "Mon": "blue",
+              "Tue": "green",
+              "Wed": "amber",
+              "Thu": "violet",
+              "Fri": "pink"
+            },
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "minutes",
+            "label": "Estimate (minutes)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk-01",
+            "values": {
+              "task_name": "Draft the workshop slides for the dairy co-op",
+              "day": "Mon",
+              "status": "Done",
+              "priority": "High",
+              "minutes": 120,
+              "owner": "tm-celeste"
+            }
+          },
+          {
+            "key": "tk-02",
+            "values": {
+              "task_name": "Send the week’s agenda to clients",
+              "day": "Mon",
+              "status": "Done",
+              "priority": "Medium",
+              "minutes": 20,
+              "owner": "tm-maeve"
+            }
+          },
+          {
+            "key": "tk-03",
+            "values": {
+              "task_name": "Review the grant budget spreadsheet",
+              "day": "Mon",
+              "status": "Doing",
+              "priority": "High",
+              "minutes": 60,
+              "owner": "tm-rohan"
+            }
+          },
+          {
+            "key": "tk-04",
+            "values": {
+              "task_name": "Call the printer about the handouts",
+              "day": "Tue",
+              "status": "To do",
+              "priority": "Low",
+              "minutes": 15,
+              "owner": "tm-maeve"
+            }
+          },
+          {
+            "key": "tk-05",
+            "values": {
+              "task_name": "Interview two staff at the creamery",
+              "day": "Tue",
+              "status": "To do",
+              "priority": "High",
+              "minutes": 90,
+              "owner": "tm-celeste"
+            }
+          },
+          {
+            "key": "tk-06",
+            "values": {
+              "task_name": "Write up notes from the interviews",
+              "day": "Tue",
+              "status": "To do",
+              "priority": "Medium",
+              "minutes": 60,
+              "owner": "tm-rohan"
+            }
+          },
+          {
+            "key": "tk-07",
+            "values": {
+              "task_name": "Prepare the board summary for the orchard",
+              "day": "Wed",
+              "status": "To do",
+              "priority": "High",
+              "minutes": 75,
+              "owner": "tm-celeste"
+            }
+          },
+          {
+            "key": "tk-08",
+            "values": {
+              "task_name": "Book travel for the spring site visit",
+              "day": "Wed",
+              "status": "To do",
+              "priority": "Medium",
+              "minutes": 30,
+              "owner": "tm-maeve"
+            }
+          },
+          {
+            "key": "tk-09",
+            "values": {
+              "task_name": "Test the survey form with a pilot group",
+              "day": "Wed",
+              "status": "To do",
+              "priority": "Medium",
+              "minutes": 45,
+              "owner": "tm-rohan"
+            }
+          },
+          {
+            "key": "tk-10",
+            "values": {
+              "task_name": "Deliver the strategy workshop",
+              "day": "Thu",
+              "status": "To do",
+              "priority": "High",
+              "minutes": 180,
+              "owner": "tm-celeste"
+            }
+          },
+          {
+            "key": "tk-11",
+            "values": {
+              "task_name": "Collect feedback forms",
+              "day": "Thu",
+              "status": "To do",
+              "priority": "Medium",
+              "minutes": 30,
+              "owner": "tm-rohan"
+            }
+          },
+          {
+            "key": "tk-12",
+            "values": {
+              "task_name": "Invoice the creamery for phase one",
+              "day": "Thu",
+              "status": "To do",
+              "priority": "High",
+              "minutes": 20,
+              "owner": "tm-maeve"
+            }
+          },
+          {
+            "key": "tk-13",
+            "values": {
+              "task_name": "Weekly review and the following week’s plan",
+              "day": "Fri",
+              "status": "To do",
+              "priority": "Medium",
+              "minutes": 45,
+              "owner": "tm-celeste"
+            }
+          },
+          {
+            "key": "tk-14",
+            "values": {
+              "task_name": "Send thank-you notes to workshop guests",
+              "day": "Fri",
+              "status": "To do",
+              "priority": "Low",
+              "minutes": 25,
+              "owner": "tm-maeve"
+            }
+          },
+          {
+            "key": "tk-15",
+            "values": {
+              "task_name": "Update the proposal template",
+              "day": "Fri",
+              "status": "To do",
+              "priority": "Low",
+              "minutes": 40,
+              "owner": "tm-rohan"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Anyone can take a task."
+        }
+      },
+      {
+        "token": "meeting",
+        "name": "Meetings",
+        "labelSingular": "Meeting",
+        "labelPlural": "Meetings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "meeting_title",
+        "describes": "The week’s meetings, which day, what time and how long.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "meeting_title",
+            "label": "Meeting",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "day",
+            "label": "Day",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri"
+            ],
+            "choiceColors": {
+              "Mon": "blue",
+              "Tue": "green",
+              "Wed": "amber",
+              "Thu": "violet",
+              "Fri": "pink"
+            },
+            "required": true
+          },
+          {
+            "key": "time",
+            "label": "Time",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minutes",
+            "label": "Length (minutes)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 5
+              },
+              {
+                "kind": "max",
+                "value": 480
+              }
+            ]
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Client call",
+              "Internal",
+              "Fieldwork",
+              "Networking"
+            ],
+            "choiceColors": {
+              "Client call": "blue",
+              "Internal": "slate",
+              "Fieldwork": "green",
+              "Networking": "amber"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "mt-01",
+            "values": {
+              "meeting_title": "Client check-in: dairy co-op",
+              "day": "Mon",
+              "time": "9:00 am",
+              "minutes": 30,
+              "kind": "Client call"
+            }
+          },
+          {
+            "key": "mt-02",
+            "values": {
+              "meeting_title": "Team stand-up",
+              "day": "Mon",
+              "time": "4:30 pm",
+              "minutes": 15,
+              "kind": "Internal"
+            }
+          },
+          {
+            "key": "mt-03",
+            "values": {
+              "meeting_title": "Creamery staff interviews",
+              "day": "Tue",
+              "time": "10:00 am",
+              "minutes": 90,
+              "kind": "Fieldwork"
+            }
+          },
+          {
+            "key": "mt-04",
+            "values": {
+              "meeting_title": "Grant budget walk-through",
+              "day": "Tue",
+              "time": "2:00 pm",
+              "minutes": 45,
+              "kind": "Client call"
+            }
+          },
+          {
+            "key": "mt-05",
+            "values": {
+              "meeting_title": "Orchard board prep",
+              "day": "Wed",
+              "time": "11:00 am",
+              "minutes": 60,
+              "kind": "Internal"
+            }
+          },
+          {
+            "key": "mt-06",
+            "values": {
+              "meeting_title": "Pilot survey debrief",
+              "day": "Wed",
+              "time": "3:30 pm",
+              "minutes": 30,
+              "kind": "Internal"
+            }
+          },
+          {
+            "key": "mt-07",
+            "values": {
+              "meeting_title": "Strategy workshop",
+              "day": "Thu",
+              "time": "9:30 am",
+              "minutes": 180,
+              "kind": "Fieldwork"
+            }
+          },
+          {
+            "key": "mt-08",
+            "values": {
+              "meeting_title": "Phase one wrap-up call",
+              "day": "Thu",
+              "time": "2:30 pm",
+              "minutes": 30,
+              "kind": "Client call"
+            }
+          },
+          {
+            "key": "mt-09",
+            "values": {
+              "meeting_title": "Weekly review",
+              "day": "Fri",
+              "time": "9:00 am",
+              "minutes": 45,
+              "kind": "Internal"
+            }
+          },
+          {
+            "key": "mt-10",
+            "values": {
+              "meeting_title": "Coffee with a referral partner",
+              "day": "Fri",
+              "time": "11:00 am",
+              "minutes": 45,
+              "kind": "Networking"
+            }
+          }
+        ],
+        "independentOf": {}
+      },
+      {
+        "token": "week",
+        "name": "Weeks",
+        "labelSingular": "Week",
+        "labelPlural": "Weeks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "week_label",
+        "describes": "One row per week: the single focus, and a short look back at how it went.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "week_label",
+            "label": "Focus for the week",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "week_of",
+            "label": "Week of",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "review",
+            "label": "How it went",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "energy",
+            "label": "Energy",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Great",
+              "Good",
+              "Okay",
+              "Low"
+            ],
+            "choiceColors": {
+              "Great": "green",
+              "Good": "teal",
+              "Okay": "amber",
+              "Low": "red"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "wk-1",
+            "values": {
+              "week_label": "Finish phase one interviews",
+              "week_of": "@mon-3w",
+              "review": "Interviews done; two went long.",
+              "energy": "Good"
+            }
+          },
+          {
+            "key": "wk-2",
+            "values": {
+              "week_label": "Draft the strategy deck",
+              "week_of": "@mon-2w",
+              "review": "Deck drafted. Too many meetings on Tuesday.",
+              "energy": "Okay"
+            }
+          },
+          {
+            "key": "wk-3",
+            "values": {
+              "week_label": "Pilot the survey",
+              "week_of": "@mon-1w",
+              "review": "Pilot ran well. Feedback forms still missing.",
+              "energy": "Good"
+            }
+          },
+          {
+            "key": "wk-4",
+            "values": {
+              "week_label": "Deliver the strategy workshop",
+              "week_of": "@mon"
+            }
+          }
+        ],
+        "independentOf": {}
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "agenda_tasks"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-celeste",
+            "values": {
+              "full_name": "Celeste Abernathy-Voss",
+              "role": "Principal consultant",
+              "work_email": "celeste@windrose-advisory.net",
+              "mobile": "(802) 555-0111",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-rohan",
+            "values": {
+              "full_name": "Rohan Deshpande",
+              "role": "Associate consultant",
+              "work_email": "rohan@windrose-advisory.net",
+              "mobile": "(802) 555-0112",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-maeve",
+            "values": {
+              "full_name": "Maeve Sullivan-Okoro",
+              "role": "Operations and scheduling",
+              "work_email": "maeve@windrose-advisory.net",
+              "mobile": "(802) 555-0113",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "quick_task",
+        "name": "Add a task to the week",
+        "describes": "Drop a task on a day.",
+        "audience": "staff",
+        "table": "task",
+        "fields": [
+          {
+            "fieldKey": "task_name",
+            "ask": "What needs doing?",
+            "required": true
+          },
+          {
+            "fieldKey": "day",
+            "ask": "Which day?",
+            "required": true
+          },
+          {
+            "fieldKey": "priority",
+            "ask": "How important is it?"
+          },
+          {
+            "fieldKey": "minutes",
+            "ask": "About how many minutes?"
+          }
+        ],
+        "submitLabel": "Add to the week",
+        "confirmation": "Added to the week."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_by_day",
+        "name": "By day",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "day"
+      },
+      {
+        "token": "task_board",
+        "name": "By status",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_by_priority",
+        "name": "By priority",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "priority"
+      },
+      {
+        "token": "all_meeting",
+        "name": "All meetings",
+        "table": "meeting",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "meeting_by_day",
+        "name": "By day",
+        "table": "meeting",
+        "kind": "kanban",
+        "groupBy": "day"
+      },
+      {
+        "token": "meeting_by_kind",
+        "name": "By type",
+        "table": "meeting",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_week",
+        "name": "All weeks",
+        "table": "week",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "week_of",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "week_calendar",
+        "name": "Calendar",
+        "table": "week",
+        "kind": "calendar",
+        "dateField": "week_of",
+        "allDay": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Agenda assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every task, its day, status, priority and estimate."
+        },
+        {
+          "name": "related_tables",
+          "table": "meeting",
+          "describes": "The meetings planned on each day."
+        }
+      ],
+      "question": {
+        "ask": "How many tasks are planned for Thursday?",
+        "whyItMatters": "Celeste checks that Thursday is not overloaded.",
+        "expect": {
+          "table": "task",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "day": "Thu"
+          },
+          "answer": 3,
+          "unit": "tasks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open tasks by day.",
+        "action": {
+          "kind": "open",
+          "surface": "task_by_day"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_by_day",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open meetings by day.",
+        "action": {
+          "kind": "open",
+          "surface": "meeting_by_day"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "meeting_by_day",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the weeks calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "week_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "week_calendar",
+          "minItems": 4
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "windrose-advisory.net"
+      ],
+      "fictionalStreets": [
+        "Sumac Hollow Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "weekly-agenda",
+      "parent": null,
+      "title": "Weekly Agenda",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the week in one glance. Each day lists its tasks and meetings. Add the week’s single focus first, then fill the days."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Focus for the week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "week",
+              "view": "all_week"
+            },
+            "inline": true,
+            "title": "Weeks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Latest weeks",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "week_of",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.2
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Mon"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Mon tasks",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Mon"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meeting"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Mon meetings",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Mon"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.2
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tue"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Tue tasks",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Tue"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meeting"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Tue meetings",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Tue"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.2
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Wed"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Wed tasks",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Wed"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meeting"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Wed meetings",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Wed"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.2
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Thu"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Thu tasks",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Thu"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meeting"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Thu meetings",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Thu"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.2
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Fri"
+                    }
+                  ],
+                  "props": {
+                    "level": 3
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Fri tasks",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Fri"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meeting"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "list",
+                        "name": "Fri meetings",
+                        "icon": "List",
+                        "filters": {
+                          "day": "Fri"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Everything, your way"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By day",
+                "icon": "SquareKanban",
+                "groupField": "day",
+                "id": "view-1"
+              },
+              {
+                "layout": "grid",
+                "name": "All tasks",
+                "icon": "Table",
+                "id": "view-2"
+              },
+              {
+                "layout": "kanban",
+                "name": "By priority",
+                "icon": "SquareKanban",
+                "groupField": "priority",
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By day",
+                "icon": "SquareKanban",
+                "groupField": "day",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "All meetings",
+                "icon": "Table",
+                "id": "view-1"
+              },
+              {
+                "layout": "kanban",
+                "name": "By type",
+                "icon": "SquareKanban",
+                "groupField": "kind",
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:friday-review"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:planning-ritual"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:week-dashboard"
+          }
+        }
+      ]
+    },
+    {
+      "key": "week-dashboard",
+      "parent": "weekly-agenda",
+      "title": "Week dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Tasks by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Minutes planned per day",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "day",
+                          "op": "sum",
+                          "field": "minutes"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "meeting",
+                      "view": "all_meeting"
+                    },
+                    "inline": true,
+                    "title": "Meetings",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Meetings by type",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "High priority, not done"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "High priority",
+                "icon": "List",
+                "filters": {
+                  "priority": "High",
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Meeting load by day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meeting"
+            },
+            "inline": true,
+            "title": "Meetings",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "chart",
+                "name": "Minutes in meetings",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "day",
+                  "op": "sum",
+                  "field": "minutes"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "friday-review",
+      "parent": "weekly-agenda",
+      "title": "Friday review",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Twenty minutes. Look back before you look ahead."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Move anything unfinished to a day next week or drop it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write two lines on how the week went in the Weeks table"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note one thing to do differently"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clear your desk and your inbox"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weeks so far"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "week",
+              "view": "all_week"
+            },
+            "inline": true,
+            "title": "Weeks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Reviews",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "week_of",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "week_of",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "planning-ritual",
+      "parent": "weekly-agenda",
+      "title": "Planning ritual",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the one focus that would make the week a success."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put meetings on their days first; they are fixed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Place the focus work in the longest gaps."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fill gaps with small tasks, never more than six hours a day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Leave Friday afternoon open."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Why one focus"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "When everything is important, nothing finishes. One focus makes tradeoffs easy to see."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "What if the week changes"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Move tasks to another day by editing the Day. Do not rewrite the plan; adjust it."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "weekly-agenda",
+      "title": "People",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "People",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

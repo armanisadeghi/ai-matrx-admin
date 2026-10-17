@@ -1,0 +1,2006 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0111",
+  "version": 1,
+  "title": "Release Notes & API Docs",
+  "description": "Releases, changes and an API reference with a public changelog and writing guide.",
+  "forWho": "Product and developer-experience teams",
+  "icon": {
+    "emoji": "📣"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "docs",
+  "tags": [
+    "release notes",
+    "changelog",
+    "api",
+    "docs"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-release-notes-api-docs",
+    "catalogueId": "SP0111",
+    "useCase": "Noelle Achebe-Lund manages a shipping API and uses this to publish release notes customers can read and keep the endpoint reference current.",
+    "industry": "cross_industry",
+    "vertical": "Developer documentation",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Parcelwise",
+      "describes": "A shipping API that lets small shops buy labels and track parcels.",
+      "address": {
+        "line1": "230 Larchmont Street",
+        "city": "Chicago",
+        "region": "IL",
+        "postalCode": "60607",
+        "country": "US"
+      },
+      "phone": "(312) 555-0100",
+      "website": "parcelwise.net",
+      "email": "hello@parcelwise.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-release-notes-api-docs",
+    "tables": [
+      {
+        "token": "change",
+        "name": "Changes",
+        "labelSingular": "Change",
+        "labelPlural": "Changes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "git-pull-request",
+        "titleField": "change_title",
+        "describes": "Every change that shipped or will ship: new, improved, fixed or breaking.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "change_title",
+            "label": "Change",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Improved",
+              "Fixed",
+              "Breaking"
+            ],
+            "choiceColors": {
+              "New": "green",
+              "Improved": "blue",
+              "Fixed": "amber",
+              "Breaking": "red"
+            }
+          },
+          {
+            "key": "area",
+            "label": "Area",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Addresses",
+              "Labels",
+              "Tracking",
+              "Shipments",
+              "Webhooks",
+              "Security",
+              "Rates"
+            ],
+            "choiceColors": {
+              "Addresses": "slate",
+              "Labels": "blue",
+              "Tracking": "amber",
+              "Shipments": "green",
+              "Webhooks": "red",
+              "Security": "violet",
+              "Rates": "teal"
+            }
+          },
+          {
+            "key": "author",
+            "label": "Author",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "pull_request",
+            "label": "Pull request",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ch-01",
+            "values": {
+              "change_title": "Validate a shipping address before buying a label",
+              "kind": "New",
+              "area": [
+                "Addresses"
+              ],
+              "author": "tm-sabine",
+              "pull_request": "https://code.parcelwise.net/pull/900"
+            }
+          },
+          {
+            "key": "ch-02",
+            "values": {
+              "change_title": "Reprint a label without charging again",
+              "kind": "New",
+              "area": [
+                "Labels"
+              ],
+              "author": "tm-thabo",
+              "pull_request": "https://code.parcelwise.net/pull/901"
+            }
+          },
+          {
+            "key": "ch-03",
+            "values": {
+              "change_title": "Faster label PDF generation",
+              "kind": "Improved",
+              "area": [
+                "Labels"
+              ],
+              "author": "tm-thabo",
+              "pull_request": "https://code.parcelwise.net/pull/902"
+            }
+          },
+          {
+            "key": "ch-04",
+            "values": {
+              "change_title": "Tracking events show the carrier’s local time zone",
+              "kind": "Fixed",
+              "area": [
+                "Tracking"
+              ],
+              "author": "tm-sabine",
+              "pull_request": "https://code.parcelwise.net/pull/903"
+            }
+          },
+          {
+            "key": "ch-05",
+            "values": {
+              "change_title": "Duplicate tracking events no longer appear",
+              "kind": "Fixed",
+              "area": [
+                "Tracking",
+                "Webhooks"
+              ],
+              "author": "tm-thabo",
+              "pull_request": "https://code.parcelwise.net/pull/904"
+            }
+          },
+          {
+            "key": "ch-06",
+            "values": {
+              "change_title": "Create up to 100 shipments in one request",
+              "kind": "New",
+              "area": [
+                "Shipments"
+              ],
+              "author": "tm-ivor",
+              "pull_request": "https://code.parcelwise.net/pull/905"
+            }
+          },
+          {
+            "key": "ch-07",
+            "values": {
+              "change_title": "Webhooks are signed with a per-account secret",
+              "kind": "New",
+              "area": [
+                "Webhooks",
+                "Security"
+              ],
+              "author": "tm-ivor",
+              "pull_request": "https://code.parcelwise.net/pull/906"
+            }
+          },
+          {
+            "key": "ch-08",
+            "values": {
+              "change_title": "Clearer errors when a weight is missing",
+              "kind": "Improved",
+              "area": [
+                "Shipments"
+              ],
+              "author": "tm-thabo",
+              "pull_request": "https://code.parcelwise.net/pull/907"
+            }
+          },
+          {
+            "key": "ch-09",
+            "values": {
+              "change_title": "Rate responses include delivery estimates",
+              "kind": "Improved",
+              "area": [
+                "Rates"
+              ],
+              "author": "tm-sabine",
+              "pull_request": "https://code.parcelwise.net/pull/908"
+            }
+          },
+          {
+            "key": "ch-10",
+            "values": {
+              "change_title": "Cache carrier rates for 60 seconds",
+              "kind": "Improved",
+              "area": [
+                "Rates"
+              ],
+              "author": "tm-thabo",
+              "pull_request": "https://code.parcelwise.net/pull/909"
+            }
+          },
+          {
+            "key": "ch-11",
+            "values": {
+              "change_title": "Remove the /v1/track endpoints",
+              "kind": "Breaking",
+              "area": [
+                "Tracking"
+              ],
+              "author": "tm-ivor",
+              "pull_request": "https://code.parcelwise.net/pull/910"
+            }
+          },
+          {
+            "key": "ch-12",
+            "values": {
+              "change_title": "Remove the X-Api-Key header in favor of bearer tokens",
+              "kind": "Breaking",
+              "area": [
+                "Security"
+              ],
+              "author": "tm-ivor",
+              "pull_request": "https://code.parcelwise.net/pull/911"
+            }
+          },
+          {
+            "key": "ch-13",
+            "values": {
+              "change_title": "Tracking history now returns the newest event first",
+              "kind": "Breaking",
+              "area": [
+                "Tracking"
+              ],
+              "author": "tm-sabine",
+              "pull_request": "https://code.parcelwise.net/pull/912"
+            }
+          }
+        ],
+        "independentOf": {
+          "author": "Anyone can author a change."
+        }
+      },
+      {
+        "token": "release",
+        "name": "Releases",
+        "labelSingular": "Release",
+        "labelPlural": "Releases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "rocket",
+        "titleField": "version",
+        "describes": "Each version, when it ships, who can see it and the changes it holds.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "version",
+            "label": "Version",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Rolling out",
+              "Released"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Rolling out": "amber",
+              "Released": "green"
+            },
+            "required": true,
+            "default": "Planned"
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Major",
+              "Minor",
+              "Patch"
+            ],
+            "choiceColors": {
+              "Major": "red",
+              "Minor": "blue",
+              "Patch": "slate"
+            }
+          },
+          {
+            "key": "audience",
+            "label": "Audience",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Internal",
+              "Public"
+            ],
+            "choiceColors": {
+              "Internal": "slate",
+              "Public": "green"
+            }
+          },
+          {
+            "key": "release_on",
+            "label": "Release date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "highlights",
+            "label": "Highlights",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "changes",
+            "label": "Changes",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "change",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "change_count",
+            "label": "Change count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "changes",
+            "pick": "change_title",
+            "agg": "count"
+          },
+          {
+            "key": "breaking_count",
+            "label": "Breaking changes",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "changes",
+            "pick": "change_title",
+            "agg": "count",
+            "filter": {
+              "kind": "Breaking"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "rl-1",
+            "values": {
+              "version": "2.3.0",
+              "status": "Released",
+              "kind": "Minor",
+              "audience": "Public",
+              "release_on": "@today-75d",
+              "highlights": "Address validation and label reprints.",
+              "changes": [
+                "ch-01",
+                "ch-02",
+                "ch-03"
+              ]
+            }
+          },
+          {
+            "key": "rl-2",
+            "values": {
+              "version": "2.3.1",
+              "status": "Released",
+              "kind": "Patch",
+              "audience": "Public",
+              "release_on": "@today-58d",
+              "highlights": "Fixes for time zones on tracking events.",
+              "changes": [
+                "ch-04",
+                "ch-05"
+              ]
+            }
+          },
+          {
+            "key": "rl-3",
+            "values": {
+              "version": "2.4.0",
+              "status": "Released",
+              "kind": "Minor",
+              "audience": "Public",
+              "release_on": "@today-21d",
+              "highlights": "Batch shipments and webhook signing.",
+              "changes": [
+                "ch-06",
+                "ch-07",
+                "ch-08",
+                "ch-09"
+              ]
+            }
+          },
+          {
+            "key": "rl-4",
+            "values": {
+              "version": "2.4.1",
+              "status": "Rolling out",
+              "kind": "Patch",
+              "audience": "Internal",
+              "release_on": "@today+2d",
+              "highlights": "Performance work on rate lookups.",
+              "changes": [
+                "ch-10"
+              ]
+            }
+          },
+          {
+            "key": "rl-5",
+            "values": {
+              "version": "3.0.0",
+              "status": "Planned",
+              "kind": "Major",
+              "audience": "Public",
+              "release_on": "@today+50d",
+              "highlights": "Removes the old tracking endpoints and the legacy auth header.",
+              "changes": [
+                "ch-11",
+                "ch-12",
+                "ch-13"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "changes": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "endpoint",
+        "name": "Endpoints",
+        "labelSingular": "Endpoint",
+        "labelPlural": "Endpoints",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "braces",
+        "titleField": "endpoint_name",
+        "describes": "Every endpoint of the public API, its method, path, auth and whether it is stable or deprecated.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "endpoint_name",
+            "label": "Endpoint",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "method",
+            "label": "Method",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "GET",
+              "POST",
+              "PUT",
+              "PATCH",
+              "DELETE"
+            ],
+            "choiceColors": {
+              "GET": "green",
+              "POST": "blue",
+              "PUT": "amber",
+              "PATCH": "violet",
+              "DELETE": "red"
+            }
+          },
+          {
+            "key": "path",
+            "label": "Path",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "resource",
+            "label": "Resource",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Shipments",
+              "Labels",
+              "Addresses",
+              "Rates",
+              "Tracking",
+              "Webhooks"
+            ],
+            "choiceColors": {
+              "Shipments": "blue",
+              "Labels": "violet",
+              "Addresses": "teal",
+              "Rates": "amber",
+              "Tracking": "green",
+              "Webhooks": "pink"
+            }
+          },
+          {
+            "key": "auth",
+            "label": "Auth",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Bearer token",
+              "API key header"
+            ],
+            "choiceColors": {
+              "Bearer token": "green",
+              "API key header": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Stable",
+              "Beta",
+              "Deprecated"
+            ],
+            "choiceColors": {
+              "Stable": "green",
+              "Beta": "blue",
+              "Deprecated": "red"
+            },
+            "required": true,
+            "default": "Stable"
+          },
+          {
+            "key": "version",
+            "label": "API version",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "v1",
+              "v2"
+            ],
+            "choiceColors": {
+              "v1": "slate",
+              "v2": "blue"
+            }
+          },
+          {
+            "key": "since_release",
+            "label": "Since release",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "release",
+            "relationMax": 1
+          }
+        ],
+        "rows": [
+          {
+            "key": "ep-01",
+            "values": {
+              "endpoint_name": "Create shipment",
+              "method": "POST",
+              "path": "/shipments",
+              "resource": "Shipments",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-02",
+            "values": {
+              "endpoint_name": "Create shipments in batch",
+              "method": "POST",
+              "path": "/shipments/batch",
+              "resource": "Shipments",
+              "auth": "Bearer token",
+              "status": "Beta",
+              "version": "v2",
+              "since_release": "rl-3"
+            }
+          },
+          {
+            "key": "ep-03",
+            "values": {
+              "endpoint_name": "Get shipment",
+              "method": "GET",
+              "path": "/shipments/{id}",
+              "resource": "Shipments",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-04",
+            "values": {
+              "endpoint_name": "Cancel shipment",
+              "method": "DELETE",
+              "path": "/shipments/{id}",
+              "resource": "Shipments",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-05",
+            "values": {
+              "endpoint_name": "Buy a label",
+              "method": "POST",
+              "path": "/labels",
+              "resource": "Labels",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-06",
+            "values": {
+              "endpoint_name": "Reprint a label",
+              "method": "POST",
+              "path": "/labels/{id}/reprint",
+              "resource": "Labels",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-07",
+            "values": {
+              "endpoint_name": "Validate an address",
+              "method": "POST",
+              "path": "/addresses/validate",
+              "resource": "Addresses",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-08",
+            "values": {
+              "endpoint_name": "Get rates",
+              "method": "POST",
+              "path": "/rates",
+              "resource": "Rates",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-09",
+            "values": {
+              "endpoint_name": "Get tracking history",
+              "method": "GET",
+              "path": "/tracking/{number}",
+              "resource": "Tracking",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-10",
+            "values": {
+              "endpoint_name": "Track a parcel (old)",
+              "method": "GET",
+              "path": "/v1/track/{number}",
+              "resource": "Tracking",
+              "auth": "API key header",
+              "status": "Deprecated",
+              "version": "v1",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-11",
+            "values": {
+              "endpoint_name": "List tracking events (old)",
+              "method": "GET",
+              "path": "/v1/track/{number}/events",
+              "resource": "Tracking",
+              "auth": "API key header",
+              "status": "Deprecated",
+              "version": "v1",
+              "since_release": "rl-1"
+            }
+          },
+          {
+            "key": "ep-12",
+            "values": {
+              "endpoint_name": "Register a webhook",
+              "method": "POST",
+              "path": "/webhooks",
+              "resource": "Webhooks",
+              "auth": "Bearer token",
+              "status": "Stable",
+              "version": "v2",
+              "since_release": "rl-3"
+            }
+          }
+        ],
+        "independentOf": {
+          "since_release": "Endpoints are documented independently of release dates."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Author links to team_member.",
+        "fromTable": "change",
+        "fromField": "author",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "changes_authored"
+      },
+      {
+        "describes": "A release is made of changes.",
+        "fromTable": "release",
+        "fromField": "changes",
+        "toTable": "change",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "release"
+      },
+      {
+        "describes": "Since release links to release.",
+        "fromTable": "endpoint",
+        "fromField": "since_release",
+        "toTable": "release",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "endpoints"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-noelle",
+            "values": {
+              "full_name": "Noelle Achebe-Lund",
+              "role": "Product manager",
+              "work_email": "noelle@parcelwise.net",
+              "mobile": "(312) 555-0101",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-ivor",
+            "values": {
+              "full_name": "Ivor Pettigrew",
+              "role": "API lead",
+              "work_email": "ivor@parcelwise.net",
+              "mobile": "(312) 555-0102",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-sabine",
+            "values": {
+              "full_name": "Sabine Moreau",
+              "role": "Backend engineer",
+              "work_email": "sabine@parcelwise.net",
+              "mobile": "(312) 555-0103",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-thabo",
+            "values": {
+              "full_name": "Thabo Mokoena",
+              "role": "Backend engineer",
+              "work_email": "thabo@parcelwise.net",
+              "mobile": "(312) 555-0104",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-wren",
+            "values": {
+              "full_name": "Wren Castillo-Brandt",
+              "role": "Technical writer",
+              "work_email": "wren@parcelwise.net",
+              "mobile": "(312) 555-0105",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-ansari",
+            "values": {
+              "full_name": "Ansari Qadir",
+              "role": "Developer advocate",
+              "work_email": "ansari@parcelwise.net",
+              "mobile": "(312) 555-0106",
+              "start_date": "@today-18m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "change_entry",
+        "name": "Log a change",
+        "describes": "How an engineer records a change for the next release.",
+        "audience": "staff",
+        "table": "change",
+        "fields": [
+          {
+            "fieldKey": "change_title",
+            "ask": "What changed, in customer words?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "Is it new, improved, fixed or breaking?",
+            "required": true
+          },
+          {
+            "fieldKey": "area",
+            "ask": "Which area?"
+          },
+          {
+            "fieldKey": "pull_request",
+            "ask": "Link to the pull request"
+          }
+        ],
+        "submitLabel": "Log the change",
+        "confirmation": "Thanks. It will appear in the next release notes."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_release",
+        "name": "All releases",
+        "table": "release",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "release_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "release_board",
+        "name": "By status",
+        "table": "release",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "release_calendar",
+        "name": "Calendar",
+        "table": "release",
+        "kind": "calendar",
+        "dateField": "release_on",
+        "allDay": true
+      },
+      {
+        "token": "all_change",
+        "name": "All changes",
+        "table": "change",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "change_board",
+        "name": "By kind",
+        "table": "change",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_endpoint",
+        "name": "All endpoints",
+        "table": "endpoint",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "endpoint_by_resource",
+        "name": "By resource",
+        "table": "endpoint",
+        "kind": "kanban",
+        "groupBy": "resource"
+      },
+      {
+        "token": "endpoint_by_status",
+        "name": "By status",
+        "table": "endpoint",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Release assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "endpoint",
+          "describes": "Every endpoint, its method, path, resource and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "release",
+          "describes": "The releases that introduced endpoints and changes."
+        }
+      ],
+      "question": {
+        "ask": "How many endpoints are deprecated?",
+        "whyItMatters": "Noelle warns customers before each major release.",
+        "expect": {
+          "table": "endpoint",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Deprecated"
+          },
+          "answer": 2,
+          "unit": "endpoints"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open releases by status.",
+        "action": {
+          "kind": "open",
+          "surface": "release_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "release_board",
+          "minItems": 5
+        }
+      },
+      {
+        "says": "Open changes by kind.",
+        "action": {
+          "kind": "open",
+          "surface": "change_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "change_board",
+          "minItems": 13
+        }
+      },
+      {
+        "says": "Open endpoints by resource.",
+        "action": {
+          "kind": "open",
+          "surface": "endpoint_by_resource"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "endpoint_by_resource",
+          "minItems": 12
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "parcelwise.net"
+      ],
+      "fictionalStreets": [
+        "Larchmont Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "release-notes-api-docs",
+      "parent": null,
+      "title": "Release Notes & API Docs",
+      "icon": {
+        "emoji": "📣"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keep one list of what shipped, one list of what each API endpoint does, and publish the parts customers should read."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:public-changelog"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:api-reference"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:endpoint-outline"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:writing-release-notes"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All releases",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-1"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "release_on",
+                "id": "view-2"
+              },
+              {
+                "layout": "list",
+                "name": "Public",
+                "icon": "List",
+                "filters": {
+                  "audience": "Public"
+                },
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Changes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "change",
+              "view": "all_change"
+            },
+            "inline": true,
+            "title": "Changes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By kind",
+                "icon": "SquareKanban",
+                "groupField": "kind",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "All changes",
+                "icon": "Table",
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Breaking",
+                "icon": "List",
+                "filters": {
+                  "kind": "Breaking"
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "public-changelog",
+      "parent": "release-notes-api-docs",
+      "title": "Public changelog",
+      "icon": {
+        "emoji": "📰"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "This is the page customers see. It lists only public releases, newest first."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Released",
+                "icon": "List",
+                "filters": {
+                  "audience": "Public",
+                  "status": "Released"
+                },
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Coming up",
+                "icon": "List",
+                "filters": {
+                  "audience": "Public",
+                  "status": [
+                    "Rolling out",
+                    "Planned"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Everything that changed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "change",
+              "view": "all_change"
+            },
+            "inline": true,
+            "title": "Changes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "New and improved",
+                "icon": "Table",
+                "filters": {
+                  "kind": [
+                    "New",
+                    "Improved"
+                  ]
+                },
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Fixed",
+                "icon": "List",
+                "filters": {
+                  "kind": "Fixed"
+                },
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Breaking",
+                "icon": "List",
+                "filters": {
+                  "kind": "Breaking"
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "api-reference",
+      "parent": "release-notes-api-docs",
+      "title": "API reference",
+      "icon": {
+        "emoji": "🔌"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Base address: https://api.parcelwise.net. Send your token as Authorization: Bearer."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Key"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "endpoint",
+              "view": "all_endpoint"
+            },
+            "inline": true,
+            "title": "Endpoints",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By resource",
+                "icon": "SquareKanban",
+                "groupField": "resource",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "All endpoints",
+                "icon": "Table",
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Deprecated",
+                "icon": "List",
+                "filters": {
+                  "status": "Deprecated"
+                },
+                "id": "view-2"
+              },
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Status meanings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stable"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Will not change without a major version"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Beta"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Might change; do not build critical flows on it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deprecated"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Works today; will be removed in the next major version"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Errors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "401 unauthorized"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "The token is missing, expired or revoked."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "422 unprocessable"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "A field failed validation. The response lists each field and why."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "429 too many requests"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Slow down. The Retry-After header says when to try again."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "endpoint-outline",
+      "parent": "release-notes-api-docs",
+      "title": "Endpoint page outline",
+      "icon": {
+        "emoji": "🧩"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "POST /labels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Buy a shipping label for an existing shipment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Request"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Field"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Required"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "shipment_id"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "string"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "From Create shipment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "string"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Carrier service code"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "format"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "string"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "pdf or png; pdf by default"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "code",
+          "text": [
+            {
+              "text": "{\n  \"shipment_id\": \"shp_91c2e7\",\n  \"service\": \"ground\",\n  \"format\": \"pdf\"\n}"
+            }
+          ],
+          "props": {
+            "language": "json"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Response"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "code",
+          "text": [
+            {
+              "text": "{\n  \"id\": \"lbl_4d03aa\",\n  \"tracking_number\": \"PW5821907733\",\n  \"url\": \"https://labels.parcelwise.net/lbl_4d03aa.pdf\"\n}"
+            }
+          ],
+          "props": {
+            "language": "json"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Errors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "422 when the shipment already has a label"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "402 when the account balance is too low"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "writing-release-notes",
+      "parent": "release-notes-api-docs",
+      "title": "Writing release notes",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lead with the benefit",
+              "bold": true
+            },
+            {
+              "text": " — “Create 100 shipments at once” beats “Batch endpoint added.”"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One change, one line",
+              "bold": true
+            },
+            {
+              "text": " — details belong in the reference."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark breaking changes loudly",
+              "bold": true
+            },
+            {
+              "text": " — say what to do instead."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before publishing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every public change has a plain-language title"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Breaking changes list a migration step"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The API reference matches the release"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Support has read the notes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Upcoming",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Planned",
+                    "Rolling out"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "release_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "release-notes-api-docs",
+      "title": "People",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "People",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

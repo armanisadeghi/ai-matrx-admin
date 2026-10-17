@@ -1,0 +1,1952 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0110",
+  "version": 1,
+  "title": "Runbooks & On-call",
+  "description": "Runbooks per service with freshness checks, plus a weekly on-call schedule and handoff.",
+  "forWho": "Infrastructure and support engineering teams",
+  "icon": {
+    "emoji": "📟"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "runbook",
+    "on-call",
+    "ops",
+    "sre"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-runbooks-on-call",
+    "catalogueId": "SP0110",
+    "useCase": "Vaughn Ibekwe heads infrastructure at a clinic software company and uses this so whoever is paged can find the right steps and the right person quickly.",
+    "industry": "cross_industry",
+    "vertical": "Operations",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Stonebridge Health Software",
+      "describes": "Scheduling and records software for independent clinics.",
+      "address": {
+        "line1": "1900 Foxcroft Lane",
+        "city": "Raleigh",
+        "region": "NC",
+        "postalCode": "27601",
+        "country": "US"
+      },
+      "phone": "(919) 555-0190",
+      "website": "stonebridge-health.net",
+      "email": "hello@stonebridge-health.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-runbooks-on-call",
+    "tables": [
+      {
+        "token": "runbook",
+        "name": "Runbooks",
+        "labelSingular": "Runbook",
+        "labelPlural": "Runbooks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-marked",
+        "titleField": "runbook_title",
+        "describes": "Every runbook, who owns it, when it was last tested and whether it is stale.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "runbook_title",
+            "label": "Runbook",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Alert response",
+              "Procedure",
+              "Troubleshooting"
+            ],
+            "choiceColors": {
+              "Alert response": "red",
+              "Procedure": "blue",
+              "Troubleshooting": "amber"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "severity",
+            "label": "Severity covered",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "SEV1",
+              "SEV2",
+              "SEV3"
+            ],
+            "choiceColors": {
+              "SEV1": "red",
+              "SEV2": "orange",
+              "SEV3": "amber"
+            }
+          },
+          {
+            "key": "last_tested",
+            "label": "Last tested",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "freshness",
+            "label": "Freshness",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Current",
+              "Stale"
+            ],
+            "choiceColors": {
+              "Current": "green",
+              "Stale": "red"
+            },
+            "required": true,
+            "default": "Current"
+          },
+          {
+            "key": "link",
+            "label": "Alert link",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rb-01",
+            "values": {
+              "runbook_title": "Patient portal returns 502 errors",
+              "type": "Alert response",
+              "owner": "tm-dev",
+              "severity": "SEV1",
+              "last_tested": "@today-20d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/60"
+            }
+          },
+          {
+            "key": "rb-02",
+            "values": {
+              "runbook_title": "Restart the portal safely",
+              "type": "Procedure",
+              "owner": "tm-dev",
+              "severity": "SEV2",
+              "last_tested": "@today-35d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/61"
+            }
+          },
+          {
+            "key": "rb-03",
+            "values": {
+              "runbook_title": "Appointment API latency above target",
+              "type": "Alert response",
+              "owner": "tm-marisa",
+              "severity": "SEV2",
+              "last_tested": "@today-12d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/62"
+            }
+          },
+          {
+            "key": "rb-04",
+            "values": {
+              "runbook_title": "Roll back an appointment API release",
+              "type": "Procedure",
+              "owner": "tm-marisa",
+              "severity": "SEV1",
+              "last_tested": "@today-50d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/63"
+            }
+          },
+          {
+            "key": "rb-05",
+            "values": {
+              "runbook_title": "Replica lag above 30 seconds",
+              "type": "Alert response",
+              "owner": "tm-halima",
+              "severity": "SEV2",
+              "last_tested": "@today-28d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/64"
+            }
+          },
+          {
+            "key": "rb-06",
+            "values": {
+              "runbook_title": "Promote a read replica",
+              "type": "Procedure",
+              "owner": "tm-halima",
+              "severity": "SEV1",
+              "last_tested": "@today-140d",
+              "freshness": "Stale",
+              "link": "https://alerts.stonebridge-health.net/rules/65"
+            }
+          },
+          {
+            "key": "rb-07",
+            "values": {
+              "runbook_title": "Diagnose slow queries",
+              "type": "Troubleshooting",
+              "owner": "tm-halima",
+              "severity": "SEV3",
+              "last_tested": "@today-60d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/66"
+            }
+          },
+          {
+            "key": "rb-08",
+            "values": {
+              "runbook_title": "Queue depth growing without draining",
+              "type": "Alert response",
+              "owner": "tm-dev",
+              "severity": "SEV2",
+              "last_tested": "@today-25d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/67"
+            }
+          },
+          {
+            "key": "rb-09",
+            "values": {
+              "runbook_title": "Purge a poisoned queue message",
+              "type": "Procedure",
+              "owner": "tm-dev",
+              "severity": "SEV3",
+              "last_tested": "@today-110d",
+              "freshness": "Stale",
+              "link": "https://alerts.stonebridge-health.net/rules/68"
+            }
+          },
+          {
+            "key": "rb-10",
+            "values": {
+              "runbook_title": "Nightly report job did not finish",
+              "type": "Troubleshooting",
+              "owner": "tm-halima",
+              "severity": "SEV3",
+              "last_tested": "@today-45d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/69"
+            }
+          },
+          {
+            "key": "rb-11",
+            "values": {
+              "runbook_title": "Office network down at the clinic",
+              "type": "Alert response",
+              "owner": "tm-oskar",
+              "severity": "SEV2",
+              "last_tested": "@today-70d",
+              "freshness": "Current",
+              "link": "https://alerts.stonebridge-health.net/rules/70"
+            }
+          },
+          {
+            "key": "rb-12",
+            "values": {
+              "runbook_title": "Rotate the VPN gateway certificate",
+              "type": "Procedure",
+              "owner": "tm-oskar",
+              "severity": "SEV3",
+              "last_tested": "@today-95d",
+              "freshness": "Stale",
+              "link": "https://alerts.stonebridge-health.net/rules/71"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Anyone can own a runbook."
+        },
+        "statusByDate": {
+          "field": "freshness",
+          "dateField": "last_tested",
+          "bands": [
+            {
+              "status": "Stale",
+              "to": -89
+            },
+            {
+              "status": "Current",
+              "from": -89
+            }
+          ]
+        }
+      },
+      {
+        "token": "service",
+        "name": "Services",
+        "labelSingular": "Service",
+        "labelPlural": "Services",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "server",
+        "titleField": "service_name",
+        "describes": "The systems in production, their tier, owner and how many runbooks cover them.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "service_name",
+            "label": "Service",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "tier",
+            "label": "Tier",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Tier 1",
+              "Tier 2",
+              "Tier 3"
+            ],
+            "choiceColors": {
+              "Tier 1": "red",
+              "Tier 2": "amber",
+              "Tier 3": "slate"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "runbooks",
+            "label": "Runbooks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "runbook",
+            "relationMax": 15,
+            "multi": true
+          },
+          {
+            "key": "runbook_count",
+            "label": "Runbook count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "runbooks",
+            "pick": "runbook_title",
+            "agg": "count"
+          },
+          {
+            "key": "stale_count",
+            "label": "Stale runbooks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "runbooks",
+            "pick": "runbook_title",
+            "agg": "count",
+            "filter": {
+              "freshness": "Stale"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "sv-1",
+            "values": {
+              "service_name": "Patient portal",
+              "tier": "Tier 1",
+              "owner": "tm-dev",
+              "runbooks": [
+                "rb-01",
+                "rb-02"
+              ]
+            }
+          },
+          {
+            "key": "sv-2",
+            "values": {
+              "service_name": "Appointment API",
+              "tier": "Tier 1",
+              "owner": "tm-marisa",
+              "runbooks": [
+                "rb-03",
+                "rb-04"
+              ]
+            }
+          },
+          {
+            "key": "sv-3",
+            "values": {
+              "service_name": "Records database",
+              "tier": "Tier 1",
+              "owner": "tm-halima",
+              "runbooks": [
+                "rb-05",
+                "rb-06",
+                "rb-07"
+              ]
+            }
+          },
+          {
+            "key": "sv-4",
+            "values": {
+              "service_name": "Message queue",
+              "tier": "Tier 2",
+              "owner": "tm-dev",
+              "runbooks": [
+                "rb-08",
+                "rb-09"
+              ]
+            }
+          },
+          {
+            "key": "sv-5",
+            "values": {
+              "service_name": "Reporting jobs",
+              "tier": "Tier 3",
+              "owner": "tm-halima",
+              "runbooks": [
+                "rb-10"
+              ]
+            }
+          },
+          {
+            "key": "sv-6",
+            "values": {
+              "service_name": "Office network",
+              "tier": "Tier 2",
+              "owner": "tm-oskar",
+              "runbooks": [
+                "rb-11",
+                "rb-12"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Anyone can own a service.",
+          "runbooks": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "oncall",
+        "name": "On-call schedule",
+        "labelSingular": "Shift",
+        "labelPlural": "On-call shifts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "phone-call",
+        "titleField": "shift_label",
+        "describes": "Who is on call each week, who backs them up and what the last person handed over.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "shift_label",
+            "label": "Shift",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "primary",
+            "label": "Primary",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "secondary",
+            "label": "Secondary",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "handoff",
+            "label": "Handoff notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Past",
+              "Current",
+              "Next"
+            ],
+            "choiceColors": {
+              "Past": "slate",
+              "Current": "green",
+              "Next": "blue"
+            },
+            "required": true,
+            "default": "Next"
+          }
+        ],
+        "rows": [
+          {
+            "key": "oc-1",
+            "values": {
+              "shift_label": "Marisa and Devraj",
+              "starts_on": "@today-17d",
+              "ends_on": "@today-11d",
+              "primary": "tm-marisa",
+              "secondary": "tm-dev",
+              "phase": "Past",
+              "handoff": "Replica lag spiked twice overnight; both cleared on their own."
+            }
+          },
+          {
+            "key": "oc-2",
+            "values": {
+              "shift_label": "Devraj and Oskar",
+              "starts_on": "@today-10d",
+              "ends_on": "@today-4d",
+              "primary": "tm-dev",
+              "secondary": "tm-oskar",
+              "phase": "Past",
+              "handoff": "Quiet. Certificate renewal reminder is still open."
+            }
+          },
+          {
+            "key": "oc-3",
+            "values": {
+              "shift_label": "Oskar and Halima",
+              "starts_on": "@today-3d",
+              "ends_on": "@today+3d",
+              "primary": "tm-oskar",
+              "secondary": "tm-halima",
+              "phase": "Current",
+              "handoff": "Watch the queue depth after Thursday’s release."
+            }
+          },
+          {
+            "key": "oc-4",
+            "values": {
+              "shift_label": "Halima and Marisa",
+              "starts_on": "@today+4d",
+              "ends_on": "@today+10d",
+              "primary": "tm-halima",
+              "secondary": "tm-marisa",
+              "phase": "Next",
+              "handoff": "Planned database maintenance on the first evening."
+            }
+          },
+          {
+            "key": "oc-5",
+            "values": {
+              "shift_label": "Marisa and Ping",
+              "starts_on": "@today+11d",
+              "ends_on": "@today+17d",
+              "primary": "tm-marisa",
+              "secondary": "tm-ping",
+              "phase": "Next",
+              "handoff": "Clinic holiday hours begin; expect fewer portal logins."
+            }
+          },
+          {
+            "key": "oc-6",
+            "values": {
+              "shift_label": "Devraj and Halima",
+              "starts_on": "@today+18d",
+              "ends_on": "@today+24d",
+              "primary": "tm-dev",
+              "secondary": "tm-halima",
+              "phase": "Next"
+            }
+          }
+        ],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "independentOf": {
+          "primary": "Rotation is by availability.",
+          "secondary": "Rotation is by availability."
+        },
+        "statusByDate": {
+          "field": "phase",
+          "dateField": "ends_on",
+          "bands": [
+            {
+              "status": "Past",
+              "to": 0
+            },
+            {
+              "status": "Current",
+              "from": 0,
+              "to": 7
+            },
+            {
+              "status": "Next",
+              "from": 7
+            }
+          ]
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "runbook",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "runbooks_owned"
+      },
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "service",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "services_owned"
+      },
+      {
+        "describes": "A service has runbooks.",
+        "fromTable": "service",
+        "fromField": "runbooks",
+        "toTable": "runbook",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "service"
+      },
+      {
+        "describes": "Primary links to team_member.",
+        "fromTable": "oncall",
+        "fromField": "primary",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "oncall_primary"
+      },
+      {
+        "describes": "Secondary links to team_member.",
+        "fromTable": "oncall",
+        "fromField": "secondary",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "oncall_secondary"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-vaughn",
+            "values": {
+              "full_name": "Vaughn Ibekwe",
+              "role": "Head of infrastructure",
+              "work_email": "vaughn@stonebridge-health.net",
+              "mobile": "(919) 555-0191",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-marisa",
+            "values": {
+              "full_name": "Marisa Kowalczyk",
+              "role": "Site reliability engineer",
+              "work_email": "marisa@stonebridge-health.net",
+              "mobile": "(919) 555-0192",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-dev",
+            "values": {
+              "full_name": "Devraj Pillai",
+              "role": "Platform engineer",
+              "work_email": "devraj@stonebridge-health.net",
+              "mobile": "(919) 555-0193",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-halima",
+            "values": {
+              "full_name": "Halima Yusuf-Greene",
+              "role": "Database administrator",
+              "work_email": "halima@stonebridge-health.net",
+              "mobile": "(919) 555-0194",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-oskar",
+            "values": {
+              "full_name": "Oskar Lindqvist-Reyes",
+              "role": "Network engineer",
+              "work_email": "oskar@stonebridge-health.net",
+              "mobile": "(919) 555-0195",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-ping",
+            "values": {
+              "full_name": "Ping Wang-Ellison",
+              "role": "Support engineer",
+              "work_email": "ping@stonebridge-health.net",
+              "mobile": "(919) 555-0196",
+              "start_date": "@today-18m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "runbook_request",
+        "name": "Request a runbook",
+        "describes": "How an on-call engineer asks for a missing runbook.",
+        "audience": "staff",
+        "table": "runbook",
+        "fields": [
+          {
+            "fieldKey": "runbook_title",
+            "ask": "What situation needs a runbook?",
+            "required": true
+          },
+          {
+            "fieldKey": "type",
+            "ask": "Is it an alert, a procedure or troubleshooting?"
+          },
+          {
+            "fieldKey": "severity",
+            "ask": "How severe is it when it happens?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The service owner has been told."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_runbook",
+        "name": "All runbooks",
+        "table": "runbook",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "last_tested",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "runbook_by_type",
+        "name": "By type",
+        "table": "runbook",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "runbook_by_freshness",
+        "name": "By freshness",
+        "table": "runbook",
+        "kind": "kanban",
+        "groupBy": "freshness"
+      },
+      {
+        "token": "runbook_tested",
+        "name": "Last tested",
+        "table": "runbook",
+        "kind": "calendar",
+        "dateField": "last_tested",
+        "allDay": true
+      },
+      {
+        "token": "all_service",
+        "name": "All services",
+        "table": "service",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "service_board",
+        "name": "By tier",
+        "table": "service",
+        "kind": "kanban",
+        "groupBy": "tier"
+      },
+      {
+        "token": "all_oncall",
+        "name": "All shifts",
+        "table": "oncall",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "starts_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "oncall_calendar",
+        "name": "Calendar",
+        "table": "oncall",
+        "kind": "calendar",
+        "dateField": "starts_on",
+        "allDay": true
+      },
+      {
+        "token": "oncall_timeline",
+        "name": "Timeline",
+        "table": "oncall",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "On-call assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "runbook",
+          "describes": "Every runbook, its type, owner, severity and last test date."
+        },
+        {
+          "name": "related_tables",
+          "table": "service",
+          "describes": "The services the runbooks cover."
+        }
+      ],
+      "question": {
+        "ask": "How many runbooks are stale?",
+        "whyItMatters": "Vaughn reviews stale runbooks every month.",
+        "expect": {
+          "table": "runbook",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "freshness": "Stale"
+          },
+          "answer": 3,
+          "unit": "runbooks"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open runbooks by type.",
+        "action": {
+          "kind": "open",
+          "surface": "runbook_by_type"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "runbook_by_type",
+          "minItems": 12
+        }
+      },
+      {
+        "says": "Open the on-call calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "oncall_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "oncall_calendar",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open services by tier.",
+        "action": {
+          "kind": "open",
+          "surface": "service_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "service_board",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "stonebridge-health.net"
+      ],
+      "fictionalStreets": [
+        "Foxcroft Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "runbooks-on-call",
+      "parent": null,
+      "title": "Runbooks & On-call",
+      "icon": {
+        "emoji": "📟"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "When an alert fires, find the matching runbook, follow its steps, and write down anything that was wrong. The schedule below says who to call."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:who-is-on-call"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:runbook-outline"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:runbook-health"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:on-call-handbook"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On-call schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "oncall",
+              "view": "all_oncall"
+            },
+            "inline": true,
+            "title": "On-call",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Current and next",
+                "icon": "List",
+                "filters": {
+                  "phase": [
+                    "Current",
+                    "Next"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "calendar",
+                "name": "Calendar",
+                "icon": "Calendar",
+                "dateField": "starts_on",
+                "id": "view-1"
+              },
+              {
+                "layout": "timeline",
+                "name": "Timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on",
+                "id": "view-2"
+              },
+              {
+                "layout": "grid",
+                "name": "All shifts",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Runbooks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "runbook",
+              "view": "all_runbook"
+            },
+            "inline": true,
+            "title": "Runbooks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All runbooks",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "last_tested",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By type",
+                "icon": "SquareKanban",
+                "groupField": "type",
+                "id": "view-1"
+              },
+              {
+                "layout": "kanban",
+                "name": "By freshness",
+                "icon": "SquareKanban",
+                "groupField": "freshness",
+                "id": "view-2"
+              },
+              {
+                "layout": "list",
+                "name": "Stale",
+                "icon": "List",
+                "filters": {
+                  "freshness": "Stale"
+                },
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Services"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "service",
+              "view": "all_service"
+            },
+            "inline": true,
+            "title": "Services",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By tier",
+                "icon": "SquareKanban",
+                "groupField": "tier",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "Coverage",
+                "icon": "Table",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "who-is-on-call",
+      "parent": "runbooks-on-call",
+      "title": "Who is on call",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Primary answers the page within five minutes. If they do not, the secondary is paged automatically."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Phone"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "oncall",
+              "view": "all_oncall"
+            },
+            "inline": true,
+            "title": "On-call",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Current",
+                "icon": "List",
+                "filters": {
+                  "phase": "Current"
+                },
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Next up",
+                "icon": "List",
+                "filters": {
+                  "phase": "Next"
+                },
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Handoff checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open incidents and who is handling them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Alerts that fired and what was done"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Anything that looks like it will break soon"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Planned maintenance in the next shift"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "runbook-outline",
+      "parent": "runbooks-on-call",
+      "title": "Runbook outline",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every runbook starts with one sentence on when to use it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When to use this"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The alert name, or the symptom a person will see."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you start"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "You have access to the dashboards"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "You know who the service owner is"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "You have told the channel you are working on it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the dashboard for the failing component."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the diagnostic command."
+            }
+          ]
+        },
+        {
+          "type": "code",
+          "text": [
+            {
+              "text": "kubectl get pods -n portal --sort-by=.status.startTime"
+            }
+          ],
+          "props": {
+            "language": "shell"
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Restart one instance and watch for two minutes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If errors continue, escalate."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Rollback"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "How to undo what you just did."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Escalation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No improvement after 15 minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Customer data may be affected"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Head of infrastructure"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nobody answers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Secondary on call"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "runbook-health",
+      "parent": "runbooks-on-call",
+      "title": "Runbook health",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "runbook",
+                      "view": "all_runbook"
+                    },
+                    "inline": true,
+                    "title": "Runbooks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Runbooks by freshness",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "freshness",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "runbook",
+                      "view": "all_runbook"
+                    },
+                    "inline": true,
+                    "title": "Runbooks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Runbooks by type",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "type",
+                          "op": "count"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "service",
+                      "view": "all_service"
+                    },
+                    "inline": true,
+                    "title": "Services",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Services by tier",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "tier",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stale runbooks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "runbook",
+              "view": "all_runbook"
+            },
+            "inline": true,
+            "title": "Runbooks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Not tested in 90 days",
+                "icon": "CircleAlert",
+                "filters": {
+                  "freshness": "Stale"
+                },
+                "sorts": [
+                  {
+                    "field": "last_tested",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Coverage by service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "service",
+              "view": "all_service"
+            },
+            "inline": true,
+            "title": "Services",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Runbook counts",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "service_name",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "on-call-handbook",
+      "parent": "runbooks-on-call",
+      "title": "On-call handbook",
+      "icon": {
+        "emoji": "📘"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first shift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Install the paging app and test a page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the three newest postmortems."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shadow the current primary for one evening."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During a shift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Acknowledge every page within five minutes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open the runbook before touching anything."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write what you did in the incident channel as you go."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "If you need to swap"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Find a teammate, change the schedule yourself, and tell the head of infrastructure."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "If you are exhausted"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Hand over. A tired engineer makes the second incident."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "runbooks-on-call",
+      "title": "Engineers",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Engineers",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Engineers",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}
