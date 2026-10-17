@@ -1,6 +1,11 @@
 -- target: branch,production
 -- lane: W2-E
 -- lock: custom
+-- based-on: custom._automation_check_timed(uuid, uuid, jsonb) acc5624b40a3e33d877659447d53390f7096d7309abafd1880ffdf21298f0b97
+-- based-on: custom._automation_check_steps(uuid, uuid, jsonb, text, boolean, integer) 3cc5aa7d101c7f86517568f1498b2225a5772d8c19f88e580097833918dc45ad
+-- based-on: custom._automation_advance(uuid) c572d529d57cf52b612fc499556d35bd40aa70ce7f91ea9af175e8bf10cd7f95
+-- based-on: custom.automation_declare(uuid, uuid, jsonb, uuid) 889bea05db4da73a0349c1645265a587adb21bccb5ba6bfe83f1293faf164b8e
+-- based-on: custom.automation_resume(uuid, jsonb, text, jsonb) 7da0500878c8e652af65b7c30ad676701f7274d7acc83b357a4df7cf76db5e88
 -- Inverse of W2-E 1: the five functions as they were before it, and its new doors and knobs removed.
 CREATE OR REPLACE FUNCTION custom._automation_check_timed(p_organization_id uuid, p_table_id uuid, p_spec jsonb)
  RETURNS jsonb
@@ -891,6 +896,7 @@ begin
 end
 $function$;
 
+DELETE FROM platform.client_callable_door WHERE schema_name = 'custom' AND function_name IN ('automation_app_watch', 'automation_app_note', 'automation_app_event');
 DROP FUNCTION IF EXISTS custom.automation_app_event(uuid, jsonb, jsonb);
 DROP FUNCTION IF EXISTS custom.automation_app_note(uuid, text, jsonb);
 DROP FUNCTION IF EXISTS custom.automation_app_watch(uuid);

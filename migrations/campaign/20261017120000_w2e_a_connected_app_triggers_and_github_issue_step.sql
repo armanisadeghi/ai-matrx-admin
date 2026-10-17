@@ -1073,6 +1073,20 @@ begin
 end
 $function$;
 
+INSERT INTO platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, non_client_lane, signed_in_callers, anonymous_callers) VALUES
+ ('custom', 'automation_app_watch', 'p_automation_id uuid', ARRAY['uuid'::regtype]::oid[],
+  'p_automation_id names one automation on a live table; unknown answers null. Refuses any caller with an auth.uid() or not a trusted backend.',
+  '20261017120000_w2e_a_connected_app_triggers_and_github_issue_step.sql',
+  'server_only: aidream''s connected-app trigger check reads the automation it polls (trigger, owner, cursor); a browser never calls it.', false, false),
+ ('custom', 'automation_app_note', 'p_automation_id uuid, p_says text, p_cursor jsonb', ARRAY['uuid'::regtype, 'text'::regtype, 'jsonb'::regtype]::oid[],
+  'p_automation_id is checked through custom.automation_app_watch (trusted backend only, unknown id answers ok=false).',
+  '20261017120000_w2e_a_connected_app_triggers_and_github_issue_step.sql',
+  'server_only: aidream''s connected-app trigger check writes why it could not read the owner''s account; a browser never calls it.', false, false),
+ ('custom', 'automation_app_event', 'p_automation_id uuid, p_items jsonb, p_cursor jsonb', ARRAY['uuid'::regtype, 'jsonb'::regtype, 'jsonb'::regtype]::oid[],
+  'p_automation_id is checked through custom.automation_app_watch (trusted backend only) and must carry a connected-app trigger; runs act as the automation''s own creator.',
+  '20261017120000_w2e_a_connected_app_triggers_and_github_issue_step.sql',
+  'server_only: aidream''s connected-app trigger check starts one run per new Gmail / Calendar / Slack item; a browser never calls it.', false, false);
+
 INSERT INTO platform.feature_knob (feature, key, value, default_value, value_type, unit, min_value, max_value, label, description, set_by, basis, review_due)
 VALUES
  ('automation', 'app_trigger_every_minutes', '15', '15', 'integer', 'minutes', 5, 1440, 'Connected-app check interval',
