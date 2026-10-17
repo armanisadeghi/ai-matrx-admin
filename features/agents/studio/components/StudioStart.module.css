@@ -111,6 +111,10 @@
    ways-in row under it: two lines on a phone, one from 40rem up (every headline fits one line there). */
 .headline {
   min-height: calc(2lh);
+  /* A one-line question sits on the reserve's bottom edge, beside the row it introduces. */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 @media (min-width: 640px) {
