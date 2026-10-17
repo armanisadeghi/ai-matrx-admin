@@ -38,9 +38,9 @@ begin
     raise exception 'RED bad repo must be refused: %', v_out; end if;
   -- 3. the server's doors: a person cannot call them; the server reads the watch, notes, and starts runs
   begin
-    perform custom.automation_app_watch(v_id);
-    -- direct connection = trusted backend, so this succeeds here; the person path is refused by auth.uid()
-  exception when others then raise exception 'RED automation_app_watch missing: %', sqlerrm;
+    perform custom.automation_app_event(v_id, '[]'::jsonb, '{}'::jsonb);  -- as the signed-in person: refused
+    raise exception 'RED a signed-in person reached the server door';
+  exception when insufficient_privilege then null;
   end;
   perform set_config('request.jwt.claims', '', true);
   v_watch := custom.automation_app_watch(v_id);
