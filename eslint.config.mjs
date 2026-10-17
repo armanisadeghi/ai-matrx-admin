@@ -2434,4 +2434,11 @@ export default [
       ],
     },
   },
+  {
+    // The generated kind-types mirror (`pnpm shape:types`) copies every kind's schema verbatim, and some kinds
+    // carry the MediaRef wire shape ({file_id | url | file_uri}). It is not hand-written code, so the
+    // storage_uri ban (a rule for code that READS or SELECTS the server-only column) has nothing to say here.
+    files: ["features/content-ir/kinds/generated/kinds.generated.ts"],
+    rules: { "no-restricted-syntax": "off" },
+  },
 ];
