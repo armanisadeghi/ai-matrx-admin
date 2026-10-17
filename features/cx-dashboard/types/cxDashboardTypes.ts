@@ -46,6 +46,8 @@ export type CxUserRequest = {
   total_input_tokens: number;
   total_output_tokens: number;
   total_cached_tokens: number;
+  /** Summed from this request's model calls (chat.request), not stored on user_request. */
+  total_cache_write_tokens?: number;
   total_tokens: number;
   total_cost: number | null;
   total_duration_ms: number | null;
@@ -178,6 +180,9 @@ export type CxOverviewKpis = {
   total_input_tokens: number;
   total_output_tokens: number;
   total_cached_tokens: number;
+  total_cache_write_tokens: number;
+  total_cache_write_5m_tokens: number;
+  total_cache_write_1h_tokens: number;
   total_tokens: number;
   avg_cost_per_request: number;
   avg_tokens_per_request: number;
@@ -321,6 +326,9 @@ export type CxUsageAnalytics = {
     total_input_tokens: number;
     total_output_tokens: number;
     total_cached_tokens: number;
+    total_cache_write_tokens: number;
+    total_cache_write_5m_tokens: number;
+    total_cache_write_1h_tokens: number;
     total_tokens: number;
     avg_duration_ms: number;
   }[];
@@ -331,6 +339,7 @@ export type CxUsageAnalytics = {
     input_tokens: number;
     output_tokens: number;
     cached_tokens: number;
+    cache_write_tokens: number;
   }[];
   by_provider: {
     provider: string;

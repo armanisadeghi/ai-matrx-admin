@@ -265,6 +265,9 @@ async function fetchOverviewKpisInner(
     total_input_tokens: num(raw.total_input_tokens),
     total_output_tokens: num(raw.total_output_tokens),
     total_cached_tokens: num(raw.total_cached_tokens),
+    total_cache_write_tokens: num(raw.total_cache_write_tokens),
+    total_cache_write_5m_tokens: num(raw.total_cache_write_5m_tokens),
+    total_cache_write_1h_tokens: num(raw.total_cache_write_1h_tokens),
     total_tokens: num(raw.total_tokens),
     avg_cost_per_request: num(raw.avg_cost_per_request),
     avg_tokens_per_request: num(raw.avg_tokens_per_request),
@@ -658,10 +661,30 @@ async function fetchUserRequestsInner(
     rows.map((r) => r.id),
   );
 
+  // Cache writes are not stored on user_request; sum them from this page's model calls.
+  const writesByRequest = new Map<string, number>();
+  if (rows.length > 0) {
+    const { data: wr, error: wErr } = await supabase
+      .schema("chat").from("request")
+      .select("user_request_id, cache_write_tokens")
+      .in("user_request_id", rows.map((r) => r.id))
+      .is("deleted_at", null)
+      .gt("cache_write_tokens", 0)
+      .limit(5000);
+    if (wErr) throw wErr;
+    for (const w of wr ?? []) {
+      writesByRequest.set(
+        w.user_request_id as string,
+        (writesByRequest.get(w.user_request_id as string) ?? 0) + num(w.cache_write_tokens),
+      );
+    }
+  }
+
   const requests = rows.map((r) => {
     const info = convInfo.get(r.id);
     return {
       ...r,
+      total_cache_write_tokens: writesByRequest.get(r.id) ?? 0,
       conversation_id: info?.conversation_id ?? null,
       conversation_title: info?.conversation_title ?? null,
       model_name: info?.model_name ?? null,
@@ -948,6 +971,9 @@ export async function fetchCxUsageAnalyticsRange(
       total_input_tokens: num(m.total_input_tokens),
       total_output_tokens: num(m.total_output_tokens),
       total_cached_tokens: num(m.total_cached_tokens),
+      total_cache_write_tokens: num(m.total_cache_write_tokens),
+      total_cache_write_5m_tokens: num(m.total_cache_write_5m_tokens),
+      total_cache_write_1h_tokens: num(m.total_cache_write_1h_tokens),
       total_tokens: num(m.total_tokens),
       avg_duration_ms: num(m.avg_duration_ms),
     })),
@@ -958,6 +984,7 @@ export async function fetchCxUsageAnalyticsRange(
       input_tokens: num(d.input_tokens),
       output_tokens: num(d.output_tokens),
       cached_tokens: num(d.cached_tokens),
+      cache_write_tokens: num(d.cache_write_tokens),
     })),
     by_provider: (raw.by_provider ?? []).map((p) => ({
       provider: String(p.provider ?? "Unknown"),

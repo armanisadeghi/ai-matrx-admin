@@ -121,6 +121,7 @@ export function RequestsContent({ result }: Props) {
         total_input_tokens: r.total_input_tokens,
         total_output_tokens: r.total_output_tokens,
         total_cached_tokens: r.total_cached_tokens,
+        total_cache_write_tokens: r.total_cache_write_tokens,
         total_tokens: r.total_tokens,
         total_cost: r.total_cost,
         total_duration_ms: r.computed_duration_ms,
@@ -289,6 +290,18 @@ export function RequestsContent({ result }: Props) {
         cell: (r) => (
           <span className="block truncate font-mono">
             {formatTokens(r.total_cached_tokens)}
+          </span>
+        ),
+      },
+      {
+        id: "total_cache_write_tokens",
+        accessorKey: "total_cache_write_tokens",
+        header: "Cache write",
+        align: "right",
+        width: 100,
+        cell: (r) => (
+          <span className="block truncate font-mono">
+            {formatTokens(r.total_cache_write_tokens)}
           </span>
         ),
       },
