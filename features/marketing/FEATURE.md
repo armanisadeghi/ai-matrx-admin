@@ -31,6 +31,26 @@ anon doors that answer ONLY what an owner published to the web (`published_to_we
 - Sitemap: the gallery, every template page, and every other published Applet that passes the
   search-engine switch (`listSearchEngineIndexedRecords('app')`).
 
+## Domain research: the website check (L12a, 2026-10-17)
+
+`/marketing/tools/domain?d=<host>` opens on **Overview** (`seo/domain-research/WebsiteCheck.tsx`): one press
+checks a website three ways through catalog Tools over `/tools/calls` (the durable call record, never
+screen-run) and lays the scores side by side — **Domain Authority** (Moz, named: a leader beside other
+values), **Link strength** (ours: aggregator values read "Matrx", R-1/R-18) and **Site strength** (SpyFu).
+Beneath: Backlinks (`seo_backlinks_summary` kind; "See the links" runs `seo_backlink_rows`) and Search and
+ads (`seo_search_ads_overview`), each answer in its own kind with the same Save to a table bar as the
+Tools home. The Keywords tab adds the keyword-volume box (`seo_keyword_data`) generated from the Tool's own
+declaration by `SimpleBoxForm`, with "Use this site's top N" from the ranked keywords.
+
+- Tools are found by **job key** in the SEO family (`seoTools.ts`), never by id. Prices before a press are
+  the catalog's own `price_hint_points`; the cost after is each call's `points_charged`.
+- Nothing spends before a press. The call ids ride in the address (`?ca=&cl=&cs=&cr=`) so a reload reads
+  the same saved answers, free (no second charge).
+- The Keywords / Competitors / "They rank, we don't" tabs still read `seo_domain` through the screen-run
+  door (server-side that facade already buys through the catalog); only the Overview moved to `/tools/calls`.
+- Pure decisions (`authority.ts`, `seoTools.ts`) are tested in `__tests__/website-check-pure.test.ts`; the
+  press, the three calls and the side-by-side scores in `__tests__/website-check.test.tsx`.
+
 ## Internal Authority Router
 
 The site layout's route-child boundary always provides a vertical-scroll
