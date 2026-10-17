@@ -43,7 +43,7 @@ export function CellTile({
       icon={stalled ? <AlertTriangle className="text-amber-500" /> : ICON[cell.status]}
       title={stalled ? "Stalled" : cell.errorCode === "void_evidence" ? "Void" : statusLabel(cell.status)}
       line={line || undefined}
-      end={<span className="tabular-nums text-xs text-muted-foreground">{X
+      end={<span className="tabular-nums text-xs text-muted-foreground">{formatMs(cell.vendorMs ?? cell.wallMs)}</span>}
       onClick={() => onOpen(cell)}
     />
   );
