@@ -195,6 +195,7 @@ export function RunStage({
   config,
   /** Wired to the surface's own Run verb when it has one. */
   onRetry,
+  onFlagCount,
   floatOnLeave = true,
 }: {
   runId: string;
@@ -206,6 +207,8 @@ export function RunStage({
   /** The authored surface. Absent → derived from the definition. */
   config?: RunSurfaceConfig | null;
   onRetry?: () => void;
+  /** Called when the number of review flags this run raised changes (the page re-counts open issues). */
+  onFlagCount?: (count: number) => void;
   /**
    * This stage is the run's home on a page (THE FLOATING LAW applies). False
    * where it is not — a board tile never closes or opens the floating window.
@@ -244,6 +247,10 @@ export function RunStage({
   // Review flags (workflow.run_log needs_review): re-read as the status moves.
   const reviewRead = useRunFlags(runId, status);
   const reviewFlags = reviewRead.flags;
+  const flagTotal = reviewFlags.length;
+  useEffect(() => {
+    onFlagCount?.(flagTotal);
+  }, [flagTotal, onFlagCount]);
   /**
    * 🚨 LOADING IS NOT "NO PROMISE" — the distinction the page shift lives in.
    *
