@@ -1,0 +1,13 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = "http://s96c6068c.localhost:3001";
+const b = await chromium.launch({ headless: true });
+const seed = await b.newContext(); const sp = await seed.newPage(); await walkSignIn(sp, ORIGIN);
+const state = await seed.storageState(); state.origins = [];
+const ctx = await b.newContext({ storageState: state, viewport: { width: 1600, height: 900 } }); ctx.setDefaultNavigationTimeout(240000);
+const page = await ctx.newPage();
+page.on("console", (m) => { if (["error","warning"].includes(m.type())) console.log(m.type(), m.text().slice(0, 1500)); });
+page.on("pageerror", (e) => console.log("pageerror", String(e).slice(0, 500)));
+await page.goto(ORIGIN + process.argv[2], { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(12000);
+await b.close();

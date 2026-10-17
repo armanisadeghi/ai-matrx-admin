@@ -76,6 +76,8 @@ async function runSeoDiscoveryStream<T>({
   const abortController = new AbortController();
   const consumeStream = dispatch(
     adoptForeignStream({
+      // The seo.* stage events are this screen's progress state, never an Unknown Data Event card.
+      isDomainDataType: (type) => type.startsWith("seo."),
       abortController,
       onEvent: (event: TypedStreamEvent) => {
         if (isErrorEvent(event)) {

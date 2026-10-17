@@ -96,13 +96,16 @@ describe("ChartView passes its view to its data request", () => {
     expect(recordAggregate).not.toHaveBeenCalled();
     expect(readRows).toHaveBeenCalledWith("t1");
     // 3 of the 4 rows pass the filter: the ring's middle number is 3, not the table's 4.
-    expect(host.querySelector("svg")?.getAttribute("aria-label")).toBe("3");
+    expect(host.querySelector("[data-records-chart-center]")?.textContent).toBe("3");
   });
 
   // What the chart draws, read from the DOM it produced (not from what ChartView hands over):
-  // a donut's slices are circles titled "<group>: <value>"; the real ChartBlock's bars are rectangles,
+  // a donut's slices are its legend rows "<group>: <value>"; the real ChartBlock's bars are rectangles,
   // read left to right, each as tall as its value (3 groups: values 1, 3, 5 give distinct heights).
-  const slices = () => [...host.querySelectorAll("svg circle title")].map((t) => t.textContent);
+  const slices = () =>
+    [...host.querySelectorAll("[data-records-donut-legend] li")].map(
+      (li) => `${li.querySelector("[title]")?.textContent}: ${li.querySelector("[data-records-donut-value]")?.textContent}`,
+    );
   const bars = () => {
     const rects = [...host.querySelectorAll("path.recharts-rectangle")].map((r) => ({ x: Number(r.getAttribute("x")), h: Number(r.getAttribute("height")) }));
     const tallest = Math.max(...rects.map((r) => r.h));
@@ -148,14 +151,37 @@ describe("ChartView passes its view to its data request", () => {
   });
 
   // A donut with no legend setting names its slices (name, value, share); only an explicit off hides them.
-  const legend = () => [...host.querySelectorAll(".spaces-chart-legend li")].map((li) => li.textContent);
+  const legend = () => [...host.querySelectorAll("[data-records-donut-legend] li")].map((li) => li.textContent);
   it("names every slice in a legend unless the legend is switched off", async () => {
     await draw("donut", "desc", []);
-    expect(legend()).toEqual(["Churned5" + "56%", "Onboarding3" + "33%", "Active1" + "11%"]);
+    expect(legend()).toEqual(["Churned5" + "55.6%", "Onboarding3" + "33.3%", "Active1" + "11.1%"]);
     await act(async () => {
       root.render(<ChartView tableId="t1" settings={{ ...settings, sort: "desc", legend: false }} title="Status" filter={{}} sorts={[]} />);
     });
     await flush();
     expect(legend()).toEqual([]);
+  });
+
+  // ONE CHART (CHART-CONVERGENCE): the donut is records-ui's ChartBlock, and Spaces hands it what only
+  // Spaces knows — the total over every record (an average is the store's, never the groups added up)
+  // and each choice's own colour.
+  it("draws the store's whole-table answer in the middle, not the drawn groups added up", async () => {
+    await act(async () => {
+      root.render(<ChartView tableId="t1" settings={{ ...settings, op: "count" }} title="Status" filter={{}} sorts={[]} />);
+    });
+    await flush();
+    // The groups add to 9; the store's total aggregate answered 3.
+    expect(host.querySelector("[data-records-chart-center]")?.textContent).toBe("3");
+  });
+
+  it("colours a slice by its choice's own colour", async () => {
+    FIELDS.data = [{ key: "status", label: "Status", type: "choice", display_format: { options: { choices: [{ value: "Active", color: "green" }] } } } as never];
+    try {
+      await draw("donut", undefined, []);
+      const active = [...host.querySelectorAll("[data-records-donut-legend] li")].find((li) => li.textContent?.startsWith("Active"));
+      expect((active?.querySelector("span[style]") as HTMLElement | null)?.style.background).toBe("rgb(115, 185, 143)");
+    } finally {
+      FIELDS.data = [{ key: "status", label: "Status", type: "choice" }];
+    }
   });
 });

@@ -138,6 +138,8 @@ export function usePlanGenerate(siteId: string | null) {
       // hook still sees every event for its typed progress + refetch logic.
       const consumeStream = dispatch(
         adoptForeignStream({
+          // The plan_* pipeline events are this hook's state, never an Unknown Data Event card.
+          isDomainDataType: (type) => type.startsWith("plan_"),
           onAdopted: ({ requestId }) => {
             if (runEpochRef.current !== epoch) {
               dispatch(removeRequest(requestId));
@@ -314,6 +316,8 @@ export function usePlanDeepen(siteId: string | null) {
       abortRef.current = streamAbort;
       const consumeStream = dispatch(
         adoptForeignStream({
+          // The plan_* pipeline events are this hook's state, never an Unknown Data Event card.
+          isDomainDataType: (type) => type.startsWith("plan_"),
           onAdopted: ({ requestId }) => {
             if (runEpochRef.current !== epoch) {
               dispatch(removeRequest(requestId));
@@ -538,6 +542,8 @@ export function usePlanBulkDeepen(siteId: string | null) {
           abortControllersRef.current.add(streamAbort);
           const consumeStream = dispatch(
             adoptForeignStream({
+              // The plan_* pipeline events are this hook's state, never an Unknown Data Event card.
+              isDomainDataType: (type) => type.startsWith("plan_"),
               onAdopted: ({ requestId }) => {
                 if (runEpochRef.current !== epoch) {
                   dispatch(removeRequest(requestId));

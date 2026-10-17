@@ -188,10 +188,59 @@ function useHeldHeight(blockId: string | undefined, ref: React.RefObject<HTMLDiv
   return hold;
 }
 
+/**
+ * A BLOCK THAT HAS PAINTED NEVER DRAWS SHORTER WHILE IT WAITS (round 42 CLS). Hydration (or a re-read) can
+ * put a painted block back to its loading state for a moment — the table's rows are drawn again from
+ * nothing — and the page under it fell 1900 px and rose again (CLS 0.15 at the first paint of a fresh
+ * page, before any size was stored). So the host remembers the height its real content last painted and,
+ * the frame its content is gone or is only the loading box, holds that height as a minimum; the minimum
+ * is dropped the frame real content is back. Imperative on purpose: the ResizeObserver runs before the
+ * frame paints, so the short frame is never seen.
+ */
+function useKeepPaintedHeight(ref: React.RefObject<HTMLDivElement | null>, blockId: string | undefined) {
+  // What this block already shows in the document, read while it renders (before React replaces it): a
+  // streamed page that hydrates late draws its blocks again from their loading box, and by the first
+  // effect the rows the server painted are already gone.
+  const [shown] = useState(() => paintedHeightOf(blockId));
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let painted = shown;
+    const check = () => {
+      const height = el.getBoundingClientRect().height;
+      const waiting = !el.firstElementChild || el.firstElementChild.classList.contains("spaces-db-loading") || el.querySelector(":scope > .spaces-db-loading") !== null;
+      if (!waiting && height > 0) {
+        painted = height;
+        if (el.style.minHeight) el.style.minHeight = "";
+      } else if (painted > 0) {
+        el.style.minHeight = `${painted}px`;
+      }
+    };
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    const mo = new MutationObserver(check);
+    mo.observe(el, { childList: true });
+    check();
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
+  }, [ref, shown]);
+}
+
+/** The height of the block `blockId` now in the document when it holds real content (0 when absent or still loading). */
+function paintedHeightOf(blockId: string | undefined): number {
+  if (!blockId || typeof document === "undefined") return 0;
+  const host = document.querySelector<HTMLElement>(`.${DATABASE_HOST_CLASS}[data-block-id="${CSS.escape(blockId)}"]`);
+  if (!host || !host.firstElementChild || host.querySelector(".spaces-db-loading")) return 0;
+  return host.getBoundingClientRect().height;
+}
+
 /** The block's element. It stops nothing: every press and key reaches the table and React above it. */
 export function DatabaseHost({ children, blockId, layout, painted, serverDrawn }: { children: ReactNode; blockId?: string; layout?: string; painted?: PaintedSize[]; serverDrawn?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const hold = useHeldHeight(blockId, ref, painted ?? [], !serverDrawn, layout);
+  // useKeepPaintedHeight(ref, blockId);
   return (
     <div
       ref={ref}

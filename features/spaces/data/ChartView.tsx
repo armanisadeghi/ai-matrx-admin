@@ -3,8 +3,8 @@
 // features/spaces/data/ChartView.tsx — Notion's chart view (G1–G3): donut with the value in the
 // middle, bar, horizontal bar and line, over one aggregate the store runs (`record_aggregate`).
 //
-// Bar / horizontal bar / line are records-ui's `ChartBlock` fed that same aggregate. The donut is drawn
-// here because ChartBlock's donut has no center value (NEEDS row). Groups past 200 are cut by the store
+// Every type (donut included) is records-ui's one `ChartBlock` fed that same aggregate (CHART-CONVERGENCE,
+// 2026-10-17: the twin donut that lived here is gone). Groups past 200 are cut by the store
 // and the tile says so, as Notion does ("Only showing 200 options").
 
 import { ChartBlock } from "@/features/data-tables/records-ui-host/recordsUiLazy";
@@ -192,78 +192,6 @@ function buckets(rows: readonly ReadRow[], group: string | null): number {
   return new Set(rows.map((r) => String((r.document as Record<string, unknown>)[group] ?? ""))).size;
 }
 
-function pretty(n: number | null): string {
-  if (n === null) return "–";
-  return Number.isInteger(n) ? n.toLocaleString() : n.toLocaleString(undefined, { maximumFractionDigits: 1 });
-}
-
-/** The donut (Notion's ring): a thin ring from 12 o'clock clockwise, a hairline gap between slices,
- *  the total in the middle in a semibold numeral. Sizes are the reference's (screenshot 1): an 80px ring,
- *  a 4px stroke, one 20px numeral for up to five characters (smaller only past that). Past a couple dozen groups the ring
- *  is Notion's dashed one: each slice a short radial tick with an equal gap after it. */
-export const RING = 80;
-function Donut({ data, settings }: { data: ChartData; settings: ChartSettings }) {
-  const r = 37;
-  const c = 2 * Math.PI * r;
-  const mid = RING / 2;
-  const sum = data.points.reduce((s, p) => s + Math.max(0, p.value), 0) || 1;
-  const many = data.points.length > 24;
-  const gap = data.points.length > 1 ? (many ? c / 400 : c / 260) : 0;
-  const offsets = data.points.reduce<number[]>((acc, p, i) => {
-    acc.push(i === 0 ? 0 : acc[i - 1] + (Math.max(0, data.points[i - 1].value) / sum) * c);
-    return acc;
-  }, []);
-  const center = settings.op === "count" || settings.op === "sum" ? data.total ?? sum : data.total;
-  const shown = pretty(center);
-  const fontSize = shown.length <= 5 ? 20 : shown.length <= 7 ? 16 : shown.length <= 9 ? 12 : 10;
-  return (
-    <div className="spaces-chart-donut">
-      <svg viewBox={`0 0 ${RING} ${RING}`} width={RING} height={RING} role="img" aria-label={shown}>
-        {data.points.map((p, i) => {
-          const offset = offsets[i];
-          const len = (Math.max(0, p.value) / sum) * c;
-          const dash = many ? Math.max(0.4, len * 0.5) : Math.max(0.5, len - gap);
-          const el = (
-            <circle
-              key={p.key}
-              cx={mid}
-              cy={mid}
-              r={r}
-              fill="none"
-              stroke={p.color}
-              strokeWidth={many ? 5 : 4}
-              strokeDasharray={`${dash} ${c - dash}`}
-              strokeDashoffset={-offset}
-              transform={`rotate(-90 ${mid} ${mid})`}
-              strokeLinecap="butt"
-            >
-              <title>{`${p.label}: ${pretty(p.value)}`}</title>
-            </circle>
-          );
-          return el;
-        })}
-        {settings.centerValue !== false ? (
-          <text x={mid} y={mid} textAnchor="middle" dominantBaseline="central" className="spaces-chart-center" style={{ fontSize }}>
-            {shown}
-          </text>
-        ) : null}
-      </svg>
-      {settings.legend !== false ? (
-        <ul className="spaces-chart-legend" aria-label="Slices">
-          {data.points.map((p) => (
-            <li key={p.key} title={`${p.label}: ${pretty(p.value)}`}>
-              <span style={{ background: p.color }} />
-              <b>{p.label}</b>
-              <em>{pretty(p.value)}</em>
-              <i>{`${Math.round((Math.max(0, p.value) / sum) * 100)}%`}</i>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
-
 /** The aggregate rows in the order the points were sorted (the view's sort, the chart's own sort), for ChartBlock. */
 function inOrder(data: ChartData): AggregateRow[] {
   const at = new Map(data.points.map((p, i) => [p.key, i]));
@@ -277,6 +205,23 @@ function inOrder(data: ChartData): AggregateRow[] {
 
 const RECORDS_KIND = { bar: "column", hbar: "bar", line: "line", donut: "donut" } as const;
 
+/** Each group's colour keyed by its stored value as text ("" = no value), for ChartBlock's `groupColors`. */
+function colorsOf(data: ChartData): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const p of data.points) out[p.key.startsWith("none-") ? "" : p.key] = p.color;
+  return out;
+}
+
+/** The donut's middle: a count or sum over every record (never only the first 200 groups); an average,
+ *  min or max is the store's own answer over every record — adding groups up would be wrong. */
+function centerOf(data: ChartData, settings: ChartSettings): number | null {
+  if (settings.op === "count" || settings.op === "sum") return data.total ?? data.points.reduce((s, p) => s + Math.max(0, p.value), 0);
+  return data.total;
+}
+
+
+/** The database block's chart: Spaces asks the question (filters, sorts, seeds, the 200-group cut);
+ *  records-ui's one `ChartBlock` draws every type, the donut included. */
 export function ChartView({ tableId, settings, title, overRows, filter, sorts }: { tableId: string; settings: ChartSettings; title: string; overRows?: boolean; filter?: ChartFilter; sorts?: ChartSorts }) {
   const { data, error } = useChartData(tableId, settings, overRows, filter, sorts);
   if (error)
@@ -290,21 +235,22 @@ export function ChartView({ tableId, settings, title, overRows, filter, sorts }:
   return (
     <div className="spaces-chart">
       {data.truncated ? <div className="spaces-chart-overflow">Only showing {GROUP_LIMIT} options</div> : null}
-      {settings.type === "donut" ? (
-        <Donut data={data} settings={settings} />
-      ) : (
-        <ChartBlock
-          subject={tableId}
-          block={{
-            title,
-            kind: RECORDS_KIND[settings.type],
-            table_id: tableId,
-            group_by: settings.groupBy ? [settings.groupBy] : [],
-            measures: [data.measure],
-            rows: inOrder(data),
-          }}
-        />
-      )}
+      <ChartBlock
+        subject={tableId}
+        // The donut was always drawn bare (the block's own title pill names it); bars keep their card.
+        {...(settings.type === "donut" ? { variant: "bare" as const } : {})}
+        legend={settings.legend !== false}
+        groupColors={colorsOf(data)}
+        {...(settings.type === "donut" && settings.centerValue !== false ? { centerValue: true, centerTotal: centerOf(data, settings) } : {})}
+        block={{
+          title,
+          kind: RECORDS_KIND[settings.type],
+          table_id: tableId,
+          group_by: settings.groupBy ? [settings.groupBy] : [],
+          measures: [data.measure],
+          rows: inOrder(data),
+        }}
+      />
     </div>
   );
 }

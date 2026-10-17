@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = "http://s96c6068c.localhost:3001"; const [,, path] = process.argv;
+const b = await chromium.launch({ headless: true });
+const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 } }); ctx.setDefaultNavigationTimeout(240000);
+const page = await ctx.newPage();
+await page.addInitScript(() => { window.__sh = []; new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__sh.push({ v: +e.value.toFixed(4), t: Math.round(e.startTime), s: (e.sources || []).map(x => (x.node?.className?.toString?.() || x.node?.nodeName || "?").slice(0, 60) + " " + JSON.stringify([x.previousRect.y|0, x.currentRect.y|0, x.previousRect.height|0, x.currentRect.height|0])) }); }).observe({ type: "layout-shift", buffered: true }); });
+await walkSignIn(page, ORIGIN);
+await page.goto(ORIGIN + path, { waitUntil: "domcontentloaded" }); await page.waitForTimeout(15000);
+console.log(JSON.stringify(await page.evaluate(() => window.__sh), null, 1));
+await b.close();

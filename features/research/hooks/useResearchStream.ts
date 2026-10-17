@@ -160,6 +160,9 @@ export function useResearchStream(
           // Only the FETCH's own controller may arm the watchdog — see
           // StartStreamOptions.abortController.
           abortController: options?.abortController,
+          // Every research step event is this hook's state (onEvent below),
+          // never an Unknown Data Event card in the live-run window.
+          isDomainDataType: isResearchDataEventType,
           onAdopted: (ids) => {
             requestIdRef.current = ids.requestId;
             setRequestId(ids.requestId);

@@ -1,0 +1,22 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = "http://s96c6068c.localhost:3001"; const WIDTH=+(process.env.WIDTH||1600);
+const b = await chromium.launch({ headless: true });
+const seed = await b.newContext(); const sp = await seed.newPage(); await walkSignIn(sp, ORIGIN);
+const state = await seed.storageState(); state.origins = [];
+const ctx = await b.newContext({ storageState: state, viewport: { width: WIDTH, height: 900 } }); ctx.setDefaultNavigationTimeout(240000);
+const page = await ctx.newPage();
+await page.addInitScript(() => {
+  window.__tl = [];
+  const snap = (why) => { const st = document.querySelector(".spaces-body-stack"); const pg = document.querySelector(".spaces-page");
+    window.__tl.push([Math.round(performance.now()), why, st ? [...st.children].map(c => c.className.toString().slice(0,30) + ":" + Math.round(c.getBoundingClientRect().height)).join("|") : (pg ? "nostack page=" + pg.className.slice(0,30) : "nopage"), st ? Math.round(st.getBoundingClientRect().height) : 0]); };
+  let prev="";
+  const tick=()=>{ const hs=[...document.querySelectorAll(".spaces-static-body .spaces-db-host")].map(h=>(h.firstElementChild?.className||"-").toString().slice(0,18)+":"+Math.round(h.getBoundingClientRect().height)); const st=document.querySelector(".spaces-body-stack"); const s=(st?Math.round(st.getBoundingClientRect().height):0)+" "+hs.join(" | "); if(s!==prev){prev=s; window.__tl.push([Math.round(performance.now()),"f",s,0]);} requestAnimationFrame(tick)}; requestAnimationFrame(tick);
+  window.__cls = [];
+  new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) { window.__cls.push([Math.round(e.startTime), +e.value.toFixed(4)]); snap("CLS " + e.value.toFixed(3)); } }).observe({ type: "layout-shift", buffered: true });
+});
+await page.goto(ORIGIN + process.argv[2], { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(12000);
+for (const r of await page.evaluate(() => window.__tl)) console.log(r.join("  "));
+console.log(JSON.stringify(await page.evaluate(() => window.__cls)));
+await b.close();

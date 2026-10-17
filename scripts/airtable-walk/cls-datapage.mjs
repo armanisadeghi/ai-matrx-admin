@@ -1,0 +1,10 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = "http://s96c6068c.localhost:3001";
+const b = await chromium.launch({ headless: true });
+const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 } }); ctx.setDefaultNavigationTimeout(240000);
+const page = await ctx.newPage(); await walkSignIn(page, ORIGIN);
+await page.goto(ORIGIN + "/data", { waitUntil: "domcontentloaded" }); await page.waitForTimeout(10000);
+console.log(await page.evaluate(() => [...document.querySelectorAll("button,a,[role=tab],[role=menuitem]")].map(e => (e.innerText||e.getAttribute("aria-label")||"").trim()).filter(Boolean).slice(0,80).join(" | ")));
+await page.screenshot({ path: process.argv[2] });
+await b.close();

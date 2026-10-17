@@ -293,6 +293,8 @@ export function useSetupPasses(
       abortRef.current = streamAbort;
       const consumeStream = dispatch(
         adoptForeignStream({
+          // The plan_* pipeline events are this hook's state, never an Unknown Data Event card.
+          isDomainDataType: (type) => type.startsWith("plan_"),
           onAdopted: ({ requestId }) => {
             if (runEpochRef.current !== epoch) {
               dispatch(removeRequest(requestId));

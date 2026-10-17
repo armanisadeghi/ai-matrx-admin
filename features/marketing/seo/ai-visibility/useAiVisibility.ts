@@ -301,6 +301,8 @@ export function useAiVisibility(siteId: string, organizationId: string) {
     streamAbortRef.current = streamAbort;
     const consumeStream = dispatch(
       adoptForeignStream({
+        // The seo.* stage events are this screen's progress state, never an Unknown Data Event card.
+        isDomainDataType: (type) => type.startsWith("seo."),
         abortController: streamAbort,
         onAdopted: ({ requestId }) => {
           adoptedRequestId.current = requestId;

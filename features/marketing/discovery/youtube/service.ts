@@ -14,6 +14,7 @@ import type {
 import { parseYouTubeSearchPage, parseYouTubeSearchRequest } from "./types";
 import { addTopicYoutubeVideos, enrichYoutubeVideoComments, getYoutubeLibraryVideo, getYoutubeVideo, listTopicYoutubeVideos, processTopicYoutubeVideos, processYoutubeVideo, searchTopicYoutube, searchYoutube } from "@ai-matrx/api/knowledge";
 import { serverApi } from "@/lib/api/server-api";
+import { isResearchDataEventType } from "@/features/research/types";
 
 export interface YouTubeSearchHistoryEntry {
   id: string;
@@ -161,6 +162,9 @@ export async function streamYouTubeVideoAnalysis(
     adoptForeignStream({
       onAdopted: options.onAdopted,
       onEvent: options.onEvent,
+      // The research pipeline's own progress events (youtube_analysis_*)
+      // are this screen's state, never an Unknown Data Event card.
+      isDomainDataType: isResearchDataEventType,
       abortController: options.abortController,
     }),
   );

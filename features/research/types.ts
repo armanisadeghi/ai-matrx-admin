@@ -1657,6 +1657,30 @@ export interface PipelineComplete {
   topic_id: string;
 }
 
+export interface SourceScoreStart {
+  type: "source_score_start";
+  total: number;
+}
+
+export interface SourceScoreComplete {
+  type: "source_score_complete";
+  scored: number;
+  total: number;
+}
+
+export interface PipelinePhaseEvent {
+  type: "pipeline_phase";
+  phase: "searching" | "scraping" | "analyzing" | "synthesizing" | "complete";
+  topic_id: string;
+}
+
+export interface AgentOverridesApplied {
+  type: "agent_overrides_applied";
+  enabled: boolean;
+  applied: Record<string, string>;
+  skipped_missing: Record<string, string>;
+}
+
 /**
  * Discriminated union of all research domain events.
  * Arrives when top-level `event === "data"` — discriminated by `data.type`.
@@ -1692,6 +1716,11 @@ export type ResearchDataEvent =
   | DocumentComplete
   | TagSuggestionsStart
   | TagSuggestionsComplete
+  | SourceScoreStart
+  | SourceScoreComplete
+  | SuggestApplied
+  | PipelinePhaseEvent
+  | AgentOverridesApplied
   | PipelineComplete;
 
 const TOPIC_OVERVIEW_MUTATION_EVENT_TYPES = new Set<ResearchDataEvent["type"]>([
@@ -1708,6 +1737,8 @@ const TOPIC_OVERVIEW_MUTATION_EVENT_TYPES = new Set<ResearchDataEvent["type"]>([
   "synthesis_complete",
   "synthesis_failed",
   "document_complete",
+  "source_score_complete",
+  "suggest_applied",
   "pipeline_complete",
 ]);
 
@@ -1756,6 +1787,11 @@ const RESEARCH_DATA_EVENT_TYPES = [
   "document_complete",
   "tag_suggestions_start",
   "tag_suggestions_complete",
+  "source_score_start",
+  "source_score_complete",
+  "suggest_applied",
+  "pipeline_phase",
+  "agent_overrides_applied",
   "pipeline_complete",
 ] as const satisfies readonly ResearchDataEvent["type"][];
 

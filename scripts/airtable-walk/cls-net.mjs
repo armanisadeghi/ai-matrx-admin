@@ -1,0 +1,12 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = "http://s96c6068c.localhost:3001";
+const b = await chromium.launch({ headless: true });
+const ctx = await b.newContext({ viewport: { width: 1600, height: 900 } }); ctx.setDefaultNavigationTimeout(240000);
+const page = await ctx.newPage(); await walkSignIn(page, ORIGIN);
+page.on("response", async (r) => { const u=r.url(); if (/supabase|matrxserver|rpc|rest\/v1/.test(u) && (r.status()>=400)) console.log(r.status(), u.slice(0,200), (await r.text().catch(()=>"")).slice(0,200)); });
+page.on("requestfailed", (r)=>console.log("FAILED", r.url().slice(0,150), r.failure()?.errorText));
+page.on("console", (m)=>{ if(m.type()==="error") console.log("ERR", m.text().slice(0,300)); });
+await page.goto(ORIGIN + process.argv[2], { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(12000);
+await b.close();

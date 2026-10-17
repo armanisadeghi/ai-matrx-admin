@@ -11,7 +11,7 @@ import type { RecordsDataSource } from "@ai-matrx/records";
 
 import * as doors from "@/features/unified-data/hub/doors";
 import type { ArchiveSort } from "./dataHomeService";
-import { archivedPortalRow, archivedTableRow, type DataHomeRow } from "./dataHomeRows";
+import { archivedFormRow, archivedPortalRow, archivedTableRow, type DataHomeRow } from "./dataHomeRows";
 
 /** The archive read's failure, in a person's words. */
 export function archiveReadFailure(failure: doors.DoorFailure): Error {
@@ -37,5 +37,12 @@ export async function readArchivedDataHomePage(
   if (tables.data.length >= page.limit) return { rows, ended: false };
   const portals = await doors.archivedPortalsEverywhere(dataSource);
   if (!portals.ok) throw archiveReadFailure(portals.error);
-  return { rows: [...rows, ...portals.data.map(archivedPortalRow)], ended: true };
+  // Archived forms and booking pages follow the portals (one store read, no paging), newest archived first.
+  const forms = await doors.archivedFormsEverywhere(dataSource);
+  if (!forms.ok) throw archiveReadFailure(forms.error);
+  const formRows = forms.data
+    .slice()
+    .sort((a, b) => (b.archived_at ?? "").localeCompare(a.archived_at ?? ""))
+    .map(archivedFormRow);
+  return { rows: [...rows, ...portals.data.map(archivedPortalRow), ...formRows], ended: true };
 }

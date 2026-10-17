@@ -143,6 +143,8 @@ export function AiVisibilityTool() {
     let finalResult: PublicVisibilityResult | null = null;
     const consumeStream = dispatch(
       adoptForeignStream({
+        // The seo.* stage events are this screen's progress state, never an Unknown Data Event card.
+        isDomainDataType: (type) => type.startsWith("seo."),
         abortController,
         onAdopted: ({ requestId }) => {
           liveRequestId.current = requestId;

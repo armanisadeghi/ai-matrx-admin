@@ -222,6 +222,8 @@ export async function makeAgentFromChat(
   // through the one stream pipeline (never a hand parse); our typed events still arrive here.
   const consumeStream = dispatch(
     adoptForeignStream({
+      // The from-chat progress/result events are this service's state, never an Unknown Data Event card.
+      isDomainDataType: (type) => type.startsWith("agent_studio_from_chat_"),
       // The pipeline's header ids name the endpoint, not a run anyone renders elsewhere.
       preferServerIds: false,
       onAdopted: (ids) => onAdopted?.(ids.requestId),
