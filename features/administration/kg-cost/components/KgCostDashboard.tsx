@@ -696,7 +696,6 @@ function OrgDetailDialog({
                         accessorKey: "source",
                         filter: "select",
                         header: "Source",
-                        filter: "text",
                         cell: (row) => (
                           <span className="font-mono text-xs">{row.source}</span>
                         ),
