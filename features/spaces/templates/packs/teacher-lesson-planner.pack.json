@@ -1,0 +1,1836 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0261",
+  "version": 1,
+  "title": "Teacher Lesson Planner",
+  "description": "Weekly lesson plans linked to standards and resources, with reflections.",
+  "forWho": "Teachers planning weekly lessons",
+  "icon": {
+    "emoji": "🍎"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "teacher",
+    "lessons",
+    "planning",
+    "standards"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-teacher-lesson-planner",
+    "catalogueId": "SP0261",
+    "useCase": "Marguerite Oyelaran teaches middle school science and uses this to plan the week, tie each lesson to standards and keep reflections to reuse next year.",
+    "industry": "education",
+    "vertical": "Lesson planning",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "calendar",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Hillcrest Middle School",
+      "describes": "A public middle school with three science teachers.",
+      "address": {
+        "line1": "640 Orchard Finch Road",
+        "city": "Kansas City",
+        "region": "MO",
+        "postalCode": "64111",
+        "country": "US"
+      },
+      "phone": "(816) 555-0155",
+      "website": "hillcrestmiddle.net",
+      "email": "hello@hillcrestmiddle.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-teacher-lesson-planner",
+    "tables": [
+      {
+        "token": "class",
+        "name": "Classes",
+        "labelSingular": "Class",
+        "labelPlural": "Classes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "school",
+        "titleField": "class_name",
+        "describes": "Each class you teach, its grade, subject, period and how many lessons are planned.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "class_name",
+            "label": "Class",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "grade",
+            "label": "Grade",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "6",
+              "7",
+              "8"
+            ],
+            "choiceColors": {
+              "6": "teal",
+              "7": "blue",
+              "8": "violet"
+            }
+          },
+          {
+            "key": "subject",
+            "label": "Subject",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Science",
+              "Maths",
+              "English"
+            ],
+            "choiceColors": {
+              "Science": "green",
+              "Maths": "amber",
+              "English": "pink"
+            }
+          },
+          {
+            "key": "period",
+            "label": "Period",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6"
+            ],
+            "choiceColors": {
+              "1": "blue",
+              "2": "teal",
+              "3": "green",
+              "4": "amber",
+              "5": "orange",
+              "6": "pink"
+            }
+          },
+          {
+            "key": "students",
+            "label": "Students",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "plan_list",
+            "label": "Lesson plans",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "multi": true
+          },
+          {
+            "key": "plan_count",
+            "label": "Lessons planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "plan_name",
+            "agg": "count"
+          },
+          {
+            "key": "taught",
+            "label": "Lessons taught",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "plan_name",
+            "agg": "count",
+            "filter": {
+              "status": "Taught"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "cl1",
+            "values": {
+              "class_name": "Period 1 Life Science",
+              "grade": "7",
+              "subject": "Science",
+              "period": "1",
+              "students": 27,
+              "plan_list": [
+                "lp01",
+                "lp02",
+                "lp03",
+                "lp06"
+              ]
+            }
+          },
+          {
+            "key": "cl2",
+            "values": {
+              "class_name": "Period 3 Life Science",
+              "grade": "7",
+              "subject": "Science",
+              "period": "3",
+              "students": 29,
+              "plan_list": [
+                "lp04",
+                "lp05",
+                "lp10",
+                "lp11"
+              ]
+            }
+          },
+          {
+            "key": "cl3",
+            "values": {
+              "class_name": "Period 5 Earth Science",
+              "grade": "8",
+              "subject": "Science",
+              "period": "5",
+              "students": 26,
+              "plan_list": [
+                "lp07",
+                "lp08",
+                "lp09"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "standard",
+        "name": "Standards",
+        "labelSingular": "Standard",
+        "labelPlural": "Standards",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "code",
+        "describes": "The standards each lesson addresses and how many times each has been taught.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "code",
+            "label": "Code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "description",
+            "label": "Description",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "subject",
+            "label": "Subject",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Science",
+              "Maths",
+              "English"
+            ],
+            "choiceColors": {
+              "Science": "green",
+              "Maths": "amber",
+              "English": "pink"
+            }
+          },
+          {
+            "key": "plan_list",
+            "label": "Taught in",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "multi": true
+          },
+          {
+            "key": "times_taught",
+            "label": "Times taught",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "plan_name",
+            "agg": "count",
+            "filter": {
+              "status": "Taught"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "s1",
+            "values": {
+              "code": "MS-LS1-2",
+              "description": "Model the function of cell parts",
+              "subject": "Science",
+              "plan_list": [
+                "lp01",
+                "lp02",
+                "lp03",
+                "lp11"
+              ]
+            }
+          },
+          {
+            "key": "s2",
+            "values": {
+              "code": "MS-LS1-5",
+              "description": "Explain how environment affects growth",
+              "subject": "Science",
+              "plan_list": [
+                "lp04",
+                "lp11"
+              ]
+            }
+          },
+          {
+            "key": "s3",
+            "values": {
+              "code": "MS-LS2-1",
+              "description": "Analyze how resources shape populations",
+              "subject": "Science",
+              "plan_list": [
+                "lp05",
+                "lp06"
+              ]
+            }
+          },
+          {
+            "key": "s4",
+            "values": {
+              "code": "MS-ESS2-4",
+              "description": "Model the water cycle and energy",
+              "subject": "Science",
+              "plan_list": [
+                "lp07",
+                "lp08"
+              ]
+            }
+          },
+          {
+            "key": "s5",
+            "values": {
+              "code": "MS-ESS3-1",
+              "description": "Explain how Earth's resources are distributed",
+              "subject": "Science",
+              "plan_list": [
+                "lp09"
+              ]
+            }
+          },
+          {
+            "key": "s6",
+            "values": {
+              "code": "MS-ETS1-1",
+              "description": "Define a design problem with constraints",
+              "subject": "Science",
+              "plan_list": [
+                "lp10"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "resource",
+        "name": "Resources",
+        "labelSingular": "Resource",
+        "labelPlural": "Resources",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-open",
+        "titleField": "resource_name",
+        "describes": "Worksheets, slides, videos and readings you reuse across lessons.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "resource_name",
+            "label": "Resource",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Worksheet",
+              "Slides",
+              "Video",
+              "Reading",
+              "Link"
+            ],
+            "choiceColors": {
+              "Worksheet": "blue",
+              "Slides": "violet",
+              "Video": "red",
+              "Reading": "amber",
+              "Link": "teal"
+            }
+          },
+          {
+            "key": "subject",
+            "label": "Subject",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Science",
+              "Maths",
+              "English"
+            ],
+            "choiceColors": {
+              "Science": "green",
+              "Maths": "amber",
+              "English": "pink"
+            }
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan_list",
+            "label": "Used in",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "plan",
+            "multi": true
+          },
+          {
+            "key": "uses",
+            "label": "Times used",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "plan_list",
+            "pick": "plan_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "r1",
+            "values": {
+              "resource_name": "Cell parts diagram worksheet",
+              "type": "Worksheet",
+              "subject": "Science",
+              "link": "https://resources.hillcrestmiddle.net/cell-parts",
+              "plan_list": [
+                "lp01",
+                "lp03",
+                "lp11"
+              ]
+            }
+          },
+          {
+            "key": "r2",
+            "values": {
+              "resource_name": "Microscope safety slides",
+              "type": "Slides",
+              "subject": "Science",
+              "link": "https://resources.hillcrestmiddle.net/microscope-slides",
+              "plan_list": [
+                "lp02"
+              ]
+            }
+          },
+          {
+            "key": "r3",
+            "values": {
+              "resource_name": "Ecosystem food chain video",
+              "type": "Video",
+              "subject": "Science",
+              "link": "https://resources.hillcrestmiddle.net/food-chain",
+              "plan_list": [
+                "lp05"
+              ]
+            }
+          },
+          {
+            "key": "r4",
+            "values": {
+              "resource_name": "Water cycle reading with questions",
+              "type": "Reading",
+              "subject": "Science",
+              "link": "https://resources.hillcrestmiddle.net/water-cycle",
+              "plan_list": [
+                "lp07",
+                "lp08"
+              ]
+            }
+          },
+          {
+            "key": "r5",
+            "values": {
+              "resource_name": "Population growth simulation",
+              "type": "Link",
+              "subject": "Science",
+              "link": "https://resources.hillcrestmiddle.net/population-sim",
+              "plan_list": [
+                "lp06"
+              ]
+            }
+          },
+          {
+            "key": "r6",
+            "values": {
+              "resource_name": "Exit ticket template",
+              "type": "Worksheet",
+              "subject": "Science",
+              "link": "https://resources.hillcrestmiddle.net/exit-ticket",
+              "plan_list": [
+                "lp01",
+                "lp04",
+                "lp05",
+                "lp08",
+                "lp10"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "plan",
+        "name": "Lesson plans",
+        "labelSingular": "Lesson plan",
+        "labelPlural": "Lesson plans",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "notebook-pen",
+        "titleField": "plan_name",
+        "describes": "Each lesson: its class, day, objective, standards and resources, and how it went afterwards.",
+        "subject": "thing",
+        "independentOf": {
+          "class": "A lesson can be planned for any day the class meets."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Taught"
+            ],
+            "filled": [
+              "reflection"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "plan_name",
+            "label": "Lesson",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "class",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "class",
+            "relationMax": 1
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "objective",
+            "label": "Objective",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "standard_list",
+            "label": "Standards",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "standard",
+            "multi": true
+          },
+          {
+            "key": "resource_list",
+            "label": "Materials",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "resource",
+            "multi": true
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 5
+              },
+              {
+                "kind": "max",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Ready",
+              "Taught",
+              "Needs revision"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Ready": "blue",
+              "Taught": "green",
+              "Needs revision": "amber"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "reflection",
+            "label": "Reflection rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "reflection_notes",
+            "label": "Reflection notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "homework",
+            "label": "Homework",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "lp01",
+            "values": {
+              "plan_name": "Introducing cell parts",
+              "class": "cl1",
+              "on": "@today-12d",
+              "objective": "Name the major organelles and their jobs",
+              "standard_list": [
+                "s1"
+              ],
+              "resource_list": [
+                "r1",
+                "r6"
+              ],
+              "minutes": 50,
+              "status": "Taught",
+              "reflection": "4",
+              "reflection_notes": "Make parts cards next time",
+              "homework": "Finish the exit ticket"
+            }
+          },
+          {
+            "key": "lp02",
+            "values": {
+              "plan_name": "Using the microscope",
+              "class": "cl1",
+              "on": "@today-9d",
+              "objective": "Prepare and focus a slide safely",
+              "standard_list": [
+                "s1"
+              ],
+              "resource_list": [
+                "r2"
+              ],
+              "minutes": 50,
+              "status": "Taught",
+              "reflection": "3",
+              "reflection_notes": "Needs a lab rotation",
+              "homework": "Finish the exit ticket"
+            }
+          },
+          {
+            "key": "lp03",
+            "values": {
+              "plan_name": "Plant and animal cells",
+              "class": "cl1",
+              "on": "@today-5d",
+              "objective": "Compare plant and animal cells",
+              "standard_list": [
+                "s1"
+              ],
+              "resource_list": [
+                "r1"
+              ],
+              "minutes": 50,
+              "status": "Taught",
+              "reflection": "5",
+              "reflection_notes": "Great discussion",
+              "homework": "Finish the exit ticket"
+            }
+          },
+          {
+            "key": "lp04",
+            "values": {
+              "plan_name": "Environment and growth",
+              "class": "cl2",
+              "on": "@today-4d",
+              "objective": "Predict how light and water change growth",
+              "standard_list": [
+                "s2"
+              ],
+              "resource_list": [
+                "r6"
+              ],
+              "minutes": 50,
+              "status": "Taught",
+              "reflection": "4",
+              "reflection_notes": "Add a data table",
+              "homework": "Finish the exit ticket"
+            }
+          },
+          {
+            "key": "lp05",
+            "values": {
+              "plan_name": "Food chains and webs",
+              "class": "cl2",
+              "on": "@today-1d",
+              "objective": "Trace energy through a food web",
+              "standard_list": [
+                "s3"
+              ],
+              "resource_list": [
+                "r3",
+                "r6"
+              ],
+              "minutes": 50,
+              "status": "Taught",
+              "reflection": "4",
+              "reflection_notes": "Students loved the video",
+              "homework": "Finish the exit ticket"
+            }
+          },
+          {
+            "key": "lp06",
+            "values": {
+              "plan_name": "Population limits",
+              "class": "cl1",
+              "on": "@today+2d",
+              "objective": "Explain carrying capacity",
+              "standard_list": [
+                "s3"
+              ],
+              "resource_list": [
+                "r5"
+              ],
+              "minutes": 50,
+              "status": "Ready"
+            }
+          },
+          {
+            "key": "lp07",
+            "values": {
+              "plan_name": "Water cycle stations",
+              "class": "cl3",
+              "on": "@today-3d",
+              "objective": "Model evaporation and condensation",
+              "standard_list": [
+                "s4"
+              ],
+              "resource_list": [
+                "r4"
+              ],
+              "minutes": 55,
+              "status": "Taught",
+              "reflection": "2",
+              "reflection_notes": "Stations ran long; trim one",
+              "homework": "Finish the exit ticket"
+            }
+          },
+          {
+            "key": "lp08",
+            "values": {
+              "plan_name": "Weather and energy",
+              "class": "cl3",
+              "on": "@today+1d",
+              "objective": "Link solar energy to weather",
+              "standard_list": [
+                "s4"
+              ],
+              "resource_list": [
+                "r4",
+                "r6"
+              ],
+              "minutes": 55,
+              "status": "Ready"
+            }
+          },
+          {
+            "key": "lp09",
+            "values": {
+              "plan_name": "Resources around the world",
+              "class": "cl3",
+              "on": "@today+5d",
+              "objective": "Map where key resources are found",
+              "standard_list": [
+                "s5"
+              ],
+              "resource_list": [],
+              "minutes": 55,
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "lp10",
+            "values": {
+              "plan_name": "Design challenge: filter a water sample",
+              "class": "cl2",
+              "on": "@today+7d",
+              "objective": "Define constraints and test a filter",
+              "standard_list": [
+                "s6"
+              ],
+              "resource_list": [
+                "r6"
+              ],
+              "minutes": 90,
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "lp11",
+            "values": {
+              "plan_name": "Cell unit review",
+              "class": "cl2",
+              "on": "@today+3d",
+              "objective": "Review for the unit quiz",
+              "standard_list": [
+                "s1",
+                "s2"
+              ],
+              "resource_list": [
+                "r1"
+              ],
+              "minutes": 50,
+              "status": "Needs revision",
+              "reflection": "3",
+              "reflection_notes": "Quiz scores were low"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A class lists its lesson plans.",
+        "fromTable": "class",
+        "fromField": "plan_list",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "class_of_plan"
+      },
+      {
+        "describes": "Each lesson belongs to one class.",
+        "fromTable": "plan",
+        "fromField": "class",
+        "toTable": "class",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "plans"
+      },
+      {
+        "describes": "A lesson lists the standards it addresses.",
+        "fromTable": "plan",
+        "fromField": "standard_list",
+        "toTable": "standard",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "plans_for_standard"
+      },
+      {
+        "describes": "A lesson lists the resources it uses.",
+        "fromTable": "plan",
+        "fromField": "resource_list",
+        "toTable": "resource",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "plans_using"
+      },
+      {
+        "describes": "A standard lists the lessons that teach it.",
+        "fromTable": "standard",
+        "fromField": "plan_list",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "standards_taught"
+      },
+      {
+        "describes": "A resource lists the lessons that use it.",
+        "fromTable": "resource",
+        "fromField": "plan_list",
+        "toTable": "plan",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "resources_used"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "new_lesson",
+        "name": "Plan a lesson",
+        "describes": "A short form for sketching a lesson before writing the full plan.",
+        "audience": "staff",
+        "table": "plan",
+        "fields": [
+          {
+            "fieldKey": "plan_name",
+            "ask": "What is the lesson called?",
+            "required": true
+          },
+          {
+            "fieldKey": "class",
+            "ask": "Which class?"
+          },
+          {
+            "fieldKey": "on",
+            "ask": "What day will you teach it?"
+          },
+          {
+            "fieldKey": "objective",
+            "ask": "What should students be able to do afterwards?"
+          }
+        ],
+        "submitLabel": "Save lesson",
+        "confirmation": "Saved as a Draft lesson."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_plans",
+        "name": "All lessons",
+        "table": "plan",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "plan_calendar",
+        "name": "Week view",
+        "table": "plan",
+        "kind": "calendar",
+        "dateField": "on"
+      },
+      {
+        "token": "plan_board",
+        "name": "By status",
+        "table": "plan",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_classes",
+        "name": "All classes",
+        "table": "class",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "class_board",
+        "name": "By grade",
+        "table": "class",
+        "kind": "kanban",
+        "groupBy": "grade"
+      },
+      {
+        "token": "all_standards",
+        "name": "All standards",
+        "table": "standard",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_resources",
+        "name": "All resources",
+        "table": "resource",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "resource_board",
+        "name": "By type",
+        "table": "resource",
+        "kind": "kanban",
+        "groupBy": "type"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Teacher Lesson Planner assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "plan",
+          "describes": "Every lesson plan, its class, date, standards and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "class",
+          "describes": "The classes lessons belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many lessons have been taught so far?",
+        "whyItMatters": "Marguerite tracks pacing against the term plan.",
+        "expect": {
+          "table": "plan",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Taught"
+          },
+          "answer": 6,
+          "unit": "lessons"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the week view.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_calendar",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open the lesson board.",
+        "action": {
+          "kind": "open",
+          "surface": "plan_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "plan_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open resources.",
+        "action": {
+          "kind": "open",
+          "surface": "all_resources"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_resources",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "hillcrestmiddle.net"
+      ],
+      "fictionalStreets": [
+        "Orchard Finch Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "teaching-hub",
+      "parent": null,
+      "title": "Teacher Lesson Planner",
+      "icon": {
+        "emoji": "🍎"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the week on the calendar, link each lesson to standards and resources, and write one line of reflection straight after teaching."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "Apple"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.6
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "This week"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "plan",
+                      "view": "plan_calendar"
+                    },
+                    "inline": true,
+                    "title": "Lesson plans",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-w",
+                        "name": "Week",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "on"
+                      },
+                      {
+                        "id": "v-a",
+                        "name": "All lessons",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-w"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.4
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "To prepare"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "plan",
+                      "view": "all_plans"
+                    },
+                    "inline": true,
+                    "title": "Lesson plans",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-p",
+                        "name": "Draft or needs revision",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": [
+                            "Draft",
+                            "Needs revision"
+                          ]
+                        }
+                      }
+                    ],
+                    "activeViewId": "v-p"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Classes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "class",
+              "view": "all_classes"
+            },
+            "inline": true,
+            "title": "Classes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-c",
+                "name": "Classes",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-cg",
+                "name": "By grade",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "grade"
+              }
+            ],
+            "activeViewId": "v-c"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lesson board"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "plan_board"
+            },
+            "inline": true,
+            "title": "Lesson plans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-t",
+                "name": "Taught, ready to reuse",
+                "layout": "gallery",
+                "icon": "LayoutGrid",
+                "filters": {
+                  "status": "Taught"
+                }
+              }
+            ],
+            "activeViewId": "v-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Resources"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "resource",
+              "view": "resource_board"
+            },
+            "inline": true,
+            "title": "Resources",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-r",
+                "name": "By type",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "type"
+              },
+              {
+                "id": "v-rg",
+                "name": "All resources",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              }
+            ],
+            "activeViewId": "v-r"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:lesson-template"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:standards-coverage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:end-of-week"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "lesson-template",
+      "parent": "teaching-hub",
+      "title": "Lesson template",
+      "icon": {
+        "emoji": "📝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Copy these headings into a lesson page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Objective"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Warm-up (5 minutes)"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Direct instruction (15 minutes)"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Guided practice (15 minutes)"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Independent practice"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assessment"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closure"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Differentiation"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reflection after class"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "standards-coverage",
+      "parent": "teaching-hub",
+      "title": "Standards coverage",
+      "icon": {
+        "emoji": "🎯"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Which standards have been taught, and which are still waiting."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "standard",
+              "view": "all_standards"
+            },
+            "inline": true,
+            "title": "Standards",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "s1",
+                "name": "Standards",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "s2",
+                "name": "Times taught",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "code",
+                  "op": "sum",
+                  "field": "times_taught"
+                }
+              }
+            ],
+            "activeViewId": "s1"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A standard with zero times taught after the midpoint of the term needs a lesson on the calendar."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Target"
+          }
+        }
+      ]
+    },
+    {
+      "key": "end-of-week",
+      "parent": "teaching-hub",
+      "title": "End of week checklist",
+      "icon": {
+        "emoji": "🔔"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark lessons Taught and add a rating"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note changes for lessons that went badly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Link standards covered this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Draft Monday's warm-up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Email families about upcoming assessments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "plan",
+              "view": "all_plans"
+            },
+            "inline": true,
+            "title": "Lesson plans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "e1",
+                "name": "Lessons by status",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "status",
+                  "op": "count",
+                  "centerValue": true
+                }
+              },
+              {
+                "id": "e2",
+                "name": "Minutes by class",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "class",
+                  "op": "sum",
+                  "field": "minutes"
+                }
+              }
+            ],
+            "activeViewId": "e1"
+          }
+        }
+      ]
+    }
+  ]
+}

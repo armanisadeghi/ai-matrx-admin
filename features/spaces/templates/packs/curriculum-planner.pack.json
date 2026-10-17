@@ -1,0 +1,1843 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0260",
+  "version": 1,
+  "title": "Course & Curriculum Planner",
+  "description": "Plan courses, units, lessons and outcomes with pacing timelines.",
+  "forWho": "Instructors and course designers",
+  "icon": {
+    "emoji": "🗺️"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "curriculum",
+    "course",
+    "lessons",
+    "outcomes"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-curriculum-planner",
+    "catalogueId": "SP0260",
+    "useCase": "Corinne Delacroix coordinates curriculum at a small college and uses this to see pacing, readiness and outcome coverage for every course.",
+    "industry": "education",
+    "vertical": "Curriculum planning",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "timeline",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Meadowlark Academy",
+      "describes": "A small college offering evening and weekend courses.",
+      "address": {
+        "line1": "27 Pennywhistle Close",
+        "city": "Minneapolis",
+        "region": "MN",
+        "postalCode": "55401",
+        "country": "US"
+      },
+      "phone": "(612) 555-0190",
+      "website": "meadowlarkacademy.net",
+      "email": "hello@meadowlarkacademy.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-curriculum-planner",
+    "tables": [
+      {
+        "token": "course",
+        "name": "Courses",
+        "labelSingular": "Course",
+        "labelPlural": "Courses",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "graduation-cap",
+        "titleField": "course_name",
+        "describes": "Each course with its level, instructor, dates and how many units and lessons it has.",
+        "subject": "thing",
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "independentOf": {
+          "instructor": "Any instructor can lead a course whenever they joined."
+        },
+        "fields": [
+          {
+            "key": "course_name",
+            "label": "Course",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "level",
+            "label": "Level",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "term",
+            "label": "Term",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fall",
+              "Spring",
+              "Summer"
+            ],
+            "choiceColors": {
+              "Fall": "amber",
+              "Spring": "green",
+              "Summer": "teal"
+            }
+          },
+          {
+            "key": "instructor",
+            "label": "Instructor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Ready",
+              "Running",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "Ready": "blue",
+              "Running": "green",
+              "Done": "gray"
+            },
+            "required": true,
+            "default": "Planning"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "unit_list",
+            "label": "Units",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "unit",
+            "multi": true
+          },
+          {
+            "key": "unit_count",
+            "label": "Unit count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "unit_list",
+            "pick": "unit_name",
+            "agg": "count"
+          },
+          {
+            "key": "minutes",
+            "label": "Teaching minutes",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "unit_list",
+            "pick": "minutes",
+            "agg": "sum"
+          },
+          {
+            "key": "budget",
+            "label": "Materials budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "key": "co-env",
+            "values": {
+              "course_name": "Environmental Science Foundations",
+              "level": "Undergraduate, year 1",
+              "term": "Fall",
+              "instructor": "tm-ingrid",
+              "status": "Running",
+              "starts_on": "@today-35d",
+              "ends_on": "@today+84d",
+              "budget": 1800,
+              "unit_list": [
+                "un1",
+                "un2",
+                "un3"
+              ]
+            }
+          },
+          {
+            "key": "co-write",
+            "values": {
+              "course_name": "Creative Writing Workshop",
+              "level": "Undergraduate, year 2",
+              "term": "Fall",
+              "instructor": "tm-yusuf",
+              "status": "Running",
+              "starts_on": "@today-35d",
+              "ends_on": "@today+84d",
+              "budget": 1200,
+              "unit_list": [
+                "un4",
+                "un5",
+                "un6"
+              ]
+            }
+          },
+          {
+            "key": "co-spring",
+            "values": {
+              "course_name": "Data Literacy for Everyone",
+              "level": "Undergraduate, year 1",
+              "term": "Spring",
+              "instructor": "tm-corinne",
+              "status": "Planning",
+              "starts_on": "@today+120d",
+              "ends_on": "@today+240d",
+              "budget": 2400,
+              "unit_list": []
+            }
+          }
+        ]
+      },
+      {
+        "token": "unit",
+        "name": "Units",
+        "labelSingular": "Unit",
+        "labelPlural": "Units",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layers",
+        "titleField": "unit_name",
+        "describes": "Each unit of a course, its order and dates, with the lesson time and progress rolled up.",
+        "subject": "thing",
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "independentOf": {
+          "course": "A unit may start a little before or after the course dates when the schedule moves."
+        },
+        "fields": [
+          {
+            "key": "unit_name",
+            "label": "Unit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "course",
+            "label": "Course",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "course",
+            "relationMax": 1
+          },
+          {
+            "key": "order",
+            "label": "Order",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "lesson_list",
+            "label": "Lessons",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "lesson",
+            "multi": true
+          },
+          {
+            "key": "minutes",
+            "label": "Lesson minutes",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "lesson_list",
+            "pick": "minutes",
+            "agg": "sum"
+          },
+          {
+            "key": "done",
+            "label": "Lessons complete",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "lesson_list",
+            "pick": "lesson_name",
+            "agg": "count",
+            "filter": {
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "lesson_total",
+            "label": "Lesson count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "lesson_list",
+            "pick": "lesson_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "un1",
+            "values": {
+              "unit_name": "Ecosystems and energy",
+              "course": "co-env",
+              "order": 1,
+              "starts_on": "@today-35d",
+              "ends_on": "@today-8d",
+              "lesson_list": [
+                "l01",
+                "l02",
+                "l03",
+                "l04"
+              ]
+            }
+          },
+          {
+            "key": "un2",
+            "values": {
+              "unit_name": "Water and climate",
+              "course": "co-env",
+              "order": 2,
+              "starts_on": "@today-7d",
+              "ends_on": "@today+20d",
+              "lesson_list": [
+                "l05",
+                "l06",
+                "l07"
+              ]
+            }
+          },
+          {
+            "key": "un3",
+            "values": {
+              "unit_name": "Human impact and solutions",
+              "course": "co-env",
+              "order": 3,
+              "starts_on": "@today+21d",
+              "ends_on": "@today+49d",
+              "lesson_list": [
+                "l08",
+                "l09"
+              ]
+            }
+          },
+          {
+            "key": "un4",
+            "values": {
+              "unit_name": "Voice and perspective",
+              "course": "co-write",
+              "order": 1,
+              "starts_on": "@today-35d",
+              "ends_on": "@today-8d",
+              "lesson_list": [
+                "l10",
+                "l11",
+                "l12"
+              ]
+            }
+          },
+          {
+            "key": "un5",
+            "values": {
+              "unit_name": "Structure and scene",
+              "course": "co-write",
+              "order": 2,
+              "starts_on": "@today-7d",
+              "ends_on": "@today+28d",
+              "lesson_list": [
+                "l13",
+                "l14",
+                "l15"
+              ]
+            }
+          },
+          {
+            "key": "un6",
+            "values": {
+              "unit_name": "Revision and sharing",
+              "course": "co-write",
+              "order": 3,
+              "starts_on": "@today+29d",
+              "ends_on": "@today+56d",
+              "lesson_list": [
+                "l16",
+                "l17",
+                "l18"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "lesson",
+        "name": "Lessons",
+        "labelSingular": "Lesson",
+        "labelPlural": "Lessons",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "presentation",
+        "titleField": "lesson_name",
+        "describes": "Each lesson, its place in a unit, date, length, type and readiness.",
+        "subject": "thing",
+        "independentOf": {
+          "unit": "A lesson can be moved outside its unit window while the schedule is being worked out."
+        },
+        "statusAgrees": [],
+        "fields": [
+          {
+            "key": "lesson_name",
+            "label": "Lesson",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "unit",
+            "label": "Unit",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "unit",
+            "relationMax": 1
+          },
+          {
+            "key": "order",
+            "label": "Order",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "minutes",
+            "label": "Minutes",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 5
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lecture",
+              "Discussion",
+              "Lab",
+              "Assessment",
+              "Project"
+            ],
+            "choiceColors": {
+              "Lecture": "blue",
+              "Discussion": "violet",
+              "Lab": "teal",
+              "Assessment": "red",
+              "Project": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Ready",
+              "Complete"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Ready": "blue",
+              "Complete": "green"
+            },
+            "required": true,
+            "default": "Draft"
+          }
+        ],
+        "rows": [
+          {
+            "key": "l01",
+            "values": {
+              "lesson_name": "Food webs and trophic levels",
+              "unit": "un1",
+              "order": 1,
+              "on": "@today-33d",
+              "minutes": 75,
+              "type": "Lecture",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l02",
+            "values": {
+              "lesson_name": "Field walk: pond sampling",
+              "unit": "un1",
+              "order": 2,
+              "on": "@today-28d",
+              "minutes": 120,
+              "type": "Lab",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l03",
+            "values": {
+              "lesson_name": "Energy flow discussion",
+              "unit": "un1",
+              "order": 3,
+              "on": "@today-21d",
+              "minutes": 60,
+              "type": "Discussion",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l04",
+            "values": {
+              "lesson_name": "Unit 1 assessment",
+              "unit": "un1",
+              "order": 4,
+              "on": "@today-10d",
+              "minutes": 45,
+              "type": "Assessment",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l05",
+            "values": {
+              "lesson_name": "The water cycle",
+              "unit": "un2",
+              "order": 1,
+              "on": "@today-5d",
+              "minutes": 75,
+              "type": "Lecture",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l06",
+            "values": {
+              "lesson_name": "Reading the climate record",
+              "unit": "un2",
+              "order": 2,
+              "on": "@today+3d",
+              "minutes": 60,
+              "type": "Discussion",
+              "status": "Ready"
+            }
+          },
+          {
+            "key": "l07",
+            "values": {
+              "lesson_name": "Lab: measuring water quality",
+              "unit": "un2",
+              "order": 3,
+              "on": "@today+10d",
+              "minutes": 120,
+              "type": "Lab",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "l08",
+            "values": {
+              "lesson_name": "Policy debate: carbon pricing",
+              "unit": "un3",
+              "order": 1,
+              "on": "@today+24d",
+              "minutes": 90,
+              "type": "Discussion",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "l09",
+            "values": {
+              "lesson_name": "Final project studio",
+              "unit": "un3",
+              "order": 2,
+              "on": "@today+40d",
+              "minutes": 120,
+              "type": "Project",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "l10",
+            "values": {
+              "lesson_name": "Finding your narrator",
+              "unit": "un4",
+              "order": 1,
+              "on": "@today-33d",
+              "minutes": 90,
+              "type": "Lecture",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l11",
+            "values": {
+              "lesson_name": "Workshop: opening paragraphs",
+              "unit": "un4",
+              "order": 2,
+              "on": "@today-26d",
+              "minutes": 120,
+              "type": "Discussion",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l12",
+            "values": {
+              "lesson_name": "Unit 1 portfolio check",
+              "unit": "un4",
+              "order": 3,
+              "on": "@today-12d",
+              "minutes": 45,
+              "type": "Assessment",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l13",
+            "values": {
+              "lesson_name": "Building a scene",
+              "unit": "un5",
+              "order": 1,
+              "on": "@today-4d",
+              "minutes": 90,
+              "type": "Lecture",
+              "status": "Complete"
+            }
+          },
+          {
+            "key": "l14",
+            "values": {
+              "lesson_name": "Dialogue practice",
+              "unit": "un5",
+              "order": 2,
+              "on": "@today+4d",
+              "minutes": 90,
+              "type": "Lab",
+              "status": "Ready"
+            }
+          },
+          {
+            "key": "l15",
+            "values": {
+              "lesson_name": "Peer review clinic",
+              "unit": "un5",
+              "order": 3,
+              "on": "@today+18d",
+              "minutes": 120,
+              "type": "Discussion",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "l16",
+            "values": {
+              "lesson_name": "Cutting and shaping",
+              "unit": "un6",
+              "order": 1,
+              "on": "@today+31d",
+              "minutes": 75,
+              "type": "Lecture",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "l17",
+            "values": {
+              "lesson_name": "Reading night",
+              "unit": "un6",
+              "order": 2,
+              "on": "@today+45d",
+              "minutes": 90,
+              "type": "Project",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "l18",
+            "values": {
+              "lesson_name": "Final portfolio",
+              "unit": "un6",
+              "order": 3,
+              "on": "@today+55d",
+              "minutes": 45,
+              "type": "Assessment",
+              "status": "Draft"
+            }
+          }
+        ]
+      },
+      {
+        "token": "outcome",
+        "name": "Outcomes",
+        "labelSingular": "Outcome",
+        "labelPlural": "Outcomes",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flag",
+        "titleField": "code",
+        "describes": "The learning outcomes a course promises and which lessons cover each one.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "code",
+            "label": "Code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "description",
+            "label": "Outcome",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lesson_list",
+            "label": "Covered by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "lesson",
+            "multi": true
+          },
+          {
+            "key": "covered",
+            "label": "Lessons covering",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "lesson_list",
+            "pick": "lesson_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ou1",
+            "values": {
+              "code": "ENV-1",
+              "description": "Describe how energy moves through an ecosystem",
+              "lesson_list": [
+                "l01",
+                "l03",
+                "l04"
+              ]
+            }
+          },
+          {
+            "key": "ou2",
+            "values": {
+              "code": "ENV-2",
+              "description": "Collect and interpret field data",
+              "lesson_list": [
+                "l02",
+                "l07"
+              ]
+            }
+          },
+          {
+            "key": "ou3",
+            "values": {
+              "code": "ENV-3",
+              "description": "Explain links between water and climate",
+              "lesson_list": [
+                "l05",
+                "l06"
+              ]
+            }
+          },
+          {
+            "key": "ou4",
+            "values": {
+              "code": "ENV-4",
+              "description": "Evaluate a policy using evidence",
+              "lesson_list": [
+                "l08",
+                "l09"
+              ]
+            }
+          },
+          {
+            "key": "ou5",
+            "values": {
+              "code": "WRT-1",
+              "description": "Write from a deliberate point of view",
+              "lesson_list": [
+                "l10",
+                "l11",
+                "l12"
+              ]
+            }
+          },
+          {
+            "key": "ou6",
+            "values": {
+              "code": "WRT-2",
+              "description": "Construct a scene with dialogue and action",
+              "lesson_list": [
+                "l13",
+                "l14"
+              ]
+            }
+          },
+          {
+            "key": "ou7",
+            "values": {
+              "code": "WRT-3",
+              "description": "Give and use constructive feedback",
+              "lesson_list": [
+                "l15",
+                "l17"
+              ]
+            }
+          },
+          {
+            "key": "ou8",
+            "values": {
+              "code": "WRT-4",
+              "description": "Revise a draft into a finished piece",
+              "lesson_list": [
+                "l16",
+                "l18"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each course has one instructor.",
+        "fromTable": "course",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "courses_taught"
+      },
+      {
+        "describes": "A course lists its units.",
+        "fromTable": "course",
+        "fromField": "unit_list",
+        "toTable": "unit",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "course_of_unit"
+      },
+      {
+        "describes": "Each unit belongs to one course.",
+        "fromTable": "unit",
+        "fromField": "course",
+        "toTable": "course",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "units"
+      },
+      {
+        "describes": "A unit lists its lessons.",
+        "fromTable": "unit",
+        "fromField": "lesson_list",
+        "toTable": "lesson",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "unit_of_lesson"
+      },
+      {
+        "describes": "Each lesson belongs to one unit.",
+        "fromTable": "lesson",
+        "fromField": "unit",
+        "toTable": "unit",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "lessons"
+      },
+      {
+        "describes": "An outcome lists the lessons that cover it.",
+        "fromTable": "outcome",
+        "fromField": "lesson_list",
+        "toTable": "lesson",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "outcomes_covered"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-ingrid",
+            "values": {
+              "full_name": "Ingrid Halvorsen",
+              "role": "Lead instructor",
+              "work_email": "ingrid@meadowlarkacademy.net",
+              "mobile": "(612) 555-0191",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-yusuf",
+            "values": {
+              "full_name": "Yusuf Rahimi",
+              "role": "Writing instructor",
+              "work_email": "yusuf@meadowlarkacademy.net",
+              "mobile": "(612) 555-0192",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-corinne",
+            "values": {
+              "full_name": "Corinne Delacroix",
+              "role": "Curriculum coordinator",
+              "work_email": "corinne@meadowlarkacademy.net",
+              "mobile": "(612) 555-0193",
+              "start_date": "@today-6y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "suggest_lesson",
+        "name": "Suggest a lesson",
+        "describes": "How an instructor proposes a new lesson for a unit.",
+        "audience": "staff",
+        "table": "lesson",
+        "fields": [
+          {
+            "fieldKey": "lesson_name",
+            "ask": "What is the lesson called?",
+            "required": true
+          },
+          {
+            "fieldKey": "unit",
+            "ask": "Which unit does it belong in?"
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What kind of session is it?"
+          },
+          {
+            "fieldKey": "minutes",
+            "ask": "How long is it, in minutes?"
+          }
+        ],
+        "submitLabel": "Suggest",
+        "confirmation": "Thanks. It is a Draft lesson in the unit."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_courses",
+        "name": "All courses",
+        "table": "course",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "course_board",
+        "name": "By status",
+        "table": "course",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "course_timeline",
+        "name": "Course timeline",
+        "table": "course",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "all_units",
+        "name": "All units",
+        "table": "unit",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "order",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "unit_timeline",
+        "name": "Pacing",
+        "table": "unit",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "all_lessons",
+        "name": "All lessons",
+        "table": "lesson",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "lesson_calendar",
+        "name": "Calendar",
+        "table": "lesson",
+        "kind": "calendar",
+        "dateField": "on"
+      },
+      {
+        "token": "lesson_board",
+        "name": "By status",
+        "table": "lesson",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_outcomes",
+        "name": "All outcomes",
+        "table": "outcome",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Course & Curriculum Planner assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "lesson",
+          "describes": "Every lesson, its unit, date, length, type and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "unit",
+          "describes": "The units that group lessons."
+        }
+      ],
+      "question": {
+        "ask": "How many lessons are still in Draft?",
+        "whyItMatters": "Corinne checks that drafts are ready a week before they run.",
+        "expect": {
+          "table": "lesson",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Draft"
+          },
+          "answer": 7,
+          "unit": "lessons"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the unit pacing timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "unit_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "unit_timeline",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open the lesson calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "lesson_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lesson_calendar",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open all outcomes.",
+        "action": {
+          "kind": "open",
+          "surface": "all_outcomes"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_outcomes",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "meadowlarkacademy.net"
+      ],
+      "fictionalStreets": [
+        "Pennywhistle Close"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "curriculum",
+      "parent": null,
+      "title": "Course & Curriculum Planner",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Map a course from outcomes to units to lessons. Plan the pacing on the timeline, then mark lessons Ready and Complete as the term runs."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "Map"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Courses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "course",
+              "view": "course_board"
+            },
+            "inline": true,
+            "title": "Courses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-c",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-ct",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on"
+              },
+              {
+                "id": "v-ca",
+                "name": "All courses",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-c"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pacing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "unit",
+              "view": "unit_timeline"
+            },
+            "inline": true,
+            "title": "Units",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-u",
+                "name": "Pacing",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on"
+              },
+              {
+                "id": "v-ug",
+                "name": "All units",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "order",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-u"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Draft lessons"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lesson",
+                      "view": "all_lessons"
+                    },
+                    "inline": true,
+                    "title": "Lessons",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-d",
+                        "name": "Draft",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "Draft"
+                        }
+                      }
+                    ],
+                    "activeViewId": "v-d"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Coverage by outcome"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "outcome",
+                      "view": "all_outcomes"
+                    },
+                    "inline": true,
+                    "title": "Outcomes",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-o",
+                        "name": "Outcomes",
+                        "layout": "grid",
+                        "icon": "Table"
+                      },
+                      {
+                        "id": "v-oc",
+                        "name": "Lessons per outcome",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "code",
+                          "op": "sum",
+                          "field": "covered"
+                        }
+                      }
+                    ],
+                    "activeViewId": "v-o"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lesson calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lesson",
+              "view": "lesson_calendar"
+            },
+            "inline": true,
+            "title": "Lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-lc",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on"
+              },
+              {
+                "id": "v-lb",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-la",
+                "name": "Assessments",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "type": "Assessment"
+                }
+              }
+            ],
+            "activeViewId": "v-lc"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:year-at-a-glance"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:planning-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Year at a glance"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Open the Year at a glance page for every course on one timeline."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "year-at-a-glance",
+      "parent": "curriculum",
+      "title": "Year at a glance",
+      "icon": {
+        "emoji": "📅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "course",
+              "view": "course_timeline"
+            },
+            "inline": true,
+            "title": "Courses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "y1",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on"
+              }
+            ],
+            "activeViewId": "y1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lesson",
+                      "view": "all_lessons"
+                    },
+                    "inline": true,
+                    "title": "Lessons",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "y2",
+                        "name": "Lessons by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "y2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lesson",
+                      "view": "all_lessons"
+                    },
+                    "inline": true,
+                    "title": "Lessons",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "y3",
+                        "name": "Minutes by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "type",
+                          "op": "sum",
+                          "field": "minutes"
+                        }
+                      }
+                    ],
+                    "activeViewId": "y3"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lesson",
+                      "view": "all_lessons"
+                    },
+                    "inline": true,
+                    "title": "Lessons",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "y4",
+                        "name": "Lessons by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "y4"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assessments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lesson",
+              "view": "all_lessons"
+            },
+            "inline": true,
+            "title": "Lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "y5",
+                "name": "Assessments",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "type": "Assessment"
+                }
+              }
+            ],
+            "activeViewId": "y5"
+          }
+        }
+      ]
+    },
+    {
+      "key": "planning-guide",
+      "parent": "curriculum",
+      "title": "Planning checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Work through this once per course."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write four to eight outcomes in plain language."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Split the term into three to six units with dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add lessons to each unit, then link each to the outcomes it covers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check that every outcome is covered by at least one lesson and one assessment."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark lessons Ready once materials are prepared."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "An outcome with zero lessons covering it is a gap. Fix the plan before the term starts."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "TriangleAlert"
+          }
+        }
+      ]
+    }
+  ]
+}

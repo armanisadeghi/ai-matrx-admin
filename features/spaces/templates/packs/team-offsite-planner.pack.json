@@ -1,0 +1,2151 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0263",
+  "version": 1,
+  "title": "Team Offsite Planner",
+  "description": "Agenda, logistics, budget, attendees and venues for a team retreat.",
+  "forWho": "People teams and team leads planning retreats",
+  "icon": {
+    "emoji": "🏕️"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "offsite",
+    "retreat",
+    "events",
+    "budget"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-team-offsite-planner",
+    "catalogueId": "SP0263",
+    "useCase": "Nia Thornberry leads people at a ten-person design studio and uses this to run the yearly retreat without losing track of budget or travel.",
+    "industry": "events_weddings",
+    "vertical": "Team offsite",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "timeline",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Salt Meadow Design",
+      "describes": "A ten-person design studio that holds a yearly team retreat.",
+      "address": {
+        "line1": "18 Cormorant Steps",
+        "city": "Santa Cruz",
+        "region": "CA",
+        "postalCode": "95060",
+        "country": "US"
+      },
+      "phone": "(831) 555-0140",
+      "website": "saltmeadowdesign.net",
+      "email": "hello@saltmeadowdesign.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-team-offsite-planner",
+    "tables": [
+      {
+        "token": "session",
+        "name": "Agenda",
+        "labelSingular": "Session",
+        "labelPlural": "Agenda",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "session_name",
+        "describes": "Every session of the offsite by day and time, who runs it and where.",
+        "subject": "thing",
+        "before": [
+          [
+            "starts_at",
+            "ends_at"
+          ]
+        ],
+        "independentOf": {
+          "owner": "Anyone can run a session whenever they joined."
+        },
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "day",
+            "label": "Day",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Day 1",
+              "Day 2",
+              "Day 3"
+            ],
+            "choiceColors": {
+              "Day 1": "blue",
+              "Day 2": "amber",
+              "Day 3": "green"
+            }
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "ends_at",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Workshop",
+              "Meal",
+              "Activity",
+              "Free time"
+            ],
+            "choiceColors": {
+              "Workshop": "violet",
+              "Meal": "orange",
+              "Activity": "green",
+              "Free time": "teal"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ag01",
+            "values": {
+              "session_name": "Arrival and welcome lunch",
+              "day": "Day 1",
+              "starts_at": "@today+40d 12:00",
+              "ends_at": "@today+40d 13:00",
+              "type": "Meal",
+              "owner": "tm-nia",
+              "location": "Dining hall"
+            }
+          },
+          {
+            "key": "ag02",
+            "values": {
+              "session_name": "Opening: where the studio is heading",
+              "day": "Day 1",
+              "starts_at": "@today+40d 14:00",
+              "ends_at": "@today+40d 16:00",
+              "type": "Workshop",
+              "owner": "tm-joaquin",
+              "location": "Main room"
+            }
+          },
+          {
+            "key": "ag03",
+            "values": {
+              "session_name": "Walk to the headland",
+              "day": "Day 1",
+              "starts_at": "@today+40d 16:00",
+              "ends_at": "@today+40d 18:00",
+              "type": "Activity",
+              "owner": "tm-maribel",
+              "location": "Trailhead"
+            }
+          },
+          {
+            "key": "ag04",
+            "values": {
+              "session_name": "Group dinner",
+              "day": "Day 1",
+              "starts_at": "@today+40d 19:00",
+              "ends_at": "@today+40d 21:00",
+              "type": "Meal",
+              "owner": "tm-nia",
+              "location": "Dining hall"
+            }
+          },
+          {
+            "key": "ag05",
+            "values": {
+              "session_name": "Breakfast",
+              "day": "Day 2",
+              "starts_at": "@today+41d 08:00",
+              "ends_at": "@today+41d 09:00",
+              "type": "Meal",
+              "owner": "tm-nia",
+              "location": "Dining hall"
+            }
+          },
+          {
+            "key": "ag06",
+            "values": {
+              "session_name": "Workshop: how we win projects",
+              "day": "Day 2",
+              "starts_at": "@today+41d 09:00",
+              "ends_at": "@today+41d 12:00",
+              "type": "Workshop",
+              "owner": "tm-amelie",
+              "location": "Main room"
+            }
+          },
+          {
+            "key": "ag07",
+            "values": {
+              "session_name": "Lunch on the deck",
+              "day": "Day 2",
+              "starts_at": "@today+41d 12:00",
+              "ends_at": "@today+41d 13:00",
+              "type": "Meal",
+              "owner": "tm-nia",
+              "location": "Deck"
+            }
+          },
+          {
+            "key": "ag08",
+            "values": {
+              "session_name": "Breakouts: tools and process",
+              "day": "Day 2",
+              "starts_at": "@today+41d 13:00",
+              "ends_at": "@today+41d 15:00",
+              "type": "Workshop",
+              "owner": "tm-kwabena",
+              "location": "Breakout rooms"
+            }
+          },
+          {
+            "key": "ag09",
+            "values": {
+              "session_name": "Free afternoon: kayaks or rest",
+              "day": "Day 2",
+              "starts_at": "@today+41d 15:00",
+              "ends_at": "@today+41d 18:00",
+              "type": "Free time",
+              "owner": "tm-maribel",
+              "location": "Beach"
+            }
+          },
+          {
+            "key": "ag10",
+            "values": {
+              "session_name": "Awards and celebration dinner",
+              "day": "Day 2",
+              "starts_at": "@today+41d 19:00",
+              "ends_at": "@today+41d 22:00",
+              "type": "Meal",
+              "owner": "tm-joaquin",
+              "location": "Dining hall"
+            }
+          },
+          {
+            "key": "ag11",
+            "values": {
+              "session_name": "Breakfast and pack up",
+              "day": "Day 3",
+              "starts_at": "@today+42d 08:00",
+              "ends_at": "@today+42d 10:00",
+              "type": "Meal",
+              "owner": "tm-nia",
+              "location": "Dining hall"
+            }
+          },
+          {
+            "key": "ag12",
+            "values": {
+              "session_name": "Closing: commitments for the quarter",
+              "day": "Day 3",
+              "starts_at": "@today+42d 10:00",
+              "ends_at": "@today+42d 11:00",
+              "type": "Workshop",
+              "owner": "tm-nia",
+              "location": "Main room"
+            }
+          }
+        ]
+      },
+      {
+        "token": "ltask",
+        "name": "Logistics tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Logistics tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Everything that needs arranging before the offsite, with owner and due day.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Travel",
+              "Venue",
+              "Food",
+              "Activities",
+              "Comms"
+            ],
+            "choiceColors": {
+              "Travel": "teal",
+              "Venue": "blue",
+              "Food": "orange",
+              "Activities": "green",
+              "Comms": "pink"
+            }
+          },
+          {
+            "key": "budget_item",
+            "label": "Budget line",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "budget",
+            "relationMax": 1
+          }
+        ],
+        "rows": [
+          {
+            "key": "lt01",
+            "values": {
+              "task_name": "Confirm the venue deposit",
+              "owner": "tm-sunita",
+              "due_on": "@today+3d",
+              "status": "In progress",
+              "category": "Venue",
+              "budget_item": "bd01"
+            }
+          },
+          {
+            "key": "lt02",
+            "values": {
+              "task_name": "Book the vans",
+              "owner": "tm-maribel",
+              "due_on": "@today+10d",
+              "status": "To do",
+              "category": "Travel",
+              "budget_item": "bd03"
+            }
+          },
+          {
+            "key": "lt03",
+            "values": {
+              "task_name": "Collect dietary needs",
+              "owner": "tm-nia",
+              "due_on": "@today+5d",
+              "status": "In progress",
+              "category": "Food",
+              "budget_item": "bd02"
+            }
+          },
+          {
+            "key": "lt04",
+            "values": {
+              "task_name": "Plan the headland walk route",
+              "owner": "tm-maribel",
+              "due_on": "@today+14d",
+              "status": "To do",
+              "category": "Activities",
+              "budget_item": "bd05"
+            }
+          },
+          {
+            "key": "lt05",
+            "values": {
+              "task_name": "Order name badges and notebooks",
+              "owner": "tm-felix",
+              "due_on": "@today+20d",
+              "status": "To do",
+              "category": "Comms",
+              "budget_item": "bd07"
+            }
+          },
+          {
+            "key": "lt06",
+            "values": {
+              "task_name": "Send the travel pack",
+              "owner": "tm-nia",
+              "due_on": "@today+12d",
+              "status": "To do",
+              "category": "Comms"
+            }
+          },
+          {
+            "key": "lt07",
+            "values": {
+              "task_name": "Arrange kayak hire",
+              "owner": "tm-maribel",
+              "due_on": "@today+18d",
+              "status": "To do",
+              "category": "Activities",
+              "budget_item": "bd05"
+            }
+          },
+          {
+            "key": "lt08",
+            "values": {
+              "task_name": "Book flights for remote staff",
+              "owner": "tm-nia",
+              "due_on": "@today+2d",
+              "status": "Done",
+              "category": "Travel",
+              "budget_item": "bd04"
+            }
+          },
+          {
+            "key": "lt09",
+            "values": {
+              "task_name": "Agree the awards list",
+              "owner": "tm-joaquin",
+              "due_on": "@today+25d",
+              "status": "To do",
+              "category": "Activities"
+            }
+          },
+          {
+            "key": "lt10",
+            "values": {
+              "task_name": "Finalise the printed agenda",
+              "owner": "tm-nia",
+              "due_on": "@today+30d",
+              "status": "To do",
+              "category": "Comms"
+            }
+          }
+        ]
+      },
+      {
+        "token": "budget",
+        "name": "Budget",
+        "labelSingular": "Budget line",
+        "labelPlural": "Budget",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wallet",
+        "titleField": "item",
+        "describes": "Estimated and actual spend for each cost of the offsite.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item",
+            "label": "Cost line",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Venue",
+              "Food",
+              "Travel",
+              "Activities",
+              "Comms"
+            ],
+            "choiceColors": {
+              "Venue": "blue",
+              "Food": "orange",
+              "Travel": "teal",
+              "Activities": "green",
+              "Comms": "pink"
+            }
+          },
+          {
+            "key": "estimate",
+            "label": "Estimate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "actual",
+            "label": "Actual",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "variance",
+            "label": "Variance",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Actual} - {Estimate}"
+          },
+          {
+            "key": "paid",
+            "label": "Paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "task_list",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "ltask",
+            "multi": true
+          },
+          {
+            "key": "task_count",
+            "label": "Linked tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "task_list",
+            "pick": "task_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "bd01",
+            "values": {
+              "item": "Venue and cabins",
+              "category": "Venue",
+              "estimate": 9000,
+              "actual": 9000,
+              "paid": true,
+              "task_list": [
+                "lt01"
+              ]
+            }
+          },
+          {
+            "key": "bd02",
+            "values": {
+              "item": "Catering for three days",
+              "category": "Food",
+              "estimate": 4500,
+              "actual": 4200,
+              "paid": false,
+              "task_list": [
+                "lt03"
+              ]
+            }
+          },
+          {
+            "key": "bd03",
+            "values": {
+              "item": "Vans and fuel",
+              "category": "Travel",
+              "estimate": 1800,
+              "actual": 0,
+              "paid": false,
+              "task_list": [
+                "lt02"
+              ]
+            }
+          },
+          {
+            "key": "bd04",
+            "values": {
+              "item": "Flights for three people",
+              "category": "Travel",
+              "estimate": 1500,
+              "actual": 1380,
+              "paid": true,
+              "task_list": [
+                "lt08"
+              ]
+            }
+          },
+          {
+            "key": "bd05",
+            "values": {
+              "item": "Kayak hire and guide",
+              "category": "Activities",
+              "estimate": 900,
+              "actual": 0,
+              "paid": false,
+              "task_list": [
+                "lt04",
+                "lt07"
+              ]
+            }
+          },
+          {
+            "key": "bd06",
+            "values": {
+              "item": "Facilitator for Day 2 workshop",
+              "category": "Venue",
+              "estimate": 1200,
+              "actual": 1200,
+              "paid": true,
+              "task_list": []
+            }
+          },
+          {
+            "key": "bd07",
+            "values": {
+              "item": "Printing and swag",
+              "category": "Comms",
+              "estimate": 650,
+              "actual": 0,
+              "paid": false,
+              "task_list": [
+                "lt05"
+              ]
+            }
+          },
+          {
+            "key": "bd08",
+            "values": {
+              "item": "Celebration dinner extras",
+              "category": "Food",
+              "estimate": 700,
+              "actual": 0,
+              "paid": false,
+              "task_list": []
+            }
+          }
+        ]
+      },
+      {
+        "token": "attendee",
+        "name": "Attendees",
+        "labelSingular": "Attendee",
+        "labelPlural": "Attendees",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "attendee_name",
+        "describes": "Who is coming, their dietary needs, travel and which cabin they are in.",
+        "subject": "thing",
+        "independentOf": {
+          "person": "Any team member can be invited."
+        },
+        "fields": [
+          {
+            "key": "attendee_name",
+            "label": "Attendee",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "person",
+            "label": "Team member",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "rsvp",
+            "label": "RSVP",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Yes",
+              "No",
+              "Maybe"
+            ],
+            "choiceColors": {
+              "Yes": "green",
+              "No": "red",
+              "Maybe": "amber"
+            },
+            "required": true
+          },
+          {
+            "key": "dietary",
+            "label": "Dietary needs",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "multi": true,
+            "choices": [
+              "Vegetarian",
+              "Vegan",
+              "Gluten-free",
+              "Dairy-free",
+              "Nut allergy"
+            ],
+            "choiceColors": {
+              "Vegetarian": "green",
+              "Vegan": "teal",
+              "Gluten-free": "amber",
+              "Dairy-free": "blue",
+              "Nut allergy": "red"
+            }
+          },
+          {
+            "key": "travel",
+            "label": "Travel",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "room",
+            "label": "Cabin",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "at-nia",
+            "values": {
+              "attendee_name": "Nia Thornberry",
+              "person": "tm-nia",
+              "rsvp": "Yes",
+              "dietary": [],
+              "travel": "Arrives with the van",
+              "room": "Cabin 1"
+            }
+          },
+          {
+            "key": "at-joaquin",
+            "values": {
+              "attendee_name": "Joaquín Beltrán",
+              "person": "tm-joaquin",
+              "rsvp": "Yes",
+              "dietary": [
+                "Vegetarian"
+              ],
+              "travel": "Flight arrives 10:40",
+              "room": "Cabin 2"
+            }
+          },
+          {
+            "key": "at-amelie",
+            "values": {
+              "attendee_name": "Amélie Rousseau",
+              "person": "tm-amelie",
+              "rsvp": "Yes",
+              "dietary": [],
+              "travel": "Drives, leaves Friday morning",
+              "room": "Cabin 3"
+            }
+          },
+          {
+            "key": "at-kwabena",
+            "values": {
+              "attendee_name": "Kwabena Osei",
+              "person": "tm-kwabena",
+              "rsvp": "Maybe",
+              "dietary": [
+                "Nut allergy"
+              ],
+              "travel": "Waiting on childcare",
+              "room": "Cabin 2"
+            }
+          },
+          {
+            "key": "at-sunita",
+            "values": {
+              "attendee_name": "Sunita Rao",
+              "person": "tm-sunita",
+              "rsvp": "Yes",
+              "dietary": [
+                "Gluten-free"
+              ],
+              "travel": "Flight arrives 11:55",
+              "room": "Cabin 4"
+            }
+          },
+          {
+            "key": "at-felix",
+            "values": {
+              "attendee_name": "Felix Lindqvist",
+              "person": "tm-felix",
+              "rsvp": "Yes",
+              "dietary": [],
+              "travel": "Van pool",
+              "room": "Cabin 5"
+            }
+          },
+          {
+            "key": "at-maribel",
+            "values": {
+              "attendee_name": "Maribel Quintero",
+              "person": "tm-maribel",
+              "rsvp": "Yes",
+              "dietary": [
+                "Vegan"
+              ],
+              "travel": "Drives",
+              "room": "Cabin 3"
+            }
+          },
+          {
+            "key": "at-oscar",
+            "values": {
+              "attendee_name": "Oscar Whitfield",
+              "person": "tm-oscar",
+              "rsvp": "No",
+              "dietary": [],
+              "travel": "Wedding that weekend",
+              "room": "Unassigned"
+            }
+          },
+          {
+            "key": "at-lena",
+            "values": {
+              "attendee_name": "Lena Fischer",
+              "person": "tm-lena",
+              "rsvp": "Yes",
+              "dietary": [
+                "Dairy-free"
+              ],
+              "travel": "Van pool",
+              "room": "Cabin 4"
+            }
+          },
+          {
+            "key": "at-darius",
+            "values": {
+              "attendee_name": "Darius Mohebbi",
+              "person": "tm-darius",
+              "rsvp": "Yes",
+              "dietary": [],
+              "travel": "Flight arrives 14:15",
+              "room": "Cabin 5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "venue",
+        "name": "Venues",
+        "labelSingular": "Venue",
+        "labelPlural": "Venues",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map-pin",
+        "titleField": "venue_name",
+        "describes": "The venues compared, their cost and capacity, and which one was chosen.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "venue_name",
+            "label": "Venue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cost",
+            "label": "Cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "capacity",
+            "label": "Capacity",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "chosen",
+            "label": "Chosen",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ve1",
+            "values": {
+              "venue_name": "Sandpiper Point Retreat",
+              "cost": 9000,
+              "capacity": 16,
+              "chosen": true,
+              "link": "https://sandpiperpoint.net/retreat"
+            }
+          },
+          {
+            "key": "ve2",
+            "values": {
+              "venue_name": "Harborlight Lodge",
+              "cost": 11500,
+              "capacity": 22,
+              "chosen": false,
+              "link": "https://harborlightlodge.net"
+            }
+          },
+          {
+            "key": "ve3",
+            "values": {
+              "venue_name": "Redwood Hollow Camp",
+              "cost": 7200,
+              "capacity": 14,
+              "chosen": false,
+              "link": "https://redwoodhollowcamp.net"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each session has one owner.",
+        "fromTable": "session",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sessions_run"
+      },
+      {
+        "describes": "A budget line lists the tasks that spend it.",
+        "fromTable": "budget",
+        "fromField": "task_list",
+        "toTable": "ltask",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "budget_of_task"
+      },
+      {
+        "describes": "Each task has one owner.",
+        "fromTable": "ltask",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "offsite_tasks"
+      },
+      {
+        "describes": "Each task may spend against one budget line.",
+        "fromTable": "ltask",
+        "fromField": "budget_item",
+        "toTable": "budget",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each attendee is one team member.",
+        "fromTable": "attendee",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "offsite_rsvps"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-nia",
+            "values": {
+              "full_name": "Nia Thornberry",
+              "role": "Head of people",
+              "work_email": "nia@saltmeadowdesign.net",
+              "mobile": "(831) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-joaquin",
+            "values": {
+              "full_name": "Joaquín Beltrán",
+              "role": "Creative director",
+              "work_email": "joaquin@saltmeadowdesign.net",
+              "mobile": "(831) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-amelie",
+            "values": {
+              "full_name": "Amélie Rousseau",
+              "role": "Account director",
+              "work_email": "amelie@saltmeadowdesign.net",
+              "mobile": "(831) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-kwabena",
+            "values": {
+              "full_name": "Kwabena Osei",
+              "role": "Engineering lead",
+              "work_email": "kwabena@saltmeadowdesign.net",
+              "mobile": "(831) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-sunita",
+            "values": {
+              "full_name": "Sunita Rao",
+              "role": "Finance manager",
+              "work_email": "sunita@saltmeadowdesign.net",
+              "mobile": "(831) 555-0145",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-felix",
+            "values": {
+              "full_name": "Felix Lindqvist",
+              "role": "Designer",
+              "work_email": "felix@saltmeadowdesign.net",
+              "mobile": "(831) 555-0146",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-maribel",
+            "values": {
+              "full_name": "Maribel Quintero",
+              "role": "Project manager",
+              "work_email": "maribel@saltmeadowdesign.net",
+              "mobile": "(831) 555-0147",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-oscar",
+            "values": {
+              "full_name": "Oscar Whitfield",
+              "role": "Developer",
+              "work_email": "oscar@saltmeadowdesign.net",
+              "mobile": "(831) 555-0148",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-lena",
+            "values": {
+              "full_name": "Lena Fischer",
+              "role": "Copywriter",
+              "work_email": "lena@saltmeadowdesign.net",
+              "mobile": "(831) 555-0149",
+              "start_date": "@today-18m"
+            }
+          },
+          {
+            "key": "tm-darius",
+            "values": {
+              "full_name": "Darius Mohebbi",
+              "role": "Developer",
+              "work_email": "darius@saltmeadowdesign.net",
+              "mobile": "(831) 555-0150",
+              "start_date": "@today-8m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "offsite_survey",
+        "name": "Offsite feedback survey",
+        "describes": "How attendees rate the offsite afterwards.",
+        "audience": "staff",
+        "table": "attendee",
+        "fields": [
+          {
+            "fieldKey": "attendee_name",
+            "ask": "Your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "rsvp",
+            "ask": "Are you coming?",
+            "required": true
+          },
+          {
+            "fieldKey": "dietary",
+            "ask": "Any dietary needs we should record?"
+          },
+          {
+            "fieldKey": "travel",
+            "ask": "How are you travelling?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. Every response is read by the people team."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_sessions",
+        "name": "All sessions",
+        "table": "session",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "starts_at",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "agenda_calendar",
+        "name": "Agenda calendar",
+        "table": "session",
+        "kind": "calendar",
+        "dateField": "starts_at"
+      },
+      {
+        "token": "agenda_days",
+        "name": "By day",
+        "table": "session",
+        "kind": "kanban",
+        "groupBy": "day"
+      },
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "ltask",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "Task board",
+        "table": "ltask",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Task calendar",
+        "table": "ltask",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_budget",
+        "name": "All budget lines",
+        "table": "budget",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "budget_board",
+        "name": "By category",
+        "table": "budget",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_attendees",
+        "name": "All attendees",
+        "table": "attendee",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "rsvp_board",
+        "name": "By RSVP",
+        "table": "attendee",
+        "kind": "kanban",
+        "groupBy": "rsvp"
+      },
+      {
+        "token": "all_venues",
+        "name": "All venues",
+        "table": "venue",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Team Offsite Planner assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "ltask",
+          "describes": "Every logistics task, its owner, due day and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "budget",
+          "describes": "The budget lines tasks spend against."
+        }
+      ],
+      "question": {
+        "ask": "How many attendees have said Yes?",
+        "whyItMatters": "Nia gives the venue a final headcount.",
+        "expect": {
+          "table": "attendee",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "rsvp": "Yes"
+          },
+          "answer": 8,
+          "unit": "attendees"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the agenda calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "agenda_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "agenda_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the task board.",
+        "action": {
+          "kind": "open",
+          "surface": "task_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open the RSVP board.",
+        "action": {
+          "kind": "open",
+          "surface": "rsvp_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "rsvp_board",
+          "minItems": 8
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "saltmeadowdesign.net",
+        "sandpiperpoint.net",
+        "harborlightlodge.net",
+        "redwoodhollowcamp.net"
+      ],
+      "fictionalStreets": [
+        "Cormorant Steps"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "offsite",
+      "parent": null,
+      "title": "Team Offsite Planner",
+      "icon": {
+        "emoji": "🏕️"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the offsite from one page: agenda by hour, logistics tasks with owners, a budget that shows variance, and who is coming. Check the budget and open tasks every Friday."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Tent"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Key facts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where: Sandpiper Point Retreat"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "When: the three days starting 40 days from now"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Group size: 10 invited"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Theme: Shaping the next year together"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quick links"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:offsite-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:travel-and-packing"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dietary-needs"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Agenda"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "session",
+              "view": "agenda_calendar"
+            },
+            "inline": true,
+            "title": "Agenda",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-a",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "v-ad",
+                "name": "By day",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "day"
+              },
+              {
+                "id": "v-at",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_at",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-a"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ltask",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Logistics tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-tb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-tc",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "v-tt",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "v-tb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budget"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "budget",
+              "view": "all_budget"
+            },
+            "inline": true,
+            "title": "Budget",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-bt",
+                "name": "All lines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-bc",
+                "name": "Estimate by category",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "centerValue": true,
+                  "field": "estimate"
+                }
+              }
+            ],
+            "activeViewId": "v-bt"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Attendees"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "attendee",
+              "view": "rsvp_board"
+            },
+            "inline": true,
+            "title": "Attendees",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-r",
+                "name": "By RSVP",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "rsvp"
+              },
+              {
+                "id": "v-ra",
+                "name": "All attendees",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-r"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Venues"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "venue",
+              "view": "all_venues"
+            },
+            "inline": true,
+            "title": "Venues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-v",
+                "name": "Venues",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-vt",
+                "name": "Compare",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-v"
+          }
+        }
+      ]
+    },
+    {
+      "key": "offsite-dashboard",
+      "parent": "offsite",
+      "title": "Offsite dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "budget",
+                      "view": "all_budget"
+                    },
+                    "inline": true,
+                    "title": "Budget",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "Actual by category",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "centerValue": true,
+                          "field": "actual"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ltask",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Logistics tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "attendee",
+                      "view": "all_attendees"
+                    },
+                    "inline": true,
+                    "title": "Attendees",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "RSVPs",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "rsvp",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unpaid costs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "budget",
+              "view": "all_budget"
+            },
+            "inline": true,
+            "title": "Budget",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d4",
+                "name": "Not yet paid",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "paid": false
+                }
+              }
+            ],
+            "activeViewId": "d4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks due soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ltask",
+              "view": "all_tasks"
+            },
+            "inline": true,
+            "title": "Logistics tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d5",
+                "name": "Not done",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "To do",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "d5"
+          }
+        }
+      ]
+    },
+    {
+      "key": "travel-and-packing",
+      "parent": "offsite",
+      "title": "Travel and packing",
+      "icon": {
+        "emoji": "🧳"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything you need before you set off."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to bring"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Layers; evenings are cold by the sea"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Walking shoes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Swimwear if you fancy kayaking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Laptop is not needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A short story or idea to share at dinner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The vans leave the studio at 7:30 on Day 1. Remote colleagues: your flight details are in the Attendees table."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Bus"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dietary-needs",
+      "parent": "offsite",
+      "title": "Dietary needs",
+      "icon": {
+        "emoji": "🥗"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Catering reads this page before ordering."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "attendee",
+              "view": "all_attendees"
+            },
+            "inline": true,
+            "title": "Attendees",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "n1",
+                "name": "Dietary needs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "n2",
+                "name": "Dietary needs",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "dietary",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "n1"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If your needs change, tell the head of people before Day 1."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Info"
+          }
+        }
+      ]
+    }
+  ]
+}

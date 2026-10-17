@@ -1,0 +1,1748 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0259",
+  "version": 1,
+  "title": "Employee Handbook",
+  "description": "A living handbook: policies with owners, review dates, sign-offs and FAQ.",
+  "forWho": "HR and operations teams",
+  "icon": {
+    "emoji": "📖"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "handbook",
+    "policies",
+    "hr",
+    "wiki"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-employee-handbook",
+    "catalogueId": "SP0259",
+    "useCase": "Paloma Ibarra directs HR at a fifty-person food company and uses this to keep every policy current, signed off and easy to find.",
+    "industry": "hospitality_food",
+    "vertical": "Employee handbook",
+    "job": "compliance_quality",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Fernhollow Foods",
+      "describes": "A fifty-person meal-prep company serving offices and schools.",
+      "address": {
+        "line1": "311 Barleywick Lane",
+        "city": "Atlanta",
+        "region": "GA",
+        "postalCode": "30303",
+        "country": "US"
+      },
+      "phone": "(404) 555-0180",
+      "website": "fernhollowfoods.net",
+      "email": "hello@fernhollowfoods.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-employee-handbook",
+    "tables": [
+      {
+        "token": "policy",
+        "name": "Policies",
+        "labelSingular": "Policy",
+        "labelPlural": "Policies",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scroll-text",
+        "titleField": "policy_name",
+        "describes": "Every company policy, who owns it, when it was last reviewed and who it applies to.",
+        "subject": "thing",
+        "before": [
+          [
+            "reviewed_on",
+            "review_due"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "policy_name",
+            "label": "Policy",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Culture",
+              "Conduct",
+              "Benefits",
+              "Time off",
+              "IT & security",
+              "Finance",
+              "Remote"
+            ],
+            "choiceColors": {
+              "Culture": "blue",
+              "Conduct": "green",
+              "Benefits": "amber",
+              "Time off": "red",
+              "IT & security": "violet",
+              "Finance": "teal",
+              "Remote": "orange"
+            }
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Published",
+              "Under review"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Published": "green",
+              "Under review": "amber"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "reviewed_on",
+            "label": "Last reviewed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "review_due",
+            "label": "Next review",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_review",
+            "label": "Days to review",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Next review}, 'days')"
+          },
+          {
+            "key": "applies",
+            "label": "Applies to",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "multi": true,
+            "choices": [
+              "All",
+              "Kitchen",
+              "Delivery",
+              "Office"
+            ],
+            "choiceColors": {
+              "All": "blue",
+              "Kitchen": "orange",
+              "Delivery": "teal",
+              "Office": "violet"
+            }
+          },
+          {
+            "key": "pinned",
+            "label": "Pinned",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ack_list",
+            "label": "Acknowledgements",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "ack",
+            "multi": true
+          },
+          {
+            "key": "ack_count",
+            "label": "Signed off",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ack_list",
+            "pick": "signed_on",
+            "agg": "count"
+          },
+          {
+            "key": "hr_notes",
+            "label": "HR notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          }
+        ],
+        "rows": [
+          {
+            "key": "po01",
+            "values": {
+              "policy_name": "Code of conduct",
+              "category": "Conduct",
+              "owner": "tm-paloma",
+              "status": "Published",
+              "reviewed_on": "@today-120d",
+              "review_due": "@today+245d",
+              "applies": [
+                "All"
+              ],
+              "pinned": true,
+              "ack_list": [
+                "ak01",
+                "ak02",
+                "ak03",
+                "ak04",
+                "ak05"
+              ]
+            }
+          },
+          {
+            "key": "po02",
+            "values": {
+              "policy_name": "Remote work policy",
+              "category": "Remote",
+              "owner": "tm-desmond",
+              "status": "Published",
+              "reviewed_on": "@today-200d",
+              "review_due": "@today+165d",
+              "applies": [
+                "All"
+              ],
+              "pinned": true,
+              "ack_list": [
+                "ak06",
+                "ak07",
+                "ak08"
+              ]
+            }
+          },
+          {
+            "key": "po03",
+            "values": {
+              "policy_name": "Paid time off",
+              "category": "Time off",
+              "owner": "tm-paloma",
+              "status": "Published",
+              "reviewed_on": "@today-60d",
+              "review_due": "@today+305d",
+              "applies": [
+                "All"
+              ],
+              "pinned": true,
+              "ack_list": [
+                "ak09",
+                "ak10",
+                "ak11"
+              ]
+            }
+          },
+          {
+            "key": "po04",
+            "values": {
+              "policy_name": "Health and safety in the kitchen",
+              "category": "Conduct",
+              "owner": "tm-ana",
+              "status": "Published",
+              "reviewed_on": "@today-340d",
+              "review_due": "@today+25d",
+              "applies": [
+                "Kitchen",
+                "Delivery"
+              ],
+              "pinned": false,
+              "ack_list": [
+                "ak12",
+                "ak13"
+              ]
+            }
+          },
+          {
+            "key": "po05",
+            "values": {
+              "policy_name": "Expense reimbursement",
+              "category": "Finance",
+              "owner": "tm-mei",
+              "status": "Published",
+              "reviewed_on": "@today-400d",
+              "review_due": "@today-35d",
+              "applies": [
+                "All"
+              ],
+              "pinned": false,
+              "ack_list": []
+            }
+          },
+          {
+            "key": "po06",
+            "values": {
+              "policy_name": "Acceptable use of company devices",
+              "category": "IT & security",
+              "owner": "tm-fergus",
+              "status": "Under review",
+              "reviewed_on": "@today-380d",
+              "review_due": "@today-15d",
+              "applies": [
+                "All"
+              ],
+              "pinned": false,
+              "ack_list": []
+            }
+          },
+          {
+            "key": "po07",
+            "values": {
+              "policy_name": "Health insurance and benefits",
+              "category": "Benefits",
+              "owner": "tm-paloma",
+              "status": "Published",
+              "reviewed_on": "@today-90d",
+              "review_due": "@today+275d",
+              "applies": [
+                "All"
+              ],
+              "pinned": true,
+              "ack_list": []
+            }
+          },
+          {
+            "key": "po08",
+            "values": {
+              "policy_name": "Anti-harassment policy",
+              "category": "Conduct",
+              "owner": "tm-paloma",
+              "status": "Published",
+              "reviewed_on": "@today-30d",
+              "review_due": "@today+335d",
+              "applies": [
+                "All"
+              ],
+              "pinned": false,
+              "ack_list": [
+                "ak14",
+                "ak15"
+              ]
+            }
+          },
+          {
+            "key": "po09",
+            "values": {
+              "policy_name": "Vehicle use for deliveries",
+              "category": "Remote",
+              "owner": "tm-desmond",
+              "status": "Draft",
+              "reviewed_on": "@today-10d",
+              "review_due": "@today+355d",
+              "applies": [
+                "Delivery"
+              ],
+              "pinned": false,
+              "ack_list": []
+            }
+          },
+          {
+            "key": "po10",
+            "values": {
+              "policy_name": "Data privacy for customer records",
+              "category": "IT & security",
+              "owner": "tm-fergus",
+              "status": "Published",
+              "reviewed_on": "@today-150d",
+              "review_due": "@today+215d",
+              "applies": [
+                "All"
+              ],
+              "pinned": false,
+              "ack_list": [
+                "ak16",
+                "ak17"
+              ]
+            }
+          }
+        ],
+        "statusAgrees": []
+      },
+      {
+        "token": "ack",
+        "name": "Acknowledgements",
+        "labelSingular": "Acknowledgement",
+        "labelPlural": "Acknowledgements",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "pen-line",
+        "titleField": "ack_name",
+        "describes": "Who confirmed they have read each policy, and when.",
+        "subject": "thing",
+        "independentOf": {
+          "policy": "A person can read a policy whenever they join or it is updated.",
+          "employee": "Any employee can sign any policy."
+        },
+        "fields": [
+          {
+            "key": "ack_name",
+            "label": "Sign-off",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "policy",
+            "label": "Policy",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "policy",
+            "relationMax": 1
+          },
+          {
+            "key": "employee",
+            "label": "Employee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ak01",
+            "values": {
+              "ack_name": "Desmond read code of conduct",
+              "policy": "po01",
+              "employee": "tm-desmond",
+              "signed_on": "@today-100d"
+            }
+          },
+          {
+            "key": "ak02",
+            "values": {
+              "ack_name": "Mei read code of conduct",
+              "policy": "po01",
+              "employee": "tm-mei",
+              "signed_on": "@today-99d"
+            }
+          },
+          {
+            "key": "ak03",
+            "values": {
+              "ack_name": "Fergus read code of conduct",
+              "policy": "po01",
+              "employee": "tm-fergus",
+              "signed_on": "@today-98d"
+            }
+          },
+          {
+            "key": "ak04",
+            "values": {
+              "ack_name": "Ana read code of conduct",
+              "policy": "po01",
+              "employee": "tm-ana",
+              "signed_on": "@today-97d"
+            }
+          },
+          {
+            "key": "ak05",
+            "values": {
+              "ack_name": "Seth read code of conduct",
+              "policy": "po01",
+              "employee": "tm-seth",
+              "signed_on": "@today-95d"
+            }
+          },
+          {
+            "key": "ak06",
+            "values": {
+              "ack_name": "Desmond read remote work policy",
+              "policy": "po02",
+              "employee": "tm-desmond",
+              "signed_on": "@today-150d"
+            }
+          },
+          {
+            "key": "ak07",
+            "values": {
+              "ack_name": "Mei read remote work policy",
+              "policy": "po02",
+              "employee": "tm-mei",
+              "signed_on": "@today-149d"
+            }
+          },
+          {
+            "key": "ak08",
+            "values": {
+              "ack_name": "Fergus read remote work policy",
+              "policy": "po02",
+              "employee": "tm-fergus",
+              "signed_on": "@today-148d"
+            }
+          },
+          {
+            "key": "ak09",
+            "values": {
+              "ack_name": "Ana read paid time off",
+              "policy": "po03",
+              "employee": "tm-ana",
+              "signed_on": "@today-50d"
+            }
+          },
+          {
+            "key": "ak10",
+            "values": {
+              "ack_name": "Seth read paid time off",
+              "policy": "po03",
+              "employee": "tm-seth",
+              "signed_on": "@today-48d"
+            }
+          },
+          {
+            "key": "ak11",
+            "values": {
+              "ack_name": "Mei read paid time off",
+              "policy": "po03",
+              "employee": "tm-mei",
+              "signed_on": "@today-47d"
+            }
+          },
+          {
+            "key": "ak12",
+            "values": {
+              "ack_name": "Ana read health and safety in the kitchen",
+              "policy": "po04",
+              "employee": "tm-ana",
+              "signed_on": "@today-300d"
+            }
+          },
+          {
+            "key": "ak13",
+            "values": {
+              "ack_name": "Seth read health and safety in the kitchen",
+              "policy": "po04",
+              "employee": "tm-seth",
+              "signed_on": "@today-299d"
+            }
+          },
+          {
+            "key": "ak14",
+            "values": {
+              "ack_name": "Desmond read anti-harassment policy",
+              "policy": "po08",
+              "employee": "tm-desmond",
+              "signed_on": "@today-25d"
+            }
+          },
+          {
+            "key": "ak15",
+            "values": {
+              "ack_name": "Mei read anti-harassment policy",
+              "policy": "po08",
+              "employee": "tm-mei",
+              "signed_on": "@today-24d"
+            }
+          },
+          {
+            "key": "ak16",
+            "values": {
+              "ack_name": "Fergus read data privacy for customer records",
+              "policy": "po10",
+              "employee": "tm-fergus",
+              "signed_on": "@today-140d"
+            }
+          },
+          {
+            "key": "ak17",
+            "values": {
+              "ack_name": "Desmond read data privacy for customer records",
+              "policy": "po10",
+              "employee": "tm-desmond",
+              "signed_on": "@today-139d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "faq",
+        "name": "FAQ",
+        "labelSingular": "Question",
+        "labelPlural": "FAQ",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "circle-help",
+        "titleField": "question",
+        "describes": "Short answers to the questions people ask most, with the policy category they belong to.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "question",
+            "label": "Question",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Culture",
+              "Conduct",
+              "Benefits",
+              "Time off",
+              "IT & security",
+              "Finance",
+              "Remote"
+            ],
+            "choiceColors": {
+              "Culture": "blue",
+              "Conduct": "green",
+              "Benefits": "amber",
+              "Time off": "red",
+              "IT & security": "violet",
+              "Finance": "teal",
+              "Remote": "orange"
+            }
+          },
+          {
+            "key": "answer",
+            "label": "Answer",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "q1",
+            "values": {
+              "question": "How many vacation days do I get?",
+              "category": "Time off",
+              "answer": "Full-time staff receive 20 days a year, plus the public holidays on the closures page."
+            }
+          },
+          {
+            "key": "q2",
+            "values": {
+              "question": "When does health cover start?",
+              "category": "Benefits",
+              "answer": "On the first day of the month after your start date."
+            }
+          },
+          {
+            "key": "q3",
+            "values": {
+              "question": "Who approves my expenses?",
+              "category": "Finance",
+              "answer": "Your manager approves, then the finance manager pays within 10 working days."
+            }
+          },
+          {
+            "key": "q4",
+            "values": {
+              "question": "Can I work from home?",
+              "category": "Remote",
+              "answer": "Office roles can work from home two days a week by agreement with their manager."
+            }
+          },
+          {
+            "key": "q5",
+            "values": {
+              "question": "What if I find a safety hazard in the kitchen?",
+              "category": "Conduct",
+              "answer": "Stop the task, tell the kitchen supervisor, and log it in the incident notebook."
+            }
+          },
+          {
+            "key": "q6",
+            "values": {
+              "question": "Who do I contact about a locked account?",
+              "category": "IT & security",
+              "answer": "Message the IT lead in chat; never share your password."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each policy has one owner.",
+        "fromTable": "policy",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "policies_owned"
+      },
+      {
+        "describes": "A policy lists the sign-offs it has received.",
+        "fromTable": "policy",
+        "fromField": "ack_list",
+        "toTable": "ack",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "policy_of_ack"
+      },
+      {
+        "describes": "Each sign-off is for one policy.",
+        "fromTable": "ack",
+        "fromField": "policy",
+        "toTable": "policy",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "acknowledgements"
+      },
+      {
+        "describes": "Each sign-off is by one employee.",
+        "fromTable": "ack",
+        "fromField": "employee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sign_offs"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-paloma",
+            "values": {
+              "full_name": "Paloma Ibarra",
+              "role": "HR director",
+              "work_email": "paloma@fernhollowfoods.net",
+              "mobile": "(404) 555-0181",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-desmond",
+            "values": {
+              "full_name": "Desmond Achebe",
+              "role": "Operations manager",
+              "work_email": "desmond@fernhollowfoods.net",
+              "mobile": "(404) 555-0182",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-mei",
+            "values": {
+              "full_name": "Mei Tanaka",
+              "role": "Finance manager",
+              "work_email": "mei@fernhollowfoods.net",
+              "mobile": "(404) 555-0183",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-fergus",
+            "values": {
+              "full_name": "Fergus O'Malley",
+              "role": "IT lead",
+              "work_email": "fergus@fernhollowfoods.net",
+              "mobile": "(404) 555-0184",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-ana",
+            "values": {
+              "full_name": "Ana Beatriz Lima",
+              "role": "Kitchen supervisor",
+              "work_email": "ana@fernhollowfoods.net",
+              "mobile": "(404) 555-0185",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-seth",
+            "values": {
+              "full_name": "Seth Kowalski",
+              "role": "Delivery driver",
+              "work_email": "seth@fernhollowfoods.net",
+              "mobile": "(404) 555-0186",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "ask_hr",
+        "name": "Ask a policy question",
+        "describes": "How anyone submits a question that should join the FAQ.",
+        "audience": "staff",
+        "table": "faq",
+        "fields": [
+          {
+            "fieldKey": "question",
+            "ask": "What would you like to know?",
+            "required": true
+          },
+          {
+            "fieldKey": "category",
+            "ask": "Which topic is it about?"
+          }
+        ],
+        "submitLabel": "Send",
+        "confirmation": "Thanks. HR will answer and may add it to the FAQ."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_policies",
+        "name": "All policies",
+        "table": "policy",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "policy_board",
+        "name": "By status",
+        "table": "policy",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "policy_category",
+        "name": "By category",
+        "table": "policy",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "review_calendar",
+        "name": "Review dates",
+        "table": "policy",
+        "kind": "calendar",
+        "dateField": "review_due"
+      },
+      {
+        "token": "all_acks",
+        "name": "All sign-offs",
+        "table": "ack",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "ack_calendar",
+        "name": "Sign-off calendar",
+        "table": "ack",
+        "kind": "calendar",
+        "dateField": "signed_on"
+      },
+      {
+        "token": "all_faq",
+        "name": "All FAQ",
+        "table": "faq",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "faq_board",
+        "name": "By category",
+        "table": "faq",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Employee Handbook assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "policy",
+          "describes": "Every policy with its category, owner, status and review date."
+        },
+        {
+          "name": "related_tables",
+          "table": "ack",
+          "describes": "The sign-offs recording who has read each policy."
+        }
+      ],
+      "question": {
+        "ask": "How many policies are published?",
+        "whyItMatters": "Paloma reports the published count at the quarterly review.",
+        "expect": {
+          "table": "policy",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Published"
+          },
+          "answer": 8,
+          "unit": "policies"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the policy board.",
+        "action": {
+          "kind": "open",
+          "surface": "policy_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "policy_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open the review calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "review_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "review_calendar",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open the FAQ.",
+        "action": {
+          "kind": "open",
+          "surface": "all_faq"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_faq",
+          "minItems": 5
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "fernhollowfoods.net"
+      ],
+      "fictionalStreets": [
+        "Barleywick Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "handbook",
+      "parent": null,
+      "title": "Employee Handbook",
+      "icon": {
+        "emoji": "📖"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything about working here in one place. Read the pinned policies first, then ask HR if anything is unclear. Policies are reviewed every year."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "BookOpen"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:welcome-to-fernhollow"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:working-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:benefits-and-time-off"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:handbook-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:handbook-faq"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pinned policies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "all_policies"
+            },
+            "inline": true,
+            "title": "Policies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-pin",
+                "name": "Pinned",
+                "layout": "gallery",
+                "icon": "LayoutGrid",
+                "filters": {
+                  "pinned": true
+                }
+              },
+              {
+                "id": "v-cat",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "v-all",
+                "name": "All policies",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-pin"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recently reviewed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "all_policies"
+            },
+            "inline": true,
+            "title": "Policies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-rec",
+                "name": "Latest review first",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Published"
+                },
+                "sorts": [
+                  {
+                    "field": "reviewed_on",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-rec"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Needs review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "all_policies"
+            },
+            "inline": true,
+            "title": "Policies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-nr",
+                "name": "Under review or draft",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Draft",
+                    "Under review"
+                  ]
+                }
+              },
+              {
+                "id": "v-rc",
+                "name": "Review dates",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "review_due"
+              }
+            ],
+            "activeViewId": "v-nr"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions people ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "faq",
+              "view": "all_faq"
+            },
+            "inline": true,
+            "title": "FAQ",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-f",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "v-fl",
+                "name": "All questions",
+                "layout": "list",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "v-f"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Questions about pay or personal matters: email hr@fernhollowfoods.net or message the HR director."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Mail"
+          }
+        }
+      ]
+    },
+    {
+      "key": "welcome-to-fernhollow",
+      "parent": "handbook",
+      "title": "Welcome and values",
+      "icon": {
+        "emoji": "🌿"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fernhollow Foods prepares fresh meals for offices and schools across the region. Most of us work in the kitchen or on a delivery route, so this handbook is written to be read in ten minutes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Our values"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Safe food first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Be on time and tell people when you cannot be."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look after each other and the customer."
+            }
+          ]
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "If you are not sure, ask. Nobody has ever been blamed for asking about food safety."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "working-here",
+      "parent": "handbook",
+      "title": "Working here",
+      "icon": {
+        "emoji": "🏢"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours and shifts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Kitchen shifts start at 5:30 and 11:00. Delivery routes leave at 8:00 and 12:30. Office hours are 8:30 to 5."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Equipment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Uniforms and non-slip shoes are provided in your first week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Laptops are issued to office staff and returned when you leave."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Need"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Uniform"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kitchen supervisor"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Laptop"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "IT lead"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fuel card"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Operations manager"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "benefits-and-time-off",
+      "parent": "handbook",
+      "title": "Benefits and time off",
+      "icon": {
+        "emoji": "🎁"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Benefits start the first of the month after you join."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "all_policies"
+            },
+            "inline": true,
+            "title": "Policies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "b1",
+                "name": "Benefits and time off",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "category": [
+                    "Benefits",
+                    "Time off"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "b1"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Request leave in the time-off tracker at least two weeks ahead."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Calendar"
+          }
+        }
+      ]
+    },
+    {
+      "key": "handbook-dashboard",
+      "parent": "handbook",
+      "title": "Policy dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "policy",
+                      "view": "all_policies"
+                    },
+                    "inline": true,
+                    "title": "Policies",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "Policies by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "policy",
+                      "view": "all_policies"
+                    },
+                    "inline": true,
+                    "title": "Policies",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "Policies by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ack",
+                      "view": "all_acks"
+                    },
+                    "inline": true,
+                    "title": "Sign-offs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "Sign-offs by policy",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "policy",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue for review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "policy",
+              "view": "all_policies"
+            },
+            "inline": true,
+            "title": "Policies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d4",
+                "name": "Under review",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Under review"
+                }
+              }
+            ],
+            "activeViewId": "d4"
+          }
+        }
+      ]
+    },
+    {
+      "key": "handbook-faq",
+      "parent": "handbook",
+      "title": "FAQ",
+      "icon": {
+        "emoji": "❓"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Quick answers to the questions people ask most."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "faq",
+              "view": "all_faq"
+            },
+            "inline": true,
+            "title": "FAQ",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "f1",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "f2",
+                "name": "All questions",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "f1"
+          }
+        }
+      ]
+    }
+  ]
+}

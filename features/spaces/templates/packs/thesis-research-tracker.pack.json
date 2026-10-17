@@ -1,0 +1,2038 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0262",
+  "version": 1,
+  "title": "Thesis & Research Tracker",
+  "description": "Chapters, sources, tasks and advisor meetings for a thesis from outline to defence.",
+  "forWho": "Graduate students and researchers",
+  "icon": {
+    "emoji": "🎓"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "thesis",
+    "research",
+    "writing",
+    "sources"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-thesis-research-tracker",
+    "catalogueId": "SP0262",
+    "useCase": "Wren Halloran is a master's student studying urban pollinators and uses this to keep chapter word counts, reading and advisor meetings in one place.",
+    "industry": "education",
+    "vertical": "Thesis tracking",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Northshore Graduate Research Office",
+      "describes": "A graduate school office supporting thesis students.",
+      "address": {
+        "line1": "12 Quillfeather Place",
+        "city": "Duluth",
+        "region": "MN",
+        "postalCode": "55802",
+        "country": "US"
+      },
+      "phone": "(218) 555-0131",
+      "website": "northshorelibrary.net",
+      "email": "hello@northshorelibrary.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-thesis-research-tracker",
+    "tables": [
+      {
+        "token": "chapter",
+        "name": "Chapters",
+        "labelSingular": "Chapter",
+        "labelPlural": "Chapters",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "chapter_name",
+        "describes": "Each thesis chapter with its order, status, word count against target and deadline.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "chapter_name",
+            "label": "Chapter",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "order",
+            "label": "Order",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Outline",
+              "Drafting",
+              "In review",
+              "Done"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Outline": "violet",
+              "Drafting": "blue",
+              "In review": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Not started"
+          },
+          {
+            "key": "target",
+            "label": "Word target",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40000
+              }
+            ]
+          },
+          {
+            "key": "words",
+            "label": "Words now",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40000
+              }
+            ]
+          },
+          {
+            "key": "progress",
+            "label": "Progress (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Words now} * 100 / {Word target}"
+          },
+          {
+            "key": "draft_due",
+            "label": "Draft due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "source_list",
+            "label": "Sources",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "source",
+            "multi": true
+          },
+          {
+            "key": "source_count",
+            "label": "Sources cited",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "source_list",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "task_list",
+            "label": "Tasks",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "task",
+            "multi": true
+          },
+          {
+            "key": "open_tasks",
+            "label": "Open tasks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "task_list",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "To do",
+                "In progress"
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ch1",
+            "values": {
+              "chapter_name": "Introduction",
+              "order": 1,
+              "status": "Done",
+              "target": 6000,
+              "words": 6400,
+              "draft_due": "@today-90d",
+              "task_list": [],
+              "source_list": [
+                "so01",
+                "so05"
+              ]
+            }
+          },
+          {
+            "key": "ch2",
+            "values": {
+              "chapter_name": "Literature review",
+              "order": 2,
+              "status": "Done",
+              "target": 12000,
+              "words": 12850,
+              "draft_due": "@today-45d",
+              "task_list": [
+                "tk09"
+              ],
+              "source_list": [
+                "so01",
+                "so02",
+                "so04",
+                "so12"
+              ]
+            }
+          },
+          {
+            "key": "ch3",
+            "values": {
+              "chapter_name": "Methodology",
+              "order": 3,
+              "status": "In review",
+              "target": 8000,
+              "words": 7600,
+              "draft_due": "@today-10d",
+              "task_list": [
+                "tk01",
+                "tk02",
+                "tk10"
+              ],
+              "source_list": [
+                "so02",
+                "so03",
+                "so05",
+                "so06",
+                "so10"
+              ]
+            }
+          },
+          {
+            "key": "ch4",
+            "values": {
+              "chapter_name": "Field study results",
+              "order": 4,
+              "status": "Drafting",
+              "target": 14000,
+              "words": 6200,
+              "draft_due": "@today+30d",
+              "task_list": [
+                "tk03",
+                "tk04",
+                "tk05",
+                "tk06",
+                "tk11"
+              ],
+              "source_list": [
+                "so04",
+                "so07",
+                "so11",
+                "so13",
+                "so14"
+              ]
+            }
+          },
+          {
+            "key": "ch5",
+            "values": {
+              "chapter_name": "Discussion",
+              "order": 5,
+              "status": "Outline",
+              "target": 10000,
+              "words": 900,
+              "draft_due": "@today+75d",
+              "task_list": [
+                "tk07",
+                "tk08"
+              ],
+              "source_list": [
+                "so07",
+                "so08",
+                "so09",
+                "so15"
+              ]
+            }
+          },
+          {
+            "key": "ch6",
+            "values": {
+              "chapter_name": "Conclusion and future work",
+              "order": 6,
+              "status": "Not started",
+              "target": 5000,
+              "words": 0,
+              "draft_due": "@today+105d",
+              "task_list": [
+                "tk12"
+              ],
+              "source_list": [
+                "so09"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "source",
+        "name": "Sources",
+        "labelSingular": "Source",
+        "labelPlural": "Sources",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "library",
+        "titleField": "title",
+        "describes": "Papers, books and reports with how far each has been read and where it is used.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "authors",
+            "label": "Authors",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "year",
+            "label": "Year",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1900
+              },
+              {
+                "kind": "max",
+                "value": 2100
+              }
+            ]
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Journal",
+              "Book",
+              "Report",
+              "Thesis",
+              "Web"
+            ],
+            "choiceColors": {
+              "Journal": "blue",
+              "Book": "amber",
+              "Report": "teal",
+              "Thesis": "violet",
+              "Web": "pink"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To read",
+              "Reading",
+              "Read",
+              "Cited"
+            ],
+            "choiceColors": {
+              "To read": "slate",
+              "Reading": "blue",
+              "Read": "amber",
+              "Cited": "green"
+            },
+            "required": true,
+            "default": "To read"
+          },
+          {
+            "key": "rating",
+            "label": "Rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "chapter_list",
+            "label": "Used in",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "chapter",
+            "multi": true
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "key_claims",
+            "label": "Key claims",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "so01",
+            "values": {
+              "title": "Seasonal foraging in urban pollinators",
+              "authors": "Linde Verbruggen",
+              "year": 2019,
+              "type": "Journal",
+              "status": "Cited",
+              "rating": "5",
+              "chapter_list": [
+                "ch1",
+                "ch2"
+              ],
+              "link": "https://journals.northshorelibrary.net/pollinators",
+              "key_claims": "Relevant to chapter 1, chapter 2."
+            }
+          },
+          {
+            "key": "so02",
+            "values": {
+              "title": "Citizen science and data quality",
+              "authors": "Aaliyah Brooks, Tomas Weiss",
+              "year": 2021,
+              "type": "Journal",
+              "status": "Cited",
+              "rating": "4",
+              "chapter_list": [
+                "ch2",
+                "ch3"
+              ],
+              "link": "https://journals.northshorelibrary.net/citizen-science",
+              "key_claims": "Relevant to chapter 2, chapter 3."
+            }
+          },
+          {
+            "key": "so03",
+            "values": {
+              "title": "Spatial statistics for ecologists",
+              "authors": "Nikolai Petrenko",
+              "year": 2016,
+              "type": "Book",
+              "status": "Read",
+              "rating": "5",
+              "chapter_list": [
+                "ch3"
+              ],
+              "key_claims": "Relevant to chapter 3."
+            }
+          },
+          {
+            "key": "so04",
+            "values": {
+              "title": "Green roofs and insect diversity",
+              "authors": "Sakura Ito",
+              "year": 2020,
+              "type": "Journal",
+              "status": "Cited",
+              "rating": "4",
+              "chapter_list": [
+                "ch2",
+                "ch4"
+              ],
+              "link": "https://journals.northshorelibrary.net/green-roofs",
+              "key_claims": "Relevant to chapter 2, chapter 4."
+            }
+          },
+          {
+            "key": "so05",
+            "values": {
+              "title": "Urban biodiversity assessment handbook",
+              "authors": "Ministry of Environment Working Group",
+              "year": 2018,
+              "type": "Report",
+              "status": "Read",
+              "rating": "3",
+              "chapter_list": [
+                "ch1",
+                "ch3"
+              ],
+              "key_claims": "Relevant to chapter 1, chapter 3."
+            }
+          },
+          {
+            "key": "so06",
+            "values": {
+              "title": "Sampling design under constraints",
+              "authors": "Fiona McAllister",
+              "year": 2017,
+              "type": "Journal",
+              "status": "Read",
+              "rating": "4",
+              "chapter_list": [
+                "ch3"
+              ],
+              "link": "https://journals.northshorelibrary.net/sampling",
+              "key_claims": "Relevant to chapter 3."
+            }
+          },
+          {
+            "key": "so07",
+            "values": {
+              "title": "Bees in the city: a decade of surveys",
+              "authors": "Rohan Deshpande",
+              "year": 2022,
+              "type": "Journal",
+              "status": "Reading",
+              "rating": "4",
+              "chapter_list": [
+                "ch4",
+                "ch5"
+              ],
+              "link": "https://journals.northshorelibrary.net/city-bees",
+              "key_claims": "Relevant to chapter 4, chapter 5."
+            }
+          },
+          {
+            "key": "so08",
+            "values": {
+              "title": "Habitat corridors and pollinator movement",
+              "authors": "Elena Voss",
+              "year": 2023,
+              "type": "Journal",
+              "status": "To read",
+              "chapter_list": [
+                "ch5"
+              ],
+              "link": "https://journals.northshorelibrary.net/corridors",
+              "key_claims": "Relevant to chapter 5."
+            }
+          },
+          {
+            "key": "so09",
+            "values": {
+              "title": "Policy responses to pollinator decline",
+              "authors": "Marcus Obi",
+              "year": 2021,
+              "type": "Report",
+              "status": "To read",
+              "chapter_list": [
+                "ch5",
+                "ch6"
+              ],
+              "key_claims": "Relevant to chapter 5, chapter 6."
+            }
+          },
+          {
+            "key": "so10",
+            "values": {
+              "title": "Mixed methods in conservation science",
+              "authors": "Henrietta Clay",
+              "year": 2015,
+              "type": "Book",
+              "status": "Read",
+              "rating": "3",
+              "chapter_list": [
+                "ch3"
+              ],
+              "key_claims": "Relevant to chapter 3."
+            }
+          },
+          {
+            "key": "so11",
+            "values": {
+              "title": "Phenology shifts under urban heat",
+              "authors": "Kenji Watanabe",
+              "year": 2020,
+              "type": "Journal",
+              "status": "Reading",
+              "rating": "4",
+              "chapter_list": [
+                "ch4"
+              ],
+              "link": "https://journals.northshorelibrary.net/phenology",
+              "key_claims": "Relevant to chapter 4."
+            }
+          },
+          {
+            "key": "so12",
+            "values": {
+              "title": "Thesis: pollinator networks in suburban gardens",
+              "authors": "Amara Nwachukwu",
+              "year": 2019,
+              "type": "Thesis",
+              "status": "Read",
+              "rating": "3",
+              "chapter_list": [
+                "ch2"
+              ],
+              "key_claims": "Relevant to chapter 2."
+            }
+          },
+          {
+            "key": "so13",
+            "values": {
+              "title": "Web atlas of local pollinator records",
+              "authors": "Northshore Naturalists Network",
+              "year": 2024,
+              "type": "Web",
+              "status": "Cited",
+              "rating": "3",
+              "chapter_list": [
+                "ch4"
+              ],
+              "link": "https://atlas.northshorelibrary.net",
+              "key_claims": "Relevant to chapter 4."
+            }
+          },
+          {
+            "key": "so14",
+            "values": {
+              "title": "Statistical power in small field studies",
+              "authors": "Dagmar Eklund",
+              "year": 2018,
+              "type": "Journal",
+              "status": "To read",
+              "chapter_list": [
+                "ch4"
+              ],
+              "link": "https://journals.northshorelibrary.net/power",
+              "key_claims": "Relevant to chapter 4."
+            }
+          },
+          {
+            "key": "so15",
+            "values": {
+              "title": "Writing the discussion section",
+              "authors": "Priscilla Ferreira",
+              "year": 2014,
+              "type": "Book",
+              "status": "To read",
+              "chapter_list": [
+                "ch5"
+              ],
+              "key_claims": "Relevant to chapter 5."
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "The writing, reading and analysis work to finish each chapter.",
+        "subject": "thing",
+        "independentOf": {
+          "chapter": "A task falls due on the day that suits the plan, not the chapter's draft date."
+        },
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "chapter",
+            "label": "Chapter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "chapter",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Write",
+              "Read",
+              "Analyse",
+              "Experiment",
+              "Revise"
+            ],
+            "choiceColors": {
+              "Write": "blue",
+              "Read": "teal",
+              "Analyse": "violet",
+              "Experiment": "orange",
+              "Revise": "amber"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "tk01",
+            "values": {
+              "task_name": "Fix sampling table in methods",
+              "chapter": "ch3",
+              "due_on": "@today+3d",
+              "status": "In progress",
+              "type": "Revise"
+            }
+          },
+          {
+            "key": "tk02",
+            "values": {
+              "task_name": "Respond to advisor comments on chapter 3",
+              "chapter": "ch3",
+              "due_on": "@today+5d",
+              "status": "To do",
+              "type": "Revise"
+            }
+          },
+          {
+            "key": "tk03",
+            "values": {
+              "task_name": "Run second round of transect surveys",
+              "chapter": "ch4",
+              "due_on": "@today+9d",
+              "status": "In progress",
+              "type": "Experiment"
+            }
+          },
+          {
+            "key": "tk04",
+            "values": {
+              "task_name": "Clean survey data from June",
+              "chapter": "ch4",
+              "due_on": "@today+4d",
+              "status": "To do",
+              "type": "Analyse"
+            }
+          },
+          {
+            "key": "tk05",
+            "values": {
+              "task_name": "Draft results section 4.1",
+              "chapter": "ch4",
+              "due_on": "@today+12d",
+              "status": "To do",
+              "type": "Write"
+            }
+          },
+          {
+            "key": "tk06",
+            "values": {
+              "task_name": "Make map figures for chapter 4",
+              "chapter": "ch4",
+              "due_on": "@today+18d",
+              "status": "To do",
+              "type": "Analyse"
+            }
+          },
+          {
+            "key": "tk07",
+            "values": {
+              "task_name": "Read corridor study (Voss)",
+              "chapter": "ch5",
+              "due_on": "@today+7d",
+              "status": "To do",
+              "type": "Read"
+            }
+          },
+          {
+            "key": "tk08",
+            "values": {
+              "task_name": "Outline discussion themes",
+              "chapter": "ch5",
+              "due_on": "@today+20d",
+              "status": "To do",
+              "type": "Write"
+            }
+          },
+          {
+            "key": "tk09",
+            "values": {
+              "task_name": "Finalise references for chapter 2",
+              "chapter": "ch2",
+              "due_on": "@today-15d",
+              "status": "Done",
+              "type": "Revise"
+            }
+          },
+          {
+            "key": "tk10",
+            "values": {
+              "task_name": "Submit ethics amendment",
+              "chapter": "ch3",
+              "due_on": "@today-25d",
+              "status": "Done",
+              "type": "Write"
+            }
+          },
+          {
+            "key": "tk11",
+            "values": {
+              "task_name": "Book lab for equipment return",
+              "chapter": "ch4",
+              "due_on": "@today+2d",
+              "status": "To do",
+              "type": "Experiment"
+            }
+          },
+          {
+            "key": "tk12",
+            "values": {
+              "task_name": "Write conclusion skeleton",
+              "chapter": "ch6",
+              "due_on": "@today+40d",
+              "status": "To do",
+              "type": "Write"
+            }
+          }
+        ]
+      },
+      {
+        "token": "meeting",
+        "name": "Advisor meetings",
+        "labelSingular": "Advisor meeting",
+        "labelPlural": "Advisor meetings",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "topic",
+        "describes": "Each meeting with the advisor, what was decided and what happens next.",
+        "subject": "thing",
+        "before": [
+          [
+            "held_on",
+            "next_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "topic",
+            "label": "Topic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "held_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decisions",
+            "label": "Decisions",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "actions",
+            "label": "Action items",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "next_on",
+            "label": "Next meeting",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "mt1",
+            "values": {
+              "topic": "Methodology feedback",
+              "held_on": "@today-14d",
+              "decisions": "Tighten sampling justification; add power calculation",
+              "actions": "Run second transect round before summer break",
+              "next_on": "@today+0d"
+            }
+          },
+          {
+            "key": "mt2",
+            "values": {
+              "topic": "Results planning",
+              "held_on": "@today-35d",
+              "decisions": "Agree structure of chapter 4",
+              "actions": "Share draft headings by month end",
+              "next_on": "@today-14d"
+            }
+          },
+          {
+            "key": "mt3",
+            "values": {
+              "topic": "Defence timeline",
+              "held_on": "@today-70d",
+              "decisions": "Target defence at the end of the term",
+              "actions": "Book the committee in advance",
+              "next_on": "@today-35d"
+            }
+          },
+          {
+            "key": "mt4",
+            "values": {
+              "topic": "Chapter 3 review",
+              "held_on": "@today+7d",
+              "next_on": "@today+28d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A chapter lists its tasks.",
+        "fromTable": "chapter",
+        "fromField": "task_list",
+        "toTable": "task",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "chapter_of_task"
+      },
+      {
+        "describes": "A chapter lists the sources it draws on.",
+        "fromTable": "chapter",
+        "fromField": "source_list",
+        "toTable": "source",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "chapters_citing"
+      },
+      {
+        "describes": "A source lists the chapters that use it.",
+        "fromTable": "source",
+        "fromField": "chapter_list",
+        "toTable": "chapter",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "sources_for"
+      },
+      {
+        "describes": "Each task belongs to one chapter.",
+        "fromTable": "task",
+        "fromField": "chapter",
+        "toTable": "chapter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "log_source",
+        "name": "Log a source",
+        "describes": "A quick way to add a paper or book as soon as it is found.",
+        "audience": "staff",
+        "table": "source",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What is the title?",
+            "required": true
+          },
+          {
+            "fieldKey": "authors",
+            "ask": "Who wrote it?"
+          },
+          {
+            "fieldKey": "year",
+            "ask": "What year was it published?"
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What kind of source is it?"
+          },
+          {
+            "fieldKey": "link",
+            "ask": "Where can it be found?"
+          }
+        ],
+        "submitLabel": "Add source",
+        "confirmation": "Added to the reading queue."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_chapters",
+        "name": "All chapters",
+        "table": "chapter",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "order",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "chapter_board",
+        "name": "Board",
+        "table": "chapter",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "chapter_calendar",
+        "name": "Draft deadlines",
+        "table": "chapter",
+        "kind": "calendar",
+        "dateField": "draft_due"
+      },
+      {
+        "token": "all_sources",
+        "name": "All sources",
+        "table": "source",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "source_board",
+        "name": "Reading status",
+        "table": "source",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "source_types",
+        "name": "By type",
+        "table": "source",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "all_tasks",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "task_board",
+        "name": "Task board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_calendar",
+        "name": "Task calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_meetings",
+        "name": "Advisor meetings",
+        "table": "meeting",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "meeting_calendar",
+        "name": "Meeting calendar",
+        "table": "meeting",
+        "kind": "calendar",
+        "dateField": "held_on"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Thesis & Research Tracker assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "task",
+          "describes": "Every thesis task, its chapter, due day and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "chapter",
+          "describes": "The chapters tasks belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many sources are still To read?",
+        "whyItMatters": "Wren schedules reading time around the unread queue.",
+        "expect": {
+          "table": "source",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "To read"
+          },
+          "answer": 4,
+          "unit": "sources"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the chapter board.",
+        "action": {
+          "kind": "open",
+          "surface": "chapter_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "chapter_board",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open the reading status board.",
+        "action": {
+          "kind": "open",
+          "surface": "source_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "source_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the task calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "task_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "task_calendar",
+          "minItems": 10
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "northshorelibrary.net"
+      ],
+      "fictionalStreets": [
+        "Quillfeather Place"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "thesis-hq",
+      "parent": null,
+      "title": "Thesis HQ",
+      "icon": {
+        "emoji": "🎓"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One home for the whole thesis: chapters and word counts, the reading queue, the weekly task list and notes from every advisor meeting. Update word counts every Friday."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "GraduationCap"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.6
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Chapters"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "chapter",
+                      "view": "chapter_board"
+                    },
+                    "inline": true,
+                    "title": "Chapters",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-cb",
+                        "name": "Board",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "status"
+                      },
+                      {
+                        "id": "v-ct",
+                        "name": "All chapters",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "sorts": [
+                          {
+                            "field": "order",
+                            "direction": "asc"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "v-cc",
+                        "name": "Draft deadlines",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "draft_due"
+                      }
+                    ],
+                    "activeViewId": "v-cb"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.4
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next tasks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_tasks"
+                    },
+                    "inline": true,
+                    "title": "Tasks",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-n",
+                        "name": "Not done",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": [
+                            "To do",
+                            "In progress"
+                          ]
+                        },
+                        "sorts": [
+                          {
+                            "field": "due_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-n"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading queue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "source",
+              "view": "source_board"
+            },
+            "inline": true,
+            "title": "Sources",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-sb",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-sq",
+                "name": "To read",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "To read",
+                    "Reading"
+                  ]
+                }
+              },
+              {
+                "id": "v-sa",
+                "name": "All sources",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-sb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Task board"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-tb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-tc",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "v-tb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Advisor meetings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "meeting",
+              "view": "all_meetings"
+            },
+            "inline": true,
+            "title": "Advisor meetings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-m",
+                "name": "All meetings",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-mc",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "held_on"
+              }
+            ],
+            "activeViewId": "v-m"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:writing-progress"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:defence-checklist"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:writing-log"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Timeline"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Draft deadlines per chapter are on the Chapters calendar. Move a deadline when the advisor agrees a new plan."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "writing-progress",
+      "parent": "thesis-hq",
+      "title": "Writing progress",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "chapter",
+                      "view": "all_chapters"
+                    },
+                    "inline": true,
+                    "title": "Chapters",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "w1",
+                        "name": "Words by chapter",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "chapter_name",
+                          "op": "sum",
+                          "field": "words"
+                        }
+                      }
+                    ],
+                    "activeViewId": "w1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "chapter",
+                      "view": "all_chapters"
+                    },
+                    "inline": true,
+                    "title": "Chapters",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "w2",
+                        "name": "Chapters by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "w2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "source",
+                      "view": "all_sources"
+                    },
+                    "inline": true,
+                    "title": "Sources",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "w3",
+                        "name": "Sources by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "w3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open tasks per chapter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "chapter",
+              "view": "all_chapters"
+            },
+            "inline": true,
+            "title": "Chapters",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "w4",
+                "name": "Chapters",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "w4"
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Target about 600 new words on a writing day. Progress is words now divided by the word target."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "PenLine"
+          }
+        }
+      ]
+    },
+    {
+      "key": "defence-checklist",
+      "parent": "thesis-hq",
+      "title": "Defence checklist",
+      "icon": {
+        "emoji": "🏁"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Committee confirmed and room booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Full draft sent to committee four weeks ahead"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Slides drafted and rehearsed twice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ethics and data statements complete"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "References checked against the style guide"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print and binding ordered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Practise answers to three hard questions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "writing-log",
+      "parent": "thesis-hq",
+      "title": "Writing log",
+      "icon": {
+        "emoji": "📓"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A line a day is enough. Note what you wrote, how long it took and what comes next."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Words"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Note"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "620"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Finished methods tables"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "0"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Data cleaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "410"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Results outline"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thu"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "700"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chapter 4 section 1"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fri"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "250"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weekly review"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
