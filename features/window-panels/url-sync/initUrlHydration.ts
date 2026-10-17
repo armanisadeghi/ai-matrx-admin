@@ -363,7 +363,7 @@ export function initUrlHydration() {
         instanceId: "default",
         data: {
           selectedItemId: getRestorableResourceId(id, "credentialVaultWindow"),
-          scope: "mine",
+          location: "",
         },
       }),
     );

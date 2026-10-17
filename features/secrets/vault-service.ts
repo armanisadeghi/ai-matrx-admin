@@ -23,24 +23,15 @@ import {
   sendMatrxRequest,
 } from "@ai-matrx/api";
 import {
-  downloadVaultAttachment as downloadVaultAttachmentBytes,
-  replaceVaultAttachment as replaceVaultAttachmentBytes,
-  uploadVaultAttachment,
-} from "@/features/files/vault/vaultAttachmentTransport";
-import { credentialDefinitionSchema } from "@/features/admin/applications/catalogs/schemas";
-import {
   CREDENTIAL_ITEM_COLUMNS,
   VAULT_ATTACHMENT_COLUMNS,
   VAULT_FIELD_COLUMNS,
   normalizeNonSecretFields,
   normalizeExecutionPurpose,
   normalizeVaultHandling,
-  normalizeWireField,
   normalizeWireItem,
   normalizeWireAttachment,
-  toPrincipalIn,
   isOrganizationVaultAccess,
-  type CredentialDefinition,
   type MemberVaultAccessChoice,
   type OrganizationVaultAccess,
   type VaultMemberAccessList,
@@ -48,33 +39,13 @@ import {
   type CredentialItemMaskedRow,
   type VaultAttachment,
   type VaultAttachmentMaskedRow,
-  type VaultAttachmentUpdateRequest,
-  type VaultAttachmentWire,
-  type VaultAccessMode,
-  type VaultAssignRequest,
-  type VaultAssignResponse,
-  type VaultAuditEntry,
   type VaultCapabilities,
-  type VaultDestinationCheck,
   type VaultField,
-  type VaultFieldIn,
   type VaultFieldMaskedRow,
-  type VaultFieldMetadataRequest,
-  type VaultFieldWire,
-  type VaultGrant,
-  type VaultGrantee,
-  type VaultImportEnvRequest,
   type VaultItem,
   type VaultItemCreateRequest,
-  type VaultItemUpdateRequest,
   type VaultItemWire,
-  type VaultPrincipal,
-  type VaultPasswordHistoryResponse,
-  type VaultPasswordHistoryRevealResponse,
-  type VaultPasswordHistoryRestoreResponse,
-  type VaultRevealResponse,
   type VaultScope,
-  type VaultTransferResponse,
 } from "./types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
@@ -147,13 +118,6 @@ export type VaultExpectedActor = {
   userId: string;
   organizationId: string;
 };
-
-export type VaultLoginCsvPreviewRequest =
-  components["schemas"]["VaultLoginCsvPreviewRequest"];
-export type VaultLoginCsvPreviewResponse =
-  components["schemas"]["VaultLoginCsvPreviewResponse"];
-export type VaultLoginCsvDownloadRequest =
-  components["schemas"]["VaultLoginCsvDownloadRequest"];
 export type VaultVerifiedExportActor = VaultExpectedActor & {
   email: string;
 };
@@ -211,38 +175,6 @@ export class VaultRestoreTransportError extends Error {
             : code === "native_recovery_unavailable"
               ? "Native passkey recovery is currently unavailable. Reload Trash and try again; your retained recovery data is preserved."
               : "This credential could not be restored. Review its recovery details and try again.",
-    );
-  }
-}
-
-export class VaultLoginExportTransportError extends Error {
-  constructor(
-    public readonly code:
-      | "recent_auth_required"
-      | "preview_stale"
-      | "export_unavailable"
-      | "missing_or_forbidden"
-      | "limit_exceeded"
-      | "context_changed"
-      | "request_rejected"
-      | "unreachable",
-  ) {
-    super(
-      code === "recent_auth_required"
-        ? "Confirm your identity before exporting selected logins."
-        : code === "preview_stale"
-          ? "Your selected logins changed. Review the current selection again."
-          : code === "export_unavailable"
-            ? "These selected logins cannot be exported right now. Review the preview and try again."
-            : code === "missing_or_forbidden"
-              ? "One or more selected logins are no longer available. Reload your Vault and select them again."
-              : code === "limit_exceeded"
-                ? "This selection exceeds the Vault export limit. Reduce the selection and try again."
-                : code === "context_changed"
-                  ? "Your account or request organization changed. Start the export again."
-                  : code === "unreachable"
-                    ? "Vault export is unavailable. Try again when the service is online."
-                    : "Vault export could not be completed. Review the selection and try again.",
     );
   }
 }
@@ -427,18 +359,6 @@ function hasFreshPasswordAmr(claims: unknown): boolean {
   });
 }
 
-async function assertVaultExportActor(
-  expectedActor: VaultExpectedActor,
-): Promise<void> {
-  const actual = await getVaultExportActor();
-  if (
-    actual.userId !== expectedActor.userId ||
-    actual.organizationId !== expectedActor.organizationId
-  ) {
-    throw new VaultLoginExportTransportError("context_changed");
-  }
-}
-
 async function assertVaultRestoreActor(
   expectedActor: VaultExpectedActor,
 ): Promise<void> {
@@ -449,95 +369,6 @@ async function assertVaultRestoreActor(
   ) {
     throw new VaultRestoreTransportError("context_changed");
   }
-}
-
-async function exportFailureCode(
-  resp: Response,
-): Promise<VaultLoginExportTransportError["code"]> {
-  // The structured recent-auth code is intentionally the only detail the
-  // browser reads. Never match server prose, which is neither a stable wire
-  // contract nor a safe place for sensitive diagnostics.
-  if (resp.status === 401) {
-    // An unparseable response is not evidence of the reauthentication gate.
-    if (rootErrorCode(await readJsonOrNull(resp)) === "recent_auth_required") {
-      return "recent_auth_required";
-    }
-    return "request_rejected";
-  }
-  if (resp.status === 404) return "missing_or_forbidden";
-  if (resp.status === 413) return "limit_exceeded";
-  if (resp.status === 409) {
-    // An unparseable body: the status is still a safe value-free export failure.
-    if (rootErrorCode(await readJsonOrNull(resp)) === "preview_stale") {
-      return "preview_stale";
-    }
-    return "export_unavailable";
-  }
-  return resp.status >= 500 ? "unreachable" : "request_rejected";
-}
-
-async function vaultExportResponse(
-  path: string,
-  body: VaultLoginCsvPreviewRequest | VaultLoginCsvDownloadRequest,
-  expectedActor: VaultExpectedActor,
-  signal?: AbortSignal,
-): Promise<Response> {
-  const { organizationId, headers: auth } = await authHeaders(
-    expectedActor,
-    () => new VaultLoginExportTransportError("context_changed"),
-  );
-  let resp: Response;
-  try {
-    resp = await vaultRequest(
-      path,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-        signal,
-        cache: "no-store",
-      },
-      auth,
-      organizationId,
-    );
-  } catch (cause) {
-    if (cause instanceof DOMException && cause.name === "AbortError")
-      throw cause;
-    throw new VaultLoginExportTransportError("unreachable");
-  }
-  await assertVaultExportActor(expectedActor);
-  if (!resp.ok)
-    throw new VaultLoginExportTransportError(await exportFailureCode(resp));
-  return resp;
-}
-
-export async function previewVaultLoginCsv(
-  body: VaultLoginCsvPreviewRequest,
-  expectedActor: VaultExpectedActor,
-  signal?: AbortSignal,
-): Promise<VaultLoginCsvPreviewResponse> {
-  const response = await vaultExportResponse(
-    "/exports/login-csv/preview",
-    body,
-    expectedActor,
-    signal,
-  );
-  return (await response.json()) as VaultLoginCsvPreviewResponse;
-}
-
-/** Returns bytes only to the caller's event handler. Do not store the Blob. */
-export async function downloadVaultLoginCsv(
-  body: VaultLoginCsvDownloadRequest,
-  expectedActor: VaultExpectedActor,
-  signal?: AbortSignal,
-): Promise<Blob> {
-  const response = await vaultExportResponse(
-    "/exports/login-csv",
-    body,
-    expectedActor,
-    signal,
-  );
-  await assertVaultExportActor(expectedActor);
-  return response.blob();
 }
 
 function restoreFailureCode(
@@ -746,17 +577,6 @@ async function vaultFetch<T>(
   }
 }
 
-/** Advisory destination validation. It never reads a response body and callers
- * must never make Vault saving depend on a remote site's availability. */
-export function checkVaultDestination(
-  url: string,
-): Promise<VaultDestinationCheck> {
-  return vaultFetch<VaultDestinationCheck>("/destination/check", {
-    method: "POST",
-    body: JSON.stringify({ url }),
-  });
-}
-
 type VaultItemCreateOptions =
   FrozenVaultImport | { idempotencyKey?: never; expectedActor?: never };
 
@@ -787,302 +607,6 @@ export function createVaultItem(
     },
     options,
   ).then(normalizeWireItem);
-}
-
-/** Freeze actor + request organization at confirmation, then recheck both at every send. */
-export async function getVaultImportActor(): Promise<VaultExpectedActor> {
-  const supabase = createClient();
-  const {
-    data: { user },
-    error,
-  } = await getClaimsUser(supabase);
-  if (error || !user) throw new Error("Not signed in");
-  const organizationId = await readActiveOrganizationForIdentity(); // org-filter: server-call freezes the organization the vault import request runs in
-  return { userId: user.id, organizationId };
-}
-
-export async function importVaultEnv(
-  body: VaultImportEnvRequest,
-): Promise<{ items: VaultItem[]; count: number }> {
-  const resp = await vaultFetch<{ items: VaultItemWire[]; count: number }>(
-    "/items/import-env",
-    { method: "POST", body: JSON.stringify(body) },
-  );
-  return { items: resp.items.map(normalizeWireItem), count: resp.count };
-}
-
-export function getVaultItem(itemId: string): Promise<VaultItem> {
-  return vaultFetch<VaultItemWire>(`/items/${encodeURIComponent(itemId)}`).then(
-    normalizeWireItem,
-  );
-}
-
-export function updateVaultItem(
-  itemId: string,
-  body: VaultItemUpdateRequest,
-): Promise<VaultItem> {
-  return vaultFetch<VaultItemWire>(`/items/${encodeURIComponent(itemId)}`, {
-    method: "PATCH",
-    body: JSON.stringify(body),
-  }).then(normalizeWireItem);
-}
-
-export function deleteVaultItem(itemId: string): Promise<void> {
-  return vaultFetch<void>(`/items/${encodeURIComponent(itemId)}`, {
-    method: "DELETE",
-  });
-}
-
-export function addVaultAttachment(
-  itemId: string,
-  file: File,
-  metadata: { label: string; description?: string; handling: string },
-): Promise<VaultAttachment> {
-  return uploadVaultAttachment<VaultAttachmentWire>(
-    itemId,
-    file,
-    metadata,
-  ).then(normalizeWireAttachment);
-}
-
-export function updateVaultAttachment(
-  itemId: string,
-  attachmentId: string,
-  body: VaultAttachmentUpdateRequest,
-): Promise<VaultAttachment> {
-  return vaultFetch<VaultAttachmentWire>(
-    `/items/${encodeURIComponent(itemId)}/attachments/${encodeURIComponent(attachmentId)}`,
-    { method: "PATCH", body: JSON.stringify(body) },
-  ).then(normalizeWireAttachment);
-}
-
-export function replaceVaultAttachment(
-  itemId: string,
-  attachmentId: string,
-  file: File,
-): Promise<VaultAttachment> {
-  return replaceVaultAttachmentBytes<VaultAttachmentWire>(
-    itemId,
-    attachmentId,
-    file,
-  ).then(normalizeWireAttachment);
-}
-
-export function deleteVaultAttachment(
-  itemId: string,
-  attachmentId: string,
-): Promise<void> {
-  return vaultFetch<void>(
-    `/items/${encodeURIComponent(itemId)}/attachments/${encodeURIComponent(attachmentId)}`,
-    { method: "DELETE" },
-  );
-}
-
-export function downloadVaultAttachment(
-  itemId: string,
-  attachmentId: string,
-  fileName: string,
-): Promise<void> {
-  return downloadVaultAttachmentBytes(itemId, attachmentId, fileName);
-}
-
-export function addVaultField(
-  itemId: string,
-  field: VaultFieldIn,
-): Promise<VaultField> {
-  return vaultFetch<VaultFieldWire>(
-    `/items/${encodeURIComponent(itemId)}/fields`,
-    { method: "POST", body: JSON.stringify(field) },
-  ).then(normalizeWireField);
-}
-
-export function updateVaultFieldValue(
-  itemId: string,
-  fieldId: string,
-  value: string,
-): Promise<VaultField> {
-  return vaultFetch<VaultFieldWire>(
-    `/items/${encodeURIComponent(itemId)}/fields/${encodeURIComponent(fieldId)}/value`,
-    { method: "PUT", body: JSON.stringify({ value }) },
-  ).then(normalizeWireField);
-}
-
-/** Metadata-only field PATCH (inject flag, env alias set/clear, description,
- *  handling, editable, is_active). Requires `can_edit`; the server enforces
- *  the one-way seal door (403 on any change away from `sealed`). */
-export function updateVaultFieldMetadata(
-  itemId: string,
-  fieldId: string,
-  body: VaultFieldMetadataRequest,
-): Promise<VaultField> {
-  return vaultFetch<VaultFieldWire>(
-    `/items/${encodeURIComponent(itemId)}/fields/${encodeURIComponent(fieldId)}`,
-    { method: "PATCH", body: JSON.stringify(body) },
-  ).then(normalizeWireField);
-}
-
-export function deleteVaultField(
-  itemId: string,
-  fieldId: string,
-): Promise<void> {
-  return vaultFetch<void>(
-    `/items/${encodeURIComponent(itemId)}/fields/${encodeURIComponent(fieldId)}`,
-    { method: "DELETE" },
-  );
-}
-
-/** Explicit reveal of ONE `revealable` field. The response is the only
- *  plaintext-bearing shape — keep it component-local with an auto-clear. */
-export function revealVaultField(
-  itemId: string,
-  fieldKey: string,
-): Promise<VaultRevealResponse> {
-  return vaultFetch<VaultRevealResponse>(
-    `/items/${encodeURIComponent(itemId)}/reveal`,
-    { method: "POST", body: JSON.stringify({ field_key: fieldKey }) },
-  );
-}
-
-/** Metadata only. This intentionally bypasses query caches and never asks
- * Supabase for history, whose classified rows are server-owned. */
-export function fetchVaultPasswordHistory(
-  itemId: string,
-  beforeRevision?: number,
-): Promise<VaultPasswordHistoryResponse> {
-  const query = beforeRevision ? `?before_revision=${beforeRevision}` : "";
-  return vaultFetch<VaultPasswordHistoryResponse>(
-    `/items/${encodeURIComponent(itemId)}/password-history${query}`,
-    { cache: "no-store" },
-  );
-}
-
-/** Explicitly reveal one historical password state. Keep its plaintext in a
- * transient component holder; no caller may cache or copy it automatically. */
-export function revealVaultPasswordHistory(
-  itemId: string,
-  fieldId: string,
-  revision: number,
-): Promise<VaultPasswordHistoryRevealResponse> {
-  return vaultFetch<VaultPasswordHistoryRevealResponse>(
-    `/items/${encodeURIComponent(itemId)}/password-history/reveal`,
-    {
-      method: "POST",
-      body: JSON.stringify({ field_id: fieldId, revision }),
-      cache: "no-store",
-    },
-  );
-}
-
-/** Restore a recorded predecessor as a new current password revision. The
- * endpoint is no-store and returns metadata only. */
-export function restoreVaultPasswordHistory(
-  itemId: string,
-  fieldId: string,
-  revision: number,
-  expectedHistoryRevision: number,
-): Promise<VaultPasswordHistoryRestoreResponse> {
-  return vaultFetch<VaultPasswordHistoryRestoreResponse>(
-    `/items/${encodeURIComponent(itemId)}/password-history/restore`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        field_id: fieldId,
-        revision,
-        expected_history_revision: expectedHistoryRevision,
-      }),
-      cache: "no-store",
-    },
-  );
-}
-
-/** Browser-facing resolution of non-sealed fields ({item_id/field_key: value}).
- *  Used to show `visible` fields; sealed is structurally refused upstream. */
-export function resolveVaultFields(
-  refs: { item_id: string; field_key: string }[],
-): Promise<Record<string, string>> {
-  return vaultFetch<{ values: Record<string, string> }>("/resolve", {
-    method: "POST",
-    body: JSON.stringify({ refs }),
-  }).then((r) => r.values);
-}
-
-export function rotateVaultItem(
-  itemId: string,
-  values: Record<string, string>,
-): Promise<VaultItem> {
-  return vaultFetch<VaultItemWire>(
-    `/items/${encodeURIComponent(itemId)}/rotate`,
-    {
-      method: "POST",
-      body: JSON.stringify({ values }),
-    },
-  ).then(normalizeWireItem);
-}
-
-/**
- * Organization access-mode flip ONLY (`all_members` ↔ `restricted`).
- *
- * This is the legacy REPLACE-the-whole-set path: it deletes and recreates
- * every grant, and drops all grantees when `all_members` is sent. Personal
- * sharing MUST use the per-recipient operations below — that is what stops a
- * share edit from silently revoking someone it never loaded.
- */
-export function setVaultAccessMode(
-  itemId: string,
-  accessMode: VaultAccessMode,
-  grantees: VaultGrantee[] = [],
-): Promise<VaultItem> {
-  return vaultFetch<VaultItemWire>(
-    `/items/${encodeURIComponent(itemId)}/share`,
-    {
-      method: "PUT",
-      body: JSON.stringify({ access_mode: accessMode, grantees }),
-    },
-  ).then(normalizeWireItem);
-}
-
-// ── Grants: one recipient at a time ───────────────────────────────────────
-
-/** Current recipients. The share panel MUST load these before rendering. */
-export function fetchVaultGrants(itemId: string): Promise<VaultGrant[]> {
-  return vaultFetch<{ grants: VaultGrant[]; count: number }>(
-    `/items/${encodeURIComponent(itemId)}/grants`,
-  ).then((r) => r.grants);
-}
-
-/** Share with ONE person by exact email. Others are untouched. */
-export function addVaultGrant(
-  itemId: string,
-  body: { recipient_email: string; can_use?: boolean; can_manage?: boolean },
-): Promise<VaultGrant> {
-  return vaultFetch<VaultGrant>(`/items/${encodeURIComponent(itemId)}/grants`, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
-
-export function updateVaultGrant(
-  itemId: string,
-  grantId: string,
-  body: { can_use?: boolean; can_manage?: boolean },
-): Promise<VaultGrant> {
-  return vaultFetch<VaultGrant>(
-    `/items/${encodeURIComponent(itemId)}/grants/${encodeURIComponent(grantId)}`,
-    { method: "PATCH", body: JSON.stringify(body) },
-  );
-}
-
-/** Share a personal item into ONE organization's vault (access ladder
- *  decision 14). `can_manage: false` = use (sign in without seeing values);
- *  `true` = editor. Change or revoke it with the ordinary per-grant calls. */
-export function addVaultOrganizationGrant(
-  itemId: string,
-  body: { organization_id: string; can_manage?: boolean },
-): Promise<VaultGrant> {
-  return vaultFetch<VaultGrant>(
-    `/items/${encodeURIComponent(itemId)}/organization-grants`,
-    { method: "POST", body: JSON.stringify(body) },
-  );
 }
 
 /** Every member's access to one organization's vault. Owners/admins only. */
@@ -1123,87 +647,6 @@ export async function fetchMyOrganizationVaultAccess(
     );
   }
   return data;
-}
-
-/** Revoke ONE recipient — immediate for list, reveal, and execution. */
-export function removeVaultGrant(
-  itemId: string,
-  grantId: string,
-): Promise<void> {
-  return vaultFetch<void>(
-    `/items/${encodeURIComponent(itemId)}/grants/${encodeURIComponent(grantId)}`,
-    { method: "DELETE" },
-  );
-}
-
-// ── Ownership transfer + assignment ───────────────────────────────────────
-
-/** Move between the actor's OWN scopes (personal ↔ organization). */
-export function transferVaultItem(
-  itemId: string,
-  to: VaultPrincipal,
-): Promise<VaultItem> {
-  return vaultFetch<VaultItemWire>(
-    `/items/${encodeURIComponent(itemId)}/transfer`,
-    {
-      method: "POST",
-      body: JSON.stringify({ to_principal: toPrincipalIn(to) }),
-    },
-  ).then(normalizeWireItem);
-}
-
-/**
- * Give ownership to ANOTHER user by exact email. The sender loses ALL future
- * access and every existing grant is cleared, so the response is a
- * confirmation rather than a usable item.
- */
-export function giveVaultItemOwnership(
-  itemId: string,
-  recipientEmail: string,
-): Promise<VaultTransferResponse> {
-  return vaultFetch<VaultTransferResponse>(
-    `/items/${encodeURIComponent(itemId)}/transfer`,
-    {
-      method: "POST",
-      body: JSON.stringify({ recipient_email: recipientEmail }),
-    },
-  );
-}
-
-/**
- * Create an item ALREADY OWNED by someone else. With `generate_field_key` the
- * server generates that value and never returns it — the response carries
- * identity and confirmation only.
- */
-export function assignVaultItem(
-  body: VaultAssignRequest,
-): Promise<VaultAssignResponse> {
-  return vaultFetch<VaultAssignResponse>("/items/assign", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
-
-export function forkVaultItem(
-  itemId: string,
-  to: VaultPrincipal,
-): Promise<VaultItem> {
-  return vaultFetch<VaultItemWire>(
-    `/items/${encodeURIComponent(itemId)}/fork`,
-    {
-      method: "POST",
-      body: JSON.stringify({ to_principal: toPrincipalIn(to) }),
-    },
-  ).then(normalizeWireItem);
-}
-
-export function fetchVaultAudit(
-  itemId: string,
-  limit = 100,
-): Promise<VaultAuditEntry[]> {
-  return vaultFetch<{ entries: VaultAuditEntry[]; count: number }>(
-    `/items/${encodeURIComponent(itemId)}/audit?limit=${limit}`,
-  ).then((r) => r.entries);
 }
 
 // ── Direct Supabase masked reads (the canonical list path) ────────────────
@@ -1296,86 +739,6 @@ function deriveCapabilities(
     can_reveal: canManageGrant,
     can_manage: false,
   };
-}
-
-/**
- * WHERE THIS CREDENTIAL LIVES — read from the credential, never from the person.
- *
- * THE OWNER'S LAW (2026-09-23): the permission is to the person, never the
- * organization; the organization the person is working in never decides
- * whether ONE credential opens. `/vault/<id>` used to look the id up inside
- * whichever list scope happened to be showing ("Mine" by default), so a
- * credential of one of her organizations, or one shared with her, opened as
- * nothing. This asks the row itself under RLS — the same policies that decide
- * whether she may read it at all — and names the scope that holds it.
- *
- *   found     → the scope the credential is listed in (mine / shared / its organization)
- *   not-given → RLS returned no row: not hers, or not there (never told apart, on purpose)
- *   unavailable → we could not ask; never folded into either answer above
- */
-export type CredentialHome =
-  | { state: "found"; scope: VaultScope }
-  | { state: "not-given" }
-  | { state: "unavailable"; why: string };
-
-export async function resolveCredentialHome(
-  itemId: string,
-): Promise<CredentialHome> {
-  try {
-    const supabase = createClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await getClaimsUser(supabase);
-    if (userError || !user)
-      return { state: "unavailable", why: "Not signed in" };
-    const { data, error } = await supabase
-      .schema("users")
-      .from("credential_items")
-      .select("id, user_id, organization_id")
-      .eq("id", itemId)
-      .is("deleted_at", null)
-      .maybeSingle();
-    if (error) return { state: "unavailable", why: error.message };
-    if (!data) return { state: "not-given" };
-    if (data.organization_id) {
-      return {
-        state: "found",
-        scope: { kind: "organization", organizationId: data.organization_id },
-      };
-    }
-    if (data.user_id === user.id)
-      return { state: "found", scope: { kind: "mine" } };
-    // Someone else's personal credential reaches me one of two ways: shared
-    // with me by name ("Shared with me" lists it), or shared into one of my
-    // organizations' vaults (only that organization's list holds it). RLS
-    // returns my own grant rows and the organization grants of vaults I may
-    // open, so the row that exists names the list — carrying an org-vault
-    // share to "Shared with me" opened nothing (access ladder T-28).
-    const { data: grants, error: grantsError } = await supabase
-      .schema("users")
-      .from("user_secret_grants")
-      .select("user_id, organization_id")
-      .eq("credential_item_id", itemId);
-    if (grantsError) return { state: "unavailable", why: grantsError.message };
-    const byName = (grants ?? []).some((g) => g.user_id === user.id);
-    const orgShare = (grants ?? []).find((g) => g.organization_id);
-    if (!byName && orgShare?.organization_id) {
-      return {
-        state: "found",
-        scope: {
-          kind: "organization",
-          organizationId: orgShare.organization_id,
-        },
-      };
-    }
-    return { state: "found", scope: { kind: "shared" } };
-  } catch (e) {
-    return {
-      state: "unavailable",
-      why: e instanceof Error ? e.message : "The vault did not answer.",
-    };
-  }
 }
 
 // TYPING NOTE: `users.credential_item_holdings` arrives with
@@ -1719,103 +1082,4 @@ export async function fetchVaultItems(
       orgShareEditIds,
     }),
   }));
-}
-
-// ── Catalog definitions (public.catalog_entries, kind=credential_definition) ─
-
-export async function fetchCredentialDefinitions(): Promise<
-  CredentialDefinition[]
-> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("catalog_entries")
-    .select("key, payload, sort_order")
-    .eq("kind", "credential_definition")
-    .eq("app", "matrx")
-    .eq("is_active", true)
-    .is("deleted_at", null)
-    .order("sort_order", { ascending: true })
-    .order("key", { ascending: true });
-  assertVaultData(data, error, "load the credential catalog");
-
-  const defs: CredentialDefinition[] = [];
-  for (const row of data ?? []) {
-    const parsed = credentialDefinitionSchema.safeParse(row.payload);
-    if (!parsed.success) {
-      // Loud: a catalog row failing its own schema is a data defect.
-      console.error(
-        `[vault] credential_definition '${row.key}' failed schema validation — skipped`,
-        parsed.error.issues,
-      );
-      continue;
-    }
-    defs.push({ key: row.key, payload: parsed.data });
-  }
-  return defs;
-}
-
-// ── Fill devices (access ladder T-30) ─────────────────────────────────────
-
-/** One browser (an AI Matrx extension install) that may fill saved passwords. */
-export interface VaultFillDevice {
-  id: string;
-  label: string;
-  extension_origin: string | null;
-  registered_at: string | null;
-  last_used_at: string | null;
-  revoked_at: string | null;
-  revoke_reason: string | null;
-  key_thumbprint: string;
-}
-
-/** The browsers that may fill this person's saved passwords, newest first. */
-export async function listVaultFillDevices(): Promise<VaultFillDevice[]> {
-  const resp = await vaultFetch<{ devices: VaultFillDevice[] }>(
-    "/fill-devices",
-  );
-  return resp.devices;
-}
-
-/** Turn filling off for one browser. It stays listed as turned off (audited). */
-export function revokeVaultFillDevice(
-  deviceId: string,
-): Promise<VaultFillDevice> {
-  return vaultFetch<VaultFillDevice>(
-    `/fill-devices/${encodeURIComponent(deviceId)}/revoke`,
-    { method: "POST" },
-  );
-}
-
-/** How this person can confirm it is them to turn filling on in a browser. */
-export interface VaultFillStepUpMethods {
-  password: boolean;
-  passkey: boolean;
-}
-
-export function getVaultFillStepUpMethods(): Promise<VaultFillStepUpMethods> {
-  return vaultFetch<VaultFillStepUpMethods>("/fill-devices/step-up-methods");
-}
-
-/** Approve ONE browser's key with the person's passkey (T-30c). The assertion
- * is verified by the auth server; the approval is single-use and expires in
- * minutes. The extension claims it the next time it turns filling on. */
-export function approveVaultFillDeviceWithPasskey(params: {
-  keyThumbprint: string;
-  label: string | null;
-  /** What is being approved — the extension ("browser") or the macOS native
-   * password app ("mac"). Unset reads as "browser" on the server. */
-  deviceKind?: "browser" | "mac" | null;
-  challengeId: string;
-  credential: Record<string, unknown>;
-}): Promise<{ approved: boolean; key_thumbprint: string; expires_at: string }> {
-  return vaultFetch("/fill-devices/approvals", {
-    method: "POST",
-    body: JSON.stringify({
-      key_thumbprint: params.keyThumbprint,
-      label: params.label,
-      device_kind: params.deviceKind ?? null,
-      challenge_id: params.challengeId,
-      credential: params.credential,
-    }),
-  });
 }

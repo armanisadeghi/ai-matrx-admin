@@ -1,6 +1,6 @@
 # Secrets — Unified Credential Vault
 
-> **Status:** active · **Tier:** 1 · **Owners:** platform · **Updated:** 2026-09-19
+> **Status:** active · **Tier:** 1 · **Owners:** platform · **Updated:** 2026-10-16
 
 > Cross-repo implementation authority: `/Users/armanisadeghi/code/common-docs/systems/account/vault-secrets/FEATURE.md` — read it before expanding this feature in ANY repository.
 >
@@ -10,10 +10,6 @@
 >
 > **Picking this up cold?** `/Users/armanisadeghi/code/common-docs/projects/credential-sharing-browser-login/REGISTER.md` — vision, gap analysis, cross-repo architecture, next steps, and landmines. Start there.
 
-The backup dialog displays per-record alias conflicts with a rename/remove-alias
-remedy and confirms that existing credentials were unchanged. Retry retains the
-same restore run, so already completed records replay without duplication.
-
 ONE definition-driven vault for both principals — personal and organization — covering env values, API keys, logins, tokens, service accounts, and multi-field credential bundles. A **credential item** (`users.credential_items`) owns one or more encrypted **fields** (`users.user_secrets`); non-secret **definitions and provider presets** come from Remote Catalogs (`public.catalog_entries`, kind `credential_definition`, app `matrx`, 120+ active).
 
 Items may also own multiple encrypted **protected files**
@@ -22,14 +18,38 @@ recovery exports. Attachment metadata is shown as explicit labeled values
 (label, filename, purpose, type/size, protection); bytes never enter list JSON,
 Redux, storage, URLs, or logs.
 
-## The one workspace
+## The one workspace — `@ai-matrx/vault`
 
-`components/VaultWorkspace.tsx` is the ONLY vault UI. It receives a `VaultPrincipal` (`{type:'user'}` or `{type:'organization', organizationId}`); which actions render is decided by each item's `capabilities` (`can_use` / `can_edit` / `can_reveal` / `can_manage`) — never by principal-specific component forks. Surfaces:
+Every Vault screen is the shared package `@ai-matrx/vault` (source `aidream/apps/shared/vault`, its own `FEATURE.md`): the same `VaultApp` the browser extension and the desktop app render. This folder keeps no screen. [`components/WebVault.tsx`](./components/WebVault.tsx) is the website's host and supplies identity only:
 
-- Personal: [`app/(core)/vault/page.tsx`](<../../app/(core)/vault/page.tsx>). The legacy `/settings/secrets` URL redirects here; it does not render a second settings-shaped Vault.
-- Organization: `OrgManage.tsx` (`features/organizations/components/`) renders `<VaultWorkspace principal={{type:'organization',…}} canManage={…}>` in its Vault section.
+- port: `createApiVaultPort(serverApi, { userState: supabase, platformDoor: supabase.schema("platform"), passkeys: supabase.auth })` — `serverApi` (`lib/api/server-api.ts`) is the app's one `@ai-matrx/api` client;
+- host: `identity: createSupabaseIdentity(supabase.auth, { redirectTo })`, `knobs: createVaultKnobs(supabase, { organizationId, userId })` (the placement's organization, else the active one), `openUrl` through `openOutbound`, `notify` through `@/lib/toast`;
+- styles: `@source "../node_modules/@ai-matrx/vault/dist"` in `app/globals.css`.
 
-The pre-unification duplicate stacks (`service.ts`, `hooks.ts`, `organization-service.ts`, `organization-hooks.ts`, `OrganizationVaultSection.tsx`) are **deleted** — do not recreate a per-principal fork.
+Placements:
+
+| Where | How the location is kept |
+|---|---|
+| `/vault`, `/vault/[itemId]` (`VaultRouteBody`) | Item id in the path, everything else in query params (`locationToParams` / `locationFromParams`); writes go through `push/replaceAddressWithoutNavigating` (no RSC round trip, no remount) |
+| `/vault/authenticator` | Redirects to `/vault?view=authenticator` |
+| `/vault/approve-browser?key=&label=[&kind=]` | Redirects to `/vault?panel=approve:<key>&label=…`; the host carries `label`/`kind` while that panel is open |
+| Vault window (`features/window-panels/windows/vault/VaultWindow.tsx`) | In memory; persisted as `{ selectedItemId, location }` (query text, never a value) |
+| Organization page vault section (`OrganizationVault`, `OrgManage.tsx`) | In memory, opened on `vault=<organizationId>` |
+
+"Add a login" elsewhere (`features/marketing/social/gated/CloudCaptureButton.tsx`) opens the Vault window at `mode=new&kind=website_login&url=…` and re-reads its logins when the window closes.
+
+## What else this folder still holds (and who uses it)
+
+Hand-written transport kept only for consumers outside the Vault screens; each is a candidate to move onto the package's port (`createApiVaultPort`) or `@ai-matrx/api/account` and then be deleted:
+
+| Export | Used by |
+|---|---|
+| `fetchVaultItems`, type `VaultItem` | `features/marketing/connections/DomainConnections.tsx`, `features/marketing/news-monitor/DeliveryControls.tsx` (credential pickers) |
+| `createVaultItem` | `features/spaces/io/NotionImport.tsx`, `features/unified-data/base/AirtableImportDialog.tsx` |
+| `getVaultExportActor`, `confirmVaultPasswordIdentity`, `restoreVaultItem`, `VaultRestoreTransportError`, `VaultIdentityConfirmationError`, types `VaultRestoreResult` / `VaultVerifiedExportActor` | `app/(core)/trash/page.tsx`, `features/trash/VaultTrashRestoreDialog.tsx`, `components/VaultRevealReauthDialog.tsx` |
+| `fetchOrganizationVaultMemberAccess`, `setOrganizationVaultMemberAccess` (via `components/MemberVaultAccessControl.tsx`) | `features/organizations/components/MemberManagement.tsx` |
+| `components/VaultRevealReauthDialog.tsx` | `features/sharing/secure/SecureLinkPanel.tsx` |
+| `safeVaultLoginUrl` (`utils.ts`) | `features/organizations/provider-accounts/ProviderAccountsSection.tsx` |
 
 ## Item/field model and handling doctrine
 
@@ -51,8 +71,8 @@ Field metadata (inject flag, env alias set/clear, description, `is_active`, hand
 
 ## Trust boundary — two data paths, one per operation
 
-1. **Masked metadata → DIRECT Supabase.** Items + fields + catalog definitions are read via supabase-js with the **explicit column lists** `CREDENTIAL_ITEM_COLUMNS` / `VAULT_FIELD_COLUMNS` (`types.ts`). `users.user_secrets.value_encrypted` is unreadable by client roles — **never `select *` on these tables.** Scope is declared per THE VIEW LAW — see Scopes below; RLS provides owner reads, org-member masked reads, personal-grantee reads, and self-reads on `user_secret_grants`.
-2. **Everything value-bearing or mutating → aidream `/api/vault/*`** (`vault-service.ts`): create/update/delete items and fields, import-env, CSV import, reveal, resolve, rotate, share, transfer, fork, audit. The legacy `/api/user-secrets` + `/api/organization-secrets` routes are server-side aliases only — this FE must never call them.
+1. **Masked metadata → DIRECT Supabase.** Items + fields + catalog definitions are read via supabase-js with the **explicit column lists** `CREDENTIAL_ITEM_COLUMNS` / `VAULT_FIELD_COLUMNS` (`types.ts`). `users.user_secrets.value_encrypted` is unreadable by client roles — **never `select *` on these tables.** Scope is declared per THE VIEW LAW; RLS provides owner reads, org-member masked reads, personal-grantee reads, and self-reads on `user_secret_grants`.
+2. **Everything value-bearing or mutating → aidream `/api/vault/*`** (the package's `createApiVaultPort` over `@ai-matrx/api`; the few kept `vault-service.ts` calls above). The legacy `/api/user-secrets` + `/api/organization-secrets` routes are server-side aliases only — this FE must never call them.
 
 Every Vault and Authenticator aidream transport requires the explicitly
 selected request organization from `appContext.organization_id` and sends it
@@ -64,325 +84,17 @@ request but does not replace the `user_id = auth.uid()` ownership boundary.
 The server's `/vault` and `/authenticator` routers independently require the
 same header and exact middleware-context agreement before any handler runs.
 
-Attachments keep the same split: `CREDENTIAL_ATTACHMENT_COLUMNS` reads only
-safe metadata directly from Supabase; `features/files/vault/vaultAttachmentTransport.ts`
-is the one browser byte path to aidream multipart upload/replace and no-store
-download. It is deliberately separate from ordinary cloud-file storage because
-the bytes stay inside the credential encryption boundary.
-
 Capabilities on the direct list are projected client-side (`deriveCapabilities` in `vault-service.ts`, mirroring aidream `item_capabilities`); the server re-checks every mutation and its responses carry authoritative capabilities.
-
-## Scopes — every list is a deliberate query (2026-07-26)
-
-`VaultScope` (`types.ts`) is what a list reads, and each kind declares its own
-filter. **None of them is a bare RLS-filtered read** — that is the defect THE
-VIEW LAW exists to prevent, and RLS widening must never silently flood a
-personal vault:
-
-| Scope          | Query                                                                                                       | Notes                                                                                                                                     |
-| -------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `mine`         | `eq(user_id, me)`                                                                                           | Keeps the explicit owner filter.                                                                                                          |
-| `shared`       | my own `user_secret_grants` rows (`can_use`) → `in(id, thoseItemIds)` + `neq(user_id, me)`                  | Items OTHER people shared with me. Create/import are hidden here — the items are owned by someone else.                                   |
-| `organization` | `eq(organization_id, org)` OR `id in` the org's own grant rows (`user_secret_grants.organization_id = org`) | The org's vault: its own items plus personal items shared into it (row badge "Shared in"). A member with vault access none reads nothing. |
-
-The personal surface shows My credentials / Shared with me / Organization.
-Organization is one bounded destination with an explicit membership dropdown;
-it never expands into an unbounded chip row and never follows the active org.
-The organization-management embed remains fixed to its host organization.
-
-## Saved views (2026-09-20)
-
-Favorites and recent views are per-user `platform.user_entity_state` records reached only through `favoritesService` for `credential_item`. `use-vault-item-state.ts` bulk-reads only IDs authorized by the current Vault list and fences actor, selected organization, scope, list identity, and request order; late results and removed IDs never render; new actions require the current authorized list. An already-dispatched request may finish in the per-user state service, which does not change credential permissions. Both list presentations use separate Open and Favorite controls, so starring never opens or marks an item viewed. Only an explicit Open, context-menu open, or controlled deep-link selection touches a recent view; the automatic first full-pane detail does not. Successful changes reconcile server state; failures show Retry.
-
-## Sharing, ownership, and assignment (2026-07-26)
-
-**Grants are per-recipient operations, never a batch overwrite.** The share
-panel LOADS current recipients (`useVaultGrants` → `GET /items/{id}/grants`)
-before rendering, then adds / changes / revokes ONE grant at a time
-(`addGrant` / `updateGrant` / `removeGrant`). The old panel initialized empty
-and saved a replacement set, so opening Share and pressing Save silently
-revoked every recipient it had never seen — **do not reintroduce a save-the-
-whole-list control.** `setAccessMode` (the legacy `PUT …/share`) survives for
-the ORG `all_members` ↔ `restricted` flip only.
-
-- Recipients are named by **exact email**; the SERVER resolves it
-  (`searchUserByEmail` is not used for vault sharing). No directory search, no
-  autocomplete, no partial match, and the account must already exist.
-- **Give ownership** (`giveOwnership`) hands a personal item to another user:
-  the sender loses all access, grants are cleared, and the UI says so plainly
-  — including that a transfer cannot un-see a password the sender already
-  read. It is separate from **Move scope** (`transfer`), which moves between
-  the actor's own personal/organization scopes.
-- **Create for someone** (`assign`) creates an item already owned by the
-  recipient. In generate-privately mode the server generates the password and
-  never returns it — the response carries identity and confirmation only, so
-  never try to display a value from it.
-- A `can_use` recipient sees `visible` fields (the username) but cannot reveal
-  the password; `can_manage` adds reveal + edit. Only the owner may share,
-  transfer, or delete. **Ratified 2026-07-26** — the share UI states it.
-- **Organization vaults (access ladder decision 14):** the Share panel of a
-  personal item offers "Share into an organization's vault" at **Use only** or
-  **Editor** (`shareToOrganization` → `POST /items/{id}/organization-grants`);
-  the access list shows the org row and it is changed/revoked like a person.
-  **Move to…** (`transfer`) moves between your vault and an org vault. Each
-  member's **vault access** (Organization default / No access / Use only /
-  Editor) is set by owners/admins on the org settings members page
-  (`MemberVaultAccessControl`, one list load per org). `deriveCapabilities`
-  mirrors the server: my own access (`users.my_organization_vault_access`)
-  bounds the org scope. Law: `../../../common-docs/policies/access-ladder.md`
-  § The vault.
-
-## Management password generation
-
-`components/VaultPasswordGenerator.tsx` stages passwords and passphrases using
-`@ai-matrx/kit/credential-generator`. `generator-limits.ts` resolves the two
-organization/user limits through the existing settings index; unavailable or
-invalid settings refuse generation instead of supplying local defaults.
-Candidates begin masked, expire after 30 seconds and clear on option or context
-changes. Reveal, Copy and Use are separate actions. Use writes an unsaved draft;
-the existing credential save remains the persistence boundary. A copied value
-remains in the clipboard until replaced; the generator never clears a newer copy.
-The create/edit callers own draft invalidation on account, organization, target
-and capability changes. Protected, sealed and noneditable fields are ineligible.
-Assignment's private server-generated path remains separate.
-
-## Selected login CSV export (2026-09-16)
-
-`VaultLoginExportDialog` is available only in the currently loaded **Mine**
-scope. It sends an exact selected-ID list to a value-free preview, then requires
-a second, plaintext-acknowledged download using the returned revision. It never
-presents the loaded count as a complete Vault or offers Export all.
-`matrx_login_csv_v1` is a migration profile, not a full backup or universal
-vendor format; extra URLs, attachments, OTP/passkeys, provenance, and custom
-fields remain explicit omissions.
-
-Firefox, RoboForm, Dashlane, and Apple Passwords CSV are available through this same
-selected-login flow for ordinary logins. Their source-level formatters and
-shared preview/download safeguards are verified; destination ingestion and
-actual browser downloads for these four profiles remain separate acceptance.
-
-The download Blob stays event-local: `URL.createObjectURL` is revoked after
-the click and bytes never enter React state, Redux, storage, analytics, logs,
-or model context. Preview/download bind `getUser(access_token)` to the exact
-sent bearer and recheck the frozen actor/request organization afterward.
-`recent_auth_required` opens a read-only current-email password ceremony;
-passwords are uncontrolled and cleared on submit/cancel. Provider-only
-confirmation is unsupported until a real ceremony exists.
-
-For Show and Copy, an expired reveal request opens the same current-account
-password confirmation. Successful confirmation does not automatically reveal or
-copy: the person chooses the action again. An unrelated 401 remains an auth
-error rather than being mislabeled as an expired recent-auth event.
-
-## Destination login and browser fill (2026-07-26)
-
-Items carry PLAINTEXT destination metadata — `login_urls`, `uri_match_mode`
-(`host` / `exact` / `never`), `notes`, `non_secret_fields`,
-`browser_fill_enabled`. These are deliberately unencrypted (the browser
-matcher must read them) and protected by the same RLS as the rest of the row.
-Catalog fields declare which side they land on via `storage_class`
-(`metadata` | `encrypted`, default `encrypted`); `website_login` is the
-worked example.
-
-- The **Not encrypted** section is visually separate and says "Do not put
-  passwords, tokens, recovery codes, or other secrets here." Keep it loud.
-- Definitions that predate this keep their URL in an ENCRYPTED field
-  (`wordpress_admin.site_url`, `control_panel_login.panel_url`,
-  `registrar_login.portal_url`, custom `account_url` — `PROMOTABLE_URL_FIELD_KEYS`). Those items
-  **cannot browser-match at all** until the user promotes the URL. The detail
-  view offers a one-click "Use as login URL" that resolves the encrypted value
-  and copies it into `login_urls`, stating that the address becomes visible
-  unencrypted metadata. **Never promote automatically.**
-- Browser fill is off by default and cannot be enabled without a login URL.
-  Matching is enforced SERVER-side on every call (`/api/vault/browser-login/*`)
-  — the client never decides what may be filled.
-- **Which browsers may fill (access ladder T-30, T-30c).** Only an AI Matrx
-  extension install with its own registered key fills. Header **Browsers**
-  (`VaultFillDevicesDialog`) lists them and turns one off (revokes the key and
-  signs that extension out). Turning filling on needs a step-up: the person's
-  password typed in the extension, OR **passkey approval** at
-  `/vault/approve-browser?key=<thumbprint>&label=<browser>`
-  (`ApproveBrowserWorkspace` + `passkey-approval.ts`), which the extension
-  opens. The page runs one ceremony against the auth server's own passkeys
-  (`supabase.auth.passkey.startAuthentication` + `navigator.credentials.get`,
-  never `signInWithPasskey`, so no new sign-in) and posts the assertion to
-  `POST /api/vault/fill-devices/approvals`; aidream verifies it with the auth
-  server. A person with no passkey is told so and can add one there
-  (`registerPasskey`). Passkeys belong to `aimatrx.com`; off that domain
-  (localhost) the page says so and links there. Server mechanics:
-  `aidream/aidream/services/user_secrets/FEATURE.md` (fill path).
-
-## Shared UI contract (2026-07-28)
-
-Personal and organization credentials render through the same
-`VaultWorkspace`; their vocabulary and interaction model may not diverge.
-
-- Detailed metadata is labeled. Canonical labels live in `VAULT_LABELS`;
-  screens import them instead of inventing nearby synonyms. Familiar list and
-  detail identity headers use title + supporting metadata without repeating
-  database-form labels such as "Credential name" and "Credential type."
-- **Detail is complete; lists are concise.** Detail metadata wraps and is shown
-  in full. List rows use exactly two lines—name plus one deduplicated supporting
-  value—and truncate each line instead of growing vertically.
-- A protected value has exactly two human-visible states: **Hidden**, or the
-  complete transiently revealed value. `value_hint` is transport metadata and
-  must never be rendered as a partial mask. The shared `SecretValue` keeps
-  reveal/copy as small trailing icon actions, displays a visible auto-hide
-  countdown after reveal, and clears plaintext after about 30 seconds.
-- `visible` means visible: Standard fields resolve as their row mounts and
-  display normally for the mounted view, with copy but no meaningless eye
-  toggle. Only `revealable` fields begin Hidden and auto-clear after an
-  explicit reveal. Custom username/email/account fields default to Standard;
-  passwords and unknown fields default to Restricted.
-- Every field edit uses the shared three-way **Protection** control: Standard,
-  Restricted, or Automation only. The UI says plainly that every value is
-  encrypted at rest; the control changes human reveal permission, not whether
-  encryption exists. Stored Automation-only values render as a locked status
-  because sealing is a permanent one-way action.
-- A credential has one **Edit credential** mode. Name, description, field
-  replacement, runtime-key metadata, access, status, notes, URLs, and other
-  details are edited inside it; independent rename/rotate/edit-note controls
-  are forbidden. The code-first Authenticator list has one deliberate compact
-  exception: its row menu may rename the same credential directly so a person
-  does not have to leave an active six-digit-code task just to fix its label.
-- **Edit is dense, not card-within-card.** Name and description edit inline
-  without a redundant “Credential details” container. A field's display and
-  editor occupy the same row: reveal/copy/edit/delete are trailing icon actions,
-  and Edit replaces the value in place until Save or Cancel. Runtime key and
-  description are compact inline metadata, with the runtime key identified as
-  “used for identification in workflows.” The sandbox switch says only
-  “Available in sandboxes”; a missing runtime key is interaction feedback, not
-  permanent wrapping prose. Custom fields live under the explicit heading
-  “Additional fields.” Full-width action rows that merely repeat “Save field
-  changes” or “Delete field” are forbidden.
-- Website metadata renders only for `website_login`, an item with existing
-  login URLs, or a legacy credential whose URL can be promoted. A generic API
-  or environment credential must not be presented as a website login.
-- `/vault` uses the familiar password-manager master/detail shape: a left
-  navigation pane for scope and type, a compact middle credential list, and a
-  persistent right detail pane. Mobile opens the same detail component in a
-  responsive Credenza. Embedded window/org hosts keep the compact presentation
-  of the same workspace because they do not own a full viewport. The former
-  settings host redirects to `/vault` instead of embedding the compact card grid.
-- `/vault/[itemId]` is the canonical credential route. Selection navigates
-  between path segments and closing returns to `/vault`; credential identity
-  never rides a query parameter.
-- A list row carries compact identity only: icon, title, and one deduplicated
-  supporting line. It never adds a third URL/type line or renders credential
-  fields. Full metadata and encrypted fields stay in the detail pane.
-- Every scope fetches `credential_items` by `created_at DESC`; the shared Vault
-  view applies its selected metadata-only order after loading. Newest added is
-  the default, and every view-order tie breaks by ID ascending so direct and
-  fallback reads present the same result.
-- New credential starts with four plain-purpose choices: Website login, API
-  key, Environment value, Secure file, and Custom credential. The full catalog remains
-  searchable behind **Browse all**.
-- Website-login creation is progressive: name is the item identity; website,
-  username, password, authenticator setup, recovery codes, secure notes, and
-  protected files are independent optional parts. Save whatever is known now
-  and complete the same item later. `/vault/authenticator` opens this exact
-  canonical form directly at Website login; it has no second creation form.
-- Recovery codes are a Restricted encrypted field, never plaintext notes. The
-  detail view reveals them transiently, copies one code at a time, and removes
-  a code through **Mark used**. Secure notes are also Restricted fields.
-- Protected files live in the same single Edit credential mode. Users can add
-  multiple files, edit label/purpose/download filename/protection, replace
-  bytes, download, and delete. Sealing is confirmed as a permanent one-way
-  action; sealed files have no human download affordance.
-- Eligible ordinary password fields in create and edit reuse the shared
-  password/passphrase generator. Explicit Use fills only the unsaved draft;
-  normal Save persists it. Showing or copying remains a separate action.
-- Every saved login destination is a labeled **Open website** door when it is
-  an absolute HTTP(S) URL. Unsafe schemes and malformed addresses remain plain
-  text with an Invalid URL warning; they never become clickable.
-- Destination entry accepts a bare host such as `npmjs.com`. On blur, the UI
-  writes the normalized HTTPS URL back into the field, removes query/fragment
-  navigation state, and asks aidream for an advisory public-site check. A
-  confirmed site gets a compact success state; invalid or unreachable sites
-  get useful feedback, but temporary reachability failure never blocks saving
-  a partial credential.
-- A scope switch immediately presents an empty loading view keyed to the new
-  scope. Late responses from Mine, Shared with me, or another organization are
-  discarded and can never appear under the newly selected scope label.
-- Every Credenza form is a bounded 92dvh mobile Drawer with one flex scroll
-  body, safe-area padding, 16px inputs/comboboxes/textareas, and 44px buttons;
-  variable content can never push its save action outside a non-scrolling view.
-
-## Files and entry points
-
-| File                                                                               | Role                                                                                                                                                                                                                                                                                                                                                |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`types.ts`](./types.ts)                                                           | Generated wire shapes (aidream OpenAPI) + normalized `VaultItem`/`VaultField`, principal descriptor, masked column lists, definition types (Zod-inferred from the Remote Catalogs `credentialDefinitionSchema` — never redeclared), `effectiveFields` (preset fields FULLY replace base fields).                                                    |
-| [`credential-identity.ts`](./credential-identity.ts)                               | Pure, metadata-only identity builder shared by Vault list/detail surfaces: icon/accent, human credential kind, host, and a deduplicated subtitle/meta line.                                                                                                                                                                                         |
-| [`vault-service.ts`](./vault-service.ts)                                           | THE service: `/api/vault/*` client + direct-Supabase masked reads + catalog definition loader.                                                                                                                                                                                                                                                      |
-| [`vault-hooks.ts`](./vault-hooks.ts)                                               | THE hook set: `useVault` (list + all mutations + toasts/busy), `useVaultDefinitions`, `useVaultAudit`, `useTransientSecret`.                                                                                                                                                                                                                        |
-| [`components/VaultWorkspace.tsx`](./components/VaultWorkspace.tsx)                 | Full three-pane route workspace plus compact embedded presentation, both sharing the same list/search/family filters, detail, create, and import flows (Credenza = Dialog/Drawer responsive).                                                                                                                                                       |
-| [`components/VaultContextMenu.tsx`](./components/VaultContextMenu.tsx)             | THE right-click menu for the vault (v3 `NonEditableContextMenu`), mounted once by `VaultWorkspace` so `/vault` and the floating Vault window share it. Builds the menu payload by hand from non-secret metadata and passes it as `getApplicationScope`, which bypasses the shell's DOM-text fallback; `selection` is forced empty. See invariant 8. |
-| [`components/VaultHandlingControl.tsx`](./components/VaultHandlingControl.tsx)     | Shared Standard / Restricted / Automation-only protection selector and current-state presentation for fields and protected files.                                                                                                                                                                                                                   |
-| [`components/SecretValue.tsx`](./components/SecretValue.tsx)                       | Canonical masked value row with audited reveal, direct copy, compact icon actions, and transient plaintext countdown/auto-clear.                                                                                                                                                                                                                    |
-| [`components/VaultCreateDialog.tsx`](./components/VaultCreateDialog.tsx)           | The credential create form: basic-purpose picker/full catalog, progressive website login parts, TOTP, recovery codes, secure notes, protected files, local password generation, and Custom builder.                                                                                                                                                 |
-| [`components/VaultPasswordGenerator.tsx`](./components/VaultPasswordGenerator.tsx) | Shared staged password/passphrase controls using the published engine; explicit reveal/copy/use and candidate expiry.                                                                                                                                                                                                                               |
-| [`generator-limits.ts`](./generator-limits.ts)                                     | Validated effective generator limits through the canonical settings client.                                                                                                                                                                                                                                                                         |
-| [`components/VaultItemDetail.tsx`](./components/VaultItemDetail.tsx)               | Labeled fields with hidden/full reveal and one credential edit mode, including authenticator, protected files, and first-class recovery-code copy/Mark-used behavior, plus share, transfer, fork, soft delete, and audit trail.                                                                                                                     |
-| [`components/VaultEnvImportDialog.tsx`](./components/VaultEnvImportDialog.tsx)     | Bulk `.env` paste/upload → `POST /api/vault/items/import-env`.                                                                                                                                                                                                                                                                                      |
-| [`csv-import.worker.ts`](./csv-import.worker.ts)                                   | A CSV FILE parses in this worker (Alchemy's `parseDelimited`; 5 MB ≈ 290 ms on the main thread); pasted text and tests with no `Worker` parse inline through the same `parseCsvText`.                                                                                                                                                               |
-| [`csv-import-file.ts`](./csv-import-file.ts)                                       | `parseCsvFile` — the only code that STARTS the CSV worker. The worker imports `csv-import.ts` and must never reach this file: a worker that reaches its own starter hangs the Turbopack build (`pnpm check:worker-cycles`).                                                                                                                         |
-| [`components/VaultCsvImportDialog.tsx`](./components/VaultCsvImportDialog.tsx)     | Local CSV, plain-Bitwarden-JSON, and 1Password 1PUX import session: bounded worker parsing with required request IDs, masked preflight, frozen idempotent commands, and truthful partial-result accounting.                                                                                                                                         |
-| [`components/VaultLoginExportDialog.tsx`](./components/VaultLoginExportDialog.tsx) | Mine-only selected-login CSV preview, plaintext warning, current-password confirmation, and short-lived browser download.                                                                                                                                                                                                                           |
-| [`../trash/VaultTrashRestoreDialog.tsx`](../trash/VaultTrashRestoreDialog.tsx)     | Trash-owned metadata-only Vault aggregate recovery preview, quarantine warning, current-password retry, and actor/request-organization fencing.                                                                                                                                                                                                     |
-| [`authenticator-service.ts`](./authenticator-service.ts)                           | `/api/authenticator/*` client — metadata plus the signed-in owner's short-lived current-code request; never a seed.                                                                                                                                                                                                                                 |
-| [`authenticator-otpauth.ts`](./authenticator-otpauth.ts)                           | Pure client parse of a setup key / `otpauth://` URI, kept in lockstep with aidream's `otpauth.py`, for the instant enrollment preview.                                                                                                                                                                                                              |
-| [`hooks/use-authenticator.ts`](./hooks/use-authenticator.ts)                       | Authenticator metadata/manage hook: list, rename, enable/disable, and remove. Enrollment uses the shared AuthenticatorSetupDialog.                                                                                                                                                                                                                  |
-| [`components/authenticator/`](./components/authenticator/)                         | The `/vault/authenticator` code-first workspace; Add opens `VaultCreateDialog` directly at Website login, and saved rows expose rotating codes plus Vault/rename/enable/remove actions.                                                                                                                                                             |
-| [`utils.ts`](./utils.ts)                                                           | `parseEnvAssignment` (single dotenv-line paste-to-fill); credential generation comes from the published shared engine.                                                                                                                                                                                                                              |
-
-## Authenticator enrollment (2026-08-22)
-
-`/vault/authenticator` is the GA manage surface for the Matrx Authenticator
-(cross-repo spec: `common-docs/systems/apps/matrx-authenticator/FEATURE.md`). It is
-**enroll + use + manage** — the signed-in owner sees the current rotating code;
-the sealed setup seed has no reveal path at any privilege.
-
-- **One authenticator intake.** `AuthenticatorSetupDialog` serves direct
-  Authenticator Add, a new Website login's Add authenticator button, and an
-  existing credential's Two-factor section. Direct Add skips the login form.
-- **Camera and alternatives together.** Camera starts on open; manual setup
-  key, image selection, paste, and drop remain available while permission is
-  pending. Cancel camera releases the pending attempt. Images decode locally.
-- **Code immediately after save.** Valid intake saves and enrolls once, then
-  displays the current server-generated code for confirmation on the provider.
-  A TOTP-only credential needs no username, password, or URL.
-- **Names come from the QR metadata.** Blank and default names become the
-  issuer or account label. A custom name remains unchanged.
-- **Retries retain the credential.** Creation is saved before enrollment.
-  Enrollment failure retains that ID and the setup input; retry does not create
-  another login. Actor and organization changes invalidate the pending setup.
-  Recent-authentication refusals offer the existing password confirmation flow.
-- **Existing logins are completed in place.** Adding an authenticator updates
-  that credential. A failed metadata rename does not discard successful 2FA.
-- **Every entry is a door.** The account name and its row menu open THAT
-  credential via `/vault/[itemId]`; the
-  menu also offers Rename login and a new-tab door without cluttering the
-  code-first list. Renaming updates the credential item's `display_name`, so the
-  Authenticator and Vault never diverge.
-- **Organization hydration is explicit.** The Authenticator hook waits for the
-  shell's active-organization bootstrap, reloads whenever that organization
-  changes, and discards superseded requests. If bootstrap resolves without a
-  selection, the page renders the canonical organization picker.
 
 ## Invariants
 
-1. Plaintext never appears in list responses, Redux, browser storage, query caches, URLs, analytics, or logs. Reveal/resolve responses use `useTransientSecret` with a ~30s auto-clear; locally entered or explicitly applied generated values stay only in the unsaved form draft. Generator candidates have their own 30-second expiry.
+1. Plaintext never appears in list responses, Redux, browser storage, query caches, URLs, analytics, or logs. In the workspace the package holds a revealed value 20 s (`useTransientSecret`).
 2. Never select `value_encrypted`; never `select *` on `credential_items` / `user_secrets` — explicit column lists only.
 3. `sealed` fields get no show/copy affordance at any capability level.
-4. One workspace, one service, one hook set. A second per-principal implementation is a defect.
-5. Definitions come only from the catalog; `credentialDefinitionSchema` is imported from `features/admin/applications/catalogs/schemas.ts`, never redeclared. Adding a provider is catalog data, not React code.
-6. Access never depends on the active organization — the viewed principal is an explicit prop.
-7. Every mutation surfaces its error via toast; catalog rows failing schema validation are skipped LOUDLY (`console.error`).
-8. **The context menu never carries a secret.** A revealed `SecretValue` puts plaintext in the DOM, so the vault menu must never let the v3 shell self-resolve `content` from the subtree and must never carry the user's `selection` — it passes an explicit `getApplicationScope` built from names, type, provider, host, status, tags and FIELD KEYS only. Never a field value, never `notes`, never a non-secret custom field's value (a user can and does paste a secret into a free-text box). No `entity` is passed either, so Attach To / Share stay hidden: a credential is not agent context.
-9. **Password-manager imports stay local until per-row confirmation.** `VaultCsvImportDialog` uses Papa Parse for CSV and bounded dedicated workers for plain Bitwarden JSON and 1Password 1PUX. Each JSON worker receives the selected file and returns a required request ID; the UI accepts only its matching response. A source/principal/request-org change, deadline, error, close, or unmount sends matching cancellation, terminates the worker, and prevents late replies from reviving the draft. Bitwarden worker failures use a fixed source-free public error. JSON shows one selected destination origin, skips possible duplicates by default, and separately accounts for selected, skipped, invalid, unsupported, deleted, and archived records before and after import. Every frozen row calls canonical `POST /items` with `source=system_import`, its UUID idempotency key, explicit principal and a fresh expected actor/request-org check; retry reuses only the unresolved command and UUID. Source cells remain in encrypted `import_source_record`; raw files never enter network, global state, or storage. Import never enters `useVault.run()` organization replay.
-10. **Login CSV export never escapes its function scope.** `VaultLoginExportDialog` holds only value-free selection/preview metadata; the Blob becomes a private object URL, clicks once, and is revoked. Account, organization, close, and cancellation invalidate preview/download state; reauthentication never auto-resumes an export.
-11. **Vault Trash recovery is aggregate-only.** `credential_item` previews `vault_recovery_preview` directly without lifecycle JSON or values, then restores through `POST /vault/items/{id}/restore`; generic undelete and bulk Keep never handle Vault tokens. Preview exposes only exact field, attachment, and `native_passkeys_count` accounting; an absent count is the installed v1 ordinary-record compatibility case, never inferred native state. A restored item stays disabled with its fields inactive and sharing, browser fill, authenticators, sandbox, agent and integration use off until separately reenabled. A restored passkey is separately disabled and does not prove website acceptance or remove the website registration. Account, organization, close, unmount and an unknown response keep the deletion ID fenced for an honest exact retry.
+4. One workspace: a Vault screen in this repo is a defect — it belongs in `@ai-matrx/vault` (released, then adopted here).
+5. Access never depends on the active organization — the active organization only names whose vault settings (knobs) apply.
+6. Every mutation surfaces its error via toast; catalog rows failing schema validation are skipped LOUDLY (`console.error`).
+7. **Vault Trash recovery is aggregate-only.** `credential_item` previews `vault_recovery_preview` directly without lifecycle JSON or values, then restores through `POST /vault/items/{id}/restore`; generic undelete and bulk Keep never handle Vault tokens. Preview exposes only exact field, attachment, and `native_passkeys_count` accounting; an absent count is the installed v1 ordinary-record compatibility case, never inferred native state. A restored item stays disabled with its fields inactive and sharing, browser fill, authenticators, sandbox, agent and integration use off until separately reenabled. A restored passkey is separately disabled and does not prove website acceptance or remove the website registration. Account, organization, close, unmount and an unknown response keep the deletion ID fenced for an honest exact retry.
 
 ## MCP connections (Phase 4 cutover, 2026-07-23)
 
@@ -411,6 +123,8 @@ owned by the connecting user (`definition_key='oauth_token_set'` or
   connection AND soft-deletes the owned vault item.
 
 ## Change Log
+
+- **2026-10-16** — Adopted `@ai-matrx/vault` 0.1.x: `/vault`, `/vault/[itemId]`, the Vault window and the organization vault section render the package's `VaultApp` through `components/WebVault.tsx`; `/vault/authenticator` and `/vault/approve-browser` redirect into it. Deleted every old screen (workspace, item detail, create/import/export/backup dialogs, generator, password history, browsers dialog, approve-browser workspace, authenticator UI), the import parsers and workers, the authenticator client and hooks, `vault-list.ts`, `use-vault-item-state.ts`, `vault-hooks.ts`, `credential-identity.ts`, `features/files/vault/vaultAttachmentTransport.ts`, their tests and the old import-dialog browser harnesses. `vault-service.ts`, `types.ts` and `utils.ts` keep only what the consumers listed above import.
 
 - `2026-10-09` — Scopes cutover (lane SCOPES-WEB-CONSUMERS): favorite results use `isAssociationsRpcErr` from `@ai-matrx/associations`.
 

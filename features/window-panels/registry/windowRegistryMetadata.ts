@@ -1185,7 +1185,7 @@ const STATIC_REGISTRY: WindowStaticMetadata[] = [
     label: "Vault",
     defaultData: {
       selectedItemId: null,
-      scope: "mine",
+      location: "",
     },
     mobilePresentation: "drawer",
     urlSync: { key: "vault" },

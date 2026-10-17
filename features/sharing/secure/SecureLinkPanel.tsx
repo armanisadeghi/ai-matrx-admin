@@ -24,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { VaultRevealReauthDialog } from "@/features/secrets/components/SecretValue";
+import { VaultRevealReauthDialog } from "@/features/secrets/components/VaultRevealReauthDialog";
 
 import {
   fetchRecipientPhoneOnFile,

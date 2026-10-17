@@ -50,7 +50,6 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
 // shared `OrganizationPicker` (@ai-matrx/design-system) is not here: it applies the same rule
 // through `distinguisher`, which `OrganizationPickerPanel` passes as the slug.
 const ORGANIZATION_LISTS = [
-  "features/secrets/components/VaultWorkspace.tsx",
   // The canonical scope selection family (Miller Columns, DrillDeck, the
   // engagement and binding-target pickers) draws every organization row from
   // the engine's org node. It replaced ShortcutScopePicker and the hierarchy

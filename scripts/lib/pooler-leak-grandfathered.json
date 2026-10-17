@@ -66,7 +66,6 @@
     "scripts/knob-resolve-callers/db.ts": 1,
     "scripts/lib/direct-db-env.ts": 1,
     "scripts/lib/direct-db.ts": 1,
-    "scripts/regression-bar/run.mjs": 1,
-    "tests/browser/reconcile-proton-import-retry.py": 1
+    "scripts/regression-bar/run.mjs": 1
   }
 }

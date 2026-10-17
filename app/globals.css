@@ -52,6 +52,7 @@
 @source "../node_modules/@ai-matrx/canvas/dist";
 @source "../node_modules/@ai-matrx/code-runtime/dist";
 @source "../node_modules/@ai-matrx/browser-audio/dist";
+@source "../node_modules/@ai-matrx/vault/dist";
 
 /* THE DATABASE-CLASS SAFELIST (DD-123 §1.8). Tailwind emits a utility only for
    a class it SCANS in a source file — and the 162 organization-authored kind

@@ -1,6 +1,10 @@
 -- chair-step: replaces five bodies (same signatures, security and grants) and adds two doors. custom.work_approval_kinds() adds `host_run`; custom.work_approval_request checks its shape (a summary, a job type, a fingerprint, the tables) and that its subject is a table, and answers the approval already pending for the same job instead of filing a second; custom.work_approval_decide records a host_run yes or no and APPLIES NOTHING (and refuses a yes from somebody who may not approve every table the job names); custom._workdoors_approval_guard lets the new `run` door mark an approved host_run as claimed/finished and nothing else; custom.agent_change_trust covers every table a host_run names. New: custom.work_approval_host_run (claim an approved job exactly once) and custom.work_approval_host_run_done (what it did). No table, trigger, policy or row is touched.
 -- lane: HOST-RUN
--- based-on: production bodies read 2026-10-16 (pg_get_functiondef), each replaced by an asserted exact edit.
+-- based-on: custom.work_approval_kinds() 1a38985ebc439888d6d87816babe75885071210561fa83ced8f7c8f5bf922de3
+-- based-on: custom.work_approval_request(uuid, uuid, jsonb, text, uuid, text, uuid) 3c23d265164114f87127a57805693445265e9967c96e0bb2086a901ba967451f
+-- based-on: custom.work_approval_decide(uuid, uuid, boolean, text) f5c47547629db4bf6ab74317464b21671edcd4bea323df1d90bb024f7bd66964
+-- based-on: custom._workdoors_approval_guard() 4837519072cdc664fcb1505187fcf728ee6fb4dbe5d196bda112c6e10f0af2f0
+-- based-on: custom.agent_change_trust(uuid, uuid) 9fd68a222f3c24c9b74eef6121c1a9e6dc3ebc0d041936328bdb6e016714e9c8
 --
 -- HOST-RUN (2026-10-16) — AN AGENT'S BULK COPY INTO AN EXISTING TABLE WAITS AS ONE CARD THAT RUNS IT.
 -- MEASURED BEFORE THIS FILE (production, a real chat, default `ask`): the records tool's notion_sync / data_sync into
@@ -1058,7 +1062,18 @@ begin
 end
 $function$;
 
-REVOKE ALL ON FUNCTION custom.work_approval_host_run(uuid, text, uuid, uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION custom.work_approval_host_run_done(uuid, uuid, boolean, text, jsonb) FROM PUBLIC;
+INSERT INTO platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, signed_in_callers, anonymous_callers, argument_rules)
+VALUES ('custom', 'work_approval_host_run', 'p_organization_id uuid, p_fingerprint text, p_conversation_id uuid, p_approval_id uuid',
+        ARRAY['uuid'::regtype, 'text'::regtype, 'uuid'::regtype, 'uuid'::regtype]::oid[],
+        'The server, as the person an agent works for, asks whether an approved bulk job (a mapped copy, a file import) may run now and claims it exactly once. Only the person who asked for it, or somebody who may decide it, passes (custom.work_approval_may_decide).',
+        'migrations/campaign/hostrun_a_an_approved_bulk_job_runs_once.sql (lane HOST-RUN)', true, false,
+        '{"version":1,"arguments":{"p_organization_id":{"type":"uuid","check":"this body decides it with custom.assert_client_may_reach(arg1) — the organization wall — a non-member is refused before anything is read.","entity":"organization","foreign":{"sqlstate":"42501","same_as_invented":true},"verified":"2026-10-16 lane HOST-RUN — read from this body"},"p_approval_id":{"type":"uuid","check":"DERIVED BY ORGANIZATION. It is read only beside organization_id = p_organization_id, so a row of another organization answers exactly what an invented id answers; then only the person who asked for it, or somebody who may decide it (custom.work_approval_may_decide), passes (42501).","foreign":{"not_a_leak":true,"same_as_invented":true},"verified":"2026-10-16 lane HOST-RUN — read from this body"},"p_conversation_id":{"type":"uuid","check":"A FILTER, NOT A KEY. It only narrows which of this organization''s own approvals (organization_id = p_organization_id) are looked at; the row found is then held to the requester / may_decide rule, so a foreign or invented conversation id finds nothing more than its own organization already holds.","foreign":{"not_a_leak":true,"same_as_invented":true},"verified":"2026-10-16 lane HOST-RUN — read from this body"}},"declared_at":"2026-10-16 lane HOST-RUN, read from this body","declared_by":"hostrun_a_an_approved_bulk_job_runs_once.sql"}'::jsonb),
+       ('custom', 'work_approval_host_run_done', 'p_organization_id uuid, p_approval_id uuid, p_ok boolean, p_outcome text, p_report jsonb',
+        ARRAY['uuid'::regtype, 'uuid'::regtype, 'bool'::regtype, 'text'::regtype, 'jsonb'::regtype]::oid[],
+        'The server records what an approved bulk job did, closing it (ok) or leaving it claimable again (failed). Only the person whose run it is, or somebody who may decide it, passes.',
+        'migrations/campaign/hostrun_a_an_approved_bulk_job_runs_once.sql (lane HOST-RUN)', true, false,
+        '{"version":1,"arguments":{"p_organization_id":{"type":"uuid","check":"this body decides it with custom.assert_client_may_reach(arg1) — the organization wall — a non-member is refused before anything is read.","entity":"organization","foreign":{"sqlstate":"42501","same_as_invented":true},"verified":"2026-10-16 lane HOST-RUN — read from this body"},"p_approval_id":{"type":"uuid","check":"DERIVED BY ORGANIZATION. It is read only beside organization_id = p_organization_id, so a row of another organization answers exactly what an invented id answers; then only the person who claimed the run, or somebody who may decide it, passes (42501).","foreign":{"not_a_leak":true,"same_as_invented":true},"verified":"2026-10-16 lane HOST-RUN — read from this body"}},"declared_at":"2026-10-16 lane HOST-RUN, read from this body","declared_by":"hostrun_a_an_approved_bulk_job_runs_once.sql"}'::jsonb)
+ON CONFLICT DO NOTHING;
+
 GRANT EXECUTE ON FUNCTION custom.work_approval_host_run(uuid, text, uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION custom.work_approval_host_run_done(uuid, uuid, boolean, text, jsonb) TO authenticated;

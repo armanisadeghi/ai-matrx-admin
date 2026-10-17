@@ -63,6 +63,9 @@ let mockLateIdle = false;
 jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => mockLateIdle }));
 
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
+import { engageForTest, resetFirstEngagement } from "@/lib/boot/firstEngagement";
+
+beforeEach(() => resetFirstEngagement());
 
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 20)); });
 
@@ -83,9 +86,16 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
   expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
   expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
 
+  // Untrusted moves and scrolls are never engagement (jsdom events are untrusted, like a script's).
   await act(async () => {
     window.dispatchEvent(new Event("pointermove"));
+    window.dispatchEvent(new Event("wheel"));
+    window.dispatchEvent(new Event("pointerdown"));
   });
+  await settle();
+  expect(listInventory).not.toHaveBeenCalled();
+
+  await act(async () => engageForTest());
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
   expect(listCapabilities).toHaveBeenCalledTimes(1);
@@ -94,9 +104,7 @@ it("reads nothing and draws nothing at first paint; one engagement reads once an
   expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
 
   // A second engagement is a no-op: the reads already happened.
-  await act(async () => {
-    window.dispatchEvent(new Event("keydown"));
-  });
+  await act(async () => engageForTest());
   await settle();
   expect(listInventory).toHaveBeenCalledTimes(1);
   await act(async () => root.unmount());
@@ -118,7 +126,7 @@ it("a page nobody touches still settles: late idle opens the one read and the ca
   await settle();
   // Before settling: nothing read, nothing drawn (not even a placeholder).
   expect(listInventory).not.toHaveBeenCalled();
-  expect(container.innerHTML).toBe("");
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
 
   mockLateIdle = true;
   await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost key="settled" /></QueryClientProvider>));
@@ -141,10 +149,38 @@ it("reads the person's organizations (the scope tree) only once an organization-
   await act(async () => root.render(<QueryClientProvider client={new QueryClient()}><ConnectorPromptHost /></QueryClientProvider>));
   await settle();
   expect(mockSelectOrganizationIds).not.toHaveBeenCalled();
-  await act(async () => {
-    window.dispatchEvent(new Event("pointerdown"));
-  });
+  await act(async () => engageForTest());
   await settle();
   expect(mockSelectOrganizationIds).toHaveBeenCalled();
+  await act(async () => root.unmount());
+});
+
+it("ZERO LAYOUT SHIFT: the late card arrives in a fixed area; the in-flow anchor is zero-height before and after", async () => {
+  listInventory.mockClear();
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  mockLateIdle = false;
+  const tree = () => (
+    <QueryClientProvider client={new QueryClient()}>
+      <ConnectorPromptHost />
+    </QueryClientProvider>
+  );
+  await act(async () => root.render(tree()));
+  await settle();
+  const anchorBefore = container.querySelector("[data-connector-prompt-anchor]");
+  expect(anchorBefore).not.toBeNull();
+  expect(anchorBefore!.className).toContain("h-0");
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
+
+  await act(async () => engageForTest());
+  await settle();
+  const card = container.querySelector("[data-testid=connect-google-card]");
+  expect(card).not.toBeNull();
+  const anchorAfter = container.querySelector("[data-connector-prompt-anchor]");
+  expect(anchorAfter).toBe(anchorBefore);
+  expect(anchorAfter!.className).toContain("h-0");
+  // The card's nearest positioned wrapper is fixed: out of flow, so nothing around it moves.
+  expect(card!.closest(".fixed")).not.toBeNull();
   await act(async () => root.unmount());
 });

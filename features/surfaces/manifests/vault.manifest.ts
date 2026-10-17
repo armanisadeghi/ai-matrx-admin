@@ -1,8 +1,8 @@
 /**
  * Surface manifest — Credential Vault (`matrx-user/vault`).
  *
- * `/vault`: where the user manages their stored credentials
- * (`features/secrets/**`).
+ * `/vault`: where the user manages their stored credentials (the shared
+ * `@ai-matrx/vault` workspace, hosted by `features/secrets/components/WebVault.tsx`).
  *
  * Declared 2026-08-17 to close an undeclared route — and declared
  * DELIBERATELY NARROW. A vault entry's secret value is NOT a surface value and

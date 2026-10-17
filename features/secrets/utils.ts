@@ -1,10 +1,3 @@
-import { VALID_KEY_RE } from "@/features/secrets/types";
-
-export interface EnvAssignment {
-  key: string;
-  value: string;
-}
-
 /** Return an absolute browser-safe login destination, or null.
  *
  * Vault destination metadata is user-authored. Keeping this check at the
@@ -20,59 +13,4 @@ export function safeVaultLoginUrl(input: string): string | null {
   } catch {
     return null;
   }
-}
-
-/** Normalize user-entered login destinations for storage.
- *
- * A bare host is the normal mobile input, so it becomes HTTPS. Explicit
- * HTTP(S) is preserved for local/intranet use. Queries and fragments are not
- * stable login identity and are deliberately excluded from browser matching.
- */
-export function normalizeVaultLoginUrlInput(input: string): string | null {
-  const candidate = input.trim();
-  if (!candidate) return null;
-  try {
-    const parsed = new URL(
-      /^[a-z][a-z\d+.-]*:/i.test(candidate)
-        ? candidate
-        : `https://${candidate}`,
-    );
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-      return null;
-    }
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return null;
-  }
-}
-
-/** Parse one pasted dotenv assignment without expanding or interpreting its value. */
-export function parseEnvAssignment(input: string): EnvAssignment | null {
-  const lines = input
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length !== 1 || lines[0].startsWith("#")) return null;
-
-  const line = lines[0].startsWith("export ")
-    ? lines[0].slice("export ".length).trimStart()
-    : lines[0];
-  const separatorIndex = line.indexOf("=");
-
-  if (separatorIndex < 0) return null;
-
-  const key = line.slice(0, separatorIndex).trim();
-  let value = line.slice(separatorIndex + 1).trim();
-
-  if (!VALID_KEY_RE.test(key)) return null;
-
-  const hasMatchingQuotes =
-    value.length >= 2 &&
-    ((value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'")));
-
-  if (hasMatchingQuotes) value = value.slice(1, -1);
-
-  return { key, value };
 }

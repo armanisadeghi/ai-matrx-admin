@@ -1,26 +1,7 @@
-/**
- * Unified Credential Vault — types.
- *
- * ONE contract for both principals (personal | organization), per
- * common-docs/systems/account/vault-secrets/FEATURE.md.
- *
- * Wire shapes come from aidream's generated OpenAPI contracts
- * (`/api/vault/*` — never hand-mirrored); masked metadata read directly
- * from Supabase is NORMALIZED into the same `VaultItem` shape so the
- * whole workspace consumes one type regardless of the read path.
- *
- * Plaintext values NEVER appear on any listed shape. The only plaintext
- * shape is `VaultRevealResponse` — short-lived, component-local, never
- * stored in Redux / browser storage / query caches.
- */
-import type { z } from "zod";
+
 
 import type { components } from "@ai-matrx/api/types";
 import type { Database } from "@/types/database.types";
-import type {
-  credentialDefinitionSchema,
-  credentialFieldSchema,
-} from "@/features/admin/applications/catalogs/schemas";
 
 type ApiSchemas = components["schemas"];
 export type VaultHandling = NonNullable<ApiSchemas["FieldIn"]["handling"]>;
@@ -155,11 +136,6 @@ export function normalizeExecutionPurpose(
   throw new Error(`Invalid Vault execution purpose: ${String(value)}`);
 }
 
-/** Protected fields never enter the browser's generic credential flow. */
-export function isProtectedExecutionField(field: VaultField): boolean {
-  return field.execution_purpose === "passkey_private";
-}
-
 export function normalizeWireItem(wire: VaultItemWire): VaultItem {
   return {
     ...wire,
@@ -199,34 +175,8 @@ export function normalizeWireAttachment(
     handling: normalizeVaultHandling(wire.handling),
   };
 }
-export type VaultPrincipalIn = ApiSchemas["PrincipalIn"];
-export type VaultFieldIn = ApiSchemas["FieldIn"];
 export type VaultItemCreateRequest = ApiSchemas["VaultItemCreateRequest"];
-export type VaultItemUpdateRequest = ApiSchemas["VaultItemUpdateRequest"];
-export type VaultAttachmentUpdateRequest =
-  ApiSchemas["VaultAttachmentUpdateRequest"];
-export type VaultImportEnvRequest = ApiSchemas["VaultImportEnvRequest"];
-export type VaultFieldMetadataRequest = ApiSchemas["VaultFieldMetadataRequest"];
-export type VaultGrantee = ApiSchemas["GranteeIn"];
-export type VaultRevealResponse = ApiSchemas["VaultRevealResponse"];
-/** Value-free history metadata. The old value is returned only by the
- * explicit, no-store history reveal endpoint. */
-export type VaultPasswordHistoryEntry = ApiSchemas["VaultPasswordHistoryEntry"];
-export type VaultPasswordHistoryResponse =
-  ApiSchemas["VaultPasswordHistoryResponse"];
-export type VaultPasswordHistoryRevealResponse =
-  ApiSchemas["VaultPasswordHistoryRevealResponse"];
-/** A restore result is deliberately value-free. The restored password stays
- * entirely inside the server-side mutation boundary. */
-export type VaultPasswordHistoryRestoreResponse =
-  ApiSchemas["VaultPasswordHistoryRestoreResponse"];
-export type VaultShareRequest = ApiSchemas["VaultShareRequest"];
-export type VaultAuditEntry = ApiSchemas["VaultAuditEntry"];
-export type VaultGrant = ApiSchemas["VaultGrantOut"];
-export type VaultOrganizationGrantAddRequest =
-  ApiSchemas["VaultOrganizationGrantAddRequest"];
 export type VaultMemberAccessList = ApiSchemas["VaultMemberAccessListResponse"];
-export type VaultMemberAccess = ApiSchemas["VaultMemberAccessOut"];
 export type VaultMemberAccessSetResponse =
   ApiSchemas["VaultMemberAccessSetResponse"];
 
@@ -258,55 +208,6 @@ export const MEMBER_VAULT_ACCESS_LABELS: Record<
   admin: "Full (owner or admin)",
 };
 
-export const MEMBER_VAULT_ACCESS_HELP: Record<OrganizationVaultAccess, string> =
-  {
-    none: "Cannot see or use the organization's saved logins.",
-    use: "They and their agents can sign in with saved logins, but cannot see passwords.",
-    editor: "Can see and edit saved values.",
-    admin: "Owners and admins always have full access.",
-  };
-export type VaultGrantAddRequest = ApiSchemas["VaultGrantAddRequest"];
-export type VaultAssignRequest = ApiSchemas["VaultAssignRequest"];
-export type VaultAssignResponse = ApiSchemas["VaultAssignResponse"];
-export type VaultTransferResponse = ApiSchemas["VaultTransferResponse"];
-
-/** URL matching rule for browser fill. `host` = same host, any path;
- *  `exact` = same host AND path; `never` = this item is never auto-filled. */
-export type UriMatchMode = "host" | "domain" | "exact" | "never";
-
-export const URI_MATCH_MODE_LABELS: Record<UriMatchMode, string> = {
-  host: "Any page on this site",
-  domain: "This site and its sister sites (e.g. all of google.com)",
-  exact: "Only this exact URL",
-  never: "Never fill automatically",
-};
-
-/** The destination-first login definition (ratified 2026-07-26). */
-export const WEBSITE_LOGIN_DEFINITION_KEY = "website_login";
-
-/** Encrypted field keys that historically hold a destination URL. These items
- *  cannot browser-match until the URL is promoted into plaintext `login_urls`
- *  — an explicit, warned declassification the user performs. */
-export const PROMOTABLE_URL_FIELD_KEYS = [
-  "account_url",
-  "site_url",
-  "panel_url",
-  "portal_url",
-] as const;
-
-export type VaultAccessMode = VaultShareRequest["access_mode"];
-
-// ── Principal (frontend view descriptor) ──────────────────────────────────
-
-export type VaultPrincipal =
-  { type: "user" } | { type: "organization"; organizationId: string };
-
-export function toPrincipalIn(principal: VaultPrincipal): VaultPrincipalIn {
-  return principal.type === "organization"
-    ? { type: "organization", organization_id: principal.organizationId }
-    : { type: "user" };
-}
-
 /**
  * The list scope the user is looking at. Each is a DELIBERATE query, never a
  * bare RLS-filtered read (THE VIEW LAW): `mine` filters on ownership,
@@ -319,72 +220,6 @@ export type VaultScope =
   /** `organizationId: null` is ALL the person's organizations (the tab's default — a filter,
    *  never a permission: RLS still decides what each item lets them see and do). */
   | { kind: "organization"; organizationId: string | null };
-
-export const VAULT_SCOPE_LABELS = {
-  mine: "Mine",
-  shared: "Shared with me",
-  organization: "Organization",
-} as const;
-
-/** Stable, non-secret persistence key for a viewed Vault scope. */
-export function vaultScopeKey(scope: VaultScope): string {
-  if (scope.kind !== "organization") return scope.kind;
-  return scope.organizationId
-    ? `organization:${scope.organizationId}`
-    : "organization";
-}
-
-/** Parse only the three canonical Vault destinations from persisted UI state. */
-export function parseVaultScopeKey(
-  value: string | null | undefined,
-): VaultScope | null {
-  if (value === "mine") return { kind: "mine" };
-  if (value === "shared") return { kind: "shared" };
-  if (value === "organization")
-    return { kind: "organization", organizationId: null };
-  if (value?.startsWith("organization:")) {
-    const organizationId = value.slice("organization:".length).trim();
-    if (organizationId) return { kind: "organization", organizationId };
-  }
-  return null;
-}
-
-/**
- * Canonical human-facing vault vocabulary. Every personal and organization
- * surface imports these labels so the same concept never acquires a second
- * name in a card, dialog, or editor.
- */
-export const VAULT_LABELS = {
-  credentialName: "Credential name",
-  credentialType: "Credential type",
-  description: "Description",
-  fieldName: "Field name",
-  internalFieldKey: "Internal field key",
-  runtimeKey: "Runtime key",
-  value: "Value",
-  valueAccess: "Who can reveal this value",
-  sandboxAccess: "Available in sandboxes",
-  fieldStatus: "Field status",
-  loginUrls: "Login URLs",
-  browserMatchRule: "Browser match rule",
-  browserFill: "Browser fill",
-  notes: "Notes",
-  otherDetails: "Other details",
-  access: "Access",
-  activity: "Activity",
-} as const;
-
-/** The owning principal a scope writes to. "Shared with me" owns nothing —
- *  creating from that scope is meaningless, so the UI hides create there. */
-export function scopeToPrincipal(scope: VaultScope): VaultPrincipal | null {
-  if (scope.kind === "mine") return { type: "user" };
-  if (scope.kind === "organization" && scope.organizationId) {
-    return { type: "organization", organizationId: scope.organizationId };
-  }
-  // "Shared with me" owns nothing; neither does the all-organizations view (a new
-  // organization credential needs one organization named).
-  return null;
-}
 
 // ── Direct-Supabase masked rows (explicit column lists — see service) ─────
 
@@ -466,80 +301,3 @@ export type VaultAttachmentMaskedRow = Pick<
   | "created_at"
   | "updated_at"
 >;
-
-// ── Catalog definitions (payload schema reused from Remote Catalogs) ──────
-
-export type CredentialDefinitionPayload = z.infer<
-  typeof credentialDefinitionSchema
->;
-export type CredentialFieldDef = z.infer<typeof credentialFieldSchema>;
-
-export interface CredentialDefinition {
-  /** catalog_entries.key — the stable definition key ('env_value', …). */
-  key: string;
-  payload: CredentialDefinitionPayload;
-}
-
-export type CredentialFamily = CredentialDefinitionPayload["family"];
-
-export type VaultDestinationCheckState =
-  "reachable" | "not_found" | "responded" | "unreachable" | "invalid";
-
-export interface VaultDestinationCheck {
-  normalized_url: string;
-  state: VaultDestinationCheckState;
-  http_status: number | null;
-}
-
-export const FAMILY_LABELS: Record<CredentialFamily, string> = {
-  generic: "Generic",
-  ai_providers: "AI & model providers",
-  source_control: "Source control & dev tools",
-  cloud_infrastructure: "Cloud & infrastructure",
-  databases: "Databases & data services",
-  hosting_deployment: "Hosting & deployment",
-  server_network: "Server & network access",
-  domains_dns_cdn: "Domains, DNS & CDN",
-  messaging_communications: "Messaging & communications",
-  payments_commerce: "Payments & commerce",
-  business_platforms: "Business platforms",
-  analytics_marketing: "Analytics & marketing",
-  cms_content: "CMS & content",
-  identity_security: "Identity & security",
-  automation_integrations: "Automation & integrations",
-  signing_files: "Signing & files",
-};
-
-export const HANDLING_LABELS: Record<NonNullable<VaultHandling>, string> = {
-  visible: "Anyone with use access",
-  revealable: "Only people with reveal access",
-  sealed: "No person — trusted automation only",
-};
-
-/** The legacy single-field type every backfilled env row uses. */
-export const ENV_VALUE_DEFINITION_KEY = "env_value";
-
-/** Mirrors the DB CHECK constraint on the optional env alias. */
-export const VALID_KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
-
-/** Stable field identity within an item (lowercase snake_case). */
-export const FIELD_KEY_RE = /^[a-z][a-z0-9_]*$/;
-
-/**
- * Effective fields of a definition: a provider preset's fields FULLY
- * replace the base definition's fields when the preset declares any;
- * otherwise the base's fields apply.
- */
-export function effectiveFields(
-  def: CredentialDefinition,
-  byKey: Map<string, CredentialDefinition>,
-): CredentialFieldDef[] {
-  const own = def.payload.fields ?? [];
-  if (own.length > 0) return own;
-  const baseKey = def.payload.base_definition_key;
-  if (baseKey) {
-    const base = byKey.get(baseKey);
-    if (base) return base.payload.fields ?? [];
-  }
-  return [];
-}

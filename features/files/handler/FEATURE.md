@@ -26,8 +26,7 @@ in-flight uploads in `cloudFiles.uploads`).
 `handler.ts` (entry) · `types.ts` (15 `FileSource` variants, `NormalizedFile`, 11 `FileTarget`
 variants) · `errors.ts` · `intelligence/access.ts` (`decideForOwnedFile`) ·
 `utils/python-base.ts` (`fileUrls()` — THE durable URL builder) · `../upload/cloudUpload.ts` +
-`../upload/tusUpload.ts` + `../upload/__tests__/transport-policy.test.ts` ·
-`../vault/vaultAttachmentTransport.ts`.
+`../upload/tusUpload.ts` + `../upload/__tests__/transport-policy.test.ts`.
 
 ## Durable URLs + the file-session cookie (`@ai-matrx/files/client` session)
 
@@ -82,8 +81,8 @@ Auth lanes for the durable byte routes:
    and compile time. Agent attachment flows hand that identity to `MediaRef`; an opaque share URL is
    display/recovery data, never the primary locator.
 9. **Vault credential attachments are not cloud files.** They must never enter `files.files` or
-   expose an object-store URL — the one sanctioned transport is `../vault/vaultAttachmentTransport.ts`
-   with the explicitly selected `X-Organization-Id`. A specialized byte boundary, not permission to
+   expose an object-store URL — the one sanctioned transport is the Vault package's own
+   (`@ai-matrx/vault`, protected files) with the explicitly selected `X-Organization-Id`. A specialized byte boundary, not permission to
    hand-build another flow.
 10. **Transport is decided in `resolveUploadTransport` only.** ≥ `TUS_TRANSPORT_THRESHOLD_BYTES`
     (80 MB) → TUS, 16 MiB chunks; below → buffered multipart. **There is no presigned transport.**

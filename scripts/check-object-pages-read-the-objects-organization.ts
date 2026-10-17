@@ -66,8 +66,6 @@ export const OBJECT_HELPERS: readonly string[] = [
   "features/record-change-approvals/applyRecordChange.ts",
   "features/list-change-proposals/applyListChange.ts",
   "features/unified-data/components/EntityCustomFields.tsx",
-  // /vault/<id> — the credential workspace the route mounts (ACTIVE-ORG-PAGES).
-  "features/secrets/components/VaultWorkspace.tsx",
   // /files/f/<id> and its studio — the file page and the per-file request seam (GATES-TAIL,
   // VERIFIER-21 #2). None may read the active organization; each asks the FILE (below).
   "app/(core)/files/f/[fileId]/page.tsx",
@@ -162,7 +160,6 @@ export function unnamedOrganizationCalls(root: string, file: string): Finding[] 
  * opened as nothing because the list showed "Mine"). Each file here must match its pattern.
  */
 export const MUST_ASK_THE_OBJECT: Readonly<Record<string, RegExp>> = {
-  "features/secrets/components/VaultWorkspace.tsx": /\buseCredentialHome\s*\(/,
   // The file page reads the file's own row under RLS and hands ITS organization to the shell;
   // without it every per-file request went out org-less and the files service answered 400
   // "Choose the organization you're working in" (GATES-TAIL, VERIFIER-21 #2).

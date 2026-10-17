@@ -12,7 +12,8 @@ import { Cloud } from "lucide-react";
 
 import { Button, Select } from "@ai-matrx/design-system/controls";
 
-import { WebsiteLoginCreateDialog } from "@/features/secrets/components/WebsiteLoginCreateDialog";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { openOverlay, selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
 import type { CaptureHandoff } from "@/features/capture-ladder/types";
 
 import type { GuidedCaptureTarget } from "./guidedApi";
@@ -37,7 +38,9 @@ export function CloudCaptureButton({
   const [busy, setBusy] = useState(false);
   const [job, setJob] = useState<CaptureHandoff | null>(null);
   const [line, setLine] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const vaultOpen = useAppSelector((s) => selectIsOverlayOpen(s, "credentialVaultWindow"));
+  const [addingLogin, setAddingLogin] = useState(false);
   const [readyTick, setReadyTick] = useState(0);
   const { row } = useGuidedJob(job?.id ?? null, job);
   const view = cloudView(row);
@@ -55,6 +58,14 @@ export function CloudCaptureButton({
       });
     return () => abort.abort();
   }, [platform, organizationId, readyTick]);
+
+  // The login is added in the Vault window; when it closes, read the saved logins again.
+  useEffect(() => {
+    if (addingLogin && !vaultOpen) {
+      setAddingLogin(false);
+      setReadyTick((n) => n + 1);
+    }
+  }, [addingLogin, vaultOpen]);
 
   useEffect(() => {
     if (view?.stage === "done") onCaptured?.();
@@ -82,28 +93,27 @@ export function CloudCaptureButton({
 
   const known = SOCIAL_PLATFORMS.find((p) => p === platform) as SocialPlatform | undefined;
   const loginUrl = known ? new URL(profileUrlFor(known, "x")).origin + "/" : "";
-  // The Vault's own create form over this page (no navigation); the new login comes back selected.
-  const addLogin = (
-    <WebsiteLoginCreateDialog
-      open={addOpen}
-      onOpenChange={setAddOpen}
-      loginUrl={loginUrl}
-      displayName={`${name} login`}
-      onSaved={(item) => {
-        setItemId(item.id);
-        setReadyTick((n) => n + 1);
-      }}
-    />
-  );
+  // The Vault's own new-login flow in its window, over this page (no navigation).
+  const addLogin = () => {
+    const location = new URLSearchParams({ mode: "new", kind: "website_login" });
+    if (loginUrl) location.set("url", loginUrl);
+    dispatch(
+      openOverlay({
+        overlayId: "credentialVaultWindow",
+        instanceId: "default",
+        data: { selectedItemId: null, location: location.toString() },
+      }),
+    );
+    setAddingLogin(true);
+  };
 
   if (ready.logins.length === 0) {
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" onClick={() => setAddOpen(true)}>
+        <Button variant="outline" onClick={addLogin}>
           Add {name} login
         </Button>
         <span className="text-xs text-muted-foreground">Then capture it in the cloud</span>
-        {addLogin}
       </div>
     );
   }
