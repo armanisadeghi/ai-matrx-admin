@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-17T06:28:09.699Z",
+  "generated_at": "2026-10-17T06:48:06.626Z",
   "files": {
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -4345,6 +4345,12 @@
       "filename": "hostrun_b_an_approved_job_expires_and_waits_on_its_background_run.sql",
       "checksum": "60d4df15be734b40d7424947143d9bb1856c1d7404c6f2bce979c3909ec85c16",
       "applied_at": "2026-10-17 06:28:07.771042+00"
+    },
+    "migrations/campaign/hostrun_c_a_failed_yes_expires_and_a_bad_table_id_is_said_plainly.sql": {
+      "source": "matrx-frontend",
+      "filename": "hostrun_c_a_failed_yes_expires_and_a_bad_table_id_is_said_plainly.sql",
+      "checksum": "9401b127df8021b909a20d6d5f07cabd8b984baf90ee05f7476193e91b6fe1ee",
+      "applied_at": "2026-10-17 06:48:04.509275+00"
     },
     "migrations/campaign/hotdoors2_a_the_search_reads_a_row_once.sql": {
       "source": "matrx-frontend",
