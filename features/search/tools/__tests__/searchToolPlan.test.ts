@@ -147,13 +147,13 @@ describe("finding an app or a business by its name", () => {
     const places = [
       { name: "Epoch Coffee", place_id: "ChIJG-gJw2vKRIYROWi2uwOp8QE", address: { display: "221 W North Loop Blvd, Austin, TX 78751, United States" } },
       { name: "Epoch Coffee", place_id: "ChIJG-gJw2vKRIYROWi2uwOp8QE" },
-      { name: "Fetch Cafe", place_id: "11265938073076301333" },
+      { name: "Fetch Cafe", place_id: "11265938073076301333", categories: ["Pet sitter"], rating: { value: 4.6, count: 9 } },
       { name: "A cafe", place_id: "brave-123" },
       { name: "No id" },
     ];
     expect(pickPlaces(places)).toEqual([
       { label: "Epoch Coffee", caption: "221 W North Loop Blvd, Austin, TX 78751", value: "ChIJG-gJw2vKRIYROWi2uwOp8QE" },
-      { label: "Fetch Cafe", caption: "Google Maps", value: "11265938073076301333" },
+      { label: "Fetch Cafe", caption: "Pet sitter · 4.6★ (9)", value: "11265938073076301333" },
     ]);
   });
 });

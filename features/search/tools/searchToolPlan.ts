@@ -233,7 +233,12 @@ export function pickPlaces(places: readonly Record<string, unknown>[], max = 5):
       address && typeof address === "object" && typeof (address as Record<string, unknown>).display === "string"
         ? ((address as Record<string, unknown>).display as string)
         : "";
-    out.push({ label: name, caption: display.replace(/,?\s*(United States|USA)\s*$/i, "").trim() || "Google Maps", value: id });
+    // Where it is, else what it is and how it is rated: enough to tell two places of one name apart.
+    const rating = place.rating && typeof place.rating === "object" ? (place.rating as Record<string, unknown>) : null;
+    const stars = rating && typeof rating.value === "number" ? `${rating.value.toFixed(1)}★${typeof rating.count === "number" ? ` (${rating.count})` : ""}` : "";
+    const category = Array.isArray(place.categories) && typeof place.categories[0] === "string" ? place.categories[0] : "";
+    const caption = display.replace(/,?\s*(United States|USA)\s*$/i, "").trim() || [category, stars].filter(Boolean).join(" · ") || "Google Maps";
+    out.push({ label: name, caption, value: id });
     if (out.length >= max) break;
   }
   return out;
