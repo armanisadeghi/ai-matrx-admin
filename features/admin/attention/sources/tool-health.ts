@@ -40,6 +40,8 @@ function stateOf(row: ToolHealthRow): string {
   if (row.kind === "account_off") return "account switched off";
   if (row.kind === "tool_off") return "off — no working source";
   if (row.kind === "breaker_failed") return "guard could not run";
+  if (row.kind === "price_drift") return "price may have changed";
+  if (row.kind === "import_candidate") return "sources to review";
   return "one source switched off";
 }
 
@@ -52,7 +54,7 @@ export function toolHealthItems(rows: readonly ToolHealthRow[], deps: ToolHealth
       key,
       sourceId: TOOL_HEALTH_SOURCE_ID,
       id: key.slice(TOOL_HEALTH_SOURCE_ID.length + 1),
-      severity: row.severity === "critical" ? "critical" : "warning",
+      severity: row.severity === "critical" ? "critical" : row.severity === "info" ? "info" : "warning",
       title: row.title,
       state: stateOf(row),
       sentence: row.sentence,

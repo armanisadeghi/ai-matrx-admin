@@ -47,3 +47,12 @@ test("summary names one Tool or counts several, and is empty at zero", () => {
   expect(summarizeToolHealth(toolHealthItems([row({}), row({ item_key: "tool-health:e2" })], deps))).toBe("2 Tool sources are switched off.");
   expect(summarizeToolHealth([])).toBeNull();
 });
+
+test("upkeep findings (a price that may have changed, sources to review) ride the same source with their own words", () => {
+  const [price] = toolHealthItems([row({ kind: "price_drift", severity: "warning", title: "Tool prices", record_href: "/administration/agents/tool-control" })], deps);
+  expect(price.state).toBe("price may have changed");
+  expect(price.severity).toBe("warning");
+  const [review] = toolHealthItems([row({ kind: "import_candidate", severity: "info", title: "New Tool sources" })], deps);
+  expect(review.state).toBe("sources to review");
+  expect(review.severity).toBe("info");
+});
