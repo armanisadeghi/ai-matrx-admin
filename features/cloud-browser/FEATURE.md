@@ -303,6 +303,11 @@ The frontend never receives a password, seed, or generated code from that path.
 
 ## Change log
 
+- **2026-10-17** — `mintStreamTicket(run, "view")` treats 409 as expected (no Error Inspector
+  incident) and `isViewStreamUnavailable` names that fallback; `isStreamGone` accepts the typed
+  `stream_superseded` / `stream_ended` codes; `useCloudBrowserSurfaceKind` (chat slot) names the
+  composer pill Computer for a machine browser.
+
 - **2026-10-16** — One viewer per run (`runViewer.ts`); machine runs route to the Computer
   tab; `loadSnapshot(…, { target })` / `startRun(…, target)` for the machine's `sandbox`
   target; screenshot 409s expected + back-off; renew loops stop on refusal; `isStreamGone`.
