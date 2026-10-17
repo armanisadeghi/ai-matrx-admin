@@ -372,7 +372,8 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      {/* Wraps in a narrow canvas so the pill never runs off the edge. */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         {!large ? (
           <Button
             variant="quiet"
