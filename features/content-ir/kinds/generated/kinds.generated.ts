@@ -9627,10 +9627,10 @@ export interface SeoSerpIntentContext {
   __kind?: string;
   device: string;
   location?: string | null;
-  brave_observed_at: string;
-  brave_snapshot_id: string;
   google_observed_at: string;
   google_snapshot_id: string;
+  web_observed_at: string;
+  web_snapshot_id: string;
 }
 
 /**
@@ -47570,7 +47570,7 @@ export interface SeoSerpIntentAnalysisOffer {
   /**
    * The saved snapshot of web search results for this keyword.
    */
-  brave_serp: unknown;
+  web_serp: unknown;
   /**
    * The saved snapshot of Google's search results for this keyword.
    */
@@ -48960,7 +48960,7 @@ export interface SeoRankTarget {
    */
   device: string;
   /**
-   * Which engine is tracked: 'brave' | 'google' | 'chat_gpt' | 'claude' | 'gemini' | 'perplexity'.
+   * Which engine is tracked: the default web engine | 'google' | 'chat_gpt' | 'claude' | 'gemini' | 'perplexity'.
    */
   engine: string;
   /**
@@ -57906,7 +57906,7 @@ export interface WebResult {
   author?: string | null;
   rating?: Rating | null;
   /**
-   * Provider that returned this result, e.g. 'brave' | 'google'.
+   * Display label of the service that returned this result.
    */
   source: string;
   favicon?: string | null;

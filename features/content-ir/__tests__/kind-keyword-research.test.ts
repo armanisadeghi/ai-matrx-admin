@@ -94,7 +94,7 @@ const SERP_INTENT_JSON = JSON.stringify({
   keyword_id: "2a132ca0-60f4-4995-8def-20482e99d360",
   phrase: "best project management software",
   language: "en",
-  context: { google_snapshot_id: "g1", brave_snapshot_id: "b1" },
+  context: { google_snapshot_id: "g1", web_snapshot_id: "b1" },
   original_classification: { intent_class: "commercial_investigation" },
   enhanced_classification: {
     intent_class: "commercial_investigation",
@@ -103,7 +103,7 @@ const SERP_INTENT_JSON = JSON.stringify({
   changes: [],
   provider_findings: [
     { provider: "google", apparent_intent: "commercial_investigation" },
-    { provider: "brave", apparent_intent: "commercial_investigation" },
+    { provider: "web", apparent_intent: "commercial_investigation" },
   ],
   serp_consensus: "aligned",
   intent_summary: "Both providers support comparison intent.",

@@ -107,7 +107,7 @@ export const webResultKindSchema: KindSchema = {
     source: {
       type: "string",
       required: true,
-      description: "Provider that returned this result, e.g. 'brave' | 'google'.",
+      description: "Display label of the service that returned this result.",
     },
     position: { type: "number", required: true, description: "1-based rank." },
     title: { type: "string", required: true },
@@ -293,7 +293,7 @@ export const webSearchResultsKindSchema: KindSchema = {
     source: {
       type: "string",
       required: true,
-      description: "Provider that served this response, e.g. 'brave' | 'google'.",
+      description: "Display label of the service that served this response.",
     },
     query: { type: "string", required: true },
     altered_query: {

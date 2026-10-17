@@ -79,7 +79,7 @@ export const faqItemKindSchema: KindSchema = {
     source: {
       type: "string",
       nullable: true,
-      description: "Provider that returned this item, e.g. 'brave' | 'google'.",
+      description: "Display label of the service that returned this item.",
     },
     position: { type: "number", nullable: true },
     source_title: { type: "string", nullable: true },

@@ -74,7 +74,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "search_provider",
     label: "Search provider",
     description:
-      "The search service that answered, as the results themselves report it (e.g. 'brave'). Empty until a search has completed.",
+      "The search service that answered, as the results themselves report it. Empty until a search has completed.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 8,
@@ -117,7 +117,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "search_engine",
     label: "Search engine",
     description:
-      'The engine switch: "brave" (shown as Matrx), "google", or "compare" (both side by side). Applies to the All, News, Images, Videos and Places tabs; Shopping, Jobs and Trends always use Google and Social names none. Always populated.',
+      'The engine switch: the default web engine (shown as Matrx), "google", or "compare" (both side by side). Applies to the All, News, Images, Videos and Places tabs; Shopping, Jobs and Trends always use Google and Social names none. Always populated.',
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 7,

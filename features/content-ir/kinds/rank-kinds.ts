@@ -69,7 +69,7 @@ export const providerRunReceiptKindSchema: KindSchema = {
     provider: {
       type: "string",
       required: true,
-      description: "Provider that served the call, e.g. 'brave' | 'serpapi' | 'dataforseo'.",
+      description: "Which kind of data service answered the call, as a plain category (e.g. 'web_search').",
     },
     from_cache: {
       type: "boolean",
