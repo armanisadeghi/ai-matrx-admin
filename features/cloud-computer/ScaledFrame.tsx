@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { Monitor } from "lucide-react";
 import { cn } from "@/utils/cn";
 
@@ -145,23 +145,24 @@ export function ScaledFrame({
     return () => window.clearTimeout(timer);
   }, [loaded]);
 
-  const post = (cmd: StreamCommand) => {
-    const win = frame.current?.contentWindow;
-    if (!win || !origin) return;
-    win.postMessage({ type: "matrx-stream-cmd", cmd }, origin);
-  };
-  const postRef = useRef(post);
-  postRef.current = post;
+  const post = useCallback(
+    (cmd: StreamCommand) => {
+      const win = frame.current?.contentWindow;
+      if (!win || !origin) return;
+      win.postMessage({ type: "matrx-stream-cmd", cmd }, origin);
+    },
+    [origin],
+  );
 
   useImperativeHandle(
     controlRef,
     () => ({
       reconnectKeyboard: () => {
         frame.current?.focus({ preventScroll: true });
-        postRef.current("keyboard-reset");
+        post("keyboard-reset");
       },
     }),
-    [],
+    [post],
   );
 
   useEffect(() => {
@@ -203,7 +204,7 @@ export function ScaledFrame({
     };
     const takeKeyboard = () => {
       iframe.focus({ preventScroll: true });
-      postRef.current("focus");
+      post("focus");
     };
     const onFocusIn = (event: FocusEvent) => {
       const target = event.target as Element | null;
@@ -227,7 +228,7 @@ export function ScaledFrame({
     // its own window blurring): tell the stream page to take the keyboard.
     const onWindowBlur = () => {
       window.setTimeout(() => {
-        if (document.activeElement === iframe) postRef.current("focus");
+        if (document.activeElement === iframe) post("focus");
       }, 0);
     };
     document.addEventListener("pointerdown", personActed, true);
@@ -244,7 +245,7 @@ export function ScaledFrame({
       window.removeEventListener("focus", onWindowFocus);
       window.removeEventListener("blur", onWindowBlur);
     };
-  }, [interactive]);
+  }, [interactive, post]);
 
   const covered = state !== "connected";
 

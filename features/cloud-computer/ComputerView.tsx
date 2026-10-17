@@ -188,10 +188,10 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
 
   // Another viewer took the seat: drop the stream at once (its claim is about
   // to be superseded server-side anyway).
+  // Set while rendering (React's "adjust state on a change" pattern), not in an
+  // effect: one render, no cascade.
   const seatTaken = !!stream && seat.elsewhere;
-  useEffect(() => {
-    if (seatTaken) setLost(true);
-  }, [seatTaken]);
+  if (seatTaken && !lost) setLost(true);
 
   const open = useCallback(
     async (mode: "view" | "control", takeover: boolean) => {
