@@ -175,6 +175,7 @@ export default function PageListView({
     },
     {
       id: "category",
+      filter: "select",
       header: "Category",
       accessorKey: "category",
       width: 180,
@@ -199,6 +200,7 @@ export default function PageListView({
     },
     {
       id: "status",
+      filter: "select",
       header: "Status",
       accessorFn: (page) =>
         `${page.is_published ? "Published" : "Unpublished"}${page.has_draft ? " Draft" : ""}`,
@@ -269,6 +271,7 @@ export default function PageListView({
     },
     {
       id: "updated_at",
+      format: { id: "datetime" },
       header: "Updated",
       accessorKey: "updated_at",
       width: 140,

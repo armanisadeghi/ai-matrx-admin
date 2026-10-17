@@ -215,6 +215,7 @@ export default function AliasesContainer() {
     },
     {
       accessorKey: "kind",
+      filter: "select",
       header: "Kind",
       sortable: true,
       cell: (item) => {

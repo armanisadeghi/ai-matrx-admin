@@ -265,6 +265,7 @@ export function LeaveLedgerView({
   const columns: MatrxColumnDef<LeaveLedgerEntry>[] = [
     {
       id: "date",
+      format: { id: "date" },
       header: "Date",
       accessorFn: (entry) => entry.occurredOn ?? "",
       cell: (entry) => (
@@ -378,6 +379,7 @@ export function LeaveLedgerView({
     },
     {
       id: "source",
+      filter: "select",
       header: "Source",
       accessorFn: (entry) => entry.source?.kind ?? "",
       cell: (entry) => (

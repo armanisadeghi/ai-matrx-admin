@@ -265,7 +265,7 @@ function snapshotReportColumns(
       id: "captured_at",
       accessorKey: "capturedAt",
       header: "Captured",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.capturedAt)}
@@ -438,6 +438,7 @@ function snapshotReportColumns(
           accessorKey: "canonicalState",
           header: "State",
           sortable: false,
+          // table-filter-off: derived client-side from the canonical chain, not a stored column
           filter: false,
           cell: (row) => (
             <StatusBadge value={chainFor(row)?.state ?? row.canonicalState} />
@@ -462,6 +463,7 @@ function snapshotReportColumns(
           id: "canonicalTargetStatus",
           header: "Target HTTP",
           sortable: false,
+          // table-filter-off: derived client-side from the canonical chain, not a stored column
           filter: false,
           align: "right",
           cell: (row) => {

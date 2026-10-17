@@ -292,6 +292,7 @@ export const LEDGER_COLUMNS: MatrxColumnDef<LedgerRow>[] = [
   },
   {
     accessorKey: "agentType",
+    filter: "select",
     header: "Agent type",
     filter: "text",
     width: 150,

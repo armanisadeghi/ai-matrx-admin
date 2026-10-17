@@ -114,6 +114,7 @@ export function SuggestionsTable(props: SuggestionsTableProps) {
       align: "center",
     },
     {
+      // table-filter-off: server source does not filter this field yet; the filter bar above covers it
       id: "source",
       header: "Source file",
       accessorFn: (r) => sourceTitle(r, sourceTitles),
@@ -130,6 +131,7 @@ export function SuggestionsTable(props: SuggestionsTableProps) {
       width: 230,
     },
     {
+      // table-filter-off: server source does not filter this field yet; the filter bar above covers it
       id: "scope_type",
       header: "Type",
       accessorFn: (r) => r.scopeTypeLabel ?? "",

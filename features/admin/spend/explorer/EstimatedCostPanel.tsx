@@ -31,6 +31,7 @@ import {
 const columns: MatrxColumnDef<EstimatedSpendRow>[] = [
   {
     id: "source",
+    filter: "select",
     header: "Source",
     accessorFn: (r) => r.source,
     width: 260,
@@ -48,6 +49,7 @@ const columns: MatrxColumnDef<EstimatedSpendRow>[] = [
   },
   {
     id: "at",
+    format: { id: "datetime" },
     header: "When",
     accessorFn: (r) => r.at,
     width: 150,

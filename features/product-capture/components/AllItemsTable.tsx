@@ -277,6 +277,7 @@ export function AllItemsTable() {
     },
     {
       id: "createdAt",
+      format: { id: "datetime" },
       accessorKey: "createdAt",
       header: "Captured",
       cell: (row) => (

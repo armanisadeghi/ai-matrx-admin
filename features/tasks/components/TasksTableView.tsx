@@ -227,6 +227,7 @@ export default function TasksTableView() {
     () => [
       {
         id: "status",
+        filter: "select",
         header: <span className="sr-only">Status</span>,
         label: "Status",
         accessorFn: (task) => (task.completed ? "Completed" : "Open"),
@@ -357,6 +358,7 @@ export default function TasksTableView() {
       },
       {
         id: "source",
+        filter: "select",
         header: "Source",
         accessorFn: (task) => task.sourceLabel ?? task.origin ?? "",
         width: 200,
@@ -374,6 +376,7 @@ export default function TasksTableView() {
       },
       {
         id: "priority",
+        filter: "select",
         header: "Priority",
         accessorFn: (task) => priorityLabel(task.priority),
         sortValue: (task) => PRIORITY_ORDER[task.priority ?? "__none__"] ?? 99,
@@ -403,6 +406,7 @@ export default function TasksTableView() {
       },
       {
         id: "dueDate",
+        format: { id: "date" },
         header: "Due",
         accessorFn: (task) => task.dueDate || null,
         sortValue: (task) => task.dueDate || "9999-12-31",

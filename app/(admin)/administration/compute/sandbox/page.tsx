@@ -443,6 +443,7 @@ export default function AdminSandboxManagementPage() {
     },
     {
       accessorKey: "created_at",
+      format: { id: "datetime" },
       header: "Created",
       label: "Created",
       width: 156,
@@ -454,6 +455,7 @@ export default function AdminSandboxManagementPage() {
     },
     {
       accessorKey: "expires_at",
+      format: { id: "datetime" },
       header: "Expires",
       label: "Expires",
       width: 156,
@@ -465,6 +467,7 @@ export default function AdminSandboxManagementPage() {
     },
     {
       accessorKey: "tier",
+      filter: "select",
       header: "Tier",
       label: "Tier",
       width: 112,
@@ -519,6 +522,7 @@ export default function AdminSandboxManagementPage() {
     },
     {
       accessorKey: "last_heartbeat_at",
+      format: { id: "datetime" },
       header: "Last heartbeat",
       label: "Last heartbeat",
       hidden: true,

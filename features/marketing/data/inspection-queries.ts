@@ -122,6 +122,15 @@ function numberFilter(
   return filter?.kind === "number" ? filter : null;
 }
 
+/** A `date` column filter: `since` inclusive, `until` exclusive (ISO instants). */
+function dateFilter(
+  state: MatrxDataTableQueryState,
+  column: string,
+): { since?: string; until?: string } | null {
+  const filter = state.columnFilters[column];
+  return filter?.kind === "date" ? filter : null;
+}
+
 function assertData<T>(data: T | null, error: unknown): T {
   if (error) throw error;
   if (data === null) throw new Error("Supabase returned no data.");
@@ -385,6 +394,9 @@ export async function listCrawlSnapshots(
   const contentHash = textFilter(state, "content_hash");
   const httpStatus = numberFilter(state, "http_status");
   const wordCount = numberFilter(state, "word_count");
+  const capturedAt = dateFilter(state, "captured_at");
+  if (capturedAt?.since) query = query.gte("captured_at", capturedAt.since);
+  if (capturedAt?.until) query = query.lt("captured_at", capturedAt.until);
   if (finalUrl) query = query.ilike("final_url", `%${finalUrl}%`);
   if (contentHash) query = query.ilike("content_hash", `%${contentHash}%`);
   if (httpStatus?.min !== undefined)
@@ -395,6 +407,11 @@ export async function listCrawlSnapshots(
     query = query.gte("word_count", wordCount.min);
   if (wordCount?.max !== undefined)
     query = query.lte("word_count", wordCount.max);
+  const captured = state.columnFilters.captured_at;
+  if (captured?.kind === "date") {
+    if (captured.since) query = query.gte("captured_at", captured.since);
+    if (captured.until) query = query.lt("captured_at", captured.until);
+  }
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query

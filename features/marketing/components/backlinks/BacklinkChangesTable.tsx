@@ -515,14 +515,14 @@ export function BacklinkChangesTable({ siteId }: { siteId: string }) {
       id: "detected_at",
       accessorKey: "detected_at",
       header: "Noticed",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => <DateCell iso={row.detected_at} />,
     },
     {
       id: "observed_at",
       accessorKey: "observed_at",
       header: "Check dated",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => <DateCell iso={row.observed_at} />,
     },
   ];

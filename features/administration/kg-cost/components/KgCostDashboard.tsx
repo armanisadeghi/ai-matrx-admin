@@ -694,6 +694,7 @@ function OrgDetailDialog({
                     columns={splitAdminCostColumns<OrgCostDetailResponse["top_sources"][number]>([
                       {
                         accessorKey: "source",
+                        filter: "select",
                         header: "Source",
                         filter: "text",
                         cell: (row) => (

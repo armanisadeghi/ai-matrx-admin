@@ -382,6 +382,7 @@ export function OutreachListDetailPage({ listId }: { listId: string }) {
       accessorKey: "status",
       header: "Status",
       sortable: false,
+      // table-filter-off: status chips above the table filter this list on the server
       filter: false,
       width: 130,
       cell: (row) => <MemberStatusBadge status={row.status} />,
@@ -452,6 +453,7 @@ export function OutreachListDetailPage({ listId }: { listId: string }) {
       accessorKey: "last_attempt_at",
       header: "Last attempt",
       sortable: false,
+      // table-filter-off: server source does not filter this field yet
       filter: false,
       width: 110,
       cell: (row) => (
@@ -465,6 +467,7 @@ export function OutreachListDetailPage({ listId }: { listId: string }) {
       accessorKey: "next_attempt_at",
       header: "Next try",
       sortable: false,
+      // table-filter-off: server source does not filter this field yet
       filter: false,
       width: 110,
       cell: (row) => (
