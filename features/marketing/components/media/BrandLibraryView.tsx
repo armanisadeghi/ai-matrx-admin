@@ -20,6 +20,7 @@ import {
   Trash2,
   Upload,
   Crop,
+  Maximize2,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,9 @@ import { MediaEmptyState } from "@/features/marketing/components/media/SnapshotM
 import {
   LoadingSurface,
   QueryError,
+  SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
+import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
 import { BrandAssetEditorDialog } from "@/features/marketing/components/brands/BrandAssetEditorDialog";
 import { AssetImageEditorDialog } from "@/features/marketing/components/media/AssetImageEditorDialog";
 import { BrandAssetDetailDialog } from "@/features/marketing/components/media/BrandAssetDetail";
@@ -109,6 +112,88 @@ const SOURCE_LABELS: Record<string, string> = {
   research: "From research",
   stock: "Stock source",
 };
+
+/**
+ * Kinds that keep their own tile: a video plays inline with its publish date, a portal is a link out.
+ * Every other kind renders in the shared brand gallery (`BrandAssetGallery`), sized by what it really is.
+ */
+const TILE_KINDS = new Set(["video", "portal"]);
+
+const ACTION_CLASS =
+  "matrx-tap-area rounded p-1 text-muted-foreground transition-colors hover:text-foreground";
+
+/** The library's per-asset actions, shown on hover over a gallery tile. */
+function AssetActions({
+  asset,
+  busy,
+  onOpenDetail,
+  onEdit,
+  onEditImage,
+  onDelete,
+  onTogglePrimary,
+}: {
+  asset: BrandAsset;
+  busy: boolean;
+  onOpenDetail: (asset: BrandAsset) => void;
+  onEdit: (asset: BrandAsset) => void;
+  onEditImage: (asset: BrandAsset) => void;
+  onDelete: (asset: BrandAsset) => void;
+  onTogglePrimary: (asset: BrandAsset) => void;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onOpenDetail(asset)}
+        title="Open the full asset record"
+        aria-label="Open the full asset record"
+        className={ACTION_CLASS}
+      >
+        <Maximize2 className="h-3.5 w-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onTogglePrimary(asset)}
+        disabled={busy}
+        title={asset.is_primary ? "Unset primary" : "Set as primary"}
+        aria-label={asset.is_primary ? "Unset primary" : "Set as primary"}
+        className={ACTION_CLASS}
+      >
+        <Star className={asset.is_primary ? "h-3.5 w-3.5 fill-amber-400 text-amber-400" : "h-3.5 w-3.5"} />
+      </button>
+      {asset.file_id ? (
+        <button
+          type="button"
+          onClick={() => onEditImage(asset)}
+          title="Edit image (crop, standards, remove background, inpaint)"
+          aria-label="Edit image"
+          className={ACTION_CLASS}
+        >
+          <Crop className="h-3.5 w-3.5" />
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => onEdit(asset)}
+        title="Edit details"
+        aria-label="Edit details"
+        className={ACTION_CLASS}
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(asset)}
+        disabled={busy}
+        title="Delete"
+        aria-label="Delete"
+        className="matrx-tap-area rounded p-1 text-muted-foreground transition-colors hover:text-destructive"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </>
+  );
+}
 
 function AssetTile({
   asset,
@@ -228,13 +313,13 @@ function AssetTile({
             type="button"
             onClick={() => onOpenDetail(asset)}
             title="Open the full asset record"
-            className="block w-full min-w-0 truncate text-left text-[11px] font-medium text-foreground hover:text-primary"
+            className="block w-full min-w-0 truncate text-left type-meta font-medium text-foreground hover:text-primary"
           >
             {asset.title ||
               BRAND_ASSET_KIND_LABELS[asset.kind as BrandAssetKind] ||
               asset.kind}
           </button>
-          <p className="truncate text-[9px] text-muted-foreground">
+          <p className="truncate type-meta text-muted-foreground">
             {SOURCE_LABELS[asset.source] ?? asset.source}
             {asset.is_primary ? " · primary" : ""}
           </p>
@@ -405,87 +490,110 @@ export function BrandLibraryView({
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-[11px] text-muted-foreground">
-          {`${assets.length.toLocaleString()} confirmed asset${assets.length === 1 ? "" : "s"} in this brand's library — shared across every site of the brand.`}
-        </p>
-        <div className="ml-auto flex items-center gap-1.5">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/*"
-            multiple
-            className="hidden"
-            onChange={(event) => void onUploadFiles(event.target.files)}
-          />
-          <Button
-            icon={uploading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Upload />
-            )}
-            variant="outline"
-            disabled={uploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Upload
-          </Button>
-          <Button
-            icon={<ImageIcon />}
-            variant="outline"
-            onClick={() => setCreating(true)}
-          >
-            Add by URL
-          </Button>
-        </div>
-      </div>
+  const galleryAssets = assets.filter((asset) => !TILE_KINDS.has(asset.kind));
+  const tileGroups = groups.filter(([kind]) => TILE_KINDS.has(kind));
+  const busy = updateAsset.isPending || deleteAsset.isPending;
 
-      {assets.length === 0 ? (
-        <MediaEmptyState
-          title="The brand library is empty"
-          detail="Upload files, add assets by URL, promote crawled images, or generate new ones — everything confirmed lands here."
-        />
-      ) : (
-        groups.map(([kind, kindAssets]) => (
-          <section key={kind} className="space-y-2">
-            <div className="flex items-baseline gap-2 px-1">
-              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-foreground/70">
-                {BRAND_ASSET_KIND_LABELS[kind as BrandAssetKind] ?? kind}
-              </h3>
-              <span className="text-[10px] tabular-nums text-muted-foreground">
-                {kindAssets.length}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {kindAssets.map((asset) => {
-                const videoId =
-                  asset.kind === "video" && asset.source_url
-                    ? youtubeId(asset.source_url)
-                    : null;
-                const publishedAt =
-                  (videoId
-                    ? youtubeIdentityForId(videoId)?.published_at
-                    : null) ?? videoPublishDateFromMetadata(asset.data);
-                return (
-                  <AssetTile
-                    key={asset.id}
-                    asset={asset}
-                    publishedAt={publishedAt}
-                    onOpenDetail={setViewing}
-                    onEdit={setEditing}
-                    onEditImage={setEditingImage}
-                    onDelete={(item) => void onDelete(item)}
-                    onTogglePrimary={(item) => void onTogglePrimary(item)}
-                    busy={updateAsset.isPending || deleteAsset.isPending}
-                  />
-                );
-              })}
-            </div>
-          </section>
-        ))
-      )}
+  return (
+    <div className="space-y-3">
+      <SectionCard
+        title="Library"
+        about="Every confirmed asset in this brand's library, shared across every site of the brand: uploads, assets added by URL, promoted crawled images and generated ones."
+        headerExtra={
+          <>
+            <span className="type-meta tabular-nums text-muted-foreground">
+              {assets.length.toLocaleString()}
+            </span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              className="hidden"
+              onChange={(event) => void onUploadFiles(event.target.files)}
+            />
+            <Button
+              icon={uploading ? <Loader2 className="animate-spin" /> : <Upload />}
+              variant="outline"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Upload
+            </Button>
+            <Button icon={<ImageIcon />} variant="outline" onClick={() => setCreating(true)}>
+              Add by URL
+            </Button>
+          </>
+        }
+      >
+        {assets.length === 0 ? (
+          <div className="p-3">
+            <MediaEmptyState
+              title="The brand library is empty"
+              detail="Upload files, add by URL, promote crawled images, or generate new ones."
+            />
+          </div>
+        ) : galleryAssets.length === 0 ? (
+          <p className="px-3 py-2 type-secondary text-muted-foreground">No images yet</p>
+        ) : (
+          <BrandAssetGallery
+            items={galleryAssets.map((asset) => ({
+              asset,
+              preview: asset.file_id ? null : assetPreviewUrl(asset),
+              color: assetColorValue(asset),
+              label: BRAND_ASSET_KIND_LABELS[asset.kind as BrandAssetKind] ?? asset.kind,
+            }))}
+            onOpen={setViewing}
+            renderActions={(asset) => (
+              <AssetActions
+                asset={asset}
+                busy={busy}
+                onOpenDetail={setViewing}
+                onEdit={setEditing}
+                onEditImage={setEditingImage}
+                onDelete={(item) => void onDelete(item)}
+                onTogglePrimary={(item) => void onTogglePrimary(item)}
+              />
+            )}
+          />
+        )}
+      </SectionCard>
+
+      {tileGroups.map(([kind, kindAssets]) => (
+        <SectionCard
+          key={kind}
+          title={BRAND_ASSET_KIND_LABELS[kind as BrandAssetKind] ?? kind}
+          headerExtra={
+            <span className="type-meta tabular-nums text-muted-foreground">{kindAssets.length}</span>
+          }
+        >
+          <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {kindAssets.map((asset) => {
+              const videoId =
+                asset.kind === "video" && asset.source_url
+                  ? youtubeId(asset.source_url)
+                  : null;
+              const publishedAt =
+                (videoId
+                  ? youtubeIdentityForId(videoId)?.published_at
+                  : null) ?? videoPublishDateFromMetadata(asset.data);
+              return (
+                <AssetTile
+                  key={asset.id}
+                  asset={asset}
+                  publishedAt={publishedAt}
+                  onOpenDetail={setViewing}
+                  onEdit={setEditing}
+                  onEditImage={setEditingImage}
+                  onDelete={(item) => void onDelete(item)}
+                  onTogglePrimary={(item) => void onTogglePrimary(item)}
+                  busy={busy}
+                />
+              );
+            })}
+          </div>
+        </SectionCard>
+      ))}
 
       <AssetImageEditorDialog
         asset={editingImage}
