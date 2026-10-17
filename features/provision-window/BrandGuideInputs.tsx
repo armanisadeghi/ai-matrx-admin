@@ -65,7 +65,7 @@ function PointRow({
       <span className="flex shrink-0 items-center whitespace-nowrap type-meta">
         <ProvisionCaptures pointKey={pointKey} subjectId={brandId} title={title} refreshKey={captured} limit={3} />
       </span>
-      {error ? <span className="type-meta text-destructive" title={error}>Capture failed</span> : null}
+      {error ? <span className="max-w-48 truncate type-meta text-destructive" title={error}>{error}</span> : null}
     </div>
   );
 }

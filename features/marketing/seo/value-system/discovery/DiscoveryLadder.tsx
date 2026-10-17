@@ -40,6 +40,14 @@ import {
 } from "lucide-react";
 import AppLink from "@/components/navigation/AppLink";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
+import {
+  InlineQueryError,
+  LoadingSurface,
+  SectionCard,
+} from "@/features/marketing/components/shared/MarketingUi";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -56,8 +64,6 @@ import {
   type DiscoveryStepKey,
   type DiscoveryStepStatus,
 } from "./data";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
@@ -72,51 +78,61 @@ const STEP_META: Record<
   DiscoveryStepKey,
   {
     title: string;
+    /** One-line hint under the title (≤60 chars). */
     question: string;
+    /** The full question, opened from the step's info button. */
+    about: string;
     agent: string;
     requires: readonly DiscoveryStepKey[];
   }
 > = {
   business_model: {
     title: "1 · Business model",
-    question: "What IS this business — who does it serve, which way does money flow?",
+    question: "What the business is and how money flows",
+    about: "What IS this business — who does it serve, and which way does money flow?",
     agent: "Site Business Model Analyst",
     requires: [],
   },
   ideal_customer: {
     title: "2 · Ideal customer",
-    question: "Who makes them money — and who only looks like a customer?",
+    question: "Who makes them money, and who only looks like it",
+    about: "Who makes them money — and who only looks like a customer?",
     agent: "Ideal Customer Analyst",
     requires: ["business_model"],
   },
   money_map: {
     title: "3 · Money map",
-    question: "Which lines earn big, which are loss leaders, which are noise?",
+    question: "Big earners, loss leaders and noise",
+    about: "Which lines earn big, which are loss leaders, which are noise?",
     agent: "Money Map Analyst",
     requires: ["business_model", "ideal_customer"],
   },
   offerings: {
     title: "4 · Offerings",
-    question: "The canonical list of things this site wants traffic to reach.",
+    question: "What this site wants traffic to reach",
+    about: "The canonical list of things this site wants traffic to reach.",
     agent: "Offering Extractor",
     requires: ["business_model", "ideal_customer", "money_map"],
   },
   offering_values: {
     title: "5 · Offering values",
-    question: "Each Offering's proposed ± points from the 100 baseline.",
+    question: "Each offering's worth in ± points",
+    about: "Each Offering's proposed ± points from the 100-point baseline.",
     agent: "Offering Valuer",
     requires: ["business_model", "ideal_customer", "money_map", "offerings"],
   },
   proposed_setup: {
     title: "6 · Proposed setup",
-    question:
+    question: "Proposals you approve or reject",
+    about:
       "Every Offering and its worth, turned into proposals you approve or reject — nothing is set until you do.",
     agent: "the setup proposer (no AI — it reads steps 4 and 5)",
     requires: ["offerings", "offering_values"],
   },
   guidelines_draft: {
     title: "Business guidelines",
-    question:
+    question: "The document every keyword agent reads",
+    about:
       "The plain-text document every keyword agent reads — drafted from your site, proposed for your approval.",
     agent: "Business Guidelines Drafter",
     requires: [],
@@ -197,12 +213,7 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
   }, [status.data]);
 
   if (status.isLoading) {
-    return (
-      <div className="flex items-center gap-2 rounded-md border border-border bg-card p-3 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" /> Reading the ladder's server
-        state…
-      </div>
-    );
+    return <LoadingSurface label="Loading business discovery…" />;
   }
   if (isOrganizationRequiredError(status.error)) {
     return (
@@ -214,11 +225,11 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
   }
   if (status.isError) {
     return (
-      <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
-        Could not read discovery status —{" "}
-        {status.error instanceof Error ? status.error.message : "unknown error"}
-        <ErrorAlchemyMenu error={status.error.message} />
-      </div>
+      <InlineQueryError
+        what="business discovery"
+        error={status.error}
+        onRetry={() => void status.refetch()}
+      />
     );
   }
 
@@ -228,17 +239,12 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-2.5">
-        <AGENT_ICON className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-        <p className="text-xs text-muted-foreground">
-          AI reads this site cold — its own crawled pages, nothing else — and
-          proposes each answer below in order. You read a rung's result, then
-          run the next. Re-run any rung to redo it; later rungs consume the
-          newest result. Every number in step 5 is a proposal from the 100-point
-          baseline, and step 6 hands each one to you to approve or reject.
-        </p>
-      </div>
+    <div className="flex flex-col gap-3">
+      <SectionCard
+        title="Discovery steps"
+        about="AI reads this site cold — its own crawled pages, nothing else — and proposes each answer in order. Read a step's result, then run the next. Re-run any step to redo it; later steps use the newest result."
+      >
+      <ol className="divide-y divide-border">
       {DISCOVERY_STEP_ORDER.map((step) => {
         const meta = STEP_META[step];
         const row = bySteps.get(step);
@@ -251,14 +257,8 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
           (run.status === "running" && runningStep === step);
         const open = openStep === step;
         return (
-          <div
-            key={step}
-            className={cn(
-              "rounded-lg border bg-card",
-              completed ? "border-primary/30" : "border-border",
-            )}
-          >
-            <div className="flex items-center gap-2 p-2.5">
+          <li key={step}>
+            <div className="flex items-center gap-2 px-3 py-2">
               <button
                 type="button"
                 className="flex min-w-0 flex-1 items-center gap-2 text-left"
@@ -273,8 +273,8 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
                   <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                 )}
                 <span className="min-w-0">
-                  <span className="block text-sm font-medium">{meta.title}</span>
-                  <span className="block truncate text-[11px] text-muted-foreground">
+                  <span className="block text-sm font-medium text-foreground">{meta.title}</span>
+                  <span className="block truncate text-xs text-muted-foreground">
                     {meta.question}
                   </span>
                 </span>
@@ -286,9 +286,10 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
                   )
                 ) : null}
               </button>
+              <AboutPeek title={meta.title} about={meta.about} kind="Step" />
               <div className="flex shrink-0 items-center gap-1.5">
                 {completed && row?.completed_at ? (
-                  <span className="text-[10px] tabular-nums text-muted-foreground">
+                  <span className="text-xs tabular-nums text-muted-foreground">
                     {new Date(row.completed_at).toLocaleString()}
                   </span>
                 ) : null}
@@ -327,7 +328,7 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
                     disabled={!runnable || isRunning || run.status === "running"}
                     title={
                       missing.length > 0
-                        ? `This rung reads ${missing
+                        ? `This step reads ${missing
                             .map((need) => STEP_META[need].title)
                             .join(", ")} — run those first.`
                         : completed
@@ -339,20 +340,20 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
                     {isRunning ? "Running…" : completed ? "Re-run" : "Run"}
                   </Button>
                 ) : (
-                  <span className="text-[10px] text-muted-foreground">
-                    Arrives with the next server release
-                  </span>
+                  <Badge variant="outline">Next release</Badge>
                 )}
               </div>
             </div>
             {open && completed && row?.artifact ? (
-              <div className="border-t border-border p-2.5">
+              <div className="border-t border-border p-3">
                 <StepArtifact step={step} artifact={row.artifact} />
               </div>
             ) : null}
-          </div>
+          </li>
         );
       })}
+      </ol>
+      </SectionCard>
       <SetupDoors siteId={siteId} brandId={brandId ?? null} />
     </div>
   );
@@ -395,30 +396,26 @@ function SetupDoors({
     },
   ];
   return (
-    <div className="rounded-lg border border-border bg-card p-2.5">
-      <p className="text-sm font-medium">Finish what only you can decide</p>
-      <p className="mb-2 text-[11px] text-muted-foreground">
-        Discovery cannot read these off your website. They are yours to set.
-      </p>
-      <div className="grid gap-2 sm:grid-cols-3">
+    <SectionCard
+      title="Finish what only you can decide"
+      about="Discovery cannot read these off your website. They are yours to set."
+    >
+      <ul className="divide-y divide-border">
         {doors.map((door) => (
-          <AppLink
-            key={door.title}
-            href={door.href}
-            className="group flex flex-col gap-1 rounded-md border border-border p-2 hover:bg-muted/50"
-          >
-            <span className="flex items-center gap-1.5 text-xs font-medium">
-              <door.icon className="h-3.5 w-3.5 text-primary" />
-              {door.title}
-            </span>
-            <span className="text-[11px] text-muted-foreground">{door.body}</span>
-            <span className="mt-auto inline-flex items-center gap-0.5 text-[11px] text-primary group-hover:underline">
+          <li key={door.title} className="flex flex-wrap items-center gap-2 px-3 py-2">
+            <door.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">{door.title}</span>
+            <AboutPeek title={door.title} about={door.body} />
+            <AppLink
+              href={door.href}
+              className="ml-auto inline-flex items-center gap-1 type-secondary font-medium text-primary"
+            >
               {door.label} <ArrowUpRight className="h-3 w-3" />
-            </span>
-          </AppLink>
+            </AppLink>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </SectionCard>
   );
 }
 
@@ -433,12 +430,9 @@ function StepArtifact({
   const confidence =
     typeof artifact.confidence === "number" ? artifact.confidence : null;
   return (
-    <div className="flex flex-col gap-2 text-xs">
+    <div className="flex flex-col gap-3 text-sm">
       {confidence != null ? (
-        <p className="text-[11px] text-muted-foreground">
-          Agent confidence:{" "}
-          <span className="font-medium text-foreground">{confidence}/100</span>
-        </p>
+        <PropertyRow label="Agent confidence" value={`${confidence}/100`} />
       ) : null}
       {step === "business_model" ? <BusinessModelView a={artifact} /> : null}
       {step === "ideal_customer" ? <IdealCustomerView a={artifact} /> : null}
@@ -460,13 +454,13 @@ function GuidelinesDraftView({ a }: { a: Record<string, unknown> }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-muted-foreground">{String(a.summary ?? "")}</p>
-      <pre className="max-h-80 overflow-y-auto overscroll-contain whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-2 font-sans text-[11px] leading-4 text-foreground scrollbar-thin">
+      <pre className="max-h-80 overflow-y-auto overscroll-contain whitespace-pre-wrap rounded-md border border-border p-3 font-sans text-sm text-foreground scrollbar-thin">
         {String(a.guidelines_text ?? "")}
       </pre>
-      <p className="text-[11px] text-muted-foreground">
-        Nothing was saved. This is waiting for you in the approval queue on the
-        Business guidelines screen — approve it, or edit it there first.
-      </p>
+      <ArtifactNote
+        text="Not saved — waiting for your approval"
+        about="This draft is waiting in the approval queue on the Business guidelines screen. Approve it there, or edit it first."
+      />
     </div>
   );
 }
@@ -495,7 +489,7 @@ function ProposedSetupView({ a }: { a: Record<string, unknown> }) {
             <div key={i} className="flex items-start gap-2">
               <span
                 className={cn(
-                  "mt-0.5 w-16 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold tabular-nums",
+                  "mt-0.5 w-16 shrink-0 rounded px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
                   add == null
                     ? "bg-muted text-muted-foreground"
                     : add > 0
@@ -509,7 +503,7 @@ function ProposedSetupView({ a }: { a: Record<string, unknown> }) {
               </span>
               <p>
                 <span className="font-medium">{String(p.name)}</span>{" "}
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   ({String(p.offering_kind)})
                 </span>{" "}
                 <span className="text-muted-foreground">
@@ -531,19 +525,29 @@ function ProposedSetupView({ a }: { a: Record<string, unknown> }) {
           ))}
         </div>
       ) : null}
-      <p className="text-[11px] text-muted-foreground">
-        Nothing was set. Each proposal waits in the queue above: approving an
-        offering adds it to your brand, makes it available on this site and
-        sets its worth; rejecting one records why and it is never proposed
-        again. Every site you manage:{" "}
+      <div className="flex flex-wrap items-center gap-2">
+        <ArtifactNote
+          text="Nothing is set until you approve it"
+          about="Approving an offering adds it to your brand, makes it available on this site and sets its worth. Rejecting one records why, and it is never proposed again."
+        />
         <AppLink
           href={marketingRoutes.approvals()}
-          className="text-primary underline-offset-2 hover:underline"
+          className="type-secondary font-medium text-primary"
         >
           Open the approval queue
         </AppLink>
-      </p>
+      </div>
     </div>
+  );
+}
+
+/** A short receipt line with its full meaning in a Peek — never a paragraph. */
+function ArtifactNote({ text, about }: { text: string; about: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 type-secondary text-muted-foreground">
+      {text}
+      <AboutPeek title={text} about={about} />
+    </span>
   );
 }
 
@@ -556,12 +560,18 @@ function asList(v: unknown): Record<string, unknown>[] {
 function BusinessModelView({ a }: { a: Record<string, unknown> }) {
   return (
     <div className="flex flex-col gap-2">
-      <p>
-        <span className="rounded bg-primary/10 px-1.5 py-0.5 font-semibold uppercase text-primary-ink">
-          {String(a.business_model ?? "?")}
-        </span>{" "}
-        · money flows: <span className="font-medium">{String(a.revenue_direction ?? "?")}</span>
-      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <PropertyRow
+          label="Business model"
+          value={a.business_model ? String(a.business_model) : undefined}
+          missing="Unknown"
+        />
+        <PropertyRow
+          label="Money flows"
+          value={a.revenue_direction ? String(a.revenue_direction) : undefined}
+          missing="Unknown"
+        />
+      </div>
       <p className="text-muted-foreground">{String(a.model_explanation ?? "")}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <div>
@@ -569,7 +579,7 @@ function BusinessModelView({ a }: { a: Record<string, unknown> }) {
           {asList(a.what_they_sell).map((it, i) => (
             <p key={i} className="text-muted-foreground">
               <span className="text-foreground">{String(it.name)}</span>{" "}
-              <span className="text-[10px]">({String(it.kind)})</span> —{" "}
+              <span className="text-xs">({String(it.kind)})</span> —{" "}
               {String(it.description)}
             </p>
           ))}
@@ -584,12 +594,12 @@ function BusinessModelView({ a }: { a: Record<string, unknown> }) {
           ))}
         </div>
       </div>
-      <p className="text-muted-foreground">
-        <span className="font-medium text-foreground">Audience: </span>
-        {String(a.audience_notes ?? "")}
-      </p>
+      <PropertyRow
+        label="Audience"
+        value={a.audience_notes ? String(a.audience_notes) : undefined}
+      />
       <details>
-        <summary className="cursor-pointer text-[11px] text-muted-foreground">
+        <summary className="cursor-pointer text-xs text-muted-foreground">
           Evidence ({asList(a.evidence).length} observations)
         </summary>
         {asList(a.evidence).map((e, i) => (
@@ -617,7 +627,7 @@ function IdealCustomerView({ a }: { a: Record<string, unknown> }) {
           <div key={i} className="mb-2">
             <p className="font-medium">{String(c.profile)}</p>
             <p className="text-muted-foreground">{String(c.why_profitable)}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Signals: {(c.signals as string[] | undefined)?.join(" · ")}
             </p>
           </div>
@@ -629,16 +639,18 @@ function IdealCustomerView({ a }: { a: Record<string, unknown> }) {
           <div key={i} className="mb-2">
             <p className="font-medium">{String(c.profile)}</p>
             <p className="text-muted-foreground">{String(c.why_low_value)}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Signals: {(c.signals as string[] | undefined)?.join(" · ")}
             </p>
           </div>
         ))}
       </div>
-      <p className="text-muted-foreground sm:col-span-2">
-        <span className="font-medium text-foreground">Targeting: </span>
-        {String(a.targeting_notes ?? "")}
-      </p>
+      <div className="sm:col-span-2">
+        <PropertyRow
+          label="Targeting"
+          value={a.targeting_notes ? String(a.targeting_notes) : undefined}
+        />
+      </div>
     </div>
   );
 }
@@ -659,7 +671,7 @@ function MoneyMapView({ a }: { a: Record<string, unknown> }) {
         <div key={i} className="flex items-start gap-2">
           <span
             className={cn(
-              "mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
+              "mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-xs font-medium",
               TIER_TONE[String(l.earn_tier)] ?? TIER_TONE.unclear,
             )}
           >
@@ -672,10 +684,7 @@ function MoneyMapView({ a }: { a: Record<string, unknown> }) {
         </div>
       ))}
       {a.model_notes ? (
-        <p className="mt-1 text-muted-foreground">
-          <span className="font-medium text-foreground">Would change the map: </span>
-          {String(a.model_notes)}
-        </p>
+        <PropertyRow label="Would change the map" value={String(a.model_notes)} />
       ) : null}
     </div>
   );
@@ -688,13 +697,13 @@ function OfferingsView({ a }: { a: Record<string, unknown> }) {
         <div key={i}>
           <p>
             <span className="font-medium">{String(o.name)}</span>{" "}
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               ({String(o.kind)})
             </span>{" "}
             <span className="text-muted-foreground">— {String(o.description)}</span>
           </p>
           {(o.aliases as string[] | undefined)?.length ? (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Also called: {(o.aliases as string[]).join(" · ")}
             </p>
           ) : null}
@@ -716,7 +725,7 @@ function OfferingValuesView({ a }: { a: Record<string, unknown> }) {
           <div key={i} className="flex items-start gap-2">
             <span
               className={cn(
-                "mt-0.5 w-14 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-semibold tabular-nums",
+                "mt-0.5 w-14 shrink-0 rounded px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums",
                 add > 0
                   ? "bg-success/15 text-success-ink"
                   : add < 0
@@ -733,10 +742,10 @@ function OfferingValuesView({ a }: { a: Record<string, unknown> }) {
           </div>
         );
       })}
-      <p className="mt-1 text-[10px] text-muted-foreground">
-        Proposals in points from the 100-point baseline. Run step 6 to turn
-        each one into a proposal you approve or reject.
-      </p>
+      <ArtifactNote
+        text="Points from the 100-point baseline"
+        about="Each number is a proposal. Run step 6 to turn each one into a proposal you approve or reject."
+      />
     </div>
   );
 }
