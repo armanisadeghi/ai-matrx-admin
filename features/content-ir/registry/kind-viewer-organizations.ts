@@ -19,7 +19,8 @@ export const webViewerOrganizations: RichContentViewerOrganizations = {
   },
   subscribe(onChange) {
     const store = getStoreSingleton();
-    if (!store) return () => {};
+    // No store yet: say so (null), so the package retries the watch on the next demand.
+    if (!store) return null;
     return store.subscribe(onChange);
   },
 };

@@ -25,6 +25,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
 import { SandboxCanvasBody } from "@ai-matrx/chat/agents/components/chat/sandbox-insight/SandboxCanvasBody";
+import { configureChat } from "@ai-matrx/chat/host/configure";
 
 
 jest.mock("@ai-matrx/chat/agents/components/debug/SandboxFileViewer", () => ({
@@ -48,10 +49,28 @@ function makeStore() {
   });
 }
 
+/**
+ * The pane reads its row DIRECT through the host's database client (never `GET /api/sandbox/[id]`,
+ * which was `file:///api/...` on Matrx 2). `respond` answers the row read as `{ data, error }`.
+ */
 async function mount(
-  respond: () => Promise<unknown> | never,
+  respond: () => Promise<{ data: unknown; error: unknown }>,
 ): Promise<{ container: HTMLDivElement; unmount: () => Promise<void> }> {
-  (globalThis as { fetch?: unknown }).fetch = jest.fn(respond);
+  const query: Record<string, unknown> = {};
+  for (const op of ["select", "eq", "is", "abortSignal"]) query[op] = () => query;
+  query.maybeSingle = () => respond();
+  configureChat({
+    db: {
+      auth: {
+        getClaims: async () => ({ data: { claims: { sub: "u-1", role: "authenticated" } }, error: null }),
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+      },
+      from: () => query,
+      schema: () => ({ from: () => query }),
+      rpc: async () => ({ data: null, error: null }),
+    },
+  } as never);
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -88,7 +107,7 @@ describe("the sandbox pane names ONE box", () => {
     const pending = new Promise((resolve) => {
       release = resolve;
     });
-    const before = await mount(() => pending as Promise<unknown>);
+    const before = await mount(() => pending as Promise<{ data: unknown; error: unknown }>);
     const preLoad = identity(before.container);
     expect(preLoad).toContain("2c23df");
     // The box status is always STATED, never simply absent.
@@ -96,28 +115,25 @@ describe("the sandbox pane names ONE box", () => {
       before.container.querySelector('[data-testid="sandbox-status-pill"]')
         ?.textContent,
     ).toBe("Checking…");
-    release({});
+    release({ data: null, error: null });
     await before.unmount();
 
     // After: the real row lands, with a different ORCHESTRATOR id.
     const after = await mount(async () => ({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        instance: {
-          id: ROW_ID,
-          sandbox_id: "sbx-7712966b7942bd",
-          name: null,
-          status: "running",
-          tier: "hosted",
-          config: { template: "bare" },
-          expires_at: null,
-        },
-      }),
+      data: {
+        id: ROW_ID,
+        sandbox_id: "sbx-7712966b7942bd",
+        name: null,
+        status: "running",
+        tier: "hosted",
+        config: { template: "bare" },
+        expires_at: null,
+      },
+      error: null,
     }));
     const postLoad = identity(after.container);
 
-    expect(postLoad).toBe("bare · hosted · 2c23df");
+    expect(postLoad).toBe("Bare hosted 2c23df");
     // THE GUARD: one identity. The suffix does not change under the user, and
     // the orchestrator id never appears as a competing identity.
     expect(postLoad).toContain("2c23df");
@@ -131,19 +147,16 @@ describe("the sandbox pane names ONE box", () => {
 
   it("says out loud that the agent-activity dot is a different question", async () => {
     const view = await mount(async () => ({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        instance: {
-          id: ROW_ID,
-          sandbox_id: "sbx-7712966b7942bd",
-          name: null,
-          status: "running",
-          tier: "hosted",
-          config: { template: "bare" },
-          expires_at: null,
-        },
-      }),
+      data: {
+        id: ROW_ID,
+        sandbox_id: "sbx-7712966b7942bd",
+        name: null,
+        status: "running",
+        tier: "hosted",
+        config: { template: "bare" },
+        expires_at: null,
+      },
+      error: null,
     }));
     // "Running" (the box) beside a bare "Idle" read as two status sources
     // contradicting each other. The activity axis names itself.
@@ -153,11 +166,7 @@ describe("the sandbox pane names ONE box", () => {
   });
 
   it("states an unreadable box instead of leaving the status blank", async () => {
-    const view = await mount(async () => ({
-      ok: false,
-      status: 404,
-      json: async () => ({ error: "Sandbox not found" }),
-    }));
+    const view = await mount(async () => ({ data: null, error: null }));
     expect(
       view.container.querySelector('[data-testid="sandbox-status-pill"]')
         ?.textContent,

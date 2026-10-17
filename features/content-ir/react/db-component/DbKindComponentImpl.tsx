@@ -1,396 +1,53 @@
 "use client";
 
 /**
- * DbKindComponentImpl — renders a kind's DB-stored user component
- * (`content_ir.kind_component`, `source='db'`), the `db_kind_component`
- * block type produced by `applyIrKindRoute`'s db-override flip.
- *
- * This is the SYNCHRONOUS-compiler path (the shared allowlist compiler);
- * the component itself loads lazily (DbKindComponent.tsx) so
- * `@babel/standalone` never enters the main chat bundle.
- *
- * Resolution per render:
- *  1. Read the kind + instance value from the block's `metadata.__ir`
- *     envelope (`reconstructRegionValue` — residues merged back, zero-loss);
- *     floor: `JSON.parse(content)`.
- *  2. Re-resolve the db row via `resolveComponent(kind, "web", "output")`.
- *     A body-less warm metadata shell requests its per-kind cold row and
- *     renders the kind loading face until the granular registry repaint lands
- *     the body. A real miss is a defect → generic viewer (never a blank hole).
- *  3. `config.flavor === 'html'` → the sandboxed iframe flavor
- *     (KindHtmlFrame). Otherwise compile + render inside the error boundary
- *     (fallback = the kind's generic structured viewer).
+ * DbKindComponentImpl — this app's mount of `@ai-matrx/rich-content`'s database-component renderer
+ * (kinds/db-component/db-kind-component-renderer: the in-page compile, the html frame, the error
+ * boundary, the loading face, the loud compile-error card). Every host draws brand_* kinds through
+ * that one renderer; what is this app's is the `dbKindComponent` capability registered here:
+ *  - the compiler + scope (dbKindComponentCache.ts — Babel, so this chunk loads lazily);
+ *  - the organization's sandbox setting (useKindSandboxSettings) and THE sandbox frame
+ *    (KindSandboxFrame, /kind-sandbox), with this app's message ceiling;
+ *  - the render-throw scream (captureReactRenderError) and the durable incident.
  */
-
-import React from "react";
-
-import { captureError } from "@/lib/diagnostics/errorCaptureStore";
-import GenericStructuredBlock from "@ai-matrx/rich-content/display/blocks/generic/GenericStructuredBlock";
-import { readEnvelope } from "@ai-matrx/rich-content/kinds/redux/render-block-envelope";
-import { reconstructRegionValue } from "@ai-matrx/content-ir";
+import type React from "react";
+import { configureRichContent } from "@ai-matrx/rich-content/host";
+import type { RichContentDbKindComponentHost, RichContentDbKindSandboxFrameProps } from "@ai-matrx/rich-content/host/types";
 import {
-  componentRegistry,
-  resolveComponent,
-} from "../../registry/component-registry";
-import {
-  applyPropsTransform,
-  getOrCompileDbKindComponent,
-  isDbKindComponentBodyPending,
-  kindComponentConfig,
-} from "./dbKindComponentCache";
-import { DbKindComponentErrorBoundary } from "./DbKindComponentErrorBoundary";
-import { KindHtmlFrame } from "./KindHtmlFrame";
+  DbKindComponentRenderer,
+  blockKindCorrections,
+  type DbKindComponentRendererProps,
+} from "@ai-matrx/rich-content/kinds/db-component/db-kind-component-renderer";
+import { captureReactRenderError } from "@/lib/diagnostics/captureReactError";
+import { MAX_INBOUND_BYTES } from "../../sandbox/protocol";
+import { webDbKindComponentCompiler } from "./dbKindComponentCache";
 import { KindSandboxFrame } from "./KindSandboxFrame";
-import { ReportKindDraw } from "./kind-draw-report";
-import {
-  sandboxForResolution,
-  useKindSandboxSettings,
-  type KindSandboxSettings,
-} from "./useKindSandboxKnob";
-import type { RunKindAction } from "../actions/useKindActionRunner";
-import type {
-  KindComponentUiOptions,
-  ResolveKindValue,
-} from "./dbKindComponentCache";
-import type { ComponentResolution } from "@ai-matrx/content-ir/react";
-import { useContentIrKindVersion } from "@ai-matrx/rich-content/kinds/react/use-registry-repaint";
-import { readAtVersionForKey } from "@ai-matrx/rich-content/kinds/react/registry-versioned";
-import { resolveLoadingSlugForKind } from "@ai-matrx/rich-content/kinds/react/loading/resolve-loading-slug";
-import { resolveKindLoadingComponent } from "@ai-matrx/rich-content/kinds/react/loading/kind-loading-registry";
-import { earlyKeysFromValue } from "@ai-matrx/rich-content/kinds/react/loading/kind-loading.types";
-import { correctKindValue, kindCorrectionsOf } from "@ai-matrx/rich-content/kinds/registry/kind-correctors";
+import { reportKindComponentIncident } from "./kindComponentIncident";
+import { useKindSandboxSettings } from "./useKindSandboxKnob";
 import { KindCorrectionsNotice } from "./KindCorrectionsNotice";
-import { stableImageState, type ImageSources } from "./item-state-media";
-import { useOnDemandScopeReady } from "@/lib/code-runtime/useOnDemandScope";
 
-/**
- * One entry per kind — the resolver's answer and the registry version it was
- * read at (DD-215c). Bounded by the number of kinds a tab renders.
- */
-const resolutionCache = new Map<
-  string,
-  { version: number; value: ReturnType<typeof resolveComponent> | null }
->();
-
-/**
- * Safe fallback when no runner is supplied (bare test/SSR render): the action
- * seam still exists and still never throws — it just reports "unavailable".
- */
-const noopRunAction: RunKindAction = async (key) => ({
-  ok: false,
-  error: `Action "${key}" is unavailable (no runner bound to this surface).`,
-});
-
-export interface DbKindComponentImplProps {
-  /** Raw region source — the zero-loss floor + the generic viewer's input. */
-  content: string;
-  /** Carries `__ir` (the parsed envelope) and `__ir_route` (the marker). */
-  metadata?: Record<string, unknown>;
-  className?: string;
-  /**
-   * The action seam handed to the compiled component. Supplied by the client
-   * shell (`DbKindComponent`) from `useKindActionRunner`; defaults to a safe
-   * "unavailable" runner so a bare render (tests/SSR) never needs a store.
-   */
-  runAction?: RunKindAction;
-  /** Return channel — set when mounted inside a Kind Request. */
-  onResolve?: ResolveKindValue;
-  /** Settings dictated by the mounting surface (e.g. selectionMode). */
-  uiOptions?: KindComponentUiOptions;
-  /**
-   * The item's durable state (what `save_item_state` / `run_shortcut` saveAs
-   * wrote), handed to the component as its `itemState` prop. Null = nothing
-   * saved yet, or no record to save into.
-   */
-  itemState?: Record<string, unknown> | null;
-  /** Loaded bytes of the images `itemState` references (file id → Blob). */
-  itemStateImages?: ImageSources;
-  /**
-   * The organization that owns the rendered record. Its sandbox setting decides
-   * where the component renders — never the active organization when the record
-   * belongs to another. Falls back to the value's own `organization_id`, then
-   * to the person's active organization (a record-less proposal).
-   */
-  organizationId?: string | null;
-  /**
-   * A component the mounting surface supplies directly, instead of the one the
-   * registry resolves for the kind (the Shape Playground renders versioned demo
-   * sources this way). Same compile, same frame, same boundary — only where the
-   * row came from differs.
-   */
-  resolution?: ComponentResolution | null;
-  /**
-   * The sandbox decision, when the mounting surface dictates it (the playground's
-   * frame / in-page switch). Absent, the organization's setting decides.
-   */
-  sandbox?: KindSandboxSettings | null;
-}
-
-/** One empty item state, so an unsaved item never looks "changed". */
-const EMPTY_STATE: Record<string, unknown> = Object.freeze({}) as Record<string, unknown>;
-
-const screamedDefects = new Set<string>();
-
-/** Loud recovery: a routed db block whose row can no longer be resolved. */
-function screamRouteDefect(kindLabel: string, reason: string): void {
-  const message = `[content-ir] db_kind_component block for "${kindLabel}" cannot render its DB row (${reason}) — falling back to the generic structured viewer.`;
-  if (!screamedDefects.has(`${kindLabel}:${reason}`)) {
-    screamedDefects.add(`${kindLabel}:${reason}`);
-    console.error(message);
-  }
-  captureError({
-    source: "content-ir",
-    message,
-    raw: { kind: kindLabel, reason },
-  });
-}
-
-function readInstanceValue(
-  content: string,
-  metadata: Record<string, unknown> | undefined,
-): { kind: string | null; value: unknown; corrections: string[] } {
-  // The backstop of the one correction step (kind-correctors.ts): whatever reaches
-  // this reader uncorrected — a pasted block with no envelope — is corrected here,
-  // and a value that already went through the step comes back unchanged.
-  const corrected = (kind: string | null, value: unknown) => {
-    const out = correctKindValue(kind, value);
-    return { kind, value: out.value, corrections: out.corrections };
-  };
-  const envelope = readEnvelope(metadata);
-  if (envelope?.root.kind) {
-    return corrected(envelope.root.kind, reconstructRegionValue(envelope));
-  }
-  try {
-    const parsed = JSON.parse(content) as unknown;
-    const kind =
-      parsed !== null &&
-      typeof parsed === "object" &&
-      !Array.isArray(parsed) &&
-      typeof (parsed as Record<string, unknown>).__kind === "string"
-        ? ((parsed as Record<string, unknown>).__kind as string)
-        : null;
-    return corrected(kind, parsed);
-  } catch {
-    return { kind: null, value: null, corrections: [] };
-  }
-}
-
-/**
- * Every correction this block carries: the server's list, the envelope's own
- * `kind_corrected` notices, and — the backstop — any correction the value still needed
- * when it reached this reader (a pasted block with no envelope). Shown above the
- * component by `KindCorrectionsNotice`.
- */
-export function blockKindCorrections(
-  content: string,
-  metadata: Record<string, unknown> | undefined,
-): string[] {
-  const lines = kindCorrectionsOf(metadata);
-  for (const line of readInstanceValue(content, metadata).corrections) {
-    if (!lines.includes(line)) lines.push(line);
-  }
-  return lines;
-}
-
-export { KindCorrectionsNotice };
-
-export const DbKindComponentImpl: React.FC<DbKindComponentImplProps> = (props) => {
-  const corrections = blockKindCorrections(props.content, props.metadata);
-  if (corrections.length === 0) return <DbKindComponentBody {...props} />;
-  return (
-    <>
-      <KindCorrectionsNotice corrections={corrections} />
-      <DbKindComponentBody {...props} />
-    </>
-  );
+export const webDbKindComponentHost: RichContentDbKindComponentHost = {
+  ...webDbKindComponentCompiler,
+  useSandboxSettings: useKindSandboxSettings,
+  SandboxFrame: KindSandboxFrame as unknown as React.ComponentType<RichContentDbKindSandboxFrameProps>,
+  frameMessageBytes: MAX_INBOUND_BYTES,
+  onRenderError: (error, info, kind) => {
+    captureReactRenderError(error, {
+      boundary: "DbKindComponentErrorBoundary",
+      componentStack: info.componentStack ?? undefined,
+      relation: `kind:${kind}`,
+    });
+    reportKindComponentIncident({
+      kind,
+      errorType: "render_throw",
+      message: error instanceof Error ? error.message : String(error),
+      stack: info.componentStack ?? null,
+    });
+  },
 };
 
-const DbKindComponentBody: React.FC<DbKindComponentImplProps> = ({
-  content,
-  metadata,
-  className,
-  runAction = noopRunAction,
-  onResolve,
-  uiOptions,
-  organizationId,
-  itemState = null,
-  itemStateImages,
-  resolution: suppliedResolution = null,
-  sandbox: dictatedSandbox = null,
-}) => {
-  const generic = (
-    <GenericStructuredBlock
-      content={content}
-      metadata={metadata}
-      className={className}
-    />
-  );
+configureRichContent({ dbKindComponent: webDbKindComponentHost });
 
-  const { kind, value } = readInstanceValue(content, metadata);
-  // THE SANDBOX GATE (DD-123 §1.10). OFF is byte-identical to the behavior
-  // this file has always had; ON renders the same row inside /kind-sandbox.
-  // It is read here, at the ONE react-flavor mount, so all three call sites
-  // (chat, Kind Request, the directive window) inherit it together.
-  const valueOrganizationId =
-    value !== null && typeof value === "object" && !Array.isArray(value)
-      ? (value as Record<string, unknown>).organization_id
-      : null;
-  const organizationSandbox = useKindSandboxSettings(
-    organizationId ||
-      (typeof valueOrganizationId === "string" ? valueOrganizationId : null),
-  );
-  const decidedSandbox = dictatedSandbox ?? organizationSandbox;
-  // 🚨 THE VERSION IS AN ARGUMENT, NEVER A DEPENDENCY (DD-215c). `void
-  // registryVersion;` left this read's freshness to whether the React Compiler
-  // happened not to memoize `resolveComponent(kind, …)` — and the compiler IS
-  // on. The same idiom, one seam over, froze the kind route on production and
-  // handed readers the platform's component for a whole mount. The version is
-  // the cache key here, so the answer follows every arrival by construction.
-  // Rule: `react/registry-versioned.ts`. Guard: `pnpm check:registry-repaint`.
-  const registryVersion = useContentIrKindVersion(kind);
-  const registryResolution = readAtVersionForKey(
-    resolutionCache,
-    kind ?? "",
-    registryVersion,
-    () => (kind ? resolveComponent(kind, "web", "output") : null),
-  );
-  const resolution = suppliedResolution ?? registryResolution;
-  // A layered body (my view / my organization's view) is ALWAYS framed (S7).
-  const sandbox = sandboxForResolution(resolution, decidedSandbox);
-  const bodyPending = Boolean(
-    resolution &&
-      resolution.resolvedBy === "db" &&
-      resolution.source === "db" &&
-      resolution.isActive &&
-      isDbKindComponentBodyPending(resolution),
-  );
-
-  React.useEffect(() => {
-    if (kind && bodyPending) {
-      componentRegistry.requestComponent(kind, "web", "output");
-    }
-  }, [bodyPending, kind]);
-
-  // In-page compiles are synchronous: the libraries this body imports
-  // (motion, date-fns, three…) load first, the kind's loading state shows
-  // meanwhile. The sandbox frame preloads the same set itself.
-  const inPageSource =
-    resolution && resolution.config.flavor !== "html" && !(sandbox.enabled && sandbox.ceilings)
-      ? resolution.componentSource
-      : null;
-  const librariesReady = useOnDemandScopeReady(inPageSource);
-
-  if (!kind) {
-    screamRouteDefect("(unresolvable)", "no kind in envelope or content");
-    return generic;
-  }
-
-  if (bodyPending || !librariesReady) {
-    const loadingValue =
-      value !== null && typeof value === "object" && !Array.isArray(value)
-        ? (value as Record<string, unknown>)
-        : null;
-    const Loader = resolveKindLoadingComponent(
-      resolveLoadingSlugForKind(kind).slug,
-    );
-    return (
-      <>
-        <ReportKindDraw state="waiting" />
-        <Loader
-          {...earlyKeysFromValue(loadingValue, kind)}
-          value={loadingValue}
-        />
-      </>
-    );
-  }
-
-  if (
-    !resolution ||
-    resolution.resolvedBy !== "db" ||
-    resolution.source !== "db" ||
-    !resolution.isActive ||
-    !resolution.componentSource
-  ) {
-    screamRouteDefect(kind, "resolver no longer answers with an active db row");
-    return (
-      <>
-        <ReportKindDraw state="failed" />
-        {generic}
-      </>
-    );
-  }
-
-  // ── html/js flavor (the user's OPTION, config.flavor === "html") ──────────
-  if (resolution.config.flavor === "html") {
-    return (
-      <KindHtmlFrame
-        kind={kind}
-        html={resolution.componentSource}
-        data={value}
-        className={className}
-      />
-    );
-  }
-
-  // ── react flavor, sandboxed: the body never enters this document ──────────
-  if (sandbox.enabled && sandbox.ceilings) {
-    return (
-      <KindSandboxFrame
-        kind={kind}
-        ceilings={sandbox.ceilings}
-        resolution={resolution}
-        // RAW value: the row's props_transform is organization-authored
-        // code too, so the FRAME applies it. Compiling it here would leave
-        // the hole the frame exists to close.
-        data={value}
-        config={kindComponentConfig(resolution.config, kind)}
-        runAction={runAction}
-        onResolve={onResolve}
-        uiOptions={uiOptions}
-        // The frame gets the image BYTES (Blob) and mints its own blob: URL.
-        itemState={stableImageState(itemState, itemStateImages, "blob")}
-        className={className}
-      />
-    );
-  }
-
-  // ── react flavor: shared allowlist compile ────────────────────────────────
-  const compiled = getOrCompileDbKindComponent(kind, resolution);
-  if (!compiled.ok) {
-    // Already screamed (cache screams once per key, captures every attempt).
-    return (
-      <>
-        <ReportKindDraw state="failed" />
-        {generic}
-      </>
-    );
-  }
-
-  const data = applyPropsTransform(kind, compiled.compiled, value);
-  const Component = compiled.compiled.Component;
-
-  return (
-    <DbKindComponentErrorBoundary
-      kind={kind}
-      resetSignal={resolution.updatedAt}
-      fallback={
-        <>
-          <ReportKindDraw state="failed" />
-          {generic}
-        </>
-      }
-    >
-      <Component
-        data={data}
-        kind={kind}
-        config={kindComponentConfig(resolution.config, kind)}
-        runAction={runAction}
-        onResolve={onResolve}
-        uiOptions={uiOptions}
-        itemState={stableImageState(itemState, itemStateImages, "url") ?? EMPTY_STATE}
-      />
-      {/* Commits only after the component above rendered without throwing. */}
-      <ReportKindDraw state="drew" />
-    </DbKindComponentErrorBoundary>
-  );
-};
+export type DbKindComponentImplProps = DbKindComponentRendererProps;
+export const DbKindComponentImpl = DbKindComponentRenderer;
+export { blockKindCorrections, KindCorrectionsNotice };

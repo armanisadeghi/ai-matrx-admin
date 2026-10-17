@@ -1821,7 +1821,7 @@ function RolesSection({
         (p) =>
           p.roleName === role.name &&
           p.kind === "selection" &&
-          tierOf(p) === "global",
+          tierOf(p, configBundle?.systemOrganizationId ?? null) === "global",
       );
       return override?.agentId ?? role.defaultAgentId ?? null;
     },
@@ -1920,7 +1920,7 @@ function RolesSection({
       (p) =>
         p.roleName === roleName &&
         p.kind === "selection" &&
-        tierOf(p) === "global",
+        tierOf(p, configBundle?.systemOrganizationId ?? null) === "global",
     );
 
   const nameFor = (agentId: string) =>
@@ -2198,7 +2198,7 @@ function ConfigNamespacesSection({
   // namespace → tier → count (RLS-visible rows only).
   const counts = new Map<string, Record<string, number>>();
   for (const row of rows) {
-    const tier = tierOf(row);
+    const tier = tierOf(row, configBundle?.systemOrganizationId ?? null);
     const entry = counts.get(row.namespace) ?? {};
     entry[tier] = (entry[tier] ?? 0) + 1;
     counts.set(row.namespace, entry);
@@ -2206,7 +2206,7 @@ function ConfigNamespacesSection({
 
   /** The platform-global config row for a namespace — system-org owned. */
   const globalRowFor = (ns: string) =>
-    rows.find((row) => row.namespace === ns && tierOf(row) === "global");
+    rows.find((row) => row.namespace === ns && tierOf(row, configBundle?.systemOrganizationId ?? null) === "global");
   const allNamespaces = [
     ...new Set([
       ...declared.map((d) => d.namespace),
