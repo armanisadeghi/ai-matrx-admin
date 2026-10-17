@@ -118,12 +118,24 @@ export function WelcomeClient({
   const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen }));
   const [met, setMet] = useState(meetSeen);
 
-  /** Leaving Meet Matrx either way is remembered for this person on the server (not this browser). */
+  /**
+   * Remembered for this person on the server (their account record), not this browser. The server reads the
+   * signed token's claims, so the session is refreshed at once: the next page load already carries the new value.
+   */
+  async function rememberMet() {
+    const { error } = await supabase.auth.updateUser({ data: { [MEET_MATRX_SEEN_KEY]: true } });
+    if (error) {
+      toast.error(`Could not save your progress: ${error.message}`);
+      return;
+    }
+    await supabase.auth.refreshSession();
+  }
+
+  /** Leaving Meet Matrx, either way, is remembered. */
   async function leaveMeet() {
     setMet(true);
     setStep("start");
-    const { error } = await supabase.auth.updateUser({ data: { [MEET_MATRX_SEEN_KEY]: true } });
-    if (error) toast.error(`Could not save your progress: ${error.message}`);
+    await rememberMet();
   }
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [isNavPending, startNav] = useTransition();
@@ -178,12 +190,12 @@ export function WelcomeClient({
               onClickCapture={(e) => {
                 if (!met && (e.target as HTMLElement).closest("[data-intro-item]")) {
                   setMet(true);
-                  void supabase.auth.updateUser({ data: { [MEET_MATRX_SEEN_KEY]: true } });
+                  void rememberMet();
                 }
               }}
             >
               <MeetMatrx eyebrow={firstName ? `Welcome, ${firstName}` : "Welcome to AI Matrx"} />
-              <div className="flex items-center justify-center gap-2">
+              <div className="sticky bottom-0 z-10 -mx-5 flex items-center justify-center gap-2 bg-gradient-to-t from-background via-background/90 to-transparent px-5 pb-4 pt-6" data-testid="meet-actions">
                 <Button variant="primary" hero icon={<ArrowRight aria-hidden />} onClick={() => void leaveMeet()} data-testid="meet-continue">
                   Continue
                 </Button>

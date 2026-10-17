@@ -168,6 +168,9 @@ export function WelcomeDoor({ showDoor, onFinished }: { showDoor: boolean; onFin
         />
       ) : null}
       {doorOpen && login ? (
+        // The door's frames that ask something (name, "couldn't find you") carry their own Skip; every other stage
+        // (searching, the found grid) gets this one, so the step always has a way out.
+        <div className="group/door flex flex-col gap-4">
         <SmartAddBrand
           key={login.subject}
           door="welcome"
@@ -176,6 +179,15 @@ export function WelcomeDoor({ showDoor, onFinished }: { showDoor: boolean; onFin
           onWelcomeDone={setDone}
           onWelcomeSkip={() => setSkipped(true)}
         />
+          <Button
+            variant="quiet"
+            className="self-center group-has-[[data-testid=welcome-skip]]/door:hidden"
+            onClick={() => setSkipped(true)}
+            data-testid="welcome-door-skip"
+          >
+            Skip
+          </Button>
+        </div>
       ) : null}
       {stuckOpen && !done && !moved ? (
         <div className="flex justify-center">
