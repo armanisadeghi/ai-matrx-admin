@@ -36,9 +36,15 @@ question on the same judged state as a saved answer; the result is a second opin
   newest per item, joined to their items. A stored refusal or failure shows with its reason after a
   reload (`storedFailure`), a stored claim as Checking; only answered rows agree or disagree. Order: disagreements, failures, pending,
   agreements; lowest decision-model confidence first (`orderReferenceRows`).
-- Drill-in: the table's side panel (`detail.render`) — judged state (`JudgedState.tsx`, shared with
-  the queue), both answers side by side through `DecisionAnswers`, label buttons and **Use reference
-  answer** (`platform.label_decision_item`, as the person); `j`/`k` move, `1–9`/`y`/`n` label, `r`
+- State column: `distinctSnippets` — the lines every loaded state shares (the agent's instruction
+  line, headings) are dropped; a JSON line's `title`/`headline`/`name`… field wins, else the first
+  differing line. The first line alone was the same boilerplate on every row.
+- Phone (below `sm`): the results draw as `mobileCards` (`ResultCard`: state, question, both answers,
+  agree) and a card opens the drill-in through the table's `controls.open`.
+- Drill-in: the table's side panel (`detail.render`) — both answers side by side through
+  `DecisionAnswers` (two columns from a 448px panel, `@md`), label buttons and **Use reference
+  answer** first, then the judged state (`JudgedState.tsx`, shared with the queue) as a
+  `DisclosureHeader` fold that scrolls at 40vh; the reference card states its recorded `method` (`platform.label_decision_item`, as the person); `j`/`k` move, `1–9`/`y`/`n` label, `r`
   takes the reference's answer. A failed or unanswerable item shows its reason and **Re-check** (a new
   estimate with `rerun`, since a stored failure counts as checked).
 - Reliability vs reference: each calibration group's `reference` block (n, agreement rate,
@@ -72,3 +78,4 @@ question on the same judged state as a saved answer; the result is a second opin
 - 2026-09-26 — combined review queue `/decisions/review` (Claude Opus 5.5, standard lane).
 - 2026-10-16 — reference check on the calibration page; calibration no longer sends the agent's organization (a non-member super admin was refused) (Claude Opus 5.5, standard lane).
 - 2026-10-16 — reference check: stored statuses (refusals/failures survive a reload), live rows carry both distributions and the answering model, a followed run blocks Estimate from the first render, re-check sends `rerun`, quote shows in-flight / unreadable / max cost (Claude Opus 5.5, standard lane).
+- 2026-10-17 — reference check from the live walk: State column shows what differs per item, drill-in puts answers and labels above the fold, phone cards, reference answers carry their `method`, quote calibrated server side (Claude Opus 5.5, standard lane).
