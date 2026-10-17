@@ -81,6 +81,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { DrillSiblingFindings } from "./DrillSiblingFindings";
 import { drillAddressMisfit, drillSiblingDimensions, drillSiblingMeasures, drillSiblingQuestion, openDrillSibling, useDrillSiblings } from "./drillSiblings";
 import { DrillRecords } from "./DrillRecords";
+import { hidePinnedDistinct, recordsForTrail } from "./drillPinned";
 import { DrillSavedViews, type DrillOpenView } from "./DrillSavedViews";
 import { drillSavedViewSurface, readDrillView } from "./savedViews";
 import { explorerWindowRange, useDrillExplorer } from "./useDrillExplorer";
@@ -305,7 +306,7 @@ export function DrillExplorer({
 
   const timeDims = (def?.dimensions ?? []).filter((d) => d.kind === "time");
   const autoGrain = drillExplorerAutoGrain(asked.window ?? null, knobs.grainLines, timeDims[0]?.grains);
-  const question = withAutoGrain(def, asked, knobs.grainLines);
+  const question = withAutoGrain(def, def ? hidePinnedDistinct(def, asked) : asked, knobs.grainLines);
   const timeKeys = new Set(timeDims.map((d) => d.key));
   const grainWasChosen = [...asked.by, ...(asked.across ? [asked.across] : [])].some((ref) => timeKeys.has(ref));
 
@@ -314,6 +315,8 @@ export function DrillExplorer({
   // and moments — so the answer, the chart and a sibling's findings read a Dimension the same way.
   const dimensions: MatrxDrillDimension[] = def ? drillSiblingDimensions(def, names, resolvers, words) : [];
   const measures: MatrxDrillMeasure[] = def ? drillSiblingMeasures(def, unit, rate) : [];
+  // inside a drilled value its own Dimension's distinct count is not offered either
+  const pinnedKept = def ? new Set(hidePinnedDistinct(def, { where: question.where, show: def.measures.map((m) => m.key) }).show) : null;
   const hasMoney = (def?.measures ?? []).some((m) => m.unit === "usd");
   const headlineKey = headline?.measure ?? (def?.measures ?? []).find((m) => m.unit === "usd")?.key ?? question.show[0] ?? null;
   const headlineMeasure = measures.find((m) => m.key === headlineKey);
@@ -333,7 +336,8 @@ export function DrillExplorer({
   const paths = (def?.paths ?? []).map((p) => p.levels);
   const builtIn = builtInViewsOf(def);
   const findings = findingsOf(def);
-  const records = recordsOf(def);
+  const declaredRecords = recordsOf(def);
+  const records = def && declaredRecords ? recordsForTrail(def, declaredRecords, question) : declaredRecords;
   const stale = useDrillStaleAfter(staleAfterKnobOf(def), seat);
 
   // FRESHNESS: the door's own `as_of` when the answers carry it; the host's count until then.
@@ -575,7 +579,7 @@ export function DrillExplorer({
         <MatrxDrillTrail dimensions={dimensions} question={question} onQuestionChange={setQuestion} rootLabel={rootLabel} emptyLabel={emptyLabel} measures={measures} answers={answers} focusAttributes={focusAttributes} rowNoun={rowNoun} cross={cross} {...(baseCrumbs.length > 0 ? { base: baseCrumbs } : {})} className="min-w-0 max-sm:basis-full" />
         <div data-drill-explorer-controls className="ml-auto flex flex-wrap items-center justify-end gap-0 [&>*]:shrink-0">
           <MatrxDrillWindowMenu question={question} onQuestionChange={setQuestion} dimensionLabel="When" />
-          <MatrxDrillMeasurePicker measures={measures} question={question} onQuestionChange={setQuestion} />
+          <MatrxDrillMeasurePicker measures={pinnedKept ? measures.filter((m) => pinnedKept.has(m.key)) : measures} question={question} onQuestionChange={setQuestion} />
           <MatrxDrillGroupByMenu dimensions={dimensions} question={question} onQuestionChange={setQuestion} />
           {question.by.length > 0 ? (
             <DrillNumberFilter

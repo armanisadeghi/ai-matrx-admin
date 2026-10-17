@@ -13,6 +13,7 @@
 // or an organization id, or a period). A crumb the other definition cannot narrow by is SAID and the
 // line is left out, never computed over a different slice.
 
+import { describeOnce } from "./describeOnce";
 import { useEffect, useState } from "react";
 import type { DrillSource } from "@ai-matrx/records";
 import type { RecordsClient } from "@ai-matrx/records/core";
@@ -65,8 +66,7 @@ export function useDrillReconcile(args: {
     let cancelled = false;
     // The other definition's window runs along ITS time Dimension (lane DRILL-LIVE-FIX-2 #1): it is
     // described first, then asked.
-    void client
-      .drillDescribe({ source: spec.source })
+    void describeOnce(client, spec.source)
       .then(async (described) => {
         if (!described.ok) return [described, described] as const;
         const windowPart = doorWindow(question, { key: drillWindowKey(described.data?.dimensions, carried), align: windowAlign });

@@ -32,6 +32,8 @@ import { asOfAnswer, doorWhere, type DrillNameResolver } from "./types";
 import { useDrillNameBookOr, useDrillNames, type DrillNameBook } from "./drillNames";
 import { carriedAsk, type DrillCarried } from "./questionParts";
 import { drillDoorLabels } from "./dimensionWords";
+import { hidePinnedDistinct } from "./drillPinned";
+import { describeOnce } from "./describeOnce";
 
 const clients = new Map<string, RecordsClient>();
 
@@ -220,7 +222,7 @@ export function useDrillExplorer(args: {
   /** Ask with no lane: every organization she is in, her row rules deciding each row (a member page whose organization is a page control). */
   acrossOrganizations?: boolean | undefined;
 }): DrillExplorerData {
-  const { source, lane, organizationId, userId, question, names: resolvers, book: hostBook, version = 0, countMeasure, windowAlign, carried, headlineAlso, headlineMeasure = null, grainLines = null, ready = true } = args;
+  const { source, lane, organizationId, userId, question: questionIn, names: resolvers, book: hostBook, version = 0, countMeasure, windowAlign, carried, headlineAlso, headlineMeasure = null, grainLines = null, ready = true } = args;
   const client = organizationId ? drillClientFor(organizationId, userId, args.acrossOrganizations === true) : null;
   const sourceKey = JSON.stringify(source);
   const [def, setDef] = useState<DrillDefinition | null>(null);
@@ -239,7 +241,7 @@ export function useDrillExplorer(args: {
   useEffect(() => {
     if (!client) return;
     let cancelled = false;
-    void client.drillDescribe({ source: JSON.parse(sourceKey) as DrillSource }).then((got) => {
+    void describeOnce(client, JSON.parse(sourceKey) as DrillSource).then((got) => {
       if (cancelled) return;
       if (got.ok) setDef(got.data ?? null);
       else setError(drillFailureWords(got.error.message, "The definition could not be read."));
@@ -249,6 +251,8 @@ export function useDrillExplorer(args: {
     };
   }, [client, sourceKey]);
 
+  // inside a drilled value its own Dimension's distinct count is neither asked nor shown
+  const question = def ? hidePinnedDistinct(def, questionIn) : questionIn;
   const askKey = JSON.stringify({ lines: grainLines, by: question.by, across: question.across ?? null, show: question.show, where: question.where, window: question.window ?? null, compare: question.compare ?? null, sort: question.sort ?? null, carried: carried ?? null });
   const resolverKeys = Object.keys(resolvers ?? {}).sort().join(",");
   const alsoKey = [headlineMeasure ?? "", ...(headlineAlso ?? [])].join(",");
@@ -283,22 +287,27 @@ export function useDrillExplorer(args: {
     // THRESHOLDS ARE ON GROUPS (lane DRILL-FLIP-FIXES L1): the total (no grouping) is asked without them,
     // and a grouped ask also shows every Measure a threshold reads (the door judges a number it shows)
     const thresholdShow = (door?.having ?? []).map((h) => h.measure).filter((k) => def.measures.some((m) => m.key === k));
+    // IDENTICAL ASKS ARE ONE ASK: two requests that compile to the same door question share one call
+    const inFlight = new Map<string, ReturnType<typeof client.drillAsk>>();
+    // (the open view's own filters narrow every number, the trail's crumbs on top)
     const ask = (by: string[], w: Record<string, unknown>) => {
       const { having, ...rest } = carriedAsk(door);
-      return client.drillAsk({
-        source: src,
-        question: {
-          by,
-          show: by.length === 0 ? totalShow : [...doorShow, ...thresholdShow.filter((k) => !doorShow.includes(k))],
-          // the open view's own filters (lists, ranges) narrow every number, the trail's crumbs on top
-          where: { ...(door?.where ?? {}), ...w },
-          lane,
-          ...windowPart,
-          ...rest,
-          ...(by.length > 0 && having ? { having } : {}),
-          ...sortFor(by),
-        },
-      });
+      const doorQuestion = {
+        by,
+        show: by.length === 0 ? totalShow : [...doorShow, ...thresholdShow.filter((k) => !doorShow.includes(k))],
+        where: { ...(door?.where ?? {}), ...w },
+        lane,
+        ...windowPart,
+        ...rest,
+        ...(by.length > 0 && having ? { having } : {}),
+        ...sortFor(by),
+      };
+      const same = JSON.stringify(doorQuestion);
+      const held = inFlight.get(same);
+      if (held) return held;
+      const sent = client.drillAsk({ source: src, question: doorQuestion });
+      inFlight.set(same, sent);
+      return sent;
     };
     void Promise.all([
       ...requests.map(async (request) => ({ key: request.key, by: request.by, got: await ask(request.by, where) })),

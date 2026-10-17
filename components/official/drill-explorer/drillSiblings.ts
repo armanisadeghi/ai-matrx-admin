@@ -14,6 +14,7 @@
 // explorer's source there (`?def=<token>`), and the address carries the view or the drilled question.
 // So the screen never asks one definition's door with another definition's question.
 
+import { describeOnce } from "./describeOnce";
 import { useEffect, useState } from "react";
 import type { DrillDefinition, DrillSource } from "@ai-matrx/records";
 import type { RecordsClient } from "@ai-matrx/records/core";
@@ -47,7 +48,7 @@ export function useDrillSiblings(client: RecordsClient | null, siblings: readonl
     if (!client || !key) return;
     let cancelled = false;
     for (const token of key.split(",")) {
-      void client.drillDescribe({ source: { kind: "entity", token } }).then((got) => {
+      void describeOnce(client, { kind: "entity", token }).then((got) => {
         if (cancelled || !got.ok || !got.data) return;
         setHeld((h) => ({ key, defs: { ...(h.key === key ? h.defs : {}), [token]: got.data! } }));
       });
