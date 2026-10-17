@@ -1,0 +1,2241 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0105",
+  "version": 1,
+  "title": "Scrum Sprint Board",
+  "description": "Epics, stories, sprints with points rollups, ceremonies and retrospectives.",
+  "forWho": "Scrum teams in software or game studios",
+  "icon": {
+    "emoji": "🏴"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "projects",
+  "tags": [
+    "scrum",
+    "sprint",
+    "agile",
+    "velocity"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-scrum-sprint-board",
+    "catalogueId": "SP0105",
+    "useCase": "Isolde Varga is scrum master at a small game studio and uses this to run sprint planning, see velocity and keep retrospective actions from being forgotten.",
+    "industry": "cross_industry",
+    "vertical": "Game development",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Lumenhaus Games",
+      "describes": "An independent studio making a puzzle-adventure game about a lighthouse keeper.",
+      "address": {
+        "line1": "88 Quillmere Pier",
+        "city": "Seattle",
+        "region": "WA",
+        "postalCode": "98104",
+        "country": "US"
+      },
+      "phone": "(206) 555-0140",
+      "website": "lumenhaus-games.net",
+      "email": "hello@lumenhaus-games.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-scrum-sprint-board",
+    "tables": [
+      {
+        "token": "epic",
+        "name": "Epics",
+        "labelSingular": "Epic",
+        "labelPlural": "Epics",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layers",
+        "titleField": "epic_name",
+        "describes": "Large pieces of the game, each made of stories, with points rolled up.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "epic_name",
+            "label": "Epic",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Planned"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "stories",
+            "label": "Stories",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "story",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "story_count",
+            "label": "Story count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stories",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "points_total",
+            "label": "Points",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stories",
+            "pick": "points",
+            "agg": "sum"
+          },
+          {
+            "key": "points_done",
+            "label": "Points done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stories",
+            "pick": "points",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ep-1",
+            "values": {
+              "epic_name": "Lantern mechanics",
+              "status": "Done",
+              "owner": "tm-fatou",
+              "stories": [
+                "us-01",
+                "us-02",
+                "us-03",
+                "us-04"
+              ]
+            }
+          },
+          {
+            "key": "ep-2",
+            "values": {
+              "epic_name": "Harbor level",
+              "status": "Done",
+              "owner": "tm-nora",
+              "stories": [
+                "us-06",
+                "us-07",
+                "us-08",
+                "us-10"
+              ]
+            }
+          },
+          {
+            "key": "ep-3",
+            "values": {
+              "epic_name": "Tides",
+              "status": "In progress",
+              "owner": "tm-nora",
+              "stories": [
+                "us-11",
+                "us-12",
+                "us-13",
+                "us-14"
+              ]
+            }
+          },
+          {
+            "key": "ep-4",
+            "values": {
+              "epic_name": "Platform and save system",
+              "status": "In progress",
+              "owner": "tm-caleb",
+              "stories": [
+                "us-05",
+                "us-09",
+                "us-15",
+                "us-16",
+                "us-20"
+              ]
+            }
+          },
+          {
+            "key": "ep-5",
+            "values": {
+              "epic_name": "Ambient life and sound",
+              "status": "Planned",
+              "owner": "tm-isolde",
+              "stories": [
+                "us-17",
+                "us-18",
+                "us-19"
+              ]
+            }
+          },
+          {
+            "key": "ep-6",
+            "values": {
+              "epic_name": "Polish and accessibility",
+              "status": "Planned",
+              "owner": "tm-caleb",
+              "stories": [
+                "us-21",
+                "us-22"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Anyone can own an epic.",
+          "stories": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "sprint",
+        "name": "Sprints",
+        "labelSingular": "Sprint",
+        "labelPlural": "Sprints",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "repeat",
+        "titleField": "sprint_name",
+        "describes": "Two-week sprints with a goal, capacity and the points committed and completed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "sprint_name",
+            "label": "Sprint",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "number",
+            "label": "Number",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Past",
+              "Current",
+              "Next"
+            ],
+            "choiceColors": {
+              "Past": "slate",
+              "Current": "blue",
+              "Next": "amber"
+            },
+            "required": true,
+            "default": "Next"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "goal",
+            "label": "Sprint goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "capacity",
+            "label": "Capacity (points)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "stories",
+            "label": "Stories",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "story",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "committed",
+            "label": "Points committed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stories",
+            "pick": "points",
+            "agg": "sum"
+          },
+          {
+            "key": "completed",
+            "label": "Points completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stories",
+            "pick": "points",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "story_count",
+            "label": "Story count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stories",
+            "pick": "title",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sp-1",
+            "values": {
+              "sprint_name": "Lantern sprint",
+              "number": 1,
+              "phase": "Past",
+              "starts_on": "@today-41d",
+              "ends_on": "@today-28d",
+              "goal": "Players can light and carry a lantern",
+              "capacity": 34,
+              "stories": [
+                "us-01",
+                "us-02",
+                "us-03",
+                "us-04",
+                "us-05"
+              ]
+            }
+          },
+          {
+            "key": "sp-2",
+            "values": {
+              "sprint_name": "Harbor sprint",
+              "number": 2,
+              "phase": "Past",
+              "starts_on": "@today-27d",
+              "ends_on": "@today-14d",
+              "goal": "The harbor level is walkable end to end",
+              "capacity": 34,
+              "stories": [
+                "us-06",
+                "us-07",
+                "us-08",
+                "us-09",
+                "us-10"
+              ]
+            }
+          },
+          {
+            "key": "sp-3",
+            "values": {
+              "sprint_name": "Tideline sprint",
+              "number": 3,
+              "phase": "Current",
+              "starts_on": "@today-13d",
+              "ends_on": "@today",
+              "goal": "Tides change the paths in the harbor",
+              "capacity": 32,
+              "stories": [
+                "us-11",
+                "us-12",
+                "us-13",
+                "us-14",
+                "us-15",
+                "us-16"
+              ]
+            }
+          },
+          {
+            "key": "sp-4",
+            "values": {
+              "sprint_name": "Gull sprint",
+              "number": 4,
+              "phase": "Next",
+              "starts_on": "@today+1d",
+              "ends_on": "@today+14d",
+              "goal": "Ambient creatures and first audio pass",
+              "capacity": 32,
+              "stories": [
+                "us-17",
+                "us-18",
+                "us-19"
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "statusByDate": {
+          "field": "phase",
+          "dateField": "ends_on",
+          "bands": [
+            {
+              "status": "Past",
+              "to": 0
+            },
+            {
+              "status": "Current",
+              "from": 0,
+              "to": 1
+            },
+            {
+              "status": "Next",
+              "from": 1
+            }
+          ]
+        },
+        "independentOf": {
+          "stories": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "story",
+        "name": "Stories",
+        "labelSingular": "Story",
+        "labelPlural": "Stories",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "square-check",
+        "titleField": "title",
+        "describes": "Every story, bug and task, its points, who has it and whether it is blocked.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Story",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Backlog",
+              "Ready",
+              "In progress",
+              "In review",
+              "Done"
+            ],
+            "choiceColors": {
+              "Backlog": "slate",
+              "Ready": "violet",
+              "In progress": "blue",
+              "In review": "amber",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Backlog"
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Story",
+              "Bug",
+              "Task"
+            ],
+            "choiceColors": {
+              "Story": "blue",
+              "Bug": "red",
+              "Task": "slate"
+            }
+          },
+          {
+            "key": "points",
+            "label": "Points",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 21
+              }
+            ]
+          },
+          {
+            "key": "assignee",
+            "label": "Assignee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "blocked",
+            "label": "Blocked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pull_request",
+            "label": "Pull request",
+            "parityType": "url",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "us-01",
+            "values": {
+              "title": "Lantern light radius shader",
+              "status": "Done",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-fatou",
+              "pull_request": "https://git.lumenhaus-games.net/pull/300"
+            }
+          },
+          {
+            "key": "us-02",
+            "values": {
+              "title": "Pick up and drop lantern",
+              "status": "Done",
+              "type": "Story",
+              "points": 3,
+              "blocked": false,
+              "assignee": "tm-fatou",
+              "pull_request": "https://git.lumenhaus-games.net/pull/301"
+            }
+          },
+          {
+            "key": "us-03",
+            "values": {
+              "title": "Lantern oil meter in the HUD",
+              "status": "Done",
+              "type": "Story",
+              "points": 3,
+              "blocked": false,
+              "assignee": "tm-nora",
+              "pull_request": "https://git.lumenhaus-games.net/pull/302"
+            }
+          },
+          {
+            "key": "us-04",
+            "values": {
+              "title": "Fix lantern flicker on pause",
+              "status": "Done",
+              "type": "Bug",
+              "points": 2,
+              "blocked": false,
+              "assignee": "tm-sven",
+              "pull_request": "https://git.lumenhaus-games.net/pull/303"
+            }
+          },
+          {
+            "key": "us-05",
+            "values": {
+              "title": "Build pipeline for nightly builds",
+              "status": "Done",
+              "type": "Task",
+              "points": 8,
+              "blocked": false,
+              "assignee": "tm-emeka",
+              "pull_request": "https://git.lumenhaus-games.net/pull/304"
+            }
+          },
+          {
+            "key": "us-06",
+            "values": {
+              "title": "Harbor tilemap and collision",
+              "status": "Done",
+              "type": "Story",
+              "points": 8,
+              "blocked": false,
+              "assignee": "tm-nora",
+              "pull_request": "https://git.lumenhaus-games.net/pull/305"
+            }
+          },
+          {
+            "key": "us-07",
+            "values": {
+              "title": "Dock ladders and climbing",
+              "status": "Done",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-fatou",
+              "pull_request": "https://git.lumenhaus-games.net/pull/306"
+            }
+          },
+          {
+            "key": "us-08",
+            "values": {
+              "title": "Crates that float and sink",
+              "status": "Done",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-fatou",
+              "pull_request": "https://git.lumenhaus-games.net/pull/307"
+            }
+          },
+          {
+            "key": "us-09",
+            "values": {
+              "title": "Save slot picker",
+              "status": "Done",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-sven",
+              "pull_request": "https://git.lumenhaus-games.net/pull/308"
+            }
+          },
+          {
+            "key": "us-10",
+            "values": {
+              "title": "Camera clips through the lighthouse",
+              "status": "Done",
+              "type": "Bug",
+              "points": 3,
+              "blocked": false,
+              "assignee": "tm-sven",
+              "pull_request": "https://git.lumenhaus-games.net/pull/309"
+            }
+          },
+          {
+            "key": "us-11",
+            "values": {
+              "title": "Tide height curve over a day",
+              "status": "Done",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-nora",
+              "pull_request": "https://git.lumenhaus-games.net/pull/310"
+            }
+          },
+          {
+            "key": "us-12",
+            "values": {
+              "title": "Paths appear and vanish with the tide",
+              "status": "In review",
+              "type": "Story",
+              "points": 8,
+              "blocked": false,
+              "assignee": "tm-fatou",
+              "pull_request": "https://git.lumenhaus-games.net/pull/311"
+            }
+          },
+          {
+            "key": "us-13",
+            "values": {
+              "title": "Tide clock in the HUD",
+              "status": "In progress",
+              "type": "Story",
+              "points": 3,
+              "blocked": false,
+              "assignee": "tm-nora",
+              "pull_request": "https://git.lumenhaus-games.net/pull/312"
+            }
+          },
+          {
+            "key": "us-14",
+            "values": {
+              "title": "Water splash particles",
+              "status": "In progress",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-sven",
+              "pull_request": "https://git.lumenhaus-games.net/pull/313"
+            }
+          },
+          {
+            "key": "us-15",
+            "values": {
+              "title": "Autosave when the tide turns",
+              "status": "Ready",
+              "type": "Story",
+              "points": 3,
+              "blocked": true,
+              "assignee": "tm-sven"
+            }
+          },
+          {
+            "key": "us-16",
+            "values": {
+              "title": "Crash on loading a very old save",
+              "status": "In progress",
+              "type": "Bug",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-emeka",
+              "pull_request": "https://git.lumenhaus-games.net/pull/315"
+            }
+          },
+          {
+            "key": "us-17",
+            "values": {
+              "title": "Gull flocks that follow the player",
+              "status": "Ready",
+              "type": "Story",
+              "points": 8,
+              "blocked": false,
+              "assignee": "tm-fatou"
+            }
+          },
+          {
+            "key": "us-18",
+            "values": {
+              "title": "Harbor ambience loop",
+              "status": "Ready",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-nora"
+            }
+          },
+          {
+            "key": "us-19",
+            "values": {
+              "title": "Footstep sounds by surface",
+              "status": "Backlog",
+              "type": "Story",
+              "points": 5,
+              "blocked": false,
+              "assignee": "tm-sven"
+            }
+          },
+          {
+            "key": "us-20",
+            "values": {
+              "title": "Gamepad remapping screen",
+              "status": "Backlog",
+              "type": "Story",
+              "points": 8,
+              "blocked": false
+            }
+          },
+          {
+            "key": "us-21",
+            "values": {
+              "title": "Photo mode",
+              "status": "Backlog",
+              "type": "Story",
+              "points": 13,
+              "blocked": false
+            }
+          },
+          {
+            "key": "us-22",
+            "values": {
+              "title": "Accessibility: colorblind lantern tint",
+              "status": "Backlog",
+              "type": "Story",
+              "points": 5,
+              "blocked": false
+            }
+          }
+        ],
+        "independentOf": {
+          "assignee": "Anyone can pick up a story."
+        }
+      },
+      {
+        "token": "retro",
+        "name": "Retrospectives",
+        "labelSingular": "Retrospective",
+        "labelPlural": "Retrospectives",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "message-square",
+        "titleField": "retro_title",
+        "describes": "What the team learned at the end of each sprint and who follows up.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "retro_title",
+            "label": "Retrospective",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sprint",
+            "label": "Sprint",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "sprint",
+            "relationMax": 1
+          },
+          {
+            "key": "held_on",
+            "label": "Held",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "went_well",
+            "label": "What went well",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "to_improve",
+            "label": "What to improve",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "action_owner",
+            "label": "Action owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          }
+        ],
+        "rows": [
+          {
+            "key": "rt-1",
+            "values": {
+              "retro_title": "Lantern sprint retrospective",
+              "sprint": "sp-1",
+              "held_on": "@today-27d",
+              "went_well": "Lantern shader landed early; pairing on tricky bugs helped.",
+              "to_improve": "Estimates for the pipeline task were far too low.",
+              "action_owner": "tm-isolde"
+            }
+          },
+          {
+            "key": "rt-2",
+            "values": {
+              "retro_title": "Harbor sprint retrospective",
+              "sprint": "sp-2",
+              "held_on": "@today-13d",
+              "went_well": "The harbor tilemap was done a day ahead; design and code stayed in sync.",
+              "to_improve": "Review queue backed up on Thursday.",
+              "action_owner": "tm-caleb"
+            }
+          },
+          {
+            "key": "rt-3",
+            "values": {
+              "retro_title": "Tideline sprint retrospective",
+              "sprint": "sp-3",
+              "held_on": "@today",
+              "went_well": "Water and tide work came together faster than planned.",
+              "to_improve": "The very old save crash ate two days; we need a save-format test.",
+              "action_owner": "tm-emeka"
+            }
+          }
+        ],
+        "childDates": [
+          {
+            "relation": "sprint",
+            "field": "held_on",
+            "parentField": "ends_on"
+          }
+        ],
+        "independentOf": {
+          "action_owner": "Anyone can follow up.",
+          "sprint": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "epic",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "epics_owned"
+      },
+      {
+        "describes": "An epic is made of stories.",
+        "fromTable": "epic",
+        "fromField": "stories",
+        "toTable": "story",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "epic"
+      },
+      {
+        "describes": "A sprint holds the stories the team committed to.",
+        "fromTable": "sprint",
+        "fromField": "stories",
+        "toTable": "story",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "sprint"
+      },
+      {
+        "describes": "Assignee links to team_member.",
+        "fromTable": "story",
+        "fromField": "assignee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "stories_assigned"
+      },
+      {
+        "describes": "Sprint links to sprint.",
+        "fromTable": "retro",
+        "fromField": "sprint",
+        "toTable": "sprint",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "retro"
+      },
+      {
+        "describes": "Action owner links to team_member.",
+        "fromTable": "retro",
+        "fromField": "action_owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "retro_actions"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-isolde",
+            "values": {
+              "full_name": "Isolde Varga",
+              "role": "Scrum master",
+              "work_email": "isolde@lumenhaus-games.net",
+              "mobile": "(206) 555-0141",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-caleb",
+            "values": {
+              "full_name": "Caleb Nakamura-Reid",
+              "role": "Tech lead",
+              "work_email": "caleb@lumenhaus-games.net",
+              "mobile": "(206) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-fatou",
+            "values": {
+              "full_name": "Fatou Diallo",
+              "role": "Gameplay engineer",
+              "work_email": "fatou@lumenhaus-games.net",
+              "mobile": "(206) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-sven",
+            "values": {
+              "full_name": "Sven Karlsen",
+              "role": "Tools engineer",
+              "work_email": "sven@lumenhaus-games.net",
+              "mobile": "(206) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-nora",
+            "values": {
+              "full_name": "Nora Whitcombe",
+              "role": "Game designer",
+              "work_email": "nora@lumenhaus-games.net",
+              "mobile": "(206) 555-0145",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-emeka",
+            "values": {
+              "full_name": "Emeka Obi",
+              "role": "Build and release",
+              "work_email": "emeka@lumenhaus-games.net",
+              "mobile": "(206) 555-0146",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "story_request",
+        "name": "Propose a story",
+        "describes": "How anyone on the team adds a story to the backlog.",
+        "audience": "staff",
+        "table": "story",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What should the player or team be able to do?",
+            "required": true
+          },
+          {
+            "fieldKey": "type",
+            "ask": "Is it a story, a bug or a task?"
+          },
+          {
+            "fieldKey": "points",
+            "ask": "Your best guess at points?"
+          }
+        ],
+        "submitLabel": "Add to the backlog",
+        "confirmation": "Thanks. It is in the backlog."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_story",
+        "name": "All stories",
+        "table": "story",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "story_board",
+        "name": "Board",
+        "table": "story",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "story_by_type",
+        "name": "By type",
+        "table": "story",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "all_epic",
+        "name": "All epics",
+        "table": "epic",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "epic_board",
+        "name": "By status",
+        "table": "epic",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_sprint",
+        "name": "All sprints",
+        "table": "sprint",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "starts_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "sprint_timeline",
+        "name": "Timeline",
+        "table": "sprint",
+        "kind": "timeline",
+        "startField": "starts_on",
+        "endField": "ends_on"
+      },
+      {
+        "token": "sprint_calendar",
+        "name": "Calendar",
+        "table": "sprint",
+        "kind": "calendar",
+        "dateField": "ends_on",
+        "allDay": true
+      },
+      {
+        "token": "all_retro",
+        "name": "All retrospectives",
+        "table": "retro",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "held_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Sprint assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "story",
+          "describes": "Every story, its status, points, owner and whether it is blocked."
+        },
+        {
+          "name": "related_tables",
+          "table": "sprint",
+          "describes": "The sprints the stories are committed to."
+        }
+      ],
+      "question": {
+        "ask": "How many stories are blocked?",
+        "whyItMatters": "Isolde asks this at every stand-up.",
+        "expect": {
+          "table": "story",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "blocked": true
+          },
+          "answer": 1,
+          "unit": "stories"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the sprint board.",
+        "action": {
+          "kind": "open",
+          "surface": "story_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "story_board",
+          "minItems": 15
+        }
+      },
+      {
+        "says": "Open the sprint timeline.",
+        "action": {
+          "kind": "open",
+          "surface": "sprint_timeline"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sprint_timeline",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open the epic board.",
+        "action": {
+          "kind": "open",
+          "surface": "epic_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "epic_board",
+          "minItems": 4
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lumenhaus-games.net"
+      ],
+      "fictionalStreets": [
+        "Quillmere Pier"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "scrum-board",
+      "parent": null,
+      "title": "Scrum Sprint Board",
+      "icon": {
+        "emoji": "🏴"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "One board for the sprint, one backlog for what comes next, and a retrospective after every sprint. Points and velocity add up by themselves."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:velocity"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sprint-ceremonies"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:definition-of-done"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:retrospectives"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sprint board"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "story",
+              "view": "all_story"
+            },
+            "inline": true,
+            "title": "Stories",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "Board",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Blocked",
+                "icon": "List",
+                "filters": {
+                  "blocked": true
+                },
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Bugs",
+                "icon": "List",
+                "filters": {
+                  "type": "Bug"
+                },
+                "id": "view-2"
+              },
+              {
+                "layout": "grid",
+                "name": "All stories",
+                "icon": "Table",
+                "id": "view-3"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sprints"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sprint",
+              "view": "all_sprint"
+            },
+            "inline": true,
+            "title": "Sprints",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Sprints",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "timeline",
+                "name": "Timeline",
+                "icon": "ChartGantt",
+                "dateField": "starts_on",
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Current and next",
+                "icon": "List",
+                "filters": {
+                  "phase": [
+                    "Current",
+                    "Next"
+                  ]
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Epics"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "epic",
+              "view": "all_epic"
+            },
+            "inline": true,
+            "title": "Epics",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "Progress",
+                "icon": "Table",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "velocity",
+      "parent": "scrum-board",
+      "title": "Velocity and burn",
+      "icon": {
+        "emoji": "📈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "story",
+                      "view": "all_story"
+                    },
+                    "inline": true,
+                    "title": "Stories",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Stories by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "sprint",
+                      "view": "all_sprint"
+                    },
+                    "inline": true,
+                    "title": "Sprints",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Points completed by phase",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "phase",
+                          "op": "sum",
+                          "field": "completed"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "story",
+                      "view": "all_story"
+                    },
+                    "inline": true,
+                    "title": "Stories",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Work by type",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sprints at a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sprint",
+              "view": "all_sprint"
+            },
+            "inline": true,
+            "title": "Sprints",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Committed and completed",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "chart",
+                "name": "Points committed",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "sprint_name",
+                  "op": "sum",
+                  "field": "committed"
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Epic progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "epic",
+              "view": "all_epic"
+            },
+            "inline": true,
+            "title": "Epics",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Points done by epic",
+                "icon": "Table",
+                "id": "view-0"
+              },
+              {
+                "layout": "chart",
+                "name": "Points by epic",
+                "icon": "ChartBar",
+                "chart": {
+                  "type": "hbar",
+                  "groupBy": "epic_name",
+                  "op": "sum",
+                  "field": "points_total"
+                },
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Blocked stories"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "story",
+              "view": "all_story"
+            },
+            "inline": true,
+            "title": "Stories",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Blocked",
+                "icon": "CircleAlert",
+                "filters": {
+                  "blocked": true
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sprint-ceremonies",
+      "parent": "scrum-board",
+      "title": "Sprint ceremonies",
+      "icon": {
+        "emoji": "🔔"
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ceremony"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Length"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Planning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First morning of the sprint"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Whole team"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Daily stand-up"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every day, 9:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ten minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Whole team"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Backlog refinement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wednesday of week one"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One hour"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tech lead, designer, scrum master"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Last afternoon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One hour"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Team and guests"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retrospective"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "After the review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Forty-five minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Whole team"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stand-up rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say what moved, what is next, and what is blocked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Park deep discussions until after."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tick Blocked on the story the moment it happens."
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Planning checklist"
+            }
+          ],
+          "children": [
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Capacity set from days off"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            },
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Goal written in one sentence"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            },
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Top stories are Ready"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            },
+            {
+              "type": "todo",
+              "text": [
+                {
+                  "text": "Nobody committed above capacity"
+                }
+              ],
+              "props": {
+                "checked": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "definition-of-done",
+      "parent": "scrum-board",
+      "title": "Definition of done",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A story moves to Done only when every box below is true."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Code reviewed by one other person"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Automated tests pass on the nightly build"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Played through on a console build"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Designer has seen it and agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No new warnings in the log"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notes added for the release"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "retrospectives",
+      "parent": "scrum-board",
+      "title": "Retrospectives",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "retro",
+              "view": "all_retro"
+            },
+            "inline": true,
+            "title": "Retrospectives",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All retrospectives",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "held_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Latest",
+                "icon": "List",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Format"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Silent writing: went well, to improve, ideas."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Vote on the two items worth discussing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "End with one action and one owner."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "scrum-board",
+      "title": "Team",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "Team",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Team",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}

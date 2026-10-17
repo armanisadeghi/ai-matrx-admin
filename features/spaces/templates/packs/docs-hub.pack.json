@@ -1,0 +1,1740 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0106",
+  "version": 1,
+  "title": "Docs Hub",
+  "description": "One database for every document, with status, owner, team, tags and a review dashboard.",
+  "forWho": "Teams that write and share lots of documents",
+  "icon": {
+    "emoji": "📚"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "docs",
+  "tags": [
+    "docs",
+    "knowledge",
+    "documents",
+    "library"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-docs-hub",
+    "catalogueId": "SP0106",
+    "useCase": "Lucinda Achterberg directs operations at a community nonprofit and uses this so staff and volunteers can find the current version of any document and see who owns it.",
+    "industry": "cross_industry",
+    "vertical": "Documentation",
+    "job": "content",
+    "audience": "organization",
+    "teaches": "boards",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Pelham Civic Table",
+      "describes": "A neighborhood nonprofit running a food pantry and community dinners.",
+      "address": {
+        "line1": "12 Ostrander Row",
+        "city": "Atlanta",
+        "region": "GA",
+        "postalCode": "30312",
+        "country": "US"
+      },
+      "phone": "(404) 555-0150",
+      "website": "pelham-civic.net",
+      "email": "hello@pelham-civic.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-docs-hub",
+    "tables": [
+      {
+        "token": "project",
+        "name": "Projects",
+        "labelSingular": "Project",
+        "labelPlural": "Projects",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folders",
+        "titleField": "project_name",
+        "describes": "The efforts that documents belong to.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "project_name",
+            "label": "Project",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "state",
+            "label": "State",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Active",
+              "Wrapping up"
+            ],
+            "choiceColors": {
+              "Planning": "slate",
+              "Active": "blue",
+              "Wrapping up": "green"
+            },
+            "required": true,
+            "default": "Active"
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "docs",
+            "label": "Write-ups",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "doc",
+            "relationMax": 30,
+            "multi": true
+          },
+          {
+            "key": "doc_count",
+            "label": "Write-up count",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "docs",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "published_count",
+            "label": "Published write-ups",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "docs",
+            "pick": "title",
+            "agg": "count",
+            "filter": {
+              "status": "Published"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "pj-1",
+            "values": {
+              "project_name": "Food pantry expansion",
+              "state": "Active",
+              "lead": "tm-tobias",
+              "docs": [
+                "dc-01",
+                "dc-02",
+                "dc-03"
+              ]
+            }
+          },
+          {
+            "key": "pj-2",
+            "values": {
+              "project_name": "Annual fundraising gala",
+              "state": "Active",
+              "lead": "tm-saoirse",
+              "docs": [
+                "dc-04",
+                "dc-05",
+                "dc-06"
+              ]
+            }
+          },
+          {
+            "key": "pj-3",
+            "values": {
+              "project_name": "Volunteer program refresh",
+              "state": "Active",
+              "lead": "tm-elodie",
+              "docs": [
+                "dc-07",
+                "dc-08",
+                "dc-09",
+                "dc-10"
+              ]
+            }
+          },
+          {
+            "key": "pj-4",
+            "values": {
+              "project_name": "Grant renewals",
+              "state": "Planning",
+              "lead": "tm-hamid",
+              "docs": [
+                "dc-11",
+                "dc-12"
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "lead": "Anyone can lead a project.",
+          "docs": "The two sides move on their own schedule and status; neither forces the other."
+        }
+      },
+      {
+        "token": "doc",
+        "name": "Write-ups",
+        "labelSingular": "Write-up",
+        "labelPlural": "Write-ups",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "title",
+        "describes": "Every document: its type, status, owner, team and when it last changed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Title",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Spec",
+              "Guide",
+              "Brief",
+              "Notes",
+              "Policy"
+            ],
+            "choiceColors": {
+              "Spec": "violet",
+              "Guide": "blue",
+              "Brief": "teal",
+              "Notes": "slate",
+              "Policy": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "In review",
+              "Published",
+              "Archived"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "In review": "amber",
+              "Published": "green",
+              "Archived": "gray"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Programs",
+              "Communications",
+              "Finance",
+              "Operations"
+            ],
+            "choiceColors": {
+              "Programs": "green",
+              "Communications": "pink",
+              "Finance": "amber",
+              "Operations": "blue"
+            }
+          },
+          {
+            "key": "tags",
+            "label": "Tags",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "pantry",
+              "gala",
+              "volunteers",
+              "grants",
+              "facilities",
+              "vendors",
+              "sponsors",
+              "events",
+              "budget",
+              "policy",
+              "survey",
+              "calendar",
+              "board",
+              "donors",
+              "social",
+              "brand"
+            ],
+            "choiceColors": {
+              "pantry": "slate",
+              "gala": "blue",
+              "volunteers": "amber",
+              "grants": "green",
+              "facilities": "red",
+              "vendors": "violet",
+              "sponsors": "teal",
+              "events": "orange",
+              "budget": "pink",
+              "policy": "brown",
+              "survey": "slate",
+              "calendar": "blue",
+              "board": "amber",
+              "donors": "green",
+              "social": "red",
+              "brand": "violet"
+            }
+          },
+          {
+            "key": "created_on",
+            "label": "Created",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "edited_on",
+            "label": "Last edited",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "verified",
+            "label": "Verified",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visibility",
+            "label": "Visible to",
+            "parityType": "select",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "choices": [
+              "Everyone",
+              "Staff only",
+              "Board only"
+            ],
+            "choiceColors": {
+              "Everyone": "green",
+              "Staff only": "amber",
+              "Board only": "red"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "dc-01",
+            "values": {
+              "title": "Pantry expansion plan",
+              "type": "Spec",
+              "status": "Published",
+              "owner": "tm-tobias",
+              "team": "Programs",
+              "tags": [
+                "pantry",
+                "facilities"
+              ],
+              "created_on": "@today-60d",
+              "edited_on": "@today-6d",
+              "verified": true,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-02",
+            "values": {
+              "title": "Pantry floor layout notes",
+              "type": "Notes",
+              "status": "Draft",
+              "owner": "tm-tobias",
+              "team": "Programs",
+              "tags": [
+                "pantry"
+              ],
+              "created_on": "@today-14d",
+              "edited_on": "@today-2d",
+              "verified": false,
+              "visibility": "Staff only"
+            }
+          },
+          {
+            "key": "dc-03",
+            "values": {
+              "title": "Cold storage vendor comparison",
+              "type": "Brief",
+              "status": "In review",
+              "owner": "tm-hamid",
+              "team": "Finance",
+              "tags": [
+                "pantry",
+                "vendors"
+              ],
+              "created_on": "@today-21d",
+              "edited_on": "@today-5d",
+              "verified": false,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-04",
+            "values": {
+              "title": "Gala run of show",
+              "type": "Guide",
+              "status": "Published",
+              "owner": "tm-saoirse",
+              "team": "Communications",
+              "tags": [
+                "gala",
+                "events"
+              ],
+              "created_on": "@today-45d",
+              "edited_on": "@today-3d",
+              "verified": true,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-05",
+            "values": {
+              "title": "Gala sponsor outreach brief",
+              "type": "Brief",
+              "status": "In review",
+              "owner": "tm-saoirse",
+              "team": "Communications",
+              "tags": [
+                "gala",
+                "sponsors"
+              ],
+              "created_on": "@today-30d",
+              "edited_on": "@today-4d",
+              "verified": false,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-06",
+            "values": {
+              "title": "Gala budget policy",
+              "type": "Policy",
+              "status": "Published",
+              "owner": "tm-hamid",
+              "team": "Finance",
+              "tags": [
+                "gala",
+                "budget"
+              ],
+              "created_on": "@today-80d",
+              "edited_on": "@today-40d",
+              "verified": true,
+              "visibility": "Staff only"
+            }
+          },
+          {
+            "key": "dc-07",
+            "values": {
+              "title": "Volunteer onboarding guide",
+              "type": "Guide",
+              "status": "Published",
+              "owner": "tm-elodie",
+              "team": "Programs",
+              "tags": [
+                "volunteers"
+              ],
+              "created_on": "@today-100d",
+              "edited_on": "@today-12d",
+              "verified": true,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-08",
+            "values": {
+              "title": "Volunteer code of conduct",
+              "type": "Policy",
+              "status": "Published",
+              "owner": "tm-lucinda",
+              "team": "Operations",
+              "tags": [
+                "volunteers",
+                "policy"
+              ],
+              "created_on": "@today-140d",
+              "edited_on": "@today-90d",
+              "verified": true,
+              "visibility": "Staff only"
+            }
+          },
+          {
+            "key": "dc-09",
+            "values": {
+              "title": "Volunteer survey results",
+              "type": "Notes",
+              "status": "Draft",
+              "owner": "tm-elodie",
+              "team": "Programs",
+              "tags": [
+                "volunteers",
+                "survey"
+              ],
+              "created_on": "@today-9d",
+              "edited_on": "@today-1d",
+              "verified": false,
+              "visibility": "Staff only"
+            }
+          },
+          {
+            "key": "dc-10",
+            "values": {
+              "title": "Shift scheduling rules",
+              "type": "Guide",
+              "status": "In review",
+              "owner": "tm-elodie",
+              "team": "Programs",
+              "tags": [
+                "volunteers"
+              ],
+              "created_on": "@today-18d",
+              "edited_on": "@today-8d",
+              "verified": false,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-11",
+            "values": {
+              "title": "State grant narrative template",
+              "type": "Guide",
+              "status": "Published",
+              "owner": "tm-tobias",
+              "team": "Finance",
+              "tags": [
+                "grants"
+              ],
+              "created_on": "@today-120d",
+              "edited_on": "@today-20d",
+              "verified": true,
+              "visibility": "Everyone"
+            }
+          },
+          {
+            "key": "dc-12",
+            "values": {
+              "title": "Foundation grant calendar",
+              "type": "Notes",
+              "status": "Draft",
+              "owner": "tm-hamid",
+              "team": "Finance",
+              "tags": [
+                "grants",
+                "calendar"
+              ],
+              "created_on": "@today-10d",
+              "edited_on": "@today-2d",
+              "verified": false,
+              "visibility": "Staff only"
+            }
+          },
+          {
+            "key": "dc-13",
+            "values": {
+              "title": "Board report outline",
+              "type": "Spec",
+              "status": "Published",
+              "owner": "tm-lucinda",
+              "team": "Operations",
+              "tags": [
+                "board"
+              ],
+              "created_on": "@today-70d",
+              "edited_on": "@today-25d",
+              "verified": true,
+              "visibility": "Board only"
+            }
+          },
+          {
+            "key": "dc-14",
+            "values": {
+              "title": "Old donor database export notes",
+              "type": "Notes",
+              "status": "Archived",
+              "owner": "tm-hamid",
+              "team": "Finance",
+              "tags": [
+                "donors"
+              ],
+              "created_on": "@today-400d",
+              "edited_on": "@today-300d",
+              "verified": false,
+              "visibility": "Board only"
+            }
+          },
+          {
+            "key": "dc-15",
+            "values": {
+              "title": "Social media posting guide",
+              "type": "Guide",
+              "status": "Published",
+              "owner": "tm-saoirse",
+              "team": "Communications",
+              "tags": [
+                "social",
+                "brand"
+              ],
+              "created_on": "@today-50d",
+              "edited_on": "@today-15d",
+              "verified": true,
+              "visibility": "Everyone"
+            }
+          }
+        ],
+        "before": [
+          [
+            "created_on",
+            "edited_on"
+          ]
+        ],
+        "independentOf": {
+          "owner": "Anyone can own a document."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Lead links to team_member.",
+        "fromTable": "project",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "docs_projects_led"
+      },
+      {
+        "describes": "A project gathers its documents.",
+        "fromTable": "project",
+        "fromField": "docs",
+        "toTable": "doc",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "project"
+      },
+      {
+        "describes": "Owner links to team_member.",
+        "fromTable": "doc",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "docs_owned"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-lucinda",
+            "values": {
+              "full_name": "Lucinda Achterberg",
+              "role": "Operations director",
+              "work_email": "lucinda@pelham-civic.net",
+              "mobile": "(404) 555-0151",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-tobias",
+            "values": {
+              "full_name": "Tobias Mwangi",
+              "role": "Program manager",
+              "work_email": "tobias@pelham-civic.net",
+              "mobile": "(404) 555-0152",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-saoirse",
+            "values": {
+              "full_name": "Saoirse Gallagher-Lim",
+              "role": "Communications lead",
+              "work_email": "saoirse@pelham-civic.net",
+              "mobile": "(404) 555-0153",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-hamid",
+            "values": {
+              "full_name": "Hamid Rostami",
+              "role": "Finance officer",
+              "work_email": "hamid@pelham-civic.net",
+              "mobile": "(404) 555-0154",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-elodie",
+            "values": {
+              "full_name": "Elodie Fontaine-Ward",
+              "role": "Volunteer coordinator",
+              "work_email": "elodie@pelham-civic.net",
+              "mobile": "(404) 555-0155",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "doc_request",
+        "name": "Request a document",
+        "describes": "How anyone asks for a document to be written.",
+        "audience": "staff",
+        "table": "doc",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What document do you need?",
+            "required": true
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What kind is it?"
+          },
+          {
+            "fieldKey": "team",
+            "ask": "Which team will use it?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is on the board as a Draft."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_doc",
+        "name": "All documents",
+        "table": "doc",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "edited_on",
+            "direction": "desc"
+          }
+        ]
+      },
+      {
+        "token": "doc_board",
+        "name": "By status",
+        "table": "doc",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "doc_by_team",
+        "name": "By team",
+        "table": "doc",
+        "kind": "kanban",
+        "groupBy": "team"
+      },
+      {
+        "token": "doc_by_type",
+        "name": "By type",
+        "table": "doc",
+        "kind": "kanban",
+        "groupBy": "type"
+      },
+      {
+        "token": "doc_calendar",
+        "name": "Last edited",
+        "table": "doc",
+        "kind": "calendar",
+        "dateField": "edited_on",
+        "allDay": true
+      },
+      {
+        "token": "all_project",
+        "name": "All projects",
+        "table": "project",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Docs assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "doc",
+          "describes": "Every document, its type, status, owner and team."
+        },
+        {
+          "name": "related_tables",
+          "table": "project",
+          "describes": "The projects the documents belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many documents are waiting for review?",
+        "whyItMatters": "Lucinda clears the review queue every Friday.",
+        "expect": {
+          "table": "doc",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "In review"
+          },
+          "answer": 3,
+          "unit": "documents"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open documents by status.",
+        "action": {
+          "kind": "open",
+          "surface": "doc_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "doc_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open documents by team.",
+        "action": {
+          "kind": "open",
+          "surface": "doc_by_team"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "doc_by_team",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the last-edited calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "doc_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "doc_calendar",
+          "minItems": 10
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "pelham-civic.net"
+      ],
+      "fictionalStreets": [
+        "Ostrander Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "docs-hub",
+      "parent": null,
+      "title": "Docs Hub",
+      "icon": {
+        "emoji": "📚"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "All our documents in one database. Find them by team, type or project, see what is still a draft, and know who owns each."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:docs-dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:writing-standards"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:document-lifecycle"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:team"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pinned and recent"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "doc",
+              "view": "all_doc"
+            },
+            "inline": true,
+            "title": "Documents",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "Recently edited",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "edited_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "list",
+                "name": "Published",
+                "icon": "List",
+                "filters": {
+                  "status": "Published"
+                },
+                "id": "view-1"
+              },
+              {
+                "layout": "list",
+                "name": "Drafts",
+                "icon": "List",
+                "filters": {
+                  "status": "Draft"
+                },
+                "id": "view-2"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "All documents"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "doc",
+              "view": "all_doc"
+            },
+            "inline": true,
+            "title": "Documents",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "All documents",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "edited_on",
+                    "direction": "desc"
+                  }
+                ],
+                "id": "view-0"
+              },
+              {
+                "layout": "kanban",
+                "name": "By status",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "id": "view-1"
+              },
+              {
+                "layout": "kanban",
+                "name": "By team",
+                "icon": "SquareKanban",
+                "groupField": "team",
+                "id": "view-2"
+              },
+              {
+                "layout": "kanban",
+                "name": "By type",
+                "icon": "SquareKanban",
+                "groupField": "type",
+                "id": "view-3"
+              },
+              {
+                "layout": "gallery",
+                "name": "Gallery",
+                "icon": "LayoutGrid",
+                "id": "view-4"
+              },
+              {
+                "layout": "calendar",
+                "name": "Last edited",
+                "icon": "Calendar",
+                "dateField": "edited_on",
+                "id": "view-5"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project",
+              "view": "all_project"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "gallery",
+                "name": "Projects",
+                "icon": "LayoutGrid",
+                "id": "view-0"
+              },
+              {
+                "layout": "grid",
+                "name": "Document counts",
+                "icon": "Table",
+                "id": "view-1"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "docs-dashboard",
+      "parent": "docs-hub",
+      "title": "Docs dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "doc",
+                      "view": "all_doc"
+                    },
+                    "inline": true,
+                    "title": "Documents",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Documents by status",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "doc",
+                      "view": "all_doc"
+                    },
+                    "inline": true,
+                    "title": "Documents",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Documents by team",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "team",
+                          "op": "count"
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "doc",
+                      "view": "all_doc"
+                    },
+                    "inline": true,
+                    "title": "Documents",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "layout": "chart",
+                        "name": "Documents by type",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "id": "view-0"
+                      }
+                    ],
+                    "activeViewId": "view-0"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waiting for review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "doc",
+              "view": "all_doc"
+            },
+            "inline": true,
+            "title": "Documents",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "list",
+                "name": "In review",
+                "icon": "List",
+                "filters": {
+                  "status": "In review"
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Published but not verified"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "doc",
+              "view": "all_doc"
+            },
+            "inline": true,
+            "title": "Documents",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Needs verifying",
+                "icon": "Table",
+                "filters": {
+                  "status": "Published",
+                  "verified": false
+                },
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Longest untouched"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "doc",
+              "view": "all_doc"
+            },
+            "inline": true,
+            "title": "Documents",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "Oldest edits",
+                "icon": "Table",
+                "filters": {
+                  "status": [
+                    "Draft",
+                    "In review",
+                    "Published"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "edited_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    },
+    {
+      "key": "writing-standards",
+      "parent": "docs-hub",
+      "title": "Writing standards",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Short rules that make every document easier to use."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Structure"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Begin with one sentence that says what the document is for."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use headings a reader can scan."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Put decisions and dates near the top."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Words"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Plain language; no unexplained acronyms."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write names and dates in full."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say who must do what, by when."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use it for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spec"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A plan others will build or follow"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pantry expansion plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Guide"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Steps someone repeats"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Volunteer onboarding guide"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brief"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A short ask to a partner or vendor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sponsor outreach brief"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Working thoughts, meetings, research"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Survey results"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Policy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A rule the organization follows"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Code of conduct"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Naming documents"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Start with the subject, not the type. “Gala budget policy” beats “Policy: gala budget.”"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "document-lifecycle",
+      "parent": "docs-hub",
+      "title": "Document lifecycle",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Draft",
+              "bold": true
+            },
+            {
+              "text": " — the owner is still writing. Nobody should rely on it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "In review",
+              "bold": true
+            },
+            {
+              "text": " — a second person is reading it. Add comments, not edits."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Published",
+              "bold": true
+            },
+            {
+              "text": " — final. Tick Verified once the owner has confirmed every fact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Archived",
+              "bold": true
+            },
+            {
+              "text": " — no longer true or needed, kept for the record."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Review every published document once a year, or sooner when the thing it describes changes."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Clock"
+          }
+        }
+      ]
+    },
+    {
+      "key": "team",
+      "parent": "docs-hub",
+      "title": "People",
+      "icon": {
+        "emoji": "👥"
+      },
+      "blocks": [
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team_member",
+              "view": "all_team"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "layout": "grid",
+                "name": "People",
+                "icon": "Users",
+                "id": "view-0"
+              }
+            ],
+            "activeViewId": "view-0"
+          }
+        }
+      ]
+    }
+  ]
+}
