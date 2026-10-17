@@ -22,7 +22,7 @@ import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutN
 import { ToolResult } from "@/features/data-sources/library/tools/ToolResult";
 import { useToolCall, type ToolCallState } from "@/features/data-sources/library/tools/useToolCall";
 
-import { authorityTiles, bandOf, type AuthorityKey, type AuthorityTile } from "./authority";
+import { authorityTiles, bandOf, type AuthorityKey, type AuthorityTile, type MatrxTileFrom } from "./authority";
 import { formatTile, linkTiles, searchTiles, type StatTile } from "./summaries";
 import { pointsTogether, type SeoTools } from "./seoTools";
 
@@ -66,28 +66,32 @@ function ApprovalGate({ call, host }: { call: ToolCallState; host: string }) {
 export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools }) {
   const authority = useSeoRun("authority", tools.authority);
   const matrx = useSeoRun("matrx", tools.authorityScore);
+  // The compare job's "Matrx" call is only safe once the server says the Tool has compare sources.
+  const compareReady = Boolean((tools.authorityScore as unknown as { compare_sources?: unknown[] } | undefined)?.compare_sources?.length);
+  const matrxFrom: MatrxTileFrom = compareReady ? "authority_score" : "backlinks_rank";
   const links = useSeoRun("links", tools.links);
   const searchAds = useSeoRun("searchAds", tools.searchAds);
   const linkRows = useSeoRun("linkRows", tools.linkRows);
   const [detail, setDetail] = useState(false);
 
   const inputs = { domain: host };
-  const checks = [authority, matrx, links, searchAds];
+  const checks = [authority, ...(compareReady ? [matrx] : []), links, searchAds];
   const busy = checks.some((c) => c.view != null && isCallRunning(c.view.status));
   const everyTool = Boolean(tools.authority && tools.links && tools.searchAds);
-  const together = pointsTogether([tools.authority, tools.authorityScore, tools.links, tools.searchAds]);
+  const together = pointsTogether([tools.authority, ...(compareReady ? [tools.authorityScore] : []), tools.links, tools.searchAds]);
   const asked = checks.some((c) => c.view != null || c.clientError != null);
 
   const runAll = () => {
     if (tools.authority) void authority.run(inputs);
-    if (tools.authorityScore) void matrx.run(inputs);
+    if (compareReady && tools.authorityScore) void matrx.run(inputs);
     if (tools.links) void links.run(inputs);
     if (tools.searchAds) void searchAds.run(inputs);
   };
 
   const tiles = authorityTiles(
-    { authority: authority.view, matrx: matrx.view, searchAds: searchAds.view },
-    { authority: authority.clientError, matrx: matrx.clientError, searchAds: searchAds.clientError },
+    { authority: authority.view, matrx: matrx.view, links: links.view, searchAds: searchAds.view },
+    { authority: authority.clientError, matrx: matrx.clientError, links: links.clientError, searchAds: searchAds.clientError },
+    matrxFrom,
   );
   const spent = [authority, matrx, links, searchAds, linkRows].reduce((sum, c) => sum + (c.view?.points_charged ?? 0), 0);
 
@@ -115,7 +119,7 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
         </Button>
       </section>
 
-      <AuthorityRow tiles={tiles} tools={tools} onRetry={(key) => void { authority, matrx, searchAds }[key].run(inputs)} />
+      <AuthorityRow tiles={tiles} tools={tools} compareReady={compareReady} onRetry={(key) => void { authority, matrx: compareReady ? matrx : links, searchAds }[key].run(inputs)} />
 
       <Panel
         icon={<Link2 className="h-4 w-4" />}
@@ -260,13 +264,16 @@ function Glance({
 function AuthorityRow({
   tiles,
   tools,
+  compareReady,
   onRetry,
 }: {
   tiles: AuthorityTile[];
   tools: SeoTools;
+  compareReady: boolean;
   onRetry: (key: AuthorityKey) => void;
 }) {
-  const price = (key: AuthorityKey) => (key === "authority" ? tools.authority : key === "matrx" ? tools.authorityScore : tools.searchAds);
+  const price = (key: AuthorityKey) =>
+    key === "authority" ? tools.authority : key === "matrx" ? (compareReady ? tools.authorityScore : tools.links) : tools.searchAds;
   return (
     <section aria-label="Authority" className="grid gap-3 sm:grid-cols-3">
       {tiles.map((tile) => (

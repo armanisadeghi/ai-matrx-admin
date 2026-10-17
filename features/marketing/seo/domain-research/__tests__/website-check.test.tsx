@@ -45,7 +45,7 @@ const hit = (job_key: string, price: number): CatalogToolHit => ({
 });
 const TOOLS: SeoTools = {
   authority: hit("seo_domain_authority", 134),
-  authorityScore: hit("seo_authority_score", 50),
+  authorityScore: { ...hit("seo_authority_score", 50), compare_sources: [{ endpoint_id: "e1", display_source: "Moz" }, { endpoint_id: null, display_source: "Matrx" }] } as CatalogToolHit,
   links: hit("seo_backlinks_summary", 482),
   searchAds: hit("seo_search_ads_overview", 20),
   linkRows: hit("seo_backlink_rows", 400),
@@ -146,4 +146,17 @@ it("never prints a vendor that is not a leader", async () => {
   await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={TOOLS} />));
   await act(async () => button("Check website")!.click());
   expect(text()).not.toMatch(/dataforseo|serpstat|treg|seranking/i);
+});
+
+it("until the server says the authority score has compare sources, the Matrx tile is the link strength already bought — never a second Moz", async () => {
+  const before: SeoTools = { ...TOOLS, authorityScore: hit("seo_authority_score", 50) };
+  await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={before} />));
+  expect(button("Check website")?.textContent).toContain("about 636 points");
+  await act(async () => button("Check website")!.click());
+  const ids = runHostToolCall.mock.calls.map((c) => (c[0] as { request: { tool_id: string } }).request.tool_id);
+  expect(ids).not.toContain("id-seo_authority_score");
+  expect(ids).toHaveLength(3);
+  const tiles = [...host.querySelectorAll("[data-authority-tile]")].map((t) => t.textContent ?? "");
+  expect(tiles[1]).toContain("Link strength");
+  expect(tiles[1]).toContain("Matrx");
 });

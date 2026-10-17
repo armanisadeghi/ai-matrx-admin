@@ -55,8 +55,13 @@ function sourceOf(key: AuthorityKey, view: ToolCallView | null): string {
   return shown && shown !== "Matrx" ? shown : "Matrx";
 }
 
-export function authorityTile(key: AuthorityKey, view: ToolCallView | null, clientError: string | null): AuthorityTile {
-  const { field, label } = FIELD[key];
+export function authorityTile(
+  key: AuthorityKey,
+  view: ToolCallView | null,
+  clientError: string | null,
+  field: string = FIELD[key].field,
+): AuthorityTile {
+  const { label } = FIELD[key];
   const base = { key, label, source: sourceOf(key, view), score: null, note: null, points: null, saved: false };
   if (!view) {
     return clientError ? { ...base, status: "failed", note: clientError } : { ...base, status: "idle" };
@@ -73,9 +78,24 @@ export function authorityTile(key: AuthorityKey, view: ToolCallView | null, clie
   return { ...base, status: "failed", note: view.error?.message ?? "That didn't work", points };
 }
 
+/**
+ * Which call is the "Matrx" tile. Once the server announces `compare_sources` on the authority-score Tool,
+ * its unpinned call is served only by our own sources and is the tile. Before that, an unpinned call can be
+ * answered by Moz itself (the same value twice, two charges), so the tile is the link strength the Backlinks
+ * panel already bought — never a second Moz.
+ */
+export type MatrxTileFrom = "authority_score" | "backlinks_rank";
+
 export function authorityTiles(
-  views: Record<AuthorityKey, ToolCallView | null>,
-  errors: Record<AuthorityKey, string | null>,
+  views: Record<AuthorityKey | "links", ToolCallView | null>,
+  errors: Record<AuthorityKey | "links", string | null>,
+  matrxFrom: MatrxTileFrom = "authority_score",
 ): AuthorityTile[] {
-  return (["authority", "matrx", "searchAds"] as const).map((key) => authorityTile(key, views[key], errors[key]));
+  const matrxKey = matrxFrom === "authority_score" ? "matrx" : "links";
+  const matrx = authorityTile("matrx", views[matrxKey], errors[matrxKey], matrxFrom === "authority_score" ? "score" : "rank");
+  return [
+    authorityTile("authority", views.authority, errors.authority),
+    matrxFrom === "authority_score" ? matrx : { ...matrx, label: "Link strength" },
+    authorityTile("searchAds", views.searchAds, errors.searchAds),
+  ];
 }

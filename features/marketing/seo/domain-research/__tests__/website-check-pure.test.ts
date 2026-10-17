@@ -140,3 +140,19 @@ describe("the numbers a panel shows at a glance", () => {
     expect(tiles.map((t) => formatTile(t))).toEqual(["22K", "$83K", "$1.3M", "27K"]);
   });
 });
+
+describe("the Matrx tile before the server announces compare sources", () => {
+  it("reads the backlinks rank, labelled Link strength, so no second Moz can appear", () => {
+    const tiles = authorityTiles(
+      {
+        authority: view({ output: { domain_authority: 31 } }),
+        matrx: view({ output: { score: 31 }, display_source: "Moz" }),
+        links: view({ output: { rank: 46 }, points_charged: 481 }),
+        searchAds: view({ output: { site_strength: 49 } }),
+      },
+      { authority: null, matrx: null, links: null, searchAds: null },
+      "backlinks_rank",
+    );
+    expect(tiles[1]).toMatchObject({ label: "Link strength", source: "Matrx", score: 46 });
+  });
+});
