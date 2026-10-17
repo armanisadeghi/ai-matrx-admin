@@ -1171,7 +1171,7 @@ function JobTitlesSection({
           <Badge variant="destructive">Not set</Badge>
         ),
     },
-    { id: "level", accessorKey: "job_level", header: "Level", mobileHidden: true },
+    { id: "level", accessorKey: "job_level", header: "Level", filter: "select", mobileHidden: true },
     {
       id: "flsa",
       accessorKey: "default_flsa_status",

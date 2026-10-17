@@ -163,6 +163,7 @@ export function ErrorsContent({ errors }: { errors: ErrorsData }) {
       {
         id: "created_at",
         accessorKey: "created_at",
+        format: { id: "datetime" },
         header: "Created",
         width: 140,
         cell: (r) => (
@@ -244,6 +245,7 @@ export function ErrorsContent({ errors }: { errors: ErrorsData }) {
       {
         id: "created_at",
         accessorKey: "created_at",
+        format: { id: "datetime" },
         header: "Created",
         width: 140,
         cell: (r) => (

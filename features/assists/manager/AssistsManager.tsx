@@ -297,6 +297,7 @@ export function AssistsManager() {
         // Filtering happens in the header band buttons, which filter the whole
         // result set server-side — a per-page column filter would silently
         // disagree with the count beside it.
+        // table-filter-off: urgency is filtered by the header band buttons, server-side
         filter: false,
         cell: (row) => {
           const band = urgencyFromPriority(row.priority);
@@ -324,6 +325,7 @@ export function AssistsManager() {
         id: "status",
         header: "Status",
         accessorFn: (row) => row.status,
+        // table-filter-off: status is chosen by the tabs above; server source does not filter it per column
         filter: false,
         cell: (row) => (
           <Badge
@@ -346,6 +348,7 @@ export function AssistsManager() {
         id: "first_seen_at",
         header: "First noticed",
         accessorFn: (row) => row.firstSeenAt ?? row.createdAt,
+        // table-filter-off: server source does not filter first_seen_at yet
         filter: false,
         cell: (row) => formatAssistDate(row.firstSeenAt ?? row.createdAt),
       },
@@ -360,6 +363,7 @@ export function AssistsManager() {
         id: "decided_at",
         header: "Decided",
         accessorFn: (row) => row.decidedAt ?? "",
+        // table-filter-off: server source does not filter decided_at yet
         filter: false,
         cell: (row) => formatAssistDate(row.decidedAt),
       },

@@ -789,7 +789,7 @@ export function ExportRunList({
     {
       accessorKey: "generated_at",
       header: "Built",
-      filter: "text",
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-muted-foreground">
           {formatGeneratedAt(row.generated_at)}

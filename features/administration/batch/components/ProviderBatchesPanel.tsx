@@ -109,7 +109,7 @@ export function ProviderBatchesPanel({
   }
 
   const columns: MatrxColumnDef<ProviderBatch>[] = [
-    { id: "submitted_at", accessorKey: "submitted_at", header: "Submitted", width: 145, cell: (row) => <span className="text-muted-foreground">{fmtStamp(row.submitted_at)}</span> },
+    { id: "submitted_at", accessorKey: "submitted_at", format: { id: "datetime" }, header: "Submitted", width: 145, cell: (row) => <span className="text-muted-foreground">{fmtStamp(row.submitted_at)}</span> },
     { id: "purpose", accessorKey: "purpose", header: "Purpose", width: 180, cell: (row) => <span className="font-medium">{row.purpose}</span> },
     { id: "model", header: "Model", accessorFn: (row) => `${row.model ?? ""} ${row.provider}`, width: 180, cell: (row) => <div><div>{row.model ?? "—"}</div><div className="text-[10px] text-muted-foreground">{row.provider}</div></div> },
     { id: "status", accessorKey: "status", header: "Status", filter: "select", width: 120, cell: (row) => <StatusBadge status={row.status} /> },

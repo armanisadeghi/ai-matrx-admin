@@ -213,6 +213,7 @@ export function ApplicationsHistoryClient({
       {
         id: "changedAt",
         accessorKey: "changedAt",
+        format: { id: "datetime" },
         header: "When",
         cell: (row) => (
           <span

@@ -495,7 +495,7 @@ export function AiVisibilityWorkspace({
     {
       accessorKey: "observed_at",
       header: "Observed",
-      filter: "text",
+      format: { id: "datetime" },
       cell: (row) => formatDate(row.observed_at),
     },
   ];

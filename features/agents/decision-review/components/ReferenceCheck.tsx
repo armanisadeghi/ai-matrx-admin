@@ -147,7 +147,7 @@ function resultColumns(): MatrxColumnDef<ReferenceResultRow>[] {
   const mono = "font-mono";
   return [
     {
-      id: "state",
+      id: "snippet",
       header: "State",
       accessorFn: (r) => r.snippet ?? "",
       filter: "text",

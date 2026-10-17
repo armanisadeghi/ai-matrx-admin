@@ -787,7 +787,7 @@ function SampleTable({
       width: 110,
       cell: (s) => <span title={new Date(s.measured_at).toLocaleString()}>{formatRelativeTime(s.measured_at)}</span>,
     },
-    { id: "source", header: "Source", accessorFn: (s) => s.source, filter: "text", width: 110, cell: (s) => <span className="text-muted-foreground">{s.source}</span> },
+    { id: "source", header: "Source", accessorFn: (s) => s.source, filter: "select", width: 110, cell: (s) => <span className="text-muted-foreground">{s.source}</span> },
     num("n", "n", (s) => s.n, (s) => <span className="tabular-nums">{s.n ?? "—"}</span>, 60),
     num("p50", "p50", (s) => s.p50_ms, (s) => <span className={`tabular-nums ${overOf(s) && stat === "p50" ? "font-medium text-warning" : ""}`}>{ms(s.p50_ms)}</span>),
     ...(stat === "p75"

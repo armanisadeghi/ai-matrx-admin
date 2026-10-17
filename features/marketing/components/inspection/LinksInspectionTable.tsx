@@ -380,6 +380,7 @@ export function LinksInspectionTable({
       id: "created_at",
       accessorKey: "created_at",
       header: "Recorded",
+      // table-filter-off: server source does not filter created_at yet
       filter: false,
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">

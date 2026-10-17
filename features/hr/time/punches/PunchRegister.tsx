@@ -268,6 +268,7 @@ function punchColumns(
     {
       id: "localWorkDate",
       accessorKey: "localWorkDate",
+      format: { id: "date" },
       header: "Work date",
       // The door onto this punch's day in the COMPUTED lane — the only place hours may be read.
       cell: (row) => (
@@ -282,6 +283,7 @@ function punchColumns(
     {
       id: "occurredAt",
       accessorKey: "occurredAt",
+      format: { id: "datetime" },
       header: "Recorded at",
       cell: (row) => (
         <span className={row.voidedAt ? "line-through decoration-2" : undefined}>
@@ -334,6 +336,7 @@ function punchColumns(
     {
       id: "deviceReportedAt",
       accessorKey: "deviceReportedAt",
+      format: { id: "datetime" },
       header: "Device said",
       mobileHidden: true,
       cell: (row) =>
@@ -400,6 +403,7 @@ function punchColumns(
     {
       id: "voidedAt",
       accessorKey: "voidedAt",
+      format: { id: "datetime" },
       header: "Void",
       cell: (row) =>
         row.voidedAt === null ? (

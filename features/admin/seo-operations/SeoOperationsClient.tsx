@@ -120,12 +120,14 @@ export function AutomationsPanel() {
       },
       {
         accessorKey: "last_run_at",
+        format: { id: "datetime" },
         header: "Last run",
         cell: (row) =>
           row.last_run_at ? new Date(row.last_run_at).toLocaleString() : "never",
       },
       {
         accessorKey: "next_due_at",
+        format: { id: "datetime" },
         header: "Next due",
         cell: (row) =>
           row.next_due_at
@@ -275,6 +277,7 @@ function MandatesPanel() {
       },
       {
         accessorKey: "output_kind",
+        filter: "select",
         header: "Output",
         cell: (row) =>
           row.output_kind ? (

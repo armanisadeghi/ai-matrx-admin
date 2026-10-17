@@ -460,7 +460,7 @@ export function SitePerformanceWorkspace() {
       id: "observed_at",
       accessorKey: "observed_at",
       header: "Tested",
-      filter: "text",
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap">
           {formatObservedAt(row.observed_at)}

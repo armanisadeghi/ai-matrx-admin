@@ -98,7 +98,7 @@ export function CalibrationTab({ cycleId, orgRef, open, readOnly = false }: { cy
     },
     { id: "manager", header: "Manager", accessorFn: (r) => r.managerName, filter: "text", width: 180 },
     { id: "department", header: "Department", accessorFn: (r) => r.department ?? "", filter: "text", width: 160 },
-    { id: "status", header: "Status", accessorFn: (r) => statusLabel(r.status), filter: "text", width: 140 },
+    { id: "status", header: "Status", accessorFn: (r) => statusLabel(r.status), filter: "select", width: 140 },
     { id: "self", header: "Self avg", accessorFn: (r) => r.selfOverall, filter: "number", width: 100, cell: (r) => mean(r.selfOverall) },
     { id: "mgr", header: "Manager avg", accessorFn: (r) => r.managerOverall, filter: "number", width: 120, cell: (r) => mean(r.managerOverall) },
     { id: "overall", header: "Manager overall", accessorFn: (r) => ratingLabel(scale, r.overallRating), filter: "text", width: 170 },

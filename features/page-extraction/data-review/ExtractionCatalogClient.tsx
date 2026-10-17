@@ -208,6 +208,7 @@ export function ExtractionCatalogClient() {
       id: "status",
       header: "Status",
       accessorFn: (row) => row.latestRunStatus ?? "",
+      filter: "select",
       cell: (row) =>
         row.latestRunStatus ? (
           <span
@@ -226,6 +227,7 @@ export function ExtractionCatalogClient() {
       id: "updated",
       header: "Updated",
       accessorKey: "updatedAt",
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-muted-foreground">
           {formatRelativeTime(row.updatedAt)}

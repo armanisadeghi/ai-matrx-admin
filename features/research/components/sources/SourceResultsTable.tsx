@@ -162,7 +162,7 @@ export function SourceResultsTable({
       ),
     },
     {
-      id: "source",
+      id: "page",
       header: "Source",
       label: "Source",
       accessorFn: (source) => source.title || source.hostname || source.url,

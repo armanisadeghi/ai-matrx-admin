@@ -130,7 +130,7 @@ export function GoalsView({
       ),
     },
     { id: "supports", header: "Supports", accessorFn: (g) => g.supports ?? "", filter: "text", width: 220 },
-    { id: "status", header: "Status", accessorFn: (g) => GOAL_STATUS_LABEL[g.status], filter: "text", width: 120, cell: (g) => <Badge tone={GOAL_STATUS_TONE[g.status]}>{GOAL_STATUS_LABEL[g.status]}</Badge> },
+    { id: "status", header: "Status", accessorFn: (g) => GOAL_STATUS_LABEL[g.status], filter: "select", filterOptions: Object.values(GOAL_STATUS_LABEL).map((label) => ({ value: label, label })), width: 120, cell: (g) => <Badge tone={GOAL_STATUS_TONE[g.status]}>{GOAL_STATUS_LABEL[g.status]}</Badge> },
     { id: "progress", header: "Progress", accessorFn: (g) => g.progress, filter: "number", width: 220, cell: (g) => progressLabel(g) },
     { id: "due", header: "Due", accessorFn: (g) => g.dueOn, filter: "date", width: 130, cell: (g) => formatDay(g.dueOn) },
     ...(canEdit
