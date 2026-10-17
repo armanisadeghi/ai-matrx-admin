@@ -29,7 +29,7 @@ begin
   perform custom.field_declare(v_org, v_jobs, jsonb_build_object('key', 'wo', 'label', 'Work order #', 'type', 'text', 'sort', 10,
     'rules', jsonb_build_array(jsonb_build_object('kind', 'unique'))));
   perform custom.field_declare(v_org, v_jobs, jsonb_build_object('key', 'status', 'label', 'Status', 'type', 'select', 'sort', 20,
-    'options', jsonb_build_array(jsonb_build_object('key', 'waiting', 'label', 'Waiting'), jsonb_build_object('key', 'done', 'label', 'Done'))));
+    'options', jsonb_build_array('Waiting', 'Done')));
   perform custom.field_declare(v_org, v_jobs, jsonb_build_object('key', 'a', 'label', 'A', 'type', 'number', 'sort', 30));
   perform custom.field_declare(v_org, v_jobs, jsonb_build_object('key', 'b', 'label', 'B', 'type', 'number', 'sort', 40));
 end
