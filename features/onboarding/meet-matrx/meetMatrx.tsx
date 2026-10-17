@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * MEET MATRX — the introduction a new person sees on the sign-up welcome (/welcome), and can reopen
  * any time from the user menu (/meet-matrx). Arman, 2026-10-17 (agent-creation-studio VISION):
