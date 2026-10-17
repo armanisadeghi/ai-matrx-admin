@@ -863,6 +863,8 @@
     "check:maybe-single-assert": "tsx scripts/check-maybe-single-assert.ts",
     "check:maybe-single-assert:self-test": "tsx scripts/check-maybe-single-assert.ts --self-test",
     "check:alchemy-doors:self-test": "tsx scripts/check-alchemy-doors.ts --self-test",
+    "check:no-code-authored-user-input": "node scripts/check-no-code-authored-user-input.mjs",
+    "check:no-code-authored-user-input:self-test": "node scripts/check-no-code-authored-user-input.mjs --self-test && node --test scripts/lint-rules/no-code-authored-user-input.selftest.mjs",
     "check:worker-cycles": "tsx scripts/check-worker-cycles.ts",
     "check:worker-cycles:self-test": "tsx scripts/check-worker-cycles.ts --self-test",
     "check:host-cycles": "tsx scripts/check-host-cycles.ts",

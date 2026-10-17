@@ -66,11 +66,6 @@ const preDefinedInitialMessages: PreDefinedMessages = {
       role: "assistant",
       content: "Hello, I am here to help.",
     },
-    {
-      role: "user",
-      content:
-        "Hi. My name is {c33aea28-8b61-4256-9c84-9483e93662d2}! and I am in {5fc6bbee-3674-4706-aff2-233c9d71ec73}! grade. I have a big debate coming up and I really need help.",
-    },
   ],
   voiceAssistant: [
     {

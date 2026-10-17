@@ -976,6 +976,10 @@ if $STRICT; then
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # THE PERSON'S MESSAGE IS THE PERSON'S WORDS (Arman, 2026-10-17): code-written text in
+        # user_input / a { role: "user" } message, across this repo, aidream/apps, extend, local.
+        "Code-written text in a user message|pnpm check:no-code-authored-user-input"
+        "Code-written user-message guard self-test|pnpm check:no-code-authored-user-input:self-test"
         # A NOTIFICATION NEVER MOVES THE PAGE (Arman, 2026-10-14): assists, attention dock, bell,
         # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
         "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
@@ -1747,6 +1751,10 @@ else
         # surface-write door bypass, private action registries. Shrink-only baseline; advisory here.
         "Raw clipboard/download/format-lib/door-bypass in app code (Alchemy doors)|pnpm check:alchemy-doors"
         "Alchemy doors guard self-test|pnpm check:alchemy-doors:self-test"
+        # THE PERSON'S MESSAGE IS THE PERSON'S WORDS (Arman, 2026-10-17): code-written text in
+        # user_input / a { role: "user" } message, across this repo, aidream/apps, extend, local.
+        "Code-written text in a user message|pnpm check:no-code-authored-user-input"
+        "Code-written user-message guard self-test|pnpm check:no-code-authored-user-input:self-test"
         # A NOTIFICATION NEVER MOVES THE PAGE (Arman, 2026-10-14): assists, attention dock, bell,
         # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
         "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"

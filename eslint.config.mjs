@@ -21,6 +21,7 @@ import { noCanonicalComponentOverride } from "./scripts/lint-rules/no-canonical-
 import { noRawSelect, noStyledRawButton, oneControl } from "./scripts/lint-rules/one-control-rule.mjs";
 import { alchemyDataIn } from "./scripts/lint-rules/alchemy-data-in.mjs";
 import { noHandBuiltChip } from "./scripts/lint-rules/hand-built-chip.mjs";
+import { noCodeAuthoredUserInput } from "./scripts/lint-rules/no-code-authored-user-input.mjs";
 
 // eslint-plugin-react's `version: "detect"` (what eslint-config-next sets) calls
 // the `context.getFilename()` method that ESLint 10 removed, which made EVERY
@@ -213,6 +214,8 @@ const matrxLintPlugin = {
     "no-raw-select": noRawSelect,
     // Alchemy takes data, not hand-built human/json/agent strings (Arman, 2026-10-14).
     "alchemy-data-in": alchemyDataIn,
+    // The person's message is the person's words — code never writes into it (Arman, 2026-10-17).
+    "no-code-authored-user-input": noCodeAuthoredUserInput,
     "no-raw-storage-media": {
       meta: {
         type: "problem",
@@ -1723,6 +1726,10 @@ export default [
       // Alchemy host handed human/json/agent strings without `data`. The agent who touches the line
       // converts it (lint-guard holds touched lines only, never a release). Census: grep the eslint output for alchemy-data-in.
       "matrx/alchemy-data-in": "error",
+      // THE PERSON'S MESSAGE IS THE PERSON'S WORDS (Arman, 2026-10-17, after a hardcoded
+      // "Suggest at most N search keywords." was appended to a user's message): any code-written
+      // text flowing into user_input / userInput / a { role: "user" } message. Never disabled.
+      "matrx/no-code-authored-user-input": "error",
       // THE CHIP LAW (owner, 2026-10-05): a hand-built tinted chip/tag/pill → the package Chip.
       // warn: the census of what is left is `pnpm findings` (ui-drift rule hand-built-chip,
       // shrink-only baseline). Never an eslint-disable.

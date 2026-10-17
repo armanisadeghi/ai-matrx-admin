@@ -135,7 +135,7 @@ export function DirectTestMode({
         },
         runtime: {
           surfaceName: null,
-          userInput: userInput || "Hello, please respond briefly.",
+          userInput,
         },
       });
       setConversationId(result.conversationId);
@@ -455,7 +455,7 @@ function BackgroundTestMode({
         },
         runtime: {
           surfaceName: null,
-          userInput: userInput || "Respond briefly with one sentence.",
+          userInput,
           widgetHandleId,
         },
       });
