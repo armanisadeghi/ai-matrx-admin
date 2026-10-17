@@ -8,7 +8,10 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { MatrxDataTableProps } from "@ai-matrx/design-system/data-table";
-import type { MatrxDataTableMobileCardControls } from "@ai-matrx/design-system/data-table/types";
+import type {
+  MatrxDataTableMobileCardControls,
+  MatrxDataTableRecordControls,
+} from "@ai-matrx/design-system/data-table/types";
 import { readReviewItem, type ReviewItem } from "../queue";
 import type { ReferenceResultRow, ReferenceVerdict } from "../reference";
 
@@ -135,11 +138,19 @@ describe("ReferenceCheck on the live rows", () => {
   it("puts both answers and the label buttons before the judged input", async () => {
     const table = tables["agents/decision-review/reference-results"]!;
     const row = table.data![0]!;
+    const noRecordControls: MatrxDataTableRecordControls = {
+      closeDetail: () => {},
+      openDetail: () => {},
+      openWindow: () => {},
+      closeWindow: () => {},
+      hasPendingEdits: false,
+      discardPendingEdits: () => {},
+    };
     const drill = document.createElement("div");
     document.body.append(drill);
     const drillRoot = createRoot(drill);
     await act(async () => {
-      drillRoot.render(<>{table.detail && "render" in table.detail ? table.detail.render?.(row) : null}</>);
+      drillRoot.render(<>{table.detail && "render" in table.detail ? table.detail.render?.(row, noRecordControls) : null}</>);
     });
     const text = drill.textContent ?? "";
     expect(drill.querySelectorAll('[data-testid="answer-card"]')).toHaveLength(2);
