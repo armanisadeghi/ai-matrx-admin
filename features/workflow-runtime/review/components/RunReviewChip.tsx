@@ -6,8 +6,9 @@
 // popover with one line per flag — category, step, message, its issue — and a
 // door to the workflow's review page. A failed read says so, with Retry.
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Flag } from "lucide-react";
 
 import {
@@ -57,8 +58,12 @@ export function RunReviewChip({
   }
   if (flags.length === 0) return null;
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <RunFlagsPopover
+      flags={flags}
+      definitionId={definitionId}
+      stepLabels={stepLabels}
+      openFromUrl
+      trigger={
         <button
           type="button"
           data-run-review-banner=""
@@ -67,7 +72,39 @@ export function RunReviewChip({
           <Flag className="h-3 w-3" aria-hidden />
           {flags.length} flagged
         </button>
-      </PopoverTrigger>
+      }
+    />
+  );
+}
+
+/** `?flags=1` on the run page opens the flag list on arrival (the runs list's Flagged count links here). */
+export const RUN_FLAGS_URL_PARAM = "flags";
+
+/**
+ * The ONE flag list: any trigger (the status-row chip, a step's flag marker) opens the same
+ * popover — one line per flag (category, step → its issue, message) and "Review all".
+ */
+export function RunFlagsPopover({
+  flags,
+  definitionId,
+  stepLabels,
+  trigger,
+  openFromUrl = false,
+}: {
+  flags: readonly RunFlag[];
+  definitionId: string;
+  stepLabels: Record<string, string>;
+  trigger: ReactNode;
+  openFromUrl?: boolean;
+}) {
+  const params = useSearchParams();
+  const [open, setOpen] = useState(
+    () => openFromUrl && params?.get(RUN_FLAGS_URL_PARAM) === "1",
+  );
+  if (flags.length === 0) return null;
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent surface="solid" align="start" width="md" padding="xs">
         <ul className="divide-y divide-border">
           {flags.map((flag) => (

@@ -183,6 +183,11 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       header: "Flagged",
       width: 90,
       align: "right",
+      // A flagged count opens the run with its flag list already showing (?flags=1).
+      href: (row) =>
+        row.flagged && row.flagged > 0
+          ? `${workflowRunPermalinkHref(row.runId, workflowsBase)}?flags=1`
+          : undefined,
       cell: (row) =>
         row.flagged === null ? (
           <span className="text-destructive" title="Flags could not be read">
@@ -191,7 +196,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
         ) : row.flagged > 0 ? (
           <span
             className="inline-flex items-center gap-1 tabular-nums text-warning"
-            title={`${row.flagged} review ${row.flagged === 1 ? "flag" : "flags"}`}
+            title={`${row.flagged} review ${row.flagged === 1 ? "flag" : "flags"} — open to see them`}
           >
             <Flag className="h-3 w-3" aria-hidden />
             {row.flagged}

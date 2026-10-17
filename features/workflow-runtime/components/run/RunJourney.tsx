@@ -19,7 +19,7 @@
  */
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement, type ReactNode } from "react";
 import {
   AlertTriangle,
   Check,
@@ -224,6 +224,7 @@ function JourneyRow({
   refused = false,
   syntheticLabels,
   flagged = 0,
+  renderFlags,
   isLast,
 }: {
   runId: string;
@@ -237,6 +238,8 @@ function JourneyRow({
   syntheticLabels?: string[];
   /** How many review flags this step raised in this run. */
   flagged?: number;
+  /** Wraps the step's flag marker in the run's flag list (so the count opens its details). */
+  renderFlags?: (nodeId: string, marker: ReactElement) => ReactNode;
   isLast: boolean;
 }) {
   // A refused step never finished and never will: it is not "now" any more.
@@ -283,16 +286,22 @@ function JourneyRow({
             {step.label}
           </span>
           <StepReplayBadge runId={runId} nodeId={step.nodeId} />
-          {flagged > 0 ? (
-            <span
-              data-step-flagged={flagged}
-              title={`${flagged} review ${flagged === 1 ? "flag" : "flags"}`}
-              className="inline-flex shrink-0 items-center gap-0.5 self-center text-[11px] tabular-nums text-warning"
-            >
-              <Flag className="h-3 w-3" aria-hidden />
-              {flagged}
-            </span>
-          ) : null}
+          {flagged > 0
+            ? (() => {
+                const marker = (
+                  <button
+                    type="button"
+                    data-step-flagged={flagged}
+                    aria-label={`${flagged} review ${flagged === 1 ? "flag" : "flags"}: show details`}
+                    className="inline-flex shrink-0 items-center gap-0.5 self-center rounded text-[11px] tabular-nums text-warning hover:underline"
+                  >
+                    <Flag className="h-3 w-3" aria-hidden />
+                    {flagged}
+                  </button>
+                );
+                return renderFlags ? renderFlags(step.nodeId, marker) : marker;
+              })()
+            : null}
           <span className="shrink-0 text-[11px] text-muted-foreground">
             {failed ? (
               <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
@@ -379,11 +388,14 @@ export function RunJourney({
   syntheticSteps,
   /** Review flags per nodeId (workflow.run_log needs_review) — a Flag marker on the row. */
   flaggedByNode,
+  renderFlags,
 }: {
   runId: string;
   steps: RunStepPresentation[];
   syntheticSteps?: Record<string, string[]>;
   flaggedByNode?: Record<string, number>;
+  /** Wraps a step's flag marker so clicking the count opens that step's flags. */
+  renderFlags?: (nodeId: string, marker: ReactElement) => ReactNode;
 }) {
   const phases = useAppSelector(selectNodeAggregatePhases(runId));
   const activity = useAppSelector(selectRunActivity(runId));
@@ -428,6 +440,7 @@ export function RunJourney({
           refused={refusedNodes.has(step.nodeId)}
           syntheticLabels={syntheticSteps?.[step.nodeId]}
           flagged={flaggedByNode?.[step.nodeId] ?? 0}
+          renderFlags={renderFlags}
           isLast={index === steps.length - 1}
         />
       ))}

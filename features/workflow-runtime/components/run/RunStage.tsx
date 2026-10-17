@@ -94,7 +94,7 @@ import { RunFailureCard } from "./RunFailureCard";
 import { RunHeldSteps } from "./RunHeldSteps";
 import { RunHero } from "./RunHero";
 import { RunJourney } from "./RunJourney";
-import { RunReviewChip } from "../../review/components/RunReviewChip";
+import { RunFlagsPopover, RunReviewChip } from "../../review/components/RunReviewChip";
 import { flagsByNode, useRunFlags } from "../../review/useRunFlags";
 import {
   deliverableSteps,
@@ -371,6 +371,14 @@ export function RunStage({
                 steps={steps}
                 syntheticSteps={synthetic}
                 flaggedByNode={flagsByNode(reviewFlags)}
+                renderFlags={(nodeId, marker) => (
+                  <RunFlagsPopover
+                    flags={reviewFlags.filter((f) => f.node_id === nodeId)}
+                    definitionId={definitionId}
+                    stepLabels={stepLabels}
+                    trigger={marker}
+                  />
+                )}
               />
             </div>
           </div>
