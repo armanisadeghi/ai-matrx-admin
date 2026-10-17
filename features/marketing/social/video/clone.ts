@@ -121,7 +121,8 @@ export interface AnalysisResult {
   analysis_id: string;
   post_id: string;
   status: "complete" | "reused";
-  cost: AnalysisCost;
+  /** What the analysis spent; the server reports it in the result. */
+  cost?: AnalysisCost;
   notes: string[];
 }
 

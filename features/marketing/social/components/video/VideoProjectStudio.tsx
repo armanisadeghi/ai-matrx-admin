@@ -36,7 +36,12 @@ import {
   type ParamSet,
 } from "../../video/clone";
 import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
-import { appendPatch, conflictVersion, estimateProject } from "../../video/server";
+import { describeTheirs, rebasePending } from "../../video/conflict";
+import { estimateLabel, summarizeEstimate } from "../../video/estimate";
+import { plainRenderMessage } from "../../video/render-errors";
+import { appendPatch, conflictVersion, estimateProject, getVideoProject } from "../../video/server";
+import { readCompositionHistory } from "../../video/service";
+import { useLocalRenderAllowed } from "../../video/studio-hooks";
 import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
 import { useSocials } from "../SocialsContext";
 import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
@@ -49,9 +54,6 @@ const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
   { value: "4:5", label: "4:5" },
   { value: "16:9", label: "16:9" },
 ];
-
-/** In development the hosted render fleet is not reachable; the server's local renderer is the dev tool. */
-const DEV_BUILD = process.env.NODE_ENV === "development";
 
 type Renderer = "hosted" | "local";
 
@@ -71,7 +73,7 @@ function batchHandler(
   setSteps: (fn: (prev: RunStep[]) => RunStep[]) => void,
   setOutcome: (fn: (prev: Record<string, ItemOutcome>) => Record<string, ItemOutcome>) => void,
   labelOf: (id: string) => string,
-  flags: { confirm: boolean; error: string | null },
+  flags: { confirm: boolean; error: string | null; failed: number },
 ) {
   return (e: LineEvent) => {
     const type = e.type.startsWith(EVENT) ? e.type.slice(EVENT.length) : e.type;
@@ -108,15 +110,29 @@ function batchHandler(
         setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
         break;
       }
-      case "variant.failed":
-        setOutcome((o) => ({ ...o, [vid]: { status: "failed", stage: String(e.stage ?? ""), error: String(e.error ?? "") } }));
-        setSteps((p) => [...p, { id: `fail-${vid}-${p.length}`, label: `${labelOf(vid)}: ${String(e.stage ?? "")} failed — ${String(e.error ?? "")}`.slice(0, 160), state: "failed" }]);
+      case "variant.failed": {
+        // The server's typed code (or its person-readable message) becomes plain words; a cloud error never reaches the screen.
+        const plain = plainRenderMessage(
+          typeof e.code === "string" ? e.code : typeof e.error_code === "string" ? e.error_code : null,
+          typeof e.user_message === "string" ? e.user_message : typeof e.error === "string" ? e.error : null,
+        );
+        flags.failed += 1;
+        flags.error ??= plain;
+        setOutcome((o) => ({ ...o, [vid]: { status: "failed", stage: String(e.stage ?? ""), error: plain } }));
+        setSteps((p) => [...p, { id: `fail-${vid}-${p.length}`, label: `${labelOf(vid)} didn't render`, state: "failed" }]);
         break;
+      }
       case "batch_report":
-        setSteps((p) => pushStep(p, { id: "report", label: "Done", state: "done", meta: dollars(Number(e.total_usd)) }));
+        // "Done" only when nothing failed; after a failure the line says what was spent, never that it finished.
+        setSteps((p) =>
+          pushStep(p, flags.failed > 0 || flags.error ? { id: "report", label: "Spent", state: "done", meta: dollars(Number(e.total_usd)) } : { id: "report", label: "Done", state: "done", meta: dollars(Number(e.total_usd)) }),
+        );
         break;
       case "error":
-        flags.error = String(e.message ?? e.code ?? "The run failed");
+        flags.error = plainRenderMessage(
+          typeof e.code === "string" ? e.code : null,
+          typeof e.user_message === "string" ? e.user_message : typeof e.message === "string" ? e.message : null,
+        );
         break;
       default:
         break;
@@ -150,7 +166,6 @@ export function VideoProjectStudio({ projectId }: { projectId: string }) {
         </Button>
         <span className="type-title truncate text-foreground">{answer.name}</span>
         <Badge>{`v${answer.head_version}`}</Badge>
-        {DEV_BUILD ? <Badge tone="warning">Dev: renders on the local server</Badge> : null}
       </div>
       {!doc ? (
         <EmptyState
@@ -179,7 +194,11 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
   const projectId = answer.project_id;
   const head = answer.head_version;
   const [saving, setSaving] = useState(false);
-  const [renderer, setRenderer] = useState<Renderer>(DEV_BUILD ? "local" : "hosted");
+  // The render fleet is the default everywhere; the local server is offered only in a dev build when the platform allows it.
+  const localAllowed = useLocalRenderAllowed();
+  const [pickedRenderer, setRenderer] = useState<Renderer>("hosted");
+  const renderer: Renderer = localAllowed ? pickedRenderer : "hosted";
+  const [conflict, setConflict] = useState<null | { ops: PatchOp[]; note: string; what: string; head: number; theirs: string }>(null);
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [outcome, setOutcome] = useState<Record<string, ItemOutcome>>({});
   const [running, setRunning] = useState<null | "generate" | "render" | "variants">(null);
@@ -194,25 +213,59 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
     enabled: Boolean(organizationId),
   });
 
+  const sum = estimate.data ? summarizeEstimate(estimate.data) : null;
   const reload = () => queryClient.invalidateQueries({ queryKey: videoKeys.project(projectId) });
 
-  const patch = async (ops: PatchOp[], note: string) => {
+  const save = async (ops: PatchOp[], base: number, note: string) => {
+    await appendPatch(projectId, { base_version: base, patch: { baseVersion: base, ops: ops as unknown as Record<string, unknown>[] }, note }, { organizationId });
+  };
+
+  /** One edit. A refusal because the video moved on rebases the pending edit onto the new head; nothing is dropped. */
+  const patch = async (ops: PatchOp[], note: string, what = note, base = head) => {
     if (!ops.length) return;
     setSaving(true);
     try {
-      await appendPatch(projectId, { base_version: head, patch: { baseVersion: head, ops: ops as unknown as Record<string, unknown>[] }, note }, { organizationId });
+      await save(ops, base, note);
       await reload();
     } catch (err) {
-      const actual = conflictVersion(err);
-      if (actual !== null) {
-        toast.error(`This video changed (now v${actual > 0 ? actual : "newer"}); reloaded`);
-        await reload();
-      } else {
+      if (conflictVersion(err) === null) {
         toast.error(err instanceof Error ? err.message : "Couldn't save the change");
+        return;
+      }
+      try {
+        const fresh = await getVideoProject(projectId, { organizationId });
+        const newHead = fresh.head_version;
+        const rows = await readCompositionHistory(projectId, base);
+        const moved = rebasePending(ops, base, rows, newHead);
+        await reload();
+        if (moved.kind === "clean") {
+          await save(moved.ops, newHead, note);
+          await reload();
+          toast.success(`Saved as v${newHead + 1}. Someone saved v${newHead} first; your change was kept.`);
+        } else {
+          const headDoc = fresh.composition?.document as unknown as Composition | undefined;
+          setConflict({
+            ops,
+            note,
+            what,
+            head: newHead,
+            theirs: moved.kind === "overlap" && headDoc ? describeTheirs(headDoc, moved.paths) : "a newer version",
+          });
+        }
+      } catch (inner) {
+        toast.error(inner instanceof Error ? inner.message : "Couldn't save the change");
+        await reload();
       }
     } finally {
       setSaving(false);
     }
+  };
+
+  const keepMine = async () => {
+    const c = conflict;
+    if (!c) return;
+    setConflict(null);
+    await patch(c.ops, c.note, c.what, c.head);
   };
 
   const captionTrack = Object.keys(doc.tracks.captions)[0] ?? null;
@@ -258,7 +311,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
     setRunning(kind);
     setFailure(null);
     setSteps([{ id: "start", label: kind === "render" ? "Starting the render" : `Starting ${ids.length} variants`, state: "running" }]);
-    const flags = { confirm: false, error: null as string | null };
+    const flags = { confirm: false, error: null as string | null, failed: 0 };
     try {
       await streamBatch(
         projectId,
@@ -292,19 +345,19 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
           <div className="flex items-center gap-2">
             <span className="type-label text-foreground">Make it</span>
             <span className="ml-auto">
-              {estimate.data ? <CostLine label={pending ? `${pending} to make` : "All made"} usd={estimate.data.total_usd} pts={estimate.data.total_points} /> : null}
+              {sum ? <CostLine label={estimateLabel(sum)} usd={sum.usd} pts={sum.points} /> : null}
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {pending ? (
+            {pending || (sum && sum.toMake > 0) ? (
               <Button variant="primary" disabled={busy} onClick={() => void runGenerate(false)}>
                 Generate
               </Button>
             ) : null}
-            <Button variant={pending ? "outline" : "primary"} icon={<Clapperboard />} disabled={busy} onClick={() => void runBatch("render", [], false)}>
+            <Button variant={pending || (sum && sum.toMake > 0) ? "outline" : "primary"} icon={<Clapperboard />} disabled={busy} onClick={() => void runBatch("render", [], false)}>
               Render
             </Button>
-            {DEV_BUILD ? (
+            {localAllowed ? (
               <Select
                 aria-label="Renderer"
                 value={renderer}
@@ -338,6 +391,21 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
               </Button>
             </div>
           ) : null}
+          {conflict ? (
+            <div className="flex flex-col gap-2 rounded-lg border border-border p-2" role="group" aria-label="Edit conflict">
+              <span className="type-label text-foreground">{`This video changed to v${conflict.head} while you were editing`}</span>
+              <span className="type-body text-foreground">{`Your change: ${conflict.what}`}</span>
+              <span className="type-body text-foreground">{`Their change: ${conflict.theirs}`}</span>
+              <div className="flex items-center gap-2">
+                <Button variant="primary" disabled={busy} onClick={() => void keepMine()}>
+                  Keep mine
+                </Button>
+                <Button variant="outline" onClick={() => setConflict(null)}>
+                  Take theirs
+                </Button>
+              </div>
+            </div>
+          ) : null}
           <RunLog steps={steps} />
           {failure ? <FailureLine error={failure} operation="video render" /> : null}
           {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" /> : null}
@@ -347,7 +415,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
 
       <section className="flex min-w-0 flex-col gap-4">
         <Block title="Script" icon={<Type className="size-4" />}>
-          <ScriptEditor doc={doc} disabled={busy} onOps={(ops, note) => void patch(ops, note)} />
+          <ScriptEditor doc={doc} disabled={busy} onOps={(ops, note, what) => void patch(ops, note, what)} />
         </Block>
         <Block title="Look" icon={<Palette className="size-4" />}>
           {captionTrack ? (
@@ -402,7 +470,7 @@ function Block({ title, icon, children }: { title: string; icon: React.ReactNode
 
 // ── script ──────────────────────────────────────────────────────────────────────────────────────────
 
-function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: boolean; onOps: (ops: PatchOp[], note: string) => void }) {
+function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: boolean; onOps: (ops: PatchOp[], note: string, what: string) => void }) {
   const [editing, setEditing] = useState<{ turn: string; word: string; text: string } | null>(null);
   return (
     <div className="flex flex-col gap-2">
@@ -435,7 +503,7 @@ function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: bo
             variant="primary"
             disabled={disabled || !editing.text.trim()}
             onClick={() => {
-              onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "captions"), "caption word");
+              onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "captions"), "caption word", `caption "${editing.text.trim()}"`);
               setEditing(null);
             }}
           >
@@ -445,7 +513,7 @@ function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: bo
             variant="outline"
             disabled={disabled || !editing.text.trim()}
             onClick={() => {
-              onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "voice"), "spoken word");
+              onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "voice"), "spoken word", `say "${editing.text.trim()}"`);
               setEditing(null);
             }}
           >
@@ -629,7 +697,7 @@ function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composi
           {v.baseVersion === head ? "Can't preview" : `Made on v${v.baseVersion}; rebased on render`}
         </div>
       )}
-      {outcome?.error ? <ErrorAlchemyMenu error={new Error(`${outcome.stage}: ${outcome.error}`)} operation="video variant render" /> : null}
+      {outcome?.error ? <ErrorAlchemyMenu error={new Error(outcome.error)} operation="video variant render" /> : null}
       {outcome?.usd !== undefined ? <CostLine usd={outcome.usd} pts={outcome.pts} /> : null}
       {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} /> : null}
     </div>

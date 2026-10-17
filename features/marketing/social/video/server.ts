@@ -38,11 +38,15 @@ export async function getVideoProject(projectId: string, o: CallOptions): Promis
   return (await getJson<VideoProjectAnswer>(`${BASE}/${projectId}`, opts(o))).data;
 }
 
-/** The version the server holds when a patch was refused as stale (409), else null. */
+/**
+ * The version the server holds when a patch was refused as stale (409), else null. The server names the head in
+ * `expectedVersion` and the caller's own base in `actualVersion`; -1 when it named neither.
+ */
 export function conflictVersion(error: unknown): number | null {
   if (!(error instanceof BackendApiError) || error.status !== 409) return null;
-  const d = error.details as { actualVersion?: unknown } | null;
-  return typeof d?.actualVersion === "number" ? d.actualVersion : -1;
+  const raw = error.details as { expectedVersion?: unknown; detail?: { expectedVersion?: unknown } } | null;
+  const head = raw?.expectedVersion ?? raw?.detail?.expectedVersion;
+  return typeof head === "number" ? head : -1;
 }
 
 export async function appendPatch(

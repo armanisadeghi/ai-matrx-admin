@@ -24,6 +24,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
 import { dollars, points } from "../../video/clone";
+import { plainFailureText } from "../../video/render-errors";
 import { useFileUrls } from "../../video/studio-hooks";
 
 // ── run log ─────────────────────────────────────────────────────────────────────────────────────────
@@ -233,7 +234,7 @@ export function pendingMediaCount(doc: Composition): number {
  */
 export function CompositionPreview({ doc, className }: { doc: Composition; className?: string }) {
   const byMedia = mediaFileIds(doc);
-  const { facts, pending } = useFileUrls(Object.values(byMedia));
+  const { facts, pending, failed } = useFileUrls(Object.values(byMedia));
   const resolved = resolveComposition(doc);
   const ratio = `${doc.timeline.width} / ${doc.timeline.height}`;
   if (!resolved.ok) {
@@ -254,6 +255,13 @@ export function CompositionPreview({ doc, className }: { doc: Composition; class
   for (const [mid, fid] of Object.entries(byMedia)) {
     const url = facts[fid]?.url;
     if (url) mediaUrls[mid] = url;
+  }
+  if (!pending && failed.length > 0) {
+    return (
+      <div className={cn("flex items-center justify-center rounded-lg border border-border bg-muted", className)} style={{ aspectRatio: ratio }}>
+        <EmptyState icon={<Film />} title="Files unavailable" line={`${failed.length} of ${new Set(Object.values(byMedia)).size} files didn't load. Check the files server.`} />
+      </div>
+    );
   }
   if (pending) {
     return <div className={cn("animate-pulse rounded-lg bg-muted", className)} style={{ aspectRatio: ratio }} aria-label="Loading preview" />;
@@ -298,7 +306,7 @@ export function OutputDownload({ fileId, label }: { fileId: string; label: strin
 
 /** A failed run: its words on one line, with the Alchemy menu beside them. */
 export function FailureLine({ error, operation }: { error: unknown; operation: string }) {
-  const text = error instanceof Error ? error.message : typeof error === "string" ? error : "That didn't work";
+  const text = plainFailureText(error);
   return (
     <div className="flex min-w-0 items-center gap-2">
       <span className="type-meta min-w-0 flex-1 text-destructive">{text.slice(0, 220)}</span>

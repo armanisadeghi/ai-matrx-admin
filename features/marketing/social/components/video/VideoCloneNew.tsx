@@ -11,7 +11,7 @@
  * variants grid after generating.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -45,8 +45,11 @@ import {
 } from "../../video/clone";
 import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
 import { createVideoProject, fetchPostWords } from "../../video/server";
-import { contentHashOf, useBrandOfferings, useFileUrls, useReferenceVideo } from "../../video/studio-hooks";
+import { contentHashOf, useBrandOfferings, useFileUrls, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
+import { brandNameIn } from "../../video/hook-brand";
+import { estimateLabel, summarizeEstimate } from "../../video/estimate";
+import { plainRenderMessage } from "../../video/render-errors";
 import { CaptionLookPicker, CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
 
 const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
@@ -150,7 +153,17 @@ function ReferencePanel({ postId }: { postId: string }) {
   const url = video.data ? facts[video.data.file_id]?.url : null;
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [busy, setBusy] = useState(false);
-  const [lastCost, setLastCost] = useState<{ usd: number; points: number } | null>(null);
+  const costKey = `video-analysis-cost:${postId}`;
+  const [lastCost, setLastCost] = useState<{ usd: number; points: number; reused: boolean } | null>(null);
+  // What the analysis spent stays on the page for this reference, through reloads (the structure replaces the run log).
+  useEffect(() => {
+    try {
+      const saved = window.sessionStorage.getItem(costKey);
+      if (saved) setLastCost(JSON.parse(saved) as { usd: number; points: number; reused: boolean });
+    } catch {
+      /* no saved cost */
+    }
+  }, [costKey]);
 
   const analyze = async () => {
     setBusy(true);
@@ -160,7 +173,13 @@ function ReferencePanel({ postId }: { postId: string }) {
         setSteps((prev) => pushStep(prev, { id: s.stage || s.label, label: s.label, state: "running", meta: s.total ? `${s.current}/${s.total}` : undefined })),
       );
       setSteps((prev) => closeSteps(prev));
-      setLastCost({ usd: result.cost.usd, points: result.cost.points });
+      const spent = { usd: result.cost?.usd ?? 0, points: result.cost?.points ?? 0, reused: result.status === "reused" };
+      setLastCost(spent);
+      try {
+        window.sessionStorage.setItem(costKey, JSON.stringify(spent));
+      } catch {
+        /* storage full or blocked: the line still shows for this visit */
+      }
       // Analysis lands the post's video and its words too: re-read all three.
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: videoKeys.post(postId) }),
@@ -215,7 +234,7 @@ function ReferencePanel({ postId }: { postId: string }) {
       ) : (
         <div className="flex flex-col gap-3">
           <RunLog steps={steps} />
-          {lastCost ? <CostLine label="Analysis cost" usd={lastCost.usd} pts={lastCost.points} /> : null}
+          {lastCost ? <CostLine label={lastCost.reused ? "Analysis reused" : "Analysis cost"} usd={lastCost.usd} pts={lastCost.points} /> : null}
           <div className="flex flex-wrap gap-1.5">
             <Badge>{`${s.shots.length} shots`}</Badge>
             {s.beats.length ? <Badge>{`${s.beats.length} beats`}</Badge> : null}
@@ -306,6 +325,9 @@ function BriefPanel({
   const [presenter, setPresenter] = useState<PresenterMode>("voiceover");
   const [script, setScript] = useState<string | null>(null);
   const [hookLine, setHookLine] = useState("");
+  const [hookTouched, setHookTouched] = useState(false);
+  const [aiRewrite, setAiRewrite] = useState(false);
+  const scriptWriterReady = useScriptWriterReady();
   const [captionLook, setCaptionLook] = useState<string>("match");
   const [aspect, setAspect] = useState<CloneAspect>("9:16");
   const [takes, setTakes] = useState<Array<{ name: string; file: BriefFile }>>([]);
@@ -317,6 +339,16 @@ function BriefPanel({
   const [plan, setPlan] = useState<ClonePlanResult | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
   const [spent, setSpent] = useState(0);
+
+  // The reference's on-screen text that stays when no hook line is typed: warn when it names a business.
+  const keptTexts = [structure.data?.hook?.on_screen_text, ...(structure.data?.onScreenText.map((t) => t.text) ?? [])].filter((t): t is string => Boolean(t));
+  const keptBrand = keptTexts.map((t) => brandNameIn(t, brand.name)).find(Boolean) ?? null;
+  const hookSource = structure.data?.hook?.on_screen_text ?? "";
+  const hookNamesBrand = brandNameIn(hookSource, brand.name);
+  // The field shows the reference hook with the other business's name swapped for this brand until the person types.
+  const hookPrefill = hookNamesBrand ? hookSource.replace(hookNamesBrand, brand.name).slice(0, 120) : "";
+  const hookValue = hookTouched ? hookLine : hookPrefill;
+  const hookPrefilledFrom = !hookTouched && hookPrefill ? hookNamesBrand : null;
 
   const referenceScript = (words.data?.words ?? []).map((w) => w.text).join(" ").trim();
   const scriptText = script ?? referenceScript;
@@ -353,8 +385,8 @@ function BriefPanel({
       mode: presenter,
       ...(presenter === "own_footage" ? { takes: takes.map((t) => ({ file: t.file })) } : {}),
     },
-    script: scriptText ? { mode: "rewrite", text: scriptText } : { mode: "keep" },
-    ...(hookLine.trim() ? { hookLine: hookLine.trim().slice(0, 120) } : {}),
+    script: aiRewrite ? { mode: "rewrite" } : scriptText ? { mode: "rewrite", text: scriptText } : { mode: "keep" },
+    ...(hookValue.trim() ? { hookLine: hookValue.trim().slice(0, 120) } : {}),
     captions: captionLook === "match" ? { mode: "match" } : captionLook === "off" ? { mode: "off" } : { mode: "preset", preset: captionLook },
     aspect,
   });
@@ -444,7 +476,7 @@ function BriefPanel({
           break;
         case "preflight_failed":
         case "error":
-          errored = String(e.message ?? e.code ?? "Generation failed");
+          errored = plainRenderMessage(typeof e.code === "string" ? e.code : null, typeof e.user_message === "string" ? e.user_message : typeof e.message === "string" ? e.message : null);
           break;
         default:
           break;
@@ -471,8 +503,9 @@ function BriefPanel({
 
   const est = plan?.estimate;
   const notes = plan?.report.notes ?? [];
+  const writerSkipped = Boolean(plan && aiRewrite && plan.script_agent !== "ran");
   const ownFootageMissing = presenter === "own_footage" && takes.length === 0;
-  const canPlan = Boolean(structure.data) && !busy && !ownFootageMissing && scriptText.length > 0;
+  const canPlan = Boolean(structure.data) && !busy && !ownFootageMissing && (scriptText.length > 0 || aiRewrite);
 
   return (
     <section className="flex min-w-0 flex-col gap-4 rounded-lg border border-border bg-card p-3">
@@ -529,11 +562,18 @@ function BriefPanel({
       <Row
         label="Script"
         end={
-          <Button variant="quiet" icon={<PenLine />} onClick={() => void announceComingSoon("marketing.social.video-script-rewrite")}>
-            AI rewrite · coming
-          </Button>
+          scriptWriterReady ? (
+            <Button variant={aiRewrite ? "outline" : "quiet"} icon={<PenLine />} disabled={busy} onClick={() => setAiRewrite((v) => !v)}>
+              {aiRewrite ? "Write it myself" : "AI rewrite"}
+            </Button>
+          ) : (
+            <Button variant="quiet" icon={<PenLine />} onClick={() => void announceComingSoon("marketing.social.video-script-rewrite")}>
+              AI rewrite · coming
+            </Button>
+          )
         }
       >
+        {aiRewrite ? <span className="type-meta text-muted-foreground">The script is written for your product when you press Plan</span> : null}
         <ProTextarea
           value={scriptText}
           onChange={(e) => setScript(e.target.value)}
@@ -541,7 +581,7 @@ function BriefPanel({
           autoGrow
           minHeight={120}
           maxHeight={320}
-          disabled={busy}
+          disabled={busy || aiRewrite}
         />
         <div className="flex items-center gap-2">
           <span className="type-meta text-muted-foreground">
@@ -601,10 +641,18 @@ function BriefPanel({
       <Row label="Hook line">
         <Field
           placeholder={structure.data?.hook?.on_screen_text || "The reference's hook is kept"}
-          value={hookLine}
+          value={hookValue}
           maxLength={120}
-          onChange={(e) => setHookLine(e.target.value)}
+          onChange={(e) => {
+            setHookLine(e.target.value);
+            setHookTouched(true);
+          }}
         />
+        {hookValue.trim() === "" && keptBrand ? (
+          <span className="type-meta text-warning">{`The reference's on-screen text names "${keptBrand}". Write your own hook line or it stays in your video.`}</span>
+        ) : hookPrefilledFrom ? (
+          <span className="type-meta text-muted-foreground">{`Swapped "${hookPrefilledFrom}" for your brand name. Edit it if it reads wrong.`}</span>
+        ) : null}
       </Row>
 
       <Row label="Captions">
@@ -638,13 +686,12 @@ function BriefPanel({
           <div className="flex flex-col gap-2 rounded-lg border border-border p-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="type-label text-foreground">{`Plan saved · version ${plan.version}`}</span>
-              <Badge>{`${est.lines.length} to make`}</Badge>
-              {est.cached.length ? <Badge tone="success">{`${est.cached.length} reused`}</Badge> : null}
               <span className="ml-auto">
-                <CostLine label="Estimate" usd={est.total_usd} pts={est.total_points} />
+                <CostLine label={estimateLabel(summarizeEstimate(est))} usd={est.total_usd} pts={est.total_points} />
               </span>
             </div>
             {plan.script_source === "fallback" ? <span className="type-meta text-warning">Kept the reference script</span> : null}
+            {writerSkipped ? <span className="type-meta text-warning">The script writer didn't run, so the reference script was kept</span> : null}
             {notes.length ? (
               <ul className="flex flex-col gap-0.5">
                 {notes.map((n, i) => (
