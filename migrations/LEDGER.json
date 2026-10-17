@@ -11335,6 +11335,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/template_gaps_a_row_templates_install_with_a_template.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_gaps_a_row_templates_install_with_a_template.sql",
+      "checksum": "200d848c8f9f0bcc24358c8fdc18ed9a8c29dfb1ba8cba2e17d64eb513de24ec",
+      "applied_at": "2026-10-17 10:15:10.568955+00"
     }
   }
 }
