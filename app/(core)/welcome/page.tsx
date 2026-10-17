@@ -12,10 +12,12 @@ export const metadata: Metadata = {
   description: "Get started with AI Matrx",
 };
 
-export default async function WelcomePage() {
+export default async function WelcomePage({ searchParams }: { searchParams: Promise<{ found?: string }> }) {
   const { user } = await getSessionVerdict();
+  // `?found=1`: any account can open the sign-up welcome ("here's what we found") on its own login, not only a new one.
+  const askedForFound = (await searchParams).found === "1";
   if (!user) {
-    redirect("/login?redirectTo=/welcome");
+    redirect(`/login?redirectTo=${encodeURIComponent(askedForFound ? "/welcome?found=1" : "/welcome")}`);
   }
 
   const firstName =
@@ -32,7 +34,7 @@ export default async function WelcomePage() {
       <PageHeader>
         <HeaderIconTitle icon="Sparkles" title="Welcome" />
       </PageHeader>
-      <WelcomeClient firstName={firstName} newUser={isNewUser(user)} />
+      <WelcomeClient firstName={firstName} newUser={isNewUser(user) || askedForFound} />
     </>
   );
 }
