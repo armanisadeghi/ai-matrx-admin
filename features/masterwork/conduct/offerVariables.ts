@@ -1,7 +1,7 @@
 // features/masterwork/conduct/offerVariables.ts
 //
 // The `masterwork.conduct` offered values a FRESH Conductor launch holds as
-// real facts, sent by name beside rulebook_id / attachments / rulebook_document.
+// real facts, sent by name together with the guaranteed rulebook_id / attachments / rulebook_document.
 // The launch is on the AGENT door (useAgentLauncher(agentId)); the live Holder
 // (Masterwork Conductor) neither declares nor templates any of these names
 // (checked live 2026-09-28), so its payload is unchanged. They become mappable
@@ -9,13 +9,25 @@
 
 import type { MasterworkConductOffer } from "@ai-matrx/agents/generated/provision-offers";
 import type { RulebookOfferFacts } from "../agent-context/rulebookDocument";
-import type { MasterworkAttachment } from "./service";
+import { attachmentsVariable, type MasterworkAttachment } from "./service";
+
+/**
+ * `rulebook_id`, `attachments` and `rulebook_document` are GUARANTEED offers:
+ * the mandate door refuses the run (422 `mandate_inputs_rejected`) without
+ * them, so the builder TAKES them and the type keeps them required.
+ */
+export type ConductOfferValues = Omit<MasterworkConductOffer, "__kind">;
 
 export function conductorOfferVariables(
+  rulebookId: string,
+  rulebookDocument: string,
   facts: RulebookOfferFacts | null,
   attachments: MasterworkAttachment[],
-): Partial<MasterworkConductOffer> {
-  const out: Partial<MasterworkConductOffer> = {
+): ConductOfferValues {
+  const out: ConductOfferValues = {
+    rulebook_id: rulebookId,
+    attachments: attachmentsVariable(attachments),
+    rulebook_document: rulebookDocument,
     // A fresh launch is never a resume — ResumedConductorSession never launches.
     is_resumed_session: false,
   };

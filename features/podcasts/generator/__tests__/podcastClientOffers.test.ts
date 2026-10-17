@@ -45,6 +45,7 @@ describe("webSourceOfferVariables", () => {
       "x".repeat(4100),
     );
     expect(v).toEqual({
+      scraped_content: "x".repeat(4100),
       source_url: "https://example.com/a",
       page_title: "Pallet grades",
       website: "example.com",
@@ -53,11 +54,11 @@ describe("webSourceOfferVariables", () => {
       page_outline: "- Intro\n- Grades\n  - A\n  - B",
       rtl: false,
     });
-    expect("scraped_content" in v).toBe(false);
+    // The guaranteed scrape text rides with the offer; focus_area is the caller's.
     expect("focus_area" in v).toBe(false);
   });
   it("falls back to the text it holds and omits absent facts", () => {
     const v = webSourceOfferVariables("https://e.com", { url: "", scrapedAt: "", overview: {} }, "abc");
-    expect(v).toEqual({ source_url: "https://e.com", char_count: 3 });
+    expect(v).toEqual({ scraped_content: "abc", source_url: "https://e.com", char_count: 3 });
   });
 });

@@ -22,10 +22,17 @@ export type ChapteringEpisodeFacts = Partial<
   >
 > & { show?: Pick<PcShow, "title"> | null };
 
+/**
+ * `episode_script` is a GUARANTEED offer (the mandate door refuses the run
+ * without it), so the builder takes it and the result type requires it.
+ */
 export function chapteringOfferVariables(
+  episodeScript: string,
   episode: ChapteringEpisodeFacts,
-): Partial<PodcastChapteringOffer> {
-  const out: Partial<PodcastChapteringOffer> = {};
+): Omit<PodcastChapteringOffer, "__kind"> {
+  const out: Omit<PodcastChapteringOffer, "__kind"> = {
+    episode_script: episodeScript,
+  };
   if (typeof episode.duration_seconds === "number" && episode.duration_seconds > 0)
     out.duration_seconds = Math.round(episode.duration_seconds);
   if (episode.title?.trim()) out.episode_title = episode.title.trim();

@@ -6,6 +6,10 @@
 // aidream client_mandates.py): the default pin drops them, so a current Holder
 // receives exactly what it did before; a binding's consumption map can pick
 // them up. An absent fact is OMITTED — never "" or null.
+//
+// The five speech variables are GUARANTEED offers (the mandate door refuses
+// the run, 422 mandate_inputs_rejected, without them), so this builder TAKES
+// them and the result type requires them.
 
 import type { FlashcardsTtsRenderOffer } from "@ai-matrx/agents/generated/provision-offers";
 
@@ -29,10 +33,24 @@ function present(v: string | null | undefined): v is string {
   return typeof v === "string" && v.trim().length > 0;
 }
 
+export type TtsRenderOfferValues = Omit<FlashcardsTtsRenderOffer, "__kind">;
+
+/** The five guaranteed speech variables, supplied by the caller. */
+export type TtsSpeechValues = Pick<
+  FlashcardsTtsRenderOffer,
+  "content" | "sample_context" | "speaker_profile" | "directors_notes" | "scene"
+>;
+
 export function ttsRenderFacts(
+  speech: TtsSpeechValues,
   input: TtsRenderFactsInput,
-): Partial<FlashcardsTtsRenderOffer> {
-  const out: Partial<FlashcardsTtsRenderOffer> = {
+): TtsRenderOfferValues {
+  const out: TtsRenderOfferValues = {
+    content: speech.content,
+    sample_context: speech.sample_context,
+    speaker_profile: speech.speaker_profile,
+    directors_notes: speech.directors_notes,
+    scene: speech.scene,
     render_lane: input.renderLane,
     card_id: input.cardId,
   };

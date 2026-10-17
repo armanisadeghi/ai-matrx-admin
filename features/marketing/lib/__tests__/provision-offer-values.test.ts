@@ -44,12 +44,14 @@ describe("image provisions", () => {
 
   it("image_prompt: only real facts, native numbers", () => {
     expect(
-      imagePromptOfferValues({
+      imagePromptOfferValues("INTENT", "STYLE", {
         ...pageFacts,
         width_px: 1600,
         height_px: 900,
       }),
     ).toEqual({
+      intent_or_content: "INTENT",
+      style: "STYLE",
       page_url: pageFacts.page_url,
       page_path: pageFacts.page_path,
       page_target_keyword: pageFacts.page_target_keyword,
@@ -58,12 +60,16 @@ describe("image provisions", () => {
       width_px: 1600,
       height_px: 900,
     });
-    expect(imagePromptOfferValues(undefined)).toEqual({});
+    expect(imagePromptOfferValues("INTENT", "STYLE", undefined)).toEqual({
+      intent_or_content: "INTENT",
+      style: "STYLE",
+    });
   });
 
   it("page_image: carries the ordered spec + style, never the keyword", () => {
-    const out = pageImageOfferValues(pageFacts, "SPEC", "Hero / Banner");
+    const out = pageImageOfferValues("DESC", pageFacts, "SPEC", "Hero / Banner");
     expect(out).toEqual({
+      image_description: "DESC",
       image_spec: "SPEC",
       style: "Hero / Banner",
       page_url: pageFacts.page_url,
@@ -71,21 +77,25 @@ describe("image provisions", () => {
       alt_text: pageFacts.alt_text,
     });
     // Unstyled order: style omitted, not sent empty.
-    expect(pageImageOfferValues(undefined, "SPEC", "")).toEqual({
+    expect(pageImageOfferValues("DESC", undefined, "SPEC", "")).toEqual({
+      image_description: "DESC",
       image_spec: "SPEC",
     });
   });
 
   it("all_in_one: its declared subset only", () => {
     expect(
-      Object.keys(allInOneOfferValues({ ...pageFacts, width_px: 1 })).sort(),
+      Object.keys(allInOneOfferValues("I", "S", 1, { ...pageFacts, width_px: 1 })).sort(),
     ).toEqual(
       [
         "alt_text",
+        "count",
         "image_description",
+        "intent_or_content",
         "page_path",
         "page_target_keyword",
         "page_url",
+        "style",
       ].sort(),
     );
   });

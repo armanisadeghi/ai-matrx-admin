@@ -23,8 +23,7 @@ import { selectRenderBlocksByType } from "@ai-matrx/chat/agents/redux/execution-
 import { selectLatestRequestId } from "@ai-matrx/chat/agents/redux/execution-system/selectors/aggregate.selectors";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { pickSpokenFrontCues, pickSpokenFrontVariables } from "./variations";
-import { ttsRenderFacts } from "../ttsRenderFacts";
-import type { FlashcardsTtsRenderOffer } from "@ai-matrx/agents/generated/provision-offers";
+import { ttsRenderFacts, type TtsSpeechValues } from "../ttsRenderFacts";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 
 /** Mandate key for the spoken-front TTS lane — resolves live to the DB-bound
@@ -119,7 +118,7 @@ export function generateSpokenFront(
   ): Promise<string | null> => {
     const picked = pickSpokenFrontVariables(card.id, card.front, index, total);
     const cues = pickSpokenFrontCues(card.id, index, total);
-    const vars: FlashcardsTtsRenderOffer = {
+    const vars: TtsSpeechValues = {
       content: picked.content,
       sample_context: picked.sample_context,
       speaker_profile: picked.speaker_profile,
@@ -144,8 +143,7 @@ export function generateSpokenFront(
             // Mapped-only offers ride beside the five speech variables; the
             // default pin drops them (payload-neutral for current Holders).
             variables: {
-              ...vars,
-              ...ttsRenderFacts({
+              ...ttsRenderFacts(vars, {
                 renderLane: "spoken_front",
                 cardId: card.id,
                 cardFront: card.front,

@@ -68,17 +68,17 @@ import {
   missingRequiredVariables,
   missingVariablesMessage,
 } from "@ai-matrx/chat/mandates/service";
-import { RULEBOOK_DOCUMENT_VARIABLE } from "@/features/masterwork/agent-context/rulebookDocument";
 import { useRulebookDocument } from "@/features/masterwork/agent-context/useRulebookDocument";
 import {
   associateConductorWhenPersisted,
-  attachmentsVariable,
   listConductorSessions,
   type ConductorSession,
   type MasterworkAttachment,
 } from "./service";
-import { conductorOfferVariables } from "./offerVariables";
-import type { MasterworkConductOffer } from "@ai-matrx/agents/generated/provision-offers";
+import {
+  conductorOfferVariables,
+  type ConductOfferValues,
+} from "./offerVariables";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
@@ -134,19 +134,18 @@ const CONDUCTOR_CHIPS = [
 function NewConductorSession({
   rulebookId,
   rulebookName,
-  attachments,
-  rulebookDocument,
   offerVariables,
   agentId,
   freshSessionKey,
 }: {
   rulebookId: string;
   rulebookName: string;
-  attachments: MasterworkAttachment[];
-  /** The Rulebook itself, already loaded — see ConductorContent. */
-  rulebookDocument: string;
-  /** Offered facts sent by name beside the three by-name variables. */
-  offerVariables: Partial<MasterworkConductOffer>;
+  /**
+   * Every offered value, sent by name: the guaranteed rulebook_id /
+   * attachments / rulebook_document (the Rulebook is loaded by
+   * `ConductorContent` before this mounts) plus the mapped-only facts.
+   */
+  offerVariables: ConductOfferValues;
   agentId: string;
   freshSessionKey: number;
 }) {
@@ -181,10 +180,7 @@ function NewConductorSession({
       // the `rulebook` tool reads. Adding a second attachable kind changes the
       // list, not this component.
       variables: {
-        rulebook_id: rulebookId,
-        attachments: attachmentsVariable(attachments),
-        [RULEBOOK_DOCUMENT_VARIABLE]: rulebookDocument,
-        // Offered facts by name (masterwork.conduct) — only ADDED keys.
+        // masterwork.conduct offered values, guaranteed ones included.
         ...offerVariables,
       },
     },
@@ -623,16 +619,12 @@ export function ConductorContent({
     { entityToken: "rulebook", id: rulebookId, name: rulebookName },
   ];
   const offerVariables = conductorOfferVariables(
+    rulebookId,
+    rulebookDoc.document ?? "",
     rulebookDoc.facts,
     sessionAttachments,
   );
-  const launchVariables = {
-    rulebook_id: rulebookId,
-    attachments: attachmentsVariable(sessionAttachments),
-    [RULEBOOK_DOCUMENT_VARIABLE]: rulebookDoc.document ?? "",
-    ...offerVariables,
-  };
-  const missing = missingRequiredVariables(mandate.contract, launchVariables);
+  const missing = missingRequiredVariables(mandate.contract, offerVariables);
   if (rulebookDoc.error || missing.length > 0) {
     return (
       <div className="space-y-3 px-4 py-6 text-sm">
@@ -680,8 +672,6 @@ export function ConductorContent({
     <NewConductorSession
       rulebookId={rulebookId}
       rulebookName={rulebookName}
-      attachments={sessionAttachments}
-      rulebookDocument={rulebookDoc.document ?? ""}
       offerVariables={offerVariables}
       agentId={mandate.agentId}
       freshSessionKey={choice.key}

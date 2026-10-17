@@ -59,5 +59,5 @@ export function saveContactOfferedValues(
     const v = typeof value === "string" ? value.trim() : "";
     if (v) out[key] = v;
   }
-  return out satisfies Partial<CrmSaveContactSelectionOffer>;
+  return out satisfies Partial<Pick<CrmSaveContactSelectionOffer, MappedKeys>>;
 }

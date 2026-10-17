@@ -142,9 +142,8 @@ export function useSourceResolvers(): UseSourceResolvers {
           // The cleaned text IS the product — no JSON middleman.
           expect: "text",
           variables: {
-            // Mapped-only offered facts (dropped on the default pin).
+            // `scraped_content` (guaranteed) + mapped-only offered facts.
             ...webSourceOfferVariables(url, scraped, raw),
-            scraped_content: raw,
             focus_area: DEFAULT_EXTRACTOR_FOCUS,
           },
           ...(feed.onRequestId ? { onRequestId: feed.onRequestId } : {}),

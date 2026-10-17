@@ -36,8 +36,7 @@ import { FC_MANDATES } from "@/features/flashcards/data/mandates";
 import { coerceDetails } from "@/features/flashcards/data/enhanceCard";
 import type { CardWithDetails } from "@/features/flashcards/data/types";
 import { readAudioFileId } from "../spoken-front/generateSpokenFront.thunk";
-import { ttsRenderFacts } from "../ttsRenderFacts";
-import type { FlashcardsTtsRenderOffer } from "@ai-matrx/agents/generated/provision-offers";
+import { ttsRenderFacts, type TtsSpeechValues } from "../ttsRenderFacts";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 
 /** Mandate key for the helper-audio TTS lane — resolves live to the DB-bound
@@ -170,7 +169,7 @@ function renderHelperAudio(
     getState: () => RootState,
   ): Promise<string | null> => {
     let conversationId: string | null = null;
-    const variables: FlashcardsTtsRenderOffer = {
+    const variables: TtsSpeechValues = {
       content: `[calm/reassuring] ${text}`,
       ...HELPER_SPEECH_STYLE,
     };
@@ -186,8 +185,7 @@ function renderHelperAudio(
             // Mapped-only offers ride beside the five speech variables; the
             // default pin drops them (payload-neutral for current Holders).
             variables: {
-              ...variables,
-              ...ttsRenderFacts({
+              ...ttsRenderFacts(variables, {
                 renderLane: "helper",
                 cardId,
                 cardFront: card.front,

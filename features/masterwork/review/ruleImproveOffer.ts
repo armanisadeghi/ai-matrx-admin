@@ -10,10 +10,22 @@
 import type { MasterworkRuleImproveOffer } from "@ai-matrx/agents/generated/provision-offers";
 import { ruleState, type Rulebook, type RulebookRule } from "../types";
 
-/** The offered names only — the three by-name variables are never touched here. */
-export type RuleImproveOfferVariables = Omit<
-  Partial<MasterworkRuleImproveOffer>,
-  "__kind" | "rule" | "expert_input" | "rulebook_context"
+/**
+ * The offered names. `rulebook_context` is GUARANTEED (the mandate door refuses
+ * the run without it), so it is a required parameter and stays required in the
+ * return type; `rule` / `expert_input` are optional by-name values the runner
+ * sets itself (guard: `pnpm check:offer-guarantees`).
+ */
+/**
+ * Callers hand `rulebook_context` the Rulebook scope as a RAW object (the
+ * server's prompt door canonicalizes it — never JSON.stringify), so its value
+ * is widened to `unknown`; the mapped type keeps the key REQUIRED.
+ */
+type WithRawValue<T, K extends keyof T> = { [P in keyof T]: P extends K ? unknown : T[P] };
+
+export type RuleImproveOfferVariables = WithRawValue<
+  Omit<MasterworkRuleImproveOffer, "__kind" | "rule" | "expert_input">,
+  "rulebook_context"
 >;
 
 export interface RuleImproveOfferInput {
@@ -30,9 +42,10 @@ function text(v: unknown): string | null {
 }
 
 export function ruleImproveOfferVariables(
+  rulebookContext: unknown,
   input: RuleImproveOfferInput,
 ): RuleImproveOfferVariables {
-  const out: RuleImproveOfferVariables = {};
+  const out: RuleImproveOfferVariables = { rulebook_context: rulebookContext };
   const rb = input.rulebook;
   if (rb) {
     const name = text(rb.name);

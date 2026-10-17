@@ -2,14 +2,16 @@
 //
 // The scrape's own facts, offered by name to the web-content-extractor mandate
 // (`podcast_client.web_source`, mapped-only). Read from the scrape result the
-// resolver already holds — no extra read. Absent → omitted.
+// resolver already holds — no extra read. Absent → omitted. `scraped_content`
+// is GUARANTEED (the mandate door refuses the run without it), so the builder
+// sets it and the type keeps it required (guard: `pnpm check:offer-guarantees`).
 
 import type { PodcastClientWebSourceOffer } from "@ai-matrx/agents/generated/provision-offers";
 import type { ScraperResult } from "@/features/scraper/hooks/useScraperApi";
 
 export type WebSourceOfferVariables = Omit<
-  Partial<PodcastClientWebSourceOffer>,
-  "__kind" | "scraped_content" | "focus_area"
+  PodcastClientWebSourceOffer,
+  "__kind" | "focus_area"
 >;
 
 function outlineMarkdown(outline: unknown): string | null {
@@ -33,7 +35,7 @@ export function webSourceOfferVariables(
   scraped: Pick<ScraperResult, "url" | "overview" | "scrapedAt"> | null,
   rawText: string,
 ): WebSourceOfferVariables {
-  const out: WebSourceOfferVariables = {};
+  const out: WebSourceOfferVariables = { scraped_content: rawText, char_count: rawText.length };
   const ov = scraped?.overview ?? {};
   const url = (scraped?.url || ov.url || requestedUrl || "").trim();
   if (url) out.source_url = url;

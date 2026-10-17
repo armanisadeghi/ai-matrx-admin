@@ -17,10 +17,7 @@ import type { ContentIrComponentAuthoringOffer } from "@ai-matrx/agents/generate
 import { composeKindAgentIntent, type KindAgentSeed } from "./kind-agent-intents";
 import type { Json } from "@/types/database.types";
 
-export type ComponentAuthoringValues = Omit<
-  Partial<ContentIrComponentAuthoringOffer>,
-  "__kind"
->;
+export type ComponentAuthoringValues = Omit<ContentIrComponentAuthoringOffer, "__kind">;
 
 export interface ComponentAuthoringInput {
   kind: string;

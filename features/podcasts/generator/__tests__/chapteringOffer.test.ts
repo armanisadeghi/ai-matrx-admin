@@ -3,7 +3,7 @@ import { chapteringOfferVariables } from "../chapteringOffer";
 describe("chapteringOfferVariables", () => {
   it("reads the loaded episode + show into offered names, native types", () => {
     expect(
-      chapteringOfferVariables({
+      chapteringOfferVariables("SCRIPT", {
         duration_seconds: 1834.6,
         title: "Grading pallets",
         description: "How the yard grades pallets",
@@ -19,6 +19,7 @@ describe("chapteringOfferVariables", () => {
         show: { title: "Yard Talk" },
       }),
     ).toEqual({
+      episode_script: "SCRIPT",
       duration_seconds: 1835,
       episode_title: "Grading pallets",
       episode_description: "How the yard grades pallets",
@@ -29,8 +30,8 @@ describe("chapteringOfferVariables", () => {
     });
   });
 
-  it("omits every absent fact and never emits a by-name key", () => {
-    const v = chapteringOfferVariables({
+  it("omits every absent fact and never emits the hint keys", () => {
+    const v = chapteringOfferVariables("SCRIPT", {
       duration_seconds: null,
       title: "",
       description: null,
@@ -39,8 +40,8 @@ describe("chapteringOfferVariables", () => {
       chapters: null,
       show: null,
     }) as Record<string, unknown>;
-    expect(v).toEqual({});
-    for (const k of ["episode_script", "duration_hint", "granularity_hint"]) {
+    expect(v).toEqual({ episode_script: "SCRIPT" });
+    for (const k of ["duration_hint", "granularity_hint"]) {
       expect(k in v).toBe(false);
     }
   });

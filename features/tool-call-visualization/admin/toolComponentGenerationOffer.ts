@@ -11,7 +11,7 @@
 import type { ToolVizComponentGenerationOffer } from "@ai-matrx/agents/generated/provision-offers";
 
 export type ToolComponentGenerationOfferValues = Pick<
-  Partial<ToolVizComponentGenerationOffer>,
+  ToolVizComponentGenerationOffer,
   | "tool_name"
   | "tool_description"
   | "tool_parameters"

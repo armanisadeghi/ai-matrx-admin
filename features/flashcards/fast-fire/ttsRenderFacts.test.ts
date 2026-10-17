@@ -1,4 +1,12 @@
-import { ttsRenderFacts } from "./ttsRenderFacts";
+import { ttsRenderFacts, type TtsSpeechValues } from "./ttsRenderFacts";
+
+const SPEECH: TtsSpeechValues = {
+  content: "C",
+  sample_context: "SC",
+  speaker_profile: "SP",
+  directors_notes: "DN",
+  scene: "S",
+};
 import {
   ENERGY_CUES,
   FIRST_CARD_PHRASES,
@@ -8,7 +16,7 @@ import {
 
 describe("ttsRenderFacts", () => {
   it("sends only the facts the site holds, native types, absent keys omitted", () => {
-    const facts = ttsRenderFacts({
+    const facts = ttsRenderFacts(SPEECH, {
       renderLane: "spoken_front",
       cardId: "c1",
       cardFront: "What is H2O?",
@@ -21,6 +29,7 @@ describe("ttsRenderFacts", () => {
       anticipationCue: "[pause]",
     });
     expect(facts).toEqual({
+      ...SPEECH,
       render_lane: "spoken_front",
       card_id: "c1",
       card_front: "What is H2O?",
@@ -34,13 +43,13 @@ describe("ttsRenderFacts", () => {
   });
 
   it("never claims a set position the caller does not really have", () => {
-    const facts = ttsRenderFacts({ renderLane: "helper", cardId: "c1", helperText: "Because." });
-    expect(facts).toEqual({ render_lane: "helper", card_id: "c1", helper_text: "Because." });
+    const facts = ttsRenderFacts(SPEECH, { renderLane: "helper", cardId: "c1", helperText: "Because." });
+    expect(facts).toEqual({ ...SPEECH, render_lane: "helper", card_id: "c1", helper_text: "Because." });
     expect("card_index" in facts).toBe(false);
   });
 
-  it("never overlaps the five by-name speech variables", () => {
-    const facts = ttsRenderFacts({
+  it("carries the five guaranteed speech variables it was given", () => {
+    const facts = ttsRenderFacts(SPEECH, {
       renderLane: "spoken_front",
       cardId: "c1",
       cardFront: "f",
@@ -54,9 +63,7 @@ describe("ttsRenderFacts", () => {
       anticipationCue: "a",
       helperText: "h",
     });
-    for (const k of ["content", "sample_context", "speaker_profile", "directors_notes", "scene"]) {
-      expect(k in facts).toBe(false);
-    }
+    expect(facts).toMatchObject(SPEECH);
   });
 });
 

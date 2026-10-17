@@ -46,8 +46,8 @@ describe("rulebookOfferFacts", () => {
 });
 
 describe("conductorOfferVariables", () => {
-  it("adds only offered names, never the three by-name variables", () => {
-    const v = conductorOfferVariables(rulebookOfferFacts(RULEBOOK), [
+  it("carries the three guaranteed values plus the offered names", () => {
+    const v = conductorOfferVariables("rb1", "DOC", rulebookOfferFacts(RULEBOOK), [
       { entityToken: "rulebook", id: "rb1", name: "Pallet grading" },
     ]);
     expect(v).toMatchObject({
@@ -58,13 +58,20 @@ describe("conductorOfferVariables", () => {
       rule_count: 4,
       is_resumed_session: false,
     });
-    for (const k of ["rulebook_id", "attachments", "rulebook_document"]) {
-      expect(k in v).toBe(false);
-    }
+    expect(v.rulebook_id).toBe("rb1");
+    expect(v.rulebook_document).toBe("DOC");
+    expect(JSON.parse(v.attachments as string)).toEqual([
+      { entity_token: "rulebook", id: "rb1", name: "Pallet grading" },
+    ]);
   });
 
   it("sends nothing about the Rulebook it has not loaded", () => {
-    const v = conductorOfferVariables(null, []);
-    expect(v).toEqual({ is_resumed_session: false });
+    const v = conductorOfferVariables("rb1", "", null, []);
+    expect(v).toEqual({
+      rulebook_id: "rb1",
+      attachments: "[]",
+      rulebook_document: "",
+      is_resumed_session: false,
+    });
   });
 });
