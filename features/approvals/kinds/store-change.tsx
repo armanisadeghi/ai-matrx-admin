@@ -171,6 +171,18 @@ export function describe(approval: StoreApproval): Pick<
     };
   }
 
+  // A BULK JOB the server runs (HOST-RUN, 2026-10-16): a mapped copy or a file import into an existing table.
+  // Approving records the yes; the agent runs exactly that job on its next step in its chat, once.
+  if (kind === "host_run") {
+    const summary = text(change["summary"]) ?? `A copy into ${table}`;
+    return {
+      headline: summary,
+      acceptEffect: "Allows this one job. The agent runs it on its next step in the chat.",
+      rejectEffect: "Nothing is copied. The request is closed as declined.",
+      fields: [],
+    };
+  }
+
   // A change to a STANDARD row (a CRM person, …): its values, by their labels; the before side
   // is not read here, so each row shows the new value.
   if (kind === "entity_row_change") {
