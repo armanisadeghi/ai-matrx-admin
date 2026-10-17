@@ -68,7 +68,6 @@ export const favoritesManagerWindowOverlay = defineOverlay<FavoritesManagerWindo
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./favoritesManagerWindow.render"),
 });
 
 

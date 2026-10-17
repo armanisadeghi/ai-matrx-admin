@@ -64,7 +64,6 @@ export const cloudBrowserWindowOverlay = defineOverlay<CloudBrowserWindowDefinit
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./cloudBrowserWindow.render"),
 });
 
 

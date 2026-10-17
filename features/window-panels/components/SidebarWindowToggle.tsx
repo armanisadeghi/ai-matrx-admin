@@ -31,7 +31,7 @@ import {
   MenuSection,
 } from "@/features/window-panels/tools-grid/menuPrimitives";
 import ToolsGrid from "@/features/window-panels/tools-grid/ToolsGrid";
-import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
+import { OVERLAY_META_INDEX } from "@/features/overlays/definitions/overlay-meta-index";
 
 /** True when a windowed rect covers the sidebar Windows trigger. */
 function rectCoversTrigger(
@@ -381,7 +381,7 @@ export default function SidebarWindowToggle() {
                     <MenuSection label="Windows" />
                     <div className="max-h-60 overflow-y-auto">
                       {windows.map((win) => {
-                        const isDeprecated = !!APP_OVERLAYS.find((d) => (d.window?.windowId ?? d.id) === win.id)?.window?.deprecated;
+                        const isDeprecated = !!OVERLAY_META_INDEX.find((d) => (d.window?.windowId ?? d.id) === win.id)?.window?.deprecated;
                         return (
                           <button
                             key={win.id}

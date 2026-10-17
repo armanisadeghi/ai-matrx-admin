@@ -89,7 +89,6 @@ export const cropStudioWindowOverlay = defineOverlay<CropStudioWindowDefinitionD
     key: "crop_studio",
     hydrate: (ctx) => import("./cropStudioWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./cropStudioWindow.render"),
 });
 
 

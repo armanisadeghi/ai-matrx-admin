@@ -99,7 +99,6 @@ export const creatorHubOverlay = defineOverlay<CreatorHubDefinitionData>()({
     key: "creator_hub",
     hydrate: (ctx) => import("./creatorHub.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./creatorHub.render"),
 });
 
 

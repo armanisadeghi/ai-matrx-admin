@@ -80,7 +80,6 @@ export const quickDataWindowOverlay = defineOverlay<QuickDataWindowDefinitionDat
     key: "quick_data",
     hydrate: (ctx) => import("./quickDataWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./quickDataWindow.render"),
 });
 
 

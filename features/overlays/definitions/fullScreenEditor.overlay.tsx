@@ -195,7 +195,6 @@ export const fullScreenEditorOverlay = defineOverlay<FullScreenEditorDefinitionD
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./fullScreenEditor.render"),
 });
 
 

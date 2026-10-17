@@ -77,7 +77,6 @@ export const streamDebugHistoryWindowOverlay = defineOverlay<StreamDebugHistoryW
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./streamDebugHistoryWindow.render"),
 });
 
 

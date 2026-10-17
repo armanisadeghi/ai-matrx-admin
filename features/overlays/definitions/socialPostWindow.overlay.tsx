@@ -106,7 +106,6 @@ export const socialPostWindowOverlay = defineOverlay<SocialPostWindowDefinitionD
     key: "social_post",
     hydrate: (ctx) => import("./socialPostWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./socialPostWindow.render"),
 });
 
 

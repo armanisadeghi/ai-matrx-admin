@@ -81,7 +81,6 @@ export const siteQuickViewWindowOverlay = defineOverlay<SiteQuickViewWindowDefin
     key: "site_quick_view",
     hydrate: (ctx) => import("./siteQuickViewWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./siteQuickViewWindow.render"),
 });
 
 

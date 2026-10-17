@@ -84,7 +84,6 @@ export const emailDialogWindowOverlay = defineOverlay<EmailDialogWindowDefinitio
     key: "email_dialog",
     hydrate: (ctx) => import("./emailDialogWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./emailDialogWindow.render"),
 });
 
 

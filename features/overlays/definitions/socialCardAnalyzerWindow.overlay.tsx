@@ -74,7 +74,6 @@ export const socialCardAnalyzerWindowOverlay = defineOverlay<SocialCardAnalyzerW
     key: "social_cards",
     hydrate: (ctx) => import("./socialCardAnalyzerWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./socialCardAnalyzerWindow.render"),
 });
 
 

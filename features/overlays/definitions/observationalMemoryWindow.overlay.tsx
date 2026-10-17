@@ -77,7 +77,6 @@ export const observationalMemoryWindowOverlay = defineOverlay<ObservationalMemor
     mobile: "fullscreen",
     mobileSidebarAs: "drawer",
   },
-  render: () => import("./observationalMemoryWindow.render"),
 });
 
 

@@ -197,7 +197,6 @@ export const agentRunWindowOverlay = defineOverlay<AgentRunWindowDefinitionData>
     key: "agent",
     hydrate: (ctx) => import("./agentRunWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./agentRunWindow.render"),
 });
 
 

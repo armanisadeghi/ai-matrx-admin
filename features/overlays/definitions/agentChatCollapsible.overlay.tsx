@@ -77,7 +77,6 @@ export const agentChatCollapsibleOverlay = defineOverlay<AgentChatCollapsibleDef
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentChatCollapsible.render"),
 });
 
 

@@ -86,7 +86,6 @@ export const agentConvertSystemWindowOverlay = defineOverlay<AgentConvertSystemW
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./agentConvertSystemWindow.render"),
 });
 
 

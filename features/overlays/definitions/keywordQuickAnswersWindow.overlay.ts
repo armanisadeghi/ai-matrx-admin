@@ -16,7 +16,6 @@ export const keywordQuickAnswersWindowOverlay = defineOverlay<KeywordQuickAnswer
     windowId: "keyword-quick-answers-window",
     mobile: "drawer",
   },
-  render: () => import("./keywordQuickAnswersWindow.render"),
 });
 
 

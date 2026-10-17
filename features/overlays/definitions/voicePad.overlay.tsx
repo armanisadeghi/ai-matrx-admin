@@ -84,7 +84,6 @@ export const voicePadOverlay = defineOverlay<VoicePadDefinitionData>()({
     key: "voice",
     hydrate: (ctx) => import("./voicePad.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./voicePad.render"),
 });
 
 

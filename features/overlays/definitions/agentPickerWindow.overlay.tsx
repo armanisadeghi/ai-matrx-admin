@@ -118,7 +118,6 @@ export const agentPickerWindowOverlay = defineOverlay<AgentPickerWindowDefinitio
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./agentPickerWindow.render"),
 });
 
 

@@ -82,7 +82,6 @@ export const agentFloatingChatOverlay = defineOverlay<AgentFloatingChatDefinitio
     windowId: "agent-floating-chat",
     ephemeral: true,
   },
-  render: () => import("./agentFloatingChat.render"),
 });
 
 

@@ -115,7 +115,6 @@ export const aiWatchWindowOverlay = defineOverlay<AiWatchWindowDefinitionData>()
     key: "ai-watch",
     hydrate: (ctx) => import("./aiWatchWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./aiWatchWindow.render"),
 });
 
 

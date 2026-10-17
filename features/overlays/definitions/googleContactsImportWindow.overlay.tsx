@@ -124,7 +124,6 @@ export const googleContactsImportWindowOverlay = defineOverlay<GoogleContactsImp
     key: "google_contacts_import",
     hydrate: (ctx) => import("./googleContactsImportWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./googleContactsImportWindow.render"),
 });
 
 

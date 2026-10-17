@@ -98,7 +98,6 @@ export const reviewWalkWindowOverlay = defineOverlay<ReviewWalkWindowDefinitionD
     key: "review_walk",
     hydrate: (ctx) => import("./reviewWalkWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./reviewWalkWindow.render"),
 });
 
 

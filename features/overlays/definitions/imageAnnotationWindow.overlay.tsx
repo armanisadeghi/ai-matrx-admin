@@ -153,7 +153,6 @@ export const imageAnnotationWindowOverlay = defineOverlay<ImageAnnotationWindowD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./imageAnnotationWindow.render"),
 });
 
 

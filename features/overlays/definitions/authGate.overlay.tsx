@@ -73,7 +73,6 @@ export const authGateOverlay = defineOverlay<AuthGateDefinitionData>()({
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./authGate.render"),
 });
 
 

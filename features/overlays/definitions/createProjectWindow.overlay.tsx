@@ -58,7 +58,6 @@ export const createProjectWindowOverlay = defineOverlay<CreateProjectWindowDefin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./createProjectWindow.render"),
 });
 
 

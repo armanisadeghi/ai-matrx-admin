@@ -78,7 +78,6 @@ export const contextItemsWindowOverlay = defineOverlay<ContextItemsWindowDefinit
     mobileSidebarAs: "drawer",
     ephemeral: true,
   },
-  render: () => import("./contextItemsWindow.render"),
 });
 
 

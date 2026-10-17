@@ -120,7 +120,6 @@ export const directiveReferencePickerWindowOverlay = defineOverlay<DirectiveRefe
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./directiveReferencePickerWindow.render"),
 });
 
 

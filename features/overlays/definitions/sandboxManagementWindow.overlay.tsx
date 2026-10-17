@@ -71,7 +71,6 @@ export const sandboxManagementWindowOverlay = defineOverlay<SandboxManagementWin
       requiredDataKeys: ["sandboxId"],
     },
   },
-  render: () => import("./sandboxManagementWindow.render"),
 });
 
 

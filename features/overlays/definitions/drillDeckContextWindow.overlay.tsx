@@ -57,7 +57,6 @@ export const drillDeckContextWindowOverlay = defineOverlay<DrillDeckContextWindo
     windowId: "drill-deck-context-window",
     mobile: "drawer",
   },
-  render: () => import("./drillDeckContextWindow.render"),
 });
 
 

@@ -77,7 +77,6 @@ export const agentAdminFindUsagesWindowOverlay = defineOverlay<AgentAdminFindUsa
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./agentAdminFindUsagesWindow.render"),
 });
 
 

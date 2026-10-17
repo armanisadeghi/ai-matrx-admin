@@ -90,7 +90,6 @@ export const transcriptionCleanupOverlay = defineOverlay<TranscriptionCleanupDef
     key: "transcription-cleanup",
     hydrate: (ctx) => import("./transcriptionCleanup.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./transcriptionCleanup.render"),
 });
 
 

@@ -1,6 +1,7 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { ChatIncognitoProvider } from "@ai-matrx/chat/agents/components/chat/ChatIncognitoProvider";
 import { ChatIncognitoHeaderButton } from "@ai-matrx/chat/agents/components/chat/ChatIncognitoHeaderButton";
+import { ChatRouteSeedStart } from "@ai-matrx/chat/agents/components/chat/ChatRouteSeedStart";
 import { ChatPasteOffer } from "@/features/data-sources/ChatPasteOffer";
 
 export const metadata = createRouteMetadata("/chat", {
@@ -26,6 +27,9 @@ export default function ChatLayout({
 }) {
   return (
     <ChatIncognitoProvider>
+      {/* /chat's first paint in ONE read: sent from the route root, before the page or the
+          lazily imported sidebar menu asks for its rows (history, pinned, model pill). */}
+      <ChatRouteSeedStart />
       <ChatIncognitoHeaderButton />
       <ChatPasteOffer />
       {children}

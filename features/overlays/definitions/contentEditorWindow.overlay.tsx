@@ -55,7 +55,6 @@ export const contentEditorWindowOverlay = defineOverlay<ContentEditorWindowDefin
     windowId: "content-editor-window",
     mobile: "fullscreen",
   },
-  render: () => import("./contentEditorWindow.render"),
 });
 
 

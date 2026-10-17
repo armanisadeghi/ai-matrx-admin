@@ -51,7 +51,6 @@ export const applyToSourceReviewOverlay = defineOverlay<ApplyToSourceReviewDefin
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./applyToSourceReview.render"),
 });
 
 

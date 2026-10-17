@@ -56,7 +56,6 @@ export const workInboxWindowOverlay = defineOverlay<WorkInboxWindowDefinitionDat
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./workInboxWindow.render"),
 });
 
 

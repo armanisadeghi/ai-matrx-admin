@@ -64,7 +64,6 @@ export const convertToShapeWindowOverlay = defineOverlay<ConvertToShapeWindowDef
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./convertToShapeWindow.render"),
 });
 
 

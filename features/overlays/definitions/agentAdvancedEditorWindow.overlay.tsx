@@ -89,7 +89,6 @@ export const agentAdvancedEditorWindowOverlay = defineOverlay<AgentAdvancedEdito
     key: "agent-content",
     hydrate: (ctx) => import("./agentAdvancedEditorWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./agentAdvancedEditorWindow.render"),
 });
 
 

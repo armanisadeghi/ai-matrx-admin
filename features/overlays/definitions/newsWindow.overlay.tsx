@@ -72,7 +72,6 @@ export const newsWindowOverlay = defineOverlay<NewsWindowDefinitionData>()({
     key: "news",
     hydrate: (ctx) => import("./newsWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./newsWindow.render"),
 });
 
 

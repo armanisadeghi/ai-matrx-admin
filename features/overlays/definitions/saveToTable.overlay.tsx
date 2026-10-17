@@ -96,7 +96,6 @@ export const saveToTableOverlay = defineOverlay<SaveToTableDefinitionData>()({
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./saveToTable.render"),
 });
 
 

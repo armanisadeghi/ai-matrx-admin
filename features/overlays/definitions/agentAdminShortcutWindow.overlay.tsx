@@ -80,7 +80,6 @@ export const agentAdminShortcutWindowOverlay = defineOverlay<AgentAdminShortcutW
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./agentAdminShortcutWindow.render"),
 });
 
 

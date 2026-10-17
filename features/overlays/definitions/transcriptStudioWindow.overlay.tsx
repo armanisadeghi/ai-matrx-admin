@@ -79,7 +79,6 @@ export const transcriptStudioWindowOverlay = defineOverlay<TranscriptStudioWindo
     mobile: "fullscreen",
     preservation: { dataKeys: ["activeSessionId"] },
   },
-  render: () => import("./transcriptStudioWindow.render"),
 });
 
 

@@ -89,7 +89,6 @@ export const markdownEditorWindowOverlay = defineOverlay<MarkdownEditorWindowDef
     key: "markdown_editor",
     hydrate: (ctx) => import("./markdownEditorWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./markdownEditorWindow.render"),
 });
 
 

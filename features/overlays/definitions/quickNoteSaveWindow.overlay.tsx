@@ -92,7 +92,6 @@ export const quickNoteSaveWindowOverlay = defineOverlay<QuickNoteSaveWindowDefin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./quickNoteSaveWindow.render"),
 });
 
 

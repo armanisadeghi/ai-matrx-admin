@@ -82,7 +82,6 @@ export const messagesWindowOverlay = defineOverlay<MessagesWindowDefinitionData>
     key: "messages",
     hydrate: (ctx) => import("./messagesWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./messagesWindow.render"),
 });
 
 

@@ -81,7 +81,6 @@ export const knowledgeCommandBarOverlay = defineOverlay<KnowledgeCommandBarDefin
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./knowledgeCommandBar.render"),
 });
 
 

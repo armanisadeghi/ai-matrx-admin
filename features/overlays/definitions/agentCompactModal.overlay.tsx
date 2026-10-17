@@ -77,7 +77,6 @@ export const agentCompactModalOverlay = defineOverlay<AgentCompactModalDefinitio
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentCompactModal.render"),
 });
 
 

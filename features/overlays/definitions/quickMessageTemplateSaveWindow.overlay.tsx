@@ -57,7 +57,6 @@ export const quickMessageTemplateSaveWindowOverlay = defineOverlay<QuickMessageT
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./quickMessageTemplateSaveWindow.render"),
 });
 
 

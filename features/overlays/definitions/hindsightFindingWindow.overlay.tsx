@@ -112,7 +112,6 @@ export const hindsightFindingWindowOverlay = defineOverlay<HindsightFindingWindo
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./hindsightFindingWindow.render"),
 });
 
 

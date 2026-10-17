@@ -56,7 +56,6 @@ export const notificationsInboxWindowOverlay = defineOverlay<NotificationsInboxW
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./notificationsInboxWindow.render"),
 });
 
 

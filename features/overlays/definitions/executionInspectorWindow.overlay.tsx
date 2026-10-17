@@ -73,7 +73,6 @@ export const executionInspectorWindowOverlay = defineOverlay<ExecutionInspectorW
     key: "exec-inspector",
     hydrate: (ctx) => import("./executionInspectorWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./executionInspectorWindow.render"),
 });
 
 

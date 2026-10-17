@@ -78,7 +78,6 @@ export const scopeEditWindowOverlay = defineOverlay<ScopeEditWindowDefinitionDat
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./scopeEditWindow.render"),
 });
 
 

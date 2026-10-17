@@ -88,7 +88,6 @@ export const agentConnectionsWindowOverlay = defineOverlay<AgentConnectionsWindo
     mobile: "drawer",
     mobileSidebarAs: "drawer",
   },
-  render: () => import("./agentConnectionsWindow.render"),
 });
 
 

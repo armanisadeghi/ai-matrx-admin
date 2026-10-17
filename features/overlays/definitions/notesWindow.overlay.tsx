@@ -95,7 +95,6 @@ export const notesWindowOverlay = defineOverlay<NotesWindowDefinitionData>()({
     key: "notes",
     hydrate: (ctx) => import("./notesWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./notesWindow.render"),
 });
 
 

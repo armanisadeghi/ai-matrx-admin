@@ -137,7 +137,6 @@ export const htmlPreviewOverlay = defineOverlay<HtmlPreviewDefinitionData>()({
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./htmlPreview.render"),
 });
 
 

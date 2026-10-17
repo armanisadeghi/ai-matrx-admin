@@ -49,7 +49,6 @@ export const curatedIconPickerWindowOverlay = defineOverlay<CuratedIconPickerWin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./curatedIconPickerWindow.render"),
 });
 
 

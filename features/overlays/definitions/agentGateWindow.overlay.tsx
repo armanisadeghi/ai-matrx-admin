@@ -85,7 +85,6 @@ export const agentGateWindowOverlay = defineOverlay<AgentGateWindowDefinitionDat
     windowId: "agent-gate-window",
     mobile: "fullscreen",
   },
-  render: () => import("./agentGateWindow.render"),
 });
 
 

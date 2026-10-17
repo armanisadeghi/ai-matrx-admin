@@ -73,7 +73,6 @@ export const flashcardSubcardsWindowOverlay = defineOverlay<FlashcardSubcardsWin
     windowId: "flashcard-subcards-window",
     mobile: "fullscreen",
   },
-  render: () => import("./flashcardSubcardsWindow.render"),
 });
 
 

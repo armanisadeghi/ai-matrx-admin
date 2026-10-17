@@ -59,7 +59,6 @@ export const customAgentWindowOverlay = defineOverlay<CustomAgentWindowDefinitio
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./customAgentWindow.render"),
 });
 
 

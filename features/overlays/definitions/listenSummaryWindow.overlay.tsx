@@ -84,7 +84,6 @@ export const listenSummaryWindowOverlay = defineOverlay<ListenSummaryWindowDefin
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./listenSummaryWindow.render"),
 });
 
 

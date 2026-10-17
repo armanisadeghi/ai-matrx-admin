@@ -11,7 +11,6 @@ export const saveContactFromSelectionOverlay = defineOverlay<SaveContactFromSele
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./saveContactFromSelection.render"),
 });
 
 declare module "@ai-matrx/summon" {

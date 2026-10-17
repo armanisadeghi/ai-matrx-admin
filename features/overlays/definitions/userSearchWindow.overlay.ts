@@ -24,7 +24,6 @@ export const userSearchWindowOverlay = defineOverlay<UserSearchWindowDefinitionD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./userSearchWindow.render"),
 });
 
 

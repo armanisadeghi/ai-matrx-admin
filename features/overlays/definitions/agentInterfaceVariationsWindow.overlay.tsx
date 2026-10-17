@@ -78,7 +78,6 @@ export const agentInterfaceVariationsWindowOverlay = defineOverlay<AgentInterfac
     ephemeral: true,
     deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
   },
-  render: () => import("./agentInterfaceVariationsWindow.render"),
 });
 
 

@@ -69,7 +69,6 @@ export const dictionarySelectorWindowOverlay = defineOverlay<DictionarySelectorW
     windowId: "dictionary-selector",
     mobile: "drawer",
   },
-  render: () => import("./dictionarySelectorWindow.render"),
 });
 
 

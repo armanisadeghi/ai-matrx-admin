@@ -91,7 +91,6 @@ export const singleMessageWindowOverlay = defineOverlay<SingleMessageWindowDefin
       requiredDataKeys: ["conversationId"],
     },
   },
-  render: () => import("./singleMessageWindow.render"),
 });
 
 

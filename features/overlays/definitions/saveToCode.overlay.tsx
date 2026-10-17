@@ -83,7 +83,6 @@ export const saveToCodeOverlay = defineOverlay<SaveToCodeDefinitionData>()({
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./saveToCode.render"),
 });
 
 

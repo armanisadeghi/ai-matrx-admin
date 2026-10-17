@@ -133,7 +133,6 @@ export const gmailComposeWindowOverlay = defineOverlay<GmailComposeWindowDefinit
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./gmailComposeWindow.render"),
 });
 
 

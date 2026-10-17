@@ -86,7 +86,6 @@ export const mandateWindowNextOverlay = defineOverlay<MandateWindowNextDefinitio
     key: "mandate_next",
     hydrate: (ctx) => import("./mandateWindowNext.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./mandateWindowNext.render"),
 });
 
 

@@ -40,6 +40,14 @@ jest.mock("@ai-matrx/records-ui", () => {
     tokenFor: (s: string) => s,
   };
 });
+// MakeHome takes declareTable / tokenFor from records-ui's light `/helpers` entry (records-ui front
+// door, 2026-10-17); they delegate to the root mock above, so the spy and its expectations are unchanged.
+jest.mock("@ai-matrx/records-ui/helpers", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/helpers"),
+  declareTable: (...args: unknown[]) =>
+    (jest.requireMock("@ai-matrx/records-ui") as { declareTable: (...a: unknown[]) => unknown }).declareTable(...args),
+  tokenFor: (s: string) => s,
+}));
 jest.mock("../MakeMount", () => ({
   MakeMount: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   NewTableBody: () => null,

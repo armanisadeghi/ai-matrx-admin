@@ -73,7 +73,6 @@ export const agentVariableEditorWindowOverlay = defineOverlay<AgentVariableEdito
     key: "agent_variable",
     hydrate: (ctx) => import("./agentVariableEditorWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./agentVariableEditorWindow.render"),
 });
 
 

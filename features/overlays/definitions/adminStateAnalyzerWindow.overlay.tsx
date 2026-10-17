@@ -73,7 +73,6 @@ export const adminStateAnalyzerWindowOverlay = defineOverlay<AdminStateAnalyzerW
     key: "state_analyzer",
     hydrate: (ctx) => import("./adminStateAnalyzerWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./adminStateAnalyzerWindow.render"),
 });
 
 

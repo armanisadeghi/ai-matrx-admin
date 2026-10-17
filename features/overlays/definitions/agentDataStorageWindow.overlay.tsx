@@ -78,7 +78,6 @@ export const agentDataStorageWindowOverlay = defineOverlay<AgentDataStorageWindo
     ephemeral: true,
     deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
   },
-  render: () => import("./agentDataStorageWindow.render"),
 });
 
 

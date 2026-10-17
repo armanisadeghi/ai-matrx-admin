@@ -81,7 +81,7 @@ The bridge has shipped; this is the live shape.
      Bearer; cookie wins).
    - The window-panels deep-link if the action is "open this UI" —
      add a `urlSync.key` to the registry and a `registerPanelHydrator`
-     in `features/window-panels/url-sync/initUrlHydration.ts`. No
+     in `features/overlays/definitions/<id>.link.ts`. No
      new RPC needed.
    - A Broadcast subscriber inside the relevant Redux slice when the
      action is "react to extension event" rather than "do something
@@ -104,7 +104,7 @@ The bridge has shipped; this is the live shape.
 | `../common-docs/systems/apps/extension/CHANNELS.md` | Architecture + protocol reference for this side of the bridge. |
 | `lib/supabase/messaging.ts` | Broadcast / Presence / Postgres Changes substrate. Add the `matrx-extension-bridge:<userId>` channel here. |
 | `features/window-panels/registry/windowRegistry.ts` | Window registry — declare `urlSync.key` for any panel the extension will deep-link into. |
-| `features/window-panels/url-sync/initUrlHydration.ts` | `registerPanelHydrator(...)` for each `urlSync.key`. |
+| `features/overlays/definitions/<id>.link.ts` | `registerPanelHydrator(...)` for each `urlSync.key`. |
 | `app/api/agent/feedback/route.ts` | Reference Bearer-`AGENT_API_KEY` route for headless calls. |
 | `app/api/mcp/[transport]/route.ts` | Reference dual-auth route (cookie OR Bearer, with `?token=` fallback). |
 | `app/api/extension/append-message/route.ts` | **Live.** Reference headless inbound route for the extension. |

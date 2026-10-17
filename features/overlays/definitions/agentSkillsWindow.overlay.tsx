@@ -49,7 +49,6 @@ export const agentSkillsWindowOverlay = defineOverlay<AgentSkillsWindowDefinitio
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./agentSkillsWindow.render"),
 });
 
 

@@ -85,7 +85,6 @@ export const directiveItemWindowOverlay = defineOverlay<DirectiveItemWindowDefin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./directiveItemWindow.render"),
 });
 
 

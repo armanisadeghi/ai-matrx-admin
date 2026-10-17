@@ -84,7 +84,6 @@ export const accessSetupWindowOverlay = defineOverlay<AccessSetupWindowDefinitio
     key: "access-setup",
     hydrate: (ctx) => import("./accessSetupWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./accessSetupWindow.render"),
 });
 
 

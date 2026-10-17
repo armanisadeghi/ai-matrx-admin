@@ -80,7 +80,6 @@ export const noteInfoWindowOverlay = defineOverlay<NoteInfoWindowDefinitionData>
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./noteInfoWindow.render"),
 });
 
 

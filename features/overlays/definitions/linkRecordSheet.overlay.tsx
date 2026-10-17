@@ -40,7 +40,6 @@ export const linkRecordSheetOverlay = defineOverlay<LinkRecordSheetDefinitionDat
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: true,
-  render: () => import("./linkRecordSheet.render"),
 });
 
 

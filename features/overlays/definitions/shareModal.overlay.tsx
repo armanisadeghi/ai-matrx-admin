@@ -97,7 +97,6 @@ export const shareModalOverlay = defineOverlay<ShareModalDefinitionData>()({
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./shareModal.render"),
 });
 
 

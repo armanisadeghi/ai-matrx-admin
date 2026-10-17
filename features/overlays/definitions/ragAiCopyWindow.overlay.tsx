@@ -70,7 +70,6 @@ export const ragAiCopyWindowOverlay = defineOverlay<RagAiCopyWindowDefinitionDat
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./ragAiCopyWindow.render"),
 });
 
 

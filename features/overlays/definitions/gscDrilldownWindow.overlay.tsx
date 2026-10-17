@@ -119,7 +119,6 @@ export const gscDrilldownWindowOverlay = defineOverlay<GscDrilldownWindowDefinit
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./gscDrilldownWindow.render"),
 });
 
 

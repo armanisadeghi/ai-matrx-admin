@@ -73,7 +73,6 @@ export const researchContextPreviewWindowOverlay = defineOverlay<ResearchContext
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./researchContextPreviewWindow.render"),
 });
 
 

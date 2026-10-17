@@ -55,7 +55,6 @@ export const resourcePickerWindowOverlay = defineOverlay<ResourcePickerWindowDef
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./resourcePickerWindow.render"),
 });
 
 

@@ -79,7 +79,6 @@ export const tableViewerWindowOverlay = defineOverlay<TableViewerWindowDefinitio
     windowId: "table-viewer-window",
     mobile: "fullscreen",
   },
-  render: () => import("./tableViewerWindow.render"),
 });
 
 

@@ -120,7 +120,6 @@ export const topicalMapWindowOverlay = defineOverlay<TopicalMapWindowDefinitionD
     key: "topical_map",
     hydrate: (ctx) => import("./topicalMapWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./topicalMapWindow.render"),
 });
 
 

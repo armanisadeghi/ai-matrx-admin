@@ -84,7 +84,6 @@ export const saveToNotesFullscreenOverlay = defineOverlay<SaveToNotesFullscreenD
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./saveToNotesFullscreen.render"),
 });
 
 

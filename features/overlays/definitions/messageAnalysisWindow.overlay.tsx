@@ -86,7 +86,6 @@ export const messageAnalysisWindowOverlay = defineOverlay<MessageAnalysisWindowD
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./messageAnalysisWindow.render"),
 });
 
 

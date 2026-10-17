@@ -111,7 +111,6 @@ export const marketingMediaAssetWindowOverlay = defineOverlay<MarketingMediaAsse
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./marketingMediaAssetWindow.render"),
 });
 
 

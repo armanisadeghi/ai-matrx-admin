@@ -79,7 +79,6 @@ export const markdownEditorOverlay = defineOverlay<MarkdownEditorDefinitionData>
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./markdownEditor.render"),
 });
 
 

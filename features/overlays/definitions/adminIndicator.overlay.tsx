@@ -63,7 +63,6 @@ export const adminIndicatorOverlay = defineOverlay<AdminIndicatorDefinitionData>
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./adminIndicator.render"),
 });
 
 

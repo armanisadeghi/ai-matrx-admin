@@ -63,7 +63,6 @@ export const brandChannelWindowOverlay = defineOverlay<BrandChannelWindowDefinit
     key: "brand_channel",
     hydrate: (ctx) => import("./brandChannelWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./brandChannelWindow.render"),
 });
 
 

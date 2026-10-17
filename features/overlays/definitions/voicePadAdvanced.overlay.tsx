@@ -84,7 +84,6 @@ export const voicePadAdvancedOverlay = defineOverlay<VoicePadAdvancedDefinitionD
     key: "voice-advanced",
     hydrate: (ctx) => import("./voicePadAdvanced.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./voicePadAdvanced.render"),
 });
 
 

@@ -71,7 +71,6 @@ export const scopeBatchImportWindowOverlay = defineOverlay<ScopeBatchImportWindo
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./scopeBatchImportWindow.render"),
 });
 
 

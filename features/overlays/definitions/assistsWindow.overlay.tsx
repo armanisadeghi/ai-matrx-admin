@@ -56,7 +56,6 @@ export const assistsWindowOverlay = defineOverlay<AssistsWindowDefinitionData>()
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./assistsWindow.render"),
 });
 
 

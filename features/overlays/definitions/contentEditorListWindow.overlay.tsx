@@ -54,7 +54,6 @@ export const contentEditorListWindowOverlay = defineOverlay<ContentEditorListWin
     mobile: "drawer",
     mobileSidebarAs: "drawer",
   },
-  render: () => import("./contentEditorListWindow.render"),
 });
 
 

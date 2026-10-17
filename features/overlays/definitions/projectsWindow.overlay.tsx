@@ -68,7 +68,6 @@ export const projectsWindowOverlay = defineOverlay<ProjectsWindowDefinitionData>
     windowId: "projects-window",
     mobile: "fullscreen",
   },
-  render: () => import("./projectsWindow.render"),
 });
 
 

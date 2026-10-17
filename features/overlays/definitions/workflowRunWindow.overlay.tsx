@@ -111,7 +111,6 @@ export const workflowRunWindowOverlay = defineOverlay<WorkflowRunWindowDefinitio
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./workflowRunWindow.render"),
 });
 
 

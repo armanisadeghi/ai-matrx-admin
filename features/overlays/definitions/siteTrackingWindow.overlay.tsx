@@ -63,7 +63,6 @@ export const siteTrackingWindowOverlay = defineOverlay<SiteTrackingWindowDefinit
     key: "site_tracking",
     hydrate: (ctx) => import("./siteTrackingWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./siteTrackingWindow.render"),
 });
 
 

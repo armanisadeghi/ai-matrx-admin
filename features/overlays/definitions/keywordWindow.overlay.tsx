@@ -89,7 +89,6 @@ export const keywordWindowOverlay = defineOverlay<KeywordWindowDefinitionData>()
     key: "keyword",
     hydrate: (ctx) => import("./keywordWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./keywordWindow.render"),
 });
 
 

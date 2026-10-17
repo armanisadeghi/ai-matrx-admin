@@ -76,7 +76,6 @@ export const promptPreviewWindowOverlay = defineOverlay<PromptPreviewWindowDefin
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./promptPreviewWindow.render"),
 });
 
 

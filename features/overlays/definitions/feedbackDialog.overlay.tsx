@@ -138,7 +138,6 @@ export const feedbackDialogOverlay = defineOverlay<FeedbackDialogDefinitionData>
     key: "feedback",
     hydrate: (ctx) => import("./feedbackDialog.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./feedbackDialog.render"),
 });
 
 

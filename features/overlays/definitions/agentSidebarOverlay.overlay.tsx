@@ -77,7 +77,6 @@ export const agentSidebarOverlayOverlay = defineOverlay<AgentSidebarOverlayDefin
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentSidebarOverlay.render"),
 });
 
 

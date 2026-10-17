@@ -69,7 +69,6 @@ export const pdfBatchExtractDebugWindowOverlay = defineOverlay<PdfBatchExtractDe
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./pdfBatchExtractDebugWindow.render"),
 });
 
 

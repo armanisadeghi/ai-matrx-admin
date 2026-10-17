@@ -110,7 +110,6 @@ export const copySubsetWindowOverlay = defineOverlay<CopySubsetWindowDefinitionD
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./copySubsetWindow.render"),
 });
 
 

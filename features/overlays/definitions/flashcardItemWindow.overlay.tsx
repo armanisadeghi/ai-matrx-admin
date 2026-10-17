@@ -100,7 +100,6 @@ export const flashcardItemWindowOverlay = defineOverlay<FlashcardItemWindowDefin
     windowId: "flashcard-item-window",
     mobile: "fullscreen",
   },
-  render: () => import("./flashcardItemWindow.render"),
 });
 
 

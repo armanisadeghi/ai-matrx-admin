@@ -88,7 +88,6 @@ export const sendToAgentWindowOverlay = defineOverlay<SendToAgentWindowDefinitio
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./sendToAgentWindow.render"),
 });
 
 

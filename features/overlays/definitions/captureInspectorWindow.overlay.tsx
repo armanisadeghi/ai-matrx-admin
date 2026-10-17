@@ -72,7 +72,6 @@ export const captureInspectorWindowOverlay = defineOverlay<CaptureInspectorWindo
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./captureInspectorWindow.render"),
 });
 
 

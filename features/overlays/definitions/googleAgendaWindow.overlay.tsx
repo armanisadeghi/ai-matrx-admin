@@ -60,7 +60,6 @@ export const googleAgendaWindowOverlay = defineOverlay<GoogleAgendaWindowDefinit
     key: "agenda",
     hydrate: (ctx) => import("./googleAgendaWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./googleAgendaWindow.render"),
 });
 
 

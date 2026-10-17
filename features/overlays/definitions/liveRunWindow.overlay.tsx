@@ -292,7 +292,6 @@ export const liveRunWindowOverlay = defineOverlay<LiveRunWindowDefinitionData>()
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./liveRunWindow.render"),
 });
 
 

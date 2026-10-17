@@ -80,7 +80,6 @@ export const aiVoiceWindowOverlay = defineOverlay<AiVoiceWindowDefinitionData>()
     key: "aiVoiceWindow",
     hydrate: (ctx) => import("./aiVoiceWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./aiVoiceWindow.render"),
 });
 
 

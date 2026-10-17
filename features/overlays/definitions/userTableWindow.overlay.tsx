@@ -76,7 +76,6 @@ export const userTableWindowOverlay = defineOverlay<UserTableWindowDefinitionDat
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./userTableWindow.render"),
 });
 
 

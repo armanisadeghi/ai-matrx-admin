@@ -94,7 +94,6 @@ export const contextAssignmentOverlay = defineOverlay<ContextAssignmentDefinitio
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./contextAssignment.render"),
 });
 
 

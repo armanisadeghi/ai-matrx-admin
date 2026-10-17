@@ -112,7 +112,6 @@ export const toolCallWindowOverlay = defineOverlay<ToolCallWindowDefinitionData>
     mobileSidebarAs: "drawer",
     ephemeral: true,
   },
-  render: () => import("./toolCallWindow.render"),
 });
 
 

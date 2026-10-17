@@ -47,7 +47,6 @@ export const characterCounterWindowOverlay = defineOverlay<CharacterCounterWindo
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./characterCounterWindow.render"),
 });
 
 

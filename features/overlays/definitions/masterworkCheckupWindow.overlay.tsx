@@ -72,7 +72,6 @@ export const masterworkCheckupWindowOverlay = defineOverlay<MasterworkCheckupWin
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./masterworkCheckupWindow.render"),
 });
 
 

@@ -1,16 +1,12 @@
-# Window Panels — mobile presentation
+# Window Panels: phone presentation
 
-Companion to the `window-panels` skill. Read when the task involves how a window renders on mobile (`mobilePresentation`).
+Companion to the `window-panels` skill. Read when choosing or debugging how a window renders on a phone. The surfaces are the package's (`src/window/mobile/`: `MobileDrawerSurface`, `MobileCardSurface`, fullscreen); the choice is the definition's `window.mobile` in `features/overlays/definitions/<id>.overlay.ts(x)` (mirrored in `definitions/overlay-meta-index.ts`).
 
-## Mobile presentation
-
-On mobile, `WindowPanel` routes by the overlay's `mobilePresentation` (from `getStaticEntryByOverlayId`; default `"fullscreen"`):
-
-| Value | Rendered as | When |
+| `window.mobile` | Rendered as | Use for |
 |---|---|---|
-| `"fullscreen"` | Full-viewport takeover (one window at a time) | Content-dominant windows (Notes, AgentRun, News). Default. |
-| `"drawer"` | Bottom-sheet (`mobile/MobileDrawerSurface.tsx`, vaul) | Forms, settings, sidebar-heavy windows. Sidebars collapse into a nested drawer (`mobileSidebarAs`, default `"drawer"`). |
-| `"card"` | Floating bottom-right card (`mobile/MobileCardSurface.tsx`), non-modal | Small utility / debug surfaces. |
-| `"hidden"` | Nothing (dev warning if opened) | Windows that shouldn't exist on mobile. |
+| `"fullscreen"` | Full-viewport takeover, one window at a time | Content-dominant windows (Notes, AgentRun, News). |
+| `"drawer"` | Bottom sheet; a sidebar collapses into a nested drawer (`window.mobileSidebarAs`) | Forms, settings, sidebar-heavy windows. |
+| `"card"` | Floating bottom-right card, non-modal | Small utility and debug surfaces. |
+| `"hidden"` | Nothing | Windows that must not exist on a phone. |
 
-Decision tree: has a sidebar → `"drawer"`; content-dominant → `"fullscreen"`; small utility/debug → `"card"`; never on mobile → `"hidden"`. Mobile rules: `h-dvh`, `pb-safe`, `--header-height`, input `font-size ≥ 16px` — see the `ios-mobile-first` skill.
+Decision: has a sidebar, drawer; content-dominant, fullscreen; small utility, card; never on a phone, hidden. Phone rules: `h-dvh`, `pb-safe`, `--header-height` (the `WindowsProvider` `mobileTopOffset`), input `font-size >= 16px` (see the `ios-mobile-first` skill). The secondary panel has no phone route; the window handles it. A window that swaps `WindowPanel` for its own phone surface calls `useOverlaySurfaceRenderAck` (from `@ai-matrx/summon/window`) so the render watchdog counts that mount as proof of visibility.

@@ -104,7 +104,6 @@ export const agentSettingsWindowOverlay = defineOverlay<AgentSettingsWindowDefin
     key: "agent-settings",
     hydrate: (ctx) => import("./agentSettingsWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./agentSettingsWindow.render"),
 });
 
 

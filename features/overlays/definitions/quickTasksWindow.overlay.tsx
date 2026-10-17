@@ -73,7 +73,6 @@ export const quickTasksWindowOverlay = defineOverlay<QuickTasksWindowDefinitionD
     key: "quick_tasks",
     hydrate: (ctx) => import("./quickTasksWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./quickTasksWindow.render"),
 });
 
 

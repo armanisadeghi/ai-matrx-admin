@@ -56,7 +56,6 @@ export const waitingRunsWindowOverlay = defineOverlay<WaitingRunsWindowDefinitio
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./waitingRunsWindow.render"),
 });
 
 

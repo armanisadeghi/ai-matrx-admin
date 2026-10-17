@@ -68,7 +68,6 @@ export const guestAiAllowanceOverlay = defineOverlay<GuestAiAllowanceDefinitionD
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./guestAiAllowance.render"),
 });
 
 

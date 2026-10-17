@@ -68,7 +68,6 @@ export const contextSwitcherWindowOverlay = defineOverlay<ContextSwitcherWindowD
     windowId: "context-switcher-window",
     mobile: "drawer",
   },
-  render: () => import("./contextSwitcherWindow.render"),
 });
 
 

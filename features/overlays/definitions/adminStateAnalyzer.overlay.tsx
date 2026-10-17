@@ -63,7 +63,6 @@ export const adminStateAnalyzerOverlay = defineOverlay<AdminStateAnalyzerDefinit
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./adminStateAnalyzer.render"),
 });
 
 

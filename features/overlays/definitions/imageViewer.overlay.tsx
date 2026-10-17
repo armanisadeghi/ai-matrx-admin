@@ -139,7 +139,6 @@ export const imageViewerOverlay = defineOverlay<ImageViewerDefinitionData>()({
     windowId: "image-viewer-window",
     mobile: "fullscreen",
   },
-  render: () => import("./imageViewer.render"),
 });
 
 

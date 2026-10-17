@@ -71,7 +71,6 @@ export const surfaceContextWindowOverlay = defineOverlay<SurfaceContextWindowDef
     mobileSidebarAs: "drawer",
     ephemeral: true,
   },
-  render: () => import("./surfaceContextWindow.render"),
 });
 
 

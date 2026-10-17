@@ -93,7 +93,6 @@ export const masterworkBuildWindowOverlay = defineOverlay<MasterworkBuildWindowD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./masterworkBuildWindow.render"),
 });
 
 

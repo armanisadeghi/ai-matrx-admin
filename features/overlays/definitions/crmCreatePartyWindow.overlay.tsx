@@ -68,7 +68,6 @@ export const crmCreatePartyWindowOverlay = defineOverlay<CrmCreatePartyWindowDef
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./crmCreatePartyWindow.render"),
 });
 
 

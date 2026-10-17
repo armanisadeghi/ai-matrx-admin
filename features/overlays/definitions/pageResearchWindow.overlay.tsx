@@ -75,7 +75,6 @@ export const pageResearchWindowOverlay = defineOverlay<PageResearchWindowDefinit
     windowId: "page-research-window",
     mobile: "fullscreen",
   },
-  render: () => import("./pageResearchWindow.render"),
 });
 
 

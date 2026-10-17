@@ -69,7 +69,6 @@ export const taskEditorWindowOverlay = defineOverlay<TaskEditorWindowDefinitionD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./taskEditorWindow.render"),
 });
 
 

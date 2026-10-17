@@ -109,7 +109,6 @@ export const taskQuickCreateWindowOverlay = defineOverlay<TaskQuickCreateWindowD
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./taskQuickCreateWindow.render"),
 });
 
 

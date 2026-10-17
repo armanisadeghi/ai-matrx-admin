@@ -82,7 +82,6 @@ export const pickListManagerWindowOverlay = defineOverlay<PickListManagerWindowD
     key: "pickListManager",
     hydrate: (ctx) => import("./pickListManagerWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./pickListManagerWindow.render"),
 });
 
 

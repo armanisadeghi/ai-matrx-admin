@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
-import { appOverlayDefinition } from "@/features/overlays/definitions/register";
+import { OVERLAY_META_INDEX } from "@/features/overlays/definitions/overlay-meta-index";
 import { MIGRATED_NAV_PANEL_TILE_IDS } from "@/features/shell/constants/nav-window-panels";
 import { MenuDivider, MenuGridItem, MenuSection } from "./menuPrimitives";
 import { activateToolsGridTile } from "./activateToolsGridTile";
@@ -136,7 +136,7 @@ export default function ToolsGrid({
               {tiles.map((tile) => {
                 const Icon = tile.icon;
                 const entry = tile.overlayId
-                  ? appOverlayDefinition(tile.overlayId)
+                  ? OVERLAY_META_INDEX.find((row) => row.id === tile.overlayId)
                   : undefined;
                 return (
                   <MenuGridItem

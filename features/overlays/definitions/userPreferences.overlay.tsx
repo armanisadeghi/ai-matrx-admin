@@ -63,7 +63,6 @@ export const userPreferencesOverlay = defineOverlay<UserPreferencesDefinitionDat
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./userPreferences.render"),
 });
 
 

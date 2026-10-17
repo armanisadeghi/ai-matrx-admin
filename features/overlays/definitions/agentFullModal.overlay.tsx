@@ -77,7 +77,6 @@ export const agentFullModalOverlay = defineOverlay<AgentFullModalDefinitionData>
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentFullModal.render"),
 });
 
 

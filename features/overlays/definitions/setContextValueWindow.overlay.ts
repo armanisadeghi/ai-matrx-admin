@@ -12,7 +12,6 @@ export const setContextValueWindowOverlay = defineOverlay<SetContextValueWindowD
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./setContextValueWindow.render"),
 });
 
 declare module "@ai-matrx/summon" {

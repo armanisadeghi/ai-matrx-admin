@@ -20,7 +20,6 @@ export const readAloudVoiceSettingsOverlay = defineOverlay<ReadAloudVoiceSetting
     windowId: "read-aloud-voice-settings",
     mobile: "card",
   },
-  render: () => import("./readAloudVoiceSettings.render"),
 });
 
 declare module "@ai-matrx/summon" {

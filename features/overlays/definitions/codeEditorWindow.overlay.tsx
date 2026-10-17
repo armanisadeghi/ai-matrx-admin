@@ -102,7 +102,6 @@ export const codeEditorWindowOverlay = defineOverlay<CodeEditorWindowDefinitionD
     windowId: "code-editor-window",
     mobile: "fullscreen",
   },
-  render: () => import("./codeEditorWindow.render"),
 });
 
 

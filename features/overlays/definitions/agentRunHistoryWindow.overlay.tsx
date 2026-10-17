@@ -85,7 +85,6 @@ export const agentRunHistoryWindowOverlay = defineOverlay<AgentRunHistoryWindowD
     windowId: "agent-run-history-window",
     mobile: "fullscreen",
   },
-  render: () => import("./agentRunHistoryWindow.render"),
 });
 
 

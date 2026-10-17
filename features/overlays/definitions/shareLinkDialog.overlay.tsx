@@ -43,7 +43,6 @@ export const shareLinkDialogOverlay = defineOverlay<ShareLinkDialogDefinitionDat
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./shareLinkDialog.render"),
 });
 
 

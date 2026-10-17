@@ -11,7 +11,6 @@ export const attachResourcePickerOverlay = defineOverlay<AttachResourcePickerDef
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./attachResourcePicker.render"),
 });
 
 declare module "@ai-matrx/summon" {

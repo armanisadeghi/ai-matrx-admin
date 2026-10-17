@@ -82,7 +82,6 @@ export const cloudFilesWindowOverlay = defineOverlay<CloudFilesWindowDefinitionD
     key: "cloud_files", aliases: ["files"],
     hydrate: (ctx) => import("./cloudFilesWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./cloudFilesWindow.render"),
 });
 
 

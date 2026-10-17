@@ -52,7 +52,6 @@ export const changeReviewWindowOverlay = defineOverlay<ChangeReviewWindowDefinit
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./changeReviewWindow.render"),
 });
 
 

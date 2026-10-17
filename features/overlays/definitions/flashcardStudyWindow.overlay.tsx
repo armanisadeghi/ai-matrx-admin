@@ -67,7 +67,6 @@ export const flashcardStudyWindowOverlay = defineOverlay<FlashcardStudyWindowDef
     mobile: "fullscreen",
     mobileSidebarAs: "drawer",
   },
-  render: () => import("./flashcardStudyWindow.render"),
 });
 
 

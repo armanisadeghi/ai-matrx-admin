@@ -65,7 +65,6 @@ export const shortcutEditorWindowOverlay = defineOverlay<ShortcutEditorWindowDef
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./shortcutEditorWindow.render"),
 });
 
 

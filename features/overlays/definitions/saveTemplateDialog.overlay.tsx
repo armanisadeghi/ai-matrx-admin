@@ -49,7 +49,6 @@ export const saveTemplateDialogOverlay = defineOverlay<SaveTemplateDialogDefinit
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./saveTemplateDialog.render"),
 });
 
 

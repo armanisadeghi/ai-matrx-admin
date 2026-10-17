@@ -89,7 +89,6 @@ export const siteCommandRunWindowOverlay = defineOverlay<SiteCommandRunWindowDef
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./siteCommandRunWindow.render"),
 });
 
 

@@ -101,7 +101,6 @@ export const googleConnectWindowOverlay = defineOverlay<GoogleConnectWindowDefin
     key: "google_connect",
     hydrate: (ctx) => import("./googleConnectWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./googleConnectWindow.render"),
 });
 
 

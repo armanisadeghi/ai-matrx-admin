@@ -82,7 +82,6 @@ export const agentFlexiblePanelOverlay = defineOverlay<AgentFlexiblePanelDefinit
     windowId: "agent-flexible-panel",
     ephemeral: true,
   },
-  render: () => import("./agentFlexiblePanel.render"),
 });
 
 

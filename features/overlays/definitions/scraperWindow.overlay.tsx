@@ -98,7 +98,6 @@ export const scraperWindowOverlay = defineOverlay<ScraperWindowDefinitionData>()
     key: "scraper",
     hydrate: (ctx) => import("./scraperWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./scraperWindow.render"),
 });
 
 

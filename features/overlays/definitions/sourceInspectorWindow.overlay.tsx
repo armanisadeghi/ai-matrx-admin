@@ -118,7 +118,6 @@ export const sourceInspectorWindowOverlay = defineOverlay<SourceInspectorWindowD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./sourceInspectorWindow.render"),
 });
 
 

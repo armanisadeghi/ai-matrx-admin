@@ -46,7 +46,6 @@ export const crmManagerWindowOverlay = defineOverlay<CrmManagerWindowDefinitionD
     windowId: "crm-manager-window",
     mobile: "fullscreen",
   },
-  render: () => import("./crmManagerWindow.render"),
 });
 
 

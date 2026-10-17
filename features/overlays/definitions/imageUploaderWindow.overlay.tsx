@@ -78,7 +78,6 @@ export const imageUploaderWindowOverlay = defineOverlay<ImageUploaderWindowDefin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./imageUploaderWindow.render"),
 });
 
 

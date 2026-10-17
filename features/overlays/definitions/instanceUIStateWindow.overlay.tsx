@@ -77,7 +77,6 @@ export const instanceUIStateWindowOverlay = defineOverlay<InstanceUIStateWindowD
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./instanceUIStateWindow.render"),
 });
 
 

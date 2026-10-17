@@ -95,7 +95,6 @@ export const flashcardsBlockWindowOverlay = defineOverlay<FlashcardsBlockWindowD
     windowId: "flashcards-block-window",
     mobile: "fullscreen",
   },
-  render: () => import("./flashcardsBlockWindow.render"),
 });
 
 

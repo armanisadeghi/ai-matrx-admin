@@ -78,7 +78,6 @@ export const hierarchyCreationWindowOverlay = defineOverlay<HierarchyCreationWin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./hierarchyCreationWindow.render"),
 });
 
 

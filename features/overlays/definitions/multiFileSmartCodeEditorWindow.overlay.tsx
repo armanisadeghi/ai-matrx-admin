@@ -56,7 +56,6 @@ export const multiFileSmartCodeEditorWindowOverlay = defineOverlay<MultiFileSmar
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./multiFileSmartCodeEditorWindow.render"),
 });
 
 

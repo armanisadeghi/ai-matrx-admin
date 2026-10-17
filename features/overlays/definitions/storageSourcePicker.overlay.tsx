@@ -65,7 +65,6 @@ export const storageSourcePickerOverlay = defineOverlay<StorageSourcePickerDefin
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./storageSourcePicker.render"),
 });
 
 

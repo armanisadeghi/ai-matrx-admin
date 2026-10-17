@@ -91,7 +91,6 @@ export const referencePickerOverlay = defineOverlay<ReferencePickerDefinitionDat
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./referencePicker.render"),
 });
 
 

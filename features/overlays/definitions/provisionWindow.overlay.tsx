@@ -44,7 +44,6 @@ export const provisionWindowOverlay = defineOverlay<ProvisionWindowDefinitionDat
     key: "provision",
     hydrate: (ctx) => import("./provisionWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./provisionWindow.render"),
 });
 
 

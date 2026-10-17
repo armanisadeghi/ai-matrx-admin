@@ -79,7 +79,6 @@ export const agentDebugWindowOverlay = defineOverlay<AgentDebugWindowDefinitionD
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./agentDebugWindow.render"),
 });
 
 

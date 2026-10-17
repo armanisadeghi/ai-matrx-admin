@@ -23,7 +23,6 @@ export const credentialVaultWindowOverlay = defineOverlay<CredentialVaultWindowD
     key: "vault",
     hydrate: (ctx) => import("./credentialVaultWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./credentialVaultWindow.render"),
 });
 
 

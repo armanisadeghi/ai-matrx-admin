@@ -87,7 +87,6 @@ export const masterworkAddRuleWindowOverlay = defineOverlay<MasterworkAddRuleWin
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./masterworkAddRuleWindow.render"),
 });
 
 

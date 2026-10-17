@@ -45,7 +45,6 @@ export const smartAddHelperWindowOverlay = defineOverlay<SmartAddHelperWindowDef
     key: "smart_add_helper",
     hydrate: (ctx) => import("./smartAddHelperWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./smartAddHelperWindow.render"),
 });
 
 

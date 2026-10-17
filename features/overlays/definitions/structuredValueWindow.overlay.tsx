@@ -88,7 +88,6 @@ export const structuredValueWindowOverlay = defineOverlay<StructuredValueWindowD
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./structuredValueWindow.render"),
 });
 
 

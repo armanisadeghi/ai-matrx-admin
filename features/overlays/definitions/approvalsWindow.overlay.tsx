@@ -60,7 +60,6 @@ export const approvalsWindowOverlay = defineOverlay<ApprovalsWindowDefinitionDat
     key: "approvals",
     hydrate: (ctx) => import("./approvalsWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./approvalsWindow.render"),
 });
 
 

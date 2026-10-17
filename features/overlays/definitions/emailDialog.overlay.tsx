@@ -75,7 +75,6 @@ export const emailDialogOverlay = defineOverlay<EmailDialogDefinitionData>()({
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./emailDialog.render"),
 });
 
 

@@ -79,7 +79,6 @@ export const agentChatAssistantOverlay = defineOverlay<AgentChatAssistantDefinit
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentChatAssistant.render"),
 });
 
 

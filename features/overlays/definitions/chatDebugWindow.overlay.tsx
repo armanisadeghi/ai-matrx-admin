@@ -77,7 +77,6 @@ export const chatDebugWindowOverlay = defineOverlay<ChatDebugWindowDefinitionDat
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./chatDebugWindow.render"),
 });
 
 

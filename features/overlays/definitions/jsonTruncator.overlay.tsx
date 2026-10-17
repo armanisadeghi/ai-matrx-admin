@@ -85,7 +85,6 @@ export const jsonTruncatorOverlay = defineOverlay<JsonTruncatorDefinitionData>()
     key: "json_truncator",
     hydrate: (ctx) => import("./jsonTruncator.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./jsonTruncator.render"),
 });
 
 

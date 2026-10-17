@@ -1,442 +1,85 @@
-# Overlays — FEATURE.md
+# Overlays: FEATURE.md
 
-> **Canonical reference** for the overlay rendering system.
-> Companion docs: [`features/window-panels/FEATURE.md`](../window-panels/FEATURE.md) (the WindowPanel component primitive), [`docs/archive/2026/OVERLAY_WINDOW_OVERHAUL.md`](../../docs/archive/2026/OVERLAY_WINDOW_OVERHAUL.md) (migration history + cutover plan), [`docs/OVERLAY_WINDOW_ROADMAP.md`](../../docs/OVERLAY_WINDOW_ROADMAP.md) (known gaps + future work).
-> **Skill**: [`.claude/skills/overlay-system/SKILL.md`](../../.claude/skills/overlay-system/SKILL.md).
-
----
+> Rules for the app's overlay layer. The engine is the npm package **`@ai-matrx/summon`** (source `../aidream/apps/shared/summon`; `README.md` to use it, `FEATURE.md` for its invariants). A package defect is fixed in the package, in the same session.
+> Skill: [`.claude/skills/overlay-system/SKILL.md`](../../.claude/skills/overlay-system/SKILL.md). The window frame: [`features/window-panels/FEATURE.md`](../window-panels/FEATURE.md).
 
 ## What this system is
 
-The overlay system is a **transport layer**: it renders any component at the top of the React tree when Redux state says so. It knows nothing about what those components are. Dialogs, sheets, modals, toasts, draggable windows, inline agent widgets — they all dispatch the same action, they all flow through the same controller, they all get explicit prop wiring.
+Any component (dialog, sheet, modal, toast, floating window, inline agent widget) is **summoned**: opened by dispatch, never in the React tree and never fetched until opened. Each overlay is declared once; the host renders the declared list. The app owns declarations and wiring; the package owns state, lifecycle, links, persistence and the window frame.
 
-It is deliberately **decoupled** from the WindowPanel component primitive. A window may participate in the overlay system, but it doesn't have to — and a non-window overlay (a dialog, a sheet) participates in the overlay system without ever touching window-panel code. This separation was the architectural goal of the May 2026 overhaul; see [`docs/archive/2026/OVERLAY_WINDOW_OVERHAUL.md`](../../docs/archive/2026/OVERLAY_WINDOW_OVERHAUL.md) for the history of why.
-
-### Dialogs that coexist with WindowPanel
-
-A dialog that launches a WindowPanel and must remain mounted uses the shared
-`<Dialog modal={false}>` contract. The shared dialog primitive omits its scrim,
-does not make the application inert, and renders below the window-manager's
-`z=1000` base, so the focused window is visible and interactive. True modal
-dialogs keep their blocking scrim at `z=10000`. Never solve this by raising
-`WindowPanel` above modal UI: that would permanently put every app-level window
-above confirmations and other intentionally blocking decisions.
-
-If the dialog does not own in-flight state, closing it before opening the
-window is also valid. Do not close a dialog whose unmount cleanup aborts or
-reaps the run merely to clear the screen; use the non-modal coexistence contract
-or move durable run ownership above the dialog first.
-
----
-
-## Mental model
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  Caller (any component anywhere)                                     │
-│    const openSettings = useOpenAgentSettingsWindow();                │
-│    openSettings({ initialAgentId: "abc" });                          │
-└──────────────────────────────┬───────────────────────────────────────┘
-                               │
-                               ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│  Opener (features/overlays/openers/<overlayId>.tsx)                  │
-│    Typed Options shape derived from the component's Props.           │
-│    Hides the callbackManager + ref-registry plumbing.                │
-│    Dispatches the appropriate openOverlay action.                    │
-└──────────────────────────────┬───────────────────────────────────────┘
-                               │
-                               ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│  overlaySlice (lib/redux/slices/overlaySlice.ts)                     │
-│    overlays[overlayId][instanceId] = { isOpen, data, lastUsedAt }    │
-│    Actions: openOverlay / closeOverlay / toggleOverlay /             │
-│             closeAllOverlays / pruneStaleInstances                   │
-└──────────────────────────────┬───────────────────────────────────────┘
-                               │
-                               ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│  OverlayController.tsx (the single mount, one big "boring" file)     │
-│    For each overlayId:                                                │
-│      const isOpen = useAppSelector(s => selectIsOverlayOpen(s, X));  │
-│      const data   = useAppSelector(s => selectOverlayData(s, X));    │
-│      {isOpen && <X prop1={…} prop2={…} />}   ← EXPLICIT WIRING       │
-└──────────────────────────────┬───────────────────────────────────────┘
-                               │
-                               ▼
-                  The actual overlay component
-                  (sometimes a <WindowPanel>, sometimes a dialog,
-                   sometimes a toast — the controller doesn't care)
-```
-
-**The non-negotiable rule:** every prop in `OverlayController.tsx` is wired by name. No `{...spread}`. TypeScript catches dispatch→component prop-shape drift at compile time. ESLint enforces (`no-restricted-syntax` on `JSXSpreadAttribute`).
-
----
-
-## Files at a glance
+## Layout
 
 ```
 features/overlays/
-├── OverlayController.tsx       # The single mount point. ~2,300 lines, intentionally explicit. Hand-maintained.
-├── catalogue.ts                # Render-free metadata for every overlay.
-└── openers/
-    ├── <overlayId>.tsx         # One file per overlay. Each exports useOpenX() + <XController />.
-    └── …                       # ~111 files.
+├── definitions/
+│   ├── <id>.overlay.ts(x)    defineOverlay + the old opener code (useOpenX, XController, option types)
+│   ├── <id>.render.tsx       the lazy chunk (typed JSX wiring from `data`, no spread)
+│   ├── <id>.link.ts          lazy ?panels= hydrator (57 overlays)
+│   ├── registry.ts           APP_OVERLAYS (one hand line per overlay)
+│   ├── overlay-definitions.gen.ts  generated imports registry.ts reads
+│   ├── register.ts           ensureAppOverlaysRegistered, appOverlayDefinition(id)
+│   ├── overlay-ids.ts        OVERLAY_ID_INDEX (derived from the meta index)
+│   ├── overlay-meta-index.ts OVERLAY_META_INDEX (generated; plain data for server components)
+│   ├── overlay-types.ts      OverlayWire / UntypedOverlayWire
+│   ├── overlay-host-types.ts OverlayHostTypes { dispatch: AppDispatch }
+│   ├── trayPreviews.ts       registerTrayPreview calls
+│   ├── callbacks/            callback contracts (callbackManager groups)
+│   ├── link-helpers.ts, controller-helpers.ts, audioDevices.tsx (opener only), __tests__/
+├── host/                     AppSummonProvider, AppWindowSelectionSurface, OverlayServices,
+│                             OverlayWorldHost, ports, overlayDiagnostics, overlayErrorReport,
+│                             OverlayErrorCopyForAi
+└── components/               shared overlay bodies (FindReplaceOverlay, ReferencePickerOverlay, …)
 ```
 
-The controller is imported directly (no `dynamic()` shell, no flag) and mounted once per provider tree — gated only by `selectAnyOverlayOpen` in `app/DeferredSingletons.tsx` (authenticated) and mounted directly in `app/(public)/PublicProviders.tsx` (public). The legacy system (`UnifiedOverlayController`, `OverlaySurface`, `windowRegistry.ts`, the diagnostics middleware, the feature flag, and the seed codegen) is **deleted** — there is no second path.
+## How it is wired
 
----
+| Piece | Where | What it does |
+|---|---|---|
+| Store | `lib/redux/rootReducer.ts` (`...summonReducers`), `lib/redux/store.ts` (`createSummonMiddleware`, `bindOverlayStoreState`) | The package's four slices (`overlays`, `windowManager`, `urlSync`, `overlayState`) live in the one app store. |
+| Provider | `features/overlays/host/AppSummonProvider.tsx`, mounted in `app/Providers.tsx` and `features/applets-host/AppletProviders.tsx` | `SummonProvider` with the app ports, a `renderWrapper` that puts every rendered overlay inside the chat surface layer boundary, the error card's admin "Copy for AI" extra, then `WindowsProvider` and `WindowTraySync` (`@ai-matrx/summon/window-host`). |
+| Ports | `host/ports.ts` | `identity` (`auth:<id>` / `guest:<fingerprint>`, ready from auth), `notify` (`@/lib/toast`), `errors` (`captureError`, named `overlays:<source>`), `debug` (admin debug mode), `persistence` (`createDataPersistence` over `@ai-matrx/data`, organization = active org). |
+| Services | `host/OverlayServices.tsx` (in `app/DeferredSingletonCore.tsx`) | `OverlayLinkManager` and `OverlayPersistence`, running before anything opens; dev-only `window.__overlaysTest`. |
+| World | `app/DeferredSingletonWrapper.tsx` → `app/DeferredOverlayWorld.tsx` → `host/OverlayWorldHost.tsx` | `<SummonHost definitions={APP_OVERLAYS} />`, loaded on the first open only. |
 
-## How to use the system
+## Rules
 
-### Open an overlay (imperative)
+1. **A closed overlay is nothing.** Not in the tree, no chunk fetched. Never render an overlay outside `SummonHost`; a component needed without a trigger goes in `app/Providers.tsx` or the layout, not here.
+2. **No JSX prop spread in a render module.** Wire props by name from narrowed `data` (or a definition `parse`). ESLint enforces it on `definitions/*.render.tsx`.
+3. **No functions in open data.** Handlers go through handles (`@ai-matrx/summon/handles`); only a channel/group id rides in the data. The owner (`overlayId:instanceId`) disposes them on close.
+4. **No `kind` discriminator.** A window overlay differs only by its `window` block and a `WindowPanel` in its render output.
+5. **Open through the definition** (`useOpenX`, `def.useSummon()`, `Controller`). Raw `openOverlay`/`closeOverlay` dispatch is for host code under `features/overlays/` and the extension bridge.
+6. **Every definition file starts with `"use client"`**; server components read `overlay-meta-index.ts`, never the registry.
+7. **Declare once**: `registry.ts` is the only hand list. `overlay-definitions.gen.ts` and `overlay-meta-index.ts` are generated by `pnpm gen:overlays`; `pnpm check:overlays` (`definitions/__tests__/overlayIndexIsGenerated.test.ts`, a release gate) fails when they are stale or a definition file is unlisted.
+8. **Window components are imported only by their render module.** `features/overlays/**` is exempt from the window-import ban.
+9. **Dialogs never block the AI.** Desktop `Dialog` is non-blocking by default; a workbench never passes `modal`. `pnpm check:blocking-dialogs`.
+10. **Notices open in a new place only**; they never route the current tab (`openFromNotice`, `check:notice-new-tab`).
 
-```tsx
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+## Adding one
 
-function MyComponent({ agentId }: { agentId: string }) {
-  const openRun = useOpenAgentRunWindow();
-  return (
-    <button
-      onClick={() =>
-        openRun({
-          initialAgentId: agentId,
-          initialSelectedConversationId: null,
-        })
-      }
-    >
-      Run agent
-    </button>
-  );
-}
-```
+Two files plus one line in `registry.ts` (`d.<id>Overlay,`), then `pnpm gen:overlays`. Steps and templates: the `overlay-system` skill. Type-check proves ids (a mistyped id is a compile error through the augmented `OverlayRegistry`); jest guards prove the index.
 
-The hook returns a stable function. Its argument is `OpenAgentRunWindowOptions`, derived from `AgentRunWindow`'s Props. TypeScript rejects unknown fields and wrong types.
+## Instances and keep-alive
 
-### Open an overlay (declarative)
+`instance: "single"` (instance id `default`) or `"multi"` (fresh id per open, or pass `instanceId`). `keepAlive`: `"none"` (default, unmount on close), `"hidden"` (stay mounted hidden, at most 8 closed ones, oldest evicted), `"restore"` (unmount; `useOverlayState` values return on reopen and persist when persistence is on). Minimizing a window always keeps its body mounted. `closesOnNavigation: true` closes an overlay that shows a piece of the page that opened it.
 
-```tsx
-import { AgentRunWindowController } from "@/features/overlays/openers/agentRunWindow";
+## Callbacks
 
-function MyComponent({ agentId, open }: Props) {
-  return (
-    <>
-      <SomeOtherUI />
-      {open && (
-        <AgentRunWindowController
-          initialAgentId={agentId}
-          initialSelectedConversationId={null}
-        />
-      )}
-    </>
-  );
-}
-```
+New overlays declare an event map on `defineOverlay` and pass `handlers` when opening; the render tree emits with `def.useEmit()`. The older callback-aware openers use a `callbackManager` group (`@ai-matrx/summon/handles`) and pass `callbackGroupId`; contracts live in `definitions/callbacks/` and `windows/<feature>/callbacks.ts`. **The severed-callback bug class:** a handler that never reaches the component because the render module forgot to pass `callbackGroupId` through. Wire it by name; emitting after the instance closed is a silent no-op by design.
 
-The Controller component dispatches `openOverlay` on mount, `closeOverlay` on unmount. Same Options shape. Use this when overlay state is naturally expressed as component lifecycle (especially for AI agents who want to "just render a window" without learning the slice or hook).
+## Links, persistence, errors
 
-### Close from inside the overlay component
+- **Links** (`?panels=`): `link: { key, hydrate }` on the definition; the one door is `openFromLink` / `openPanelRequest` (notifications use `openPanelsInPlace`, the extension bridge uses a zod envelope then `openPanelRequest`). Link data wins over restore data, restored geometry wins over link geometry.
+- **Persistence**: default-deny, declared per window (`window-panels` persistence branch). Rows are `users.user_surface_state`.
+- **Failures are never silent**: a render module that does not load in 12 s becomes a `ChunkLoadError` with Try again; a render error shows the package's error card (admins: "Copy for AI" built by `host/overlayErrorReport.ts` and `host/overlayDiagnostics.ts`); an overlay that opened and never rendered is announced by the package watchdog.
 
-The OverlayController passes an `onClose` prop to every overlay component that declares one. Just call it:
+## Testing
 
-```tsx
-function MyDialog({ isOpen, onClose }: MyDialogProps) {
-  return (
-    <Dialog open={isOpen} onClose={onClose}>
-      …<button onClick={onClose}>Cancel</button>
-    </Dialog>
-  );
-}
-```
+`definitions/__tests__/` (generated-index guard, link kit, ported link tests, per-overlay tests) and `app/__tests__/nothing-loads-until-engaged.test.tsx`. Package fakes: `@ai-matrx/summon/testing` (`createTestPorts`, `createTestSummonStore`, `createMemoryPersistence`). Runtime sweep of every id (dev build, admin sign-in from the app `.env`): `npx tsx scripts/overlays-convert/sweep.ts --url http://<session>.localhost:3001 [--only id1,id2] [--data data.json]`. Ids that need data from their launcher (`agentInlineOverlay`, `applyToSourceReview`, `resourcePickerWindow`) legitimately close themselves in a bare sweep.
 
-For multi-instance overlays, the controller also passes `instanceId`; close it with `onClose` (which knows the instance id).
+## Open items
 
-### Open with callbacks
-
-For overlays that need to talk back to the caller (e.g., "tell me when the user uploads an image"), use the **callback-aware openers**. They hide the `callbackManager` registry entirely:
-
-```tsx
-const openUploader = useOpenImageUploaderWindow();
-const handle = openUploader({
-  preset: "logo",
-  currentUrl: form.logoUrl,
-  onUploaded: (e) => setLogoUrl(e.result.primary_url), // feels like a normal callback
-  onCleared: () => setLogoUrl(""),
-});
-// …later
-handle.close();
-```
-
-Internally, the opener creates a callback group via `callbackManager`, passes the `callbackGroupId` string through Redux, and the component subscribes. **Functions never travel through Redux.** Callback contracts live in [`features/window-panels/windows/<feature>/callbacks.ts`](../window-panels/windows/) (will move to `features/overlays/callbacks/` in a future cleanup pass).
-
-**A save callback is a settlement boundary.** `fullScreenEditor` and `htmlPreview` register exactly one promise-returning save owner (`onSave` xor `onAction`). Callback creation rejects malformed owners before allocating a group, and fan-out rejects an original runtime void result before any async wrapper can acknowledge it. The bridge awaits the command, retains the group and entered buffer on rejection, and closes/removes only after acknowledgement. Observers are diagnostic-only after success. While pending, `FullScreenOverlay` blocks Save, primary actions, Cancel, X, Escape, backdrop, tabs, and editor interaction on both desktop and selected mobile-tab bodies; retry uses the retained command. The canonical dialog close affordance is hidden during pending work. `disposeFullScreenEditorCallbackGroup` is the one terminal cleanup primitive for bridges and imperative opener handles, so no opener retains a stale callback closure after bridge success or cancel.
-
-Current callback-aware openers: `imageUploaderWindow`, `smartCodeEditorWindow`, `multiFileSmartCodeEditorWindow`, `curatedIconPickerWindow`, `contentEditorWindow`, `contentEditorListWindow`, `contentEditorWorkspaceWindow`, `googleConnectWindow` (`callbacks/googleConnectWindow.ts`), `fullScreenEditor` and `htmlPreview` (both on the group contract in [`callbacks/fullScreenEditor.ts`](./callbacks/fullScreenEditor.ts)).
-
-### The severed-callback bug class (`onSave={undefined} /* pass via callbackGroupId */`)
-
-When the explicit controller was seeded by codegen, every component prop that was a **function** got stubbed to `undefined` with a `/* fn — pass via callbackGroupId */ /* TODO: review */` marker — correct (a function can't travel through Redux) but **incomplete**: no callback group was wired to replace it. A stub left this way means **that callback silently never fires** — the button looks alive and does nothing. This is exactly what broke chat's Edit / Edit & resubmit (`fullScreenEditor.onSave`) and HTML-preview Save (`htmlPreview.onSave`).
-
-Two correct ways to finish a stub:
-
-1. **Callback group** — make the opener callback-aware (`callbacks/<overlayId>.ts` + `callbackManager`), pass `callbackGroupId` through data, subscribe in the component. Use when the caller needs the result (`fullScreenEditor`).
-2. **Self-handle** — if the component already has the ids it needs, do the work inside it and delete the prop from the controller. Use when there's nothing to hand back (`htmlPreview` self-saves chat messages via `editMessage` when opened without a callback group — a passed `callbackGroupId` always wins so non-chat sources can own the save).
-
-A third guard backs both: the public `openOverlay` / `toggleOverlay` wrappers in `lib/redux/slices/overlaySlice.ts` scan `data` for function values, `console.error` loudly, and strip them — a raw callback in Redux data is now a screaming bug at dispatch time, never a silently dead button.
-
-**Never leave a `undefined /* pass via callbackGroupId */` stub for a callback a user can trigger.** `grep "pass via callbackGroupId" OverlayController.tsx` lists every remaining one — each is a latent silent-no-op until finished. As of 2026-06-14 the count is **0**: the 11 that remained after R1 were each audited, found to have zero consumers, and deleted (the _delete-dead-prop_ completion — see [FOUND_DEFECTS.md](../../FOUND_DEFECTS.md) R2). The grep is the standing guard — any future stub it surfaces is a new latent bug.
-
----
-
-## Adding a new overlay
-
-A new overlay uses one explicit registration flow:
-
-1. **Add the catalogue entry** in [`catalogue.ts`](./catalogue.ts) — `myDialog: { label: "My Dialog", instanceMode: "singleton", isWindow: false }`. Its key IS the overlayId: `OverlayId = keyof typeof OVERLAY_CATALOGUE` narrows every dispatch site at compile time, and `isOverlayId` validates ids from outside the type system. There is no second id list.
-
-2. **Write the component** anywhere (typically under `features/<your-feature>/` or `features/window-panels/windows/<your-feature>/` if it uses `<WindowPanel>`). Declare its Props with `initialX` for state-seed inputs that hydrate `useState`:
-
-   ```tsx
-   interface MyDialogProps {
-     isOpen: boolean;
-     onClose: () => void;
-     initialFoo?: string;
-   }
-   export default function MyDialog({
-     isOpen,
-     onClose,
-     initialFoo,
-   }: MyDialogProps) {
-     if (!isOpen) return null;
-     return <Dialog onClose={onClose}>…</Dialog>;
-   }
-   ```
-
-3. **Hand-edit the remaining artifacts.** The controller is hand-maintained (the one-shot seed codegen that bootstrapped it has been deleted). Add:
-   - the `isOpenById` selector entry,
-   - the `lazyOverlay()` import + the gated JSX block in `OverlayController.tsx`,
-   - the opener file under `openers/`.
-
-   **Cardinal rule:** the JSX block MUST be gated on `isOpen` — never render a component ungated in the controller (an ungated render mounts on every route and, if the component doesn't self-gate, paints its UI everywhere — that was the QuickTasksSheet bug). The shape is:
-
-   - Controller block (in `OverlayController.tsx`):
-
-     ```tsx
-     // top — ALWAYS lazyOverlay, never bare next/dynamic (see "Lazy loading" below)
-     const MyDialog = lazyOverlay(() => import("@/features/foo/MyDialog"));
-     // ...
-     // in JSX:
-     {
-       (() => {
-         const isOpen = isOpenById.myDialog;
-         const data = dataById.myDialog as
-           Record<string, unknown> | null | undefined;
-         if (!isOpen) return null;
-         return (
-           <MyDialog
-             isOpen
-             onClose={() => dispatch(closeOverlay({ overlayId: "myDialog" }))}
-             initialFoo={
-               typeof data?.initialFoo === "string"
-                 ? data.initialFoo
-                 : undefined
-             }
-           />
-         );
-       })();
-     }
-     ```
-
-   - Opener file (`features/overlays/openers/myDialog.tsx`):
-
-     ```tsx
-     export interface OpenMyDialogOptions {
-       initialFoo?: string;
-     }
-     export interface MyDialogHandle {
-       close: () => void;
-     }
-     export function useOpenMyDialog() {
-       const dispatch = useAppDispatch();
-       return useCallback(
-         (opts: OpenMyDialogOptions = {}): MyDialogHandle => {
-           dispatch(
-             openOverlay({
-               overlayId: "myDialog",
-               data: { initialFoo: opts.initialFoo },
-             }),
-           );
-           return {
-             close: () => dispatch(closeOverlay({ overlayId: "myDialog" })),
-           };
-         },
-         [dispatch],
-       );
-     }
-     export function MyDialogController(props: OpenMyDialogOptions): null {
-       const open = useOpenMyDialog();
-       useEffect(() => {
-         const handle = open(props);
-         return () => handle.close();
-       }, [open, props.initialFoo]);
-       return null;
-     }
-     ```
-
----
-
-## Singletons and multi-instance
-
-The catalogue's `instanceMode` is the source of truth:
-
-| Mode                  | What `useOpenX()` does                                                   | What the controller renders      |
-| --------------------- | ------------------------------------------------------------------------ | -------------------------------- |
-| `singleton` (default) | Dispatches with the default instanceId. Subsequent opens reuse the slot. | One block: `{isOpen && <X … />}` |
-| `multi`               | Generates a fresh `instanceId` per call, returns it in the handle.       | `.map(selectOpenInstances)`      |
-
-The opener encapsulates the mode choice; callers don't think about it.
-
-**Multi-instance means every downstream identity is instanced.** A mapped controller block alone is insufficient: thread the same `instanceId` through the component, `WindowPanel.id`, `overlayInstanceId`, close handler, URL/persistence identity, and any feature-owned surface/focus/history key. A static identity at any one of those layers couples otherwise separate overlays.
-
----
-
-## Mounting
-
-The controller is mounted once per provider tree, imported directly (no `dynamic()` shell, no feature flag):
-
-- **Authenticated routes** — `app/DeferredSingletons.tsx` mounts it behind an `OverlayControllerGate` that returns `null` until `selectAnyOverlayOpen` is true. So the controller's module (and the per-overlay chunks it lazy-loads) stay out of the page until the user opens their first overlay.
-- **Public routes** — `app/(public)/PublicProviders.tsx` mounts it directly.
-
-The cutover is complete: the feature flag, the legacy controller, and the diagnostic middleware are all deleted. There is exactly one render path.
-
----
-
-## Diagnostic console signal
-
-One production-safe signal, fires at most once per page session:
-
-- `console.info: [overlays] NEW OverlayController active …`
-  Confirms the controller mounted. (The legacy `console.warn` signals were removed with the legacy controller.)
-
-There is no longer a timeout/heartbeat middleware: the explicit controller renders synchronously, so a component that throws surfaces through React's normal error boundary rather than a silent 1.5s timeout.
-
-### Lazy loading — `lazyOverlay`, never bare `dynamic()`
-
-Every overlay is code-split with `ssr: false` (required — the initial bundle would be unusable otherwise). But a bare `next/dynamic` has **no loading state and no error boundary**, so a failed or stalled chunk renders **nothing** and fails silently. This was the real residual silent-failure hole.
-
-`features/overlays/boundary/lazyOverlay.tsx` closes it. It is a 1:1 drop-in for `dynamic()` and guarantees, for every overlay, one of exactly three outcomes — **the component, a loading state, or a meaningful error — never nothing**:
-
-- **`OverlayLoadingFallback`** — canonical spinner while the chunk loads, with a 10s loud stall console-warning.
-- **Hard load timeout (the key fix).** A hung `import()` that never resolves _and_ never rejects isn't an error, so an error boundary alone can't catch it (confirmed in prod: trace `B2` fired, `B3` never did). `lazyOverlay` races the import against a `OVERLAY_LOAD_TIMEOUT_MS` (12s) timeout that **rejects** with a `ChunkLoadError`, converting a stall into a catchable error so the rich admin error fallback always takes over.
-- **`OverlayErrorBoundary`** — per-render error boundary that catches `ChunkLoadError` / render throws, `console.error`s loudly, and renders `OverlayErrorFallback`.
-- **`OverlayErrorFallback`** — cause-neutral failure message + an **inconsistent deployment-ID banner** only when loaded scripts actually disagree on `?dpl=`, plus "Try again" / "Reload page". For **admins** (`selectIsAdmin`) it adds an expandable view of **targeted diagnostics** and a **"Copy for AI"** button (`buildOverlayErrorAgentPayload`). The payload is NOT a full Redux dump (noise for a chunk failure) — it's `overlayDiagnostics.ts`: the error + component stack + failing module, deployment-ID observations (build id and `?dpl=` values), **network/chunk forensics** (which `_next/static` chunks failed or hung, connection state), and ONLY the overlay-relevant slices (`overlays` / `windowManager` / `appContext` + a redacted user summary).
-- **Genuine retry.** "Try again" builds a **fresh loadable per attempt** (`lazyOverlay` caches `dynamic()` by attempt number). A bare `dynamic()` caches the import result for the module's life, so a naive re-mount would replay the same rejection — retry would be a no-op. The fresh loadable makes retry actually re-import; page reload remains the user-chosen last resort.
-
-Pass a custom `loading` as the second arg only when an overlay needs a bespoke skeleton; the error handling always applies.
-
-**Do not nest `ssr:false` boundaries down a single path.** One boundary protects everything beneath it; nesting them is what fragments the chunk graph and produces the intermittent prod-only failures this primitive surfaces.
-
----
-
-## Hard rules
-
-1. **No prop spread in `OverlayController.tsx`.** Wire every prop by name. ESLint enforces (`no-restricted-syntax` on `JSXSpreadAttribute`).
-2. **Nothing renders ungated.** Every overlay block is gated on `isOpen`. An ungated render mounts on every route and, if the component doesn't self-gate, paints its UI everywhere (the QuickTasksSheet bug). A component that's needed without a trigger does NOT belong here — it goes in `app/Providers.tsx` or the layout.
-3. **Don't import `openOverlay`/`closeOverlay` outside `features/overlays/`.** Use the typed opener.
-4. **Don't add a `kind` discriminator** to overlay metadata. The controller knows what each overlay is by rendering it explicitly; sheets / modals / windows / toasts are all just components.
-5. **Don't put functions in `openOverlay` data.** Use `callbackGroupId` via `callbackManager` (the opener hides this from callers).
-6. **Don't introduce a new "registry that the controller iterates."** The controller's render path is explicit JSX. The catalogue is metadata only; nothing iterates it to render.
-7. **Lazy-load overlays with `lazyOverlay`, never bare `dynamic()`.** It wires the canonical loading + error boundary so an overlay can never render nothing. And never nest `ssr:false` boundaries down one render path.
-
----
-
-## Architectural boundary with windows
-
-This system is the **overlay controller** (transport). The **WindowPanel component primitive** lives in `features/window-panels/` and is documented separately at [`features/window-panels/FEATURE.md`](../window-panels/FEATURE.md). The two systems are independent:
-
-- A `<WindowPanel>` rendered anywhere joins the runtime window manager (`windowManagerSlice`) at mount and participates in "minimize all", focus history, tray, etc. — **whether or not the overlay controller rendered it**. A page can have a local `<WindowPanel>` that no controller ever touches; it still participates in window-wide actions.
-- The overlay controller renders a `<WindowPanel>` the same way it renders a dialog or a toast: by name, with explicit props. From its perspective, WindowPanel is just a component.
-
-If you find yourself adding window-specific concepts to the overlay system (or overlay-specific concepts to WindowPanel), stop. They're separate.
-
----
-
-## Change log
-
-- **2026-10-02** — The floating `SidePanelSurface` and the `kgSuggestionsDrawer` overlay are deleted: the right-hand region is the canvas. Row details, admin forms, journeys, directive shapes, drawer-framed topics and the suggestion inbox are canvas tabs (`features/canvas/FEATURE.md`).
-
-- 2026-10-02 — **Ten side-panel overlays became canvas tabs and are deleted:** `quickChat`, `quickChatWindow`, `quickNotes`, `quickTasks`, `quickData`, `quickScribe`, `scratchpadPanel`, `workingDocumentPanel`, `contextPreviewPanel`, `noteKnowledgePanel` (catalogue, controller blocks, openers, registry metadata). Their kinds and openers: `features/canvas/host/toolKinds.tsx`.
-- 2026-09-30 — **Page-bound overlays close on navigation.** Catalogue field `closesOnNavigation` marks a window that shows a piece of the page that opened it; `useCloseOverlaysOnNavigation` (mounted once in the OverlayController) dispatches `closeOverlaysBoundToPage` on every pathname change. First member: `flashcardItemWindow` (a deck card kept floating over Study). Every other overlay still survives navigation. Guard `__tests__/pageBoundOverlaysCloseOnNavigation.test.ts` (red on a no-op reducer).
-
-- **2026-09-12** — **Fullscreen editor saves settle before close.** `callbackManager.triggerGroupCommand` awaits one durable `fullScreenEditor` command and retains it on rejection; `disposeFullScreenEditorCallbackGroup` releases it on every terminal bridge or imperative-handle path. The markdown and HTML editors share `FullScreenOverlay`'s pending/error/retry boundary; pending work hides the canonical close affordance. Public content-action saves reject synchronous returns before wrapper code can acknowledge them. Rich-document save adapters return actual promises and rethrow failures. Covered by callback settlement and rendered overlay/editor/bridge tests.
-
-- 2026-09-11 — **`referencePicker` overlay.** Singleton dialog/drawer (`components/ReferencePickerOverlay.tsx`) hosting the matrx-envelope reference picker; opener `openers/referencePicker.tsx` + callback group `callbacks/referencePicker.ts` (findReplace contract — only the group id rides Redux).
-
-- **2026-09-11** — **Added `copySubsetWindow`** (multi-instance WindowPanel, `components/agent-copy/copy-subset/CopySubsetWindow.tsx`): the "Filter & sort before copying…" door on every Copy-for-AI menu. Rows, column definitions, and callbacks live in a module-scope SESSION registry (`copy-subset/session.ts` — `callbackManager` carries events, not data snapshots) and only `{ sessionId, title }` travels through `openOverlay` data; the opener registers the session, the window releases it on unmount. Bound with `onClose`, never `overlayId`, so window persistence never restores a session-less window. Registration guard: `copy-subset/overlay-registration.test.ts` (catalogue entry + controller lazy import/gated block + opener exports, and no rows in Redux data). `check:surface-overlays` lists it as UNDECLARED (P12 backlog, warning by design).
-- **2026-09-10** — **The catalogue is the one overlay id list (DC-006).** `OverlayId = keyof typeof OVERLAY_CATALOGUE` and the runtime `isOverlayId` guard now live in `catalogue.ts` (`satisfies Record<string, OverlayCatalogueEntry>`); the hand-maintained 192-id `features/window-panels/registry/` id file is deleted and all 27 importers import from `@/features/overlays/catalogue`. Adding an overlay = one catalogue entry, not two lists. Bundle: the every-page close middleware now pulls the catalogue (plain data, no imports) instead of the bare id array — +12.1 KB minified / +1.4 KB gzip, measured with esbuild against the existing `(core)` layout chunk; judged under the split threshold. Removed two false claims: the `pnpm check:registry` gate (no such script) and the `scripts/generate-overlay-controller.ts` generator credit on the catalogue/controller headers. `check:surface-overlays` reads `Object.keys(OVERLAY_CATALOGUE)` and drops its duplicate-id pass (object keys cannot repeat).
-- **2026-09-08** — **`agentRunWindow` opens ON A MANDATE and can adopt a page.** `OpenAgentRunWindowOptions` gained `mandateKey` (threaded to the managed `useAgentLauncher` so every run in the fresh conversation goes through the server's mandate door — the Holder and its `config_overrides` are the server's decision, `initialAgentId` only paints the chrome; a title-bar agent switch drops the key) and `surfaceName` (replaces the hardcoded `runtime: { surfaceName: null }` opt-out with an explicit adoption of a mounted surface, so a chat ABOUT a page reads its scope and is offered its write targets). First caller: the mandate workspace's _Refine with AI_ (`TriadGoalSection`). Controller mapping in `OverlayController`; pass-through pinned in `agentRunWindowOpener.test.tsx`.
-
-- **2026-09-01** — Added the singleton `shareLinkDialog` overlay as the durable
-  owner for app-level share-link management launched from transient package
-  media popovers. The media lightbox may close its Share popover immediately
-  while the canonical `ShareLinkDialog` stays mounted with the exact file id.
-- **2026-08-30** — **`agentRunWindow` is fully multi-instance.** Its opener now mints and returns an exact instance id, every controller render/close is instance-scoped, and the window carries that identity into Window Manager, URL, and agent-execution surface keys. Quick Actions and Monaco use the typed opener, so all ordinary launch paths open independent chat windows.
-- **2026-08-28** — `googleConnectWindow` became callback-aware for selected-file Drive import. The
-  opener stores only `mode` and `callbackGroupId` in Redux; the window returns materialized
-  `File[]` plus per-file failures through the callback registry, so raw functions and Google access
-  tokens never enter overlay state.
-- **2026-08-27** — Added `agentTestCasesWindow`, the builder's non-blocking sample-input manager. The existing launcher now uses its typed opener; the lazy controller explicitly wires `agentId` and `conversationId`, and the old local Sheet state is gone.
-
-- **2026-09-19 — The dynamic-panel avatar stand-in is gone.** The 2026-07-16 entry below is history: the profile menu now lives bottom-left (`features/shell/components/user-block/ShellUserBlock.tsx`), which no panel covers, so `ElevatedShellUserMenuRoot` and its store were deleted.
-- **2026-09-16 — The existing `announcements` overlay became the click-through experience for system-announcement banners.** Its typed opener and explicit controller wiring now accept `initialAnnouncementId`; the responsive detail/inbox surface loads the canonical active rows and replaces the prior compact list dialog. The system-announcement global host opens it instead of mounting a second modal stack.
-- **2026-08-23 — Removed unsupported deployment-cause claims from every lazy-overlay recovery surface.** A chunk error or timeout proves only that a module did not load; it does not prove a stale tab, cache fault, or deploy. User copy, timeout errors, human/agent diagnostic payloads, and the diagnostic field now state only observed facts. The separate banner appears only for an actual loaded-script `?dpl=` inconsistency and does not infer how it arose. Regression coverage scans route, global, toast, lazy-overlay, and diagnostic-copy surfaces.
-- **2026-08-21** — **Quick Chat can adopt an existing conversation.**
-  `useOpenQuickChatSheet({ initialConversationId, title })` threads both values
-  explicitly through `OverlayController` into `QuickChatSheet`, so a compact
-  launcher can submit first and open the canonical side panel without creating
-  a second conversation or losing surface context.
-- **2026-08-18** — **Dialogs can coexist safely with floating windows without changing WindowPanel.**
-  The shared `Dialog modal={false}` path now omits the scrim and fixes its layer at `z=900`, below
-  the window manager's `z=1000` base; true modals remain inert and scrimmed at `z=10000`. Audited
-  current dialog-to-window launchers and adopted the contract in CMS page AI readiness, CRM contact
-  saving, message edit-history comparison, system-prompt comparison, and marketing capture
-  observations. Focused accessibility/layering tests cover both modal paths.
-- **2026-08-15** — **`liveRunWindow` can bind a stable multi-run set.** Its typed opener and
-  explicit controller data path now carry `runSetKey`; `LiveRunWindow` renders the canonical
-  `RunSetDisplay` for that set, allowing remounted launch surfaces to recover every lane from
-  Redux without serializing component-local request ids into overlay state.
-- **2026-07-23** — **New `drillDeckContextWindow` overlay.** The compact Drill Deck Surface-A picker is a singleton WindowPanel with mobile drawer presentation, registered across the typed overlay ID, catalogue, static WindowPanel metadata, `lazyOverlay` controller import/selectors/gated render block, typed opener, and admin Tools-grid launcher. The official Drill Deck component page opens the real registered window.
-- **2026-07-17** — **New `contextPreviewPanel` overlay — server-truth "what the agent receives".** Singleton, `isWindow:false`, opened by `useOpenContextPreviewPanel({ conversationId?, agentId? })` from the composer's `ContextLensBar` "Context" segment. Renders `ContextPreviewPanel` (`../aidream/apps/shared/chat/src/agents/components/context-preview/`) in `SidePanelSurface`: the aidream `POST /ai/context/preview` response (exact injected context block + tiered variables, same code path as a real run) + an "Attached this turn" tab. Replaces + deletes the blocking `AgentSeesSheet`. Registered across all sites (id list, catalogue, controller selectors + gated block, opener).
-- **2026-07-16** — **Dynamic panel no longer buries the shell avatar.** `MatrxDynamicPanel` auto-claims a glass-layer elevated user menu (`ElevatedShellUserMenuRoot` in AppShell) when docked right/top or fullscreen/mobile — the shell header stacking context cannot win against `#glass-layer` `z-[100]`. See `components/matrx/resizable/FEATURE.md`.
-- **2026-07-15** — **Shared dynamic panels now have predictable keyboard entry and return.** `MatrxDynamicPanelHost` can opt user-invoked forms and pickers into initial focus, exposes the surface as a labelled non-modal dialog, and restores focus to the opener when it closes. The shared panel chrome also gives its position, full-screen, and collapse icon controls explicit accessible names.
-- **2026-07-15** — **New `ragAiCopyWindow` overlay — configurable RAG content export.** A singleton, ephemeral WindowPanel with mobile drawer presentation, opened through `useOpenRagAiCopyWindow({ bundle, initialSections? })`. The opener carries serializable source/retrieval facts plus currently loaded content; the window's pure RAG builder always preserves the identifying IDs while the user selects content sections and size caps. Registered explicitly across overlay IDs, catalogue, static window metadata, lazy controller import/selectors/data/gated render block, and the typed opener.
-- **2026-07-13** — **New `userTableWindow` overlay — a saved UDT dataset table (by id) at full size in a floating WindowPanel.** Sibling of `tableViewerWindow` (that hosts a markdown table string; this hosts a live `udt_datasets` table via `UserTableViewer`). Component `features/window-panels/windows/UserTableWindow.tsx`; opener `useOpenUserTableWindow({ tableId, title? })`; singleton, `isWindow:true`. Registered across all sites (id list, catalogue, controller import + `isOpenById` + `dataById` + gated block, opener). Opened from the converted chat-artifact table's new "Window" toolbar action (`features/canvas/artifact-types/renderers/TableArtifact.tsx`), which also gained a "New tab" → `/data/{id}` link.
-- **2026-07-12** — **Closed the D33 tail.** `HtmlPreviewBridge` save with no `callbackGroupId` AND no chat target now screams (toast + `console.error`) instead of silently returning. Purged the last raw-`onSave`-through-Redux sites: `features/cx-chat/actions/messageActionRegistry.ts` (two handlers that only dispatched the no-op `_legacy-stubs` actions — htmlPreview falls back to the bridge self-handle; fullScreenEditor hides Save until the cx-chat refactor wires a real callback) and the dead `onSave: undefined` keys in `CmsArtifactDetail` / public-chat `MessageDisplay`. Notes' editable v3 context menus now pass `contentSource={type:"note"}` so the html-preview Save actually reaches `noteAdapter.edit` from edit mode (verified live: note save-back persists across reload).
-- **2026-07-08** — **Made `htmlPreview` callback-aware + added the function-in-Redux-data guard (D33).** The html-preview Save worked only for chat messages (bridge self-handle via `editMessage`); notes and every other `ContentSource` had no channel back. `HtmlPreviewBridge` now honors a `callbackGroupId` (reusing the `callbacks/fullScreenEditor.ts` group contract — group wins, self-handle is the no-group fallback), the controller passes it, `openers/htmlPreview.tsx` registers the group from a typed `onSave` option (raw `onSave`-through-Redux TODO deleted; groups disposed on close/unmount), and both callers own their save: `features/rich-document/actions/handlers/export.ts` routes through `ctx.sourceAdapter.edit` (chat → editMessage, note → NotesAPI.update, …) and `components/content-actions/contentActionRegistry.ts` html-preview now honors `ctx.onSave` (Save button appears only when a handler exists). Failures scream (toast + console.error). Class guard: `openOverlay`/`toggleOverlay` wrappers in `overlaySlice.ts` strip + `console.error` any function value in `data`, so the next raw callback is loud at dispatch, not a dead button. Bridge's dead direct-mount `onSave` prop deleted.
-- **2026-07-05** — **New `runControlsWindow` overlay — the Smart Input "Chat Options" run controls as a non-blocking window.** Replaces the desktop tabbed Popover in `RunControlsMenu` (which trapped nested dialogs behind it — see `features/agents/FEATURE.md` change log). Component `../aidream/apps/shared/chat/src/window-panels/windows/agents/RunControlsWindow.tsx`; opener `useOpenRunControlsWindow({ conversationId, includeAttach?, initialTab? })`; singleton, ephemeral, `mobilePresentation: "drawer"` (mobile keeps the `TabbedBottomSheet` path in the trigger). Registered across id list / catalogue / metadata / controller block / opener.
-- **2026-06-24** — **New `workingDocumentPanel` overlay — the agent-edited working document in a resizable right sidebar.** A SidePanelSurface sibling to the floating `workingDocumentWindow`: singleton, `isWindow:false`, opened by `useOpenWorkingDocumentPanel({ conversationId, title? })`, renders `<DocumentsWorkspace conversationId>` inside `SidePanelSurface` (gated block in `OverlayController.tsx`). This is what a chat tool's `<ArtifactResultBar>` (`features/tool-call-visualization`) opens — after the agent patches the working document, clicking the result bar parks the final version in the sidebar without leaving the conversation. Registered across all sites (the id list, `catalogue.ts`, opener, controller data-selectors + render block). Also boy-scouted three stray `[Track Quick Notes]` `console.log`s out of `SidePanelSurface.tsx` + `OverlayController.tsx`.
-- **2026-06-22** — **Overlay failures no longer trap the user or destroy in-flight work; diagnostics now capture the REAL state.** When a deep nested chunk in an overlay's subtree (e.g. the agent runner inside `createProjectWindow` → `CreateWithAiTabs` → `AgentRunWrapper`) throws a `ChunkLoadError`, it bubbles to the single top overlay boundary and replaced the whole panel with a dead-end error card — the user's typed agent request appeared lost and the only exit was a full reload. Three fixes: (1) **Escape hatch** — `onClose` is now threaded `OverlayController → lazyOverlay → OverlayErrorBoundary → OverlayErrorFallback` (every controller-rendered overlay already passes an `onClose` that dispatches `closeOverlay({overlayId,instanceId})`), so the fallback shows a **Close** button that dismisses just that instance — no page reload. (2) **Work preserved** — the typed request lives in Redux (`instanceUserInput.byConversationId[cid].text`), NOT in the unmounted React tree, so **Try again** (now the primary action, genuine fresh re-import) brings the message back; the fallback also renders the exact pending text inline for admins so it's visibly never lost. (3) **Diagnostics fixed** — `overlayDiagnostics` gained an `agentExecution` section that unions `conversations` / `instanceUserInput` / `instanceUIState` by conversationId and captures, per live conversation, the **agent id/name, run status, and the verbatim typed request** (input-bearing conversations first; text capped at 8k). The prior dump captured overlay/app/user slices but none of the agent work the user actually cared about. Files: `lazyOverlay.tsx`, `OverlayErrorBoundary.tsx`, `OverlayErrorFallback.tsx`, `overlayDiagnostics.ts`, `overlayErrorReport.ts`. **Root cause still open (separate ticket):** the agent message-display subtree nests multiple `dynamic({ssr:false})`/`lazy()` boundaries (`AgentConversationDisplay` → `AgentEmptyMessageDisplay` → `MarkdownStream`/`IconResolver`, plus the jspdf-guarded `AgentAssistantMessage`) — nesting the lazy doc explicitly forbids. On the war-room route's ~155-chunk graph one deep chunk failed to register and threw. De-nesting is the real fix but touches SSR-guarded shared components (a static `MarkdownStreamImpl` could 500 SSR'd applet routes) so it needs a deliberate, verified pass — not a blind flatten.
-- **2026-06-21 (update 3)** — **Root cause CONFIRMED + fixed: malformed `?dpl=` from a mis-wired deployment id.** The full admin diagnostics dump proved it was NOT a download failure (`failedOrPendingChunks: []`, all 216 chunks present) and NOT app code: the lazy `import()` is invoked, the chunk script loads 200, but the promise never settles. Cause: `next.config.js` set `deploymentId: process.env.NEXT_DEPLOYMENT_ID` — but `NEXT_DEPLOYMENT_ID` is not a real Vercel var (the real one is `VERCEL_DEPLOYMENT_ID`), so it resolved to an **empty string** and Next stamped SSR asset URLs with an empty `?dpl=`. Under **Turbopack** (prod bundler) the runtime chunk loader does NOT apply `deploymentId`, so it re-requests the same chunks with **no** `?dpl=` → two URLs per chunk → the lazily-required chunk loads but registers under a key the runtime isn't awaiting → `import()` hangs → 12s `ChunkLoadError`. Dev has no chunking/`?dpl=` so it always worked there. **Fix:** removed `deploymentId` (commented out in `next.config.js`) so nothing carries `?dpl=` and all URLs are consistent; switched the diagnostics `NEXT_PUBLIC_DEPLOYMENT_ID` passthrough to the real `VERCEL_DEPLOYMENT_ID`. Stale-tab protection should use Vercel's native Skew Protection (Project Settings → Advanced), not the framework query-param path, until Turbopack threads `dpl` through its runtime loader. Secondary tech debt noted: the `webpack:` block in `next.config.js` (Node polyfills/`ProvidePlugin`) is ignored by Turbopack — not the cause here, but dead config to migrate.
-- **2026-06-21 (update 2)** — **Hardened the boundary + made diagnostics actually useful.** (1) A hung `import()` (never resolves/rejects — the real prod symptom: trace `B2` fired, `B3` never did) is now raced against a 12s timeout that rejects with a `ChunkLoadError`, so the rich error fallback always fires instead of an endless spinner. (2) Replaced the full-Redux-dump payload with **targeted diagnostics** (`overlayDiagnostics.ts`): deploy/skew forensics (`?dpl=` ids + build id), network/chunk forensics (failed/pending `_next/static` chunks, connection), and only the `overlays`/`windowManager`/`appContext` slices. (3) Added a deploy-skew banner. (4) Fixed "Try again" to build a fresh loadable per attempt so it genuinely re-imports. **Prime suspect identified:** scripts on the failing page disagree on `?dpl=` (some carry it, some don't) and the chunk request hangs → **deployment-skew routing** (Vercel Skew Protection / `NEXT_DEPLOYMENT_ID`, wired in `next.config.js`). Needs infra verification (is Skew Protection enabled + is `NEXT_DEPLOYMENT_ID` non-empty in the prod build).
-- **2026-06-21** — **Closed the lazy-overlay silent-failure hole (chunk-load failures).** Bare `next/dynamic` had no loading/error boundary, so a failed or stalled overlay chunk rendered nothing (intermittent prod-only bug, e.g. War Room → New Project). New `features/overlays/boundary/`: `lazyOverlay` (drop-in for `dynamic()`, injects `ssr:false` + canonical loading + per-render error boundary), `OverlayLoadingFallback`, `OverlayErrorBoundary`, `OverlayErrorFallback` + "Copy for AI" via `overlayErrorReport.ts`. All 119 `dynamic()` declarations in `OverlayController.tsx` migrated to `lazyOverlay`. An overlay now renders the component, a loading state, or a meaningful error — never nothing.
-- **2026-06-17** — Extracted the two-mode "create with AI" body into a shared primitive `CreateWithAiTabs` (`../aidream/apps/shared/chat/src/agents/components/smart/CreateWithAiTabs.tsx`): both tabs stay mounted (AI lazy-mounted on first use, then retained, toggled with `hidden`) over a constant `min-h-[460px]` floor, so tab switches never resize/flash the window/dialog or remount the agent. `ProjectCreatePanel` was refactored onto it (fixes the window resize-on-switch). `TaskQuickCreateWindow` now renders a new `TaskCreatePanel` (Manual `TaskQuickCreateCore` + Use AI) built on the same primitive, with a `/tasks/new` route. Task AI tab is gated off until `TASK_CREATE_AGENT_ID` is set.
-- **2026-06-16 (update 2)** — `createProjectWindow` callbacks gained an `ai-created` event + `onAiCreated` handler (`callbacks.ts` + `useOpenCreateProjectWindow`). The "Use AI" tab's agent writes the project directly server-side, so on the run's `running/streaming → complete` edge `AgentRunWrapper.onRunComplete` → `ProjectCreatePanel` dispatches the global `invalidateAndRefetchFullContext()` (every nav-tree-derived consumer refreshes) AND emits `ai-created` for self-fetching consumers. The `/projects` hub "New project" button now opens this window (was the legacy `CreateProjectModal`) and refreshes its self-fetched list on both `created` and `ai-created`. The legacy `CreateProjectModal` is now a thin wrapper over `ProjectFormSheet`, so its remaining consumers (ResearchInitForm, ProjectList) inherit Manual + Use AI too.
-- **2026-06-16 (update)** — `createProjectWindow` (and `ProjectFormSheet`, and the new `/projects/new` route) now render `ProjectCreatePanel` instead of `ProjectFormCore` directly. The panel is a two-mode body — "Manual" (the unchanged `ProjectFormCore`) + "Use AI" (`AgentRunWrapper`, agent `917074a0-fc06-4ff4-9805-4a517e04d08b`, sourceFeature `project-create`). Still one form body shared across every surface — the panel wraps the core; nobody forks it. Pass `enableAi={false}` to get the manual-only form back.
-- **2026-06-16** — Added the `createProjectWindow` overlay — the app-wide "create a project" WindowPanel (callback-aware: `onCreated` / `onWindowClose` via the callback registry; multi-instance + ephemeral). Wraps the shared `ProjectFormCore`, extracted from `ProjectFormSheet` so the Sheet (Dialog/Drawer) and the Window share one form body — don't fork the form, wrap the core. Registered via id list + catalogue + windowRegistryMetadata + opener (`openers/createProjectWindow.tsx`) + a gated multi-instance block in `OverlayController.tsx`. First consumer: War Room `WarRoomProjectPicker`.
-- **2026-06-15 (batch 4 — complete sweep)** — Remaining product blocking `Sheet` panels migrated to `MatrxDynamicPanelHost` (or left intentionally custom): notes/transcripts/studio mobile nav, org project settings, agent tools categories, email compose, sample library, schema visualizer, task panels/filters, mobile icon button groups, filter drawers, entity sheet forms, field-action sheet container, module header mobile menus, applet field builder overlay, custom table row history. **Intentionally unchanged:** `CanvasSideSheetInner` (custom non-dimming canvas chrome), `components/ui/sidebar.tsx` (shadcn mobile sidebar primitive), legacy `EntitySheet` radix primitives under `app/entities`.
-- **2026-06-15 (batch 3)** — **`MatrxDynamicPanelHost` rollout continues.** RAG: `LibraryDocDetailSheet`, `ProcessingProgressSheet`. Agents: `AgentSaveStatus` diff panel. Files: `CloudFileEditor`. Data tables: `WorkbookEditor` / `DocumentEditor` history panels. Surfaces admin: `SurfaceDetailDrawer`. AI models audit: `ModelDetailSheet`. Voice playground: `PlaygroundSettingsSheet` (controlled open + trigger merge).
-- **2026-06-15** — **Quick Access + product panels → `MatrxDynamicPanelHost`.** `SidePanelSurface` desktop path now delegates to the shared host (repositionable, non-blocking) while keeping mobile Drawer + `requestWidthBoost` for Quick Chat history. Same host rolled out across org/scope/agents/files/transcripts: `EditScopeValueSheet`, `TemplateGalleryDrawer`, `ContributeResourceSheet`, `ContainerResourceSheet`, `GlobalSuggestionsDrawer` (desktop), `ContextSlotDetailSheet`, `UndoHistoryOverlay`, `CloudFileMetadataSheet`, `SingleFileTopBar` files nav, `SettingsSidebar`.
-- **2026-06-15** — Quick Access panels — functional pass. `SidePanelSurface` gained a **content width-boost channel** (`useSidePanelSurface().requestWidthBoost`): panel content can grow the panel (capped to the viewport) instead of shrinking — Quick Chat's history sidebar uses it so opening it pushes the panel's left edge into the page rather than eating the chat. Quick Chat now centers transcript + input (matches `/chat`: `constrainWidth + edgeToEdgeScroll`) and autofocuses the message box. Quick Note / Quick Task autofocus their capture surface on open. Quick Data dropped its half-width table sidebar for a header dropdown picker (full-width table). Utilities Hub: **Files** tab → real `WindowPanelShell` (now with a per-file Context column via `FileList showContext`), **AI Results** tab → `ChatHistoryWorkspace` (frameless body shared with the `quickChatHistory` window) with an optional `enableInput` SmartAgentInput. `ChatHistoryWindow` load sequence now mirrors `/chat` (warm agent payload + instance before hydrate).
-- **2026-06-14** — **Closed the severed-callback bug class (D7 → 0).** Audited the 11 `undefined /* pass via callbackGroupId */` stubs that remained after the `fullScreenEditor` fix; every one had zero consumers, so each was deleted (controller stub + component prop/destructure/internal call + opener option). `EmailDialogWindow.onSubmit`, `QuickSaveCodeDialog.{onOpenChange,onSaved}` (+ legacy `open`), `QuickNoteSaveOverlay.onSaved`×2, and the `onOpen`/`onIndexChange` notifiers on `FullscreenBrokerState`/`FullscreenMarkdownEditor`/`FullscreenSocketAccordion`/`ImageViewer` are gone. The `resourcePickerWindow` overlay branch was removed entirely (never opened; consumers render the component directly; `onResourceSelected` is required → it was a latent crash) along with its dead opener file. `grep "pass via callbackGroupId" OverlayController.tsx` → 0. See FOUND_DEFECTS R2.
-- **2026-06-14** — Consolidated Notes to a single multi-instance `notesWindow` overlay in `OverlayController` (removed legacy singleton block + `notesBetaWindow` id). Opener is `useOpenNotesWindow` from `openers/notesWindow.tsx`; component is `NotesWindow` in `windows/notes/NotesWindow.tsx`.
-- **2026-06-14** — **Made `fullScreenEditor` callback-aware + killed the `onSave={undefined}` severed-callback bug class.** The controller stubbed `fullScreenEditor.onSave` (and `htmlPreview.onSave`) to `undefined` during the codegen seed and never finished the wiring, so every editor Save silently no-op'd — this is what broke chat's "Edit" and "Edit & resubmit". Added `callbacks/fullScreenEditor.ts` (callbackManager group + `emitFullScreenEditorSave`), upgraded `openers/fullScreenEditor.tsx` to register the group and pass only `callbackGroupId`, and made the bridge prefer the callback then self-handle via `editMessage` when given `conversationId`+`messageId`. `htmlPreview` now self-handles its markdown save (no callback needed). Documented the whole stub class above + the 11 still-severed callbacks (FOUND_DEFECTS). The bridge now screams (toast + console.error) if it's ever opened with no save target — loud recovery, never silent.
-- **2026-06-14** — Restored side-panel chrome for the four bare Quick Access overlays (`quickNotes`, `quickTasks`, `quickChat`, `quickData`, plus `quickChatWindow`). They were authored as chrome-free content (reused as Utilities Hub tabs), so after the legacy `OverlaySurface` was deleted they mounted as an invisible `h-full` div. New primitive `surfaces/SidePanelSurface.tsx` — a **non-blocking, drag-to-resize** right-side panel (modelled on `MessagingSideSheet`: no modal backdrop / no scroll-lock, left-edge resize handle, width persisted per-panel in localStorage, slide-in, ESC/X close), with a bottom Drawer on mobile — now wraps each gated block. Same change: `QuickChatSheet` swapped from the old `AgentRunner` to the live `/chat` route's `AgentConversationColumn` (verified streaming) — this also upgrades the Utilities Hub "Chat" tab.
-- **2026-06-02** — Phase F (kg-suggestions): added the `kgSuggestionsDrawer` overlay — the global Knowledge-Graph suggestion inbox (Drawer on mobile / right Sheet on desktop). Registered via id list + catalogue + opener (`openers/kgSuggestionsDrawer.tsx`) + a gated block in `OverlayController.tsx`. Opened with `useOpenKgSuggestionsDrawer`; data-less singleton. See `features/kg-suggestions/FEATURE.md`.
-- **2026-05-19** — Added the `creatorHub` overlay — a global Creator Hub window (WindowPanel with a tab-list sidebar), the creator analogue of the admin Bug indicator. Opened from a Crown in the main sidebar; registered via id list + catalogue + windowRegistryMetadata + opener (`openers/creatorHub.tsx`).
-- **2026-05-18** — Cutover instrumentation: production-safe console signals on both controllers. `cb732f222`
-- **2026-05-18** — Stage 3b+3d: 35/41 controller `as never` casts tightened with real type imports; first dispatch-site migration (AgentOptionsMenu). `ec67ca9c6`
-- **2026-05-18** — Stage 3a+3c: callback-aware openers as re-exports; ESLint spread ban. `cd0e24407`
-- **2026-05-18** — Stage 2: typed openers + catalogue. `57635640e`
-- **2026-05-18** — Stage 1: new explicit `OverlayController.tsx` behind a flag. `25c160c6f`
-- **2026-04-24 → 2026-05-18** — Conflated state under `features/window-panels/`. Spread-renderer caused 17+ silent-failure bugs. Fully replaced by the above.
+1. Runtime proof of the switch is a sweep (214 of 223 clean; the rest are external 404/409s or need launcher data); keep rerunning it after package upgrades.
+2. `ChatWindowId` from the installed chat package contains an id with no definition here (ChatHostAdapter `chatWindowOverlay` type error): add the definition or fix the chat package.
+3. Carried lint errors: `react-hooks/refs` in `extractionCellEditorWindow.overlay.tsx`, `matrx/alchemy-data-in` in `host/OverlayErrorCopyForAi.tsx`.
+4. `definitions/audioDevices.tsx` is an opener only: it opens `audioControlWindow` with `tab: "devices"`.
+5. 18 overlays use the untyped wire (`UntypedOverlayWire`) because their openers dispatch interface-typed payloads; tighten as their option types become plain.

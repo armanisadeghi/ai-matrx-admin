@@ -81,7 +81,6 @@ export const browserFrameWindowOverlay = defineOverlay<BrowserFrameWindowDefinit
     windowId: "browser-frame-window",
     mobile: "fullscreen",
   },
-  render: () => import("./browserFrameWindow.render"),
 });
 
 

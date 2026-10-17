@@ -87,7 +87,6 @@ export const workingDocumentWindowOverlay = defineOverlay<WorkingDocumentWindowD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./workingDocumentWindow.render"),
 });
 
 

@@ -58,7 +58,6 @@ export const serpAnalyzerWindowOverlay = defineOverlay<SerpAnalyzerWindowDefinit
     key: "serp_analyzer",
     hydrate: (ctx) => import("./serpAnalyzerWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./serpAnalyzerWindow.render"),
 });
 
 

@@ -96,7 +96,6 @@ export const filePreviewWindowOverlay = defineOverlay<FilePreviewWindowDefinitio
     key: "file_preview",
     hydrate: (ctx) => import("./filePreviewWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./filePreviewWindow.render"),
 });
 
 

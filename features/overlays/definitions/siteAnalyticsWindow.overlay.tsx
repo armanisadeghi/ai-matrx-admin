@@ -62,7 +62,6 @@ export const siteAnalyticsWindowOverlay = defineOverlay<SiteAnalyticsWindowDefin
     key: "site_analytics",
     hydrate: (ctx) => import("./siteAnalyticsWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./siteAnalyticsWindow.render"),
 });
 
 

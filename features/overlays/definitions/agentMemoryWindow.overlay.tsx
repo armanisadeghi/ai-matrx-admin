@@ -60,7 +60,6 @@ export const agentMemoryWindowOverlay = defineOverlay<AgentMemoryWindowDefinitio
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./agentMemoryWindow.render"),
 });
 
 

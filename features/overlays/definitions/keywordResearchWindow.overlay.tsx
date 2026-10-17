@@ -70,7 +70,6 @@ export const keywordResearchWindowOverlay = defineOverlay<KeywordResearchWindowD
     key: "keyword_research",
     hydrate: (ctx) => import("./keywordResearchWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./keywordResearchWindow.render"),
 });
 
 

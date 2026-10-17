@@ -115,7 +115,6 @@ export const topicalMapTopicPanelOverlay = defineOverlay<TopicalMapTopicPanelDef
     key: "topic",
     hydrate: (ctx) => import("./topicalMapTopicPanel.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./topicalMapTopicPanel.render"),
 });
 
 

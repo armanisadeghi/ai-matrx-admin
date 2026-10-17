@@ -50,7 +50,6 @@ export const liveIntegrationsWindowOverlay = defineOverlay<LiveIntegrationsWindo
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./liveIntegrationsWindow.render"),
 });
 
 

@@ -67,7 +67,6 @@ export const userPreferencesWindowOverlay = defineOverlay<UserPreferencesWindowD
     key: "user_preferences",
     hydrate: (ctx) => import("./userPreferencesWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./userPreferencesWindow.render"),
 });
 
 

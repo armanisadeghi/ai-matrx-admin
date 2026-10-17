@@ -72,7 +72,6 @@ export const agentCreateAppWindowOverlay = defineOverlay<AgentCreateAppWindowDef
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./agentCreateAppWindow.render"),
 });
 
 

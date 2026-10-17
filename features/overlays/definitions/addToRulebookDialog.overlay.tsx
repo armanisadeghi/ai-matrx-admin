@@ -83,7 +83,6 @@ export const addToRulebookDialogOverlay = defineOverlay<AddToRulebookDialogDefin
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./addToRulebookDialog.render"),
 });
 
 

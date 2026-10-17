@@ -72,7 +72,6 @@ export const agentFromChatWindowOverlay = defineOverlay<AgentFromChatWindowDefin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./agentFromChatWindow.render"),
 });
 
 

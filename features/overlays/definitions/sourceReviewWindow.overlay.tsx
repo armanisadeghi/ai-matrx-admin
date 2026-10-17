@@ -46,7 +46,6 @@ export const sourceReviewWindowOverlay = defineOverlay<SourceReviewWindowDefinit
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./sourceReviewWindow.render"),
 });
 
 

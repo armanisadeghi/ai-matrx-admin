@@ -78,7 +78,6 @@ export const canvasViewerWindowOverlay = defineOverlay<CanvasViewerWindowDefinit
     windowId: "canvas-viewer-window",
     mobile: "fullscreen",
   },
-  render: () => import("./canvasViewerWindow.render"),
 });
 
 

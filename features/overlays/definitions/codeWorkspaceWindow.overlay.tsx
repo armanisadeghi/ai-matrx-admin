@@ -100,7 +100,6 @@ export const codeWorkspaceWindowOverlay = defineOverlay<CodeWorkspaceWindowDefin
     windowId: "code-workspace",
     mobile: "fullscreen",
   },
-  render: () => import("./codeWorkspaceWindow.render"),
 });
 
 

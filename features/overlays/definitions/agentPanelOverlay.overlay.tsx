@@ -77,7 +77,6 @@ export const agentPanelOverlayOverlay = defineOverlay<AgentPanelOverlayDefinitio
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentPanelOverlay.render"),
 });
 
 

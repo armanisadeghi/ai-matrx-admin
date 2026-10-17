@@ -58,7 +58,6 @@ export const dataChangesWindowOverlay = defineOverlay<DataChangesWindowDefinitio
     key: "data_changes",
     hydrate: (ctx) => import("./dataChangesWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./dataChangesWindow.render"),
 });
 
 

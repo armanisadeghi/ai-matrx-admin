@@ -82,7 +82,6 @@ export const browserWorkbenchWindowOverlay = defineOverlay<BrowserWorkbenchWindo
     mobileSidebarAs: "drawer",
     preservation: { dataKeys: ["tabs", "activeTabId"] },
   },
-  render: () => import("./browserWorkbenchWindow.render"),
 });
 
 

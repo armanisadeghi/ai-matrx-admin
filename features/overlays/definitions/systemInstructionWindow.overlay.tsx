@@ -78,7 +78,6 @@ export const systemInstructionWindowOverlay = defineOverlay<SystemInstructionWin
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./systemInstructionWindow.render"),
 });
 
 

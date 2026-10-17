@@ -59,7 +59,6 @@ export const smartCodeEditorWindowOverlay = defineOverlay<SmartCodeEditorWindowD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./smartCodeEditorWindow.render"),
 });
 
 

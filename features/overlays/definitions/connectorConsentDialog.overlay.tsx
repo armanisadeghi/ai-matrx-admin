@@ -80,7 +80,6 @@ export const connectorConsentDialogOverlay = defineOverlay<ConnectorConsentDialo
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./connectorConsentDialog.render"),
 });
 
 

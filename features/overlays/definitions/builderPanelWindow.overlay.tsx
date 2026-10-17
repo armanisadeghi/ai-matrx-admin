@@ -57,7 +57,6 @@ export const builderPanelWindowOverlay = defineOverlay<BuilderPanelWindowDefinit
     mobile: "fullscreen",
     preservation: { dataKeys: ["surfaceKey", "tab", "entryKey", "raw"] },
   },
-  render: () => import("./builderPanelWindow.render"),
 });
 
 

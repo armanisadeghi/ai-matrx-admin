@@ -84,7 +84,6 @@ export const saveToNotesOverlay = defineOverlay<SaveToNotesDefinitionData>()({
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./saveToNotes.render"),
 });
 
 

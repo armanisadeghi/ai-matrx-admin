@@ -85,7 +85,6 @@ export const runControlsWindowOverlay = defineOverlay<RunControlsWindowDefinitio
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./runControlsWindow.render"),
 });
 
 

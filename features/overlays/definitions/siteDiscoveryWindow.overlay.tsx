@@ -68,7 +68,6 @@ export const siteDiscoveryWindowOverlay = defineOverlay<SiteDiscoveryWindowDefin
       dataKeys: ["siteId", "brandId", "organizationId", "siteLabel"],
     },
   },
-  render: () => import("./siteDiscoveryWindow.render"),
 });
 
 

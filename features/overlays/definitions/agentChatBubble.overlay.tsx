@@ -77,7 +77,6 @@ export const agentChatBubbleOverlay = defineOverlay<AgentChatBubbleDefinitionDat
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentChatBubble.render"),
 });
 
 

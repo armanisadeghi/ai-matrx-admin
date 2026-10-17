@@ -93,7 +93,6 @@ export const shareModalWindowOverlay = defineOverlay<ShareModalWindowDefinitionD
       allowedDataValues: { resourceType: RESOURCE_TYPES },
     },
   },
-  render: () => import("./shareModalWindow.render"),
 });
 
 

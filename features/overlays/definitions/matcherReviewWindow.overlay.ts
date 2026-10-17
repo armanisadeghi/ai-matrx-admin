@@ -24,7 +24,6 @@ export const matcherReviewWindowOverlay = defineOverlay<MatcherReviewWindowDefin
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./matcherReviewWindow.render"),
 });
 
 

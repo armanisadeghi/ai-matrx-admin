@@ -22,7 +22,6 @@ export const googleTasksImportWindowOverlay = defineOverlay<GoogleTasksImportWin
     key: "google_tasks_import",
     hydrate: (ctx) => import("./googleTasksImportWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./googleTasksImportWindow.render"),
 });
 
 // Old opener names, unchanged: callers only change the import path.

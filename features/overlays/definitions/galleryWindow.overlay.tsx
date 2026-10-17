@@ -78,7 +78,6 @@ export const galleryWindowOverlay = defineOverlay<GalleryWindowDefinitionData>()
     key: "gallery",
     hydrate: (ctx) => import("./galleryWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./galleryWindow.render"),
 });
 
 

@@ -44,7 +44,6 @@ export const searchReviewWindowOverlay = defineOverlay<SearchReviewWindowDefinit
     key: "search_review",
     hydrate: (ctx) => import("./searchReviewWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./searchReviewWindow.render"),
 });
 
 

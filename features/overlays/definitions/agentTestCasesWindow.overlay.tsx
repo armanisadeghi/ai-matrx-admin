@@ -76,7 +76,6 @@ export const agentTestCasesWindowOverlay = defineOverlay<AgentTestCasesWindowDef
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./agentTestCasesWindow.render"),
 });
 
 

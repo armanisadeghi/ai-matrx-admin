@@ -70,7 +70,6 @@ export const audioControlWindowOverlay = defineOverlay<AudioControlWindowDefinit
     mobile: "card",
     ephemeral: true,
   },
-  render: () => import("./audioControlWindow.render"),
 });
 
 

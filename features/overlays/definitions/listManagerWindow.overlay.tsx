@@ -80,7 +80,6 @@ export const listManagerWindowOverlay = defineOverlay<ListManagerWindowDefinitio
     key: "listManager",
     hydrate: (ctx) => import("./listManagerWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./listManagerWindow.render"),
 });
 
 

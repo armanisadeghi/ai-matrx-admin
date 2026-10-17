@@ -79,7 +79,6 @@ export const agentToastOverlayOverlay = defineOverlay<AgentToastOverlayDefinitio
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentToastOverlay.render"),
 });
 
 

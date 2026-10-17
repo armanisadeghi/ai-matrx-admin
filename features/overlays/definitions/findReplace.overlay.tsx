@@ -129,7 +129,6 @@ export const findReplaceOverlay = defineOverlay<FindReplaceDefinitionData>()({
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./findReplace.render"),
 });
 
 

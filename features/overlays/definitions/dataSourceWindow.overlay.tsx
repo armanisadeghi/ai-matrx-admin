@@ -46,7 +46,6 @@ export const dataSourceWindowOverlay = defineOverlay<DataSourceWindowDefinitionD
     windowId: "data-source",
     mobile: "fullscreen",
   },
-  render: () => import("./dataSourceWindow.render"),
 });
 
 

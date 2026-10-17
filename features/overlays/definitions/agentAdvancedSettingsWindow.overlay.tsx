@@ -60,7 +60,6 @@ export const agentAdvancedSettingsWindowOverlay = defineOverlay<AgentAdvancedSet
   keepAlive: "none",
   closesOnNavigation: false,
   window: {},
-  render: () => import("./agentAdvancedSettingsWindow.render"),
 });
 
 

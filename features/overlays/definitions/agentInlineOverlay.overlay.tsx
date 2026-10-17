@@ -77,7 +77,6 @@ export const agentInlineOverlayOverlay = defineOverlay<AgentInlineOverlayDefinit
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./agentInlineOverlay.render"),
 });
 
 

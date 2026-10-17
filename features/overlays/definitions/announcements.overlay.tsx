@@ -72,7 +72,6 @@ export const announcementsOverlay = defineOverlay<AnnouncementsDefinitionData>()
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./announcements.render"),
 });
 
 

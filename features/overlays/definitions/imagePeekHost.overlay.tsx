@@ -63,7 +63,6 @@ export const imagePeekHostOverlay = defineOverlay<ImagePeekHostDefinitionData>()
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./imagePeekHost.render"),
 });
 
 

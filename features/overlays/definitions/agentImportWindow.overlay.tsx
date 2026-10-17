@@ -68,7 +68,6 @@ export const agentImportWindowOverlay = defineOverlay<AgentImportWindowDefinitio
     windowId: "agent-import-window",
     mobile: "drawer",
   },
-  render: () => import("./agentImportWindow.render"),
 });
 
 

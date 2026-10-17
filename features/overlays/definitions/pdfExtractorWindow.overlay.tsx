@@ -69,7 +69,6 @@ export const pdfExtractorWindowOverlay = defineOverlay<PdfExtractorWindowDefinit
     mobile: "fullscreen",
     mobileSidebarAs: "drawer",
   },
-  render: () => import("./pdfExtractorWindow.render"),
 });
 
 

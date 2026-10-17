@@ -54,7 +54,6 @@ export const surfaceAgentBindWindowOverlay = defineOverlay<SurfaceAgentBindWindo
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./surfaceAgentBindWindow.render"),
 });
 
 

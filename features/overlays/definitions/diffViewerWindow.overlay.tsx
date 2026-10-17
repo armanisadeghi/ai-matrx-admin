@@ -107,7 +107,6 @@ export const diffViewerWindowOverlay = defineOverlay<DiffViewerWindowDefinitionD
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./diffViewerWindow.render"),
 });
 
 

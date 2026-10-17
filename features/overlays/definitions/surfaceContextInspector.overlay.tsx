@@ -100,7 +100,6 @@ export const surfaceContextInspectorOverlay = defineOverlay<SurfaceContextInspec
     mobileSidebarAs: "drawer",
     ephemeral: true,
   },
-  render: () => import("./surfaceContextInspector.render"),
 });
 
 

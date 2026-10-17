@@ -83,7 +83,6 @@ export const quickChatHistoryOverlay = defineOverlay<QuickChatHistoryDefinitionD
     key: "chat_history",
     hydrate: (ctx) => import("./quickChatHistory.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./quickChatHistory.render"),
 });
 
 

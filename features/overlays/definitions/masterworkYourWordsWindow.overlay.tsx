@@ -63,7 +63,6 @@ export const masterworkYourWordsWindowOverlay = defineOverlay<MasterworkYourWord
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./masterworkYourWordsWindow.render"),
 });
 
 

@@ -87,7 +87,6 @@ export const codeFileManagerWindowOverlay = defineOverlay<CodeFileManagerWindowD
     mobile: "drawer",
     mobileSidebarAs: "drawer",
   },
-  render: () => import("./codeFileManagerWindow.render"),
 });
 
 

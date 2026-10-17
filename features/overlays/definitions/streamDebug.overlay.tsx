@@ -81,7 +81,6 @@ export const streamDebugOverlay = defineOverlay<StreamDebugDefinitionData>()({
     windowId: "stream-debug",
     ephemeral: true,
   },
-  render: () => import("./streamDebug.render"),
 });
 
 

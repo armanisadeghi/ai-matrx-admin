@@ -72,7 +72,6 @@ export const quickUtilitiesOverlay = defineOverlay<QuickUtilitiesDefinitionData>
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  render: () => import("./quickUtilities.render"),
 });
 
 

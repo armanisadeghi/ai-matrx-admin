@@ -152,7 +152,6 @@ export const impactBatchWindowOverlay = defineOverlay<ImpactBatchWindowDefinitio
       requiredDataKeys: ["agentIds", "mode"],
     },
   },
-  render: () => import("./impactBatchWindow.render"),
 });
 
 

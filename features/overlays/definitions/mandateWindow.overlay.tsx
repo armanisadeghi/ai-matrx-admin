@@ -109,7 +109,6 @@ export const mandateWindowOverlay = defineOverlay<MandateWindowDefinitionData>()
     key: "mandate",
     hydrate: (ctx) => import("./mandateWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./mandateWindow.render"),
 });
 
 

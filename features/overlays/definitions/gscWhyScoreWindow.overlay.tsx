@@ -87,7 +87,6 @@ export const gscWhyScoreWindowOverlay = defineOverlay<GscWhyScoreWindowDefinitio
     mobile: "drawer",
     ephemeral: true,
   },
-  render: () => import("./gscWhyScoreWindow.render"),
 });
 
 

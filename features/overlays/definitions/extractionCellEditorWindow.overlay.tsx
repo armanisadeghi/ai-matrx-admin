@@ -119,7 +119,6 @@ export const extractionCellEditorWindowOverlay = defineOverlay<ExtractionCellEdi
     mobile: "fullscreen",
     ephemeral: true,
   },
-  render: () => import("./extractionCellEditorWindow.render"),
 });
 
 

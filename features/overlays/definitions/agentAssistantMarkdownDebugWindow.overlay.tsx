@@ -73,7 +73,6 @@ export const agentAssistantMarkdownDebugWindowOverlay = defineOverlay<AgentAssis
     key: "agent-md-debug",
     hydrate: (ctx) => import("./agentAssistantMarkdownDebugWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./agentAssistantMarkdownDebugWindow.render"),
 });
 
 

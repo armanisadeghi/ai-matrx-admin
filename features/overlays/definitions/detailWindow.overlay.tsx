@@ -99,7 +99,6 @@ export const detailWindowOverlay = defineOverlay<DetailWindowDefinitionData>()({
     key: "detail",
     hydrate: (ctx) => import("./detailWindow.link").then((m) => m.hydrate(ctx)),
   },
-  render: () => import("./detailWindow.render"),
 });
 
 
