@@ -21,28 +21,17 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  toggleWindowsHidden,
-  minimizeAll,
-  restoreAll,
-  restoreWindow,
-  focusWindow,
-  selectWindowsHidden,
-  selectAllWindows,
-  selectAllMinimized,
-  type WindowState,
-  arrangeActiveWindows,
-} from "@/lib/redux/slices/windowManagerSlice";
+import { toggleWindowsHidden, minimizeAll, restoreAll, restoreWindow, focusWindow, selectWindowsHidden, selectAllWindows, selectAllMinimized, type WindowState, arrangeActiveWindows } from "@ai-matrx/summon";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
-import { LayoutIconButton } from "@/features/window-panels/components/LayoutIcon";
+import { LayoutIconButton } from "@ai-matrx/summon/window";
 import {
   MenuDivider,
   MenuItem,
   MenuSection,
 } from "@/features/window-panels/tools-grid/menuPrimitives";
 import ToolsGrid from "@/features/window-panels/tools-grid/ToolsGrid";
-import { getStaticEntryBySlug } from "@/features/window-panels/registry/windowRegistryMetadata";
+import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
 /** True when a windowed rect covers the sidebar Windows trigger. */
 function rectCoversTrigger(
@@ -392,8 +381,7 @@ export default function SidebarWindowToggle() {
                     <MenuSection label="Windows" />
                     <div className="max-h-60 overflow-y-auto">
                       {windows.map((win) => {
-                        const isDeprecated = !!getStaticEntryBySlug(win.id)
-                          ?.deprecated;
+                        const isDeprecated = !!APP_OVERLAYS.find((d) => (d.window?.windowId ?? d.id) === win.id)?.window?.deprecated;
                         return (
                           <button
                             key={win.id}

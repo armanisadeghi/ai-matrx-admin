@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useOpenNoteInWindow } from "@/features/notes/actions/useOpenNoteInWindow";
-import { useOpenTranscriptStudioWindow } from "@/features/overlays/openers/transcriptStudioWindow";
+import { useOpenTranscriptStudioWindow } from "@/features/overlays/definitions/transcriptStudioWindow.overlay";
 import {
   selectActiveAudioSessionId,
   selectActiveNoteId,

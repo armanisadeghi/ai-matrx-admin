@@ -52,7 +52,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
 import { toast } from "@/lib/toast";
 import { LazyGoogleAPIProvider } from "@/providers/google-provider/LazyGoogleAPIProvider";
-import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
+import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 import {
   isGoogleAuthorizationCancelled,
   useGoogleAPI,

@@ -1,0 +1,87 @@
+"use client";
+
+/**
+ * Opener for the `userTableWindow` overlay.
+ *
+ * - `useOpenUserTableWindow()` — imperative hook. Call to open with typed
+ *   options; returns a handle with a `close()` method.
+ * - `<UserTableWindowController />` — declarative wrapper. Mount to open,
+ *   unmount to close.
+ *
+ * Opens a saved table (by id) at full size in a floating
+ * WindowPanel — the one table page (`LocatedTableViewer` → `UnifiedTableBody`).
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "userTableWindow" as const;
+
+export interface OpenUserTableWindowOptions {
+  tableId?: string;
+  title?: string;
+}
+
+export interface UserTableWindowHandle {
+  close: () => void;
+}
+
+export function useOpenUserTableWindow() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenUserTableWindowOptions = {}): UserTableWindowHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            tableId: opts.tableId,
+            title: opts.title,
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount.
+ */
+export function UserTableWindowController(
+  props: OpenUserTableWindowOptions,
+): null {
+  const open = useOpenUserTableWindow();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.tableId, props.title]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type UserTableWindowDefinitionData = OpenUserTableWindowOptions;
+
+export const userTableWindowOverlay = defineOverlay<UserTableWindowDefinitionData>()({
+  id: "userTableWindow",
+  label: "Custom Table Window",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {},
+  render: () => import("./userTableWindow.render"),
+});
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    userTableWindow: OverlayWire<UserTableWindowDefinitionData>;
+  }
+}

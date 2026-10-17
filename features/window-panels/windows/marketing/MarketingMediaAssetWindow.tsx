@@ -33,7 +33,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ImageViewer } from "@/features/window-panels/windows/image/ImageViewerWindow";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildMediaAssetMenuSection } from "@/features/marketing/components/media/media-asset-actions";
@@ -62,7 +62,7 @@ import {
   BRAND_ASSET_KINDS,
   type BrandAssetKind,
 } from "@/features/marketing/types";
-import { emitMarketingMediaAssetWindowEvent } from "@/features/overlays/callbacks/marketingMediaAssetWindow";
+import { emitMarketingMediaAssetWindowEvent } from "@/features/overlays/definitions/callbacks/marketingMediaAssetWindow";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   IMAGE_VIEWER_SURFACE_NAME,

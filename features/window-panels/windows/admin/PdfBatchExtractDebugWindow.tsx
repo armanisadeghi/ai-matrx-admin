@@ -14,7 +14,7 @@ import { formatFileSize } from "@ai-matrx/kit/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import {

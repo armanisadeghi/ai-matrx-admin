@@ -17,7 +17,7 @@
 import { Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { useOpenMandateWindowNext } from "@/features/overlays/openers/mandateWindowNext";
+import { useOpenMandateWindowNext } from "@/features/overlays/definitions/mandateWindowNext.overlay";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { cn } from "@/lib/utils";
 

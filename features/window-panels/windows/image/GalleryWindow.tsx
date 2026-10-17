@@ -19,7 +19,7 @@ import {
   Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { GalleryFloatingWorkspace } from "@/features/gallery/components/GalleryFloatingWorkspace";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

@@ -108,7 +108,7 @@ jest.mock("@/features/workflow-runtime/transport/run-event-source", () => ({
   startRunEventSource: () => ({ stop: () => undefined }),
 }));
 const floatOpens: string[] = [];
-jest.mock("@/features/overlays/openers/workflowRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/workflowRunWindow.overlay", () => ({
   openWorkflowRunWindowAction: (args: { runId: string }) => {
     floatOpens.push(args.runId);
     return { type: "test/openWorkflowRunWindow", payload: args };

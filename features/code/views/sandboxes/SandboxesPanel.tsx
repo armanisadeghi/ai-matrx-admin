@@ -58,7 +58,7 @@ import { MockFilesystemAdapter } from "../../adapters/MockFilesystemAdapter";
 import { MockProcessAdapter } from "../../adapters/SandboxProcessAdapter";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { useSandboxWorkspaceConnection } from "./useSandboxWorkspaceConnection";
-import { useOpenSandboxManagementWindow } from "@/features/overlays/openers/sandboxManagementWindow";
+import { useOpenSandboxManagementWindow } from "@/features/overlays/definitions/sandboxManagementWindow.overlay";
 import { useSandboxLifecycleSubmission } from "@/lib/sandbox/useSandboxLifecycleSubmission";
 import { useSandboxLifecycleTerminalInvalidation } from "@/lib/sandbox/useSandboxLifecycleTerminalInvalidation";
 import {

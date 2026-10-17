@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { restoreChange } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import { ChangeReviewWindow } from "@/features/trash/review/ChangeReviewWindow";

@@ -11,7 +11,7 @@ import { launchAgentExecution } from "@ai-matrx/chat/agents/redux/execution-syst
 import { launchFailureMessage } from "@ai-matrx/chat/agents/redux/execution-system/utils/launch-failure-message";
 import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";

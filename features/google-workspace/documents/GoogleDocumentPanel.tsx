@@ -31,7 +31,7 @@ import {
   SENT_FOR_APPROVAL_MESSAGE,
 } from "@/features/google-workspace/service";
 import { getGoogleDrivePickerToken } from "@/features/google-workspace/drivePickerToken";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { pickGoogleWorkspaceFile } from "@/lib/googlePicker";
 
 import {

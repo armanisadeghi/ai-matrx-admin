@@ -4,7 +4,7 @@
 // description for whoever triages it, and structured in users.user_feedback.metadata.report_subject
 // (source, quote, anchor) for tools. RC-B11 low finding 4.
 
-import type { FeedbackSubject } from "@/features/overlays/openers/feedbackDialog";
+import type { FeedbackSubject } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import type { Json } from "@/types/database.types";
 
 /** The selected passage or billing record as the first lines a triager reads. */

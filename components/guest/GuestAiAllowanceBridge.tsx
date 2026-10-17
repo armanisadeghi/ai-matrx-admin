@@ -11,7 +11,7 @@
 
 import { useEffect } from "react";
 import { onGuestAiAllowanceUsed } from "@/lib/guest/guest-ai-allowance";
-import { useOpenGuestAiAllowance } from "@/features/overlays/openers/guestAiAllowance";
+import { useOpenGuestAiAllowance } from "@/features/overlays/definitions/guestAiAllowance.overlay";
 
 export function GuestAiAllowanceBridge(): null {
   const openReminder = useOpenGuestAiAllowance();

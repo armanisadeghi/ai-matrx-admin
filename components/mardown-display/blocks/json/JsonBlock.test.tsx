@@ -9,7 +9,7 @@ jest.mock("next/dynamic", () => ({
     },
 }));
 
-jest.mock("@/features/overlays/openers/convertToShapeWindow", () => ({
+jest.mock("@/features/overlays/definitions/convertToShapeWindow.overlay", () => ({
   useOpenConvertToShapeWindow: () => jest.fn(),
 }));
 

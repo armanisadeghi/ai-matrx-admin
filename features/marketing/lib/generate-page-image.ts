@@ -46,8 +46,8 @@ import { launchAgentExecution } from "@ai-matrx/chat/agents/redux/execution-syst
 import { executeInstance } from "@ai-matrx/chat/agents/redux/execution-system/thunks/execute-instance.thunk";
 import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { destroyInstanceIfAllowed } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.thunks";
-import { openLiveRunWindowAction } from "@/features/overlays/openers/liveRunWindow";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { closeOverlay } from "@ai-matrx/summon";
 import {
   selectAnswerText,
   selectRequestError,

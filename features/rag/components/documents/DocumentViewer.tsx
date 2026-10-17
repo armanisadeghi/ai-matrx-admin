@@ -34,7 +34,7 @@ import {
   Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import {
   Dialog,
   DialogContent,

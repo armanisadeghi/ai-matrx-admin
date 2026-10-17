@@ -166,7 +166,7 @@ import {
 } from "./illustrateSetRun";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
-import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
+import { useOpenFlashcardItemWindow } from "@/features/overlays/definitions/flashcardItemWindow.overlay";
 import { serializeDeck } from "@/features/education/media/audio/audioBrief";
 import { ConvertContentDialog } from "@/features/education/convert/ConvertContentDialog";
 import { GenerateCardsDialog } from "./GenerateCardsDialog";

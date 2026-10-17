@@ -89,7 +89,7 @@ import {
 import { ClearContextButton } from "@/features/scopes/components/active-context/ClearContextButton";
 import { ContextSelectionSummary } from "./ContextSelectionSummary";
 import { formatOrgDisplayName } from "@/features/scopes/utils/formatOrgDisplayName";
-import { useOpenScopeEditWindow } from "@/features/overlays/openers/scopeEditWindow";
+import { useOpenScopeEditWindow } from "@/features/overlays/definitions/scopeEditWindow.overlay";
 import type {
   OrgNode,
 } from "@/features/scopes/types";

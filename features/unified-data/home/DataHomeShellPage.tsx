@@ -22,7 +22,7 @@ import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScop
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { ALL_ORGANIZATIONS, ORG_FILTER_PARAM, dataHomeOrganizationHref } from "@/features/unified-data/hub/dataHomeScope";
 import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";

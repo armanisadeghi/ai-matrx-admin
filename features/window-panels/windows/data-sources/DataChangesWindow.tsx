@@ -5,7 +5,7 @@
  * this file only frames it.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ChangesPanel } from "@/features/data-sources/ChangesPanel";
 import { useLibraryOrganizationId } from "@/features/data-sources/library/hooks";
 

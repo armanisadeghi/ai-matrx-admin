@@ -16,7 +16,7 @@
 import { useCallback, useState } from "react";
 import { Lightbulb } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentSkillConfig, } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import {
@@ -29,7 +29,7 @@ import { SkillConfigPicker } from "@/features/skills/components/SkillConfigPicke
 import type { SkillConfig } from "@/features/skills/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 
 interface AgentSkillsWindowProps {

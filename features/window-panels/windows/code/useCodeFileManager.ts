@@ -356,7 +356,7 @@ export function useCodeFileManager(): UseCodeFileManagerResult {
       if (ids.length === 0) return;
       // Lazy import to avoid circular dependency with overlaySlice in tests.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { openOverlay } = require("@/lib/redux/slices/overlaySlice");
+      const { openOverlay } = require("@ai-matrx/summon");
       dispatch(
         openOverlay({
           overlayId: "codeEditorWindow",

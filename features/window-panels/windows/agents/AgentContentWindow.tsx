@@ -23,7 +23,7 @@ import {
   Braces,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {

@@ -19,7 +19,7 @@ jest.mock("@ai-matrx/design-system/data-table", () => ({
   },
 }));
 
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 

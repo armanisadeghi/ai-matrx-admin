@@ -30,7 +30,7 @@ import {
   evaluateMetaDescription,
   evaluateMetaTitle,
 } from "@/features/marketing/seo/serp/metrics";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { marketingPageManifest } from "@/features/surfaces/manifests/marketing-page.manifest";
 import { surfaceValueLabels } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import type { PlannedLinkEntry } from "@/features/marketing/types";

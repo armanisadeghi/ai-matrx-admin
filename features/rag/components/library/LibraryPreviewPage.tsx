@@ -52,7 +52,7 @@ import { Skeleton } from "@ai-matrx/design-system";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import type { components } from "@ai-matrx/api/types";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { computeMatches } from "@/features/notes/utils/findMatches";
 import { HighlightedText } from "@/components/text/HighlightedText";
 import { forkProcessedDocument } from "@/features/rag/api/fork";

@@ -11,7 +11,7 @@
 
 import { FilePen } from "lucide-react";
 import { registerActionIfAbsent } from "./register-if-absent";
-import { applyToSourceReviewAction } from "@/features/overlays/openers/applyToSourceReview";
+import { applyToSourceReviewAction } from "@/features/overlays/definitions/applyToSourceReview.overlay";
 import { applyTargetForConversation } from "@ai-matrx/rich-content/rich-document/review/applyTargets";
 import { chatIds, contentForDestination } from "../utils";
 

@@ -25,7 +25,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { detailPageHref } from "@/features/window-panels/detail/DetailHost";
 import MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";
-import { useOpenStructuredValueWindow } from "@/features/overlays/openers/structuredValueWindow";
+import { useOpenStructuredValueWindow } from "@/features/overlays/definitions/structuredValueWindow.overlay";
 
 /** records-ui `ReferenceChipRef` — spelled here so this binding compiles against the package before and after it gains the port. */
 interface ReferenceArgs {

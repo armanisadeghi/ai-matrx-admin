@@ -12,7 +12,7 @@ import { useState } from "react";
 import { toast } from "@/lib/toast";
 import { DiffViewer, type DiffEngine } from "@ai-matrx/diff/react";
 import { DiffReview } from "@ai-matrx/diff/react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 

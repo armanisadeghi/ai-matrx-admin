@@ -60,7 +60,7 @@ import { useNotesSurfaceScope } from "../hooks/useNotesSurfaceScope";
 import { useNoteEditorMode } from "../hooks/usePreferredDefaultEditorMode";
 import { saveNote, copyNote } from "../redux/thunks";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
-import { useOpenNoteInfoWindow } from "@/features/overlays/openers/noteInfoWindow";
+import { useOpenNoteInfoWindow } from "@/features/overlays/definitions/noteInfoWindow.overlay";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
 import { useNoteIngestStatus } from "../hooks/useNoteIngestStatus";
 import { useNoteDelete } from "../hooks/useNoteDelete";

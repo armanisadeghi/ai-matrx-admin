@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 
 jest.mock("@/features/agents/agent-creators/interactive-builder/AgentGenerator", () => ({ AgentGenerator: () => null }));
-jest.mock("@/features/overlays/openers/agentAdvancedEditorWindow", () => ({ useOpenAgentContentWindow: () => jest.fn() }));
+jest.mock("@/features/overlays/definitions/agentAdvancedEditorWindow.overlay", () => ({ useOpenAgentContentWindow: () => jest.fn() }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("./../ScopeHolderBar", () => ({}));
 

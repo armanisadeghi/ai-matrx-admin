@@ -118,8 +118,6 @@ const ALLOW: Record<Rule, string[]> = {
     "features/files/virtual-sources/registry.ts",
     // Declared mandate PLACES (where a feature's agent runs) - declarations read by the intelligence page.
     "features/mandates/feature-intelligence/page-intelligence-doors.ts",
-    // WindowPanel's own imperative openPopout handle by window id; not a menu action.
-    "features/window-panels/popout/usePopoutControl.ts",
     // Providers of client-state payloads sent WITH an agent request (client.capabilities), not user-invoked actions.
     "../aidream/apps/shared/chat/src/agents/redux/execution-system/client-capabilities/registry.ts",
     // Promise resolvers for a pending ask_user tool call (callId -> resolve); a rendezvous, not an action.
@@ -144,8 +142,6 @@ const ALLOW: Record<Rule, string[]> = {
     "features/content-ir/records/kind-record-registry.ts",
     // Transcript-studio MODULE definitions (feature modules registered at boot); a module catalog.
     "features/transcript-studio/modules/registry.ts",
-    // URL -> panel HYDRATORS run once when a URL carrying panel state loads; restoration, never a menu row.
-    "features/window-panels/url-sync/UrlPanelRegistry.ts",
     // Guided-setup CHECKLIST definitions (steps + done-tests); declarations read by the checklist UI.
     "lib/guided-setup/registry.ts",
     // AbortControllers of in-flight agent requests by request id; a cancellation handle.

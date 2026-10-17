@@ -17,7 +17,7 @@ import {
   type VaultLocation,
 } from "@ai-matrx/vault";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { WebVault } from "@/features/secrets/components/WebVault";
 
 export interface VaultWindowProps {

@@ -41,7 +41,7 @@ import type {
   AccessRequestStatus,
   RequestedLevel,
 } from "@/features/access-gate/types";
-import { useOpenAgentFindUsagesWindow } from "@/features/overlays/openers/agentFindUsagesWindow";
+import { useOpenAgentFindUsagesWindow } from "@/features/overlays/definitions/agentFindUsagesWindow.overlay";
 import type { MessageActionRenderer } from "@ai-matrx/messaging/react";
 import type {
   AccessRequestActionPayload,

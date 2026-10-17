@@ -9,7 +9,7 @@
  */
 
 import { configureStore, type Middleware } from "@reduxjs/toolkit";
-import overlaysReducer, { closeOverlay, openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer, closeOverlay, openOverlay } from "@ai-matrx/summon";
 import conversationsReducer, {
   createInstance,
   destroyInstance,

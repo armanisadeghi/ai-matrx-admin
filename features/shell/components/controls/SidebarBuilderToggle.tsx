@@ -13,10 +13,10 @@ import { Blocks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
-import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { selectIsOverlayOpen } from "@ai-matrx/summon";
 import { selectBuilderFeedList, feedsForRoute } from "@/features/builder-panel/selectors";
 import { useBuilderRecording } from "@/features/builder-panel/hooks/useBuilderRecording";
-import { BUILDER_PANEL_OVERLAY_ID, useToggleBuilderPanel } from "@/features/overlays/openers/builderPanelWindow";
+import { BUILDER_PANEL_OVERLAY_ID, useToggleBuilderPanel } from "@/features/overlays/definitions/builderPanelWindow.overlay";
 
 export default function SidebarBuilderToggle() {
   const isAdmin = useAppSelector(selectIsAdminDebugger) ?? false;

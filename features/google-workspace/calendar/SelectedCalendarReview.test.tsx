@@ -21,7 +21,7 @@ jest.mock("@/features/marketing/google/hooks", () => ({
 jest.mock("@/features/organizations/useOrganizationRequired", () => ({
   useOrganizationRequired: () => ({}),
 }));
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => jest.fn(),
 }));
 

@@ -19,7 +19,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, X } from "lucide-react";
-import { useOpenAddToRulebookDialog } from "@/features/overlays/openers/addToRulebookDialog";
+import { useOpenAddToRulebookDialog } from "@/features/overlays/definitions/addToRulebookDialog.overlay";
 import { hasAnyRulebook } from "./service";
 import { cn } from "@/lib/utils";
 

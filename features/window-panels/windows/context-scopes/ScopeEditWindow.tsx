@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { ScopeForm } from "@/features/scopes/components/management/ScopeForm";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

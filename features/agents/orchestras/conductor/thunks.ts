@@ -25,7 +25,7 @@ import {
   launchFailureMessage,
 } from "@ai-matrx/chat/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { destroyInstanceIfAllowed } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.thunks";
-import { openLiveRunWindowAction } from "@/features/overlays/openers/liveRunWindow";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { selectRequest } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import {
   fetchFullAgent,

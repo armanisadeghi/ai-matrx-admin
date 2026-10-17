@@ -34,7 +34,7 @@ import {
   type PeekBlock,
   type PeekRecord,
 } from "@ai-matrx/design-system";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import {
   BLOCKER_META,
   GRADE_META,

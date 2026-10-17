@@ -29,7 +29,7 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import {

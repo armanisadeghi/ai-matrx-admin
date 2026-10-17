@@ -7,7 +7,7 @@
 
 import React, { useCallback } from "react";
 import { useConversationSummary } from "@/features/messaging/lib/useConversationSummary";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
 

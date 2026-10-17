@@ -34,7 +34,7 @@ import {
   Loader2,
   Inbox,
 } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { cn } from "@/lib/utils";
 import { getLanguageIconNode } from "@ai-matrx/rich-content/code-block/LanguageDisplay";
 import {

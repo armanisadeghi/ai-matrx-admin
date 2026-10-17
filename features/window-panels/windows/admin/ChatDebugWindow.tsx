@@ -54,7 +54,7 @@ const selectMessages = (_state: RootState, _sessionId: string): unknown[] =>
   EMPTY_MESSAGES;
 const selectResources = (_state: RootState, _sessionId: string): unknown[] =>
   EMPTY_RESOURCES;
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 // context-menu-exempt: entity — a debug toggle panel + stubbed session-state dump, not a record; the conversation/agent it names already has its own doors via EntityRef
 

@@ -24,7 +24,7 @@ import { Badge, Button, Chip, ChipSet, DisclosureHeader, EmptyState, RegionSkele
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
-import { useOpenDataSourceWindow } from "@/features/overlays/openers/dataSourceWindow";
+import { useOpenDataSourceWindow } from "@/features/overlays/definitions/dataSourceWindow.overlay";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { cn } from "@/lib/utils";

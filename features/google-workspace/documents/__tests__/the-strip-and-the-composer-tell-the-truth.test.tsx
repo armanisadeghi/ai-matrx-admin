@@ -131,7 +131,7 @@ jest.mock("@/features/marketing/google/service", () => ({
  * callbacks that act in place — the connector window and THE Google Picker.
  * `a-refusal-says-what-to-do.test.tsx` drives both; here they are stubbed.
  */
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => jest.fn(),
 }));
 jest.mock("@/lib/googlePicker", () => ({ pickGoogleWorkspaceFile: jest.fn() }));

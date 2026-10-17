@@ -55,7 +55,7 @@ import type {
   StudySessionRow,
   StudyStreakRow,
 } from "@/features/education/study/types";
-import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
+import { useOpenFlashcardItemWindow } from "@/features/overlays/definitions/flashcardItemWindow.overlay";
 import CardFaceContent from "@/components/mardown-display/blocks/flashcards/CardFaceContent";
 import { displayTitle } from "@ai-matrx/rich-content/markdown-core/plain-title";
 import { fcService } from "../../data/fcService";

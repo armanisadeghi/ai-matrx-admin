@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { usePathname } from "next/navigation";
 import { Select, Tabs, type SelectOption } from "@ai-matrx/design-system/controls";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDebugData } from "@/lib/redux/preferences/adminDebugSlice";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";

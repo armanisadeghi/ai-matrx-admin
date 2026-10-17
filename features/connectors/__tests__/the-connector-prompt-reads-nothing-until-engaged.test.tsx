@@ -44,7 +44,7 @@ const mockSelectOrganizationIds = jest.fn(() => []);
 jest.mock("@/features/scopes/redux/selectors/tree", () => ({
   selectOrganizationIds: () => mockSelectOrganizationIds(),
 }));
-jest.mock("@/features/overlays/openers/connectorConsentDialog", () => ({
+jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({
   useOpenConnectorConsentDialog: () => jest.fn(),
 }));
 // The adapter's other imports (consent runner) are not under test.

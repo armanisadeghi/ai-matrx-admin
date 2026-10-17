@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { ChevronDown, ChevronUp, Globe2, Loader2, Search } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import {
   Select,
   SelectContent,

@@ -22,7 +22,7 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import type { DecodedDirective } from "@ai-matrx/content-ir";
 
-import overlayReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlayReducer } from "@ai-matrx/summon";
 
 // The card is an app-router client component; only its SENTENCE is under test.
 jest.mock("next/navigation", () => ({

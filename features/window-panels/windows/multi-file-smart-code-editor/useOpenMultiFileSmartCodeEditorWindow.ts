@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay, closeOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay, closeOverlay } from "@ai-matrx/summon";
 import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
 import {
   createMultiFileSmartCodeEditorCallbackGroup,

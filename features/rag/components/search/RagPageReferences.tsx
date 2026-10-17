@@ -37,7 +37,7 @@ import {
   type PageBundle,
 } from "@/features/rag/components/source-inspector/usePageBundle";
 import { usePdfSurfaceLinks } from "@/features/pdf/hooks/usePdfSurfaceLinks";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import { listResultsForFilePage } from "@/features/page-extraction/api/runs";
 import type { PageExtractionResult } from "@/features/page-extraction/types";
 import { cn } from "@/lib/utils";

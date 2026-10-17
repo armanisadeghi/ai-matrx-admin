@@ -11,7 +11,7 @@
  */
 
 import { ListTodo } from "lucide-react";
-import { useOpenTaskQuickCreateWindow } from "@/features/overlays/openers/taskQuickCreateWindow";
+import { useOpenTaskQuickCreateWindow } from "@/features/overlays/definitions/taskQuickCreateWindow.overlay";
 import type { MarketingPage } from "@/features/marketing/types";
 import { cn } from "@/lib/utils";
 

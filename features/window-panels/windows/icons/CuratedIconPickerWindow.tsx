@@ -13,7 +13,7 @@
  */
 
 import React, { useMemo, useRef, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@ai-matrx/design-system/controls";
 import { IconResolver,

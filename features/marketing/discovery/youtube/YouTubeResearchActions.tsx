@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { removeRequest } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.slice";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { toast } from "@/lib/toast";
 import {
   enrichYouTubeComments,

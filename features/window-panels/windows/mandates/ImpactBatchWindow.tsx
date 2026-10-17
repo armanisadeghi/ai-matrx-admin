@@ -10,13 +10,13 @@
  * SHELL only: the window chrome, the scope it restores from, and its title.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ImpactBatchPanel } from "@/features/mandates/admin/ImpactBatchPanel";
 import type {
   ImpactBatchWindowDelta,
   ImpactBatchWindowMode,
   ImpactBatchWindowPosture,
-} from "@/features/overlays/openers/impactBatchWindow";
+} from "@/features/overlays/definitions/impactBatchWindow.overlay";
 
 export interface ImpactBatchWindowProps {
   isOpen?: boolean;

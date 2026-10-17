@@ -40,8 +40,8 @@ import { Button } from "@ai-matrx/design-system";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { TopicTree } from "@/components/official/topic-tree/TopicTree";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
-import { useOpenTopicalMapWindow } from "@/features/overlays/openers/topicalMapWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
+import { useOpenTopicalMapWindow } from "@/features/overlays/definitions/topicalMapWindow.overlay";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 

@@ -22,8 +22,8 @@ import { getManifest as getSurfaceIndexEntry } from "@ai-matrx/chat/surfaces/run
 import { useSurfaceAgentRoles } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";
 import { useAgentNames } from "@ai-matrx/chat/surfaces/hooks/useAgentNames";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
-import { useOpenSurfaceAgentBindWindow } from "@/features/overlays/openers/surfaceAgentBindWindow";
-import { useOpenAgentSettingsWindow } from "@/features/overlays/openers/agentSettingsWindow";
+import { useOpenSurfaceAgentBindWindow } from "@/features/overlays/definitions/surfaceAgentBindWindow.overlay";
+import { useOpenAgentSettingsWindow } from "@/features/overlays/definitions/agentSettingsWindow.overlay";
 import { deleteAgentSurfaceBinding } from "@ai-matrx/chat/surfaces/services/bind-agent-to-surface.service";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

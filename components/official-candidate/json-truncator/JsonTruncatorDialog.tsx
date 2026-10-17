@@ -14,10 +14,7 @@
  *   />
  */
 
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
+import { WindowPanel, type WindowPanelProps } from "@ai-matrx/summon/window";
 import {
   JsonTruncator,
   type JsonTruncatorProps,

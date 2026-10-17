@@ -18,7 +18,7 @@ import type { SaveToTableSource } from "@ai-matrx/records-ui";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { whereANewTableIsBorn } from "@/features/data-tables/data-source/where-a-table-is-born";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
-import { disposeSaveToTableCallbackGroup, emitSaveToTableEvent } from "@/features/overlays/callbacks/saveToTable";
+import { disposeSaveToTableCallbackGroup, emitSaveToTableEvent } from "@/features/overlays/definitions/callbacks/saveToTable";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";

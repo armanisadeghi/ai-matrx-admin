@@ -20,7 +20,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { useOpenFlashcardsBlockWindow } from "@/features/overlays/openers/flashcardsBlockWindow";
+import { useOpenFlashcardsBlockWindow } from "@/features/overlays/definitions/flashcardsBlockWindow.overlay";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
   BlockControlsButton,

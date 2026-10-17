@@ -70,9 +70,9 @@ import {
 } from "@/components/ui/dialog";
 import { formatCount } from "@/features/marketing/search-console/types";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { reviewWindow } from "../lib";
 import {
   previewMatcherReach,

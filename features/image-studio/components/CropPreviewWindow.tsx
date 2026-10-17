@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Select } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { CropPreview } from "./CropPreview";
 import { MiniFocalPointPicker } from "./MiniFocalPointPicker";
 import { ALL_PRESETS, getPresetById } from "../presets";

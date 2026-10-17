@@ -19,7 +19,7 @@ jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hook
 jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
 jest.mock("@/styles/themes/useThemeMode", () => ({ useThemeMode: () => "dark" }));
 jest.mock("@/features/canvas/hooks/useCanvas", () => ({ useCanvas: () => ({ open: jest.fn() }) }));
-jest.mock("@/features/overlays/openers/smartCodeEditorWindow", () => ({
+jest.mock("@/features/overlays/definitions/smartCodeEditorWindow.overlay", () => ({
   useOpenSmartCodeEditorWindow: () => jest.fn(),
 }));
 jest.mock("@ai-matrx/rich-content/code-block/SmallCodeEditor", () => ({ __esModule: true, default: () => null }));

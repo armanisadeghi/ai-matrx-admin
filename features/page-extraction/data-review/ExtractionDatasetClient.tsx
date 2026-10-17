@@ -86,7 +86,7 @@ import type {
 } from "@/features/page-extraction/types";
 
 import { ContextStatusButton } from "@/features/scopes/components/context-assignment/ContextStatusButton";
-import { useOpenExtractionCellEditor } from "@/features/overlays/openers/extractionCellEditorWindow";
+import { useOpenExtractionCellEditor } from "@/features/overlays/definitions/extractionCellEditorWindow.overlay";
 import { ExportMenu } from "./ExportMenu";
 import { SendToMenu } from "./SendToMenu";
 import { RunsPopover } from "./RunsPopover";

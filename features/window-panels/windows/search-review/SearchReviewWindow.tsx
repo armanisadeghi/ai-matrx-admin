@@ -11,7 +11,7 @@
 
 import { SearchX } from "lucide-react";
 import { EmptyState } from "@ai-matrx/design-system/controls";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SearchReviewBody } from "@/features/search-review/SearchReviewBody";
 import { useSearchReviewSession } from "@/features/search-review/sessionStore";
 

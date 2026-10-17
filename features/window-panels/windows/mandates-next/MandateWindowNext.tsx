@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Loader2, Search, SquareArrowOutUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";

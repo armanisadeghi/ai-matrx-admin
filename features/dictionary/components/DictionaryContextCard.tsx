@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useDictionaryContext } from "@/features/dictionary/hooks/useDictionaryContext";
-import { useOpenDictionarySelectorWindow } from "@/features/overlays/openers/dictionarySelectorWindow";
+import { useOpenDictionarySelectorWindow } from "@/features/overlays/definitions/dictionarySelectorWindow.overlay";
 import { DICT_LEVEL_LABELS } from "@/features/dictionary/constants";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";

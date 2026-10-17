@@ -12,8 +12,8 @@ import { useState } from "react";
 import { Eye, PanelTopOpen } from "lucide-react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
-import { useWatchAiRun } from "@/features/overlays/openers/aiWatchWindow";
-import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
+import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
+import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { ProvisionWindowBody } from "@/features/provision-window/ProvisionWindowBody";
 import type { BuilderEntry, BuilderRef } from "../types";
 

@@ -9,7 +9,7 @@
  * `ScopeBatchImportBody` — this file is only the WindowPanel shell.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ScopeBatchImportBody } from "@/features/agents/components/scope-batch-import/ScopeBatchImportBody";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {

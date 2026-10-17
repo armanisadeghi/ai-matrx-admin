@@ -19,7 +19,7 @@ import { Button, Chip, DisclosureHeader, RegionSkeleton } from "@ai-matrx/design
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useOpenWorkflowRunWindow } from "@/features/overlays/openers/workflowRunWindow";
+import { useOpenWorkflowRunWindow } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { assessmentService } from "@/features/education/assessment/data/assessmentService";
 import { AddMoreCardsButton, originToDraft } from "@/features/flashcards/components/set-detail/AddMoreCardsButton";

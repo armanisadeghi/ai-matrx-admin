@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from "react";
 import { Settings } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AgentConnectionsSidebar } from "@/features/agent-connections/components/AgentConnectionsSidebar";
 import { AgentConnectionsBody } from "@/features/agent-connections/components/AgentConnectionsBody";
 import { AgentConnectionsNavProvider } from "@/features/agent-connections/components/AgentConnectionsNavContext";

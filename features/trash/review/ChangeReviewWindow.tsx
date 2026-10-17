@@ -21,7 +21,7 @@ import {
   type ChangePreviewWire,
   type ChangeTarget,
 } from "@ai-matrx/data/db";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";

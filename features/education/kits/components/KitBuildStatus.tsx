@@ -14,7 +14,7 @@ import { useEffect, useEffectEvent, useState } from "react";
 import { Eye, Loader2 } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { useOpenWorkflowRunWindow } from "@/features/overlays/openers/workflowRunWindow";
+import { useOpenWorkflowRunWindow } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";
 import {
   selectRunActivity,

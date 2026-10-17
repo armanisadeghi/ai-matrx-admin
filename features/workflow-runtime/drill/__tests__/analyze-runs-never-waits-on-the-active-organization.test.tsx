@@ -33,7 +33,7 @@ jest.mock("@/components/navigation/AppLink", () => ({ __esModule: true, default:
 jest.mock("@/lib/redux/hooks", () => ({ useAppDispatch: () => () => undefined }));
 // The chat package reads these hooks through its own module (P3): one double covers both.
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
-jest.mock("@/lib/redux/slices/overlaySlice", () => ({ openOverlay: (p: unknown) => p, closeOverlay: (p: unknown) => p }));
+jest.mock("@ai-matrx/summon", () => ({ openOverlay: (p: unknown) => p, closeOverlay: (p: unknown) => p }));
 
 import { WorkflowRunsExplorer } from "../WorkflowRunsExplorer";
 

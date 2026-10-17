@@ -10,7 +10,7 @@
  */
 
 import React, { useCallback, useMemo, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ContentEditor } from "@/components/official/content-editor/ContentEditor";
 import {
   ContentEditorList,

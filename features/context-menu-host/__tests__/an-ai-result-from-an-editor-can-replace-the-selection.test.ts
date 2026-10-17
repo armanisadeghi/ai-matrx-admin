@@ -22,7 +22,7 @@ import {
   deriveClientToolsFromHandle,
   type WidgetHandle,
 } from "@ai-matrx/chat/agents/types/widget-handle.types";
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 import { buildEditableWidgetHandle } from "@ai-matrx/context-menu/engine";
 import { buildSelectionWriteBack } from "@ai-matrx/context-menu/model";
 import { registerLaunchWidgetHandle } from "@ai-matrx/chat/agents/utils/launch-widget-handles";

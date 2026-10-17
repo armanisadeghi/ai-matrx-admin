@@ -1,0 +1,89 @@
+"use client";
+
+/**
+ * Opener for the `agentFindUsagesWindow` overlay.
+ *
+ * - `useOpenAgentFindUsagesWindow()` — imperative hook. Call to open with typed options;
+ *   returns a handle with a `close()` method.
+ * - `<AgentFindUsagesWindowController />` — declarative wrapper. Mount to open,
+ *   unmount to close. Equivalent ergonomics to rendering a normal component.
+ *
+ * Hand-maintained opener — see features/overlays/FEATURE.md.
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "agentFindUsagesWindow" as const;
+
+export interface OpenAgentFindUsagesWindowOptions {
+  agentId?: string | null;
+}
+
+export interface AgentFindUsagesWindowHandle {
+  close: () => void;
+}
+
+export function useOpenAgentFindUsagesWindow() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (opts: OpenAgentFindUsagesWindowOptions = {}): AgentFindUsagesWindowHandle => {
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            agentId: opts.agentId,
+          },
+        }),
+      );
+      return {
+        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount. Use this when a caller wants to express overlay
+ * state declaratively (the way they'd render a normal component).
+ */
+export function AgentFindUsagesWindowController(props: OpenAgentFindUsagesWindowOptions): null {
+  const open = useOpenAgentFindUsagesWindow();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.agentId]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type AgentFindUsagesWindowDefinitionData = OpenAgentFindUsagesWindowOptions;
+
+export const agentFindUsagesWindowOverlay = defineOverlay<AgentFindUsagesWindowDefinitionData>()({
+  id: "agentFindUsagesWindow",
+  label: "Agent Find Usages Window",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {
+    restoreDefaults: { agentId: null },
+    windowId: "agent-find-usages-window",
+    mobile: "fullscreen",
+    ephemeral: true,
+  },
+  render: () => import("./agentFindUsagesWindow.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    agentFindUsagesWindow: OverlayWire<AgentFindUsagesWindowDefinitionData>;
+  }
+}

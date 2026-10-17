@@ -22,7 +22,7 @@
 import { PenLine } from "lucide-react";
 
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { cn } from "@/lib/utils";
 

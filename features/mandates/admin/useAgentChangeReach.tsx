@@ -40,7 +40,7 @@ import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
-import { useOpenAgentFindUsagesWindow } from "@/features/overlays/openers/agentFindUsagesWindow";
+import { useOpenAgentFindUsagesWindow } from "@/features/overlays/definitions/agentFindUsagesWindow.overlay";
 import {
   autoAdvanceCandidates,
   countBatchTiers,

@@ -48,7 +48,7 @@ import {
   buildMessageMenuSection,
   threadTableRows,
 } from "@/features/messaging/lib/messaging-menu-actions";
-import { useOpenSaveToTable } from "@/features/overlays/openers/saveToTable";
+import { useOpenSaveToTable } from "@/features/overlays/definitions/saveToTable.overlay";
 import { useMessagingAiDemand } from "@/features/messaging/lib/messagingAiDemand";
 import { useOpenConversation } from "@/features/messaging/lib/openConversation";
 import { useConversationSummary } from "@/features/messaging/lib/useConversationSummary";

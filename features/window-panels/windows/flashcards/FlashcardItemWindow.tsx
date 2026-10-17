@@ -6,8 +6,8 @@
 
 import React, { useEffect } from "react";
 import { Smartphone } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
-import { useOverlaySurfaceRenderAck } from "@/features/window-panels/diagnostics/useOverlaySurfaceRenderAck";
+import { WindowPanel } from "@ai-matrx/summon/window";
+import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
 import { Button } from "@/components/ui/button";
 import FlashcardItem from "@/components/mardown-display/blocks/flashcards/FlashcardItem";
 import FlashcardMobileView from "@/components/mardown-display/blocks/flashcards/FlashcardMobileView";

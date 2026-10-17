@@ -25,7 +25,7 @@ import { useMarketingSite } from "@/features/marketing/components/site/Marketing
 import { useMarketingSiteSurfaceBase } from "@/features/marketing/lib/scopes/site-surface-base";
 import { useUpdatePageIntent } from "@/features/marketing/data/hooks";
 import { usePageTopQueries } from "@/features/marketing/seo/keyword/hooks";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import type { MarketingPage } from "@/features/marketing/types";
 import { useGscKeywordValueByText } from "@/features/marketing/search-console/hooks/useGscQuery";
 import { buildGscValueColumns } from "@/features/marketing/search-console/lib/columns";

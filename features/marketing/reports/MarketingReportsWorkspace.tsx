@@ -53,7 +53,7 @@ import {
 } from "@/features/marketing/search-console/types";
 import type { GscKeywordValueRow } from "@/features/marketing/search-console/data-insights";
 import { normalizeKeywordPhrase } from "@/features/marketing/seo/keyword/normalize";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import {
   createMarketingReportsScope,

@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { KitOutlineCard } from "../KitOutline";
 import type { KitOutlineState } from "../../outline/useKitOutline";
 
-jest.mock("@/features/overlays/openers/workflowRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/workflowRunWindow.overlay", () => ({
   useOpenWorkflowRunWindow: () => jest.fn(),
 }));
 

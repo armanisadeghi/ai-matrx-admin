@@ -138,8 +138,8 @@ jest.mock("@/features/crm/components/crm-row-actions", () => ({
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({
   SurfaceRuntimeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("@/features/overlays/openers/crmCreatePartyWindow", () => ({ useOpenCrmCreatePartyWindow: () => () => ({ close: () => {} }) }));
-jest.mock("@/features/overlays/openers/googleImportWindows", () => ({ useOpenGoogleContactsImport: () => () => {} }));
+jest.mock("@/features/overlays/definitions/crmCreatePartyWindow.overlay", () => ({ useOpenCrmCreatePartyWindow: () => () => ({ close: () => {} }) }));
+jest.mock("@/features/overlays/definitions/googleContactsImportWindow.overlay", () => ({ useOpenGoogleContactsImport: () => () => {} }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/lib/entity-list/components/EntityScopeTabs", () => ({ EntityScopeTabs: () => null }));
 jest.mock("@/lib/entity-list/components/EntityOrgFilter", () => ({ EntityOrgFilter: () => null }));

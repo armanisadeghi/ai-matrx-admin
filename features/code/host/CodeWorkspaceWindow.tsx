@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { CodeWorkspace } from "../CodeWorkspace";
 import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
 import type { ProcessAdapter } from "../adapters/ProcessAdapter";

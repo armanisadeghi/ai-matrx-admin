@@ -16,7 +16,7 @@ jest.mock(
   "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.thunks",
   () => ({ destroyInstanceIfAllowed: jest.fn() }),
 );
-jest.mock("@/features/overlays/openers/liveRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/liveRunWindow.overlay", () => ({
   openLiveRunWindowAction: jest.fn(),
 }));
 jest.mock("@ai-matrx/chat/mandates/service", () => ({ resolveMandate: jest.fn() }));

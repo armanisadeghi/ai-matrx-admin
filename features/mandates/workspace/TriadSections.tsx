@@ -58,7 +58,7 @@ import { DraftInputsEditor } from "../authoring/DraftInputsEditor";
 import { isUserTextOnly, useMandateInputSurface } from "../input-surface";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import {
   useSurfaceScopeContribution,
   useSurfaceWriteHandlers,

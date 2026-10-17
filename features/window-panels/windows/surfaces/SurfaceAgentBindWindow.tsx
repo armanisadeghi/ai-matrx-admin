@@ -8,7 +8,7 @@
 
 import { useRef } from "react";
 import { Link2 } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceAgentBindPanel } from "@/features/surfaces/components/bind/SurfaceAgentBindPanel";
 import type { ValueMappingMap } from "@ai-matrx/chat/surfaces/types";

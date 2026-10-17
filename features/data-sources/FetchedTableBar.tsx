@@ -20,7 +20,7 @@ import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { getMoreCount, inputWords, type DataFetchInput, type DataFetchResult } from "./contract";
-import { useOpenDataChangesWindow } from "@/features/overlays/openers/dataChangesWindow";
+import { useOpenDataChangesWindow } from "@/features/overlays/definitions/dataChangesWindow.overlay";
 
 import { barFacts } from "./barFacts";
 import { fetchSpecKey, limitSettingHref, liveRowCountKey, refreshHistoryKey, useDataSources, useFetchEstimate, useFetchSpec, useLiveRowCount } from "./hooks";

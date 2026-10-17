@@ -9,7 +9,7 @@
 import { useCallback } from "react";
 
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
-import { useOpenSocialPost } from "@/features/overlays/openers/socialPostWindow";
+import { useOpenSocialPost } from "@/features/overlays/definitions/socialPostWindow.overlay";
 import { guessAspect } from "./components/PostMedia";
 import type { DetailTab } from "./components/PostDetail";
 

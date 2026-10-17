@@ -52,7 +52,7 @@ jest.mock("@/components/official/MatrxDataTableHost", () => ({
 jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => children,
 }));
-jest.mock("@/features/overlays/openers/topicalMapTopicPanel", () => ({
+jest.mock("@/features/overlays/definitions/topicalMapTopicPanel.overlay", () => ({
   useOpenTopicPanel: () => jest.fn(),
 }));
 jest.mock("@/lib/layout/useClippedContentGuard", () => ({

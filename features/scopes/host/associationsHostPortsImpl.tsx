@@ -16,7 +16,7 @@ import {
   useAssociationPickerBridge,
   type AssociationPickerProps,
 } from "@ai-matrx/associations/react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { FilePickerWindow } from "@/features/resource-manager/resource-picker/FilePickerWindow";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 

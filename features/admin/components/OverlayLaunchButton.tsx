@@ -11,7 +11,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { ExternalLink, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";

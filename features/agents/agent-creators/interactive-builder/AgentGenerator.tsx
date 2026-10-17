@@ -38,7 +38,7 @@ import {
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
 import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { resolvePreferredAuthoringModel } from "@/features/ai-models/preferredAuthoringModel";
 import { getSystemShortcut } from "@ai-matrx/chat/agents/constants/system-shortcuts";

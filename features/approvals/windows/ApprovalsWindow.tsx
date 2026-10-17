@@ -14,7 +14,7 @@
  * static-imported from a route, layout or provider (the bundle invariant).
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ApprovalsWorkspace } from "../ApprovalsWorkspace";
 
 export function ApprovalsWindow({

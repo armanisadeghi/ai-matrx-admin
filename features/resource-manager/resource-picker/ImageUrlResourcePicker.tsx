@@ -19,7 +19,7 @@ import {
   ResourcePickerSubViewHeader,
 } from "./ResourcePickerSubViewHeader";
 import { usePickerInputFocus } from "./usePickerInputFocus";
-import { useOpenImageUploaderWindow } from "@/features/overlays/openers/imageUploaderWindow";
+import { useOpenImageUploaderWindow } from "@/features/overlays/definitions/imageUploaderWindow.overlay";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { normalizeUrl, validateImageUrl } from "./imageLink";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

@@ -30,7 +30,7 @@ const plusMenuSource = readFileSync(
   "utf8",
 );
 const windowPanelSource = readFileSync(
-  join(process.cwd(), "features/window-panels/WindowPanel.tsx"),
+  join(process.cwd(), "node_modules/@ai-matrx/summon/dist/window.js"),
   "utf8",
 );
 

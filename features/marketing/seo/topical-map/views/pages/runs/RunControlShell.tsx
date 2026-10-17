@@ -23,7 +23,7 @@ import { RotateCcw, SquareArrowOutUpRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 
 import { Button } from "@/components/ui/button";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { formatElapsed } from "@/lib/durable-run/useDurableRun";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

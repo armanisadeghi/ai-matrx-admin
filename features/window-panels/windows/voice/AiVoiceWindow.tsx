@@ -2,18 +2,15 @@
 
 import React, { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@/lib/redux/slices/overlaySlice";
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
-import type { OverlayId } from "@/features/overlays/catalogue";
+import { closeOverlay } from "@ai-matrx/summon";
+import { WindowPanel, type WindowPanelProps, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
+import type { OverlayId } from "@ai-matrx/summon";
 import AiVoiceFloatingWorkspace from "@/features/audio/voice/AiVoiceFloatingWorkspace";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 // context-menu-exempt: entity — the window is a tabbed voice-tools shell (playground / voices / custom actions), not a single record; a per-voice entity would require wiring inside VoicesList, which this window does not own
 
 export interface AiVoiceWindowProps extends Omit<
-  WindowPanelProps,
+  WindowPanelBaseProps,
   "children" | "title"
 > {
   title?: string;

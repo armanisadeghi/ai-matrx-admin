@@ -10,7 +10,7 @@
  * open alongside their work instead of in a blocking dialog.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SystemInstructionEditor } from "@/features/agents/components/builder/message-builders/system-instructions/SystemInstructionEditor";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectInstanceAgentId } from "@ai-matrx/chat/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";

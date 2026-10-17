@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
-import { useOpenTaskQuickCreateWindow } from "@/features/overlays/openers/taskQuickCreateWindow";
+import { useOpenTaskQuickCreateWindow } from "@/features/overlays/definitions/taskQuickCreateWindow.overlay";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 import type { HrCapability } from "../../constants";

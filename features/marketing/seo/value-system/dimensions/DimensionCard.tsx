@@ -49,7 +49,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCount } from "@/features/marketing/search-console/types";
 import { formatRelativeTime } from "@/utils/datetime";
 import { useDigStampMutations } from "@/features/marketing/search-console/hooks/useDigRules";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { DimensionForm, type DimensionFormValue } from "./DimensionForm";
 import { ValueForm, type ValueFormValue } from "./ValueForm";
 import { MatcherEditor } from "./MatcherEditor";

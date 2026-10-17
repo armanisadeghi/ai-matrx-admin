@@ -49,7 +49,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import CodeSidebar from "@/features/code-editor/multi-file-core/CodeSidebar";
 import SmallCodeEditor from "@ai-matrx/rich-content/code-block/SmallCodeEditor";
 import { getLanguageIconNode } from "@ai-matrx/rich-content/code-block/LanguageDisplay";

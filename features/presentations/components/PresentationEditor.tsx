@@ -26,7 +26,7 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { EditorDocumentHeader } from "@/features/shell/components/header/templates/EditorDocumentHeader";
 import { EditorMenuBar, useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
-import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import { EditorToolbar } from "@/components/editor-chrome/EditorToolbar";
 import { EditorRibbon } from "@/components/editor-chrome/EditorRibbon";
 import { OfficeLookSwitch } from "@/features/file-actions/skin/OfficeLookSwitch";

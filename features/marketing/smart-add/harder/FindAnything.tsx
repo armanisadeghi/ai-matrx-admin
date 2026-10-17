@@ -16,7 +16,7 @@ import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { SearchReviewBody } from "@/features/search-review/SearchReviewBody";
 import type { ReviewAnswer, ReviewChoice, ReviewResult, SearchReviewSession } from "@/features/search-review/types";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
-import { useOpenSmartAddHelper } from "@/features/overlays/openers/smartAddHelperWindow";
+import { useOpenSmartAddHelper } from "@/features/overlays/definitions/smartAddHelperWindow.overlay";
 import { HELPER_LABELS, type HelperMethod } from "../helpers/types";
 import type { FocusState, HarderCandidate, SweepAnswer, SweepRow, TierCount } from "./types";
 

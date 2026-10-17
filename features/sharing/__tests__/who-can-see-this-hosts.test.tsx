@@ -63,7 +63,7 @@ jest.mock("@/components/agent-copy/page-capture/usePageCapture", () => ({ usePag
 jest.mock("@/components/agent-copy/page-capture/PageCaptureButton", () => ({ PageCaptureButton: () => null }));
 jest.mock("@/components/official/entity-ref/EntityRef", () => ({ EntityRef: () => null }));
 jest.mock("@/components/ui/use-toast", () => ({ useToast: () => ({ toast: jest.fn() }) }));
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({

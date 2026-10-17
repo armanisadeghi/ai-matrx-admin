@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import type { MarketingPage, PageSnapshot } from "@/features/marketing/types";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import { marketingPageManifest } from "@/features/surfaces/manifests/marketing-page.manifest";
 import { surfaceValueLabels } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import {

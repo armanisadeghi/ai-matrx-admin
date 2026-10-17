@@ -19,7 +19,7 @@ import { RefinableContentEditor } from "@ai-matrx/chat/ui/content-refine/Refinab
 import { useRefinableContent } from "@ai-matrx/chat/ui/content-refine/useRefinableContent";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { MESSAGE_ROLES } from "@/features/message-templates/constants";
 import {
   clearTemplateCache,

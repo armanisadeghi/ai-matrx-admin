@@ -26,8 +26,8 @@ import {
   type ShapeReadiness,
 } from "@/features/content-ir/studio/convert-to-shape";
 import { loadShapeReadiness } from "@/features/content-ir/studio/shape-readiness-service";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { buildKindAuthoringOffer } from "@/features/content-ir/studio/kind-authoring-offer";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

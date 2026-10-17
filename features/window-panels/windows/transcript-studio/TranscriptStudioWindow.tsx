@@ -18,10 +18,7 @@
  */
 
 import { useCallback } from "react";
-import {
-  WindowPanel,
-  type WindowPanelProps,
-} from "@/features/window-panels/WindowPanel";
+import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { StudioView } from "@/features/transcript-studio/components/StudioView";
 import { selectActiveSessionId } from "@/features/transcript-studio/redux/selectors";
@@ -31,7 +28,7 @@ const OVERLAY_ID = "transcriptStudioWindow";
 const WINDOW_ID = "transcript-studio-window";
 
 export interface TranscriptStudioWindowProps extends Omit<
-  WindowPanelProps,
+  WindowPanelBaseProps,
   "children" | "title"
 > {
   title?: string;

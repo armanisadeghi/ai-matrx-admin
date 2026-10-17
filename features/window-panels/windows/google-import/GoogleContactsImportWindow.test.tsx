@@ -22,7 +22,7 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectAdminFeature: () => admission.isSuperAdmin,
   selectUserEmail: () => admission.email,
 }));
-jest.mock("@/features/window-panels/WindowPanel", () => ({
+jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),

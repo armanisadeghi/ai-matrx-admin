@@ -43,7 +43,7 @@ import {
   ImpactBatchPanel,
   type ImpactBatchScope,
 } from "@/features/mandates/admin/ImpactBatchPanel";
-import { useOpenImpactBatchWindow } from "@/features/overlays/openers/impactBatchWindow";
+import { useOpenImpactBatchWindow } from "@/features/overlays/definitions/impactBatchWindow.overlay";
 import { toast } from "@/lib/toast";
 import type { LLMParams } from "@ai-matrx/chat/agents/types/agent-api-types";
 import type { SettingSwap } from "@/features/ai-models/server/replace-model-references";

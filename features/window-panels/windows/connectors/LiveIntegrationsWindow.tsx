@@ -1,7 +1,7 @@
 "use client";
 
 import { LiveIntegrationsList } from "@/features/connectors/LiveIntegrationsList";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 
 interface LiveIntegrationsWindowProps {

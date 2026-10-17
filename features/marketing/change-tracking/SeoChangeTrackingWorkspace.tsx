@@ -65,7 +65,7 @@ import {
 } from "@/features/marketing/lib/copy-payloads";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingSubView } from "@/features/marketing/lib/useMarketingSubView";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { getGscKeywordValueFor } from "@/features/marketing/search-console/data-insights";
 import { buildGscValueColumns } from "@/features/marketing/search-console/lib/columns";
 import { toast } from "@/lib/toast";

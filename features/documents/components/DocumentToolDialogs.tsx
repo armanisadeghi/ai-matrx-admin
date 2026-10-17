@@ -12,7 +12,7 @@ import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea, type ProTextareaElement } from "@/components/official/ProTextarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
-import { useOpenDiffViewerWindow } from "@/features/overlays/openers/diffViewerWindow";
+import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import type { DocEditOps } from "@ai-matrx/office/docs/tools";
 import {
   BUILDING_BLOCKS,

@@ -1,0 +1,121 @@
+"use client";
+
+/**
+ * Opener for the `taskQuickCreateWindow` overlay.
+ *
+ * - `useOpenTaskQuickCreateWindow()` — imperative hook. Call to open with typed options;
+ *   returns a handle with a `close()` method.
+ * - `<TaskQuickCreateWindowController />` — declarative wrapper. Mount to open,
+ *   unmount to close. Equivalent ergonomics to rendering a normal component.
+ *
+ * Hand-maintained opener — see features/overlays/FEATURE.md.
+ */
+
+import { useCallback, useEffect } from "react";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import type {
+  TaskPrePopulate,
+  TaskSourceInput,
+} from "@/features/tasks/widgets/quick-create/TaskQuickCreateCore";
+import { defineOverlay } from "@ai-matrx/summon/react";
+import type { OverlayWire } from "./overlay-types";
+
+const OVERLAY_ID = "taskQuickCreateWindow" as const;
+
+type TaskQuickCreateSavedHandler = (taskId: string) => void;
+let savedHandler: TaskQuickCreateSavedHandler | null = null;
+
+/** Called by TaskQuickCreateWindow when a task is saved. */
+export function emitTaskQuickCreateSaved(taskId: string) {
+  savedHandler?.(taskId);
+  savedHandler = null;
+}
+
+export interface OpenTaskQuickCreateWindowOptions {
+  source?: TaskSourceInput;
+  prePopulate?: TaskPrePopulate;
+  /** One-shot — fired when the user saves a new task, then cleared. */
+  onSaved?: TaskQuickCreateSavedHandler;
+}
+
+export interface TaskQuickCreateWindowHandle {
+  close: () => void;
+}
+
+export function useOpenTaskQuickCreateWindow() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    (
+      opts: OpenTaskQuickCreateWindowOptions = {},
+    ): TaskQuickCreateWindowHandle => {
+      savedHandler = opts.onSaved ?? null;
+      dispatch(
+        openOverlay({
+          overlayId: OVERLAY_ID,
+          data: {
+            source: opts.source,
+            prePopulate: opts.prePopulate,
+          },
+        }),
+      );
+      return {
+        close: () => {
+          savedHandler = null;
+          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+        },
+      };
+    },
+    [dispatch],
+  );
+}
+
+/**
+ * Declarative form. Renders nothing visible; opens the overlay on mount,
+ * closes it on unmount. Use this when a caller wants to express overlay
+ * state declaratively (the way they'd render a normal component).
+ */
+export function TaskQuickCreateWindowController(
+  props: OpenTaskQuickCreateWindowOptions,
+): null {
+  const open = useOpenTaskQuickCreateWindow();
+  useEffect(() => {
+    const handle = open(props);
+    return () => handle.close();
+  }, [open, props.source, props.prePopulate]);
+  return null;
+}
+
+// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
+
+export type TaskQuickCreateWindowDefinitionData = OpenTaskQuickCreateWindowOptions;
+
+export const taskQuickCreateWindowOverlay = defineOverlay<TaskQuickCreateWindowDefinitionData>()({
+  id: "taskQuickCreateWindow",
+  label: "Task Quick Create Window",
+  instance: "single",
+  keepAlive: "none",
+  closesOnNavigation: false,
+  window: {
+    restoreDefaults: {
+          entity_type: null,
+          entity_id: null,
+          label: "",
+          metadata: {},
+          source: undefined,
+          prePopulate: { title: "", description: "", priority: null },
+        },
+    windowId: "task-quick-create-window",
+    mobile: "drawer",
+    ephemeral: true,
+  },
+  render: () => import("./taskQuickCreateWindow.render"),
+});
+
+
+
+declare module "@ai-matrx/summon" {
+  interface OverlayRegistry {
+    taskQuickCreateWindow: OverlayWire<TaskQuickCreateWindowDefinitionData>;
+  }
+}

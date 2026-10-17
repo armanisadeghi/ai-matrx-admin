@@ -20,7 +20,7 @@ import { HrPageState } from "@/features/hr/shared/HrStates";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { toast } from "@/lib/toast";
-import { useOpenAccessSetupWindow } from "@/features/overlays/openers/accessSetupWindow";
+import { useOpenAccessSetupWindow } from "@/features/overlays/definitions/accessSetupWindow.overlay";
 
 import { AnswerForm } from "./AnswerForm";
 import { AnswerReadout, Comparison } from "./Comparison";

@@ -16,8 +16,8 @@ import { OrganizationContextNotice } from "@/features/organizations/components/O
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { useGoogleCapabilities, useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
 import { googleConnectionLabel } from "@/features/marketing/google/presentation";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
-import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
+import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 import { extractErrorMessage } from "@/utils/errors";
 import { BackendApiError } from "@ai-matrx/api";
 import type { GoogleConnectionHealth } from "@/features/marketing/google/types";

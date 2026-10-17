@@ -47,7 +47,7 @@ import type {
   ResolvedKeyword,
 } from "@/features/marketing/seo/keyword/types";
 import type { SiteKeywordPerformanceRow } from "@/features/marketing/seo/keyword-research/types";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import type { MarketingPage } from "@/features/marketing/types";
 import { GscClassBar } from "@/features/marketing/search-console/components/ambassador/GscClassBar";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

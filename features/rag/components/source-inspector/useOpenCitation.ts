@@ -23,10 +23,10 @@
  */
 
 import { useCallback } from "react";
-import { useOpenSourceInspectorWindow } from "@/features/overlays/openers/sourceInspectorWindow";
-import { useOpenNotesWindow } from "@/features/overlays/openers/notesWindow";
-import { useOpenTranscriptStudioWindow } from "@/features/overlays/openers/transcriptStudioWindow";
-import { useOpenScraperWindow } from "@/features/overlays/openers/scraperWindow";
+import { useOpenSourceInspectorWindow } from "@/features/overlays/definitions/sourceInspectorWindow.overlay";
+import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
+import { useOpenTranscriptStudioWindow } from "@/features/overlays/definitions/transcriptStudioWindow.overlay";
+import { useOpenScraperWindow } from "@/features/overlays/definitions/scraperWindow.overlay";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Canonical home: `@/utils/navigation/should-open-in-new-tab` — re-exported

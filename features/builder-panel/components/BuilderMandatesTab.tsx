@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge, Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { dbAuthoredMandateKey } from "@ai-matrx/agents/mandates";
 import { fetchSurfaceMandates, type MandateProposal, type RealMandate } from "../data";
 import { ProposalCard } from "./ProposalCard";

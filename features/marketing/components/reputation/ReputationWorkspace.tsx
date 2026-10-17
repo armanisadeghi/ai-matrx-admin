@@ -26,7 +26,7 @@ import {
   Target,
   X,
 } from "lucide-react";
-import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
+import { useFloatingLiveRun } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";

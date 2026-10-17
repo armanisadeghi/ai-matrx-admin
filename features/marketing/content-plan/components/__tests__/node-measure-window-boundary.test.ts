@@ -27,14 +27,14 @@ describe("Node measurement window bundle boundary", () => {
     expect(cardSource).toContain('dynamic(() => import("./NodeMeasureWindow")');
     expect(cardSource).toContain("windowOpen && webPageId");
     expect(cardSource).not.toContain(
-      'from "@/features/window-panels/WindowPanel"',
+      'from "@ai-matrx/summon/window"',
     );
     expect(cardSource).not.toContain(
       'from "@/features/cms/components/measure/CmsPageMeasure"',
     );
 
     expect(windowSource).toContain(
-      'from "@/features/window-panels/WindowPanel"',
+      'from "@ai-matrx/summon/window"',
     );
     expect(windowSource).toContain(
       'from "@/features/cms/components/measure/CmsPageMeasureLazy"',

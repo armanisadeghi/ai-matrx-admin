@@ -7,7 +7,7 @@
  */
 
 import type { CanvasKindProps } from "@ai-matrx/canvas/react";
-import { useOpenSocialPost } from "@/features/overlays/openers/socialPostWindow";
+import { useOpenSocialPost } from "@/features/overlays/definitions/socialPostWindow.overlay";
 import { PostDetailBody, type DetailTab } from "../components/PostDetail";
 import { readPostTabData } from "./postKind";
 

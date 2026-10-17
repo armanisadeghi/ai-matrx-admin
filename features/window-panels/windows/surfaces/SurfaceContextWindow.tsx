@@ -35,10 +35,10 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { CopyForAiButton } from "@/components/agent-copy/CopyForAiButton";
 import { CopyForAiIcon } from "@/components/agent-copy/CopyForAiIcon";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import { SurfaceBoundAgentsList } from "@/features/surfaces/components/bind/SurfaceBoundAgentsList";
-import { useOpenSurfaceContextInspector } from "@/features/overlays/openers/surfaceContextInspector";
+import { useOpenSurfaceContextInspector } from "@/features/overlays/definitions/surfaceContextInspector.overlay";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { surfaceLevelPlace } from "@ai-matrx/chat/agents/redux/execution-system/context-rules/context-hierarchy";
 import { useLiveSurfaceScope } from "@ai-matrx/chat/surfaces/runtime/useLiveSurfaceScope";

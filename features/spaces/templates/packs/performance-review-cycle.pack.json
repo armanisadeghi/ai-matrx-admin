@@ -1,0 +1,2128 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0256",
+  "version": 1,
+  "title": "Performance Review Cycle",
+  "description": "Reviews, goals and feedback for one or many review rounds.",
+  "forWho": "HR and managers running reviews",
+  "icon": {
+    "emoji": "⭐"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "performance",
+    "reviews",
+    "goals",
+    "feedback"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-performance-review-cycle",
+    "catalogueId": "SP0256",
+    "useCase": "Valentina Rossi leads people at a sixty-person software company and uses this to run each review cycle without a spreadsheet.",
+    "industry": "software_it",
+    "vertical": "Performance reviews",
+    "job": "team_hr",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Bright Harbor Technologies",
+      "describes": "A sixty-person software company running two review cycles a year.",
+      "address": {
+        "line1": "22 Saltmarsh Way",
+        "city": "Boston",
+        "region": "MA",
+        "postalCode": "02110",
+        "country": "US"
+      },
+      "phone": "(617) 555-0160",
+      "website": "brightharbortech.net",
+      "email": "hello@brightharbortech.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-performance-review-cycle",
+    "tables": [
+      {
+        "token": "cycle",
+        "name": "Review cycles",
+        "labelSingular": "Cycle",
+        "labelPlural": "Review cycles",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "refresh-cw",
+        "titleField": "cycle_name",
+        "describes": "Each review round with its dates, status and how many reviews are complete.",
+        "subject": "thing",
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "cycle_name",
+            "label": "Cycle",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Open",
+              "Calibration",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Open": "blue",
+              "Calibration": "amber",
+              "Closed": "green"
+            },
+            "required": true,
+            "default": "Planned"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "review_list",
+            "label": "Reviews",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "review",
+            "multi": true
+          },
+          {
+            "key": "complete",
+            "label": "Completed reviews",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "review_list",
+            "pick": "review_name",
+            "agg": "count",
+            "filter": {
+              "stage": "Complete"
+            }
+          },
+          {
+            "key": "total",
+            "label": "Total reviews",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "review_list",
+            "pick": "review_name",
+            "agg": "count"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cy-h1",
+            "values": {
+              "cycle_name": "Mid-year review",
+              "status": "Closed",
+              "starts_on": "@today-200d",
+              "ends_on": "@today-150d",
+              "review_list": [
+                "rv01",
+                "rv02",
+                "rv03"
+              ]
+            }
+          },
+          {
+            "key": "cy-ann",
+            "values": {
+              "cycle_name": "Annual review",
+              "status": "Open",
+              "starts_on": "@today-20d",
+              "ends_on": "@today+40d",
+              "review_list": [
+                "rv04",
+                "rv05",
+                "rv06",
+                "rv07",
+                "rv08"
+              ]
+            }
+          },
+          {
+            "key": "cy-next",
+            "values": {
+              "cycle_name": "Spring probation check-ins",
+              "status": "Planned",
+              "starts_on": "@today+160d",
+              "ends_on": "@today+215d",
+              "review_list": []
+            }
+          }
+        ]
+      },
+      {
+        "token": "review",
+        "name": "Reviews",
+        "labelSingular": "Review",
+        "labelPlural": "Reviews",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "review_name",
+        "describes": "One review per person per cycle, from self-review through to delivery.",
+        "subject": "thing",
+        "independentOf": {
+          "cycle": "A review is due on its own date, set by the manager within the review window.",
+          "employee": "Anyone can be reviewed whenever they joined.",
+          "reviewer": "Any manager can review."
+        },
+        "statusAgrees": [
+          {
+            "relation": "cycle",
+            "field": "stage",
+            "childStatus": [
+              "Not started",
+              "Self-review",
+              "Manager review",
+              "Calibration"
+            ],
+            "parentField": "status",
+            "parentStatus": [
+              "Open",
+              "Calibration"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "review_name",
+            "label": "Review",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cycle",
+            "label": "Cycle",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "cycle",
+            "relationMax": 1
+          },
+          {
+            "key": "employee",
+            "label": "Employee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "reviewer",
+            "label": "Reviewer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Self-review",
+              "Manager review",
+              "Calibration",
+              "Delivered",
+              "Complete"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Self-review": "blue",
+              "Manager review": "violet",
+              "Calibration": "amber",
+              "Delivered": "teal",
+              "Complete": "green"
+            },
+            "required": true,
+            "default": "Not started"
+          },
+          {
+            "key": "self_rating",
+            "label": "Self rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "manager_rating",
+            "label": "Manager rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "final_rating",
+            "label": "Final rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "choiceColors": {
+              "1": "red",
+              "2": "orange",
+              "3": "amber",
+              "4": "teal",
+              "5": "green"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "goal_list",
+            "label": "Goals",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "goal",
+            "multi": true
+          },
+          {
+            "key": "achievement",
+            "label": "Goal achievement",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "goal_list",
+            "pick": "progress",
+            "agg": "avg"
+          },
+          {
+            "key": "feedback_list",
+            "label": "Feedback",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "feedback",
+            "multi": true
+          },
+          {
+            "key": "feedback_count",
+            "label": "Feedback received",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "feedback_list",
+            "pick": "feedback_name",
+            "agg": "count"
+          },
+          {
+            "key": "summary",
+            "label": "Summary",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rv01",
+            "values": {
+              "review_name": "Liam Forsythe: mid-year",
+              "cycle": "cy-h1",
+              "employee": "tm-liam",
+              "reviewer": "tm-marcus",
+              "stage": "Complete",
+              "self_rating": "4",
+              "manager_rating": "4",
+              "final_rating": "4",
+              "due_on": "@today-160d",
+              "goal_list": [
+                "g10"
+              ],
+              "feedback_list": []
+            }
+          },
+          {
+            "key": "rv02",
+            "values": {
+              "review_name": "Zara Mahmoud: mid-year",
+              "cycle": "cy-h1",
+              "employee": "tm-zara",
+              "reviewer": "tm-marcus",
+              "stage": "Complete",
+              "self_rating": "4",
+              "manager_rating": "3",
+              "final_rating": "3",
+              "due_on": "@today-158d",
+              "goal_list": [],
+              "feedback_list": []
+            }
+          },
+          {
+            "key": "rv03",
+            "values": {
+              "review_name": "Bruno Costa: mid-year",
+              "cycle": "cy-h1",
+              "employee": "tm-bruno",
+              "reviewer": "tm-keiko",
+              "stage": "Complete",
+              "self_rating": "3",
+              "manager_rating": "3",
+              "final_rating": "3",
+              "due_on": "@today-155d",
+              "goal_list": [],
+              "feedback_list": []
+            }
+          },
+          {
+            "key": "rv04",
+            "values": {
+              "review_name": "Liam Forsythe: annual",
+              "cycle": "cy-ann",
+              "employee": "tm-liam",
+              "reviewer": "tm-marcus",
+              "stage": "Manager review",
+              "self_rating": "4",
+              "manager_rating": "4",
+              "due_on": "@today+14d",
+              "goal_list": [
+                "g01",
+                "g02"
+              ],
+              "feedback_list": [
+                "f01",
+                "f06"
+              ]
+            }
+          },
+          {
+            "key": "rv05",
+            "values": {
+              "review_name": "Zara Mahmoud: annual",
+              "cycle": "cy-ann",
+              "employee": "tm-zara",
+              "reviewer": "tm-marcus",
+              "stage": "Self-review",
+              "due_on": "@today+16d",
+              "goal_list": [
+                "g03",
+                "g04"
+              ],
+              "feedback_list": [
+                "f02"
+              ]
+            }
+          },
+          {
+            "key": "rv06",
+            "values": {
+              "review_name": "Bruno Costa: annual",
+              "cycle": "cy-ann",
+              "employee": "tm-bruno",
+              "reviewer": "tm-keiko",
+              "stage": "Calibration",
+              "self_rating": "4",
+              "manager_rating": "4",
+              "due_on": "@today+10d",
+              "goal_list": [
+                "g05",
+                "g06"
+              ],
+              "feedback_list": [
+                "f03",
+                "f04",
+                "f08"
+              ]
+            }
+          },
+          {
+            "key": "rv07",
+            "values": {
+              "review_name": "Sienna Whitaker: annual",
+              "cycle": "cy-ann",
+              "employee": "tm-sienna",
+              "reviewer": "tm-marcus",
+              "stage": "Not started",
+              "due_on": "@today+25d",
+              "goal_list": [
+                "g07"
+              ],
+              "feedback_list": [
+                "f07"
+              ]
+            }
+          },
+          {
+            "key": "rv08",
+            "values": {
+              "review_name": "Arjun Kapoor: annual",
+              "cycle": "cy-ann",
+              "employee": "tm-arjun",
+              "reviewer": "tm-marcus",
+              "stage": "Self-review",
+              "due_on": "@today+20d",
+              "goal_list": [
+                "g08",
+                "g09"
+              ],
+              "feedback_list": [
+                "f05"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "goal",
+        "name": "Goals",
+        "labelSingular": "Goal",
+        "labelPlural": "Goals",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "target",
+        "titleField": "goal_name",
+        "describes": "The goals each person committed to, how far along they are and whether they are on track.",
+        "subject": "thing",
+        "independentOf": {
+          "owner": "Any employee can own a goal.",
+          "review": "A goal is due on its own date, not the review's."
+        },
+        "fields": [
+          {
+            "key": "goal_name",
+            "label": "Goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "review",
+            "label": "Review",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "review",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "On track",
+              "At risk",
+              "Off track",
+              "Done"
+            ],
+            "choiceColors": {
+              "On track": "blue",
+              "At risk": "amber",
+              "Off track": "red",
+              "Done": "green"
+            },
+            "required": true
+          },
+          {
+            "key": "progress",
+            "label": "Progress",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "g01",
+            "values": {
+              "goal_name": "Cut checkout errors by half",
+              "owner": "tm-liam",
+              "review": "rv04",
+              "status": "On track",
+              "progress": 70,
+              "due_on": "@today+30d"
+            }
+          },
+          {
+            "key": "g02",
+            "values": {
+              "goal_name": "Mentor two new engineers",
+              "owner": "tm-liam",
+              "review": "rv04",
+              "status": "Done",
+              "progress": 100,
+              "due_on": "@today-5d"
+            }
+          },
+          {
+            "key": "g03",
+            "values": {
+              "goal_name": "Ship the reports redesign",
+              "owner": "tm-zara",
+              "review": "rv05",
+              "status": "At risk",
+              "progress": 35,
+              "due_on": "@today+35d"
+            }
+          },
+          {
+            "key": "g04",
+            "values": {
+              "goal_name": "Learn the payments service",
+              "owner": "tm-zara",
+              "review": "rv05",
+              "status": "On track",
+              "progress": 60,
+              "due_on": "@today+30d"
+            }
+          },
+          {
+            "key": "g05",
+            "values": {
+              "goal_name": "Refresh the design system",
+              "owner": "tm-bruno",
+              "review": "rv06",
+              "status": "On track",
+              "progress": 80,
+              "due_on": "@today+20d"
+            }
+          },
+          {
+            "key": "g06",
+            "values": {
+              "goal_name": "Run four user interviews",
+              "owner": "tm-bruno",
+              "review": "rv06",
+              "status": "Done",
+              "progress": 100,
+              "due_on": "@today-15d"
+            }
+          },
+          {
+            "key": "g07",
+            "values": {
+              "goal_name": "Raise test coverage to 80%",
+              "owner": "tm-sienna",
+              "review": "rv07",
+              "status": "Off track",
+              "progress": 20,
+              "due_on": "@today+40d"
+            }
+          },
+          {
+            "key": "g08",
+            "values": {
+              "goal_name": "Cut median reply time to 2 hours",
+              "owner": "tm-arjun",
+              "review": "rv08",
+              "status": "On track",
+              "progress": 65,
+              "due_on": "@today+35d"
+            }
+          },
+          {
+            "key": "g09",
+            "values": {
+              "goal_name": "Write ten help articles",
+              "owner": "tm-arjun",
+              "review": "rv08",
+              "status": "At risk",
+              "progress": 40,
+              "due_on": "@today+25d"
+            }
+          },
+          {
+            "key": "g10",
+            "values": {
+              "goal_name": "Complete cloud certification",
+              "owner": "tm-liam",
+              "review": "rv01",
+              "status": "Done",
+              "progress": 100,
+              "due_on": "@today-170d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "feedback",
+        "name": "Feedback",
+        "labelSingular": "Feedback",
+        "labelPlural": "Feedback",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "message-square-text",
+        "titleField": "feedback_name",
+        "describes": "Written feedback about a person from peers, managers and reports.",
+        "subject": "thing",
+        "independentOf": {
+          "about": "Anyone can give feedback to anyone.",
+          "from_": "Anyone can give feedback.",
+          "review": "Feedback is given when the giver chooses, not tied to a review date."
+        },
+        "fields": [
+          {
+            "key": "feedback_name",
+            "label": "Feedback",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "about",
+            "label": "About",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "from_",
+            "label": "From",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Peer",
+              "Upward",
+              "Manager"
+            ],
+            "choiceColors": {
+              "Peer": "blue",
+              "Upward": "violet",
+              "Manager": "teal"
+            }
+          },
+          {
+            "key": "sentiment",
+            "label": "Sentiment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Positive",
+              "Mixed",
+              "Concern"
+            ],
+            "choiceColors": {
+              "Positive": "green",
+              "Mixed": "amber",
+              "Concern": "red"
+            }
+          },
+          {
+            "key": "review",
+            "label": "Review",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "review",
+            "relationMax": 1
+          },
+          {
+            "key": "given_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "f01",
+            "values": {
+              "feedback_name": "Strong code review habits",
+              "about": "tm-liam",
+              "from_": "tm-zara",
+              "type": "Peer",
+              "sentiment": "Positive",
+              "review": "rv04",
+              "given_on": "@today-12d"
+            }
+          },
+          {
+            "key": "f02",
+            "values": {
+              "feedback_name": "Needs clearer hand-offs",
+              "about": "tm-zara",
+              "from_": "tm-liam",
+              "type": "Peer",
+              "sentiment": "Mixed",
+              "review": "rv05",
+              "given_on": "@today-10d"
+            }
+          },
+          {
+            "key": "f03",
+            "values": {
+              "feedback_name": "Design reviews are a highlight",
+              "about": "tm-bruno",
+              "from_": "tm-liam",
+              "type": "Peer",
+              "sentiment": "Positive",
+              "review": "rv06",
+              "given_on": "@today-9d"
+            }
+          },
+          {
+            "key": "f04",
+            "values": {
+              "feedback_name": "Great at calming tense meetings",
+              "about": "tm-bruno",
+              "from_": "tm-keiko",
+              "type": "Manager",
+              "sentiment": "Positive",
+              "review": "rv06",
+              "given_on": "@today-7d"
+            }
+          },
+          {
+            "key": "f05",
+            "values": {
+              "feedback_name": "Give earlier notice on delays",
+              "about": "tm-arjun",
+              "from_": "tm-sienna",
+              "type": "Peer",
+              "sentiment": "Mixed",
+              "review": "rv08",
+              "given_on": "@today-8d"
+            }
+          },
+          {
+            "key": "f06",
+            "values": {
+              "feedback_name": "Takes on stretch work willingly",
+              "about": "tm-liam",
+              "from_": "tm-marcus",
+              "type": "Manager",
+              "sentiment": "Positive",
+              "review": "rv04",
+              "given_on": "@today-6d"
+            }
+          },
+          {
+            "key": "f07",
+            "values": {
+              "feedback_name": "Could share more during stand-ups",
+              "about": "tm-sienna",
+              "from_": "tm-marcus",
+              "type": "Upward",
+              "sentiment": "Mixed",
+              "review": "rv07",
+              "given_on": "@today-5d"
+            }
+          },
+          {
+            "key": "f08",
+            "values": {
+              "feedback_name": "Clear direction from this manager",
+              "about": "tm-keiko",
+              "from_": "tm-bruno",
+              "type": "Upward",
+              "sentiment": "Positive",
+              "review": "rv06",
+              "given_on": "@today-4d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A cycle lists its reviews.",
+        "fromTable": "cycle",
+        "fromField": "review_list",
+        "toTable": "review",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "cycle_of_review"
+      },
+      {
+        "describes": "Each review belongs to one cycle.",
+        "fromTable": "review",
+        "fromField": "cycle",
+        "toTable": "cycle",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "reviews"
+      },
+      {
+        "describes": "Each review is about one employee.",
+        "fromTable": "review",
+        "fromField": "employee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "reviews_received"
+      },
+      {
+        "describes": "Each review has one reviewer.",
+        "fromTable": "review",
+        "fromField": "reviewer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "reviews_given"
+      },
+      {
+        "describes": "A review lists the goals it covers.",
+        "fromTable": "review",
+        "fromField": "goal_list",
+        "toTable": "goal",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "review_of_goal"
+      },
+      {
+        "describes": "A review lists feedback collected for it.",
+        "fromTable": "review",
+        "fromField": "feedback_list",
+        "toTable": "feedback",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "review_of_feedback"
+      },
+      {
+        "describes": "Each goal has one owner.",
+        "fromTable": "goal",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "goals_owned"
+      },
+      {
+        "describes": "Each goal is assessed in one review.",
+        "fromTable": "goal",
+        "fromField": "review",
+        "toTable": "review",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "goals"
+      },
+      {
+        "describes": "Each note is about one person.",
+        "fromTable": "feedback",
+        "fromField": "about",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "feedback_about"
+      },
+      {
+        "describes": "Each note comes from one person.",
+        "fromTable": "feedback",
+        "fromField": "from_",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "feedback_given"
+      },
+      {
+        "describes": "Each note is collected for one review.",
+        "fromTable": "feedback",
+        "fromField": "review",
+        "toTable": "review",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "feedback"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-valentina",
+            "values": {
+              "full_name": "Valentina Rossi",
+              "role": "VP of people",
+              "work_email": "valentina@brightharbortech.net",
+              "mobile": "(617) 555-0161",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-marcus",
+            "values": {
+              "full_name": "Marcus Adeyemi",
+              "role": "Engineering manager",
+              "work_email": "marcus@brightharbortech.net",
+              "mobile": "(617) 555-0162",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-keiko",
+            "values": {
+              "full_name": "Keiko Matsuda",
+              "role": "Design manager",
+              "work_email": "keiko@brightharbortech.net",
+              "mobile": "(617) 555-0163",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-liam",
+            "values": {
+              "full_name": "Liam Forsythe",
+              "role": "Software engineer",
+              "work_email": "liam@brightharbortech.net",
+              "mobile": "(617) 555-0164",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-zara",
+            "values": {
+              "full_name": "Zara Mahmoud",
+              "role": "Software engineer",
+              "work_email": "zara@brightharbortech.net",
+              "mobile": "(617) 555-0165",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-bruno",
+            "values": {
+              "full_name": "Bruno Costa",
+              "role": "Product designer",
+              "work_email": "bruno@brightharbortech.net",
+              "mobile": "(617) 555-0166",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-sienna",
+            "values": {
+              "full_name": "Sienna Whitaker",
+              "role": "QA analyst",
+              "work_email": "sienna@brightharbortech.net",
+              "mobile": "(617) 555-0167",
+              "start_date": "@today-18m"
+            }
+          },
+          {
+            "key": "tm-arjun",
+            "values": {
+              "full_name": "Arjun Kapoor",
+              "role": "Support engineer",
+              "work_email": "arjun@brightharbortech.net",
+              "mobile": "(617) 555-0168",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "give_feedback",
+        "name": "Give feedback",
+        "describes": "How a colleague writes feedback about someone for their review.",
+        "audience": "staff",
+        "table": "feedback",
+        "fields": [
+          {
+            "fieldKey": "feedback_name",
+            "ask": "In a sentence, what is the feedback?",
+            "required": true
+          },
+          {
+            "fieldKey": "about",
+            "ask": "Who is it about?",
+            "required": true
+          },
+          {
+            "fieldKey": "type",
+            "ask": "Are you a peer, manager or report?"
+          },
+          {
+            "fieldKey": "sentiment",
+            "ask": "Overall, is it positive, mixed or a concern?"
+          }
+        ],
+        "submitLabel": "Send feedback",
+        "confirmation": "Thanks. It will be shared with the reviewer."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_cycles",
+        "name": "All cycles",
+        "table": "cycle",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_reviews",
+        "name": "All reviews",
+        "table": "review",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "review_board",
+        "name": "By stage",
+        "table": "review",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "review_calendar",
+        "name": "Due dates",
+        "table": "review",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_goals",
+        "name": "All goals",
+        "table": "goal",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "goal_board",
+        "name": "By status",
+        "table": "goal",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "goal_timeline",
+        "name": "Goal timeline",
+        "table": "goal",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_feedback",
+        "name": "All feedback",
+        "table": "feedback",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Performance Review Cycle assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "review",
+          "describes": "Every review, its cycle, stage and ratings."
+        },
+        {
+          "name": "related_tables",
+          "table": "cycle",
+          "describes": "The review cycles reviews belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many reviews are still in self-review?",
+        "whyItMatters": "Valentina nudges people in self-review before the deadline.",
+        "expect": {
+          "table": "review",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "stage": "Self-review"
+          },
+          "answer": 2,
+          "unit": "reviews"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the review board.",
+        "action": {
+          "kind": "open",
+          "surface": "review_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "review_board",
+          "minItems": 6
+        }
+      },
+      {
+        "says": "Open the goal board.",
+        "action": {
+          "kind": "open",
+          "surface": "goal_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "goal_board",
+          "minItems": 8
+        }
+      },
+      {
+        "says": "Open all feedback.",
+        "action": {
+          "kind": "open",
+          "surface": "all_feedback"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_feedback",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "brightharbortech.net"
+      ],
+      "fictionalStreets": [
+        "Saltmarsh Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "performance",
+      "parent": null,
+      "title": "Performance Reviews",
+      "icon": {
+        "emoji": "⭐"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run each review round from one page: reviews moving through stages, goals with progress, and feedback collected along the way."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Star"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.65
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reviews by stage"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "review",
+                      "view": "review_board"
+                    },
+                    "inline": true,
+                    "title": "Reviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-s",
+                        "name": "By stage",
+                        "layout": "kanban",
+                        "icon": "SquareKanban",
+                        "groupField": "stage"
+                      },
+                      {
+                        "id": "v-c",
+                        "name": "Due dates",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "due_on"
+                      },
+                      {
+                        "id": "v-a",
+                        "name": "All reviews",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "v-s"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.35
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review cycles"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cycle",
+                      "view": "all_cycles"
+                    },
+                    "inline": true,
+                    "title": "Review cycles",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-cy",
+                        "name": "All cycles",
+                        "layout": "grid",
+                        "icon": "Table"
+                      }
+                    ],
+                    "activeViewId": "v-cy"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Goals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "goal",
+              "view": "goal_board"
+            },
+            "inline": true,
+            "title": "Goals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-gb",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-gt",
+                "name": "All goals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-gc",
+                "name": "Due dates",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "v-gb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Feedback"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "feedback",
+              "view": "all_feedback"
+            },
+            "inline": true,
+            "title": "Feedback",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-f",
+                "name": "All feedback",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "given_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "v-fs",
+                "name": "By sentiment",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "sentiment"
+              }
+            ],
+            "activeViewId": "v-f"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:review-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:rating-rubric"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:review-form"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "toggle",
+          "text": [
+            {
+              "text": "Rubric"
+            }
+          ],
+          "children": [
+            {
+              "type": "text",
+              "text": [
+                {
+                  "text": "Open the Rating rubric page before calibration; every rating needs one example."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "review-dashboard",
+      "parent": "performance",
+      "title": "Cycle dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "review",
+                      "view": "all_reviews"
+                    },
+                    "inline": true,
+                    "title": "Reviews",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "Reviews by stage",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "goal",
+                      "view": "all_goals"
+                    },
+                    "inline": true,
+                    "title": "Goals",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "Goals by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "feedback",
+                      "view": "all_feedback"
+                    },
+                    "inline": true,
+                    "title": "Feedback",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "Feedback by sentiment",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "sentiment",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Needs attention"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "goal",
+              "view": "all_goals"
+            },
+            "inline": true,
+            "title": "Goals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-r",
+                "name": "At risk or off track",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "At risk",
+                    "Off track"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-r"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reviews due next"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "review",
+              "view": "all_reviews"
+            },
+            "inline": true,
+            "title": "Reviews",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-d",
+                "name": "Open reviews",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "stage": [
+                    "Not started",
+                    "Self-review",
+                    "Manager review",
+                    "Calibration"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "d-d"
+          }
+        }
+      ]
+    },
+    {
+      "key": "rating-rubric",
+      "parent": "performance",
+      "title": "Rating rubric",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the same scale for self, manager and final ratings."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rating"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Evidence needed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Well below expectations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Specific, repeated gaps"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Below expectations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Several clear misses"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meets expectations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reliable delivery of the role"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Exceeds expectations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clear impact beyond the role"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Outstanding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Changed how the team works"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Calibration compares ratings across managers. Bring one example for any 1, 2 or 5."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Scale"
+          }
+        }
+      ]
+    },
+    {
+      "key": "review-form",
+      "parent": "performance",
+      "title": "Review form",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Copy this outline into the review page and answer each prompt in a few sentences."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Impact"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What changed because of your work this period?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Skills"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What did you get better at? What is next?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Collaboration"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who did you help? Who helped you?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Growth"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What role are you working toward?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Next-period goals"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Name up to three goals with a measure each."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

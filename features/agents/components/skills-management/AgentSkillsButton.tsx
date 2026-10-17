@@ -16,8 +16,8 @@ import { Lightbulb } from "lucide-react";
 
 import { Button } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
-import { useOpenAgentSkillsWindow } from "@/features/overlays/openers/agentSkillsWindow";
+import { selectIsOverlayOpen } from "@ai-matrx/summon";
+import { useOpenAgentSkillsWindow } from "@/features/overlays/definitions/agentSkillsWindow.overlay";
 import { selectAgentSkillConfig } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { cn } from "@/lib/utils";
 

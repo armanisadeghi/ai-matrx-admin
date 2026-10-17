@@ -18,7 +18,7 @@ import { selectAppById } from "@/features/agents/redux/applets/selectors";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { siteConfig } from "@/config/extras/site";
 import { useChangeByTalkingDisclosure } from "@/features/applets/route/useChangeByTalkingDisclosure";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { appletJobs, appletPages, appletSources } from "@/features/applets/types";
 import { useSourceTableNames } from "@/features/applets/hooks/useSourceTableNames";

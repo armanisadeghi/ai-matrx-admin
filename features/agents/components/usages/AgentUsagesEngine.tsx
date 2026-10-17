@@ -56,7 +56,7 @@ import type {
 } from "@/features/agents/redux/usages/usages.types";
 import { VerdictDetail } from "@/features/mandates/admin/impact-cells";
 import { useImpactAdvance } from "@/features/mandates/admin/impact-advance";
-import { useOpenImpactBatchWindow } from "@/features/overlays/openers/impactBatchWindow";
+import { useOpenImpactBatchWindow } from "@/features/overlays/definitions/impactBatchWindow.overlay";
 import { MandateSetCandidateDialog } from "@/features/mandates/candidate-dialog/MandateSetCandidateDialog";
 import {
   rungOfImpactVerdict,

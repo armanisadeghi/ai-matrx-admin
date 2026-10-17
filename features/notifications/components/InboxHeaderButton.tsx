@@ -22,8 +22,8 @@ import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useEffect, useRef } from "react";
 import { BellRingTapButton, BellTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
-import { useOpenAuthGateDialog } from "@/features/overlays/openers/authGate";
+import { openOverlay } from "@ai-matrx/summon";
+import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
 import { useInboxCounts } from "../useInbox";
 import { useNotificationsToggle } from "../canvas/notificationsKind";
 

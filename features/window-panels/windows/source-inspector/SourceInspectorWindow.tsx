@@ -15,7 +15,7 @@
 
 "use client";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SourceInspectorPane } from "@/features/rag/components/source-inspector/SourceInspectorPane";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 

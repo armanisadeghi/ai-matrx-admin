@@ -20,7 +20,7 @@ import {
   type RagAiCopyOptions,
   type RagAiSectionKey,
 } from "@/features/rag/components/search/ragAiCopy";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { cn } from "@/lib/utils";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 

@@ -56,7 +56,7 @@ import {
   selectAllScopesFlat,
   selectAllScopeTypesFlat,
 } from "@/features/scopes/redux/selectors/tree";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { toast } from "@/lib/toast";
 import { toastDoor } from "@/components/official/entity-ref/toastDoor";
 import { ConversationHoverPreview } from "@/features/agents/components/previews/ConversationHoverPreview";

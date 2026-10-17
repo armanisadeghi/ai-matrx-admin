@@ -18,7 +18,7 @@
 
 "use client";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import type { DetailWindowShellProps } from "@ai-matrx/detail/react";
 import {
   DETAIL_URL_AS_ARG,

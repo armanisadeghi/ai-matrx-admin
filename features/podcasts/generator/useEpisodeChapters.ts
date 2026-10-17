@@ -27,8 +27,8 @@
 import { useCallback, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
-import type { LiveRunWindowHandle } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import type { LiveRunWindowHandle } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { podcastService } from "@/features/podcasts/service";
 import { chapterTimingAdjustmentNotice } from "@/features/podcasts/chapter-timing";
 import { parseChapters } from "@/features/podcasts/types";

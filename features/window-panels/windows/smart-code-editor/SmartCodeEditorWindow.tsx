@@ -17,7 +17,7 @@ import type { MandateKey } from "@ai-matrx/agents/mandates";
  */
 
 import React, { useCallback, useRef, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SmartCodeEditor } from "@/features/code-editor/agent-code-editor/components/SmartCodeEditor";
 import type {
   CodeEditorAgentConfig,

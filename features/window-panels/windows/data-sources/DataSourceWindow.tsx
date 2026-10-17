@@ -8,7 +8,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SourceDetail } from "@/features/data-sources/library/SourceDetail";
 import { useLibrary, useLibraryOrganizationId } from "@/features/data-sources/library/hooks";
 

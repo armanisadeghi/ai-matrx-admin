@@ -24,7 +24,7 @@ import type {
   EntityListController,
   EntityRowActionsResult,
 } from "@/lib/entity-list/config";
-import { useOpenMandateWindow } from "@/features/overlays/openers/mandateWindow";
+import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { useCopyMandateAgent } from "@/features/mandates/useCopyMandateAgent";
 import { mandateRoute, type MandateListRow } from "./types";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";

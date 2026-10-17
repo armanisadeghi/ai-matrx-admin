@@ -66,7 +66,7 @@ jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({
     capturedHandlers.push(handlers);
   },
 }));
-jest.mock("@/features/overlays/openers/gmailComposeWindow", () => ({
+jest.mock("@/features/overlays/definitions/gmailComposeWindow.overlay", () => ({
   useOpenGmailComposeWindow: () => jest.fn(),
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => null }));

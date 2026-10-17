@@ -12,39 +12,31 @@
  * in place is a link that silently lost its other half.
  */
 import type { AppDispatch } from "@/lib/redux/store";
-import { getHydrator } from "@/features/window-panels/url-sync/UrlPanelRegistry";
-import { parseParams } from "@/features/window-panels/url-sync/UrlPanelManager";
-import { initUrlHydration } from "@/features/window-panels/url-sync/initUrlHydration";
-
-let hydratorsRegistered = false;
-
-function ensureHydratorsRegistered(): void {
-  // `UrlPanelManager` registers them on mount, but it lives in the deferred
-  // singleton core and may not have mounted yet on a fast click. Registration
-  // is idempotent (a keyed table), so doing it here is always safe.
-  if (hydratorsRegistered) return;
-  hydratorsRegistered = true;
-  initUrlHydration();
-}
+import { getOverlayMetaByLinkKey } from "@ai-matrx/summon";
+import { canonicalLinkKey, openFromLink, parseLinkParam } from "@ai-matrx/summon/url";
+import { ensureAppOverlaysRegistered } from "@/features/overlays/definitions/register";
 
 export type OpenInPlaceResult =
   { opened: true; keys: string[] } | { opened: false; missingKeys: string[] };
 
+/**
+ * Open a notification's `?panels=` value in place — all or nothing: when any key has no
+ * registered definition nothing opens and the caller opens the link in a new tab instead.
+ */
 export function openPanelsInPlace(
   dispatch: AppDispatch,
   panelsParam: string,
 ): OpenInPlaceResult {
-  ensureHydratorsRegistered();
-  const panels = parseParams(panelsParam).filter((panel) => panel.typeKey);
-  const missingKeys = panels
-    .filter((panel) => !getHydrator(panel.typeKey))
-    .map((panel) => panel.typeKey);
-  if (panels.length === 0 || missingKeys.length > 0) {
+  ensureAppOverlaysRegistered();
+  const tokens = parseLinkParam(panelsParam);
+  const missingKeys = tokens
+    .filter((token) => !getOverlayMetaByLinkKey(canonicalLinkKey(token.key)))
+    .map((token) => token.key);
+  if (tokens.length === 0 || missingKeys.length > 0) {
     return { opened: false, missingKeys };
   }
-  for (const panel of panels) {
-    const hydrator = getHydrator(panel.typeKey);
-    hydrator?.(dispatch, panel.instanceId ?? "", panel.args ?? {});
-  }
-  return { opened: true, keys: panels.map((panel) => panel.typeKey) };
+  // Every key is known, so nothing is refused for being unknown; sync hydrators have dispatched
+  // before this returns.
+  void openFromLink(`?panels=${encodeURIComponent(panelsParam)}`, { dispatch, requireAll: true });
+  return { opened: true, keys: tokens.map((token) => token.key) };
 }

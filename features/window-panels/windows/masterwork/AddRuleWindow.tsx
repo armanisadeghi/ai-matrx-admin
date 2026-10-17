@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useRef } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AddRulePanel } from "@/features/masterwork/components/add-rule/AddRulePanel";
 import { emitAddRuleEvent, type AddRuleWindowData } from "./callbacks";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";

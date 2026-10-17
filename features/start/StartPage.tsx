@@ -34,7 +34,7 @@ import { WidgetNotice } from "./widgets/frame";
 import { describeStartWidget } from "./widgets/catalog";
 import { useStartAgentTools } from "./tools/useStartAgentTools";
 import { START_PAGE_SURFACE_NAME } from "@/features/surfaces/manifests/start-page.manifest";
-import { useOpenAgentRunWindow } from "@/features/overlays/openers/agentRunWindow";
+import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunWindow.overlay";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /** The Start page maintainer (declared in aidream services/start_page/mandates.py). */

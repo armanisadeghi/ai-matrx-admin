@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { FileCode2, FileText, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CaptureThumb } from "@/features/marketing/components/shared/CaptureThumb";
-import { useOpenFilePreviewWindow } from "@/features/overlays/openers/filePreviewWindow";
+import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import { useSnapshotScreenshots } from "@/features/marketing/data/inspection-hooks";
 import type { PageSnapshot } from "@/features/marketing/types";
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";

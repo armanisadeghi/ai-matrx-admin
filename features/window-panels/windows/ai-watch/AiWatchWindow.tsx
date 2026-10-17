@@ -7,9 +7,9 @@
  */
 
 import { useEffect } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/openers/aiWatchWindow";
+import { AI_WATCH_PAGE_INSTANCE, watchAiRunAction } from "@/features/overlays/definitions/aiWatchWindow.overlay";
 import { useAiWatchPanel, type AiWatchWindowProps } from "@/features/ai-watch/useAiWatchPanel";
 
 export type { AiWatchWindowProps };

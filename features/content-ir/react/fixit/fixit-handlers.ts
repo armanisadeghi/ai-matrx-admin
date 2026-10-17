@@ -7,7 +7,7 @@
  * `useKindFixIt` wires the real dependencies; the tests wire fakes.
  */
 
-import type { OpenAgentRunWindowOptions } from "@/features/overlays/openers/agentRunWindow";
+import type { OpenAgentRunWindowOptions } from "@/features/overlays/definitions/agentRunWindow.overlay";
 import {
   composeLayerSeed,
   describeLayerSwitchOff,

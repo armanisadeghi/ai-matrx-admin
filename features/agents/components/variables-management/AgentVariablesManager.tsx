@@ -13,7 +13,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, X, AlertCircle, Layers, SlidersHorizontal } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { useOpenScopeBatchImportWindow } from "@/features/overlays/openers/scopeBatchImportWindow";
+import { useOpenScopeBatchImportWindow } from "@/features/overlays/definitions/scopeBatchImportWindow.overlay";
 import {
   selectAgentVariableDefinitions,
   selectAgentMessages,
@@ -25,7 +25,7 @@ import {
 import { unbindControlVariable } from "@ai-matrx/chat/agents/utils/control-variables";
 import { isControlVariable } from "@ai-matrx/agents";
 import type { VariableDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { useOpenAgentVariableEditorWindow } from "@/features/overlays/openers/agentVariableEditorWindow";
+import { useOpenAgentVariableEditorWindow } from "@/features/overlays/definitions/agentVariableEditorWindow.overlay";
 import {
   extractVariableReferences,
   generateNextVariableName,

@@ -115,7 +115,7 @@ import {
 
 import { TikTokConnectionsPanel } from "@/features/tiktok-connections/TikTokConnectionsPanel";
 import { listTikTokConnections } from "@/features/tiktok-connections/service";
-import { useOpenLiveIntegrationsWindow } from "@/features/overlays/openers/liveIntegrationsWindow";
+import { useOpenLiveIntegrationsWindow } from "@/features/overlays/definitions/liveIntegrationsWindow.overlay";
 import { listMicrosoftConnections } from "@/features/microsoft-integration/service";
 import type { MicrosoftConnection } from "@/features/microsoft-integration/types";
 import { listStorageConnections } from "@/features/storage-connections/service";

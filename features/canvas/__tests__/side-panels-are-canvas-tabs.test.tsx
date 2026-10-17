@@ -48,7 +48,7 @@ Element.prototype.scrollIntoView ??= function scrollIntoView() {};
 jest.mock("@/features/marketing/seo/topical-map/knobs", () => ({
   useTopicalMapKnobs: () => ({ knobs: { detail_panel: "drawer" }, loading: false, error: null }),
 }));
-jest.mock("@/features/window-panels/WindowPanel", () => ({ WindowPanel: () => null }));
+jest.mock("@ai-matrx/summon/window", () => ({ WindowPanel: () => null }));
 jest.mock("@/features/marketing/seo/topical-map/panel/TopicDetailBody", () => ({ TopicDetailBody: () => null }));
 jest.mock("@/features/kg-suggestions/hooks/useKgSuggestions", () => ({
   useKgSuggestions: () => ({ items: [], count: 3, status: "success", error: null }),

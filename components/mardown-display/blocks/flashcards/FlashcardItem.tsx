@@ -24,7 +24,7 @@ import {
 import type { ReviewResult } from "@/features/flashcards/types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
-import { useOpenFlashcardItemWindow } from "@/features/overlays/openers/flashcardItemWindow";
+import { useOpenFlashcardItemWindow } from "@/features/overlays/definitions/flashcardItemWindow.overlay";
 import { SHOW_DEV_CONTROLS } from "@/lib/dev/devControls";
 import { Pencil } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";

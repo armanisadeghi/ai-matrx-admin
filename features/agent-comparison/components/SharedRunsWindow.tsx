@@ -20,7 +20,7 @@ import { useEffect, useId, useState } from "react";
 import { FileText, Globe, Printer } from "lucide-react";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { RichDocumentActionProvider } from "@ai-matrx/rich-content/rich-document/RichDocumentActionProvider";
 import { RichDocumentActionSurface } from "@ai-matrx/rich-content/rich-document/RichDocumentActionSurface";
 import { getAction } from "@ai-matrx/rich-content/rich-document/actions/provider";

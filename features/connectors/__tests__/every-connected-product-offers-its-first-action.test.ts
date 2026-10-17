@@ -1,22 +1,4 @@
-/**
- * 🚨 EVERY CONNECTED ROW OFFERS ITS FIRST USEFUL ACTION — OR SAYS IN WRITING WHY
- * THERE IS NOTHING TO OFFER YET (PLAN §2; law 4: a screen is absent or honest).
- *
- * THE DEFECT THIS PINS (lane F-51, escalated from U-W2). `firstAction` was
- * `{ label, href } | null`, and FIVE of the nine Google rows were `null`.
- * Calendar was one of them although its first action — opening the agenda — was
- * built, catalogued and shipped in the same project: the field could only hold an
- * href, and the agenda is a window with no route. Nothing could tell a row that
- * had nothing to offer from a row somebody forgot, on any provider, ever.
- *
- * So the census is over the CONFIG, not over one row: every product declares one
- * of three shapes, an overlay action names a real catalogued overlay, a route
- * action is a real in-app path, and the rows that offer nothing are an explicit,
- * shrinking list with a written reason each. A new product row copied from a
- * neighbour cannot reach a person with nothing at the end of it.
- */
 
-import { OVERLAY_CATALOGUE, isOverlayId, type OverlayId } from "@/features/overlays/catalogue";
 import { routeAnswerFor } from "@/lib/route-manifest/match";
 
 import {
@@ -24,6 +6,15 @@ import {
   type ConnectorFirstActionContextKey,
   type ConnectorProviderConfig,
 } from "../provider-config";
+import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
+import type { OverlayId } from "@ai-matrx/summon";
+
+/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
+  APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
+);
+const isOverlayId = (id: string): id is OverlayId => id in OVERLAY_CATALOGUE;
+
 
 /** Every provider config the app ships. The census walks all of them. */
 const PROVIDERS: ConnectorProviderConfig[] = [GOOGLE_CONNECTOR_PROVIDER];

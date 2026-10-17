@@ -30,7 +30,7 @@ import {
 import { isGoogleWorkspaceFileRow } from "@/features/marketing/google/types";
 import { Button } from "@ai-matrx/design-system";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
-import { useOpenGoogleConnectWindow } from "@/features/overlays/openers/googleConnectWindow";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { GoogleAccountSelect } from "@/features/google-workspace/GoogleAccountSelect";
 import {
   eligibleGoogleConnections,

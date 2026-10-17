@@ -26,7 +26,7 @@ jest.mock("@/components/official/entity-ref/EntityRef", () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("./runs-mocks").entityRefMock(),
 );
-jest.mock("@/features/overlays/openers/liveRunWindow", () => ({
+jest.mock("@/features/overlays/definitions/liveRunWindow.overlay", () => ({
   useOpenLiveRunWindow: () => jest.fn(),
 }));
 jest.mock("@/lib/durable-run/useDurableRun", () => ({

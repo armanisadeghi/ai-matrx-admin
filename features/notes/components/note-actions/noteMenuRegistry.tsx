@@ -32,7 +32,7 @@ import {
 import { toast } from "@/lib/toast";
 import { renameIntentFallback } from "@ai-matrx/chat/ui/renameIntentFallback";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
-import { changeReviewOverlayData } from "@/features/overlays/openers/changeReviewWindow";
+import { changeReviewOverlayData } from "@/features/overlays/definitions/changeReviewWindow.overlay";
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
@@ -48,7 +48,7 @@ import {
 import { isNoteContentEmpty } from "../../utils/noteUtils";
 import { downloadNoteAsMarkdown } from "../../utils/exportNotesMarkdown";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface NoteMenuContext {

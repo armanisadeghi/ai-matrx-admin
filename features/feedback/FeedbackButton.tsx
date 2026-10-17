@@ -7,7 +7,7 @@ import {
   type TapButtonProps,
 } from "@ai-matrx/design-system/tap-target/buttons";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { useOpenFeedbackWindow } from "@/features/overlays/openers/feedbackDialog";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 
 // The "NEW!" highlight (PartyPopper, X, bouncing tooltip, dismiss + view-count
 // logic) lives in a separate chunk. Most users have already exhausted the 5

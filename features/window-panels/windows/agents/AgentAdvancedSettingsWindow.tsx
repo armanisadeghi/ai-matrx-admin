@@ -12,7 +12,7 @@
  * for the agent's current model.
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentModelId,

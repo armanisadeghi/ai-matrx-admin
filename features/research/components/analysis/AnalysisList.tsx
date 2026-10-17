@@ -20,7 +20,7 @@ import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { Cost } from "@/components/cost/Cost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useFloatingLiveRun } from "@/features/overlays/openers/liveRunWindow";
+import { useFloatingLiveRun } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { useTopicContext, useStreamDebug } from "../../context/ResearchContext";
 import { useAnalysesForTopic, useResearchSources, useSourceImportance } from "../../hooks/useResearchState";

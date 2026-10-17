@@ -44,7 +44,7 @@ import { APPLETS_PORT } from "@/features/applets/embed/appletsPort";
 import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScopedChat";
 import { RecordRunsSection } from "@/features/workflow-runtime/simple-builder/RecordRunsSection";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
-import { useOpenLinkRecordSheet } from "@/features/overlays/openers/linkRecordSheet";
+import { useOpenLinkRecordSheet } from "@/features/overlays/definitions/linkRecordSheet.overlay";
 import { getOrganizationMembers } from "@/features/organizations/service";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { runRowAgentAction, type RowAgentActionTarget } from "@/features/unified-data/row-agent-action/rowAgentAction";

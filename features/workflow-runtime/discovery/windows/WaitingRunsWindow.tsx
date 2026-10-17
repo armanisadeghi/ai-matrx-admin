@@ -11,7 +11,7 @@
  * Rendered only behind the lazy overlay boundary (`OverlayController`).
  */
 
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { WaitingInbox } from "../components/WaitingInbox";
 
 export function WaitingRunsWindow({ onClose }: { onClose?: () => void }) {

@@ -57,7 +57,7 @@ import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree"
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 const WindowPanel = dynamic(
-  () => import("@/features/window-panels/WindowPanel"),
+  () => import("@ai-matrx/summon/window").then((m) => ({ default: m.WindowPanel })),
   { ssr: false },
 );
 

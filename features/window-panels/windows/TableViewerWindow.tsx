@@ -30,7 +30,7 @@
 import { toDelimitedText } from "@ai-matrx/alchemy/operate/read";
 import React, { Suspense, lazy, useState } from "react";
 import { Braces, Rows3, Sheet } from "lucide-react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {

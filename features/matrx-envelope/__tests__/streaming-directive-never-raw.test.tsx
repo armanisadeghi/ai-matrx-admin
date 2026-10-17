@@ -22,7 +22,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
 import apiConfigReducer from "@/lib/redux/slices/apiConfigSlice";
-import overlayReducer from "@/lib/redux/slices/overlaySlice";
+import { overlaysReducer as overlayReducer } from "@ai-matrx/summon";
 import { setStoreSingleton } from "@/lib/redux/store-singleton";
 
 import {

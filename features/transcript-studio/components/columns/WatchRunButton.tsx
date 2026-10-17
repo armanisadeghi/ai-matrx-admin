@@ -24,7 +24,7 @@
 import { Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { useOpenLiveRunWindow } from "@/features/overlays/openers/liveRunWindow";
+import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { conversationHref } from "@/features/hindsight/subject-doors";
 import { selectLatestRunForColumn } from "../../redux/selectors";
 import { studioLiveRunInstanceId } from "../../redux/liveRunWatch";

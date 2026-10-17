@@ -15,7 +15,7 @@ const tests = [
   "features/notes/components/NoteContentEditor.transition.test.tsx",
   "features/notes/components/mobile/MobileNoteEditor.transition.test.tsx",
   "features/notes/service/notesService.convergence.test.ts",
-  "features/overlays/callbacks/fullScreenEditor.test.ts",
+  "features/overlays/definitions/callbacks/fullScreenEditor.test.ts",
 ];
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const writeManifest = (manifest) => writeFileSync(join(runRoot, "manifest.json"), JSON.stringify(manifest, null, 2));

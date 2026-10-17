@@ -19,7 +19,7 @@ import { useGoogleConnectorState } from "./google-adapter";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
 import { useLateIdleReady } from "@/lib/boot/lateIdle";
 import { useHasEngaged } from "@/lib/boot/firstEngagement";
-import { useOpenConnectorConsentDialog } from "@/features/overlays/openers/connectorConsentDialog";
+import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 
 /**
  * FIRST-PAINT CONTRACT (V6, owner 2026-10-16: connections are never part of the first paint).

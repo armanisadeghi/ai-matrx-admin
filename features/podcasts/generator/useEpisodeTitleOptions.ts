@@ -33,7 +33,7 @@ import { useLiveAgentRun } from "@ai-matrx/chat/agents/hooks/useLiveAgentRun";
 import {
   useOpenLiveRunWindow,
   type LiveRunWindowHandle,
-} from "@/features/overlays/openers/liveRunWindow";
+} from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { podcastService } from "@/features/podcasts/service";
 import { episodeMetadata } from "@/features/podcasts/generator/useEpisodeArticles";
 import {

@@ -11,7 +11,7 @@ import { MessageSquare, Plus } from "lucide-react";
 import { asConversationId } from "@ai-matrx/messaging";
 import { useMessagingHost, useMessagingSnapshot } from "@ai-matrx/messaging/react";
 import { useConversationSummary } from "@/features/messaging/lib/useConversationSummary";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ConversationListPane } from "@/features/messaging/components/ConversationListPane";
 import { ConversationPane } from "@/features/messaging/components/ConversationPane";
 import { NewConversationDialog } from "@/features/messaging/components/NewConversationDialog";

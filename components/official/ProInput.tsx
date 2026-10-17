@@ -98,7 +98,7 @@ import {
 } from "@ai-matrx/design-system";
 import { MicButton } from "@/components/audio/MicButton";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
-import { useOpenAudioDevices } from "@/features/overlays/openers/audioDevices";
+import { useOpenAudioDevices } from "@/features/overlays/definitions/audioDevices";
 import {
   AlertDialog,
   AlertDialogAction,

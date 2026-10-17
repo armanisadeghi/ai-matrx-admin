@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useRef } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ProjectCreatePanel } from "@/features/projects/components/ProjectCreatePanel";
 import type { Project } from "@/features/projects/types";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";

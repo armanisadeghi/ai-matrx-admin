@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

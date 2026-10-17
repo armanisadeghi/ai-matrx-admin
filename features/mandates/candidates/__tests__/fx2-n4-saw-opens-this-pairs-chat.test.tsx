@@ -25,9 +25,9 @@ jest.mock("@/components/cost/Cost", () => ({ Cost: () => <span>—</span> }));
 jest.mock("@/features/mandates/admin/bench-output-preview", () => ({
   OutputPreview: ({ output }: { output: string }) => <div>{output}</div>,
 }));
-jest.mock("@/features/overlays/openers/diffViewerWindow", () => ({ useOpenDiffViewerWindow: () => jest.fn() }));
+jest.mock("@/features/overlays/definitions/diffViewerWindow.overlay", () => ({ useOpenDiffViewerWindow: () => jest.fn() }));
 const openWalk = jest.fn();
-jest.mock("@/features/overlays/openers/reviewWalkWindow", () => ({ useOpenReviewWalkWindow: () => openWalk }));
+jest.mock("@/features/overlays/definitions/reviewWalkWindow.overlay", () => ({ useOpenReviewWalkWindow: () => openWalk }));
 jest.mock("../openers", () => ({ useOpenCandidateSummary: () => jest.fn(), useOpenCandidateRun: () => jest.fn() }));
 const findTranscriptUnit = jest.fn();
 jest.mock("../transcripts", () => ({

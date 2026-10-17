@@ -39,7 +39,7 @@ import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/utils/datetime";
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { useOpenGmailComposeWindow } from "@/features/overlays/openers/gmailComposeWindow";
+import { useOpenGmailComposeWindow } from "@/features/overlays/definitions/gmailComposeWindow.overlay";
 import { selectActiveProjectId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useOrgMembers } from "../../deals/useOrgMembers";

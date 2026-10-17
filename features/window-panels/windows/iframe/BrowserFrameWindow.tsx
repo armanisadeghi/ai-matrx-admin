@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { EmbedSiteFrame } from "@/features/window-panels/components/EmbedSiteFrame";
 import {
   normalizeUserUrl,

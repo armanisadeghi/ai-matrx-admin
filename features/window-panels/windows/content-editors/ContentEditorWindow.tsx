@@ -9,7 +9,7 @@
  */
 
 import React, { useCallback, useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { ContentEditor } from "@/components/official/content-editor/ContentEditor";
 import { useContentEditorEmitter } from "./useContentEditorEmitter";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

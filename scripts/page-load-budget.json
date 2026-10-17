@@ -58,6 +58,24 @@
         "select platform.assists": 2,
         "rpc platform.knob_index": 2
       }
+    },
+    "/chat/new": {
+      "maxReads": 32,
+      "repeats": {
+        "rpc platform.knob_snapshot_delta": 2,
+        "select ui.ui_surface": 2,
+        "select platform.assists": 2
+      }
+    },
+    "/chat/acb177bb-96cc-431f-bbcf-46d120624318": {
+      "maxReads": 51,
+      "repeats": {
+        "select ui.ui_surface": 2,
+        "select canvas.canvas_items": 2,
+        "rpc public.block_state_list_staged": 2,
+        "rpc public.assoc_for_targets": 2,
+        "select platform.assists": 2
+      }
     }
   },
   "_allowances": {
@@ -72,6 +90,7 @@
     "select content_ir.kind_definition / kind_component / kind_example": "one shape's page: registry catalog read in two 1000-row pages plus distinct per-shape reads (home, readiness, fix-it diagnosis, cold-tier definition, owner editor) each selecting different columns; a shape with no component also runs the fix-it diagnosis",
     "rpc public.get_user_file_tree (/files)": "one tree load paged at 5000 rows (p_offset 0, 5000) for a 3,500+ file library",
     "rpc public.assoc_for_sources (/files)": "two bulk reads: the visible files' scope tags (batched by ensureEntityScopes) and the project tags",
-    "rpc platform.knob_index (/files)": "two different prefixes: 'files' (the page's settings) and 'messaging.inbox' (the shell's inbox kind); each question is read once (fetchKnobIndex shares)"
+    "rpc platform.knob_index (/files)": "two different prefixes: 'files' (the page's settings) and 'messaging.inbox' (the shell's inbox kind); each question is read once (fetchKnobIndex shares)",
+    "/chat/new + /chat/<id> (2026-10-17)": "maxReads from the signed-in census after chat.route_seed (admin /chat/new 32, test@test.com 24; admin /chat/<id> 51, member 43). /chat/<id> is keyed by an admin@admin.com conversation. repeats are the first-run baseline (shrink-only); the sidebar/pinned/stars reads are one chat.route_seed; ai.model_config + ai.model_offering still read beside it (the pill reads before the seed starts)."
   }
 }

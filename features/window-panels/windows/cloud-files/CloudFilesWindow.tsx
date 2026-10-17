@@ -20,7 +20,7 @@
 "use client";
 
 import { useState } from "react";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { WindowPanelShell } from "@/features/files/components/surfaces/WindowPanelShell";
 import type { CloudFilesWindowTab } from "@/features/files/components/surfaces/WindowPanelShell";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

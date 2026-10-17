@@ -21,7 +21,7 @@
  */
 
 import { useSyncExternalStore } from "react";
-import { callbackManager } from "@/utils/callbackManager";
+import { callbackManager } from "@ai-matrx/summon/handles";
 
 export type CanvasCallbackIds<K extends string> = { readonly [P in K]: string };
 

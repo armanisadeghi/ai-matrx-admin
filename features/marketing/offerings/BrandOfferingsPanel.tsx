@@ -34,7 +34,7 @@ import {
   selectRunEmissions,
   selectRunStatus,
 } from "@/features/workflow-runtime/redux/workflow-runs.selectors";
-import { openWorkflowRunWindowAction } from "@/features/overlays/openers/workflowRunWindow";
+import { openWorkflowRunWindowAction } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { getJson, postNdjson } from "@/lib/python-client";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";

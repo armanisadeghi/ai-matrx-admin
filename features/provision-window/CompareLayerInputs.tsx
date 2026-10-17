@@ -10,7 +10,7 @@ import { useState } from "react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { extractErrorMessage } from "@/utils/errors";
-import { useOpenProvisionWindow } from "@/features/overlays/openers/provisionWindow";
+import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";

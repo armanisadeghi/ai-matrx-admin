@@ -1,7 +1,7 @@
 "use client";
 
 import { useDialogContainer } from "@/components/ui/dialog";
-import { usePopoutContainer } from "@/features/window-panels/popout/usePopoutContainer";
+import { usePopoutContainer } from "@ai-matrx/summon/window";
 
 /**
  * Resolve where Radix portaled content (Select, Popover, DropdownMenu, etc.)

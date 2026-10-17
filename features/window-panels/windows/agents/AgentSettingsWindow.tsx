@@ -6,7 +6,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   fetchFullAgent,
 } from "@/features/agents/redux/fetch-full-agent.thunk";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { AgentSettingsForm } from "@/features/agents/components/settings/AgentSettingsForm";
 import {
   AgentSidebar,
@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
-import { useOpenAgentContentWindow } from "@/features/overlays/openers/agentAdvancedEditorWindow";
+import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 
 type PanelView = "info" | "surface";

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@/lib/redux/slices/overlaySlice";
+import { openOverlay } from "@ai-matrx/summon";
 import {
   selectVoicePadDraftText,
   selectVoicePadEntries,

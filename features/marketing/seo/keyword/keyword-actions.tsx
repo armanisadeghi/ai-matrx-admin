@@ -47,9 +47,9 @@ import {
   withAvailability,
   type AvailabilityMap,
 } from "@ai-matrx/context-menu/engine";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
-import { useOpenGscDrilldownWindow } from "@/features/overlays/openers/gscDrilldownWindow";
-import { useOpenGscWhyScoreWindow } from "@/features/overlays/openers/gscWhyScoreWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
+import { useOpenGscDrilldownWindow } from "@/features/overlays/definitions/gscDrilldownWindow.overlay";
+import { useOpenGscWhyScoreWindow } from "@/features/overlays/definitions/gscWhyScoreWindow.overlay";
 import {
   AssignPanel,
   type AssignTarget,

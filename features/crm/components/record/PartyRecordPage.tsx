@@ -49,7 +49,7 @@ import { getAssociationsStore } from "@/features/scopes/host/associationsStore";
 import { parseTaskDraft } from "../../agent-context/crmRecordSurfaceWrite";
 import type { DealRow } from "../../deals/types";
 import type { ContactCandidateView } from "../../enrichment/service";
-import { useOpenGmailComposeWindow } from "@/features/overlays/openers/gmailComposeWindow";
+import { useOpenGmailComposeWindow } from "@/features/overlays/definitions/gmailComposeWindow.overlay";
 import { selectActiveProjectId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useCategories } from "@/features/scopes/hooks/useCategories";

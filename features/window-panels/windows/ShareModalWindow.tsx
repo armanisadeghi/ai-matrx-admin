@@ -23,7 +23,7 @@ import { OrgAvailabilityNote } from "@/features/sharing/components/OrgAvailabili
 import { WhoCanSeeThis } from "@/features/sharing/components/WhoCanSeeThis";
 import { PublicAccessTab } from "@/features/sharing/components/tabs/PublicAccessTab";
 import { useToast } from "@/components/ui/use-toast";
-import { WindowPanel } from "@/features/window-panels/WindowPanel";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   SHARE_SURFACE_NAME,

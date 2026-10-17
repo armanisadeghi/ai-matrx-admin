@@ -1,34 +1,16 @@
 /**
- * A singleton window publishes its own overlay id in the instance slot of its
- * address (`?panels=quick_data:quickDataWindow`). Reloading that address must
- * restore the window from its own state — the token is never forwarded into the
- * window's data as if it named a record. Until 2026-10-01 the quick-data
- * hydrator did exactly that, and the reload asked `custom.where_tables_live`
- * for the table "quickDataWindow" (Postgres 22P02, invalid uuid).
- *
- * The guard walks EVERY registered window address, so a new hydrator that
- * forwards its raw id fails here by name.
+ * A window identity is never a resource id: reloading `quick_data:quickDataWindow` opens the window
+ * with no table, and no definition's link forwards its own overlay id into its data. Ported onto
+ * the package link door + the definitions' link.hydrate.
  */
-import { ALL_WINDOW_STATIC_METADATA } from "../registry/windowRegistryMetadata";
-import {
-  getRestorableUuid,
-  initUrlHydration,
-} from "../url-sync/initUrlHydration";
-import { getHydrator } from "../url-sync/UrlPanelRegistry";
+import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
+import { getRestorableUuid } from "@/features/overlays/definitions/link-helpers";
+import { linkHydrator, registerAppLinks } from "@/features/overlays/definitions/__tests__/linkKit";
 
-jest.mock(
-  "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk",
-  () => ({
-    loadConversation: jest.fn((args: unknown) => ({
-      type: "test/loadConversation",
-      payload: args,
-    })),
-  }),
-);
-jest.mock(
-  "@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight",
-  () => ({ followWhatIsStillInFlight: jest.fn() }),
-);
+jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk", () => ({
+  loadConversation: jest.fn((args: unknown) => ({ type: "test/loadConversation", payload: args })),
+}));
+jest.mock("@ai-matrx/chat/agents/runtime-reconnect/follow-what-is-still-in-flight", () => ({ followWhatIsStillInFlight: jest.fn() }));
 
 function valuesOf(value: unknown, out: unknown[] = []): unknown[] {
   if (value && typeof value === "object") {
@@ -37,37 +19,37 @@ function valuesOf(value: unknown, out: unknown[] = []): unknown[] {
   return out;
 }
 
-describe("a window identity is never a resource id", () => {
-  beforeAll(() => initUrlHydration());
+const openedData = (dispatch: jest.Mock): unknown =>
+  (dispatch.mock.calls.find(([a]) => (a as { type?: string })?.type === "overlays/openOverlay")?.[0] as { payload: { data: unknown } } | undefined)?.payload.data;
 
-  it("reloading `quick_data:quickDataWindow` opens the window with no table selected", () => {
+describe("a window identity is never a resource id", () => {
+  beforeAll(() => registerAppLinks());
+
+  it("reloading `quick_data:quickDataWindow` opens the window with no table selected", async () => {
     const dispatch = jest.fn();
-    getHydrator("quick_data")?.(dispatch, "quickDataWindow", {});
-    const action = dispatch.mock.calls[0]?.[0] as { payload: { data: unknown } };
-    expect(action.payload.data).toBeNull();
+    await linkHydrator("quick_data")!(dispatch, "quickDataWindow", {});
+    expect(dispatch.mock.calls.some(([a]) => (a as { type?: string })?.type === "overlays/openOverlay")).toBe(true);
+    expect(openedData(dispatch)).toBeNull();
   });
 
-  it("a real table id still deep-links", () => {
+  it("a real table id still deep-links", async () => {
     const id = "522c3ff1-7229-439c-be00-5b20492cc328";
     const dispatch = jest.fn();
-    getHydrator("quick_data")?.(dispatch, id, {});
-    const action = dispatch.mock.calls[0]?.[0] as { payload: { data: unknown } };
-    expect(action.payload.data).toEqual({ selectedTable: id });
+    await linkHydrator("quick_data")!(dispatch, id, {});
+    expect(openedData(dispatch)).toEqual({ selectedTable: id });
   });
 
-  it("no window forwards its own overlay id into its data", () => {
+  it("no window forwards its own overlay id into its data", async () => {
     const offenders: string[] = [];
-    for (const entry of ALL_WINDOW_STATIC_METADATA) {
-      const key = entry.urlSync?.key;
-      const hydrator = key ? getHydrator(key) : undefined;
+    for (const def of APP_OVERLAYS) {
+      const key = def.link?.key;
+      const hydrator = key ? linkHydrator(key) : undefined;
       if (!key || !hydrator) continue;
       const dispatch = jest.fn();
-      hydrator(dispatch, entry.overlayId, {});
+      await hydrator(dispatch, def.id, {});
       for (const [action] of dispatch.mock.calls) {
         const data = (action as { payload?: { data?: unknown } })?.payload?.data;
-        if (valuesOf(data).includes(entry.overlayId)) {
-          offenders.push(`${key} -> ${entry.overlayId}`);
-        }
+        if (valuesOf(data).includes(def.id)) offenders.push(`${key} -> ${def.id}`);
       }
     }
     expect(offenders).toEqual([]);

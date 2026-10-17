@@ -43,7 +43,7 @@ jest.mock("@/features/marketing/google/service", () => ({
  * — the door itself has its own suite
  * (`an-unavailable-event-offers-every-real-action.test.tsx`).
  */
-jest.mock("@/features/overlays/openers/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
   useOpenGoogleConnectWindow: () => () => ({ close: () => {} }),
 }));
 

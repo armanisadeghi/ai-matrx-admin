@@ -86,7 +86,7 @@ jest.mock("@/lib/googlePicker", () => ({
 jest.mock("@/features/google-workspace/drivePickerToken", () => ({
   getGoogleDrivePickerToken: jest.fn(async () => "token"),
 }));
-jest.mock("@/features/overlays/callbacks/googleConnectWindow", () => ({
+jest.mock("@/features/overlays/definitions/callbacks/googleConnectWindow", () => ({
   emitGoogleConnectEvent: jest.fn(),
 }));
 // The body also DISPATCHES now (ab34706ec7, "fix(files): retain provider

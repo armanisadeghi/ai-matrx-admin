@@ -252,7 +252,7 @@ const DOOR_IMPORT_MARKERS = [
   "next/navigation",
   // @ai-matrx/chat routes through its navigation port (P10): useRouter / Link.
   "host/navigation",
-  "features/overlays/openers",
+  "features/overlays/definitions",
   "getEntityInfo",
   "hrefFor",
   "ResourcePeekHost",

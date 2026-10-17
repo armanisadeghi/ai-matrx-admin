@@ -85,7 +85,7 @@ import { cn } from "@/lib/utils";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const LazyWindowPanel = dynamic(
-  () => import("@/features/window-panels/WindowPanel").then((m) => m.WindowPanel),
+  () => import("@ai-matrx/summon/window").then((m) => m.WindowPanel),
   { ssr: false },
 );
 

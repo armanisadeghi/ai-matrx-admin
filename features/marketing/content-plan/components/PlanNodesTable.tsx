@@ -52,7 +52,7 @@ import {
 import { UnresolvedEntityRef } from "@/features/access-gate/components/UnresolvedEntityRef";
 import { useAccessStates } from "@/features/access-gate/hooks/useAccessStates";
 import { getKeywordPhrasesByIds } from "@/features/marketing/seo/keyword/data";
-import { useOpenKeywordWindow } from "@/features/overlays/openers/keywordWindow";
+import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { filterAndSortRows } from "@ai-matrx/design-system/data-table/filter-engine";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type {
