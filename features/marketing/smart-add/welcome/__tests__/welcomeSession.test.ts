@@ -1,5 +1,5 @@
 import type { KnownDomainRule } from "@/lib/web-domains/registry";
-import { loginSeed, provenWebsite, seedEvidence } from "../loginSeed";
+import { loginSeed, websiteCandidate, seedEvidence } from "../loginSeed";
 import { narrowAs, paidCardsHost, roundKey, roundSubject, stableUuid, testLoginUsable, testLoginUser, testSubject, welcomeSubject, EMPTY_TEST_LOGIN } from "../welcomeSession";
 import { welcomeProfilePatch } from "../welcomeProfile";
 
@@ -34,14 +34,15 @@ describe("sign-up welcome session", () => {
     expect(seed.name).toBe("Ada Example");
     expect(seed.emailProven).toBe(true);
     expect(seed.workspaceDomain).toBe("adaworks.dev");
-    expect(provenWebsite(seed)).toBe("adaworks.dev");
-    expect(seedEvidence(seed).map((i) => i.field).sort()).toEqual(["email", "website"]);
+    expect(websiteCandidate(seed)).toBe("adaworks.dev");
+    // The Workspace domain is a candidate only (an employer's domain is not their site): never seeded as an answer.
+    expect(seedEvidence(seed).map((i) => i.field).sort()).toEqual(["email"]);
   });
 
   it("a name-only Gmail sign-in proves no website; a GitHub login proves the account", () => {
     const gmail = loginSeed(testLoginUser({ ...EMPTY_TEST_LOGIN, name: "Ada Example", email: "ada.example@gmail.com" }), RULES);
     expect(gmail.freeMail).toBe(true);
-    expect(provenWebsite(gmail)).toBeNull();
+    expect(websiteCandidate(gmail)).toBeNull();
     const gh = loginSeed(testLoginUser({ ...EMPTY_TEST_LOGIN, provider: "github", name: "Ada", githubLogin: "@adaex" }), RULES);
     expect(gh.githubLogin).toBe("adaex");
     expect(seedEvidence(gh).find((i) => i.field === "social")?.key).toBe("social:github:adaex");
