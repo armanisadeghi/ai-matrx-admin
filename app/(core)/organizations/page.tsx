@@ -36,7 +36,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArchivedDisclosure, Skeleton } from "@ai-matrx/design-system";
 import { ProInput } from "@/components/official/ProInput";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { usePagedOrganizations } from "@/features/organizations/hooks/usePagedOrganizations";
+import { getUserOrganizationsPage } from "@/features/organizations/service";
 import { CreateOrgModal } from "@/features/organizations/components/CreateOrgModal";
 import { OrganizationAbbreviation } from "@/features/organizations/components/OrganizationAbbreviation";
 import { OrganizationsStats } from "@/features/organizations/components/OrganizationsStats";
@@ -48,7 +49,6 @@ import type {
 import {
 } from "@/features/organizations/types";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { ReferencesBulkCopyButton } from "@/features/matrx-envelope/components/ReferencesBulkCopyButton";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
@@ -386,6 +386,60 @@ function OrganizationsLoadingState() {
   );
 }
 
+/** The archived organizations: counted on mount (one small read), listed only once the disclosure is opened. */
+function ArchivedOrganizationsSection({
+  suggestions,
+  kpis,
+}: {
+  suggestions: UseScopeSuggestionsResult;
+  kpis: OrganizationKpis;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [total, setTotal] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    let live = true;
+    void getUserOrganizationsPage({ archiveFilter: "archived", limit: 10 }).then(
+      (page) => live && setTotal(page.total),
+      () => live && setTotal(0),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!total) return null;
+  return (
+    <ArchivedDisclosure count={total} open={open} onOpenChange={setOpen}>
+      {open ? <ArchivedOrganizationsGrid suggestions={suggestions} kpis={kpis} /> : null}
+    </ArchivedDisclosure>
+  );
+}
+
+function ArchivedOrganizationsGrid({
+  suggestions,
+  kpis,
+}: {
+  suggestions: UseScopeSuggestionsResult;
+  kpis: OrganizationKpis;
+}) {
+  const archived = usePagedOrganizations("archived");
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {archived.organizations.map((org) => (
+          <OrgCard key={org.id} org={org} suggestions={suggestions} kpis={kpis} />
+        ))}
+      </div>
+      {archived.hasMore ? (
+        <div className="mt-3 flex justify-center">
+          <Button variant="outline" disabled={archived.loadingMore} onClick={archived.loadMore}>
+            {archived.loadingMore ? "Loading…" : "Show more"}
+          </Button>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 export default function OrganizationsPage() {
   // THE ARCHIVED-ITEMS LAW (Arman, 2026-09-09). This page asks for "all" so it
   // can offer the reveal itself, then hides the archived organizations behind
@@ -394,35 +448,26 @@ export default function OrganizationsPage() {
   // the surface runtime are unchanged. An archived organization is CLOSED, not
   // deleted: nobody can reach anything inside it, nothing bound to it runs, and
   // an owner can restore it from its own settings page at any time.
-  const {
-    organizations: allOrganizations,
-    loading,
-    error,
-    refresh,
-  } = useUserOrganizations("all");
-  const [showArchived, setShowArchived] = React.useState(false);
-  const organizations = allOrganizations.filter((o) => !o.archivedAt);
-  const archivedOrganizations = allOrganizations.filter((o) =>
-    Boolean(o.archivedAt),
-  );
+  // BOUNDED ORGANIZATIONS (2026-10-17): the live organizations are a PAGE (last used first); the
+  // search box asks the server and "Show more" pages. Archived ones load only when that disclosure
+  // is opened (`ArchivedOrganizationsSection`).
+  const paged = usePagedOrganizations();
+  const { loading, error, refresh } = paged;
+  const organizations = paged.organizations;
+  const totalLive = paged.total ?? organizations.length;
   const suggestions = useScopeSuggestions();
   // The shell's "New Org" action lands here as `?create=1` and opens the dialog.
   const searchParams = useSearchParams();
   const [createOpen, setCreateOpen] = React.useState(
     () => searchParams?.get("create") === "1",
   );
-  const [query, setQuery] = React.useState("");
+  const query = paged.query;
+  const setQuery = paged.setQuery;
   const isMobile = useIsMobile();
   const store = useAppStore();
 
-  const filtered = query
-    ? filterAndSortBySearch(organizations, query, [
-        { get: (o) => o.name, weight: "title" },
-        { get: (o) => o.abbreviation, weight: "title" },
-        { get: (o) => o.slug, weight: "subtitle" },
-        { get: (o) => o.description ?? "", weight: "body" },
-      ])
-    : organizations;
+  // `organizations` already answers the query (the server's matches while it is a page).
+  const filtered = organizations;
 
   // ONE list, every organization under its own name (Arman, 2026-09-11: use
   // the real name, always).
@@ -528,11 +573,11 @@ export default function OrganizationsPage() {
               <div data-surface-value="organization_count">
                 <OrganizationsStats
                   loading={loading}
-                  organizationCount={organizations.length}
+                  organizationCount={totalLive}
                 />
               </div>
 
-              {organizations.length > 4 && (
+              {(totalLive > 4 || query) && (
                 <div
                   className="flex w-full items-center gap-2 sm:w-auto"
                   data-surface-value="search_query"
@@ -614,22 +659,18 @@ export default function OrganizationsPage() {
                     ))}
                   </div>
                 </div>
-                <ArchivedDisclosure
-                  count={archivedOrganizations.length}
-                  open={showArchived}
-                  onOpenChange={setShowArchived}
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {archivedOrganizations.map((org) => (
-                      <OrgCard
-                        key={org.id}
-                        org={org}
-                        suggestions={suggestions}
-                        kpis={kpis}
-                      />
-                    ))}
+                {paged.hasMore ? (
+                  <div className="flex justify-center">
+                    <Button variant="outline" disabled={paged.loadingMore} onClick={paged.loadMore}>
+                      {paged.loadingMore
+                        ? "Loading…"
+                        : paged.total !== null
+                          ? `Show more (${organizations.length} of ${paged.total})`
+                          : "Show more"}
+                    </Button>
                   </div>
-                </ArchivedDisclosure>
+                ) : null}
+                <ArchivedOrganizationsSection suggestions={suggestions} kpis={kpis} />
               </>
             )}
           </div>

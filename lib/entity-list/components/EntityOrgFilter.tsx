@@ -21,7 +21,6 @@
 // Per-organization counts are shown when the counts RPC returns `all` narrow
 // rows (`counts.narrow.all`, computed across every organization on purpose).
 
-import { useState } from "react";
 import { Building2, Check, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,7 +31,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
+import { usePagedOrganizations } from "@/features/organizations/hooks/usePagedOrganizations";
 import type { EntityScopeCounts } from "@/lib/entity-list/types";
 
 export const ALL_ORGANIZATIONS_LABEL = "All organizations";
@@ -68,8 +68,18 @@ export interface EntityOrgFilterProps {
  * `useOrgFilterParam` in ../orgFilterUrl.ts).
  */
 export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen, extraOrganizations, className }: EntityOrgFilterProps) {
-  const { organizations, loading } = useUserOrganizations();
-  const [needle, setNeedle] = useState("");
+  // Her organizations are a PAGE of a longer list when she is in many (bounded organizations,
+  // 2026-10-17): the menu searches server-side as she types and pages with "Show more"; the
+  // organization the URL names is asked by id, so it is drawn even when it is beyond the page.
+  const paged = usePagedOrganizations();
+  const named = useOrganizationsWith([orgId]);
+  const { loading } = paged;
+  const organizations = [
+    ...paged.organizations,
+    ...named.organizations.filter((o) => o.id === orgId && !paged.organizations.some((p) => p.id === o.id)),
+  ];
+  const needle = paged.query;
+  const setNeedle = paged.setQuery;
   const perOrg = new Map(
     (counts?.narrow.all ?? []).map((o) => [o.id, o.count] as const),
   );
@@ -83,14 +93,13 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
   // Offer the filter only where it helps (law rule 3): one organization or
   // none leaves nothing to choose. A URL that names an organization always
   // shows the control, so the narrowing can be seen and cleared.
-  if (!orgId && (loading || choices.length < 2)) return null;
+  if (!orgId && (loading || (choices.length < 2 && !paged.isPartial))) return null;
 
   const label = orgId
     ? `Org: ${selected?.name ?? (loading ? "…" : "an organization you are not in")}`
     : ALL_ORGANIZATIONS_LABEL;
-  const shown = needle.trim()
-    ? choices.filter((c) => c.name.toLowerCase().includes(needle.trim().toLowerCase()))
-    : choices;
+  // `paged.organizations` is already the answer to the query (local while whole, the server's when a page).
+  const shown = choices;
   const countOf = (id: string) =>
     countsLoading ? undefined : perOrg.get(id);
 
@@ -128,7 +137,7 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-56 overflow-y-auto">
         <DropdownMenuLabel className="text-xs">Show records in</DropdownMenuLabel>
-        {choices.length > SEARCH_AT && (
+        {(choices.length > SEARCH_AT || paged.isPartial || needle) && (
           <div className="px-1 pb-1">
             <input
               value={needle}
@@ -170,6 +179,18 @@ export function EntityOrgFilter({ orgId, onChange, counts, countsLoading, onOpen
             </DropdownMenuItem>
           );
         })}
+        {paged.hasMore && (
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              paged.loadMore();
+            }}
+            disabled={paged.loadingMore}
+            className="text-muted-foreground"
+          >
+            {paged.loadingMore ? "Loading…" : paged.total !== null ? `Show more (${paged.organizations.length} of ${paged.total})` : "Show more"}
+          </DropdownMenuItem>
+        )}
         {shown.length === 0 && (
           <p className="px-2 py-1.5 type-secondary text-muted-foreground">
             No organization matches “{needle.trim()}”.

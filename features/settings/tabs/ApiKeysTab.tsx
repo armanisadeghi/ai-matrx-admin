@@ -28,6 +28,7 @@ import { SettingsTextInput } from "@/components/official/settings/primitives/Set
 import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
 import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
 import { useUserOrganizations } from "@/features/organizations/hooks";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import {
   PERSONAL_API_BASE_URL,
   createPersonalApiKey,
@@ -54,8 +55,9 @@ export default function ApiKeysTab() {
   const { copyText } = useClipboard({
     notify: copyNotify,
   });
-  const { organizations, loading: orgsLoading, error: orgsError } =
+  const { organizations, loading: orgsLoading, error: orgsError, hasMore: hasMoreOrganizations } =
     useUserOrganizations();
+  const [orgName, setOrgName] = useState("");
 
   const [keys, setKeys] = useState<PersonalApiKey[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
@@ -97,12 +99,11 @@ export default function ApiKeysTab() {
     };
   }, []);
 
-  const orgOptions = organizations.map((o) => ({ value: o.id, label: o.name }));
 
   // One organization: it is the answer, so it is chosen for the person.
   // org-fallback-deliberate: exactly one membership is the answer (boot-ladder rung 3), nothing is guessed; with several the person must pick
   const chosenOrgId =
-    orgId || (organizations.length === 1 ? organizations[0].id : "");
+    orgId || (organizations.length === 1 && !hasMoreOrganizations ? organizations[0].id : "");
 
   const openForm = () => {
     setCreated(null);
@@ -257,17 +258,23 @@ export default function ApiKeysTab() {
             maxLength={120}
             width="lg"
           />
-          <SettingsSelect
+          <SettingsRow
             label="Organization"
             description="Where the key works when a request names no organization."
-            value={chosenOrgId}
-            onValueChange={setOrgId}
-            options={orgOptions}
-            placeholder={orgsLoading ? "Loading your organizations" : "Choose one"}
-            width="lg"
-            disabled={orgsLoading || orgOptions.length === 0}
             error={orgsError ?? undefined}
-          />
+            disabled={orgsLoading}
+          >
+            <OrganizationChooser
+              value={chosenOrgId || null}
+              valueName={orgName || organizations.find((o) => o.id === chosenOrgId)?.name || null}
+              placeholder={orgsLoading ? "Loading your organizations" : "Choose one"}
+              disabled={orgsLoading}
+              onChange={(org) => {
+                setOrgId(org.id);
+                setOrgName(org.name);
+              }}
+            />
+          </SettingsRow>
           <SettingsButton
             label="Create key"
             description="Works until you revoke it or it hits your org's max age."

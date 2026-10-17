@@ -46,7 +46,7 @@ import { RecordRunsSection } from "@/features/workflow-runtime/simple-builder/Re
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
 import { useOpenLinkRecordSheet } from "@/features/overlays/definitions/linkRecordSheet.overlay";
 import { getOrganizationMembers } from "@/features/organizations/service";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { runRowAgentAction, type RowAgentActionTarget } from "@/features/unified-data/row-agent-action/rowAgentAction";
 import { CALENDAR_FEED_PORT } from "@/features/calendar-feed/calendarFeedPort";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
@@ -309,7 +309,7 @@ export function useRecordsUiPorts({
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
   const store = useAppStore();
-  const { organizations: myOrganizations, loading: myOrganizationsLoading } = useUserOrganizations();
+  const { organizations: myOrganizations, loading: myOrganizationsLoading } = useOrganizationsWith([organizationId]);
   const { launchMandate: launchMandateAnywhere } = useAgentLauncher();
   /**
    * A MANDATE RUNS IN AN ORGANIZATION THE PERSON IS IN. A table given to her from outside lives in an

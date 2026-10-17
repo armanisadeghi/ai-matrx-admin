@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { OrganizationPickerPopover } from "@/features/organizations/components/OrganizationPickerPopover";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { useActiveOrganizationPicker } from "@/features/organizations/hooks/useActiveOrganizationPicker";
 import {
   selectOrganizationId,
@@ -101,8 +102,10 @@ export function PartyCreateForm({
   // the active one and offers the picker in place — never a dead end.
   const { organizations, loading: orgsLoading, loadFailed } =
     useActiveOrganizationPicker();
+  // Whether she is a member of the passed organization is asked BY ID (it may be beyond her first page).
+  const { organizations: passedMatches } = useOrganizationsWith([initialOrgId]);
   const passedOrg = initialOrgId
-    ? organizations.find((org) => org.id === initialOrgId)
+    ? (organizations.find((org) => org.id === initialOrgId) ?? passedMatches.find((org) => org.id === initialOrgId))
     : undefined;
   const passedUsable =
     !initialOrgId || Boolean(passedOrg) || orgsLoading || loadFailed;

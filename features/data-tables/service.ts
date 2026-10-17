@@ -28,7 +28,7 @@ import {
   type GetTableResult,
 } from "@/features/data-tables/table-shapes";
 import { whereANewTableIsBorn } from "./data-source/where-a-table-is-born";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { getMyOrganizationsByIds, getUserOrganizations } from "@/features/organizations/service";
 import { sanitizeFieldName } from "@ai-matrx/records/core";
 import type {
   BulkOp,
@@ -681,7 +681,8 @@ async function withOrganizationNames(rows: UserTableListItem[]): Promise<UserTab
   const orgIds = new Set(rows.map((r) => r.organization_id).filter((id): id is string => Boolean(id)));
   if (orgIds.size < 2) return rows;
   try {
-    const mine = await getUserOrganizations();
+    // The organizations named on these rows, asked by id (her list may be longer than one page).
+    const mine = await getMyOrganizationsByIds([...orgIds]);
     const names = new Map(mine.map((o) => [o.id, o.name] as const));
     return rows.map((r) => ({ ...r, organization_name: (r.organization_id && names.get(r.organization_id)) || null }));
   } catch (err) {
