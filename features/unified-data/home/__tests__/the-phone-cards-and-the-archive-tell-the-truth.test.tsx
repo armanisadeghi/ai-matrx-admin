@@ -37,6 +37,7 @@ jest.mock("@/features/unified-data/hub/doors", () => ({
   ...jest.requireActual("@/features/unified-data/hub/doors"),
   archivedTablesEverywhere: (...args: unknown[]) => archived(...args),
   archivedPortalsEverywhere: (...args: unknown[]) => archivedPortals(...args),
+  archivedFormsEverywhere: async () => ({ ok: true, data: [] }),
 }));
 
 // eslint-disable-next-line import/first

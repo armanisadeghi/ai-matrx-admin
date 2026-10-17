@@ -564,6 +564,27 @@ export async function archivedPortalsEverywhere(
   return answered.ok ? { ok: true, data: answered.data.portals ?? [] } : answered;
 }
 
+/** An archived form or booking page of any organization the person belongs to (`custom.forms_archived_everywhere`). */
+export interface ArchivedFormEverywhereRow {
+  form_id: string;
+  table_id: string;
+  table_name: string | null;
+  kind: "form" | "booking";
+  title: string | null;
+  archived_at: string | null;
+  table_archived: boolean;
+  can_restore: boolean;
+  organization_id: string;
+  organization_name: string | null;
+}
+
+export async function archivedFormsEverywhere(
+  dataSource: RecordsDataSource,
+): Promise<DoorAnswer<ArchivedFormEverywhereRow[]>> {
+  const answered = await call<{ forms?: ArchivedFormEverywhereRow[] }>(dataSource, "forms_archived_everywhere", {});
+  return answered.ok ? { ok: true, data: answered.data.forms ?? [] } : answered;
+}
+
 /** Bring one archived record back, in the organization it lives in (all-organizations archive). */
 /**
  * What one call of `custom.record_restore` answers (DATA-DEFECTS-4). The door used to return nothing; it now

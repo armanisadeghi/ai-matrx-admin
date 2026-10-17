@@ -372,6 +372,16 @@ export function useDataHomeRowMenus({
       }
       onChanged();
     };
+    // A form or booking page comes back through the store's one form door, in its own organization.
+    const restoreForm = async () => {
+      if (!row.organizationId) return;
+      const back = await restoreFormFromHome({
+        client: createRecordsClient({ ...client.config, organizationId: row.organizationId }),
+        formId: row.itemId,
+      });
+      if (back.outcome === "refused") throw new Error(back.sentence);
+      onChanged();
+    };
     return {
       sections: [
         {
@@ -392,7 +402,15 @@ export function useDataHomeRowMenus({
                   onSelect: restore,
                   toast: { loading: "Restoring…", success: `${row.name} restored`, error: (e) => (e instanceof Error ? e.message : "Couldn’t restore") },
                 }
-              : { id: "restore", kind: "link", label: "Restore from its table", icon: ArchiveRestore, href: row.href },
+              : row.kind === "form" || row.kind === "booking"
+                ? {
+                    id: "restore",
+                    label: "Restore",
+                    icon: ArchiveRestore,
+                    onSelect: restoreForm,
+                    toast: { loading: "Restoring…", success: `${row.name} restored`, error: (e) => (e instanceof Error ? e.message : "Couldn’t restore") },
+                  }
+                : { id: "restore", kind: "link", label: "Restore from its table", icon: ArchiveRestore, href: row.href },
           ],
         },
       ],
