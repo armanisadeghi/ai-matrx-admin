@@ -33,6 +33,8 @@ const FIELD_LABEL: Record<string, string> = {
   link_page: "Link page",
 };
 
+const MARK_LABEL: Record<"later" | "ignored", string> = { later: "Ask me later", ignored: "Ignored" };
+
 const SENTIMENT_LABEL: Record<string, string> = { positive: "Positive", neutral: "Neutral", negative: "Negative" };
 
 function RelationCell({
@@ -47,16 +49,18 @@ function RelationCell({
   onChange: (row: WebDecisionRow, kind: BrandRelationKind) => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
-  const label = kinds.find((k) => k.key === row.relationKey)?.label ?? row.relationKey;
+  const label = row.mark ? MARK_LABEL[row.mark] : (kinds.find((k) => k.key === row.relationKey)?.label ?? row.relationKey);
+  // Ask me later / Ignored carry no relationship yet; choosing one gives it its first.
+  const current = row.mark ? `__${row.mark}` : row.relationKey;
   if (!canEdit || !kinds.length) return <span className="truncate text-sm">{label}</span>;
   return (
     <Select<string>
       aria-label={`Relationship of ${row.label}`}
-      value={row.relationKey}
+      value={current}
       disabled={busy}
       onValueChange={async (key) => {
         const kind = kinds.find((k) => k.key === key);
-        if (!kind || key === row.relationKey) return;
+        if (!kind || key === current) return;
         setBusy(true);
         try {
           await onChange(row, kind);
@@ -66,7 +70,7 @@ function RelationCell({
       }}
       options={[
         ...kinds.map((k) => ({ value: k.key, label: k.label })),
-        ...(kinds.some((k) => k.key === row.relationKey) ? [] : [{ value: row.relationKey, label }]),
+        ...(kinds.some((k) => k.key === current) ? [] : [{ value: current, label }]),
       ]}
       data-testid="brand-web-decision-relation"
     />
@@ -130,7 +134,7 @@ export function BrandWebDecisionsSection({ brand, canEdit }: { brand: MarketingB
     {
       id: "relationship",
       header: "Relationship",
-      accessorFn: (row) => labelOf(row.relationKey),
+      accessorFn: (row) => (row.mark ? MARK_LABEL[row.mark] : labelOf(row.relationKey)),
       cell: (row) => <RelationCell row={row} kinds={kinds} canEdit={canEdit} onChange={change} />,
     },
     { id: "sentiment", header: "Tone", accessorFn: (row) => (row.sentiment ? SENTIMENT_LABEL[row.sentiment] : ""), cell: (row) => <span className="text-sm">{row.sentiment ? SENTIMENT_LABEL[row.sentiment] : ""}</span> },

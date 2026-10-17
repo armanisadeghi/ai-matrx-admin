@@ -1173,6 +1173,8 @@ export function SmartAddBrand({
     webItems,
     choices: webChoices,
     setChoices: setWebChoices,
+    marks: webMarks,
+    setMarks: setWebMarks,
   });
   useEffect(() => {
     if (!builder.isActive) return;
@@ -2415,9 +2417,9 @@ export function SmartAddBrand({
         kinds={relationKinds}
         choices={webChoices}
         ctx={webCtx}
-        onChoose={(item, choice) => {
+        onChoose={(item, choice, mark) => {
           setWebChoices(({ [item.key]: _drop, ...rest }) => (choice ? { ...rest, [item.key]: choice } : rest));
-          enrichWeb?.decide(item, choice);
+          enrichWeb?.decide(item, choice, mark);
         }}
         marks={webMarks}
         onMark={(key, mark) => setWebMarks(({ [key]: _drop, ...rest }) => (mark ? { ...rest, [key]: mark } : rest))}

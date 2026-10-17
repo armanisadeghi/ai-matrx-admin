@@ -28,3 +28,12 @@ export function blocksCrossOriginImages(url: string): boolean {
 export function browserImageUrl(url: string): string {
   return /^https?:\/\//i.test(url) ? proxiedExternalImageUrl(url) : url;
 }
+
+/**
+ * The original URL behind an image-optimizer CDN mirror, whose copies expire when the site is re-optimized
+ * (NitroPack-style `…/optimized/rev-<id>/<site host>/<path>`). Null when the URL is not such a mirror.
+ */
+export function cdnMirrorOriginUrl(url: string): string | null {
+  const match = /\/optimized\/rev-[^/]+\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)\/(.+)$/i.exec(url);
+  return match ? `https://${match[1]}/${match[2]}` : null;
+}

@@ -493,17 +493,17 @@ function BusinessFactRow({
           data={fact}
           dataType="Agent"
         />
-        <RowActionButton title={canEdit ? "Edit fact" : "Only editors can edit"} disabled={!canEdit} onClick={onEdit}>
-          <Pencil className="h-3.5 w-3.5" />
-        </RowActionButton>
-        <RowActionButton
-          title={canEdit ? "Delete fact" : "Only editors can delete"}
-          destructive
-          disabled={!canEdit}
-          onClick={onDelete}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </RowActionButton>
+        {/* Viewers get copy only — the same rule as the hero's actions. */}
+        {canEdit ? (
+          <>
+            <RowActionButton title="Edit fact" onClick={onEdit}>
+              <Pencil className="h-3.5 w-3.5" />
+            </RowActionButton>
+            <RowActionButton title="Delete fact" destructive onClick={onDelete}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </RowActionButton>
+          </>
+        ) : null}
       </div>
     </li>
   );
@@ -1006,8 +1006,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               <div className="mt-0.5 flex h-6 min-w-0 items-center overflow-hidden">
                 {current.website_url ? contactFactValue({ kind: "website", value: externalHref(current.website_url) }) : null}
               </div>
-              <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
-                <StatusBadge value={current.status} />
+              {/* Status, kind and industry, then the setup status on the same line (often empty). */}
+              <div className="mt-2 flex h-7 min-w-0 flex-nowrap items-center gap-2 overflow-hidden">
+                <span className="inline-flex shrink-0">
+                  <StatusBadge value={current.status} />
+                </span>
                 {isPersonBrand(current) ? (
                   <>
                     <Badge variant="outline">{BRAND_KIND_COPY.person.label}</Badge>
@@ -1017,10 +1020,9 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 {current.industry ? (
                   <Badge variant="outline" className="min-w-0 truncate">{current.industry}</Badge>
                 ) : null}
-              </div>
-              {/* Setup status owns a fixed-height line from first paint, so it never reflows the badges. */}
-              <div className="mt-1.5 flex h-7 min-w-0 items-center overflow-hidden">
-                <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
+                <div className="flex shrink-0 items-center">
+                  <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
+                </div>
               </div>
               {/* One non-wrapping row of accounts; what does not fit is a +N that opens the Social tab. */}
               <div className="mt-2 flex h-6 min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
@@ -1343,21 +1345,16 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       >
                         <ListTree className="h-3.5 w-3.5" />
                       </RowActionButton>
-                      <RowActionButton
-                        title={canEdit ? "Edit site" : "Only editors can edit"}
-                        disabled={!canEdit}
-                        onClick={() => setEditingSite(site)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </RowActionButton>
-                      <RowActionButton
-                        title={canEdit ? "Delete site" : "Only editors can delete"}
-                        destructive
-                        disabled={!canEdit}
-                        onClick={() => setDeletingSite(site)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </RowActionButton>
+                      {canEdit ? (
+                        <>
+                          <RowActionButton title="Edit site" onClick={() => setEditingSite(site)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </RowActionButton>
+                          <RowActionButton title="Delete site" destructive onClick={() => setDeletingSite(site)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </RowActionButton>
+                        </>
+                      ) : null}
                     </div>
                   </li>
                 ))}
@@ -1476,21 +1473,16 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       }
                       dataType="Agent"
                     />
-                    <RowActionButton
-                      title={canEdit ? "Edit asset" : "Only editors can edit"}
-                      disabled={!canEdit}
-                      onClick={() => setAssetEditor({ open: true, asset })}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </RowActionButton>
-                    <RowActionButton
-                      title={canEdit ? "Delete asset" : "Only editors can delete"}
-                      destructive
-                      disabled={!canEdit}
-                      onClick={() => setDeletingAsset(asset)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </RowActionButton>
+                    {canEdit ? (
+                      <>
+                        <RowActionButton title="Edit asset" onClick={() => setAssetEditor({ open: true, asset })}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </RowActionButton>
+                        <RowActionButton title="Delete asset" destructive onClick={() => setDeletingAsset(asset)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </RowActionButton>
+                      </>
+                    ) : null}
                     </>
                   );
                 }}

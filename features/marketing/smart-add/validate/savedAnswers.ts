@@ -22,6 +22,7 @@ import type { EvidenceItem } from "../evidence";
 import type { SuggestContext } from "../webKinds";
 import { fromRow, type SavedRow } from "./fromSaved";
 import { focusFromEvidence, focusFromFact, type Answer, type BrandFact, type FocusItem } from "./queue";
+import { PROMOTED_TYPES, undoPromotion, type PromotedFindingType } from "../promote";
 import type { Persisted } from "./persist";
 import { logosLabel } from "./fold";
 
@@ -52,6 +53,13 @@ async function db() {
 async function undoSaved(brandId: string, rowIds: string[], leadId: string, answer: Record<string, Json | undefined>, kinds: BrandRelationKind[], relationKey: string | null) {
   const homes = Array.isArray(answer.homes) ? answer.homes.filter((h): h is string => typeof h === "string") : [];
   const before = rec(answer.before as Json);
+  // What the server's promotion created for this answer (a competitor, a person's link, a listing, a backlink …),
+  // recorded on the row when it was made: taken back first, and only exactly those rows.
+  const promoted = rec(answer.promoted as Json);
+  const created = Object.fromEntries(
+    PROMOTED_TYPES.map((t) => [t, Array.isArray(promoted[t]) ? (promoted[t] as Json[]).filter((id): id is string => typeof id === "string") : []]),
+  ) as Record<PromotedFindingType, string[]>;
+  await undoPromotion(created);
   for (const home of [...homes].reverse()) {
     const [table, id] = [home.slice(0, home.indexOf(":")), home.slice(home.indexOf(":") + 1)];
     if (table === "web.property") await deleteProperty(id);
@@ -171,4 +179,36 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     });
   }
   return out;
+}
+
+/**
+ * Take back an answer saved on an earlier visit (the brand page's table, a reopened Enrich) before it is changed or
+ * cleared: every site / person link / competitor / listing / backlink it created goes, anything a person made stays,
+ * and the finding goes back to undecided with no answer left on its row. False when no answered row was found.
+ */
+export async function retractSavedAnswer(
+  brandId: string,
+  kinds: BrandRelationKind[],
+  where: { evidenceKey: string } | { rowId: string },
+): Promise<boolean> {
+  const w = await db();
+  const base = w
+    .from("discovered_item")
+    .select("id, relation_key, context, status")
+    .eq("brand_id", brandId)
+    .is("deleted_at", null);
+  const found = await ("rowId" in where ? base.eq("id", where.rowId) : base.eq("source", "smart_add").eq("context->>evidence_key", where.evidenceKey)).limit(20);
+  if (found.error) throw new Error(found.error.message);
+  const rows = found.data ?? [];
+  if (!rows.length) return false;
+  const lead = rows.find((r) => typeof rec(rec(r.context).answer as Json).folded_into !== "string") ?? rows[0];
+  const answerCtx = rec(rec(lead.context).answer as Json);
+  await undoSaved(brandId, rows.map((r) => r.id), lead.id, answerCtx, kinds, lead.relation_key);
+  // undoSaved sets it back to pending; the answer record goes too, so the row no longer reads as decided.
+  for (const r of rows) {
+    const { answer: _gone, ...context } = rec(r.context);
+    const { error } = await w.from("discovered_item").update({ sentiment: null, context: context as Json }).eq("id", r.id);
+    if (error) throw new Error(error.message);
+  }
+  return true;
 }

@@ -20,6 +20,7 @@ import {
   type CategorizableMedia,
 } from "@/lib/media/categorization";
 import { CaptureThumb } from "@/features/marketing/components/shared/CaptureThumb";
+import { useOutsideImage } from "@/features/marketing/lib/useOutsideImage";
 import type { BrandAsset } from "@/features/marketing/types";
 
 /**
@@ -272,14 +273,7 @@ export function BrandAssetGallery({
     >
       {p.item.preview && p.size ? (
         // Confirmed assets reference the brand's own public URLs.
-        <img
-          src={p.item.preview}
-          alt=""
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          style={imgSize}
-          className={imgSize ? "max-w-full object-contain" : "max-h-full max-w-full object-contain"}
-        />
+        <GalleryImage url={p.item.preview} label={p.item.label} imgSize={imgSize} />
       ) : p.item.color ? (
         <span
           className="h-9 w-9 rounded-full border border-border shadow-inner"
@@ -366,5 +360,22 @@ export function BrandAssetGallery({
         </section>
       ) : null}
     </div>
+  );
+}
+
+/** A confirmed asset's picture: outside URLs fall back through the proxy; a dead one shows the label's letter, never a broken image. */
+function GalleryImage({ url, label, imgSize }: { url: string; label: string; imgSize?: { width: number; height: number } }) {
+  const image = useOutsideImage(url);
+  if (image.failed || !image.src) return <Letter label={label} />;
+  return (
+    <img
+      key={image.imgKey}
+      {...image.imgProps}
+      alt=""
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      style={imgSize}
+      className={imgSize ? "max-w-full object-contain" : "max-h-full max-w-full object-contain"}
+    />
   );
 }
