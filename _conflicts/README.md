@@ -33,6 +33,8 @@ Its files stay as they are.
 ## Held files
 - _conflicts/2026-10-17-090152/migrations/LEDGER.json.held — LOCAL latest 2026-10-17 03:34; GITHUB latest 2026-10-17 03:35; LOCAL lacks 0 of GITHUB's 10 new lines; GITHUB lacks 0 of LOCAL's 9 new lines; recover: git show 6255b362d6:'migrations/LEDGER.json' / 1a873af6b8:'migrations/LEDGER.json'
 - _conflicts/2026-10-17-090152/pnpm-lock.yaml.held — LOCAL latest 2026-10-17 05:49; GITHUB latest 2026-10-17 03:44; LOCAL lacks 41 of GITHUB's 80 new lines; GITHUB lacks 82 of LOCAL's 123 new lines; recover: git show 6255b362d6:'pnpm-lock.yaml' / 1a873af6b8:'pnpm-lock.yaml'
+- _conflicts/2026-10-17-132308/pnpm-lock.yaml.held — LOCAL latest 2026-10-17 13:19; GITHUB latest 2026-10-17 13:06; LOCAL lacks 5 of GITHUB's 39 new lines; GITHUB lacks 16 of LOCAL's 50 new lines; recover: git show ba28938cc7:'pnpm-lock.yaml' / a6c2c97510:'pnpm-lock.yaml'
+- _conflicts/2026-10-17-132308/scripts/record-toasts.baseline.json.held — LOCAL latest 2026-10-17 13:02; GITHUB latest 2026-10-17 13:04; LOCAL lacks 1 of GITHUB's 2 new lines; GITHUB lacks 6 of LOCAL's 8 new lines; recover: git show ba28938cc7:'scripts/record-toasts.baseline.json' / a6c2c97510:'scripts/record-toasts.baseline.json'
 
 ## Resolution log
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
