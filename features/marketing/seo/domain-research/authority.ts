@@ -87,12 +87,12 @@ export function authorityTile(
 export type MatrxTileFrom = "authority_score" | "backlinks_rank";
 
 export function authorityTiles(
-  views: Record<AuthorityKey | "links", ToolCallView | null>,
-  errors: Record<AuthorityKey | "links", string | null>,
+  views: Record<AuthorityKey, ToolCallView | null> & { links?: ToolCallView | null },
+  errors: Record<AuthorityKey, string | null> & { links?: string | null },
   matrxFrom: MatrxTileFrom = "authority_score",
 ): AuthorityTile[] {
   const matrxKey = matrxFrom === "authority_score" ? "matrx" : "links";
-  const matrx = authorityTile("matrx", views[matrxKey], errors[matrxKey], matrxFrom === "authority_score" ? "score" : "rank");
+  const matrx = authorityTile("matrx", views[matrxKey] ?? null, errors[matrxKey] ?? null, matrxFrom === "authority_score" ? "score" : "rank");
   return [
     authorityTile("authority", views.authority, errors.authority),
     matrxFrom === "authority_score" ? matrx : { ...matrx, label: "Link strength" },
