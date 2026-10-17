@@ -75,12 +75,17 @@ describe("ToolResult", () => {
     expect(host.textContent).toContain("Raw data");
   });
 
-  it("a seat that may see dollars sees the vendor cost; a source name is never shown for a single-answer Tool", () => {
+  it("a seat that may see dollars sees the vendor cost; a single-answer Tool (no source from the layer) names none", () => {
     seesDollars = true;
-    show(view("succeeded", { output: { domain: "x.org" }, points_charged: 10, cost_usd: 0.02, display_source: "Hunter" }));
+    show(view("succeeded", { output: { domain: "x.org" }, points_charged: 10, cost_usd: 0.02, display_source: null }));
     const cost = host.querySelector("[data-tool-cost]")?.textContent ?? "";
     expect(cost).toContain("$0.02");
-    expect(cost).not.toContain("Hunter");
+    expect(cost).not.toContain("Matrx");
+  });
+
+  it("a compare Tool's source (what the layer sends only for compare) is shown beside the answer", () => {
+    show(view("succeeded", { output: { domain: "x.org" }, display_source: "Moz" }));
+    expect(host.querySelector("[data-tool-cost]")?.textContent).toContain("Moz");
   });
 
   it("says a saved answer is saved, and free when nothing was charged", () => {
