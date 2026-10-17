@@ -112,6 +112,18 @@ export function describeRows(output: unknown, schema?: unknown): ResultRows | nu
   }
   if (columns.length === 0) return null;
 
+  // Two fields can carry one title (a review's id and its text are both "Review"): rows are keyed by header, so a
+  // repeat would overwrite the first column and the table dialog would invent "Review 2". A repeat takes its field's
+  // own name instead ("Review ID").
+  const taken = new Set<string>();
+  for (const c of columns) {
+    if (taken.has(c.header)) c.header = humanize(c.field).replace(/\bid\b/gi, "ID");
+    let unique = c.header;
+    for (let n = 2; taken.has(unique); n++) unique = `${c.header} ${n}`;
+    c.header = unique;
+    taken.add(c.header);
+  }
+
   // The key is declared on the kind: a field named `row_key` (what an existing kind can add without breaking
   // its contract) or any field marked `x-row-key`.
   const declaredKey = columns.filter((c) => c.field === ROW_KEY_FIELD);

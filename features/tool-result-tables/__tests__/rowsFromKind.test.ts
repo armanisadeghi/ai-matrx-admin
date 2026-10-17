@@ -32,6 +32,27 @@ describe("a Tool answer read as table rows", () => {
     expect(asGrid(d).rows[1]).toEqual(["https://a/2", "2", ""]);
   });
 
+  it("never gives two columns one header: a review's id and its text are both titled Review in the kind", () => {
+    const schema = {
+      type: "object",
+      properties: { items: { type: "array", items: { $ref: "#/$defs/R" } } },
+      $defs: {
+        R: {
+          type: "object",
+          properties: {
+            text: { type: "string", title: "Review" },
+            review_id: { type: "string", title: "Review", "x-row-key": true },
+            rating: { type: "number", title: "Stars" },
+          },
+        },
+      },
+    };
+    const d = describeRows({ items: [{ text: "Fine", review_id: "14647844316", rating: 4 }] }, schema)!;
+    expect(d.headers).toEqual(["Review", "Review ID", "Stars"]);
+    expect(d.keyHeader).toBe("Review ID");
+    expect(d.rows[0]).toEqual({ Review: "Fine", "Review ID": "14647844316", Stars: 4 });
+  });
+
   it("collapses a repeated key to one row so a re-run cannot duplicate", () => {
     const d = describeRows({ items: [{ url: "u", n: 1 }, { url: "u", n: 2 }, { url: "v", n: 3 }] })!;
     expect(d.keyHeader).toBe("Url");
