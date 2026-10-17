@@ -8,6 +8,9 @@
 // and every READ goes direct to the database (ai.model_candidate, ai.model_variant, …).
 // Design: common-docs/systems/ai/ai-models/projects/unified-models/DESIGN.md §3.2.
 
+import { BackendApiError } from "@ai-matrx/api";
+import { formatAbsoluteDate } from "@ai-matrx/kit/format";
+
 import { postJsonAsUser } from "@/lib/api/post-json-as-user";
 import { supabase } from "@/utils/supabase/client";
 
@@ -171,17 +174,43 @@ export interface CallAuth {
   organizationId: string | null | undefined;
 }
 
+const ISO_TIMESTAMP = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?/g;
+
+/**
+ * A server sentence as a person reads it: every ISO timestamp becomes local time — the time alone when
+ * it is today ("11:25 PM"), else the date with it ("Oct 17, 2026, 11:25 PM"). The server keeps its
+ * sentence generic; the reader never sees ISO text.
+ */
+export function readableTimes(text: string, now: Date = new Date()): string {
+  return text.replace(ISO_TIMESTAMP, (iso) => {
+    const at = new Date(iso);
+    if (Number.isNaN(at.getTime())) return iso;
+    const today = at.toDateString() === now.toDateString();
+    return today ? formatAbsoluteDate(at, { hour: "numeric", minute: "2-digit" }) : formatAbsoluteDate(at);
+  });
+}
+
 async function post<T>(auth: CallAuth, path: string, body: Record<string, unknown> = {}, method: "POST" | "PATCH" = "POST"): Promise<T> {
   if (!auth.baseUrl) throw new Error("No AI Matrx server address is configured.");
   if (!auth.accessToken) throw new Error("Sign in again; no session was found.");
-  return postJsonAsUser<T>({
-    baseUrl: auth.baseUrl,
-    accessToken: auth.accessToken,
-    organizationId: auth.organizationId,
-    path,
-    body,
-    method,
-  });
+  try {
+    return await postJsonAsUser<T>({
+      baseUrl: auth.baseUrl,
+      accessToken: auth.accessToken,
+      organizationId: auth.organizationId,
+      path,
+      body,
+      method,
+    });
+  } catch (err) {
+    if (err instanceof BackendApiError && ISO_TIMESTAMP.test(err.message)) {
+      ISO_TIMESTAMP.lastIndex = 0;
+      const words = readableTimes(err.message);
+      throw new BackendApiError({ code: err.code, detail: err.detail, userMessage: words, details: err.details, requestId: err.requestId, status: err.status });
+    }
+    ISO_TIMESTAMP.lastIndex = 0;
+    throw err;
+  }
 }
 
 export const discoveryApi = {
