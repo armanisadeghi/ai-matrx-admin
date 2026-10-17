@@ -40,6 +40,19 @@ export function codeBlockContext(args: {
   };
 }
 
+// A row whose predicate throws is that row's defect: reported by id (the error inspector names it)
+// and absent — one row never takes down the answer the block sits on. Same rule as the package's
+// `actionIsVisible`; switch to it once the published @ai-matrx/rich-content exports it.
+function isVisible(action: ReturnType<typeof getAllActions>[number], ctx: RichDocumentActionContext): boolean {
+  if (!action.visible) return true;
+  try {
+    return Boolean(action.visible(ctx));
+  } catch (err) {
+    console.error(`[code-block] action "${String(action.id)}" visible() threw; the row is absent`, err);
+    return false;
+  }
+}
+
 export function resolveCodeBlockMenuItems(
   ctx: RichDocumentActionContext,
 ): MenuItem[] {
@@ -48,7 +61,7 @@ export function resolveCodeBlockMenuItems(
   return getAllActions()
     .filter((a) => String(a.id).startsWith(CODE_BLOCK_ACTION_PREFIX))
     .filter((a) => !a.requiresAuth || ctx.isAuthenticated)
-    .filter((a) => !a.visible || a.visible(ctx))
+    .filter((a) => isVisible(a, ctx))
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     .map((action) => ({
       key: String(action.id),

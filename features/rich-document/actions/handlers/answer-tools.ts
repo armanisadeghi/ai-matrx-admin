@@ -32,7 +32,9 @@ type CodeTabsShape = {
 };
 
 function activeEditableTab(ctx: RichDocumentActionContext) {
-  const tabs = (ctx.getState() as unknown as CodeTabsShape).codeTabs;
+  // Every code block evaluates this row, on any host — the package's compact snippet once handed
+  // rows `getState: () => undefined`. No store, or no /code workspace in it, means no target file.
+  const tabs = (ctx.getState() as unknown as CodeTabsShape | undefined)?.codeTabs;
   const tab = tabs?.activeId ? tabs.byId[tabs.activeId] : null;
   if (!tab || tab.readOnly) return null;
   if (tab.kind && tab.kind !== "editor") return null;
