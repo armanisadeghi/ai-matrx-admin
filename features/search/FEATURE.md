@@ -31,25 +31,38 @@ this whole program exists to prevent.
 - `app/(core)/search/layout.tsx` — the auth branch. Guests get
   `SearchLanding` (marketing); signed-in visitors fall through to the engine.
   Also carries the route metadata.
-- `app/(core)/search/page.tsx` — reads `?q=` server-side, injects the compact
-  search box into the shell header, renders `SearchWorkspace`.
+- `app/(core)/search/page.tsx` — the shell header and `SearchPage`.
+- `app/(core)/scraper/search/page.tsx` — the Search Lab: the same
+  `SearchExperience` on the `matrx-user/scraper` surface.
 
 **Components**
 
-- `components/SearchWorkspace.tsx` — the surface: hero empty state, results,
-  waiting, error. Mounts the `matrx-user/search` `SurfaceRuntimeProvider`.
-- `components/SearchBox.tsx` — the ONE input, in `hero` and `compact` sizes.
+- `components/SearchPage.tsx` — `/search` for a signed-in person: `useSearchRoute`
+  + the `matrx-user/search` surface around ONE `SearchExperience`.
+- `components/SearchExperience.tsx` — the whole page: the pill, the tabs, the
+  results. Twelve tabs: the nine engine tabs plus the three catalog tabs below.
 - `components/SearchResultsSkeleton.tsx` — the waiting state, shaped like the
   answer.
+- `tools/ToolSearchPanel.tsx` — the three catalog tabs (third-party services
+  lane L12d): **Deep** (web search across the routed sources), **Reviews**
+  (Google Maps · Trustpilot · App Store · Google Play) and **AI answers** (how a
+  brand shows up when an AI assistant is asked). Each is a catalog Tool run
+  through `/tools/calls` with the friendly one-box form (`SimpleBoxForm`) generated
+  from the Tool's own declaration, drawn by its kind with the cost in points, and
+  kept to a table by the Tools home's own `ToolResult`. `tools/searchToolPlan.ts`
+  (pure) holds the tabs, the lanes (a lane's job may be served by two Tools while the
+  catalog fills in: the first LIVE one answers), what each pasted link means and how
+  it fills each Tool's input; `tools/useLaneFinder.ts` finds an app or business by
+  name (a free Matrx search, never points) when a name stands where a link was wanted.
 
 **Hooks**
 
-- `useKindSearch(query, provider, count)` (`hooks/useKindSearch.ts`) — runs the
-  query that is in the URL; aborts the in-flight request when it changes.
+- `useSearchRoute()` — the link read once, the keyword form, the box's actions;
+  every search writes its inputs back to the address.
 
 **Services**
 
-- `service.ts` → `runKindSearch(...)` — the ONE client path to a search:
+- `service.ts` → `runKindSearch(...)` — the ONE client path to an engine search:
   `POST /search-kinds/search` on aidream via `useBackendApi`.
 
 **Backend endpoint**
@@ -79,20 +92,27 @@ side effect of building the box).
 **Surface**
 
 - `matrx-user/search` (`features/surfaces/manifests/search.manifest.ts`),
-  registered live with 19 values; emitter is `SearchWorkspace`.
+  registered live with 19 values; emitter is `SearchPage` (`searchExperienceValues`).
 
 ---
 
 ## Key flows
 
 **1. A search**
-Trigger: submit in `SearchBox`, or a `/search?q=…` link, or back/forward.
-`SearchBox` → `router.push(buildSearchHref(q))` → the server page re-reads
-`?q=` → `SearchWorkspace` → `useKindSearch` → `runKindSearch` →
-`POST /search-kinds/search` → NDJSON → one `search_kinds_result` event →
-`KindInstanceRender kind="web_search_results"` → the production render route →
-`WebSearchResultsBlock` → nested kind delegation per item.
-Exit: results on screen, `phase === "done"`.
+Trigger: submit in the pill, or a `/search?q=…` link, or back/forward.
+`SearchPage` → `useSearchRoute` (reads the link once) → `SearchExperience` →
+`form.handleSearch` → `runKindSearch` → `POST /search-kinds/search` → NDJSON → one
+`search_kinds_result` event → the registered kind components per engine run.
+Exit: results on screen. Every search writes its inputs back to the address.
+
+**1b. A catalog tab** (Deep · Reviews · AI answers)
+Trigger: pressing the tab (`?tab=deep|reviews|answers`). `ToolSearchPanel` →
+`useToolRunForm(jobKey)` (`GET /tools/{job}/run-form`) → `SimpleBoxForm` → on submit
+`useToolCall.run` → `POST /tools/calls` (a durable record; `?call=` reopens it) →
+`ToolResult` (kind + cost in points + "Keep these rows"). A pasted store, map or
+Trustpilot link picks its lane; a name where a link is wanted runs the free finder
+and offers the exact matches; a lane whose first Tool is not live uses the next one,
+and with none live says so in one line.
 
 **2. A guest arrives (including on someone's shared search link)**
 `layout.tsx` → `getServerAuth()` → not authenticated → `SearchLanding` inside
@@ -157,18 +177,22 @@ same query through the `attempt` nonce.
 
 **Primitives introduced**
 
-- `useKindSearch` (`hooks/useKindSearch.ts`) — Why a new hook: nothing existing
-  runs a URL-driven, abortable search stream. Considered extending: the demo's
-  inline `run()`. Rejected because: it was component-local state with no URL
-  contract and no abort.
-- `SearchBox` (`components/SearchBox.tsx`) — Why a new component: this is the
-  product's search input, and it writes to the URL. Considered extending: the
-  various list-page search inputs. Rejected because: those filter a loaded list
-  in place; this one navigates.
+- `tools/ToolSearchPanel.tsx`, `tools/searchToolPlan.ts`, `tools/useLaneFinder.ts`
+  — Why new: the search page had no way to run a catalog Tool. Reused instead of
+  rebuilt: `SimpleBoxForm`, `useToolRunForm`, `useToolCall`, `ToolResult` (with
+  "Keep these rows") from the Tools home, and `runKindSearch` for the finder.
 
 ---
 
 ## Change log
+
+- `2026-10-17` — Third-party services lane L12d. `/search` now renders the one
+  `SearchExperience` (the plan's F1 — the older Brave-only `SearchWorkspace`,
+  `SearchBox` and `useKindSearch` are deleted). Three catalog tabs added: Deep,
+  Reviews, AI answers (`tools/`), run through `/tools/calls` with the one-box
+  form, cost in points, save to a table. The place card's inline Reviews door
+  (`PlaceReviewsLoader`, the Google engine's own door) is unchanged and listed
+  as the open convergence in the program register.
 
 - `2026-10-13` — `runKindSearch` takes optional `options` (vertical, country,
   language, safe_search, time_range, page, location, device, ai_answer,

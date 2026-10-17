@@ -12,18 +12,28 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { SearchX } from "lucide-react";
+import { Loader2, SearchX } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
-import { Tabs } from "@ai-matrx/design-system/controls";
+import { Button, Tabs } from "@ai-matrx/design-system/controls";
 import { toolPriceText } from "@ai-matrx/agents/tools";
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ToolResult } from "@/features/data-sources/library/tools/ToolResult";
 import { useToolCall } from "@/features/data-sources/library/tools/useToolCall";
 import { useToolRunForm, type ToolRunForm } from "@/features/data-sources/library/tools/useToolRunForm";
-import { adaptInputs, detectReviewLane, laneOf, TOOL_LANES, type ToolLane, type ToolTab } from "./searchToolPlan";
+import { useLaneFinder } from "./useLaneFinder";
+import {
+  adaptInputs,
+  detectReviewLane,
+  laneOf,
+  needsFinder,
+  TOOL_LANES,
+  type ToolLane,
+  type ToolTab,
+} from "./searchToolPlan";
 
 type FormQuery = ReturnType<typeof useToolRunForm>;
 
@@ -53,11 +63,13 @@ function LaneBox({
   // A lane has at most two Tools while the catalog fills in; the hooks are fixed, the keys are data.
   const first = useToolRunForm(lane.jobKeys[0] ?? null);
   const second = useToolRunForm(lane.jobKeys[1] ?? null);
-  const picked = pickTool(lane, [first, second]);
-  const form = picked && picked !== "loading" ? picked.form : null;
-  const jobKey = picked && picked !== "loading" ? picked.jobKey : "";
+  const chosen = pickTool(lane, [first, second]);
+  const form = chosen && chosen !== "loading" ? chosen.form : null;
+  const jobKey = chosen && chosen !== "loading" ? chosen.jobKey : "";
 
   const [values, setValues] = useState<Record<string, unknown>>({});
+  // A thing picked from the finder: the box keeps its name, the Tool is given its link or id.
+  const [picked, setPicked] = useState<{ label: string; value: string } | null>(null);
   const inputs = form?.schema.inputs ?? [];
   const primary = inputs.find((i) => i.primary) ?? inputs.find((i) => i.required) ?? inputs[0];
 
@@ -75,11 +87,23 @@ function LaneBox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callId, form?.facts.toolId]);
 
-  const run = (overrides: Record<string, unknown> = {}, spendApprovalId?: string) =>
-    call.run(adaptInputs(jobKey, merged), adaptInputs(jobKey, overrides), spendApprovalId);
+  const finder = useLaneFinder(lane.id);
+  const run = (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
+    const typedText = primary ? String(overrides[primary.name] ?? merged[primary.name] ?? "") : "";
+    // What the Tool is given: the thing picked from the finder (while the box still shows its name), else the text.
+    const given = primary && picked && typedText.trim() === picked.label ? { [primary.name]: picked.value } : null;
+    // A name where a link is wanted: look for it and let the person pick, instead of buying a failure.
+    if (!spendApprovalId && !given && needsFinder(lane.id, typedText)) {
+      call.clear();
+      void finder.find(typedText.trim());
+      return Promise.resolve();
+    }
+    finder.clear();
+    return call.run(adaptInputs(jobKey, { ...merged, ...given }), adaptInputs(jobKey, { ...overrides, ...given }), spendApprovalId);
+  };
 
-  if (picked === "loading") return <div className="h-14 animate-pulse rounded-full bg-muted" aria-busy />;
-  if (!form || !picked) {
+  if (chosen === "loading") return <div className="h-14 animate-pulse rounded-full bg-muted" aria-busy />;
+  if (!form || !chosen) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-center" data-tool-unavailable="">
         <SearchX className="h-5 w-5 text-muted-foreground" aria-hidden />
@@ -104,6 +128,7 @@ function LaneBox({
         values={merged}
         onChange={(name, value) => {
           setValues((prev) => ({ ...prev, [name]: value }));
+          if (finder.state.phase !== "idle") finder.clear();
           if (name === primary?.name && typeof value === "string") onTyped(value);
         }}
         onSubmit={(overrides) => void run(overrides)}
@@ -114,8 +139,50 @@ function LaneBox({
         autoFocus
         footer={price ? <span className="text-xs text-muted-foreground" data-tool-price="">{price}</span> : undefined}
       />
+      {finder.state.phase !== "idle" ? (
+        <div className="flex flex-wrap items-center gap-2" data-tool-finder={finder.state.phase}>
+          {finder.state.phase === "looking" ? (
+            <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              {`Looking for “${finder.state.words}”`}
+            </span>
+          ) : finder.state.phase === "failed" ? (
+            <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+              {finder.state.message}
+              <ErrorAlchemyMenu error={finder.state.message} />
+            </span>
+          ) : finder.state.candidates.length === 0 ? (
+            <span className="text-sm text-muted-foreground">{`No match for “${finder.state.words}”. Paste its link instead.`}</span>
+          ) : (
+            finder.state.candidates.map((c) => (
+              <Button
+                key={c.value}
+                variant="outline"
+                data-tool-candidate=""
+                onClick={() => {
+                  if (!primary) return;
+                  setValues((prev) => ({ ...prev, [primary.name]: c.label }));
+                  setPicked({ label: c.label, value: c.value });
+                  onTyped(c.label);
+                  finder.clear();
+                  void call.run(adaptInputs(jobKey, { ...merged, [primary.name]: c.value }), {});
+                }}
+              >
+                {`${c.label} · ${c.caption}`}
+              </Button>
+            ))
+          )}
+        </div>
+      ) : null}
       {view || call.clientError ? (
-        <ToolResult view={view} clientError={call.clientError} onRunAgain={() => void run()} onCancel={call.stop} />
+        <ToolResult
+          view={view}
+          clientError={call.clientError}
+          onRunAgain={() => void run()}
+          onCancel={call.stop}
+          onReopen={call.reopen}
+          showRaw={false}
+        />
       ) : null}
       {approval ? (
         <ToolActionApprovalDialog

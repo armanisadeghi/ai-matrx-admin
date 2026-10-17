@@ -37,7 +37,7 @@ export interface ToolLane {
 export const TOOL_LANES: Record<ToolTab, readonly ToolLane[]> = {
   deep: [{ id: "web", label: "Web", jobKeys: ["web_search_results"] }],
   reviews: [
-    { id: "maps", label: "Google Maps", jobKeys: ["data_google_maps_reviews"] },
+    { id: "maps", label: "Google Maps", jobKeys: ["place_reviews"] },
     { id: "trustpilot", label: "Trustpilot", jobKeys: ["customer_reviews", "data_trustpilot_reviews"] },
     { id: "appstore", label: "App Store", jobKeys: ["app_store_reviews", "data_app_store_reviews"] },
     { id: "play", label: "Google Play", jobKeys: ["data_google_play_reviews"] },
@@ -100,6 +100,132 @@ export function adaptInputs(jobKey: string, values: Record<string, unknown>): Re
   const out: Record<string, unknown> = {};
   for (const [name, value] of Object.entries(values)) {
     out[name] = typeof value === "string" ? adaptInput(jobKey, name, value) : value;
+  }
+  return out;
+}
+
+// ── Finding the thing by name ────────────────────────────────────────────────
+
+/** One thing a name could mean: pick it and what the Tool needs fills in (the box keeps showing the name). */
+export interface FindCandidate {
+  /** What it is called, cleaned of the site's own suffix ("Gumroad"). */
+  label: string;
+  /** Where it lives or sits, as the person knows it ("App Store", "Austin, TX"). */
+  caption: string;
+  /** What the Tool is given: the page's link, or the place's id. */
+  value: string;
+}
+
+interface Finder {
+  /** `web`: the free Matrx web search looks for the page. `places`: the places search looks for the business. */
+  source: "web" | "places";
+  /** What is searched for. */
+  query: (words: string) => string;
+  /** A result address that IS one of these things (a page, not a listing of pages). */
+  accepts: RegExp;
+  site: string;
+  /** Drops the site's own suffix from a page title. */
+  clean: (title: string) => string;
+}
+
+const FINDERS: Record<string, Finder> = {
+  maps: {
+    source: "places",
+    query: (w) => w,
+    accepts: /^$/,
+    site: "Google Maps",
+    clean: (t) => t.trim(),
+  },
+  appstore: {
+    source: "web",
+    query: (w) => `${w} app site:apps.apple.com`,
+    accepts: /^https?:\/\/apps\.apple\.com\/[^?#]*\/id\d+/i,
+    site: "App Store",
+    clean: (t) => t.replace(/\s+on the app store\s*$/i, "").replace(/\s+[-–—]\s+apps on.*$/i, "").trim(),
+  },
+  play: {
+    source: "web",
+    query: (w) => `${w} app site:play.google.com`,
+    accepts: /^https?:\/\/play\.google\.com\/store\/apps\/details\?id=/i,
+    site: "Google Play",
+    clean: (t) => t.replace(/\s+[-–—]\s+apps on google play\s*$/i, "").replace(/\s+[-–—]\s+google play\s*$/i, "").trim(),
+  },
+  trustpilot: {
+    source: "web",
+    query: (w) => `${w} reviews site:trustpilot.com`,
+    accepts: /^https?:\/\/[a-z]+\.trustpilot\.com\/review\/[^/?#]+\/?$/i,
+    site: "Trustpilot",
+    clean: (t) => t.replace(/\s+reviews?\s*[|:-].*$/i, "").replace(/\s*\|\s*trustpilot.*$/i, "").trim(),
+  },
+};
+
+/** Lanes a name can be looked up for (the rest need a link, or are already a website). */
+export function laneCanFind(laneId: string): boolean {
+  return laneId in FINDERS;
+}
+
+/**
+ * True when the box holds words that name a thing rather than a link or an id the Tool can take:
+ * the person gets choices to pick from instead of an error.
+ */
+export function needsFinder(laneId: string, text: string): boolean {
+  const t = text.trim();
+  if (!t || !laneCanFind(laneId)) return false;
+  if (/^https?:\/\//i.test(t) || /^\d{6,}$/.test(t)) return false;
+  if (laneId === "maps") return !/^ChIJ[\w-]{10,}$/.test(t);
+  if (laneId === "trustpilot") {
+    const kind = classifyText(t, { anyEnding: true })?.type;
+    return kind !== "domain" && kind !== "url";
+  }
+  if (laneId === "play") return !/^[a-z][\w]*(\.[\w]+)+$/i.test(t);
+  return true;
+}
+
+export function finderQuery(laneId: string, words: string): string | null {
+  const finder = FINDERS[laneId];
+  return finder ? finder.query(words.trim()) : null;
+}
+
+/** Where a lane's name is looked up. */
+export function finderSource(laneId: string): "web" | "places" | null {
+  return FINDERS[laneId]?.source ?? null;
+}
+
+/** The few results that are exactly the thing asked for, each once, best first. */
+export function pickCandidates(laneId: string, results: readonly { title?: string | null; url?: string | null }[], max = 4): FindCandidate[] {
+  const finder = FINDERS[laneId];
+  if (!finder) return [];
+  const seen = new Set<string>();
+  const out: FindCandidate[] = [];
+  for (const r of results) {
+    const url = (r.url ?? "").trim();
+    if (!url || !finder.accepts.test(url)) continue;
+    const key = url.replace(/[?#].*$/, "").toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const label = finder.clean((r.title ?? "").trim()) || siteOf(url);
+    out.push({ label, caption: finder.site, value: url });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/** A places search answer → the businesses Google knows (each with the id the reviews Tool takes). */
+export function pickPlaces(places: readonly Record<string, unknown>[], max = 5): FindCandidate[] {
+  const out: FindCandidate[] = [];
+  const seen = new Set<string>();
+  for (const place of places) {
+    const id = typeof place.place_id === "string" ? place.place_id : "";
+    const name = typeof place.name === "string" ? place.name.trim() : "";
+    if (!id || !name || seen.has(id) || !/^ChIJ/.test(id)) continue;
+    seen.add(id);
+    const address = place.address;
+    const display =
+      address && typeof address === "object" && typeof (address as Record<string, unknown>).display === "string"
+        ? ((address as Record<string, unknown>).display as string)
+        : "";
+    out.push({ label: name, caption: display.replace(/,?\s*(United States|USA)\s*$/i, "").trim() || "Google Maps", value: id });
+    if (out.length >= max) break;
   }
   return out;
 }
