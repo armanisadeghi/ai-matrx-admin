@@ -25,21 +25,29 @@ export function AddressStatus({ output, verdict }: { output: unknown; verdict: u
   const checked = emailVerdictWords(verdict);
   const text = checked?.text ?? foundEmailWords(output);
   if (!text) return null;
-  const address = String((output as Record<string, unknown>).email ?? "");
   const tone = checked ? (checked.tone === "good" ? "success" : checked.tone === "warn" ? "warning" : "destructive") : "neutral";
   return (
     <div className="flex items-center gap-2" data-address-status={checked?.tone ?? "found"}>
-      {address ? <span className="text-sm font-medium text-foreground">{address}</span> : null}
       <Badge tone={tone}>{text}</Badge>
     </div>
   );
 }
 
-export function KeepInCrm({ output, inputs, confirmedEmail }: { output: unknown; inputs: Record<string, unknown>; confirmedEmail: string | null }) {
+export function KeepInCrm({
+  output,
+  inputs,
+  confirmedEmail,
+  confirmedPhone,
+}: {
+  output: unknown;
+  inputs: Record<string, unknown>;
+  confirmedEmail: string | null;
+  confirmedPhone: string | null;
+}) {
   const org = useOrganizationRequired();
-  const keep = partyToKeep(output, { confirmedEmail, inputs });
+  const keep = partyToKeep(output, { confirmedEmail, confirmedPhone, inputs });
   const [busy, setBusy] = useState(false);
-  const [saved, setSaved] = useState<{ partyId: string; name: string; note: string; created: boolean; emails: string[] } | null>(null);
+  const [saved, setSaved] = useState<{ partyId: string; name: string; note: string; created: boolean; emails: string[]; phones: string[] } | null>(null);
 
   if (!keep) return null;
   const orgId = org.organizationId;
@@ -65,7 +73,7 @@ export function KeepInCrm({ output, inputs, confirmedEmail }: { output: unknown;
       if (keep.emails.length > 0 || keep.phones.length > 0) {
         await ensurePrimaryContactPoints({ partyId: resolved.partyId, emails: keep.emails, phones: keep.phones });
       }
-      setSaved({ partyId: resolved.partyId, name: resolved.displayName, note: keep.note, created: resolved.created, emails: keep.emails });
+      setSaved({ partyId: resolved.partyId, name: resolved.displayName, note: keep.note, created: resolved.created, emails: keep.emails, phones: keep.phones });
     } catch (cause) {
       toast.error(extractErrorMessage(cause, "That didn't save."));
     } finally {
@@ -73,21 +81,29 @@ export function KeepInCrm({ output, inputs, confirmedEmail }: { output: unknown;
     }
   }
 
-  // The address was confirmed after the person was saved: attach it to that same person, never a second one.
+  // An address or number was confirmed after the record was saved: attach it to that same record, never a second one.
   async function attachConfirmed() {
-    const email = keep?.emails[0];
-    if (!saved || !email || !orgId) return;
+    if (!saved || !orgId) return;
+    const email = saved.emails.length === 0 ? keep?.emails[0] : undefined;
+    const phone = saved.phones.length === 0 ? keep?.phones[0] : undefined;
+    if (!email && !phone) return;
     setBusy(true);
     try {
-      await addContactPoint({ partyId: saved.partyId, orgId, channel: "email", value: email, makePrimary: true });
-      setSaved({ ...saved, emails: [email], note: "Added the confirmed email to the person." });
+      if (email) await addContactPoint({ partyId: saved.partyId, orgId, channel: "email", value: email, makePrimary: true });
+      if (phone) await addContactPoint({ partyId: saved.partyId, orgId, channel: "phone", value: phone, makePrimary: true });
+      setSaved({
+        ...saved,
+        emails: email ? [email] : saved.emails,
+        phones: phone ? [phone] : saved.phones,
+        note: email ? "Added the confirmed email." : "Added the checked phone number.",
+      });
     } catch (cause) {
       toast.error(extractErrorMessage(cause, "That didn't save."));
     } finally {
       setBusy(false);
     }
   }
-  const canAttach = saved !== null && keep.emails.length > 0 && saved.emails.length === 0;
+  const canAttach = saved !== null && ((keep.emails.length > 0 && saved.emails.length === 0) || (keep.phones.length > 0 && saved.phones.length === 0));
 
   return (
     <div data-keep-in-crm="" className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
@@ -99,7 +115,7 @@ export function KeepInCrm({ output, inputs, confirmedEmail }: { output: unknown;
           </span>
           {canAttach ? (
             <Button variant="outline" onClick={() => void attachConfirmed()} disabled={busy} data-keep-attach-email="">
-              Add the confirmed email
+              {keep.emails.length > 0 && saved.emails.length === 0 ? "Add the confirmed email" : "Add the checked phone"}
             </Button>
           ) : null}
           <span className="basis-full text-xs text-muted-foreground" data-keep-note="">
@@ -113,6 +129,7 @@ export function KeepInCrm({ output, inputs, confirmedEmail }: { output: unknown;
             {busy ? "Saving…" : "Save to CRM"}
           </Button>
           {keep.unconfirmedEmail ? <span className="text-xs text-muted-foreground">The email stays off the record until it is checked.</span> : null}
+          {keep.unconfirmedPhone ? <span className="text-xs text-muted-foreground">The phone stays off the record until it is checked.</span> : null}
         </>
       )}
     </div>

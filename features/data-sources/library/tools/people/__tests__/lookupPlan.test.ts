@@ -1,4 +1,4 @@
-import { emailVerdictWords, foundEmailWords, lookupHelp, nextSteps, partyToKeep, planLookup } from "../lookupPlan";
+import { checkedPhone, emailVerdictWords, foundEmailWords, lookupHelp, nextSteps, partyToKeep, planLookup } from "../lookupPlan";
 
 describe("planLookup: the one box picks the Tool", () => {
   it("reads a website, a link, an email, a phone and a person at a website", () => {
@@ -59,16 +59,24 @@ describe("company answers and next steps", () => {
     ]);
     expect(nextSteps({ __kind: "work_email", email: "a@b.co" })).toEqual([{ label: "Check this email", jobKey: "email_verify", inputs: { email: "a@b.co" } }]);
     expect(nextSteps({ __kind: "phone_check", valid: true })).toEqual([]);
+    expect(
+      nextSteps({ __kind: "email_candidates", emails: [{ email: "a@b.co", first_name: "Ann", last_name: "Lee" }, { email: "c@b.co" }, { email: "d@b.co" }, { email: "e@b.co" }] }).map((s) => s.label),
+    ).toEqual(["Check Ann Lee", "Check c@b.co", "Check d@b.co"]);
   });
-  it("keeps a company with its phone and profile facts, and no address of anyone", () => {
+  it("keeps a company and its profile facts; its phone waits for a phone check", () => {
     expect(partyToKeep(company)).toMatchObject({
       kind: "organization",
       displayName: "Zingerman's",
       primaryDomain: "zingermans.com",
-      phones: ["+1 734 663 3354"],
+      phones: [],
+      unconfirmedPhone: "+1 734 663 3354",
       emails: [],
-      attributes: { company_profile: { industry: "Food", employees: 600 } },
+      attributes: { company_profile: { industry: "Food", employees: 600, phone: "+1 734 663 3354" } },
     });
+    expect(partyToKeep(company, { confirmedPhone: "+17346633354" })?.phones).toEqual(["+1 734 663 3354"]);
+    expect(partyToKeep(company, { confirmedPhone: "+1 999 000 0000" })?.phones).toEqual([]);
+    expect(checkedPhone({ __kind: "phone_check", valid: true, display_number: "+1 734 663 3354" })).toBe("+1 734 663 3354");
+    expect(checkedPhone({ __kind: "phone_check", valid: false })).toBeNull();
     expect(partyToKeep({ __kind: "phone_check", valid: true })).toBeNull();
   });
 });

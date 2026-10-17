@@ -106,8 +106,8 @@ export function lookupHelp(raw: string): string | null {
   const text = raw.trim();
   if (!text || planLookup(text)) return null;
   const seen = classifyText(text, { anyEnding: true });
-  if (seen?.type === "person_name") return "Add the company's website after the name, like “Ari Weinzweig zingermans.com”.";
-  return "Type a website, an email, a phone number, or a name and the company's website.";
+  if (seen?.type === "person_name") return "Add the company's website after the name.";
+  return "Type a website, email, phone, or a name and website.";
 }
 
 export interface NextStep {
@@ -152,6 +152,18 @@ export function nextSteps(output: unknown): NextStep[] {
       const email = text(o, "email");
       return email ? [{ label: "Check this email", jobKey: PEOPLE_JOBS.emailCheck, inputs: { email } }] : [];
     }
+    case "email_candidates": {
+      const rows = Array.isArray(o?.emails) ? (o?.emails as unknown[]) : [];
+      const steps: NextStep[] = [];
+      for (const row of rows) {
+        const r = asRecord(row);
+        const email = text(r, "email");
+        if (!email || steps.length >= 3) continue;
+        const who = [text(r, "first_name"), text(r, "last_name")].filter(Boolean).join(" ");
+        steps.push({ label: `Check ${who || email}`, jobKey: PEOPLE_JOBS.emailCheck, inputs: { email } });
+      }
+      return steps;
+    }
     default:
       return [];
   }
@@ -183,7 +195,10 @@ export interface PartyToKeep {
   primaryDomain?: string;
   /** Only an address a check confirmed; never a found guess. */
   emails: string[];
+  /** Only a number a phone check confirmed; the profile's own number waits in `attributes` until then. */
   phones: string[];
+  /** A number found but not checked yet. */
+  unconfirmedPhone: string | null;
   /** Found but unconfirmed address, kept on the record's data so a later check can use it. */
   unconfirmedEmail: string | null;
   attributes: Record<string, unknown>;
@@ -198,7 +213,7 @@ export interface PartyToKeep {
  */
 export function partyToKeep(
   output: unknown,
-  opts: { confirmedEmail?: string | null; inputs?: Record<string, unknown> } = {},
+  opts: { confirmedEmail?: string | null; confirmedPhone?: string | null; inputs?: Record<string, unknown> } = {},
 ): PartyToKeep | null {
   const o = asRecord(output);
   const kind = kindOf(output);
@@ -212,15 +227,19 @@ export function partyToKeep(
       if (v !== null && v !== undefined && v !== "") attributes[key] = v;
     }
     const phone = text(o, "phone");
+    const digits = (v: string) => v.replace(/\D/g, "");
+    const phoneOk = phone !== null && opts.confirmedPhone != null && digits(opts.confirmedPhone) === digits(phone);
+    if (phone) attributes.phone = phone;
     return {
       kind: "organization",
       displayName: name ?? (domain as string),
       primaryDomain: domain ?? undefined,
       emails: [],
-      phones: phone ? [phone] : [],
+      phones: phoneOk ? [phone] : [],
+      unconfirmedPhone: phone && !phoneOk ? phone : null,
       unconfirmedEmail: null,
       attributes: { company_profile: attributes },
-      note: phone ? "Saved the company and its phone number." : "Saved the company.",
+      note: phoneOk ? "Saved the company and its checked phone number." : phone ? "Saved. The phone waits until a check confirms it." : "Saved the company.",
     };
   }
   if (kind === "work_email") {
@@ -245,6 +264,7 @@ export function partyToKeep(
       // website rides on the record's data beside where the address was found.
       emails: confirmed ? [confirmed] : [],
       phones: [],
+      unconfirmedPhone: null,
       unconfirmedEmail: confirmed ? null : email,
       attributes: {
         works_at_domain: text(o, "domain") ?? typed("domain"),
@@ -256,4 +276,11 @@ export function partyToKeep(
     };
   }
   return null;
+}
+
+/** The number a phone check found real (its own written-out form), or null when it did not say so. */
+export function checkedPhone(output: unknown): string | null {
+  const o = asRecord(output);
+  if (kindOf(output) !== "phone_check" || o?.valid !== true) return null;
+  return text(o, "display_number") ?? text(o, "number");
 }
