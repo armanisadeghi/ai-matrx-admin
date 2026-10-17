@@ -432,8 +432,15 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
 
   /** A store, map or Trustpilot link typed in the pill is a reviews question: it opens the Reviews tab, filled in. */
   const submitBox = () => {
-    if (detectReviewLane(keywords)) {
+    const lane = detectReviewLane(keywords);
+    if (lane) {
       onAnyTab("reviews");
+      // The link and its source ride the address, so a reload opens the same lane with the same link.
+      const p = new URLSearchParams(window.location.search);
+      p.set("tab", "reviews");
+      p.set("lane", lane);
+      p.set("q", keywords.trim());
+      replaceAddressWithoutNavigating(`${window.location.pathname}?${p.toString()}`);
       return;
     }
     inputs.submit();
