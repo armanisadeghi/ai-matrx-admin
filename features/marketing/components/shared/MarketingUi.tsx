@@ -486,17 +486,15 @@ export function SectionCard({
         className,
       )}
     >
-      <div className="flex min-h-9 shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-border px-3 py-0.5">
-        <h2 className="min-w-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {title}
-        </h2>
+      <div className="flex min-h-10 shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-border px-3 py-1">
+        <h2 className="min-w-0 type-title text-foreground">{title}</h2>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1">
           {copy ? <CopyButtons size="icon" {...copy} /> : null}
           {headerExtra}
           {action && "href" in action ? (
             <Link
               href={action.href}
-              className="matrx-tap-area inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-medium text-primary"
+              className="matrx-tap-area inline-flex shrink-0 items-center gap-1 whitespace-nowrap type-secondary font-medium text-primary"
             >
               {action.label}
               <ArrowRight className="h-3 w-3" />
@@ -505,7 +503,7 @@ export function SectionCard({
             <button
               type="button"
               onClick={action.onClick}
-              className="matrx-tap-area inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-medium text-primary"
+              className="matrx-tap-area inline-flex shrink-0 items-center gap-1 whitespace-nowrap type-secondary font-medium text-primary"
             >
               {action.label}
               <Plus className="h-3 w-3" />

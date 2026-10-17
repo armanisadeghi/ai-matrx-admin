@@ -15,6 +15,7 @@
  * one ledger, one slice; deciding in either place clears both.
  */
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -45,6 +46,7 @@ export function AssistStrip({
   filter?: (assist: Assist) => boolean;
   className?: string;
 }) {
+  useLoadMark("Assists strip");
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
   const authReady = useAppSelector(selectAuthReady);

@@ -33,6 +33,7 @@
  * one — admin pages act at each record's owner level.
  */
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ArrowRightLeft, Building2, ChevronRight } from "lucide-react";
@@ -50,6 +51,7 @@ import { usePageObjectOrganization } from "@/features/shell/pageObjectOrganizati
 type Variant = "rail" | "drawer";
 
 export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
+  useLoadMark("Org switcher");
   const dispatch = useAppDispatch();
   const [open, setOpen] = useState(false);
   // The closed trigger never asks for the scope tree (startup read); the open menu's panel does.

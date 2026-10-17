@@ -1,3 +1,4 @@
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -91,6 +92,7 @@ export default async function LandingPage({ searchParams }: LandingPageProps) {
   }
   return (
     <div className="min-h-dvh bg-background text-foreground flex flex-col">
+      <LoadMark name="page / (landing)" />
       <JsonLd data={brandJsonLd} />
       <main className="flex-1 relative overflow-hidden">
         {/* Gradient Background */}

@@ -26,7 +26,7 @@
  */
 
 import { useEffect, useRef, type ReactNode } from "react";
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, Globe, Search, TrendingUp } from "lucide-react";
 
@@ -95,7 +95,7 @@ function GroupHeading({
 
 function BackRow({ href, label }: { href: string; label: string }) {
   return (
-    <Link
+    <NavLink
       href={href}
       title={label}
       aria-label={label}
@@ -108,7 +108,7 @@ function BackRow({ href, label }: { href: string; label: string }) {
         />
       </span>
       <span className="shell-nav-label truncate">{label}</span>
-    </Link>
+    </NavLink>
   );
 }
 
@@ -130,7 +130,7 @@ function NavRow({
   activeRef?: (el: HTMLAnchorElement | null) => void;
 }) {
   return (
-    <Link
+    <NavLink
       ref={activeRef}
       href={href}
       title={title ?? label}
@@ -147,7 +147,7 @@ function NavRow({
           </span>
         ) : null}
       </span>
-    </Link>
+    </NavLink>
   );
 }
 
@@ -206,7 +206,7 @@ function AgencyMenu({
   );
   return (
     <>
-      <Link
+      <NavLink
         href="/marketing"
         title="Marketing Hub"
         aria-label="Marketing Hub"
@@ -223,7 +223,7 @@ function AgencyMenu({
           />
         </span>
         <span className="shell-nav-label truncate">Marketing Hub</span>
-      </Link>
+      </NavLink>
 
       {MARKETING_PILLARS.map((pillar) => {
         const entries = pillar.entries.filter(
@@ -444,7 +444,7 @@ function SeoMenu({
   return (
     <>
       <BackRow href={`/marketing/${brandSeg}/seo`} label="SEO overview" />
-      <Link
+      <NavLink
         href={basePath}
         title={siteLabel}
         aria-label={siteLabel}
@@ -457,7 +457,7 @@ function SeoMenu({
           />
         </span>
         <span className="shell-nav-label truncate">{siteLabel}</span>
-      </Link>
+      </NavLink>
       {groups.map((group) => (
         <div key={group.label}>
           <GroupHeading label={group.label} expanded={expanded} />

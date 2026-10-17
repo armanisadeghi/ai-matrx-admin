@@ -13,6 +13,7 @@
  */
 "use client";
 
+import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { isHelperMethod } from "@/features/marketing/smart-add/helpers/types";
 import { readGoogleAgendaWindowLaunchData } from "@/features/google-workspace/calendar/window-types";
 import { isValueMappingMap } from "@ai-matrx/chat/surfaces/types";
@@ -1263,6 +1264,7 @@ const DictionarySelectorWindow = lazyOverlay(
 );
 
 export default function OverlayController() {
+  useLoadMark("Overlay controller");
   const dispatch = useAppDispatch();
   useCloseOverlaysOnNavigation();
 

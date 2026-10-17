@@ -55,13 +55,15 @@ export async function saveToolTableBinding(userId: string, toolId: string, bindi
 export function useToolTableBinding(userId: string | null, toolId: string | null) {
   const [binding, setBinding] = useState<ToolTableBinding | null>(null);
   const [ready, setReady] = useState(false);
+  /** The remembered table could not be read: saving now could overwrite it, so the bar says so instead. */
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (!userId || !toolId) return;
     let live = true;
     loadToolTableBinding(userId, toolId)
-      .then((b) => live && (setBinding(b), setReady(true)))
-      .catch(() => live && setReady(true));
+      .then((b) => live && (setBinding(b), setLoadFailed(false), setReady(true)))
+      .catch(() => live && (setLoadFailed(true), setReady(true)));
     return () => {
       live = false;
     };
@@ -76,5 +78,5 @@ export function useToolTableBinding(userId: string | null, toolId: string | null
     [userId, toolId],
   );
 
-  return { binding, ready, save };
+  return { binding, ready, loadFailed, save };
 }

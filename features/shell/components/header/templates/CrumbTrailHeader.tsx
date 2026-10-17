@@ -22,7 +22,7 @@
 
 import { Fragment } from "react";
 import { useBackHref } from "@/lib/navigation/useBackHref";
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -95,7 +95,7 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
               asChild
               className={cn(opt.active && "bg-accent/60")}
             >
-              <AppLink href={opt.href} className="flex items-center gap-2">
+              <NavLink href={opt.href} className="flex items-center gap-2">
                 <Check
                   className={cn(
                     "h-3.5 w-3.5 shrink-0",
@@ -103,7 +103,7 @@ function CrumbOptions({ crumb }: { crumb: Crumb }) {
                   )}
                 />
                 <span className="truncate">{opt.label}</span>
-              </AppLink>
+              </NavLink>
             </DropdownMenuItem>
           ))}
         </div>
@@ -128,12 +128,12 @@ export function CrumbNode({ crumb, isLast }: { crumb: Crumb; isLast: boolean }) 
       {crumb.label}
     </span>
   ) : crumb.href ? (
-    <AppLink
+    <NavLink
       href={crumb.href}
       className="truncate max-w-[12rem] type-body text-muted-foreground hover:text-foreground hover:underline underline-offset-2 transition-colors"
     >
       {crumb.label}
-    </AppLink>
+    </NavLink>
   ) : (
     <span className="truncate max-w-[12rem] type-body text-muted-foreground">
       {crumb.label}

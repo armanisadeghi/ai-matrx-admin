@@ -1,3 +1,4 @@
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import HamburgerButton from "./header-left-menu/HamburgerButton";
 import { HeaderControlSet } from "./HeaderControlSet";
 import { HeaderCrowdingGuard } from "./HeaderCrowdingGuard";
@@ -25,6 +26,7 @@ interface HeaderProps {
 export default function Header({ isAuthenticated }: HeaderProps) {
   return (
     <header className="shell-header">
+      <LoadMark name="Header" />
       <div className="shell-header-fade" data-shell-header-fade aria-hidden="true" />
       <HamburgerButton />
       {isAuthenticated ? <ShellChatToggle /> : <GuestBrand />}

@@ -183,7 +183,7 @@ export function ToolResult({
           <AnswerValueView value={view.output} emptyText="The answer came back empty." />
         )}
       </div>
-      <ToolResultTableBar callId={view.call_id} toolId={view.tool_id} toolName={view.display_name} output={view.output} />
+      <ToolResultTableBar callId={view.call_id} toolId={view.tool_id} toolName={view.display_name} output={view.output} finishedAt={view.finished_at} />
       {view.ignored_filters.length > 0 ? (
         <p className="text-xs text-muted-foreground" data-tool-ignored="">
           Not used by this Tool: {view.ignored_filters.map((f) => f.label).join(", ")}

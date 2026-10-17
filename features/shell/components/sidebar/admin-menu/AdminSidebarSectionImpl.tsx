@@ -16,7 +16,7 @@
 
 import { useEffect, useRef } from "react";
 import { rememberAdminFooterHeight } from "./admin-footer-reserve";
-import AppLink from "@/components/navigation/AppLink";
+import NavLink from "@/components/navigation/NavLink";
 import { ADMIN_LAUNCHPAD_PATH } from "@/features/admin/constants/admin-categories";
 import SidebarBuilderToggle from "../../controls/SidebarBuilderToggle";
 import SidebarWatchAiToggle from "../../controls/SidebarWatchAiToggle";
@@ -48,7 +48,7 @@ export default function AdminSidebarSectionImpl() {
 
   return (
     <div ref={sectionRef} className="shell-admin-section">
-      <AppLink
+      <NavLink
         href={ADMIN_LAUNCHPAD_PATH}
         target="_blank"
         rel="noopener noreferrer"
@@ -62,7 +62,7 @@ export default function AdminSidebarSectionImpl() {
         <span className="shell-nav-external">
           <ShellIcon name="ArrowUpRight" size={14} strokeWidth={1.75} />
         </span>
-      </AppLink>
+      </NavLink>
       <SidebarBuilderToggle />
       <SidebarWatchAiToggle />
       <SidebarErrorInspectorToggle />

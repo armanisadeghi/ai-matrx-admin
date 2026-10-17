@@ -19,7 +19,7 @@
  * Same commands, same File menu, same actions — only the presentation differs.
  */
 
-import Link from "next/link";
+import NavLink from "@/components/navigation/NavLink";
 import type { CSSProperties, ReactNode } from "react";
 import { Menu } from "lucide-react";
 
@@ -120,14 +120,14 @@ export function EditorDocumentHeader({
         >
           <div className="flex min-w-0 items-center gap-1.5">
             {navButton}
-            <Link
+            <NavLink
               href={backHref}
               aria-label={backLabel}
               title={backLabel}
               className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[var(--office-accent)] text-white [&_svg]:size-5"
             >
               {productIcon}
-            </Link>
+            </NavLink>
           </div>
           <div className="flex h-7 min-w-0 items-center justify-start gap-0.5 sm:justify-center">{titleRow}</div>
           {actions ? <div className="flex min-w-0 items-center justify-end gap-1">{actions}</div> : <span />}
@@ -135,7 +135,7 @@ export function EditorDocumentHeader({
       ) : (
         <header className={cn("canvas-workspace-header flex h-[3.75rem] shrink-0 items-center gap-1.5 pl-2 pr-3", !settled && "invisible")}>
           {navButton}
-          <Link
+          <NavLink
             href={backHref}
             aria-label={backLabel}
             title={backLabel}
@@ -145,7 +145,7 @@ export function EditorDocumentHeader({
             )}
           >
             {productIcon}
-          </Link>
+          </NavLink>
           <div className="flex min-w-0 flex-1 flex-col justify-center">
             <div className="flex h-7 min-w-0 items-center gap-0.5">{titleRow}</div>
             {menuBar ? <div className="flex h-6 min-w-0 items-center">{menuBar}</div> : null}

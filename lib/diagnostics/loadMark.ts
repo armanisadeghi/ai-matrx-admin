@@ -13,7 +13,7 @@
  * Only the first render of each name per page load counts.
  *
  * A SERVER component cannot call it (it never runs in the browser) — render `<LoadMark name="…" />`
- * (LoadMark.tsx) inside it instead; that line says "server HTML, hydrated".
+ * (LoadMarkIsland.tsx) inside it instead; that line says "server HTML, hydrated".
  *
  * Inside an @ai-matrx package (which cannot import this file) write the one-line equivalent at the
  * top of the component body:
@@ -53,3 +53,6 @@ export function useLoadMark(name: string, kind: LoadMarkKind = "render", extra?:
 export function resetLoadMarksForTests(): void {
   started.clear();
 }
+
+/** The same mark under a non-hook name, for a conditional call (`if (open) markRendered("Command palette")`). */
+export const markRendered = useLoadMark;

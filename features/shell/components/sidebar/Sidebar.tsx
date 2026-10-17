@@ -13,6 +13,7 @@
 //   shell-sidebar-route-nav — route-specific menu (client island, Large Routes)
 // data-sidebar-view on <nav> controls which is visible (default: "main").
 
+import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import NavItem from "./NavItem";
 import PrimaryNavFlyoutGroup from "./PrimaryNavFlyoutGroup";
 import FavoritesNavGroup from "./FavoritesNavGroup";
@@ -47,6 +48,7 @@ export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: 
     // tooltip (the design-system title takeover), opening beside the rail —
     // it only appears while the label is hidden (collapsed rail).
     <aside className="shell-sidebar" data-title-side="right">
+      <LoadMark name="Sidebar" />
       {/* Publishes the person's dragged panel width before first paint (no shift on load). */}
       <script dangerouslySetInnerHTML={{ __html: DOMAIN_PANEL_PREPAINT_SCRIPT }} />
       {/* Brand Section — Route header override + default toggle fallback */}

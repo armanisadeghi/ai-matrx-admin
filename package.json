@@ -554,6 +554,8 @@
     "test:worktree-next-bin-resolution": "bash scripts/test-worktree-next-bin-resolution.sh",
     "check:agent-links": "tsx scripts/check-agent-links.ts",
     "check:agent-links:self-test": "tsx scripts/check-agent-links.ts --self-test",
+    "check:nav-link-prefetch": "tsx scripts/check-nav-link-prefetch.ts",
+    "check:nav-link-prefetch:self-test": "tsx scripts/check-nav-link-prefetch.ts --self-test",
     "check:cross-deployment-links": "tsx scripts/check-cross-deployment-links.ts",
     "check:cross-deployment-links:strict": "tsx scripts/check-cross-deployment-links.ts --strict",
     "check:cross-deployment-links:self-test": "tsx scripts/check-cross-deployment-links.ts --self-test",
