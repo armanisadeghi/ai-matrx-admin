@@ -92,8 +92,8 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
   return (
     <div className="flex flex-col gap-4" data-website-check={host}>
       <section aria-label="Check this website" className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
-        <div className="min-w-0 flex-1">
-          <div className="text-base font-semibold text-foreground">{host}</div>
+        <div className="min-w-[12rem] flex-1">
+          <div className="break-all text-base font-semibold text-foreground">{host}</div>
           <div className="text-xs text-muted-foreground">Authority, backlinks, search and ads</div>
         </div>
         {asked && spent > 0 ? (
@@ -101,9 +101,15 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
             Spent <span className="font-medium text-foreground">{formatPoints(spent)}</span>
           </span>
         ) : null}
-        <Button variant="primary" disabled={!everyTool || busy} onClick={runAll} data-check-button="">
+        <Button
+          variant="primary"
+          disabled={!everyTool || busy}
+          onClick={runAll}
+          title={asked ? "Repeat checks are free while the answers are saved" : undefined}
+          data-check-button=""
+        >
           {asked ? "Check again" : "Check website"}
-          {together != null ? ` · about ${formatPoints(together)}` : ""}
+          {!asked && together != null ? ` · about ${formatPoints(together)}` : ""}
         </Button>
       </section>
 
@@ -137,11 +143,11 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
       </Panel>
 
       {authority.view?.status === "succeeded" ? (
-        <Panel icon={<ShieldCheck className="h-4 w-4" />} title="Authority details" price={tools.authority} call={authority}>
+        <Panel icon={<ShieldCheck className="h-4 w-4" />} title="Authority details">
           {detail ? (
             <Answer call={authority} inputs={inputs} idle="" />
           ) : (
-            <Button variant="quiet" onClick={() => setDetail(true)}>
+            <Button variant="quiet" className="self-start" onClick={() => setDetail(true)}>
               Show the details
             </Button>
           )}
@@ -182,11 +188,11 @@ function Panel({
       : null;
   return (
     <section aria-label={title} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
         <span className="text-muted-foreground" aria-hidden>
           {icon}
         </span>
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <h2 className="whitespace-nowrap text-sm font-semibold text-foreground">{title}</h2>
         {cost ? <span className="text-xs text-muted-foreground" data-panel-cost="">{cost}</span> : null}
         <span className="ml-auto">{action}</span>
       </div>
