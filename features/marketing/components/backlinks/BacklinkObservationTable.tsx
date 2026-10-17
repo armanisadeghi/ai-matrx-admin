@@ -587,14 +587,14 @@ export function BacklinkObservationTable({
       id: "first_seen_at",
       accessorKey: "first_seen_at",
       header: "First seen",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => <DateCell iso={row.first_seen_at} />,
     },
     {
       id: "last_seen_at",
       accessorKey: "last_seen_at",
       header: "Last seen",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => <DateCell iso={row.last_seen_at} />,
     },
   ];

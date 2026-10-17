@@ -170,7 +170,7 @@ export function CrawlUrlsTable({ crawlId }: { crawlId: string }) {
       id: "completed_at",
       accessorKey: "completed_at",
       header: "Completed",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.completed_at)}

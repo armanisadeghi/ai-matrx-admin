@@ -136,6 +136,15 @@ function numberFilter(
   return filter?.kind === "number" ? filter : null;
 }
 
+/** A `date` column filter: `since` inclusive, `until` exclusive (ISO instants). */
+function dateFilter(
+  state: MatrxDataTableQueryState,
+  column: string,
+): { since?: string; until?: string } | null {
+  const filter = state.columnFilters[column];
+  return filter?.kind === "date" ? filter : null;
+}
+
 function selectFilter(
   state: MatrxDataTableQueryState,
   column: string,
@@ -1156,6 +1165,9 @@ export async function listPages(
     query = query.gte("gsc_position_28d", position.min);
   if (position?.max !== undefined)
     query = query.lte("gsc_position_28d", position.max);
+  const lastSeen = dateFilter(state, "last_seen");
+  if (lastSeen?.since) query = query.gte("last_seen", lastSeen.since);
+  if (lastSeen?.until) query = query.lt("last_seen", lastSeen.until);
 
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   if (sortColumn === "gsc_clicks_28d") {
@@ -2249,6 +2261,9 @@ export async function listCrawlUrls(
   if (http?.min !== undefined) query = query.gte("http_status", http.min);
   if (http?.max !== undefined) query = query.lte("http_status", http.max);
   if (isInScope !== null) query = query.eq("is_in_scope", isInScope);
+  const completed = dateFilter(state, "completed_at");
+  if (completed?.since) query = query.gte("completed_at", completed.since);
+  if (completed?.until) query = query.lt("completed_at", completed.until);
   query = query.order(sortColumn, { ascending, nullsFirst: false });
   query = query.order("id", { ascending });
   const response = await query
@@ -3404,6 +3419,9 @@ export async function listSitemapPages(
   }
   const search = cleanSearch(state.search);
   if (search) query = query.ilike("page.url", `%${search}%`);
+  const modified = dateFilter(state, "lastmod");
+  if (modified?.since) query = query.gte("lastmod", modified.since);
+  if (modified?.until) query = query.lt("lastmod", modified.until);
 
   const ascending = state.sort?.direction === "asc";
   if (state.sort?.id === "lastmod") {

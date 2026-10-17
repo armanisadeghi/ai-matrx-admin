@@ -334,6 +334,7 @@ function exceptionColumns({
       id: "localWorkDate",
       accessorKey: "localWorkDate",
       header: "Day",
+      format: { id: "date" },
       cell: (row) => formatLocalDate(row.localWorkDate, { weekday: true }),
     },
     {

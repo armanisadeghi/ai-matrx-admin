@@ -62,7 +62,7 @@ export function toCodexCells(cells: readonly CodexUsageRow[]): CodexCell[] {
 
 export const CODEX_COLUMNS: MatrxColumnDef<CodexCell>[] = [
   { accessorKey: "conversation", header: "Conversation", filter: "text", width: 260 },
-  { accessorKey: "kind", header: "Kind", filter: "text", width: 120 },
+  { accessorKey: "kind", header: "Kind", filter: "select", width: 120 },
   { accessorKey: "root", header: "Started from", filter: "text", width: 220 },
   { accessorKey: "project", header: "Project", filter: "text", width: 180 },
   { accessorKey: "model", header: "Model", filter: "text", width: 160 },

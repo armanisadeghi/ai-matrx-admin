@@ -319,6 +319,7 @@ export function SandboxInstancesTable({
     {
       accessorKey: "last_heartbeat_at",
       header: "Activity",
+      format: { id: "datetime" },
       label: "Activity",
       width: 164,
       cell: (row) => (
@@ -337,6 +338,7 @@ export function SandboxInstancesTable({
     {
       accessorKey: "expires_at",
       header: "Expires",
+      format: { id: "datetime" },
       label: "Expires",
       width: 134,
       cell: (row) => <ExpiryCell instance={row} />,
@@ -358,6 +360,7 @@ export function SandboxInstancesTable({
     {
       accessorKey: "created_at",
       header: "Created",
+      format: { id: "datetime" },
       label: "Created",
       hidden: true,
       cell: (row) => (

@@ -129,7 +129,7 @@ export function SitemapDetail({ sitemapId }: { sitemapId: string }) {
       id: "lastmod",
       accessorKey: "lastmod",
       header: "Last modified",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {row.lastmod ? formatCompactDate(row.lastmod) : "—"}

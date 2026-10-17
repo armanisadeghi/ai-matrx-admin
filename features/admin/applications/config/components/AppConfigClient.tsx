@@ -116,6 +116,7 @@ export function AppConfigClient({
         id: "updated_at",
         accessorKey: "updated_at",
         header: "Updated",
+        format: { id: "datetime" },
         cell: (row) => (
           <span
             className="whitespace-nowrap text-xs"

@@ -502,6 +502,7 @@ function runColumns({
       id: "level",
       header: "Level",
       accessorFn: (run) => rungWords(run.rung),
+      // table-filter-off: server source does not filter level yet
       filter: false,
       width: 110,
       mobileHidden: true,
@@ -536,6 +537,7 @@ function runColumns({
       id: "status",
       header: "Status",
       accessorFn: (run) => STATUS_WORDS[run.status],
+      // table-filter-off: status is filtered by the toolbar status switcher, not the column state
       filter: false,
       width: 130,
       cell: (run) => (

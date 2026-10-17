@@ -51,6 +51,7 @@ const FAILURE_COLUMNS: MatrxColumnDef<CaptureFailure>[] = [
   {
     id: "at",
     header: "Time",
+    format: { id: "datetime" },
     accessorFn: (f) => f.at,
     width: 120,
     cell: (f) => <span className="font-mono tabular-nums">{new Date(f.at).toLocaleTimeString()}</span>,

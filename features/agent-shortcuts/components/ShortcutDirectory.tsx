@@ -256,6 +256,12 @@ export function ShortcutDirectory({
       label: "Scope",
       width: 170,
       accessorFn: (row) => `${row.scopeType} ${row.scopeName}`,
+      filter: "select",
+      filterValue: (row) => row.scopeType,
+      filterOptions: scopeOptions.map((value) => ({
+        value,
+        label: scopeTypeLabel(value),
+      })),
       cell: (row) => (
         <div className="space-y-0.5">
           <Badge variant="outline" className="text-xs">

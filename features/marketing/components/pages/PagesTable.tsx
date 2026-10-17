@@ -437,7 +437,7 @@ export function PagesTable() {
       id: "last_seen",
       accessorKey: "last_seen",
       header: "Last seen",
-      filter: false,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">
           {formatCompactDate(row.last_seen)}

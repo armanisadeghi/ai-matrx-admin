@@ -328,6 +328,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                       accessorKey: "readibleType",
                       header: "Type",
                       label: "Type",
+                      filter: "select",
                       cell: (bookmark) => (
                         <div className="px-2 py-1 type-secondary rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 inline-block">
                               {bookmark.readibleType || bookmark.type}

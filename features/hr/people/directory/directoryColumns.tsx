@@ -284,6 +284,7 @@ export function buildHrDirectoryColumns(args: {
       id: "hire_date",
       accessorKey: "hire_date",
       header: "Start date",
+      // table-filter-off: server source filters hire date through its own hired_from/hired_to range, not the column
       filter: false,
       cell: (row) => (
         <span className="whitespace-nowrap text-sm text-foreground">

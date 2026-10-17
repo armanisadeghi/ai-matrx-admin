@@ -107,7 +107,7 @@ export const ANALYTICS_COLUMNS: MatrxColumnDef<AppletAdminView>[] = [
     id: "category",
     header: "Category",
     accessorFn: (app) => app.category ?? "",
-    filter: "text",
+    filter: "select",
     width: 140,
     mobileHidden: true,
     cell: (app) => app.category ?? UNKNOWN_DISPLAY,

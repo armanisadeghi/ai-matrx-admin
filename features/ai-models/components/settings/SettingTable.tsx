@@ -194,6 +194,7 @@ export default function SettingTable({
       accessorKey: "value_type",
       header: "Value Type",
       sortable: true,
+      filter: "select",
       width: "9rem",
       cell: (item) => (
         <Badge variant="outline" className="font-mono text-xs">

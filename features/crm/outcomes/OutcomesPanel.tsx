@@ -260,6 +260,7 @@ export function OutcomesPanel({ campaignId }: { campaignId: string }) {
         accessorKey: "status",
         header: "Status",
         sortable: false,
+        // table-filter-off: server source does not filter status yet (page-level status switcher owns it)
         filter: false,
         width: 130,
         cell: (row) => <StatusBadge row={row} />,
@@ -282,6 +283,7 @@ export function OutcomesPanel({ campaignId }: { campaignId: string }) {
         accessorKey: "occurred_at",
         header: "Link went live",
         sortable: false,
+        // table-filter-off: server source does not filter occurred_at yet
         filter: false,
         width: 120,
         cell: (row) => (

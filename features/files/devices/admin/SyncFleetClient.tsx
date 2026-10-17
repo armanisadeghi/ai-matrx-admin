@@ -137,6 +137,7 @@ function FleetSection({
     {
       id: "state",
       header: "State",
+      filter: "select",
       accessorFn: (row) => describeMappingState(row.state).title,
       cell: (row) => {
         const state = describeMappingState(row.state);

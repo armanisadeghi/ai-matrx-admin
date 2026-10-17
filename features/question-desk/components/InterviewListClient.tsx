@@ -175,6 +175,7 @@ export function InterviewListClient() {
       accessorKey: "opened_at",
       header: "Opened",
       sortable: true,
+      format: { id: "datetime" },
       cell: (row) => (
         <span className="font-mono text-[11px] text-muted-foreground">
           {row.opened_at ? row.opened_at.slice(0, 10) : "not yet"}
@@ -185,6 +186,7 @@ export function InterviewListClient() {
       accessorKey: "status",
       header: "Status",
       sortable: true,
+      filter: "select",
       cell: (row) => (
         <span className="font-mono text-[11px] text-muted-foreground">
           {row.status}

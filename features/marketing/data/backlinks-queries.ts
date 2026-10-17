@@ -389,6 +389,12 @@ export async function listLatestBacklinks(
   } else if (states.length > 1) {
     query = query.in("state", states);
   }
+  for (const column of ["first_seen_at", "last_seen_at"] as const) {
+    const range = state.columnFilters[column];
+    if (range?.kind !== "date") continue;
+    if (range.since) query = query.gte(column, range.since);
+    if (range.until) query = query.lt(column, range.until);
+  }
   const dofollow = state.columnFilters.is_dofollow;
   if (dofollow?.kind === "boolean") {
     query = query.eq("is_dofollow", dofollow.value);
@@ -534,6 +540,12 @@ export async function listBacklinkChangeEvents(
     if (severityFilter.max !== undefined) {
       query = query.lte("severity", severityFilter.max);
     }
+  }
+  for (const column of ["detected_at", "observed_at"] as const) {
+    const range = state.columnFilters[column];
+    if (range?.kind !== "date") continue;
+    if (range.since) query = query.gte(column, range.since);
+    if (range.until) query = query.lt(column, range.until);
   }
   const sortColumn = state.sort
     ? (CHANGE_EVENT_SORT_COLUMNS[state.sort.id] ?? "detected_at")
