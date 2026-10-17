@@ -32,7 +32,8 @@ export interface HistoryControls {
   redo: () => void;
 }
 
-export function ZoomMenu({ history, className }: { history?: HistoryControls; className?: string }) {
+/** `locked`: page layout fixes the zoom, so the menu shows no percentage and offers no zoom commands. */
+export function ZoomMenu({ history, className, locked = false }: { history?: HistoryControls; className?: string; locked?: boolean }) {
   const store = useBoardCameraStore();
   const guides = useLayoutGuides();
   const snap = useSnapSettings();
@@ -41,7 +42,7 @@ export function ZoomMenu({ history, className }: { history?: HistoryControls; cl
   // The trigger reads the camera through a frame listener (no React render per frame).
   useEffect(() => {
     const el = pctRef.current;
-    if (!el) return;
+    if (!el || locked) return;
     const text = document.createTextNode("");
     el.replaceChildren(text);
     const apply = () => {
@@ -50,7 +51,7 @@ export function ZoomMenu({ history, className }: { history?: HistoryControls; cl
     };
     apply();
     return store.subscribeFrame(apply);
-  }, [store]);
+  }, [store, locked]);
 
   const zoomTo = (z: number) => {
     const { w, h } = store.getSize();
@@ -69,11 +70,13 @@ export function ZoomMenu({ history, className }: { history?: HistoryControls; cl
             className,
           )}
         >
-          <span ref={pctRef} />
+          {locked ? <span>Page</span> : <span ref={pctRef} />}
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52" data-board-chrome>
+        {!locked && (
+        <>
         <DropdownMenuItem onSelect={() => zoomTo(store.getCamera().z * 1.25)}>
           Zoom in
           <DropdownMenuShortcut>⌘+</DropdownMenuShortcut>
@@ -106,6 +109,8 @@ export function ZoomMenu({ history, className }: { history?: HistoryControls; cl
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
+        </>
+        )}
         <DropdownMenuCheckboxItem checked={guides} onCheckedChange={(on) => store.setGuides(on === true)}>
           Layout guides
           <DropdownMenuShortcut>⇧G</DropdownMenuShortcut>

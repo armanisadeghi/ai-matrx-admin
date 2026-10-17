@@ -102,11 +102,27 @@ function mapRows(rows: ListRow[]): FactoryBuildRow[] {
 }
 
 /** Builds this admin query state asks for, one page; search/filter/sort/page are answered by the database. */
+const BUILD_WHO = "metadata->>build_who";
+const BUILD_PLACE = "metadata->>build_place";
+const BUILD_MANDATE = "metadata->>build_mandate_key";
+const BUILD_AGENT_NAME = "metadata->>build_agent_name";
+const BUILD_OUTCOME = "metadata->>build_outcome";
+
 export const FACTORY_BUILD_TABLE_SPEC: ServerTableSpec = {
-  searchColumns: [],
-  select: { status: "status" },
+  // Door, starter, job and outcome are stamped on the build's root row (`metadata.build_*`, aidream
+  // agent_factory/root_facts.py), so the database filters, sorts and searches them.
+  searchColumns: [BUILD_WHO, BUILD_MANDATE, BUILD_AGENT_NAME, BUILD_PLACE],
+  text: { who: BUILD_WHO, mandate: BUILD_MANDATE },
+  select: { status: "status", door: BUILD_PLACE, outcome: BUILD_OUTCOME },
   date: { started: "created_at" },
-  sort: { started: "created_at", status: "status" },
+  sort: {
+    started: "created_at",
+    status: "status",
+    who: BUILD_WHO,
+    door: BUILD_PLACE,
+    mandate: BUILD_MANDATE,
+    outcome: BUILD_OUTCOME,
+  },
   defaultSort: { column: "created_at", ascending: false },
 };
 

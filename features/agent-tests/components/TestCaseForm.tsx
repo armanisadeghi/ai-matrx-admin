@@ -16,6 +16,13 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import type { AgentContractHead } from "@/features/agents/samples/service";
 import { createTestCase, factsFromLines, type TestCaseRow } from "../cases";
 
+/** A declared input's pretty name: its label, or its key in plain words. */
+function prettyName(d: { name: string; label: string | null }): string {
+  if (d.label?.trim()) return d.label;
+  const words = d.name.replace(/[_-]+/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 export function TestCaseForm({
   agentId,
   head,
@@ -70,9 +77,11 @@ export function TestCaseForm({
       />
       {declarations.map((d) => (
         <label key={d.name} className="flex flex-col gap-1">
-          <Badge>{d.label ?? d.name}</Badge>
+          <Badge className="self-start" title={`{{${d.name}}}`}>
+            {prettyName(d)}
+          </Badge>
           <ProInput
-            aria-label={d.label ?? d.name}
+            aria-label={prettyName(d)}
             data-variable={d.name}
             value={values[d.name] ?? ""}
             onChange={(e) =>

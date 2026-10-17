@@ -1,5 +1,5 @@
 import type { BadgeTone } from "@ai-matrx/design-system/controls";
-import type { CheckOutcome, TestRunStatus, TestVerdict } from "./types";
+import type { CheckOutcome, TestCaseView, TestRunStatus, TestVerdict } from "./types";
 
 /** How each verdict reads and whether it counts toward the pass rate (PLAN §2.5). */
 export const VERDICT_META: Record<
@@ -100,4 +100,12 @@ export const OUTCOME_STATUS_LABEL: Record<string, string> = {
 export function doorLabel(door: string | null): string | null {
   if (!door) return null;
   return DOOR_LABEL[door] ?? door;
+}
+
+/** "3 checks · 2 facts": what decides a case (a case with neither is always undecided). */
+export function caseDecidersLine(c: Pick<TestCaseView, "checkCount" | "factCount">): string {
+  const parts: string[] = [];
+  if (c.checkCount > 0) parts.push(`${c.checkCount} ${c.checkCount === 1 ? "check" : "checks"}`);
+  if (c.factCount > 0) parts.push(`${c.factCount} ${c.factCount === 1 ? "fact" : "facts"}`);
+  return parts.join(" · ") || "Nothing to decide";
 }

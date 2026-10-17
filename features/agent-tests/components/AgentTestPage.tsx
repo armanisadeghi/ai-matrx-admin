@@ -43,7 +43,7 @@ import {
   resumeRun,
 } from "../service";
 import { agentTestModes } from "../agentModes";
-import { runStatusMeta } from "../verdicts";
+import { caseDecidersLine, runStatusMeta } from "../verdicts";
 import {
   DEFAULT_RUN_OPTIONS,
   type AgentTestSeat,
@@ -161,7 +161,7 @@ function RunOptionsCard({
             disabled={caseCount === 0 || launching}
             onClick={() => void run()}
           >
-            {caseCount > 0 ? `Run ${caseCount} tests` : "Run tests"}
+            {caseCount === 1 ? "Run 1 test" : caseCount > 1 ? `Run ${caseCount} tests` : "Run tests"}
           </Button>
           {error ? (
             <ErrorNotice
@@ -200,7 +200,7 @@ function CaseList({
           key={testCase.id}
           variant="quiet"
           title={testCase.label}
-          line={`${testCase.checkCount} checks`}
+          line={caseDecidersLine(testCase)}
           selected={selectedCaseIds.has(testCase.id)}
         />
       ))}

@@ -23,6 +23,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {
   outcomeChip,
   outcomeLabel,
+  OUTCOME_CODES,
   verdictChip,
 } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { listFactoryBuildsPage } from "../service";
@@ -37,7 +38,7 @@ import { StartBuildDialog } from "./StartBuildDialog";
 import { SpineStatusChip, formatDuration } from "./factory-shared";
 import { FactoryDoorsTable } from "./FactoryDoorsTable";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import { buildPlaceLabel, formatDollars, loadBuildCosts } from "../overview";
+import { DOORS, buildPlaceLabel, doorLabel, formatDollars, loadBuildCosts } from "../overview";
 
 export const FACTORY_BASE_PATH = "/administration/agents/factory";
 
@@ -52,6 +53,15 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
   { value: "pending", label: "Queued" },
 ];
+
+const PLACE_OPTIONS = [
+  ...DOORS.map((d) => ({ value: d.key, label: d.place })),
+  { value: "system_plan", label: "System Builder (via Agent Studio)" },
+  { value: "admin_page", label: "Admin page" },
+  { value: "script", label: "Script" },
+  { value: "not_recorded", label: "Not recorded" },
+];
+const OUTCOME_OPTIONS = OUTCOME_CODES.map((c) => ({ value: c, label: outcomeLabel(c) }));
 
 const INITIAL_STATE = serverTableInitialState({ id: "started", direction: "desc" }, 50);
 
@@ -121,8 +131,7 @@ export function FactoryBuildsPage() {
         accessorFn: (r) => r.userId ?? "",
         header: "Who",
         width: 230,
-        filter: false,
-        sortable: false,
+        filter: "text",
         cell: (r) =>
           r.userId ? (
             <div className="min-w-0">
@@ -143,8 +152,8 @@ export function FactoryBuildsPage() {
         id: "door",
         accessorFn: (r) => buildPlaceLabel(r),
         header: "Door",
-        filter: false,
-        sortable: false,
+        filter: "select",
+        filterOptions: PLACE_OPTIONS,
         width: 230,
         cell: (r) => (
           <span className="truncate type-secondary">{buildPlaceLabel(r)}</span>
@@ -152,8 +161,8 @@ export function FactoryBuildsPage() {
       },
       {
         id: "outcome",
-        filter: false,
-        sortable: false,
+        filter: "select",
+        filterOptions: OUTCOME_OPTIONS,
         accessorFn: (r) => (r.outcome ? outcomeLabel(r.outcome) : ""),
         header: "Outcome",
         width: 175,
@@ -206,8 +215,7 @@ export function FactoryBuildsPage() {
       },
       {
         id: "mandate",
-        filter: false,
-        sortable: false,
+        filter: "text",
         accessorFn: (r) => r.mandateKey ?? "",
         header: "Job",
         width: 230,

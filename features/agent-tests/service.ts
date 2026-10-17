@@ -227,6 +227,7 @@ export function toCaseView(row: ExemplarRow): TestCaseView {
     userInput: row.user_input ?? "",
     variables,
     checkCount: Array.isArray(row.checks) ? row.checks.length : 0,
+    factCount: Array.isArray(row.judge_facts) ? row.judge_facts.length : 0,
     door: row.door,
     updatedAt: row.updated_at,
   };

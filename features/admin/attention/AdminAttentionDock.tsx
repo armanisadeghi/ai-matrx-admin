@@ -24,7 +24,7 @@
  *   NO UUIDS   every sentence renders through TextWithDoors.
  *
  * IT FLOATS, AND THAT IS THE LAW (Arman, 2026-09-12): a notice never modifies
- * the page under it. It is fixed, movable (`useDraggableFloat`), publishes no
+ * the page under it. It is fixed, movable (`useDock`, @ai-matrx/summon/dock), publishes no
  * height and measures nothing. While visible it marks the document with its
  * compact/expanded state so `styles/shell.css` can keep a scroll runway on
  * the actual shell scroll owner — a size class, never a measured height.
@@ -67,7 +67,8 @@ import { AppLink } from "@/components/navigation/AppLink";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { useDraggableFloat } from "@/hooks/useDraggableFloat";
+import { useDock } from "@ai-matrx/summon/dock";
+import { clientDockStore } from "@/lib/sync/dock-positions";
 import { refreshNow, useNow } from "@/hooks/useNow";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -134,7 +135,6 @@ export default function AdminAttentionDock() {
   const now = useNow();
   const [noteFor, setNoteFor] = useState<AttentionItem | null>(null);
   const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [cardElement, setCardElement] = useState<HTMLDivElement | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -151,16 +151,26 @@ export default function AdminAttentionDock() {
   const sources = [devServer, datedChanges, spendAlarms, spendToday, schedules, outages, deploys, toolHealth, knownDomains, packageCopies];
   const triageState = useAttentionTriage(canRead);
 
-  const float = useDraggableFloat({
-    storageKey: POSITION_KEY,
-    element: cardElement,
+  // Destructured: the React compiler treats an object carrying a `ref` as a ref, so reading its
+  // style during render would count as a ref access.
+  const {
+    ref: floatRef,
+    style: floatStyle,
+    handleProps: floatHandleProps,
+    moved: floatMoved,
+    reset: floatReset,
+  } = useDock({
+    id: POSITION_KEY,
+    // Stored as the card's top-left in viewport px (the shape this key always held).
+    corner: "top-left",
+    store: clientDockStore,
     // Bottom-right by default: out of the way of every page's own header and
     // primary controls.
     anchor: { bottom: "var(--admin-attention-anchor-bottom, 1rem)", right: "1rem" },
     // A person's safe drag location stays put. A saved location that lands on
     // a canonical table's footer is lifted just enough to leave its controls
     // reachable, without reserving or shifting any page layout.
-    exclusion: TABLE_FOOTER_EXCLUSION,
+    avoid: TABLE_FOOTER_EXCLUSION,
   });
 
   useEffect(() => {
@@ -358,8 +368,8 @@ export default function AdminAttentionDock() {
       aria-label="Drag the attention dock somewhere else"
       title="Drag me anywhere"
       className={cn("shrink-0", iconButton)}
-      onDoubleClick={float.reset}
-      {...float.dragHandleProps}
+      onDoubleClick={floatReset}
+      {...floatHandleProps}
     >
       <GripVertical className="h-3.5 w-3.5" aria-hidden />
     </button>
@@ -388,10 +398,10 @@ export default function AdminAttentionDock() {
             Snooze {choice.label}
           </DropdownMenuItem>
         ))}
-        {float.moved && (
+        {floatMoved && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={float.reset}>Move back to the corner</DropdownMenuItem>
+            <DropdownMenuItem onSelect={floatReset}>Move back to the corner</DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>
@@ -434,10 +444,10 @@ export default function AdminAttentionDock() {
       : `${loudFailures.length === 1 ? "A check" : `${loudFailures.length} checks`} could not be read`;
     return (
       <div
-        ref={setCardElement}
+        ref={floatRef}
         data-matrx-notice-surface=""
         className="z-50 flex items-center gap-1 shadow-xl"
-        style={float.style}
+        style={floatStyle}
         data-surface-value="admin_attention_dock_collapsed"
         data-matrx-floating-bottom=""
       >
@@ -470,10 +480,10 @@ export default function AdminAttentionDock() {
 
   return (
     <div
-      ref={setCardElement}
+      ref={floatRef}
       data-matrx-notice-surface=""
       className={shell}
-      style={float.style}
+      style={floatStyle}
       data-surface-value="admin_attention_dock"
         data-matrx-floating-bottom=""
     >

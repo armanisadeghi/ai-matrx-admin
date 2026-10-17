@@ -74,6 +74,8 @@ export interface TestCaseView {
   userInput: string;
   variables: Record<string, unknown>;
   checkCount: number;
+  /** Judge facts the case declares (decided by the fact judge). */
+  factCount: number;
   door: string;
   updatedAt: string | null;
 }

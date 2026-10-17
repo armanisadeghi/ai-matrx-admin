@@ -958,6 +958,7 @@ export function UserBoard({
                   </button>
                   <span className="mx-0.5 h-5 w-px bg-border" />
                   <ZoomMenu
+                    locked={layoutMode === "page"}
                     history={{ canUndo: layout.canUndo, canRedo: layout.canRedo, undo: board.undo, redo: board.redo }}
                   />
                 </div>

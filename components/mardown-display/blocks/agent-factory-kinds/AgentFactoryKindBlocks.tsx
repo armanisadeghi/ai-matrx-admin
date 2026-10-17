@@ -412,6 +412,9 @@ const OUTCOME_LABEL: Record<string, string> = {
   schema_refresh_regressed: "Refresh made it worse",
 };
 
+/** Every build outcome code, for a filter's options. */
+export const OUTCOME_CODES: readonly string[] = Object.keys(OUTCOME_LABEL);
+
 /** Short human label for a build outcome code; an unmapped code reads as spaced words, never raw. */
 export function outcomeLabel(outcome: string): string {
   const known = OUTCOME_LABEL[outcome];

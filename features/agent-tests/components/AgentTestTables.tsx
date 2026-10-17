@@ -11,6 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import {
   VERDICT_META,
   VERDICT_ORDER,
+  caseDecidersLine,
   doorLabel,
   passRate,
   runStatusMeta,
@@ -164,7 +165,7 @@ function CasePeek({ testCase }: { testCase: TestCaseView | null }) {
           kind: "Test case",
           id: testCase.id,
           title: testCase.label,
-          subtitle: `${testCase.checkCount} checks`,
+          subtitle: caseDecidersLine(testCase),
           body: [
             ...(preview
               ? [{ section: "Message", text: preview, clamp: 4 as const }]
