@@ -69,7 +69,7 @@ grep -rl "workflow_run\|WorkflowRun" features app | grep '\.tsx$'
 ```
 
 Count only files that **render that identity to a user**. Exclude tests,
-`features/overlays/openers/**` (those are opener hooks), and pure type files.
+`features/overlays/definitions/**` (those are opener hooks), and pure type files.
 
 - **2 or more → EXTRACT and register.** No exceptions, no "but the other one is
   a window", no "but they show slightly different columns". A window and a

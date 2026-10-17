@@ -1,20 +1,33 @@
-# Window Panels — persistence (local-first workspace cache + URL)
+# Window Panels: persistence and links
 
-Companion to the `window-panels` skill. Read when the task involves saving or restoring window state, `onCollectData`, ephemeral / autosave windows, or `?panels=` URL deep-linking.
+Companion to the `window-panels` skill. Read when saving or restoring window state, `onCollectData`, `ephemeral`, or `?panels=` links. The engine is the package (`src/persistence/`, `src/url/`); the app supplies the port (`features/overlays/host/ports.ts`) and two mounted components (`OverlayPersistence`, `OverlayLinkManager`, both in `features/overlays/host/OverlayServices.tsx`).
 
-## Persistence (local-first workspace cache + URL)
+## Where it is stored
 
-> **The `window_sessions` Supabase table is GONE** (dropped 2026-08-12, public-schema triage — it had 0 rows and no code consumer). Persistence is a local-first, tab-scoped workspace cache: IndexedDB + localStorage via `features/window-panels/persistence/localWindowSessionStore.ts`, account-isolated, default-deny per audited registry entry (see FEATURE.md 2026-07-20 entry). Nothing window-related is stored server-side.
+`createDataPersistence` (`@ai-matrx/summon/persistence/data`) over the app's `@ai-matrx/data` doors writes rows of `users.user_surface_state` (`feature = "summon"`, `surface_key` = `workspace`, `workspace:<tab id>` or `state:<overlayId>:<instanceId>`), with the active organization bound through `createDb({ organization })`. It is per person and per identity key (`auth:<userId>` / `guest:<fingerprint>`). Old `matrx:window-workspace:*` local keys are not read: everyone started with no saved windows once. The `window_sessions` table is gone. **Not yet exercised against live `users.user_surface_state` writes** (package FEATURE "Known open items"): watch RLS and the org binding.
 
-**Save triggers — only two.** Nothing else writes to the store (moving, resizing, sidebar toggle, tab switch do NOT save):
-1. **Explicit** — user clicks "Save window state" in the green dropdown.
-2. **Piggyback** — child code calls `onCollectData` as part of its own save.
+## What saves and when
 
-**`onCollectData`** returns a plain JSON-serializable object — wrap it in `useCallback` with all deps (it's called synchronously at save time). `WindowPanel` merges it under the chrome state (`windowState`, `rect`, `sidebarOpen`, `zIndex`) and writes to the local workspace store (IndexedDB, per-account).
+The controller (`src/persistence/controller.ts`) saves the workspace and `keepAlive: "restore"` component state **debounced 250 ms after any window-manager or overlay-state change**, and flushes on `pagehide`, hidden visibility and every close. Writes stay gated until the load for the current identity applied. An identity change closes everything and loads the new identity's data. Closing removes the window from the saved workspace (no resurrection of a window closed during a slow read).
 
-- **On close** — `WindowPanel` deletes the row, so it doesn't reopen next load.
-- **On page load** — `WindowPersistenceManager` reads the local workspace, clamps each rect into the current viewport (`utils/rectClamp.ts`, 48 px min visible strip), and dispatches `openOverlay` + `restoreWindowState` **before** `WindowPanel` mounts.
-- **Ephemeral windows** (`ephemeral: true` in the metadata entry) skip persistence — the "Save window state" button is hidden, close skips the delete. Use for debug panels, one-shot tool dialogs, and callback-group windows whose caller-side state can't survive reload.
-- **Autosave-on-blur** (`autosave: true` / implied by `heavySnapshot: true` in metadata) saves on tab-hide + unmount with a 500 ms debounce; `onHeavySnapshot` awaits an async buffer serializer before the write.
+## Default-deny, declared on the definition
 
-**URL deep-linking (`?panels=…`).** A window with `urlSync.key` in its metadata auto-activates `useUrlSync` — no prop wiring needed (explicit `urlSyncKey` / `urlSyncId` props still override). Instance id falls back to `overlayId` for singletons, reading like `?panels=notes:notesWindow`. Every metadata `urlSync.key` needs a hydrator in `url-sync/initUrlHydration.ts` (dev assertion logs missing ones).
+```ts
+window: {
+  windowId: "my-feature-window",
+  mobile: "drawer",
+  preservation: { dataKeys: ["selectedId"], requiredDataKeys: ["selectedId"], maxDataBytes: 32768 },
+  restoreDefaults: { selectedId: null },
+  // ephemeral: true,   // never saves anything (callback-group windows, debug panels, one-shot dialogs)
+},
+```
+
+- A window restores **data** only for `preservation.dataKeys`; without `preservation` it restores geometry only; `ephemeral: true` saves nothing. Multi-instance windows restore per exact `instanceId`.
+- `requiredDataKeys` stops a context-dependent window from reopening without the identity it needs.
+- `restoreDefaults` is merged under restored data. Functions, callbacks and blobs never reach storage (open data is JSON).
+- `WindowPanel`'s `onCollectData` returns the window's current content keys (plain JSON, read from live state). The result is filtered to `dataKeys`. **No manual `useCallback`**: the React Compiler memoizes it. "Save window state" in the green dropdown is an explicit save.
+- Link vs restore for the same instance: link data wins, restored geometry wins, in either arrival order.
+
+## Links (`?panels=`)
+
+A window is addressable when its definition has `link: { key, hydrate }`; `WindowPanel` then writes its own token (`?panels=notes:<instanceId>`) from `urlSyncKey` / `urlSyncId` / `urlSyncArgs`. **Three edits give a window its address:** the `link` block (+ `<id>.link.ts` hydrator), the matching `urlSyncKey`, and `urlSyncId={<subject id>}` on the `WindowPanel` (without the third, every instance writes the same token and the link reopens an empty frame). Grammar v2 is `key[:id[:k-v(_k-v)*]]`. A token whose overlay has not registered yet is kept verbatim in the address bar and announced at the deadline; it is never dropped by a timer. The address census is `features/window-panels/__tests__/everyWindowHasAnAddress.test.ts` + `registry/window-address-baseline.json`.

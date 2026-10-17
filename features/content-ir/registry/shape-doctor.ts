@@ -155,7 +155,6 @@ export const CONTROL_TAGS: ReadonlySet<string> = new Set([
   "database",
   "private",
   "plan",
-  "event",
   "tool",
 ]);
 
