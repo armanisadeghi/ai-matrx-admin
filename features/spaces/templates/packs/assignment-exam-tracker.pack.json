@@ -1,0 +1,1532 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0254",
+  "version": 1,
+  "title": "Assignment & Exam Tracker",
+  "description": "Deadlines, weights and grades for every course in one view.",
+  "forWho": "Students tracking coursework",
+  "icon": {
+    "emoji": "📝"
+  },
+  "cover": {
+    "url": "gallery:photo-pine-forest",
+    "offsetY": 50
+  },
+  "category": "education",
+  "tags": [
+    "assignments",
+    "exams",
+    "deadlines",
+    "grades"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-assignment-exam-tracker",
+    "catalogueId": "SP0254",
+    "useCase": "Imogen Castellano is a college junior taking four courses and uses this to see exactly what is due next and how each course is going.",
+    "industry": "education",
+    "vertical": "Assignment tracker",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Riverbend University Student Services",
+      "describes": "A university student-success office sharing a planner with undergraduates.",
+      "address": {
+        "line1": "1180 Thornwick Avenue",
+        "city": "Columbus",
+        "region": "OH",
+        "postalCode": "43215",
+        "country": "US"
+      },
+      "phone": "(614) 555-0133",
+      "website": "riverbend-university.net",
+      "email": "hello@riverbend-university.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-assignment-exam-tracker",
+    "tables": [
+      {
+        "token": "course",
+        "name": "Courses",
+        "labelSingular": "Course",
+        "labelPlural": "Courses",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "course_name",
+        "describes": "Each course this term with its instructor, credits, grade target and open work.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "course_name",
+            "label": "Course",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "instructor",
+            "label": "Instructor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instructor_email",
+            "label": "Instructor email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "term",
+            "label": "Term",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fall",
+              "Spring",
+              "Summer"
+            ],
+            "choiceColors": {
+              "Fall": "amber",
+              "Spring": "green",
+              "Summer": "teal"
+            }
+          },
+          {
+            "key": "credits",
+            "label": "Credits",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 6
+              }
+            ]
+          },
+          {
+            "key": "target",
+            "label": "Target grade",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "assignment_list",
+            "label": "Assignments",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "assignment",
+            "multi": true
+          },
+          {
+            "key": "open",
+            "label": "Open assignments",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assignment_list",
+            "pick": "assignment_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Not started",
+                "In progress"
+              ]
+            }
+          },
+          {
+            "key": "weight_done",
+            "label": "Weight completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assignment_list",
+            "pick": "weight",
+            "agg": "sum",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "avg_grade",
+            "label": "Average grade",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "assignment_list",
+            "pick": "grade",
+            "agg": "avg"
+          }
+        ],
+        "rows": [
+          {
+            "key": "co-chem",
+            "values": {
+              "course_name": "Organic Chemistry I",
+              "instructor": "Dr. Helena Voss",
+              "instructor_email": "helena.voss@riverbend-university.net",
+              "term": "Fall",
+              "credits": 4,
+              "target": 90,
+              "assignment_list": [
+                "a01",
+                "a02",
+                "a03",
+                "a04"
+              ]
+            }
+          },
+          {
+            "key": "co-hist",
+            "values": {
+              "course_name": "Modern European History",
+              "instructor": "Prof. Anselm Baptiste",
+              "instructor_email": "anselm.baptiste@riverbend-university.net",
+              "term": "Fall",
+              "credits": 3,
+              "target": 88,
+              "assignment_list": [
+                "a05",
+                "a06",
+                "a07",
+                "a08"
+              ]
+            }
+          },
+          {
+            "key": "co-stat",
+            "values": {
+              "course_name": "Statistics for Social Science",
+              "instructor": "Dr. Mei-Ling Cho",
+              "instructor_email": "meiling.cho@riverbend-university.net",
+              "term": "Fall",
+              "credits": 3,
+              "target": 85,
+              "assignment_list": [
+                "a09",
+                "a10",
+                "a11",
+                "a12"
+              ]
+            }
+          },
+          {
+            "key": "co-art",
+            "values": {
+              "course_name": "Introduction to Studio Art",
+              "instructor": "Prof. Yusuf Karimi",
+              "instructor_email": "yusuf.karimi@riverbend-university.net",
+              "term": "Fall",
+              "credits": 2,
+              "target": 95,
+              "assignment_list": [
+                "a13",
+                "a14",
+                "a15",
+                "a16"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "assignment",
+        "name": "Assignments",
+        "labelSingular": "Assignment",
+        "labelPlural": "Assignments",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "assignment_name",
+        "describes": "Every homework, essay, quiz and exam with its due day, weight and grade.",
+        "subject": "thing",
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "assignment_name",
+            "label": "Assignment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "course",
+            "label": "Course",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "course",
+            "relationMax": 1
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Homework",
+              "Essay",
+              "Quiz",
+              "Exam",
+              "Project",
+              "Presentation",
+              "Lab"
+            ],
+            "choiceColors": {
+              "Homework": "blue",
+              "Essay": "violet",
+              "Quiz": "amber",
+              "Exam": "red",
+              "Project": "teal",
+              "Presentation": "pink",
+              "Lab": "green"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "Not started"
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Medium",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Medium": "amber",
+              "High": "red"
+            }
+          },
+          {
+            "key": "weight",
+            "label": "Weight",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "grade",
+            "label": "Grade",
+            "parityType": "percent",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "submitted",
+            "label": "Submitted",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "hours",
+            "label": "Estimated hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "assignment_name": "Lab 3: distillation write-up",
+              "course": "co-chem",
+              "type": "Lab",
+              "due_on": "@today-11d",
+              "status": "Done",
+              "priority": "High",
+              "weight": 8,
+              "grade": 91,
+              "submitted": true,
+              "hours": 2
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "assignment_name": "Problem set 6: stereochemistry",
+              "course": "co-chem",
+              "type": "Homework",
+              "due_on": "@today+2d",
+              "status": "In progress",
+              "priority": "High",
+              "weight": 4,
+              "submitted": false,
+              "hours": 1
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "assignment_name": "Midterm exam",
+              "course": "co-chem",
+              "type": "Exam",
+              "due_on": "@today+9d",
+              "status": "Not started",
+              "priority": "High",
+              "weight": 25,
+              "submitted": false,
+              "hours": 8
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "assignment_name": "Quiz 4: reaction mechanisms",
+              "course": "co-chem",
+              "type": "Quiz",
+              "due_on": "@today-3d",
+              "status": "Done",
+              "priority": "Medium",
+              "weight": 5,
+              "grade": 82,
+              "submitted": true,
+              "hours": 1
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "assignment_name": "Essay: causes of the First World War",
+              "course": "co-hist",
+              "type": "Essay",
+              "due_on": "@today+5d",
+              "status": "In progress",
+              "priority": "High",
+              "weight": 20,
+              "submitted": false,
+              "hours": 6
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "assignment_name": "Reading response: Congress of Vienna",
+              "course": "co-hist",
+              "type": "Homework",
+              "due_on": "@today-1d",
+              "status": "In progress",
+              "priority": "Medium",
+              "weight": 5,
+              "submitted": false,
+              "hours": 1
+            }
+          },
+          {
+            "key": "a07",
+            "values": {
+              "assignment_name": "Presentation: the 1848 revolutions",
+              "course": "co-hist",
+              "type": "Presentation",
+              "due_on": "@today+14d",
+              "status": "Not started",
+              "priority": "Medium",
+              "weight": 15,
+              "submitted": false,
+              "hours": 5
+            }
+          },
+          {
+            "key": "a08",
+            "values": {
+              "assignment_name": "Midterm exam",
+              "course": "co-hist",
+              "type": "Exam",
+              "due_on": "@today-20d",
+              "status": "Done",
+              "priority": "High",
+              "weight": 25,
+              "grade": 87,
+              "submitted": true,
+              "hours": 8
+            }
+          },
+          {
+            "key": "a09",
+            "values": {
+              "assignment_name": "Homework 5: hypothesis tests",
+              "course": "co-stat",
+              "type": "Homework",
+              "due_on": "@today+1d",
+              "status": "Not started",
+              "priority": "Medium",
+              "weight": 5,
+              "submitted": false,
+              "hours": 1
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "assignment_name": "Survey project proposal",
+              "course": "co-stat",
+              "type": "Project",
+              "due_on": "@today-6d",
+              "status": "Done",
+              "priority": "High",
+              "weight": 10,
+              "grade": 94,
+              "submitted": true,
+              "hours": 3
+            }
+          },
+          {
+            "key": "a11",
+            "values": {
+              "assignment_name": "Quiz 3: confidence intervals",
+              "course": "co-stat",
+              "type": "Quiz",
+              "due_on": "@today+4d",
+              "status": "Not started",
+              "priority": "Medium",
+              "weight": 5,
+              "submitted": false,
+              "hours": 1
+            }
+          },
+          {
+            "key": "a12",
+            "values": {
+              "assignment_name": "Final project: analysis report",
+              "course": "co-stat",
+              "type": "Project",
+              "due_on": "@today+30d",
+              "status": "Not started",
+              "priority": "High",
+              "weight": 30,
+              "submitted": false,
+              "hours": 10
+            }
+          },
+          {
+            "key": "a13",
+            "values": {
+              "assignment_name": "Still life series, three pieces",
+              "course": "co-art",
+              "type": "Project",
+              "due_on": "@today+7d",
+              "status": "In progress",
+              "priority": "Medium",
+              "weight": 25,
+              "submitted": false,
+              "hours": 8
+            }
+          },
+          {
+            "key": "a14",
+            "values": {
+              "assignment_name": "Critique journal, entries 4 to 6",
+              "course": "co-art",
+              "type": "Essay",
+              "due_on": "@today-2d",
+              "status": "In progress",
+              "priority": "Low",
+              "weight": 10,
+              "submitted": false,
+              "hours": 3
+            }
+          },
+          {
+            "key": "a15",
+            "values": {
+              "assignment_name": "Colour theory worksheet",
+              "course": "co-art",
+              "type": "Homework",
+              "due_on": "@today-15d",
+              "status": "Done",
+              "priority": "Low",
+              "weight": 5,
+              "grade": 98,
+              "submitted": true,
+              "hours": 1
+            }
+          },
+          {
+            "key": "a16",
+            "values": {
+              "assignment_name": "Gallery visit reflection",
+              "course": "co-art",
+              "type": "Essay",
+              "due_on": "@today+11d",
+              "status": "Not started",
+              "priority": "Low",
+              "weight": 10,
+              "submitted": false,
+              "hours": 3
+            }
+          }
+        ],
+        "independentOf": {
+          "course": "An assignment can be due before or after the course meets on a given day."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "A course lists its assignments.",
+        "fromTable": "course",
+        "fromField": "assignment_list",
+        "toTable": "assignment",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "course_of_assignment"
+      },
+      {
+        "describes": "Each assignment belongs to one course.",
+        "fromTable": "assignment",
+        "fromField": "course",
+        "toTable": "course",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "assignments"
+      }
+    ],
+    "sharedBlocks": [],
+    "forms": [
+      {
+        "token": "add_assignment",
+        "name": "Add an assignment",
+        "describes": "A quick way to log work the moment a professor announces it.",
+        "audience": "staff",
+        "table": "assignment",
+        "fields": [
+          {
+            "fieldKey": "assignment_name",
+            "ask": "What is it called?",
+            "required": true
+          },
+          {
+            "fieldKey": "course",
+            "ask": "Which course?"
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What type of work is it?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it due?"
+          },
+          {
+            "fieldKey": "weight",
+            "ask": "How much of the course grade is it worth?"
+          }
+        ],
+        "submitLabel": "Add it",
+        "confirmation": "Added. It is on your board as Not started."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_assignments",
+        "name": "All assignments",
+        "table": "assignment",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "due_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "assignment_board",
+        "name": "Board",
+        "table": "assignment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "assignment_calendar",
+        "name": "Calendar",
+        "table": "assignment",
+        "kind": "calendar",
+        "dateField": "due_on"
+      },
+      {
+        "token": "all_courses",
+        "name": "All courses",
+        "table": "course",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "course_board",
+        "name": "By term",
+        "table": "course",
+        "kind": "kanban",
+        "groupBy": "term"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Assignment & Exam Tracker assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "assignment",
+          "describes": "Every assignment with its course, type, due day, weight and grade."
+        },
+        {
+          "name": "related_tables",
+          "table": "course",
+          "describes": "The courses assignments belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many assignments are not done yet?",
+        "whyItMatters": "Imogen plans her study blocks around the open count.",
+        "expect": {
+          "table": "assignment",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Not started"
+          },
+          "answer": 6,
+          "unit": "assignments"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the assignment board.",
+        "action": {
+          "kind": "open",
+          "surface": "assignment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "assignment_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "assignment_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "assignment_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open all courses.",
+        "action": {
+          "kind": "open",
+          "surface": "all_courses"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_courses",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "riverbend-university.net"
+      ],
+      "fictionalStreets": [
+        "Thornwick Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "assignment-tracker",
+      "parent": null,
+      "title": "Assignment & Exam Tracker",
+      "icon": {
+        "emoji": "📝"
+      },
+      "cover": {
+        "url": "gallery:photo-pine-forest",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "See every deadline in one place. Log work as soon as it is announced, move it across the board, and enter the grade when it comes back."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Due this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "assignment",
+              "view": "all_assignments"
+            },
+            "inline": true,
+            "title": "Assignments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-wk",
+                "name": "Not done, by due day",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": [
+                    "Not started",
+                    "In progress"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-wk"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Exams and big projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "assignment",
+              "view": "all_assignments"
+            },
+            "inline": true,
+            "title": "Assignments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-ex",
+                "name": "Exams",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "type": [
+                    "Exam",
+                    "Project",
+                    "Presentation"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-ex"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "By course"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "assignment",
+              "view": "assignment_board"
+            },
+            "inline": true,
+            "title": "Assignments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-bs",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-tb",
+                "name": "All assignments",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "v-cl",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              }
+            ],
+            "activeViewId": "v-bs"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Courses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "course",
+              "view": "all_courses"
+            },
+            "inline": true,
+            "title": "Courses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-c1",
+                "name": "Progress",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-c2",
+                "name": "By term",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "term"
+              }
+            ],
+            "activeViewId": "v-c1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:progress"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:exam-prep"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:weekly-planner"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "progress",
+      "parent": "assignment-tracker",
+      "title": "Progress",
+      "icon": {
+        "emoji": "📈"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "assignment",
+                      "view": "all_assignments"
+                    },
+                    "inline": true,
+                    "title": "Assignments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "p1",
+                        "name": "Assignments by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "p1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "assignment",
+                      "view": "all_assignments"
+                    },
+                    "inline": true,
+                    "title": "Assignments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "p2",
+                        "name": "Assignments by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "type",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "p2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "assignment",
+                      "view": "all_assignments"
+                    },
+                    "inline": true,
+                    "title": "Assignments",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "p3",
+                        "name": "Hours by course",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "course",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "p3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Graded so far"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "assignment",
+              "view": "all_assignments"
+            },
+            "inline": true,
+            "title": "Assignments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "p-g",
+                "name": "Done",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Done"
+                }
+              }
+            ],
+            "activeViewId": "p-g"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Course summary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "course",
+              "view": "all_courses"
+            },
+            "inline": true,
+            "title": "Courses",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "p-c",
+                "name": "All courses",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "p-c"
+          }
+        }
+      ]
+    },
+    {
+      "key": "exam-prep",
+      "parent": "assignment-tracker",
+      "title": "Exam prep plan",
+      "icon": {
+        "emoji": "🧠"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Work backwards from the exam day. Copy this plan into the exam row."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "10 days before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Gather notes, list every topic"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "7 days before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First pass of practice questions"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4 days before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Timed practice test"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2 days before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix weak topics, make a one-page summary"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Night before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Light review, pack bag, sleep"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Topics listed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Practice test done"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weak topics reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Materials packed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "weekly-planner",
+      "parent": "assignment-tracker",
+      "title": "Weekly planning",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every Sunday, spend ten minutes on this list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the board and move anything finished to Done."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at the calendar for the next seven days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the three assignments that most affect your grades."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Block study time for each in your calendar."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "If something is due in the next 48 hours and still Not started, do that first."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "AlarmClock"
+          }
+        }
+      ]
+    }
+  ]
+}

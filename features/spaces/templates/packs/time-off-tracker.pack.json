@@ -1,0 +1,1773 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0253",
+  "version": 1,
+  "title": "Time-Off Tracker",
+  "description": "Request, approve and track leave with a team calendar and live balances.",
+  "forWho": "Small teams and HR managers",
+  "icon": {
+    "emoji": "🏖️"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "time-off",
+    "leave",
+    "vacation",
+    "hr"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-time-off-tracker",
+    "catalogueId": "SP0253",
+    "useCase": "Camille Girard manages a dental clinic of eight and uses this to approve leave, see who is away and keep every allowance straight.",
+    "industry": "healthcare",
+    "vertical": "Time-off tracking",
+    "job": "team_hr",
+    "audience": "organization",
+    "teaches": "calendar",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Willowbrook Dental",
+      "describes": "A dental clinic with eight staff that needs two hygienists and a dentist every working day.",
+      "address": {
+        "line1": "302 Hollowmere Street",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97205",
+        "country": "US"
+      },
+      "phone": "(503) 555-0120",
+      "website": "willowbrookdental.net",
+      "email": "hello@willowbrookdental.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-time-off-tracker",
+    "tables": [
+      {
+        "token": "balance",
+        "name": "Balances",
+        "labelSingular": "Balance",
+        "labelPlural": "Balances",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scale",
+        "titleField": "balance_name",
+        "describes": "Each person's yearly allowance, days carried over and days used so far.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "balance_name",
+            "label": "Balance",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "employee",
+            "label": "Employee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Clinical",
+              "Front office",
+              "Management"
+            ],
+            "choiceColors": {
+              "Clinical": "teal",
+              "Front office": "amber",
+              "Management": "violet"
+            }
+          },
+          {
+            "key": "allowance",
+            "label": "Annual allowance",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "carry",
+            "label": "Carry-over",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Total available",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Annual allowance} + {Carry-over}"
+          },
+          {
+            "key": "request_list",
+            "label": "Requests",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "request",
+            "multi": true
+          },
+          {
+            "key": "used",
+            "label": "Vacation days used",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "request_list",
+            "pick": "days",
+            "agg": "sum",
+            "filter": {
+              "status": "Approved",
+              "type": "Vacation"
+            }
+          },
+          {
+            "key": "sick",
+            "label": "Sick days taken",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "request_list",
+            "pick": "days",
+            "agg": "sum",
+            "filter": {
+              "status": "Approved",
+              "type": "Sick"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "b-camille",
+            "values": {
+              "balance_name": "Camille Girard allowance",
+              "employee": "tm-camille",
+              "team": "Management",
+              "allowance": 20,
+              "carry": 3,
+              "request_list": [
+                "rq06"
+              ]
+            }
+          },
+          {
+            "key": "b-jasper",
+            "values": {
+              "balance_name": "Jasper Okonkwo-Hale allowance",
+              "employee": "tm-jasper",
+              "team": "Clinical",
+              "allowance": 25,
+              "carry": 0,
+              "request_list": [
+                "rq02",
+                "rq14"
+              ]
+            }
+          },
+          {
+            "key": "b-bianca",
+            "values": {
+              "balance_name": "Bianca Torres allowance",
+              "employee": "tm-bianca",
+              "team": "Clinical",
+              "allowance": 18,
+              "carry": 2,
+              "request_list": [
+                "rq01",
+                "rq09"
+              ]
+            }
+          },
+          {
+            "key": "b-ravi",
+            "values": {
+              "balance_name": "Ravi Menon allowance",
+              "employee": "tm-ravi",
+              "team": "Clinical",
+              "allowance": 15,
+              "carry": 0,
+              "request_list": [
+                "rq03",
+                "rq10"
+              ]
+            }
+          },
+          {
+            "key": "b-elise",
+            "values": {
+              "balance_name": "Elise Haugen allowance",
+              "employee": "tm-elise",
+              "team": "Front office",
+              "allowance": 15,
+              "carry": 1,
+              "request_list": [
+                "rq04",
+                "rq11"
+              ]
+            }
+          },
+          {
+            "key": "b-tomas",
+            "values": {
+              "balance_name": "Tomás Reyes allowance",
+              "employee": "tm-tomas",
+              "team": "Clinical",
+              "allowance": 15,
+              "carry": 0,
+              "request_list": [
+                "rq07",
+                "rq12"
+              ]
+            }
+          },
+          {
+            "key": "b-nadia",
+            "values": {
+              "balance_name": "Nadia Petrova allowance",
+              "employee": "tm-nadia",
+              "team": "Front office",
+              "allowance": 18,
+              "carry": 4,
+              "request_list": [
+                "rq05",
+                "rq13"
+              ]
+            }
+          },
+          {
+            "key": "b-gabriel",
+            "values": {
+              "balance_name": "Gabriel Lindgren allowance",
+              "employee": "tm-gabriel",
+              "team": "Clinical",
+              "allowance": 12,
+              "carry": 0,
+              "request_list": [
+                "rq08",
+                "rq15"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "request",
+        "name": "Requests",
+        "labelSingular": "Request",
+        "labelPlural": "Requests",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "plane",
+        "titleField": "request_name",
+        "describes": "Every time-off request: who, what kind, which dates and whether it was approved.",
+        "subject": "thing",
+        "before": [
+          [
+            "start_on",
+            "end_on"
+          ]
+        ],
+        "independentOf": {
+          "balance": "A request can be filed for any year the person has a balance record, whenever it starts.",
+          "employee": "Any employee can ask for time off whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Approved",
+              "Declined"
+            ],
+            "filled": [
+              "approver"
+            ]
+          }
+        ],
+        "fields": [
+          {
+            "key": "request_name",
+            "label": "Request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "balance",
+            "label": "Balance",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "balance",
+            "relationMax": 1
+          },
+          {
+            "key": "employee",
+            "label": "Employee",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "type",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Vacation",
+              "Sick",
+              "Personal",
+              "Parental",
+              "Unpaid"
+            ],
+            "choiceColors": {
+              "Vacation": "blue",
+              "Sick": "red",
+              "Personal": "amber",
+              "Parental": "pink",
+              "Unpaid": "slate"
+            },
+            "required": true
+          },
+          {
+            "key": "start_on",
+            "label": "Start",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "end_on",
+            "label": "End",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days",
+            "label": "Working days",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "key": "span",
+            "label": "Calendar days",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Start}, {End}, 'days') + 1"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Approved",
+              "Declined",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Pending": "amber",
+              "Approved": "green",
+              "Declined": "red",
+              "Cancelled": "slate"
+            },
+            "required": true,
+            "default": "Pending"
+          },
+          {
+            "key": "approver",
+            "label": "Approver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          },
+          {
+            "key": "submitted_on",
+            "label": "Submitted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rq01",
+            "values": {
+              "request_name": "Bianca Torres: vacation",
+              "balance": "b-bianca",
+              "employee": "tm-bianca",
+              "type": "Vacation",
+              "start_on": "@today+20d",
+              "end_on": "@today+26d",
+              "days": 5,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Family trip, covered by Tomás",
+              "submitted_on": "@today-3d"
+            }
+          },
+          {
+            "key": "rq02",
+            "values": {
+              "request_name": "Jasper Okonkwo-Hale: vacation",
+              "balance": "b-jasper",
+              "employee": "tm-jasper",
+              "type": "Vacation",
+              "start_on": "@today+45d",
+              "end_on": "@today+57d",
+              "days": 9,
+              "status": "Pending",
+              "approver": "tm-camille",
+              "reason": "Conference then a long weekend",
+              "submitted_on": "@today-7d"
+            }
+          },
+          {
+            "key": "rq03",
+            "values": {
+              "request_name": "Ravi Menon: sick",
+              "balance": "b-ravi",
+              "employee": "tm-ravi",
+              "type": "Sick",
+              "start_on": "@today-6d",
+              "end_on": "@today-5d",
+              "days": 2,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Flu",
+              "submitted_on": "@today-11d"
+            }
+          },
+          {
+            "key": "rq04",
+            "values": {
+              "request_name": "Elise Haugen: personal",
+              "balance": "b-elise",
+              "employee": "tm-elise",
+              "type": "Personal",
+              "start_on": "@today+3d",
+              "end_on": "@today+3d",
+              "days": 1,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Moving day",
+              "submitted_on": "@today-15d"
+            }
+          },
+          {
+            "key": "rq05",
+            "values": {
+              "request_name": "Nadia Petrova: vacation",
+              "balance": "b-nadia",
+              "employee": "tm-nadia",
+              "type": "Vacation",
+              "start_on": "@today+60d",
+              "end_on": "@today+71d",
+              "days": 8,
+              "status": "Pending",
+              "approver": "tm-camille",
+              "reason": "Visiting family abroad",
+              "submitted_on": "@today-19d"
+            }
+          },
+          {
+            "key": "rq06",
+            "values": {
+              "request_name": "Camille Girard: parental",
+              "balance": "b-camille",
+              "employee": "tm-camille",
+              "type": "Parental",
+              "start_on": "@today+90d",
+              "end_on": "@today+160d",
+              "days": 50,
+              "status": "Approved",
+              "approver": "tm-jasper",
+              "reason": "Planned leave",
+              "submitted_on": "@today-23d"
+            }
+          },
+          {
+            "key": "rq07",
+            "values": {
+              "request_name": "Tomás Reyes: vacation",
+              "balance": "b-tomas",
+              "employee": "tm-tomas",
+              "type": "Vacation",
+              "start_on": "@today-30d",
+              "end_on": "@today-24d",
+              "days": 5,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Beach week",
+              "submitted_on": "@today-27d"
+            }
+          },
+          {
+            "key": "rq08",
+            "values": {
+              "request_name": "Gabriel Lindgren: unpaid",
+              "balance": "b-gabriel",
+              "employee": "tm-gabriel",
+              "type": "Unpaid",
+              "start_on": "@today+14d",
+              "end_on": "@today+16d",
+              "days": 3,
+              "status": "Declined",
+              "approver": "tm-camille",
+              "reason": "Short notice, clinic fully booked",
+              "submitted_on": "@today-31d"
+            }
+          },
+          {
+            "key": "rq09",
+            "values": {
+              "request_name": "Bianca Torres: sick",
+              "balance": "b-bianca",
+              "employee": "tm-bianca",
+              "type": "Sick",
+              "start_on": "@today-45d",
+              "end_on": "@today-45d",
+              "days": 1,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Migraine",
+              "submitted_on": "@today-35d"
+            }
+          },
+          {
+            "key": "rq10",
+            "values": {
+              "request_name": "Ravi Menon: vacation",
+              "balance": "b-ravi",
+              "employee": "tm-ravi",
+              "type": "Vacation",
+              "start_on": "@today+30d",
+              "end_on": "@today+34d",
+              "days": 3,
+              "status": "Pending",
+              "approver": "tm-camille",
+              "reason": "Wedding",
+              "submitted_on": "@today-39d"
+            }
+          },
+          {
+            "key": "rq11",
+            "values": {
+              "request_name": "Elise Haugen: vacation",
+              "balance": "b-elise",
+              "employee": "tm-elise",
+              "type": "Vacation",
+              "start_on": "@today-90d",
+              "end_on": "@today-84d",
+              "days": 5,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Spring break",
+              "submitted_on": "@today-43d"
+            }
+          },
+          {
+            "key": "rq12",
+            "values": {
+              "request_name": "Tomás Reyes: personal",
+              "balance": "b-tomas",
+              "employee": "tm-tomas",
+              "type": "Personal",
+              "start_on": "@today+8d",
+              "end_on": "@today+8d",
+              "days": 1,
+              "status": "Pending",
+              "approver": "tm-camille",
+              "reason": "Driving test",
+              "submitted_on": "@today-47d"
+            }
+          },
+          {
+            "key": "rq13",
+            "values": {
+              "request_name": "Nadia Petrova: sick",
+              "balance": "b-nadia",
+              "employee": "tm-nadia",
+              "type": "Sick",
+              "start_on": "@today-12d",
+              "end_on": "@today-11d",
+              "days": 2,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Stomach bug",
+              "submitted_on": "@today-51d"
+            }
+          },
+          {
+            "key": "rq14",
+            "values": {
+              "request_name": "Jasper Okonkwo-Hale: vacation",
+              "balance": "b-jasper",
+              "employee": "tm-jasper",
+              "type": "Vacation",
+              "start_on": "@today-120d",
+              "end_on": "@today-110d",
+              "days": 7,
+              "status": "Approved",
+              "approver": "tm-camille",
+              "reason": "Summer holiday",
+              "submitted_on": "@today-55d"
+            }
+          },
+          {
+            "key": "rq15",
+            "values": {
+              "request_name": "Gabriel Lindgren: vacation",
+              "balance": "b-gabriel",
+              "employee": "tm-gabriel",
+              "type": "Vacation",
+              "start_on": "@today+75d",
+              "end_on": "@today+79d",
+              "days": 5,
+              "status": "Cancelled",
+              "approver": "tm-camille",
+              "reason": "Plans changed",
+              "submitted_on": "@today-59d"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each balance belongs to one employee.",
+        "fromTable": "balance",
+        "fromField": "employee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "balances"
+      },
+      {
+        "describes": "A balance lists the requests that draw on it.",
+        "fromTable": "balance",
+        "fromField": "request_list",
+        "toTable": "request",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "balance_of_request"
+      },
+      {
+        "describes": "Each request counts against one balance.",
+        "fromTable": "request",
+        "fromField": "balance",
+        "toTable": "balance",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "requests"
+      },
+      {
+        "describes": "Each request is made by one employee.",
+        "fromTable": "request",
+        "fromField": "employee",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "requests_made"
+      },
+      {
+        "describes": "Each request has one approver.",
+        "fromTable": "request",
+        "fromField": "approver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "requests_approved"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-camille",
+            "values": {
+              "full_name": "Camille Girard",
+              "role": "Operations manager",
+              "work_email": "camille@willowbrookdental.net",
+              "mobile": "(503) 555-0121",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-jasper",
+            "values": {
+              "full_name": "Jasper Okonkwo-Hale",
+              "role": "Dentist",
+              "work_email": "jasper@willowbrookdental.net",
+              "mobile": "(503) 555-0122",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-bianca",
+            "values": {
+              "full_name": "Bianca Torres",
+              "role": "Dental hygienist",
+              "work_email": "bianca@willowbrookdental.net",
+              "mobile": "(503) 555-0123",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-ravi",
+            "values": {
+              "full_name": "Ravi Menon",
+              "role": "Dental assistant",
+              "work_email": "ravi@willowbrookdental.net",
+              "mobile": "(503) 555-0124",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-elise",
+            "values": {
+              "full_name": "Elise Haugen",
+              "role": "Front desk coordinator",
+              "work_email": "elise@willowbrookdental.net",
+              "mobile": "(503) 555-0125",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-tomas",
+            "values": {
+              "full_name": "Tomás Reyes",
+              "role": "Dental hygienist",
+              "work_email": "tomas@willowbrookdental.net",
+              "mobile": "(503) 555-0126",
+              "start_date": "@today-18m"
+            }
+          },
+          {
+            "key": "tm-nadia",
+            "values": {
+              "full_name": "Nadia Petrova",
+              "role": "Billing specialist",
+              "work_email": "nadia@willowbrookdental.net",
+              "mobile": "(503) 555-0127",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-gabriel",
+            "values": {
+              "full_name": "Gabriel Lindgren",
+              "role": "Dental assistant",
+              "work_email": "gabriel@willowbrookdental.net",
+              "mobile": "(503) 555-0128",
+              "start_date": "@today-8m"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "time_off_request",
+        "name": "Request time off",
+        "describes": "How anyone on the team asks for days off.",
+        "audience": "staff",
+        "table": "request",
+        "fields": [
+          {
+            "fieldKey": "request_name",
+            "ask": "Short title for your request?",
+            "required": true
+          },
+          {
+            "fieldKey": "type",
+            "ask": "What kind of leave is it?",
+            "required": true
+          },
+          {
+            "fieldKey": "start_on",
+            "ask": "First day off?",
+            "required": true
+          },
+          {
+            "fieldKey": "end_on",
+            "ask": "Last day off?",
+            "required": true
+          },
+          {
+            "fieldKey": "days",
+            "ask": "How many working days is that?"
+          },
+          {
+            "fieldKey": "reason",
+            "ask": "Anything your manager should know?"
+          }
+        ],
+        "submitLabel": "Send request",
+        "confirmation": "Thanks. Your manager will reply within two working days."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_requests",
+        "name": "All requests",
+        "table": "request",
+        "kind": "grid",
+        "isDefault": true,
+        "sorts": [
+          {
+            "field": "start_on",
+            "direction": "asc"
+          }
+        ]
+      },
+      {
+        "token": "request_calendar",
+        "name": "Calendar",
+        "table": "request",
+        "kind": "calendar",
+        "dateField": "start_on"
+      },
+      {
+        "token": "request_board",
+        "name": "By status",
+        "table": "request",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "request_timeline",
+        "name": "Timeline",
+        "table": "request",
+        "kind": "timeline",
+        "startField": "start_on",
+        "endField": "end_on"
+      },
+      {
+        "token": "all_balances",
+        "name": "All balances",
+        "table": "balance",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "balance_board",
+        "name": "By team",
+        "table": "balance",
+        "kind": "kanban",
+        "groupBy": "team"
+      },
+      {
+        "token": "all_team",
+        "name": "Team",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Time-Off Tracker assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "request",
+          "describes": "Every leave request, its type, dates, days and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "balance",
+          "describes": "Each person's yearly allowance and days used."
+        }
+      ],
+      "question": {
+        "ask": "How many requests are waiting for approval?",
+        "whyItMatters": "Camille clears the pending list each Friday.",
+        "expect": {
+          "table": "request",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Pending"
+          },
+          "answer": 4,
+          "unit": "requests"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the time-off calendar.",
+        "action": {
+          "kind": "open",
+          "surface": "request_calendar"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "request_calendar",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open the request board.",
+        "action": {
+          "kind": "open",
+          "surface": "request_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "request_board",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open all balances.",
+        "action": {
+          "kind": "open",
+          "surface": "all_balances"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_balances",
+          "minItems": 6
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "willowbrookdental.net"
+      ],
+      "fictionalStreets": [
+        "Hollowmere Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "time-off",
+      "parent": null,
+      "title": "Time Off",
+      "icon": {
+        "emoji": "🏖️"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Ask for time off, see who is away and keep every allowance honest. Use the form to request days, then approve or decline from Pending approvals."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "Sun"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who is out soon"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "request_calendar"
+                    },
+                    "inline": true,
+                    "title": "Requests",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-out",
+                        "name": "Approved",
+                        "layout": "list",
+                        "icon": "List",
+                        "filters": {
+                          "status": "Approved"
+                        },
+                        "sorts": [
+                          {
+                            "field": "start_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-out"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pending approvals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_requests"
+                    },
+                    "inline": true,
+                    "title": "Requests",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-pend",
+                        "name": "Pending",
+                        "layout": "grid",
+                        "icon": "Table",
+                        "filters": {
+                          "status": "Pending"
+                        },
+                        "sorts": [
+                          {
+                            "field": "start_on",
+                            "direction": "asc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-pend"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "request_calendar"
+            },
+            "inline": true,
+            "title": "Requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-cal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "start_on"
+              },
+              {
+                "id": "v-tl",
+                "name": "Timeline",
+                "layout": "timeline",
+                "icon": "ChartGantt",
+                "dateField": "start_on"
+              },
+              {
+                "id": "v-bd",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "v-all",
+                "name": "All requests",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "start_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "v-cal"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Balances"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "balance",
+              "view": "all_balances"
+            },
+            "inline": true,
+            "title": "Balances",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-b1",
+                "name": "All balances",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-b2",
+                "name": "By team",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "team"
+              }
+            ],
+            "activeViewId": "v-b1"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:time-off-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:leave-policy"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:holiday-calendar"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "time-off-dashboard",
+      "parent": "time-off",
+      "title": "Time-off dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_requests"
+                    },
+                    "inline": true,
+                    "title": "Requests",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "Requests by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "type",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "request",
+                      "view": "all_requests"
+                    },
+                    "inline": true,
+                    "title": "Requests",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "Days by type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "type",
+                          "op": "sum",
+                          "field": "days"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "balance",
+                      "view": "all_balances"
+                    },
+                    "inline": true,
+                    "title": "Balances",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "People by team",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "team",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Days used by person"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "balance",
+              "view": "all_balances"
+            },
+            "inline": true,
+            "title": "Balances",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-u",
+                "name": "Used and sick days",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "d-u"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recent sickness"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "request",
+              "view": "all_requests"
+            },
+            "inline": true,
+            "title": "Requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-s",
+                "name": "Sick leave",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "type": "Sick"
+                }
+              }
+            ],
+            "activeViewId": "d-s"
+          }
+        }
+      ]
+    },
+    {
+      "key": "leave-policy",
+      "parent": "time-off",
+      "title": "Leave policy",
+      "icon": {
+        "emoji": "📜"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The short version of how leave works. Ask the operations manager for anything not covered here."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vacation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask at least two weeks ahead for more than three days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The clinic needs two hygienists and one dentist on every working day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Up to five unused days carry over until the end of March."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sick leave"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the front desk before the start of your shift."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A note is needed after three days in a row."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Parental and unpaid leave"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Parental leave is paid for the first eight weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Unpaid leave needs the manager and the owner to agree."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Half days count as 0.5. Enter whole working days between start and end; weekends do not count."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Info"
+          }
+        }
+      ]
+    },
+    {
+      "key": "holiday-calendar",
+      "parent": "time-off",
+      "title": "Holidays and closures",
+      "icon": {
+        "emoji": "🎄"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Days the clinic is closed. These never count against anyone's allowance."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "New Year's Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Memorial Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Independence Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Labor Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thanksgiving and the day after"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Closed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Christmas Eve to New Year's Eve"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Emergency line only"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
