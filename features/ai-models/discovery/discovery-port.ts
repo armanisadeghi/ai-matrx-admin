@@ -44,6 +44,8 @@ export function createAdminDiscoveryPort(auth: CallAuth, options: AdminDiscovery
   const keyOf = (repo: string, revision: string) => `${repo}@${revision}`;
 
   return {
+    // Admin adds to the catalog: every version can be added; each row names its runtime (never a gate).
+    mode: "catalog",
     device: null,
     runtimes: [],
     async resolve(link: string) {

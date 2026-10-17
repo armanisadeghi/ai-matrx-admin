@@ -372,6 +372,7 @@ function CandidateDetail({
           result={resultOfCandidate(candidate)}
           device={null}
           runtimes={[]}
+          mode="catalog"
           chooseLabel="Promote this version"
           onChoose={(_model, v) => promoteOne(v)}
           renderVariantActions={(v) => {

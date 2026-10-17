@@ -16,6 +16,13 @@ const posted: Array<{ path: string; body: unknown }> = [];
 jest.mock("@/lib/api/post-json-as-user", () => ({
   postJsonAsUser: async ({ path, body }: { path: string; body: unknown }) => {
     posted.push({ path, body });
+    if (path === "/ai-catalog/discover/probe") {
+      const link = String((body as { link?: string })?.link);
+      if (link.includes("civitai.com")) {
+        return { ok: true, source: "civitai", url: "https://civitai.com/api/download/models/14856", filename: "MoXinV1.safetensors", size_bytes: 151140748, sha256: "3fd5".padEnd(64, "0"), sha_source: "civitai_api", repo: "civitai:12597", revision: "14856" };
+      }
+      return { ok: true, source: "huggingface", url: "https://huggingface.co/hexgrad/Kokoro-82M/resolve/abc/voices/af_heart.pt", filename: "af_heart.pt", size_bytes: 523425, sha256: "a".repeat(64), sha_source: "huggingface_lfs", repo: "hexgrad/Kokoro-82M", revision: "abc" };
+    }
     if (path === "/admin/ai-catalog/discovery/resolve" && String((body as { link?: string })?.link).includes("civitai.com")) {
       return {
         id: "c2",
@@ -41,6 +48,7 @@ jest.mock("@/lib/api/post-json-as-user", () => ({
               key: "fp16-full-safetensors-12781", format: "safetensors", quant: "fp16", label: "fp16 full safetensors",
               total_bytes: 151140748, runnable: false,
               why_not: "This is a LoRA (an add-on that teaches an image model a style, character or concept) for SD 1.5 image models. No AI Matrx runner runs image models yet, so it cannot run here today.",
+              runtime: { key: "image_generation", name: "image generation", available: false, note: "Matrx 2 has no image generation runtime yet, so this version cannot run on a computer today." },
               artifacts: [{ role: "weights", path_in_repo: "MoXinV1.safetensors", url: "u3", size_bytes: 151140748, required_for: ["core"] }],
             },
           ],
@@ -95,7 +103,7 @@ describe("Catalogs Add from link", () => {
     document.body.appendChild(host);
     const root = createRoot(host);
     await act(async () => {
-      root.render(<AddFromLinkDialog open onOpenChange={() => {}} />);
+      root.render(<AddFromLinkDialog open onOpenChange={() => {}} onPick={() => {}} />);
     });
     const dialog = document.body;
     expect(dialog.querySelector('[data-testid="model-discovery"]')).not.toBeNull();
@@ -133,9 +141,9 @@ describe("Catalogs Add from link", () => {
     return root;
   }
 
-  it("a Civitai LoRA link goes to the one engine and says why it does not run, never the older reader", async () => {
+  it("a Civitai LoRA link goes to the one engine: Add is enabled and the runtime note says Matrx 2 has none yet", async () => {
     posted.length = 0;
-    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} />);
+    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} onPick={() => {}} />);
     const tab = Array.from(document.body.querySelectorAll("button,[role=tab]")).find((b) => b.textContent === "Paste a link") as HTMLElement;
     await act(async () => tab.click());
     const field = document.body.querySelector('input[aria-label="Model link"]') as HTMLInputElement;
@@ -149,16 +157,55 @@ describe("Catalogs Add from link", () => {
     expect(posted.some((p) => p.path.includes("catalog-resolver"))).toBe(false);
     expect(document.body.querySelector('[data-testid="older-reader-notice"]')).toBeNull();
     expect(document.body.querySelectorAll('[data-testid="discovery-variant"]')).toHaveLength(1);
-    expect(document.body.textContent).toContain("Will not run");
+    const add = Array.from(document.body.querySelectorAll("button")).find((b) => b.textContent === "Add this version") as HTMLButtonElement;
+    expect(add.disabled).toBe(false);
+    expect(document.body.querySelector('[data-testid="variant-runtime"]')?.textContent).toBe(
+      "Matrx 2 has no image generation runtime yet, so this version cannot run on a computer today.",
+    );
+    expect(document.body.textContent).not.toContain("Will not run");
     await act(async () => root.unmount());
   });
 
   it("a LoRA table opens the same discovery view, not the older reader", async () => {
-    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} defaultKind="lora" />);
+    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} defaultKind="lora" onPick={() => {}} />);
     expect(document.body.querySelector('[data-testid="model-discovery"]')).not.toBeNull();
     expect(document.body.querySelector('[data-testid="older-reader-notice"]')).toBeNull();
     expect(document.body.textContent).not.toContain("Kind hint");
     await act(async () => root.unmount());
+  });
+
+  async function fill(kind: string, link: string) {
+    posted.length = 0;
+    const picked: unknown[] = [];
+    const root = await mount(<AddFromLinkDialog open onOpenChange={() => {}} defaultKind={kind} onPick={(p) => picked.push(p)} />);
+    expect(document.body.querySelector('[data-testid="model-discovery"]')).toBeNull();
+    const field = document.body.querySelector('input[aria-label="File link"]') as HTMLInputElement;
+    await act(async () => setInput(field, link));
+    const go = Array.from(document.body.querySelectorAll("button")).find((b) => b.textContent === "Fill the entry")!;
+    await act(async () => {
+      go.click();
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await act(async () => root.unmount());
+    expect(posted.map((p) => p.path)).toEqual(["/ai-catalog/discover/probe"]);
+    return picked as Array<{ kind: string; key: string; payload: Record<string, unknown>; artifact_url: string; artifact_sha256: string | null; artifact_size_bytes: number | null }>;
+  }
+
+  it("a voice link fills the voice entry through the engine (Kokoro name read, LFS sha pinned)", async () => {
+    const [p] = await fill("tts_voice", "https://huggingface.co/hexgrad/Kokoro-82M/resolve/main/voices/af_heart.pt");
+    expect(p).toMatchObject({
+      kind: "tts_voice",
+      key: "af-heart",
+      payload: { voice_id: "af_heart", name: "Heart", lang_code: "a", gender: "female" },
+      artifact_url: "https://huggingface.co/hexgrad/Kokoro-82M/resolve/abc/voices/af_heart.pt",
+      artifact_sha256: "a".repeat(64),
+      artifact_size_bytes: 523425,
+    });
+  });
+
+  it("a preset link fills the preset entry and names its model", async () => {
+    const [p] = await fill("workflow_preset", "https://civitai.com/models/12597");
+    expect(p).toMatchObject({ kind: "workflow_preset", payload: { preset_id: "moxinv1", name: "MoXinV1", suggested_model_id: "civitai:12597@14856" } });
   });
 
   it("nothing in the app calls the retired catalog-entry resolver", () => {
