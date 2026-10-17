@@ -48,9 +48,9 @@ export async function writeAgentToPlanStep(
   if (!plan) throw new Error("That plan could not be opened");
   const step = plan.steps.find((s) => s.n === stepNumber);
   if (!step) throw new Error(`The plan has no step ${stepNumber}`);
-  if (step.usesAgentId === agentId) return;
+  if (step.usesAgentId === agentId && (step.usesAgentName ?? null) === (agentName ?? step.usesAgentName ?? null)) return;
   await savePlanChanges(planId, {
     ...plan,
-    steps: plan.steps.map((s) => (s.n === stepNumber ? { ...s, usesAgentId: agentId, usesAgentName: agentName } : s)),
+    steps: plan.steps.map((s) => (s.n === stepNumber ? { ...s, usesAgentId: agentId, usesAgentName: agentName ?? s.usesAgentName } : s)),
   });
 }

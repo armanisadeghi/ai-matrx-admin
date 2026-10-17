@@ -60,7 +60,7 @@ function doerOf(text: string): StepDoer {
   if (/\b(no ai|simple code|simple rules|plain rules|code compares|deterministic|pure code|workflow node)\b/.test(t)) return "code";
   if (/\b(decision model|decision-model|small model|classifier)\b/.test(t)) return "decision";
   if (/\b(frontier|mid-size|mid size|top-tier|top tier|large model)\b/.test(t)) return "ai-call";
-  if (/\b(workflow pauses|you (review|approve|check|decide|upload)|a person signs)\b/.test(t)) return "human";
+  if (/\b(workflow pauses|you (review|approve|check|decide|upload)|a person signs|approval step|person \(approval)\b/.test(t)) return "human";
   if (/\bagent\b/.test(t)) return "agent";
   if (/\b(ai call|llm call|model call|prompt)\b/.test(t)) return "ai-call";
   if (/\b(the same model|a model|the model)\b/.test(t)) return "ai-call";
@@ -70,7 +70,9 @@ function doerOf(text: string): StepDoer {
 }
 
 function modelClassOf(text: string): string | null {
-  const m = /\b(frontier|mid-size|mid size|top-tier|top tier|small|decision|tiny)[\s-]+models?\b/i.exec(text);
+  const m =
+    /\b(frontier|mid-size|mid size|top-tier|top tier|small|decision|tiny)[\s-]+models?\b/i.exec(text) ??
+    /\bmodel\s*:\s*\**\s*(frontier|mid-size|mid size|top-tier|top tier|small|decision|tiny)\b/i.exec(text);
   if (!m) return null;
   const c = m[1].toLowerCase();
   if (c === "mid size") return "mid-size";
@@ -210,6 +212,13 @@ function numberedParts(body: string): string[] {
   return parts;
 }
 
+/** A "- **Model:** …" bullet is the badge's business; the card's sentence is what the step does. */
+function withoutModelLine(body: string): string {
+  const lines = body.split("\n");
+  const kept = lines.filter((l) => !/^\s*[-*•]\s*\**\s*model\s*:?\s*\**\s*:?/i.test(l));
+  return kept.length < lines.length ? plainOf(kept.join("\n")) : "";
+}
+
 function stepFrom(n: number, title: string, body: string): SystemPlanStep {
   const plain = plainOf(body);
   const parts = numberedParts(body);
@@ -218,7 +227,7 @@ function stepFrom(n: number, title: string, body: string): SystemPlanStep {
     title: clip(stripMd(title), 120),
     markdown: planText(body.replace(/\n{3,}/g, "\n\n").trim()),
     // A step with several numbered parts says them all, not just the first one's sentence.
-    summary: parts.length >= 2 ? `${parts.length} parts: ${parts.join("; ")}.` : summaryOf(plain),
+    summary: parts.length >= 2 ? `${parts.length} parts: ${parts.join("; ")}.` : summaryOf(withoutModelLine(body) || plain),
     job: plain,
     doer: doerOf(`${title} ${body}`),
     modelClass: modelClassOf(`${title} ${body}`),
@@ -252,6 +261,34 @@ function listItems(lines: string[]): Array<{ title: string; body: string }> {
   }
 }
 
+/**
+ * A steps TABLE (`| # | Step | Who does it | Model | … |`): one step per row. The title is the step cell's
+ * bold lead (or its first sentence); the body is the whole step cell plus every other column, labelled.
+ */
+function tableSteps(lines: string[]): Array<{ title: string; body: string }> {
+  const cells = (l: string) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+  const out: Array<{ title: string; body: string }> = [];
+  for (let i = 0; i + 1 < lines.length; i++) {
+    const isSep = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(lines[i + 1]);
+    if (!(/\|/.test(lines[i]) && isSep)) continue;
+    const head = cells(lines[i]);
+    // The step cell is the first column that is not a bare number column.
+    const numbered = /^(#|no\.?|n|step\s*(#|no\.?|number))$/i.test(head[0] ?? "");
+    const at = numbered ? 1 : 0;
+    for (i += 2; i < lines.length && /\|/.test(lines[i]) && lines[i].trim() !== ""; i++) {
+      const row = cells(lines[i]);
+      const cell = row[at] ?? "";
+      if (!cell) continue;
+      const bold = /^\*\*(.+?)\*\*\s*(.*)$/.exec(cell);
+      const title = bold ? bold[1] : (cell.split(/(?<=[.!?:])\s/)[0] ?? cell);
+      const rest = row.flatMap((c, k) => (k === at || (numbered && k === 0) || !c ? [] : [`${head[k] ?? ""}: ${c}`]));
+      out.push({ title: title.replace(/[.:]\s*$/, ""), body: [cell, ...rest].join("\n") });
+    }
+    break;
+  }
+  return out;
+}
+
 /** `**Step 1: Title.** body` paragraphs, each owning the lines (bullets included) up to the next. */
 function boldStepParagraphs(lines: string[]): Array<{ title: string; body: string }> {
   const out: Array<{ title: string; body: string[] }> = [];
@@ -269,7 +306,7 @@ export function parsePlannerAnswer(
   conversationId: string | null = null,
 ): SystemPlan {
   const sections = splitSections(answer);
-  const stepsAt = sections.findIndex((s) => /^(the )?steps?\b|^step[- ]by[- ]step|^the (design|pipeline)\b/i.test(s.title));
+  const stepsAt = sections.findIndex((s) => /^(the )?((one|two|three|four|five|six|seven|eight|nine|ten|\d+) )?steps?\b|^step[- ]by[- ]step|^the (design|pipeline)\b/i.test(s.title));
   let steps: SystemPlanStep[] = [];
   if (stepsAt >= 0) {
     const head = sections[stepsAt];
@@ -281,6 +318,8 @@ export function parsePlannerAnswer(
       steps = bolded.map((b, i) => stepFrom(i + 1, b.title, b.body));
     } else if (subs.length >= 1 && head.level < 7) {
       steps = subs.map((s, i) => stepFrom(i + 1, s.title.replace(/^(step\s*)?\d+[.):]?\s*/i, ""), s.lines.join("\n")));
+    } else if (tableSteps(head.lines).length >= 2) {
+      steps = tableSteps(head.lines).map((t, i) => stepFrom(i + 1, t.title, t.body));
     } else {
       const items = listItems(head.lines);
       steps = items.map((it, i) => stepFrom(i + 1, it.title.replace(/^(step\s*)?\d+[.):]?\s*/i, ""), it.body));

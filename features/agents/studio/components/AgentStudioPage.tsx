@@ -278,8 +278,9 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const wroteBackFor = useRef<string | null>(null);
   useEffect(() => {
     const { agentId, planId, planStep } = state;
-    if (!agentId || !planId || !planStep || wroteBackFor.current === agentId) return;
-    wroteBackFor.current = agentId;
+    const key = `${agentId}:${agentName ?? ""}`;
+    if (!agentId || !planId || !planStep || wroteBackFor.current === key) return;
+    wroteBackFor.current = key;
     void writeAgentToPlanStep(planId, Number(planStep), agentId, agentName ?? null).catch((e: unknown) =>
       toast.error("The plan step was not updated", { description: e instanceof Error ? e.message : String(e) }),
     );
