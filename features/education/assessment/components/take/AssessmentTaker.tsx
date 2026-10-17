@@ -25,7 +25,7 @@ import {
   StudyOrganizationGate,
   useStudyOrganizationReady,
 } from "@/features/education/study/components/StudyOrganizationGate";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { QuestionView, optionsOf } from "./QuestionView";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";
 import {
@@ -125,7 +125,7 @@ export function AssessmentTaker({
   // one) falls back to their selected organization, and the notice shows in
   // place until one is picked — never the blocking prompt on arrival.
   const selectedOrgReady = useStudyOrganizationReady();
-  const { organizations, loading: orgsLoading } = useUserOrganizations();
+  const { organizations, loading: orgsLoading } = useOrganizationsWith([assessment.organization_id]);
   const carriedOrgId = organizations.some((o) => o.id === assessment.organization_id)
     ? assessment.organization_id
     : null;

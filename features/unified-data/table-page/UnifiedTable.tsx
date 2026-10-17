@@ -37,7 +37,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useSharedTable } from "@/features/unified-data/hub/useSharedTable";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";
 import { PREVIEW_RIGHTS, recordsUiHostFor, useAppRecordsConfig, useRecordsUiPorts } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
@@ -136,7 +136,7 @@ export function useUnifiedTable({
    * (`pnpm check:object-pages-read-the-objects-organization`).
    */
   const object = useObjectOrganization(dataSource, tableId);
-  const { organizations: myOrganizations } = useUserOrganizations();
+  const { organizations: myOrganizations } = useOrganizationsWith([object.state === "found" ? object.organizationId : null]);
   /** A table another organization gave this person (see `useSharedTable`). */
   const shareHint = object.state === "found" ? object.organizationId : null;
   const shared = useSharedTable(dataSource, tableId, shareHint);

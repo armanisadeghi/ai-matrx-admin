@@ -14,7 +14,7 @@
 "use client";
 
 import { OrgStorageMeter } from "@/features/files/storage-meter/OrgStorageMeter";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 
 /** The distinct organizations owning the mappings on screen, in first-seen order. */
 export function owningOrganizationIds(
@@ -56,7 +56,7 @@ function NamedStorageMeters({
 }: {
   organizationIds: string[];
 }) {
-  const { organizations, error } = useUserOrganizations();
+  const { organizations, error } = useOrganizationsWith(organizationIds);
   const nameById = new Map(organizations.map((org) => [org.id, org.name]));
   return (
     <div className="flex flex-wrap gap-2">

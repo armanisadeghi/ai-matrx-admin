@@ -23,7 +23,7 @@ import { makeScope } from "@/lib/list-scope/types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { isTestOrganization } from "@/features/make/recent";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -131,7 +131,7 @@ export function DataHomeList({ dataSource, sharedOnlyHere = false }: DataHomeLis
       live = false;
     };
   }, [corpus]);
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([...rowsById.values()].map((r) => r.organizationId));
   const testOrganizationIds = useMemo(
     () => new Set(organizations.filter((o) => isTestOrganization(o)).map((o) => o.id)),
     [organizations],

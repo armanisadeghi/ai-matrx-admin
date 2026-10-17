@@ -65,7 +65,7 @@ import {
 } from "@/features/mandates/overrides";
 import { parseMandateWave1 } from "@/features/mandates/provision-shapes";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { homeScopePhrase } from "@/features/mandates/workspace/system-rung-health";
 import {
   contractOfMandate,
@@ -1712,7 +1712,7 @@ export function MandateDetailView({
   showHolderAnswer?: boolean;
 }) {
   const dispatch = useAppDispatch();
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([row.mandate.organization_id]);
   /**
    * WHO THE JOB'S OWN ANSWER COVERS — a PHRASE, computed here so no sentence
    * below ever interpolates an id-shaped expression (FIX-R8's class guard is

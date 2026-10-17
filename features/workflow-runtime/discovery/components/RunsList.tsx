@@ -41,7 +41,7 @@ import {
 import { runDurationMs, type RunListRow } from "../runs";
 import { useRunsList } from "../useRunsList";
 import { useWorkflowFacts } from "../useWorkflowFacts";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { EntityOrgFilter } from "@/lib/entity-list/components/EntityOrgFilter";
 import { useOrgFilterParam } from "@/lib/entity-list/orgFilterUrl";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
   const [clickedRow, setClickedRow] = useState<RunRowView | null>(null);
 
   // The list spans every organization the person belongs to; name each row's.
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith(rows.map((r) => r.organizationId));
   const orgName = new Map(organizations.map((o) => [o.id, o.name]));
   const showOrganization = organizations.length > 1;
 

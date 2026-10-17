@@ -3,7 +3,7 @@
 "use client";
 
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -190,8 +190,8 @@ function ScheduleDetailBody({ taskId, seat = "owner" }: Props) {
   );
   // The shell header believes the schedule: its writes go in the schedule's own organization,
   // so a red "Choose org" over it would be a lie (GATES-TAIL, VERIFIER-21 #7).
-  const { organizations: myOrganizations } = useUserOrganizations();
   const scheduleOrganizationId = task?.organizationId ?? null;
+  const { organizations: myOrganizations } = useOrganizationsWith([scheduleOrganizationId]);
   useDeclarePageObjectOrganization(
     scheduleOrganizationId
       ? {
