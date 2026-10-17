@@ -31,7 +31,7 @@
 //     "add to my board" opens.
 
 import type { MaybeSingleResponse } from "@ai-matrx/data";
-import { guardedUpdate, readAllRows } from "@ai-matrx/data/db";
+import { asJsonObject, guardedUpdate, mergeJsonColumn, readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { writeOne } from "@/utils/supabase/writeOne";
@@ -199,6 +199,23 @@ export function meetingIdOfSettings(settings: Json): string | null {
 export const BRAND_BOARD_SETTING = "brand_id";
 export const STUDIO_BOARD_SETTING = "studio_brand_id";
 
+/**
+ * Pages: a board's sub-boards. A page is an ordinary board whose `settings.parent_board_id` is its
+ * parent (one level: a page of a page is filed under the same top board). `settings.layout` is
+ * "canvas" (default) or "page"; `settings.canvas_layout` keeps every canvas position while the board
+ * is in page layout, so Canvas layout comes back exactly (`engine/page-layout.ts`).
+ */
+export const PARENT_BOARD_SETTING = "parent_board_id";
+export const LAYOUT_SETTING = "layout";
+export const CANVAS_LAYOUT_SETTING = "canvas_layout";
+export const DEFAULT_PAGE_TITLE = "Untitled page";
+
+export function parentBoardIdOf(settings: Json | JsonObject | null | undefined): string | null {
+  if (!isJsonObject(settings)) return null;
+  const id = settings[PARENT_BOARD_SETTING];
+  return typeof id === "string" && id ? id : null;
+}
+
 /** Settings for a copy: everything except the retired `home` flag, the meeting link and the Studio
  * link (a copy is an ordinary board — never the meeting's board, never the brand's Studio).
  * `dropBrand` also drops the brand link (a board made from a template belongs to nobody's brand). */
@@ -207,7 +224,8 @@ export function settingsForCopy(settings: Json, options: { dropBrand?: boolean }
   const out: JsonObject = {};
   for (const [k, v] of Object.entries(settings)) {
     if (k === "home" || k === MEETING_BOARD_SETTING || k === STUDIO_BOARD_SETTING || v === undefined) continue;
-    if (options.dropBrand && k === BRAND_BOARD_SETTING) continue;
+    // A template copy is a new top board; a plain Duplicate of a page stays a page of the same parent.
+    if (options.dropBrand && (k === BRAND_BOARD_SETTING || k === PARENT_BOARD_SETTING)) continue;
     out[k] = v;
   }
   return out;
@@ -246,6 +264,8 @@ export interface LoadedBoard {
   fingerprint: string;
   updatedAt: string;
   lastOpenedAt: string | null;
+  /** The row's `settings` (links, layout, the kept canvas). */
+  settings: JsonObject;
 }
 
 export interface BoardListRow {
@@ -258,6 +278,10 @@ export interface BoardListRow {
   created_at: string;
   updated_at: string;
   last_opened_at: string | null;
+  /** The board this one is a page of (a live parent): the list nests it there. */
+  parent_id: string | null;
+  /** Live pages under this board. */
+  page_count: number;
 }
 
 type LoadedRow = Pick<
@@ -289,6 +313,7 @@ export function toLoadedBoard(row: LoadedRow): LoadedBoard {
     fingerprint: documentFingerprint(row),
     updatedAt: row.updated_at,
     lastOpenedAt: row.last_opened_at,
+    settings: isJsonObject(row.settings) ? row.settings : {},
   };
 }
 
@@ -352,9 +377,22 @@ export async function listBoards(archived: ArchiveFilterValue = "active"): Promi
   } catch (error) {
     throw readFailed("your boards", error);
   }
+  // A page lists under its parent while that parent is live; a page whose parent is gone lists on its own.
+  const live = new Set(rows.filter((r) => r.deleted_at === null).map((r) => r.id));
+  const parentOf = (r: (typeof rows)[number]) => {
+    const p = parentBoardIdOf(r.settings);
+    return p && live.has(p) && r.deleted_at === null ? p : null;
+  };
+  const pages = new Map<string, number>();
+  for (const r of rows) {
+    const p = parentOf(r);
+    if (p) pages.set(p, (pages.get(p) ?? 0) + 1);
+  }
   return rows
     .filter((r) => (archived === "all" ? true : archived === "archived" ? r.deleted_at !== null : r.deleted_at === null))
     .map((r) => ({
+      parent_id: parentOf(r),
+      page_count: pages.get(r.id) ?? 0,
       id: r.id,
       title: r.title,
       organization_id: r.organization_id,
@@ -535,6 +573,8 @@ export function settlePendingCreate(id: string): void {
 export async function beginBoardCreate(input: {
   organizationId: string | null;
   title?: string;
+  /** Links the new board carries from its first write (a page's parent, its layout). */
+  settings?: JsonObject;
 }): Promise<{ id: string }> {
   const orgId = await resolveOrganization(input.organizationId);
   const userId = requireUserId();
@@ -550,14 +590,14 @@ export async function beginBoardCreate(input: {
     camera: empty.camera,
     nodes: empty.nodes,
     edges: empty.edges,
-    settings: {},
+    settings: (input.settings ?? {}) as Json,
     version: 1,
     created_by: userId,
     created_at: now,
     updated_at: now,
     last_opened_at: now,
   });
-  const insert = () => insertBoard({ id, organizationId: orgId, userId, title });
+  const insert = () => insertBoard({ id, organizationId: orgId, userId, title, settings: (input.settings ?? {}) as Json });
   const entry: PendingCreate = {
     board,
     promise: insert(),
@@ -739,6 +779,102 @@ export async function restoreBoard(id: string): Promise<{ id: string }> {
     );
   }
   return { id };
+}
+
+// ── Settings and pages ───────────────────────────────────────────────────────
+
+/**
+ * Merge `patch` into the board's `settings` (a `null` value removes the key), version-guarded and
+ * retried against the stored value, so another key (a meeting or brand link) is never lost.
+ * Returns the stored settings and the row's new `version`.
+ */
+export async function updateBoardSettings(
+  id: string,
+  patch: Record<string, JsonValue | null>,
+): Promise<{ settings: JsonObject; version: number }> {
+  type Row = { version: number; settings: Json };
+  let result;
+  try {
+    result = await mergeJsonColumn<Row>({
+      fetchCurrent: () => db.from(TABLE).select("version, settings").eq("id", id).is("deleted_at", null).maybeSingle(),
+      readColumn: (row) => row.settings,
+      merge: (current) => {
+        const next: Record<string, unknown> = { ...current };
+        for (const [k, v] of Object.entries(patch)) {
+          if (v === null) delete next[k];
+          else next[k] = v;
+        }
+        return next;
+      },
+      applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+        db
+          .from(TABLE)
+          .update({ settings: value as Json, version: nextVersion })
+          .eq("id", id)
+          .eq("version", expectedVersion)
+          .is("deleted_at", null)
+          .select("version, settings")
+          .maybeSingle(),
+    });
+  } catch (error) {
+    throw writeFailed("change the board's settings", error);
+  }
+  if (result.status === "saved") {
+    return { settings: asJsonObject(result.row.settings) as JsonObject, version: result.row.version };
+  }
+  if (result.status === "not_found") {
+    throw new BoardError("not_found", "This board was deleted, so the change was not saved.", "Open another board from your boards list.");
+  }
+  if (result.status === "conflict") {
+    throw new BoardError("conflict", "This board kept changing, so the setting was not saved.", "Try again.");
+  }
+  throw writeFailed("change the board's settings", (result as { error?: unknown }).error);
+}
+
+export interface BoardPage {
+  id: string;
+  title: string;
+  /** null = the top board of the family. */
+  parentId: string | null;
+}
+
+/**
+ * A board's page family in ONE read: the top board (`rootId`) and every live page filed under it,
+ * top board first, then pages in the order they were made.
+ */
+export async function listPageFamily(rootId: string): Promise<BoardPage[]> {
+  const { data, error } = await db
+    .from(TABLE)
+    .select("id, title, settings, created_at")
+    .or(`id.eq.${rootId},settings->>${PARENT_BOARD_SETTING}.eq.${rootId}`)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true })
+    .limit(500);
+  if (error) throw readFailed("this board's pages", error);
+  const rows = data ?? [];
+  const root = rows.find((r) => r.id === rootId);
+  const pages = rows.filter((r) => r.id !== rootId);
+  return [
+    ...(root ? [{ id: root.id, title: root.title, parentId: null }] : []),
+    ...pages.map((r) => ({ id: r.id, title: r.title, parentId: rootId })),
+  ];
+}
+
+/**
+ * Start a new page under `parent` (a board, or a page — then under the same top board), in the
+ * parent's organization, opened at once like "New board" (`beginBoardCreate`).
+ */
+export async function beginPageCreate(input: {
+  parent: { id: string; organizationId: string; settings: JsonObject };
+  title?: string;
+  layout?: "canvas" | "page";
+}): Promise<{ id: string }> {
+  const rootId = parentBoardIdOf(input.parent.settings) ?? input.parent.id;
+  return beginBoardCreate({
+    organizationId: input.parent.organizationId,
+    title: input.title?.trim() ? input.title : DEFAULT_PAGE_TITLE,
+    settings: { [PARENT_BOARD_SETTING]: rootId, ...(input.layout === "page" ? { [LAYOUT_SETTING]: "page" } : {}) },
+  });
 }
 
 /** Stamp `last_opened_at`. Returns the row's new `version`. */

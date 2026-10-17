@@ -60,6 +60,14 @@ export interface ShapeHost {
   clickEdits?: (id: string) => boolean;
 }
 
+/** Page layout: the one column the camera reads (world px). */
+export interface PageLock {
+  column: { x: number; w: number };
+}
+
+/** Screen px kept between a page and the view's edges. */
+export const PAGE_VIEW_MARGIN = 24;
+
 export interface Insets {
   top: number;
   right: number;
@@ -112,6 +120,7 @@ export const WARM_TILE_BUDGET = 12;
 
 export class BoardCameraStore {
   private camera: Camera;
+  private pageLock: PageLock | null = null;
   private size: Size = { w: 1, h: 1 };
   private insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
   private items = new Map<string, Rect>();
@@ -174,7 +183,7 @@ export class BoardCameraStore {
 
   setCamera(next: Camera, opts: { keepFlight?: boolean } = {}): void {
     if (!opts.keepFlight) this.cancelFlight();
-    this.camera = next;
+    this.camera = this.pageLock ? this.lockedCamera(next) : next;
     this.markInteracting();
     for (const l of this.frameListeners) l();
     this.scheduleCoarse();
@@ -182,6 +191,7 @@ export class BoardCameraStore {
 
   setSize(size: Size): void {
     this.size = size;
+    if (this.pageLock) this.camera = this.lockedCamera(this.camera);
     for (const l of this.frameListeners) l();
     this.scheduleCoarse();
   }
@@ -199,6 +209,62 @@ export class BoardCameraStore {
       this.flight = t < 1 ? requestAnimationFrame(step) : null;
     };
     this.flight = requestAnimationFrame(step);
+  }
+
+  // ── page layout: the camera is locked to one readable column ─────────────
+
+  /** The page column (world px), or null on a free canvas. */
+  getPageLock = (): PageLock | null => this.pageLock;
+
+  /**
+   * Lock the camera to a page: zoom fixed so the column fits the view width (never above 100%),
+   * the column centred, and only vertical movement, clamped to the content. Every way the camera
+   * moves (wheel, drag, keys, fit, fly-to) passes through `setCamera`, so all of them obey it.
+   */
+  setPageLock(lock: PageLock | null): void {
+    const same =
+      lock === this.pageLock ||
+      (lock && this.pageLock && lock.column.x === this.pageLock.column.x && lock.column.w === this.pageLock.column.w);
+    if (same) return;
+    this.pageLock = lock;
+    if (lock) this.setCamera(this.camera);
+    for (const l of this.uiListeners) l();
+  }
+
+  /** The zoom a page is read at in this view. */
+  pageZoom(lock: PageLock): number {
+    const { left, right } = this.insets;
+    const innerW = Math.max(1, this.size.w - left - right - PAGE_VIEW_MARGIN * 2);
+    return Math.max(MIN_ZOOM, Math.min(1, innerW / lock.column.w));
+  }
+
+  /** Put world `y` at the top of the page view (a chapter's start). */
+  pageScrollTo(y: number, animate = true): void {
+    const lock = this.pageLock;
+    if (!lock) return;
+    const z = this.pageZoom(lock);
+    const target = { x: this.camera.x, y: this.insets.top + PAGE_VIEW_MARGIN - y * z, z };
+    if (animate) this.flyTo(target, 360);
+    else this.setCamera(target);
+  }
+
+  private lockedCamera(next: Camera): Camera {
+    const lock = this.pageLock!;
+    const { top, bottom, left, right } = this.insets;
+    const z = this.pageZoom(lock);
+    const innerW = Math.max(1, this.size.w - left - right);
+    const x = left + (innerW - lock.column.w * z) / 2 - lock.column.x * z;
+    // What was at the view's centre stays there (fit, fly-to and pinch keep their meaning).
+    const cy = this.size.h / 2;
+    let y = cy - ((cy - next.y) / next.z) * z;
+    const bounds = unionRects([...this.items.values()]);
+    if (bounds) {
+      const pinTop = top + PAGE_VIEW_MARGIN - bounds.y * z;
+      const pinBottom = this.size.h - bottom - PAGE_VIEW_MARGIN - (bounds.y + bounds.h) * z;
+      // Content shorter than the view pins to the top.
+      y = Math.min(pinTop, Math.max(pinBottom, y));
+    }
+    return { x, y, z };
   }
 
   /** Screen px covered by overlay chrome; fits frame content inside the rest. */

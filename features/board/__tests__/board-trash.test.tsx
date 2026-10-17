@@ -127,6 +127,8 @@ describe("/board Archived filter", () => {
     created_at: "2026-09-01",
     updated_at: "2026-09-01",
     last_opened_at: null,
+    parent_id: null,
+    page_count: 0,
   });
   const query = { scope: { kind: "mine" as const }, orgId: null, search: "", deep: false, filters: {}, page: 1 };
   const sort = { sort: "updated_at", direction: "desc" as const, favoritesFirst: false, pageSize: 25 };

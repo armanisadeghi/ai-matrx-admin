@@ -14,7 +14,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { type ReactNode, useEffect, useState } from "react";
-import { LayoutGrid, LayoutTemplate, Pencil, Plus } from "lucide-react";
+import { FilePlus, LayoutGrid, LayoutTemplate, ListTree, Pencil, Plus, Rows3, Shapes } from "lucide-react";
 import { ChatCanvasWorkspace } from "@ai-matrx/chat/canvas/workspace/ChatCanvasWorkspace";
 import type { CanvasWorkspaceLayout } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -25,7 +25,9 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { BoardOrganizationProvider } from "../items/board-organization";
 import { BoardChatsProvider, BoardHomeChatFiler } from "../items/board-chats";
 import { type SavedBoardTarget, useSavedBoard } from "../persistence/useSavedBoard";
-import { BOARD_TOKEN } from "../persistence/boardsService";
+import { BOARD_TOKEN, CANVAS_LAYOUT_SETTING, LAYOUT_SETTING } from "../persistence/boardsService";
+import { usePageFamily } from "../persistence/usePageFamily";
+import { type BoardLayoutMode, layoutModeOf, parseCanvasSnapshot } from "../engine/page-layout";
 import type { BoardPreset } from "../presets/board-preset";
 import { useCreateBoard } from "../persistence/useCreateBoard";
 import { listTemplateIds } from "@/features/spaces/state/templates";
@@ -84,6 +86,23 @@ export function BoardPage({
   const ready = saved.state === "ready" ? saved : null;
   const title = ready?.board.title ?? "Board";
   const readyId = ready?.board.id ?? null;
+  // Page layout (`settings.layout`) and the canvas it keeps (`settings.canvas_layout`).
+  const layout: BoardLayoutMode = layoutModeOf(ready?.board.settings[LAYOUT_SETTING]);
+  const canvasLayout = parseCanvasSnapshot(ready?.board.settings[CANVAS_LAYOUT_SETTING]);
+  const setLayout = (next: BoardLayoutMode) => {
+    if (!ready || next === layout) return;
+    void ready.updateSettings({ [LAYOUT_SETTING]: next === "page" ? "page" : null }).catch(() => undefined);
+  };
+  // The outline: open by default in page layout, a toggle on the canvas (per open board, per layout).
+  const [outlinePick, setOutlinePick] = useState<{ key: string; open: boolean } | null>(null);
+  const outlineKey = `${readyId ?? ""}|${layout}`;
+  const outlineOpen = outlinePick?.key === outlineKey ? outlinePick.open : layout === "page";
+  const setOutlineOpen = (open: boolean) => setOutlinePick({ key: outlineKey, open });
+  const family = usePageFamily(
+    ready
+      ? { id: ready.board.id, title, organizationId: ready.board.organizationId, settings: ready.board.settings, layout }
+      : null,
+  );
   useEffect(() => {
     if (!readyId) return;
     let live = true;
@@ -134,6 +153,24 @@ export function BoardPage({
               <DropdownMenuItem onSelect={() => setRenaming(true)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Rename…
+              </DropdownMenuItem>
+            )}
+            {ready && (
+              <DropdownMenuItem onSelect={() => setLayout(layout === "page" ? "canvas" : "page")}>
+                {layout === "page" ? <Shapes className="mr-2 h-4 w-4" /> : <Rows3 className="mr-2 h-4 w-4" />}
+                {layout === "page" ? "Canvas layout" : "Page layout"}
+              </DropdownMenuItem>
+            )}
+            {ready && (
+              <DropdownMenuItem onSelect={() => setOutlineOpen(!outlineOpen)}>
+                <ListTree className="mr-2 h-4 w-4" />
+                {outlineOpen ? "Hide outline" : "Show outline"}
+              </DropdownMenuItem>
+            )}
+            {ready && (
+              <DropdownMenuItem disabled={family.adding} onSelect={() => void family.addPage().catch(() => undefined)}>
+                <FilePlus className="mr-2 h-4 w-4" />
+                Add page
               </DropdownMenuItem>
             )}
             {hideNewBoard ? null : (
@@ -199,6 +236,32 @@ export function BoardPage({
                       viewerCamera={ready.board.viewerCamera}
                       onChange={ready.save}
                       onCamera={ready.saveCamera}
+                      layout={layout}
+                      canvasLayout={canvasLayout}
+                      onKeepCanvas={(snapshot) => void ready.updateSettings({ [CANVAS_LAYOUT_SETTING]: snapshot }).catch(() => undefined)}
+                      outline={{
+                        open: outlineOpen,
+                        onOpenChange: setOutlineOpen,
+                        pages: {
+                          list: family.list,
+                          currentId: ready.board.id,
+                          error: family.error,
+                          adding: family.adding,
+                          onAdd: () => void family.addPage().catch(() => undefined),
+                          onRetry: family.retry,
+                        },
+                      }}
+                      pagesHost={{
+                        layout,
+                        pages: (family.list ?? []).map((p) => ({
+                          id: p.id,
+                          title: p.title,
+                          parent_id: p.parentId,
+                          current: p.id === ready.board.id,
+                        })),
+                        setLayout,
+                        addPage: family.addPage,
+                      }}
                     />
                   </BoardChatsProvider>
                 </BoardOrganizationProvider>

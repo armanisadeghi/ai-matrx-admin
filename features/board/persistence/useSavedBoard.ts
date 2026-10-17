@@ -41,8 +41,10 @@ import {
   renameBoard,
   saveBoardDocument,
   touchOpened,
+  updateBoardSettings,
   type LoadedBoard,
 } from "./boardsService";
+import type { JsonObject, JsonValue } from "@/types/json";
 import { readViewerCamera, writeViewerCamera } from "./viewerCamera";
 
 export const AUTOSAVE_DELAY_MS = 800;
@@ -73,7 +75,11 @@ export type SavedBoardState =
         problems: string[];
         /** Where this person last looked at this board, or null (open to fit everything). */
         viewerCamera: Camera | null;
+        /** The row's settings as this tab knows them (changes show at once, then save). */
+        settings: JsonObject;
       };
+      /** Merge into the board's settings (`null` removes a key): shown at once, saved in order. */
+      updateSettings: (patch: Record<string, JsonValue | null>) => Promise<void>;
       /** Debounced autosave (~800ms); last write wins within the tab. Pass a
        * builder to defer building the document until the write goes out. */
       save: (doc: BoardDocument | (() => BoardDocument)) => void;
@@ -116,7 +122,7 @@ async function loadTarget(target: SavedBoardTarget, organizationId: string | nul
 
 type Phase =
   | { key: string; status: "failed"; reason: string }
-  | { key: string; status: "ready"; board: LoadedBoard; title: string; viewerCamera: Camera | null };
+  | { key: string; status: "ready"; board: LoadedBoard; title: string; viewerCamera: Camera | null; settings: JsonObject };
 
 export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
   const userId = useAppSelector(selectUserId);
@@ -158,6 +164,8 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
   // A board this tab just minted (optimistic "New board"): the page shows it at once while the
   // insert lands. Saves wait for the landing; a failed landing is the page's `failed` state with Retry.
   const landing = useRef<Promise<unknown> | null>(null);
+  // Settings writes go out one after another (each merges into what the last one stored).
+  const settingsChain = useRef<Promise<unknown>>(Promise.resolve());
   const landingFailed = useRef(false);
 
   const retry = () => {
@@ -194,7 +202,7 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
       blocked.current = false;
       setSaveError(null);
       setLastSavedAt(null);
-      setPhase({ key, status: "ready", board: first, title: first.title, viewerCamera: readViewerCamera(userId, first.id) });
+      setPhase({ key, status: "ready", board: first, title: first.title, viewerCamera: readViewerCamera(userId, first.id), settings: first.settings });
       const run = landingFailed.current ? pending.retry() : pending.promise;
       landingFailed.current = false;
       const done = run.then(
@@ -230,7 +238,7 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
         blocked.current = false;
         setSaveError(null);
         setLastSavedAt(null);
-        setPhase({ key, status: "ready", board, title: board.title, viewerCamera: readViewerCamera(userId, board.id) });
+        setPhase({ key, status: "ready", board, title: board.title, viewerCamera: readViewerCamera(userId, board.id), settings: board.settings });
       },
       (error: unknown) => {
         if (!alive) return;
@@ -366,7 +374,7 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
   if (!phase || phase.key !== key) return { state: "loading" };
   if (phase.status === "failed") return { state: "failed", reason: phase.reason, retry };
 
-  const { board, title, viewerCamera } = phase;
+  const { board, title, viewerCamera, settings } = phase;
 
   const save = (doc: BoardDocument | (() => BoardDocument)) => {
     if (blocked.current) return; // saving on would overwrite the newer board; the toast offers reload
@@ -396,9 +404,36 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
     );
   };
 
+  const updateSettings = (patch: Record<string, JsonValue | null>): Promise<void> => {
+    const apply = (cur: JsonObject): JsonObject => {
+      const next: JsonObject = { ...cur };
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === null) delete next[k];
+        else next[k] = v;
+      }
+      return next;
+    };
+    setPhase((p) => (p && p.status === "ready" && p.board.id === board.id ? { ...p, settings: apply(p.settings) } : p));
+    const run = settingsChain.current.then(async () => {
+      // A board still being created: its row must exist first.
+      if (landing.current) await landing.current.catch(() => undefined);
+      const saved = await updateBoardSettings(board.id, patch);
+      if (guard.current?.id === board.id && saved.version > guard.current.version) {
+        guard.current = { ...guard.current, version: saved.version };
+      }
+    });
+    settingsChain.current = run.catch(() => undefined);
+    return run.catch((error: unknown) => {
+      toast.error(isBoardError(error) ? error.message : "The board's setting was not saved. Try again.");
+      throw error;
+    });
+  };
+
   return {
     state: "ready",
+    updateSettings,
     board: {
+      settings,
       id: board.id,
       title,
       organizationId: board.organizationId,

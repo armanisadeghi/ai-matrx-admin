@@ -24,6 +24,7 @@
  * target does not offer is refused with the target's own remedy.
  */
 
+import { type BoardLayoutMode, chapterOrder } from "../engine/page-layout";
 import { useEffect, useRef } from "react";
 import { toast } from "@/lib/toast";
 import {
@@ -184,6 +185,21 @@ export interface BoardToolHost<T extends BoardTileBase & { title: string }> {
   placeItems?: (
     batch: { item: PlacedItem; at?: { x: number; y: number } }[],
   ) => ({ id: string; already: boolean } | null)[];
+  /** Layout and pages of a saved board; absent = `board_set_layout` / `board_add_page` are refused. */
+  pages?: BoardPagesHost;
+}
+
+/**
+ * A saved board's layout and pages (`UserBoard` over `/board/<id>`): what `board_read` reports and
+ * what `board_set_layout` / `board_add_page` drive. Absent on feature boards (War Room, runs).
+ */
+export interface BoardPagesHost {
+  layout: BoardLayoutMode;
+  /** The board's pages: its parent and siblings, or its own child pages. `current` marks this one. */
+  pages: readonly { id: string; title: string; parent_id: string | null; current: boolean }[];
+  setLayout: (mode: BoardLayoutMode) => void;
+  /** Make a child page (a new board under this one, or a sibling when this is a page) and open it. */
+  addPage: (title?: string) => Promise<{ id: string; title: string }>;
 }
 
 const DEFAULT_SIZE: Record<BoardTileKindInput, { w: number; h: number }> = {
@@ -332,8 +348,33 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
           ...(sh.bind?.end ? { to_id: sh.bind.end } : {}),
         })),
         view: view ? round(view) : null,
+        layout: host.pages?.layout ?? "canvas",
+        // Chapters: the frames in reading order (in page layout, top to bottom).
+        chapters: chapterOrder(now.frames).map((f) => ({ id: f.id, title: f.title })),
+        ...(host.pages ? { pages: host.pages.pages } : {}),
       },
     };
+  };
+
+  const setLayoutTool = (input: unknown) => {
+    const pages = host.pages;
+    if (!pages) return fail("This board has no page layout (only saved boards do).");
+    const mode = record(input).layout;
+    if (mode !== "page" && mode !== "canvas") return fail('layout must be "page" or "canvas".');
+    if (pages.layout === mode) return { ok: true, layout: mode, changed: false };
+    pages.setLayout(mode);
+    return { ok: true, layout: mode, changed: true };
+  };
+
+  const addPageTool = async (input: unknown) => {
+    const pages = host.pages;
+    if (!pages) return fail("This board cannot have pages (only saved boards do).");
+    try {
+      const made = await pages.addPage(str(record(input).title));
+      return { ok: true, page: made, opened: true };
+    } catch (e) {
+      return fail(e instanceof Error ? e.message : "The page could not be made. Try again.");
+    }
   };
 
   const add = (input: unknown) => {
@@ -1047,5 +1088,7 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     board_item_act: itemAct,
     board_park: park,
     board_undo: undo,
+    board_set_layout: setLayoutTool,
+    board_add_page: addPageTool,
   });
 }

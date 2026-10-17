@@ -308,6 +308,7 @@ export const runRow = {
   project_id: PROJECT_ID,
   ...PUBLISH,
   recovery_retry_count: 0,
+  review_flag_count: 0,
   request_attribution_complete: true,
   shown_to: null,
   started_at: "2026-09-30T18:11:02.000Z",

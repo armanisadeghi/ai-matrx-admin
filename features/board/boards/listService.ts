@@ -10,6 +10,9 @@
 // THE ARCHIVED-ITEMS LAW: the shell's Archived filter (`query.archived`) is
 // passed to the read — a deleted board (`deleted_at`) is "archived" — so the
 // default hides deleted boards and "Archived" shows them with Restore.
+//
+// Pages: a board's pages (`settings.parent_board_id`) are not rows of their own while their parent
+// is live; the parent's row carries "N pages" and its outline lists and opens them.
 
 import type { EntityListService } from "@/lib/entity-list/config";
 import type { ArchivedFilter } from "@/lib/entity-list/types";
@@ -36,7 +39,9 @@ export function createBoardListService(
   const shared = (archived: ArchivedFilter) => {
     let read = inFlight.get(archived);
     if (!read) {
-      read = load(archived);
+      // Pages (sub-boards) list under their board, not here: the parent row says how many it has,
+      // and its outline opens them. A page whose parent is gone has `parent_id` null and lists here.
+      read = load(archived).then((rows) => rows.filter((r) => r.parent_id === null));
       inFlight.set(archived, read);
       // Release after this tick's callers have joined, so the next refresh reads again.
       read.then(

@@ -409,6 +409,29 @@ export class BoardStore<T extends BoardTileBase> {
     });
 
   /**
+   * Re-lay the board WITHOUT an undo step (page layout's continuous arrangement, and the switch
+   * between layouts): tiles and shapes move, frames move and take the given size. Past and future
+   * are untouched, so ⌘Z still takes back the person's own last change (the layout re-runs after).
+   */
+  reflow = (moves: readonly { id: string; x: number; y: number; w?: number; h?: number }[]): void => {
+    if (moves.length === 0) return;
+    const st = this.h;
+    const s = st.now;
+    const at = new Map(moves.map((m) => [m.id, m]));
+    const byId = { ...s.byId };
+    for (const [id, m] of at) {
+      const t = byId[id];
+      if (t) byId[id] = { ...t, rect: { ...t.rect, x: m.x, y: m.y } };
+    }
+    const frames = s.frames.map((f) => {
+      const m = at.get(f.id);
+      return m ? { ...f, rect: { x: m.x, y: m.y, w: m.w ?? f.rect.w, h: m.h ?? f.rect.h } } : f;
+    });
+    const shapes = this.movedShapes(s, at) ?? s.shapes;
+    this.commit({ ...st, now: { ...s, byId, shapes, frames }, moving: null });
+  };
+
+  /**
    * The shapes list with every shape named in `at` moved so its box's corner
    * lands at the given point, or null when none moved. A line / arrow end
    * bound to something that is NOT moving with it lets go where it is drawn

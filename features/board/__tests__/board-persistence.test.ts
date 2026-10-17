@@ -246,6 +246,8 @@ describe("board list service", () => {
     created_at: updated,
     updated_at: updated,
     last_opened_at: null,
+    parent_id: null,
+    page_count: 0,
   });
   const query = { scope: { kind: "mine" as const }, orgId: null, search: "", deep: false, archived: "active" as const, filters: {}, page: 1 };
   const sort = { sort: "tile_count", direction: "desc" as const, favoritesFirst: false, pageSize: 25 };

@@ -441,6 +441,15 @@ export function BoardViewport({
         innerCanScroll: !!tile && contentScrolls(e, tile),
       });
       if (route === "ignore" || route === "native") return;
+      // Page layout reads like a document: every scroll the content does not take moves the page
+      // down or up (over a tile too), and nothing zooms.
+      if (store.getPageLock()) {
+        e.preventDefault();
+        if (e.ctrlKey || e.metaKey) return;
+        const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? store.getSize().h : 1;
+        store.setCamera(panBy(store.getCamera(), 0, -e.deltaY * unit));
+        return;
+      }
       // "block": over a tile that cannot scroll this way — nothing moves, and
       // the scroll must not chain out to the page.
       e.preventDefault();

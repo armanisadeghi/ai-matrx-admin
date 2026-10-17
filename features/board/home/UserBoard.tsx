@@ -20,7 +20,7 @@
  */
 
 import { type ComponentType, type DragEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { ExternalLink, PanelRight, Plus } from "lucide-react";
+import { ExternalLink, ListTree, PanelRight, Plus } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { EntityCommentPopover } from "@/components/comments/EntityCommentPopover";
@@ -66,7 +66,10 @@ import { ZoomMenu } from "../components/ZoomMenu";
 import { LayersPanel } from "../components/LayersPanel";
 import { ParkedShelf } from "../components/ParkedShelf";
 import { Minimap, ZoomHud } from "../components/BoardChrome";
-import type { AddTileInput, BoardToolHost, EditTileInput } from "../tools/useBoardAgentTools";
+import type { AddTileInput, BoardPagesHost, BoardToolHost, EditTileInput } from "../tools/useBoardAgentTools";
+import type { BoardLayoutMode, CanvasSnapshot } from "../engine/page-layout";
+import { PAGE_LABEL_ROOM, usePageLayout } from "./usePageLayout";
+import { BoardOutline, type OutlinePages } from "../components/BoardOutline";
 import {
   createItemSurfaceIndex,
   ITEM_BASICS_SAMPLE_MS,
@@ -134,6 +137,11 @@ export function UserBoard({
   onCamera,
   guest = false,
   preset,
+  layout: layoutMode = "canvas",
+  canvasLayout = null,
+  onKeepCanvas,
+  outline,
+  pagesHost,
 }: {
   /** The saved board's id: comments on board-only tiles go on its thread. Null = no board record. */
   boardId?: string | null;
@@ -150,6 +158,16 @@ export function UserBoard({
   guest?: boolean;
   /** A focus for this board (`presets/`): what the Add menu, Start panel and agent offer. None = every type. */
   preset?: BoardPreset;
+  /** "page": the board reads as a document of chapters (`engine/page-layout.ts`). Default canvas. */
+  layout?: BoardLayoutMode;
+  /** The canvas positions kept while in page layout (the board's settings). */
+  canvasLayout?: CanvasSnapshot | null;
+  /** Keep (or, with null, forget) the canvas positions — called on each switch of layout. */
+  onKeepCanvas?: (snapshot: CanvasSnapshot | null) => void;
+  /** The outline rail (chapters + pages): shown or not, and the board's pages. Absent = no outline. */
+  outline?: { open: boolean; onOpenChange: (open: boolean) => void; pages: OutlinePages | null };
+  /** Layout and pages for the agent tools (`board_set_layout`, `board_add_page`). */
+  pagesHost?: BoardPagesHost;
 }) {
   const isMobile = useIsMobile();
   const guestTypes = guest ? BOARD_ITEM_TYPES.filter((t) => t.guestSafe) : BOARD_ITEM_TYPES;
@@ -187,6 +205,14 @@ export function UserBoard({
   const reuseValue = useMemo(() => (reuseIndex ? { index: reuseIndex, boardId } : null), [reuseIndex, boardId]);
   const [store, setStore] = useState<BoardCameraStore | null>(null);
   const [wheelMode, setWheelMode] = useWheelModePreference();
+  const pageLayout = usePageLayout({
+    board,
+    store,
+    layout: layoutMode,
+    snapshot: canvasLayout,
+    onKeepCanvas,
+    restoredView: viewerCamera !== null,
+  });
   const [layersOpen, setLayersOpen] = useState(false);
   // Every tile's own surface capture, live or dormant: how an agent reaches
   // any item on the board (board_items, board_open_item, board_item_act).
@@ -361,6 +387,23 @@ export function UserBoard({
     const placed = placeTiles(board, tiles, view, placementRun.current, at);
     placementRun.current = placed.run;
     const target = tiles[tiles.length - 1].id;
+    if (layoutMode === "page") {
+      // Page layout: into the chapter being read (or a new section at the bottom); shown once the page has re-flowed.
+      pageLayout.landNew(tiles.map((t) => t.id));
+      if (!busy) {
+        setTimeout(() => {
+          store.select(target);
+          if (opts.edit) store.setEditing(target);
+          const r = board.getTile(target)?.rect;
+          const cam = store.getCamera();
+          const size = store.getSize();
+          if (r && (r.y * cam.z + cam.y < 0 || (r.y + Math.min(r.h, 200)) * cam.z + cam.y > size.h)) {
+            store.pageScrollTo(r.y - PAGE_LABEL_ROOM);
+          }
+        }, 260);
+      }
+      return results;
+    }
     // The tile registers on its next render: then select it so the person can
     // start on it at once, and pan just enough to show it if it is off screen.
     if (!busy) {
@@ -771,6 +814,7 @@ export function UserBoard({
     },
     editTile: (tile, input) => agentEdit(tile, input),
     describe: (tile) => describeItem(tile.source),
+    ...(pagesHost ? { pages: pagesHost } : {}),
   };
 
   // Lines are context: a chat tile reads which tiles are joined to it, and builds its own context
@@ -814,6 +858,20 @@ export function UserBoard({
   return (
     <TileLinksProvider value={links}>
     <BoardSurface host={agentHost}>
+      <div className="flex h-full min-h-0">
+      {outline && (
+        <BoardOutline
+          open={outline.open}
+          mobile={isMobile}
+          frames={layout.frames}
+          store={store}
+          layout={layoutMode}
+          pages={outline.pages}
+          onMoveChapter={layoutMode === "page" ? pageLayout.moveChapter : undefined}
+          onClose={() => outline.onOpenChange(false)}
+        />
+      )}
+      <div className="relative h-full min-h-0 min-w-0 flex-1">
       <BoardMenu
         store={store}
         tilesOf={(ids) => ids.filter((id) => tileOf(id))}
@@ -853,7 +911,7 @@ export function UserBoard({
           <BoardNavigationContext.Provider value={boardNavigation}>
           <BoardViewport
             initialCamera={viewerCamera ?? doc.camera}
-            fitOnMount={viewerCamera === null && (doc.nodes.length > 0 || doc.shapes.length > 0 || doc.groups.length > 0)}
+            fitOnMount={layoutMode !== "page" && viewerCamera === null && (doc.nodes.length > 0 || doc.shapes.length > 0 || doc.groups.length > 0)}
             // On a phone the zoom HUD and the assists bubble float over the bottom edge: framing leaves room for both.
             insets={{ top: 72, bottom: isMobile ? 104 : 56 }}
             wheelMode={wheelMode}
@@ -870,6 +928,21 @@ export function UserBoard({
                   data-board-chrome
                   className="absolute right-4 top-4 z-30 flex items-center gap-0.5 rounded-lg border border-border bg-card/95 p-1 shadow-md backdrop-blur"
                 >
+                  {outline && (
+                    <button
+                      type="button"
+                      onClick={() => outline.onOpenChange(!outline.open)}
+                      aria-pressed={outline.open}
+                      title="Outline"
+                      aria-label="Outline"
+                      className={cn(
+                        "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground",
+                        outline.open && "bg-primary/15 text-primary-ink",
+                      )}
+                    >
+                      <ListTree className="h-4 w-4" />
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setLayersOpen((o) => !o)}
@@ -915,8 +988,8 @@ export function UserBoard({
                   </div>
                 )}
                 <PenStyleBar />
-                <ZoomHud />
-                <Minimap />
+                {layoutMode !== "page" && <ZoomHud />}
+                {layoutMode !== "page" && <Minimap />}
               </>
             }
           >
@@ -948,6 +1021,8 @@ export function UserBoard({
           </ReuseContext.Provider>
         </div>
       </BoardMenu>
+      </div>
+      </div>
       <Dialog open={picking !== null} onOpenChange={(open) => !open && setPicking(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader className="flex-row items-center justify-between gap-3 space-y-0 pr-8">

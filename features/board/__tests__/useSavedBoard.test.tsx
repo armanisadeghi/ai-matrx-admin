@@ -63,6 +63,7 @@ const loaded: LoadedBoard = {
   fingerprint: "fp-1",
   updatedAt: "2026-09-27T00:00:00Z",
   lastOpenedAt: null,
+  settings: {},
 };
 
 function mount() {

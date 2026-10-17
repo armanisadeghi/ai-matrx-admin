@@ -24,6 +24,11 @@ export const BOARD_COLUMNS: EntityColumnSpec<BoardListRow>[] = [
       cell: (row) => (
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate font-medium">{row.title}</span>
+          {row.page_count > 0 && (
+            <Badge variant="outline" className="shrink-0 py-0 text-[10px] text-muted-foreground">
+              {row.page_count === 1 ? "1 page" : `${row.page_count} pages`}
+            </Badge>
+          )}
           {row.archived && (
             <Badge variant="outline" className="shrink-0 py-0 text-[10px] text-muted-foreground">
               Archived
