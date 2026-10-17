@@ -825,7 +825,7 @@ function ViewSettings({
                 {chart.op !== "count" ? <MenuRow label="Of" end={<span className="type-secondary text-muted-foreground">{label(chart.field)}</span>} onClick={() => editable && setPage("yfield")} /> : null}
                 <MenuRow label="Sort" end={<span className="type-secondary text-muted-foreground">{chart.sort === "asc" ? "Ascending" : chart.sort === "desc" ? "Descending" : "Manual"}</span>} onClick={() => editable && setChart({ sort: chart.sort === "asc" ? "desc" : chart.sort === "desc" ? "manual" : "asc" })} />
                 {chart.type === "donut" ? <MenuRow label="Value in center" end={<Switch checked={chart.centerValue !== false} tabIndex={-1} aria-hidden />} onClick={() => editable && setChart({ centerValue: chart.centerValue === false })} /> : null}
-                <MenuRow label="Legend" end={<Switch checked={Boolean(chart.legend)} tabIndex={-1} aria-hidden />} onClick={() => editable && setChart({ legend: !chart.legend })} />
+                <MenuRow label="Legend" end={<Switch checked={chart.legend !== false} tabIndex={-1} aria-hidden />} onClick={() => editable && setChart({ legend: chart.legend === false })} />
                 <MenuRow label="Data labels" end={<Switch checked={Boolean(chart.dataLabels)} tabIndex={-1} aria-hidden />} onClick={() => editable && setChart({ dataLabels: !chart.dataLabels })} />
               </>
             ) : null}

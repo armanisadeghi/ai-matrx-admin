@@ -1,0 +1,21 @@
+import { chromium } from "playwright";
+import { walkSignIn } from "./walk-signin.mjs";
+const ORIGIN = "http://s96c6068c.localhost:3001"; const D = process.argv[2]; const name = process.argv[3];
+const b = await chromium.launch({ headless: true });
+const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 } }); ctx.setDefaultNavigationTimeout(240000);
+const page = await ctx.newPage();
+console.log(await walkSignIn(page, ORIGIN));
+await page.goto(ORIGIN + "/spaces/home", { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(6000);
+await page.getByRole("button", { name: "Templates" }).first().click();
+await page.waitForTimeout(2500);
+await page.locator('input[type=search], input[placeholder*="earch"]').last().fill(name); await page.waitForTimeout(2500);
+await page.getByText(name, { exact: true }).first().click();
+await page.waitForTimeout(5000);
+await page.screenshot({ path: `${D}/preview-${name.replace(/\W/g,"")}.png` });
+await page.getByRole("button", { name: /Use template/ }).first().click();
+for (let i = 0; i < 24; i++) { await page.waitForTimeout(5000); if (/\/spaces\/[0-9a-f-]{36}/.test(page.url())) break; }
+await page.waitForTimeout(8000);
+console.log("URL", page.url());
+await page.screenshot({ path: `${D}/installed-${name.replace(/\W/g,"")}.png` });
+await b.close();

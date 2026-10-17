@@ -146,4 +146,16 @@ describe("ChartView passes its view to its data request", () => {
     await draw("donut", undefined, []);
     expect(slices()).toEqual(["Onboarding: 3", "Active: 1", "Churned: 5"]);
   });
+
+  // A donut with no legend setting names its slices (name, value, share); only an explicit off hides them.
+  const legend = () => [...host.querySelectorAll(".spaces-chart-legend li")].map((li) => li.textContent);
+  it("names every slice in a legend unless the legend is switched off", async () => {
+    await draw("donut", "desc", []);
+    expect(legend()).toEqual(["Churned5" + "56%", "Onboarding3" + "33%", "Active1" + "11%"]);
+    await act(async () => {
+      root.render(<ChartView tableId="t1" settings={{ ...settings, sort: "desc", legend: false }} title="Status" filter={{}} sorts={[]} />);
+    });
+    await flush();
+    expect(legend()).toEqual([]);
+  });
 });

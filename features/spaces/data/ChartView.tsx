@@ -248,13 +248,14 @@ function Donut({ data, settings }: { data: ChartData; settings: ChartSettings })
           </text>
         ) : null}
       </svg>
-      {settings.legend ? (
-        <ul className="spaces-chart-legend">
-          {data.points.slice(0, 12).map((p) => (
-            <li key={p.key}>
+      {settings.legend !== false ? (
+        <ul className="spaces-chart-legend" aria-label="Slices">
+          {data.points.map((p) => (
+            <li key={p.key} title={`${p.label}: ${pretty(p.value)}`}>
               <span style={{ background: p.color }} />
-              {p.label}
-              {settings.dataLabels ? <em>{pretty(p.value)}</em> : null}
+              <b>{p.label}</b>
+              <em>{pretty(p.value)}</em>
+              <i>{`${Math.round((Math.max(0, p.value) / sum) * 100)}%`}</i>
             </li>
           ))}
         </ul>
