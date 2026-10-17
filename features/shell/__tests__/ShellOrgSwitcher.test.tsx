@@ -49,8 +49,12 @@ jest.mock("@/lib/redux/hooks", () => ({ useAppDispatch: () => dispatch }));
 jest.mock("@/lib/redux/thunks/activeOrgBootstrap", () => ({
   chooseActiveOrganization: (payload: { id: string; name: string }) => ({ type: "choose", payload }),
 }));
+const pickerCalls: Array<{ load?: boolean } | undefined> = [];
 jest.mock("@/features/organizations/hooks/useActiveOrganizationPicker", () => ({
-  useActiveOrganizationPicker: () => picker,
+  useActiveOrganizationPicker: (options?: { load?: boolean }) => {
+    pickerCalls.push(options);
+    return picker;
+  },
 }));
 jest.mock("@/features/shell/pageObjectOrganization", () => ({
   usePageObjectOrganization: () => objectOrganization,
@@ -71,7 +75,9 @@ jest.mock("@ai-matrx/design-system", () => ({
 }));
 jest.mock("@/components/navigation/AppLink", () => ({
   __esModule: true,
-  default: ({ children, href }: { children: ReactNode; href: string }) => <a href={href}>{children}</a>,
+  default: ({ children, href, prefetch: _prefetch, ...rest }: { children: ReactNode; href: string; prefetch?: boolean }) => (
+    <a href={href} {...rest}>{children}</a>
+  ),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -92,7 +98,7 @@ function mount() {
   });
 }
 
-const trigger = () => host.querySelector<HTMLButtonElement>("[data-shell-org-switcher]")!;
+const trigger = () => host.querySelector<HTMLElement>("[data-shell-org-switcher]")!;
 
 beforeEach(() => {
   picker = { activeOrgId: null, activeOrgName: null, organizations: [ACME, BETA], belongsToNone: false, loadFailed: false };
@@ -118,9 +124,20 @@ describe("ShellOrgSwitcher — every organization state shows on the one control
       expect(host.querySelector(".ring-primary")).toBeNull();
       expect(host.querySelector(".text-primary")).toBeNull();
       expect(trigger().textContent).toContain("Create an organization");
-      expect(host.querySelector('a[href="/organizations"]')).not.toBeNull();
+      // One click: the control itself is the link, not a menu that holds one.
+      expect(trigger().tagName).toBe("A");
+      expect(trigger().getAttribute("href")).toBe("/organizations");
+      expect(trigger().getAttribute("aria-label")).toBe("Create an organization");
     },
   );
+
+  it("the closed control never asks for the scope tree", () => {
+    pickerCalls.length = 0;
+    picker = { ...picker, activeOrgId: ACME.id, activeOrgName: ACME.name };
+    mount();
+    expect(pickerCalls.length).toBeGreaterThan(0);
+    expect(pickerCalls.every((call) => call?.load === false)).toBe(true);
+  });
 
   it("while the name is still loading, shows a skeleton - never the word Organization or 'no organization'", () => {
     picker = { ...picker, activeOrgId: null, activeOrgName: null, belongsToNone: false };

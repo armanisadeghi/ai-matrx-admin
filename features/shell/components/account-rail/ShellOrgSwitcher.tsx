@@ -22,7 +22,7 @@
  *   - the load ladder always picks one for a person who has one (STATE rule
  *     12: never none, nothing prompts), so the control NEVER asks. The only
  *     way to reach none is belonging to no organization at all → it says
- *     "Create an organization" quietly and its header opens /organizations;
+ *     "Create an organization" quietly and the control itself opens /organizations;
  *   - the memberships could not be read → a red dot and a label that says so
  *     (the picker's own notice explains and retries);
  *   - the page's object lives in another of the person's organizations → a
@@ -37,6 +37,7 @@
 
 import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useState } from "react";
+import AppLink from "@/components/navigation/AppLink";
 import { ArrowRightLeft, Building2, ChevronRight } from "lucide-react";
 import { SelectChevron } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
@@ -103,7 +104,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
       : name
         ? `Organization: ${name}. Change organization`
         : noOrganization
-          ? "You belong to no organization. Create one"
+          ? "Create an organization"
           : "Organization name is loading";
 
   const mark = (
@@ -230,6 +231,24 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
         <SelectChevron size="sm" />
       </button>
     );
+
+  // Belonging to none: there is nothing to pick, so the control IS the door —
+  // one click to /organizations, never a menu in between.
+  if (noOrganization) {
+    return (
+      <AppLink
+        href="/organizations"
+        prefetch={false}
+        aria-label={description}
+        title={label ?? undefined}
+        data-shell-org-switcher={variant}
+        className={variant === "rail" ? "shell-nav-item shell-nav-stable shell-tactile-subtle" : "shell-mobile-nav-item w-full"}
+      >
+        <span className="shell-nav-icon">{mark}</span>
+        <span className={variant === "rail" ? "shell-nav-label" : "min-w-0 flex-1 truncate text-left"}>{labelNode}</span>
+      </AppLink>
+    );
+  }
 
   return (
     <OrganizationPickerPopover
