@@ -409,6 +409,18 @@ export class BoardStore<T extends BoardTileBase> {
     });
 
   /**
+   * Forget undo and redo (a layout switch: an older step holds the other layout's positions, and
+   * taking it back would put them over the restored ones).
+   */
+  clearHistory = (): void => {
+    this.agentSteps = [];
+    this.undoneAgentSteps = [];
+    const st = this.h;
+    if (st.past.length === 0 && st.future.length === 0) return;
+    this.commit({ ...st, past: [], future: [], moving: null });
+  };
+
+  /**
    * Re-lay the board WITHOUT an undo step (page layout's continuous arrangement, and the switch
    * between layouts): tiles and shapes move, frames move and take the given size. Past and future
    * are untouched, so ⌘Z still takes back the person's own last change (the layout re-runs after).

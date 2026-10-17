@@ -82,12 +82,12 @@ export function planPageLayout(
   const tileById = new Map(scene.tiles.map((t) => [t.id, t]));
   let ordered = readingOrder(units);
   if (frameOrder) {
+    // The listed frames take the listed frames' slots in the given order; a frame not listed (made
+    // since) keeps its own reading-order slot.
     const rank = new Map(frameOrder.map((id, i) => [id, i]));
-    const framesInOrder = ordered
-      .filter((u) => frameIds.has(u.id))
-      .sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity));
+    const listed = ordered.filter((u) => rank.has(u.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
     let k = 0;
-    ordered = ordered.map((u) => (frameIds.has(u.id) ? framesInOrder[k++] : u));
+    ordered = ordered.map((u) => (rank.has(u.id) ? listed[k++] : u));
   }
   const out = new Map<string, Rect>();
   const chapters: string[] = [];
@@ -225,4 +225,24 @@ export function pageLanding(
     return { x: Math.round(f.x + f.w - 1 - rect.w / 2), y: Math.round(f.y + f.h - 1 - rect.h / 2) };
   }
   return { x: 0, y: Math.round(contentBottom + PAGE_SECTION_GAP) };
+}
+
+/** A stored chapter order (frame ids), read defensively. */
+export function parseChapterOrder(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every((v) => typeof v === "string") ? (value as string[]) : null;
+}
+
+/**
+ * A switch back to the canvas that did not finish: the layout setting says canvas, a kept canvas
+ * exists, yet the board still sits exactly in its page arrangement (the tab closed after the
+ * setting landed, before the restored positions saved). True = put the canvas back now.
+ */
+export function interruptedLeave(
+  scene: { tiles: readonly Placed[]; frames: readonly Placed[] },
+  snapshot: CanvasSnapshot | null,
+  chapterOrderValue: readonly string[] | null,
+): boolean {
+  if (!snapshot || scene.tiles.length + scene.frames.length === 0) return false;
+  if (planPageLayout(scene, chapterOrderValue ?? undefined).moves.length !== 0) return false;
+  return restoreCanvas(scene, snapshot).length > 0;
 }

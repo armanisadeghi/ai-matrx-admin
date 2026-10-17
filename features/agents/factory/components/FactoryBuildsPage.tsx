@@ -61,7 +61,6 @@ const PLACE_OPTIONS = [
   { value: "script", label: "Script" },
   { value: "not_recorded", label: "Not recorded" },
 ];
-const OUTCOME_OPTIONS = OUTCOME_CODES.map((c) => ({ value: c, label: outcomeLabel(c) }));
 
 const INITIAL_STATE = serverTableInitialState({ id: "started", direction: "desc" }, 50);
 
@@ -162,7 +161,7 @@ export function FactoryBuildsPage() {
       {
         id: "outcome",
         filter: "select",
-        filterOptions: OUTCOME_OPTIONS,
+        filterOptions: (OUTCOME_CODES ?? []).map((c) => ({ value: c, label: outcomeLabel(c) })),
         accessorFn: (r) => (r.outcome ? outcomeLabel(r.outcome) : ""),
         header: "Outcome",
         width: 175,
