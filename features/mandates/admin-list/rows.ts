@@ -6,7 +6,7 @@
 
 import { mandateStatusOf } from "@/features/mandates/status/mandate-status";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
-import { buildRow } from "@/features/mandates/admin/mandate-health";
+import { buildRow, jobAnswersSomewhere } from "@/features/mandates/admin/mandate-health";
 import type {
   MandateCodeTruth,
   MandateConsoleData,
@@ -244,7 +244,8 @@ export function buildAdminRows(sources: MandateAdminSources): MandateAdminRow[] 
       status: mandateStatusOf({
         deletedAt: mandate.deleted_at ?? null,
         isEnabled: Boolean(mandate.is_enabled),
-        hasHolder: hasHolder || Boolean(fallbackKey) || bindings.length > 0,
+        // A DISABLED binding answers nobody — only enabled ones fill the job.
+        hasHolder: jobAnswersSomewhere(mandate, bindings),
       }),
       featureLabel: featureLabelOf(base.mandateKey, truth?.source?.module),
       goal: resolveMandateGoal({

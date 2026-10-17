@@ -14,6 +14,11 @@ describe("the sign-up welcome is one sequence", () => {
   it("the sequence runs identity -> meet -> start, and never shows Meet Matrx twice", () => {
     expect(nextStep("identity", false)).toBe("meet");
     expect(nextStep("identity", true)).toBe("start");
+    // The age question sits right after identity when owed (or not yet read), and never before it.
+    expect(nextStep("identity", false, true)).toBe("age");
+    expect(nextStep("identity", true, null)).toBe("age");
+    expect(nextStep("age", false)).toBe("meet");
+    expect(nextStep("age", true)).toBe("start");
     expect(nextStep("meet", false)).toBe("start");
     expect(nextStep("start", false)).toBe("start");
   });

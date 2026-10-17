@@ -20,8 +20,10 @@ import { runWithSessionRetry } from "@/lib/supabase/authRetry";
 import {
   fetchMandateCodeTruthReport,
   type MandateCodeTruth,
+  type MandateDefinitionRow,
 } from "@/features/mandates/admin/service";
 import { adminMandateRecordHref } from "@/features/mandates/admin-routes";
+import { jobAnswersSomewhere } from "@/features/mandates/admin/mandate-health";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import {
   FLAG_WORDS,
@@ -44,6 +46,7 @@ export const SEVERITY_LABEL: Record<HealthSeverity, string> = {
 export const SEVERITY_RANK: Record<HealthSeverity, number> = { high: 3, medium: 2, low: 1 };
 
 export type HealthKind =
+  | "nothing_answers"
   | "broken"
   | "unresolved"
   | "orphaned"
@@ -56,6 +59,7 @@ export type HealthKind =
   | "code_missing";
 
 export const KIND_LABEL: Record<HealthKind, string> = {
+  nothing_answers: "Nothing answers",
   broken: "Broken reference",
   unresolved: "Unreadable call",
   orphaned: "Orphaned reference",
@@ -68,8 +72,9 @@ export const KIND_LABEL: Record<HealthKind, string> = {
   code_missing: "Code declaration missing",
 };
 
-export type HealthSource = "scan" | "drift";
+export type HealthSource = "scan" | "drift" | "records";
 export const SOURCE_LABEL: Record<HealthSource, string> = {
+  records: "Mandate records",
   scan: "Code scan",
   drift: "Code vs database",
 };
@@ -99,16 +104,59 @@ export interface HealthFinding {
 interface DefinitionFacts {
   label: string | null;
   origin: string | null;
+  /** Some rung answers the job (`jobAnswersSomewhere`); enabled jobs only matter. */
+  answers: boolean;
+  enabled: boolean;
+}
+
+type DefinitionRead = Pick<
+  MandateDefinitionRow,
+  | "id"
+  | "mandate_key"
+  | "label"
+  | "origin"
+  | "is_enabled"
+  | "default_holder_id"
+  | "default_holder_version_id"
+  | "default_holder_type"
+  | "fallback_mandate_key"
+>;
+
+/** Mandate ids with at least one live, ENABLED binding. */
+async function readAnsweringBindingIds(): Promise<Set<string>> {
+  const rows = await readAllRows<{ id: string; mandate_id: string }>(
+    ({ from, to }) =>
+      runWithSessionRetry(() =>
+        supabase
+          .schema("mandate")
+          .from("binding")
+          .select("id,mandate_id", { count: "exact" })
+          .is("deleted_at", null)
+          .eq("is_enabled", true)
+          .order("id", { ascending: true })
+          .range(from, to),
+      ).then((result) => ({
+        data: (result.data ?? null) as { id: string; mandate_id: string }[] | null,
+        count: "count" in result && typeof result.count === "number" ? result.count : null,
+        error: result.error ? { message: result.error.message ?? "read failed" } : null,
+      })),
+    { label: "mandate.binding" },
+  );
+  return new Set(rows.map((row) => row.mandate_id));
 }
 
 async function readDefinitions(): Promise<Map<string, DefinitionFacts>> {
-  const rows = await readAllRows<{ mandate_key: string; label: string | null; origin: string | null; id: string }>(
+  const answeringBindings = readAnsweringBindingIds();
+  const rows = await readAllRows<DefinitionRead>(
     ({ from, to }) =>
       runWithSessionRetry(() =>
         supabase
           .schema("mandate")
           .from("definition")
-          .select("id,mandate_key,label,origin", { count: "exact" })
+          .select(
+            "id,mandate_key,label,origin,is_enabled,default_holder_id,default_holder_version_id,default_holder_type,fallback_mandate_key",
+            { count: "exact" },
+          )
           .is("deleted_at", null)
           // The admin management pages name SYSTEM mandates only (Arman,
           // 2026-09-26): a finding's label and its Fix link never resolve to
@@ -117,19 +165,26 @@ async function readDefinitions(): Promise<Map<string, DefinitionFacts>> {
           .order("id", { ascending: true })
           .range(from, to),
       ).then((result) => ({
-        data: (result.data ?? null) as { mandate_key: string; label: string | null; origin: string | null; id: string }[] | null,
+        data: (result.data ?? null) as DefinitionRead[] | null,
         count: "count" in result && typeof result.count === "number" ? result.count : null,
         error: result.error ? { message: result.error.message ?? "read failed" } : null,
       })),
     { label: "mandate.definition" },
   );
+  const bound = await answeringBindings;
   // One system row per key; any "code" origin wins.
   const out = new Map<string, DefinitionFacts>();
   for (const row of rows) {
     const prev = out.get(row.mandate_key);
+    const answers = jobAnswersSomewhere(
+      row,
+      bound.has(row.id) ? [{ deleted_at: null, is_enabled: true }] : [],
+    );
     out.set(row.mandate_key, {
       label: prev?.label ?? row.label,
       origin: prev?.origin === "code" ? "code" : row.origin,
+      answers: (prev?.answers ?? false) || answers,
+      enabled: (prev?.enabled ?? false) || row.is_enabled !== false,
     });
   }
   return out;
@@ -274,6 +329,35 @@ export async function fetchMandateHealth(dispatch: AppDispatch): Promise<HealthL
     }
   } else {
     failures.push({ source: "scan", message: String((scan.reason as Error)?.message ?? scan.reason) });
+  }
+
+  // 🚨 NOTHING ANSWERS (2026-10-17): an enabled job no rung answers refuses
+  // every request — the Agent Studio assistant sat here with no finding.
+  if (definitions.status === "fulfilled") {
+    for (const [rawKey, def] of defs) {
+      if (!def.enabled || def.answers) continue;
+      const key = storedMandateKey(rawKey);
+      findings.push({
+        id: `records:${rawKey}:nothing-answers`,
+        severity: "high",
+        kind: "nothing_answers",
+        source: "records",
+        mandateKey: key,
+        mandateName: mandateDisplayName(key, def.label),
+        problem: "Every request for this job is refused",
+        detail: "No default Mandate Holder, fallback or enabled binding",
+        repo: "",
+        location: "",
+        codeUrl: null,
+        fix: "Choose a Mandate Holder",
+        fixHref: adminMandateRecordHref(key),
+      });
+    }
+  } else {
+    failures.push({
+      source: "records",
+      message: String((definitions.reason as Error)?.message ?? definitions.reason),
+    });
   }
 
   if (truth.status === "fulfilled") {

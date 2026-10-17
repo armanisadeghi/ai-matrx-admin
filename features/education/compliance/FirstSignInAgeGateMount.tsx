@@ -97,7 +97,8 @@ function markDeclaredInThisBrowser(userId: string | null | undefined): void {
   }
 }
 
-function markAskedThisSession(): void {
+/** The age question was put to this person in this tab session (asked or skipped): the popup does not ask again until the next session. */
+export function markAskedThisSession(): void {
   try {
     sessionStorage.setItem(SESSION_KEY, "1");
   } catch {
@@ -109,6 +110,10 @@ export function FirstSignInAgeGateMount() {
   const pathname = usePathname();
   // The departed-member portal — see the header block. Deferred, never waived.
   const onPortal = pathname === "/portal" || pathname?.startsWith("/portal/");
+  // The sign-up welcome (/welcome) asks the SAME question itself, as its own calm step (WelcomeAgeStep), so a popup
+  // here would sit on top of another step. Deferred, never waived: the step records its answer or a skip, and a
+  // skipped person is asked on the next session on any other surface, exactly like the portal.
+  const onWelcome = pathname === "/welcome" || pathname?.startsWith("/welcome/");
   // Asked already this tab session (or on the portal): the `edu_coppa_gate` read is never made.
   const userId = useAppSelector(selectUser)?.id ?? null;
   const [askedAtMount] = useState(alreadyAskedThisSession);
@@ -116,14 +121,14 @@ export function FirstSignInAgeGateMount() {
   const declared = declaredInThisBrowser(userId);
   const gate = useAiComplianceGate({
     declarationVariant: "first_run",
-    enabled: settled && !onPortal && !askedAtMount && !declared,
+    enabled: settled && !onPortal && !onWelcome && !askedAtMount && !declared,
   });
   const { loading, gate: verdict, promptDeclarationIfNeeded, reload } = gate;
   // The silent signup-metadata apply is tried at most once per mount.
   const triedMetaApply = useRef(false);
 
   useEffect(() => {
-    if (onPortal) return;
+    if (onPortal || onWelcome) return;
     if (loading) return;
     // A declared band never goes back to undeclared: nothing is left to ask this session, so a
     // reload in this tab does not read the gate again.
@@ -165,8 +170,8 @@ export function FirstSignInAgeGateMount() {
     return () => {
       cancelled = true;
     };
-  }, [onPortal, loading, verdict, promptDeclarationIfNeeded, reload, userId]);
+  }, [onPortal, onWelcome, loading, verdict, promptDeclarationIfNeeded, reload, userId]);
 
-  if (onPortal) return null;
+  if (onPortal || onWelcome) return null;
   return <gate.Gate />;
 }

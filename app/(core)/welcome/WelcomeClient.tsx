@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Building2,
@@ -22,6 +22,7 @@ import { ONBOARDING_METADATA_KEY } from "@/utils/onboarding";
 import { Button } from "@ai-matrx/design-system/controls";
 import { WelcomeDoor } from "@/features/marketing/smart-add/welcome/WelcomeDoor";
 import { MeetMatrx } from "@/features/onboarding/meet-matrx/meetMatrx";
+import { WelcomeAgeStep, ageStillNeeded } from "@/features/onboarding/welcome-steps/WelcomeAgeStep";
 import {
   MEET_MATRX_SEEN_KEY,
   firstStep,
@@ -117,6 +118,18 @@ export function WelcomeClient({
   // One step on screen at a time. The server already knows the start (new account / met Matrx), so there is no flash.
   const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen }));
   const [met, setMet] = useState(meetSeen);
+  // Whether the age question is still owed: read while the identity step is on screen, so the age step is already
+  // decided when it is reached. Only a new account is ever walked through it here.
+  const [ageNeeded, setAgeNeeded] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!newUser) return;
+    let live = true;
+    void ageStillNeeded().then((n) => live && setAgeNeeded(n));
+    return () => {
+      live = false;
+    };
+  }, [newUser]);
+  const afterAge = useCallback(() => setStep(nextStep("age", met)), [met]);
 
   /**
    * Remembered for this person on the server (their account record), not this browser. The server reads the
@@ -180,8 +193,9 @@ export function WelcomeClient({
           {step === "identity" ? (
             // A new account: "here's what we found" (or one name field) from the login alone. Its Skip / Looks right
             // moves on; a name the login already gives is never asked for.
-            <WelcomeDoor showDoor onFinished={() => setStep(nextStep("identity", met))} />
+            <WelcomeDoor showDoor onFinished={() => setStep(nextStep("identity", met, ageNeeded))} />
           ) : null}
+          {step === "age" ? <WelcomeAgeStep needed={ageNeeded} onDone={afterAge} /> : null}
           {step === "meet" ? (
             <div
               className="flex flex-col gap-8"
