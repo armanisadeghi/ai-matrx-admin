@@ -17,9 +17,9 @@ import { ProInput } from "@/components/official/ProInput";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Copy, FlaskConical, History, Plus, RotateCcw, Trash2, Undo2, X } from "lucide-react";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
-import { automationWebhookUrl, isButtonField } from "@ai-matrx/records";
-import { postJson, resolveBaseUrl } from "@/lib/python-client";
-import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
+import { automationWebhookUrl, isAutomationAppTrigger, isButtonField } from "@ai-matrx/records";
+import { getJson, postJson, resolveBaseUrl } from "@/lib/python-client";
+import type { AutomationAction, AutomationAppTriggerTerms, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
 import { useMyLevel, useRecordsClient, type Field } from "@ai-matrx/records/react";
 import { whatYouMayDo } from "@ai-matrx/records-ui/helpers";
 
@@ -50,7 +50,7 @@ type Draft =
   | { kind: "flow"; step: Step };
 
 /** The step kinds the visual flow editor owns. */
-const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event"]);
+const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue"]);
 
 /** AT-AUTO3: the starting shape of each flow step (the editor fills the rest by choosing). */
 const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
@@ -64,6 +64,7 @@ const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
   ["Send Gmail", () => ({ do: "gmail", to: "", subject: "", body: "" })],
   ["Send a text", () => ({ do: "sms", to: "", message: "" })],
   ["Google Calendar event", () => ({ do: "google_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" })],
+  ["GitHub issue", () => ({ do: "github_issue", repo: "", title: "", body: "", labels: "" })],
 ];
 
 function scriptInputs(lines: string): Record<string, string> {
@@ -216,6 +217,12 @@ function describeTrigger(t: AutomationTrigger, fields: Field[], say: Say = space
     }
     case "webhook":
       return "Webhook received";
+    case "gmail_received":
+      return t.query ? `New Gmail: ${t.query}` : "New Gmail email";
+    case "calendar_event":
+      return t.when === "created" ? "Calendar event created" : `Calendar event starts${t.minutes_before ? `, ${t.minutes_before} min before` : ""}`;
+    case "slack_message":
+      return `Slack message in ${t.channel}${t.contains ? ` with "${t.contains}"` : ""}`;
     case "schedule":
       if (t.every === "minutes") return `Every ${t.minutes} minutes`;
       if (t.every === "hour") return `Every ${(t.hours ?? 1) === 1 ? "hour" : `${t.hours} hours`} at :${String(t.minute ?? 0).padStart(2, "0")}`;
@@ -278,6 +285,10 @@ const RUN_TRIGGER: Record<string, string> = {
   button_pressed: "Button",
   date_arrives: "Date",
   schedule: "Schedule",
+  webhook: "Webhook",
+  gmail_received: "Gmail",
+  calendar_event: "Calendar",
+  slack_message: "Slack",
   test: "Test",
 };
 
@@ -543,6 +554,13 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
   const [minutesN, setMinutesN] = useState<5 | 10 | 15 | 30>(15);
   const [hoursN, setHoursN] = useState("1");
   const [minuteN, setMinuteN] = useState("0");
+  const [gmailQuery, setGmailQuery] = useState("");
+  const [calWhen, setCalWhen] = useState<"starts" | "created">("starts");
+  const [calLead, setCalLead] = useState("0");
+  const [slackChannel, setSlackChannel] = useState("");
+  const [slackContains, setSlackContains] = useState("");
+  const [appTerms, setAppTerms] = useState<AutomationAppTriggerTerms | null>(null);
+  const [checking, setChecking] = useState<string | null>(null);
   const [versionsOf, setVersionsOf] = useState<string | null>(null);
   const [condField, setCondField] = useState<string | null>(null);
   const [condIs, setCondIs] = useState("");
@@ -552,8 +570,33 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
   const dateFields = fields.filter(isDateField);
   const buttonFields = fields.filter((f) => isButtonField(f as never));
   // A schedule or a webhook has no triggering row (AT-AUTO2).
-  const timed = on === "schedule" || on === "webhook";
+  const timed = on === "schedule" || on === "webhook" || isAutomationAppTrigger(on);
   const [epoch, setEpoch] = useState(0);
+  // W2-E: what a connected-app check costs, shown before it is switched on.
+  useEffect(() => {
+    let live = true;
+    getJson<AutomationAppTriggerTerms>("/automations/app-triggers/terms", { organizationId: organizationId ?? undefined })
+      .then(({ data }) => { if (live) setAppTerms(data); })
+      .catch(() => undefined);
+    return () => { live = false; };
+  }, [organizationId]);
+  const syncApp = (a: AutomationItem) => {
+    if (isAutomationAppTrigger(a.spec.trigger.on)) {
+      void postJson(`/automations/app-triggers/${a.id}/sync`, {}, { organizationId: organizationId ?? undefined }).catch((e: unknown) => setSaid(e instanceof Error ? e.message : "The check schedule did not change."));
+    }
+  };
+  const checkNow = async (a: AutomationItem) => {
+    setChecking(a.id);
+    try {
+      const { data } = await postJson<{ says?: string }>(`/automations/app-triggers/${a.id}/check`, {}, { organizationId: organizationId ?? undefined });
+      setSaid(data.says ?? null);
+    } catch (e) {
+      setSaid(e instanceof Error ? e.message : "The check did not run.");
+    } finally {
+      setChecking(null);
+      reread();
+    }
+  };
   const reread = () => setEpoch((n) => n + 1);
 
   useEffect(() => {
@@ -620,6 +663,11 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
     setDateDays(String(Math.abs(n)));
     setAt(t.on === "date_arrives" || (t.on === "schedule" && "at" in t) ? clock(t.at) : "09:00");
     setEvery(t.on === "schedule" ? t.every : "week");
+    setGmailQuery(t.on === "gmail_received" ? (t.query ?? "") : "");
+    setCalWhen(t.on === "calendar_event" ? (t.when ?? "starts") : "starts");
+    setCalLead(t.on === "calendar_event" ? String(t.minutes_before ?? 0) : "0");
+    setSlackChannel(t.on === "slack_message" ? t.channel : "");
+    setSlackContains(t.on === "slack_message" ? (t.contains ?? "") : "");
     setWeekday(t.on === "schedule" && "weekday" in t ? (t.weekday ?? 1) : 1);
     setMonthDay(t.on === "schedule" && "day" in t ? String(t.day ?? 1) : "1");
     if (t.on === "schedule" && t.every === "minutes") setMinutesN(t.minutes);
@@ -648,6 +696,9 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
       return { on, field: trigField, offset_days: dateWhen === "before" ? -n : dateWhen === "after" ? n : 0, at };
     }
     if (on === "webhook") return { on };
+    if (on === "gmail_received") return gmailQuery.trim() ? { on, query: gmailQuery.trim() } : { on };
+    if (on === "calendar_event") return calWhen === "created" ? { on, when: "created" } : { on, when: "starts", minutes_before: Math.max(0, Math.trunc(Number(calLead) || 0)) };
+    if (on === "slack_message") return { on, channel: slackChannel.trim(), ...(slackContains.trim() ? { contains: slackContains.trim() } : {}) };
     if (on === "schedule" && every === "minutes") return { on, every, minutes: minutesN };
     if (on === "schedule" && every === "hour") return { on, every, hours: Math.trunc(Number(hoursN) || 1), minute: Math.trunc(Number(minuteN) || 0) };
     if (on === "schedule") {
@@ -659,7 +710,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
     setOn(next);
     if (next === "date_arrives") setTrigField(dateFields[0]?.id ?? "");
     if (next === "button_pressed") setTrigField(buttonFields[0]?.id ?? "");
-    if (next === "schedule" || next === "webhook") setDrafts(drafts.filter((d) => d.kind !== "set"));
+    if (next === "schedule" || next === "webhook" || isAutomationAppTrigger(next)) setDrafts(drafts.filter((d) => d.kind !== "set"));
   };
   const save = async () => {
     const spec: AutomationSpec = {
@@ -696,7 +747,32 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Pill on={on === "date_arrives"} onClick={() => pickTrigger("date_arrives")} disabledReason={dateFields.length === 0 ? say("Add a date property first") : undefined}>Date arrives</Pill>
             <Pill on={on === "schedule"} onClick={() => pickTrigger("schedule")}>Every…</Pill>
             <Pill on={on === "webhook"} onClick={() => pickTrigger("webhook")}>Webhook received</Pill>
+            <Pill on={on === "gmail_received"} onClick={() => pickTrigger("gmail_received")}>New Gmail email</Pill>
+            <Pill on={on === "calendar_event"} onClick={() => pickTrigger("calendar_event")}>Calendar event</Pill>
+            <Pill on={on === "slack_message"} onClick={() => pickTrigger("slack_message")}>Slack message</Pill>
           </div>
+          {on === "gmail_received" ? (
+            <Input aria-label="Gmail search" placeholder="Gmail search, e.g. from:orders@shop.com" value={gmailQuery} onChange={(e) => setGmailQuery(e.target.value)} />
+          ) : null}
+          {on === "calendar_event" ? (
+            <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-calendar-trigger">
+              <Pill on={calWhen === "starts"} onClick={() => setCalWhen("starts")}>Starts</Pill>
+              <Pill on={calWhen === "created"} onClick={() => setCalWhen("created")}>Created</Pill>
+              {calWhen === "starts" ? <Input aria-label="Minutes before" type="number" min={0} max={1440} className="w-20" value={calLead} onChange={(e) => setCalLead(e.target.value)} /> : null}
+              {calWhen === "starts" ? <span className="type-secondary text-muted-foreground">min before</span> : null}
+            </div>
+          ) : null}
+          {on === "slack_message" ? (
+            <div className="flex flex-wrap items-center gap-1">
+              <Input aria-label="Slack channel" placeholder="Channel" className="w-40" value={slackChannel} onChange={(e) => setSlackChannel(e.target.value)} />
+              <Input aria-label="Message contains" placeholder="Contains (optional)" className="w-48" value={slackContains} onChange={(e) => setSlackContains(e.target.value)} />
+            </div>
+          ) : null}
+          {isAutomationAppTrigger(on) ? (
+            <span className="type-secondary text-muted-foreground" data-testid="spaces-automation-app-terms">
+              {appTerms ? `Saved off · checks every ${appTerms.every_minutes} min · ${appTerms.points_per_check} points a check, about ${appTerms.points_per_month.toLocaleString()} a month` : "Saved off · checks on a schedule"}
+            </span>
+          ) : null}
           {on === "date_arrives" ? (
             <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-date-trigger">
               <FieldPills fields={dateFields} value={trigField} onPick={setTrigField} />
@@ -919,7 +995,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   <Button variant="quiet" icon={<RotateCcw size={14} />} aria-label="Restore automation" disabled={switchReason !== null} title={switchReason ?? undefined} onClick={() => void flip(client.automationRestore({ automation_id: a.id }))} />
                 ) : (
                   <>
-                    <Switch aria-label="Automation on" checked={a.enabled} disabled={switchReason !== null} title={switchReason ?? undefined} onCheckedChange={(v: boolean) => void flip(client.automationSetEnabled({ automation_id: a.id, enabled: v }))} />
+                    <Switch aria-label="Automation on" checked={a.enabled} disabled={switchReason !== null} title={switchReason ?? undefined} onCheckedChange={(v: boolean) => void flip(client.automationSetEnabled({ automation_id: a.id, enabled: v })).then(() => syncApp(a))} />
                     <Button variant="quiet" icon={<FlaskConical size={14} />} aria-label="Test automation" onClick={() => setTestOf(testOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<History size={14} />} aria-label="Runs" onClick={() => setRunsOf(runsOf === a.id ? null : a.id)} />
                     <Button variant="quiet" icon={<Undo2 size={14} />} aria-label="Versions" onClick={() => setVersionsOf(versionsOf === a.id ? null : a.id)} />
@@ -930,6 +1006,16 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
               {testOf === a.id ? <TestRun automation={a} tableId={tableId} fields={fields} onRan={() => { setRunsOf(null); reread(); }} /> : null}
               {runsOf === a.id ? <RunHistory automationId={a.id} limit={runsShown} /> : null}
               {a.spec.trigger.on === "webhook" ? <WebhookUrl item={a} /> : null}
+              {isAutomationAppTrigger(a.spec.trigger.on) && !a.archived_at ? (
+                <div className="flex items-center gap-1" data-testid="spaces-automation-app-check">
+                  <span className={`type-secondary min-w-0 flex-1 truncate ${a.app_says ? "text-destructive" : "text-muted-foreground"}`}>
+                    {a.app_says ?? (a.app_checked_at ? `Checked ${new Date(a.app_checked_at).toLocaleString()}` : "Not checked yet")}
+                  </span>
+                  <Button variant="quiet" disabled={checking === a.id} title={appTerms ? `${appTerms.points_per_check} points` : undefined} onClick={() => void checkNow(a)}>
+                    {checking === a.id ? "Checking…" : `Check now${appTerms ? ` · ${appTerms.points_per_check} pts` : ""}`}
+                  </Button>
+                </div>
+              ) : null}
               {versionsOf === a.id ? <Versions automationId={a.id} onRestored={() => { setVersionsOf(null); reread(); }} /> : null}
             </div>
           ))}

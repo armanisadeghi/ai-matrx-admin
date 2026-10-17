@@ -83,6 +83,22 @@ describe("an agent button on the new table page", () => {
   });
 });
 
+describe("every guaranteed value rides the launch's variables (data.table_row_action)", () => {
+  it("carries each guaranteed offered value by name — the door refuses the run without one", () => {
+    const offer = rowAgentOffer({ target, tableName: "Appointments", columns, document, actingPersonId: null, actingPersonCanEdit: true });
+    const variables = rowAgentLaunch(target, offer, "org-x").runtime?.variables as Record<string, unknown>;
+    // Guaranteed in aidream `client_mandates.py` DATA_TABLE_ROW_ACTION_PROVISION (generated type: required keys).
+    for (const name of [
+      "table_id", "table_name", "table_columns", "row_id", "row_label",
+      "row_json", "row_fields_summary", "action_name", "acting_person_can_edit",
+    ]) {
+      expect(variables[name]).not.toBeUndefined();
+      expect(variables[name]).not.toBeNull();
+    }
+    expect(typeof variables.row_fields_summary).toBe("string");
+  });
+});
+
 describe("the Provision's mapped-only values (wave 4)", () => {
   it("ride variables only — the context the Holder sees is byte-for-byte the offer it saw before", () => {
     const offer = rowAgentOffer({ target, tableName: "Appointments", columns, document, actingPersonId: null, actingPersonCanEdit: false });
