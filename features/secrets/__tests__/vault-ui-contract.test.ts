@@ -1,0 +1,431 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const componentSource = [
+  "SecretValue.tsx",
+  "VaultHandlingControl.tsx",
+  "VaultWorkspace.tsx",
+  "VaultItemDetail.tsx",
+  "VaultCreateDialog.tsx",
+]
+  .map((file) =>
+    readFileSync(
+      join(process.cwd(), "features/secrets/components", file),
+      "utf8",
+    ),
+  )
+  .join("\n");
+
+describe("shared vault UI contract", () => {
+  // The scope BEHAVIOUR — which organization each tab loads, and that the
+  // personal scopes need no organization at all — is guarded by rendering the
+  // workspace in vault-scope-routing.test.tsx. This case only holds the three
+  // ratified scopes in the navigation.
+  //
+  // It used to also assert the file never mentions `selectOrganizationId`.
+  // That stopped being true on purpose (d30f8934e0): the Organization tab now
+  // follows the organization the person SELECTED instead of silently picking
+  // `availableOrganizations[0]`, which had been showing one tenant's
+  // credentials to someone who had chosen another. A source-symbol ban could
+  // not tell the two apart, so the real routing is asserted by behaviour.
+  test("exposes every ratified personal Vault scope", () => {
+    const workspaceSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultWorkspace.tsx"),
+      "utf8",
+    );
+
+    expect(workspaceSource).toContain('label="My credentials"');
+    expect(workspaceSource).toContain('label="Shared with me"');
+    expect(workspaceSource).toContain('label="Organization"');
+    expect(workspaceSource).toContain("useUserOrganizations()");
+  });
+
+  test("keeps full detail metadata complete while compact list rows truncate", () => {
+    const detailSource = [
+      "SecretValue.tsx",
+      "VaultHandlingControl.tsx",
+      "VaultItemDetail.tsx",
+      "VaultCreateDialog.tsx",
+    ]
+      .map((file) =>
+        readFileSync(
+          join(process.cwd(), "features/secrets/components", file),
+          "utf8",
+        ),
+      )
+      .join("\n");
+    const workspaceSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultWorkspace.tsx"),
+      "utf8",
+    );
+
+    expect(detailSource).not.toMatch(
+      /className=(?:"[^"]*|\{[^}]*)(?:\btruncate\b|\bline-clamp-\d+\b|\btext-ellipsis\b)/,
+    );
+    expect(workspaceSource).toContain(
+      "whitespace-normal break-words text-sm font-semibold",
+    );
+    expect(workspaceSource).not.toContain("item.login_urls.join");
+  });
+
+  test("loads newest-created credentials first", () => {
+    const serviceSource = readFileSync(
+      join(process.cwd(), "features/secrets/vault-service.ts"),
+      "utf8",
+    );
+
+    expect(serviceSource).toContain(
+      '.order("created_at", { ascending: false })',
+    );
+    expect(serviceSource).not.toContain(
+      '.order("display_name", { ascending: true })',
+    );
+  });
+
+  test("does not render partial secret hints", () => {
+    const valueSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/SecretValue.tsx"),
+      "utf8",
+    );
+
+    expect(valueSource).not.toContain("value_hint");
+    expect(valueSource).toContain('"Hidden"');
+    expect(valueSource).toContain("Hides in {secondsLeft}s");
+  });
+
+  test("keeps protected private passkey material out of generic controls", () => {
+    const typesSource = readFileSync(
+      join(process.cwd(), "features/secrets/types.ts"),
+      "utf8",
+    );
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+    const valueSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/SecretValue.tsx"),
+      "utf8",
+    );
+
+    expect(typesSource).toContain('"execution_purpose"');
+    expect(typesSource).toContain("VAULT_FIELD_COLUMNS");
+    expect(typesSource).toContain("wire.execution_purpose");
+    expect(typesSource).toContain('=== "passkey_private"');
+    expect(valueSource).toContain("Native provider only");
+    expect(valueSource).toContain(
+      "if (isProtectedExecutionField(field)) return false",
+    );
+    expect(valueSource).toContain(
+      "if (isProtectedExecutionField(field)) return null",
+    );
+    expect(detailSource).toContain("!protectedExecution");
+    expect(detailSource).toContain("!hasProtectedExecutionField");
+    expect(detailSource).toContain("Moving, giving ownership, and copying are");
+  });
+
+  test("displays Standard values without a reveal interaction", () => {
+    const valueSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/SecretValue.tsx"),
+      "utf8",
+    );
+
+    expect(valueSource).toContain('field.handling !== "visible"');
+    expect(valueSource).toContain('field.handling === "revealable"');
+    expect(valueSource).toContain('aria-label="Loading value"');
+  });
+
+  test("offers one plain-language protection control everywhere fields are edited", () => {
+    const handlingSource = readFileSync(
+      join(
+        process.cwd(),
+        "features/secrets/components/VaultHandlingControl.tsx",
+      ),
+      "utf8",
+    );
+
+    expect(handlingSource).toContain("ToggleGroup");
+    expect(handlingSource).toContain('label: "Standard"');
+    expect(handlingSource).toContain('label: "Restricted"');
+    expect(handlingSource).toContain('label: "Automation only"');
+    expect(
+      componentSource.match(/<VaultHandlingControl/g)?.length,
+    ).toBeGreaterThan(3);
+  });
+
+  test("uses one credential edit entry instead of independent edit actions", () => {
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+
+    expect(detailSource).toContain("Edit credential");
+    expect(detailSource).not.toContain("Edit notes");
+    expect(detailSource).not.toContain("Rename");
+    expect(detailSource).not.toContain("Rotate");
+    expect(detailSource).not.toContain("Field settings");
+  });
+
+  test("keeps the full vault in a labeled three-pane workspace", () => {
+    const workspaceSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultWorkspace.tsx"),
+      "utf8",
+    );
+    const pageSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultPage.tsx"),
+      "utf8",
+    );
+
+    expect(pageSource).toContain('presentation="full"');
+    expect(workspaceSource).toContain(
+      "lg:grid-cols-[14rem_20rem_minmax(0,1fr)]",
+    );
+    expect(workspaceSource).toContain("VaultWorkspaceListRow");
+    expect(workspaceSource).toContain("identity.subtitle ??");
+    expect(workspaceSource).toContain(
+      "Values and full metadata belong in detail",
+    );
+  });
+
+  test("uses a canonical item route instead of query-parameter selection", () => {
+    const pageSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultPage.tsx"),
+      "utf8",
+    );
+    const itemRouteSource = readFileSync(
+      join(process.cwd(), "app/(core)/vault/[itemId]/page.tsx"),
+      "utf8",
+    );
+    const authenticatorSource = readFileSync(
+      join(
+        process.cwd(),
+        "features/secrets/components/authenticator/AuthenticatorWorkspace.tsx",
+      ),
+      "utf8",
+    );
+
+    expect(pageSource).toContain("/vault/${encodeURIComponent(id)}");
+    expect(pageSource).not.toContain("useSearchParams");
+    expect(itemRouteSource).toContain("<VaultPage itemId={itemId}");
+    expect(authenticatorSource).toContain(
+      "/vault/${encodeURIComponent(entry.credential_item_id)}",
+    );
+  });
+
+  test("keeps initial edit actions compact and icon-only", () => {
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+
+    expect(detailSource).not.toContain("Credential details");
+    expect(detailSource).not.toContain("Save credential details");
+    expect(detailSource).not.toContain("Save field changes");
+    expect(detailSource).toContain('aria-label="Save credential"');
+    expect(detailSource).toContain("<Save");
+    expect(detailSource).toContain("<Trash2");
+  });
+
+  test("edits field values and metadata in place without a second editor card", () => {
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+
+    expect(detailSource).toContain("editingValue && editMode");
+    expect(detailSource).toContain("Enter the new value");
+    expect(detailSource).toContain("used for identification in workflows");
+    expect(detailSource).toContain(
+      "Add a runtime key before enabling sandboxes",
+    );
+    expect(detailSource).toContain("Additional fields");
+    expect(detailSource).toContain(
+      'className="flex min-w-0 flex-wrap items-end gap-2"',
+    );
+    expect(detailSource).not.toContain(
+      '<div className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">',
+    );
+    expect(detailSource).not.toContain("Replace stored value");
+    expect(detailSource).not.toContain("runtime key required");
+    expect(detailSource).not.toContain(
+      "Workflows find this value by its runtime key",
+    );
+  });
+
+  test("keeps the legacy settings URL on the canonical full Vault", () => {
+    // The page shim became a config redirect when the /settings/* pages were
+    // retired (2026-10-01): one rule, no second Vault presentation.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { legacySettingsRedirects } = require(
+      join(process.cwd(), "utils/next-config/legacySettingsRedirects.js"),
+    ) as {
+      legacySettingsRedirects: {
+        source: string;
+        destination: string;
+        has?: unknown;
+      }[];
+    };
+
+    expect(
+      legacySettingsRedirects.find(
+        (rule) => rule.source === "/settings/secrets" && !rule.has,
+      )?.destination,
+    ).toBe("/vault");
+  });
+
+  test("starts creation with the basic purposes, including protected files", () => {
+    const createSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultCreateDialog.tsx"),
+      "utf8",
+    );
+
+    expect(createSource).toContain("What are you saving?");
+    expect(createSource).toContain("WEBSITE_LOGIN_DEFINITION_KEY");
+    expect(createSource).toContain('"api_key"');
+    expect(createSource).toContain("ENV_VALUE_DEFINITION_KEY");
+    expect(createSource).toContain("attachment_only");
+    expect(createSource).toContain("Protected file");
+    expect(createSource).toContain("Custom credential");
+    expect(createSource).toContain("Browse all");
+  });
+
+  test("protected create fields opt out of password-manager overlays", () => {
+    const createSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultCreateDialog.tsx"),
+      "utf8",
+    );
+
+    expect(createSource).toContain('data-lpignore="true"');
+    expect(createSource).toContain("data-1p-ignore");
+    expect(createSource).toContain('data-bwignore="true"');
+  });
+
+  test("renders attachments as labeled files and never selects their ciphertext", () => {
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+    const typesSource = readFileSync(
+      join(process.cwd(), "features/secrets/types.ts"),
+      "utf8",
+    );
+
+    expect(detailSource).toContain("Protected files");
+    expect(detailSource).toContain("Type and size");
+    expect(detailSource).toContain("Download protection");
+    expect(typesSource).toContain("VAULT_ATTACHMENT_COLUMNS");
+    expect(
+      typesSource.match(/VAULT_ATTACHMENT_COLUMNS[\s\S]*?as const/)?.[0],
+    ).not.toContain("value_encrypted");
+  });
+
+  test("makes each safe login destination an explicit door", () => {
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+
+    expect(detailSource).toContain("safeVaultLoginUrl(url)");
+    expect(detailSource).toContain("Open website");
+    // The outbound door opens it in a new tab with rel="noopener" and our referral data.
+    expect(detailSource).toContain("<OutboundLink");
+    expect(detailSource).toContain("Invalid URL");
+  });
+
+  test("never presents rows loaded for a previous Vault scope", () => {
+    const hooksSource = readFileSync(
+      join(process.cwd(), "features/secrets/vault-hooks.ts"),
+      "utf8",
+    );
+
+    expect(hooksSource).toContain("loadedScopeKey === scopeKey ? items : []");
+    expect(hooksSource).toContain("requestId !== requestIdRef.current");
+  });
+
+  test("uses one authenticator intake across direct and Vault creation", () => {
+    const workspaceSource = readFileSync(
+      join(
+        process.cwd(),
+        "features/secrets/components/authenticator/AuthenticatorWorkspace.tsx",
+      ),
+      "utf8",
+    );
+    const createSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultCreateDialog.tsx"),
+      "utf8",
+    );
+
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+    for (const source of [workspaceSource, createSource, detailSource]) {
+      expect(source).toContain("<AuthenticatorSetupDialog");
+    }
+    expect(workspaceSource).not.toContain("<VaultCreateDialog");
+    expect(workspaceSource).toContain("fields: []");
+  });
+
+  test("supports partial login saves and first-class protected additions", () => {
+    const createSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultCreateDialog.tsx"),
+      "utf8",
+    );
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+
+    expect(createSource).toContain("!isWebsiteLogin");
+    expect(createSource).toContain('field_key: "recovery_codes"');
+    expect(createSource).toContain('field_key: "secure_notes"');
+    expect(createSource).toContain("supplementalAttachments");
+    expect(detailSource).toContain("Mark used");
+    expect(detailSource).toContain("Replace all recovery codes");
+  });
+
+  test("keeps mobile credential dialogs scrollable without iOS input zoom", () => {
+    const credenzaSource = readFileSync(
+      join(process.cwd(), "components/ui/credenza-modal/credenza.tsx"),
+      "utf8",
+    );
+
+    expect(credenzaSource).toContain("h-[92dvh]");
+    expect(credenzaSource).toContain("overflow-hidden");
+    expect(credenzaSource).toContain("flex-1 overflow-y-auto");
+    expect(credenzaSource).toContain("[&_input]:text-base");
+    expect(credenzaSource).toContain("[&_textarea]:text-base");
+  });
+
+  test("normalizes and checks bare destinations without blocking save", () => {
+    const createSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultCreateDialog.tsx"),
+      "utf8",
+    );
+    const detailSource = readFileSync(
+      join(process.cwd(), "features/secrets/components/VaultItemDetail.tsx"),
+      "utf8",
+    );
+
+    for (const source of [createSource, detailSource]) {
+      expect(source).toContain("normalizeVaultLoginUrlInput");
+      expect(source).toContain("checkVaultDestination");
+      expect(source).toContain("onBlur");
+      expect(source).toContain("You can still");
+      expect(source).toContain('aria-live="polite"');
+    }
+  });
+
+  test("offers authenticator rename without leaving the manage surface", () => {
+    const workspaceSource = readFileSync(
+      join(
+        process.cwd(),
+        "features/secrets/components/authenticator/AuthenticatorWorkspace.tsx",
+      ),
+      "utf8",
+    );
+
+    expect(workspaceSource).toContain("Rename login");
+    expect(workspaceSource).toContain("<TextInputDialog");
+    expect(workspaceSource).toContain("actions.rename");
+  });
+});
