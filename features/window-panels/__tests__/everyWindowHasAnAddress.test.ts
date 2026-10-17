@@ -39,8 +39,8 @@ import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
-/** The old window-metadata rows, read from the definitions: windows with a window id, other overlays with a link. */
-const ALL_WINDOW_STATIC_METADATA = APP_OVERLAYS.filter((d) => (d.window ? d.window.windowId !== undefined : d.link !== undefined)).map((d) => ({
+/** The window-metadata rows, read from the definitions: a window's `window` block IS its row (windowId defaults to the overlay id); other overlays count when they carry a link. */
+const ALL_WINDOW_STATIC_METADATA = APP_OVERLAYS.filter((d) => d.window !== undefined || d.link !== undefined).map((d) => ({
   overlayId: d.id,
   slug: d.window?.windowId ?? d.id,
   urlSync: d.link ? { key: d.link.key } : undefined,

@@ -1324,11 +1324,6 @@
       "source": "app/(admin)/administration/ui/official-components/to-be-added/toggle-menu-demo/toggle-with-categories/page.tsx"
     },
     {
-      "pattern": "/administration/ui/persistence-test",
-      "status": "live",
-      "source": "app/(admin)/administration/ui/persistence-test/page.tsx"
-    },
-    {
       "pattern": "/administration/ui/style-guide",
       "status": "live",
       "source": "app/(admin)/administration/ui/style-guide/page.tsx"
@@ -2472,6 +2467,11 @@
       "pattern": "/compare/old/transcripts",
       "status": "live",
       "source": "app/(core)/compare/old/transcripts/page.tsx"
+    },
+    {
+      "pattern": "/compare/s/[slug]",
+      "status": "live",
+      "source": "app/(public)/compare/s/[slug]/page.tsx"
     },
     {
       "pattern": "/connect-computer",
