@@ -191,7 +191,7 @@ function line(e: LoadTraceEvent): { text: string; style: string } {
 
 function print(e: LoadTraceEvent): void {
   const { text, style } = line(e);
-  out.log(`%c[load] +${String(e.at).padStart(6)}ms  ${text}`, style);
+  traceConsole.log(`%c[load] +${String(e.at).padStart(6)}ms  ${text}`, style);
 }
 
 function push(event: LoadTraceEvent): void {
@@ -261,13 +261,13 @@ function printTimelineAndSummary(): void {
   const lazy = report.violations.filter((v) => v.kind === "lazy-before-settle").length;
   const shifts = report.violations.filter((v) => v.kind === "shift").length;
   const smoke = heavy + lazy + shifts;
-  out.log(
+  traceConsole.log(
     `%c[load] SUMMARY ${report.route} · settled +${report.settledAt}ms · ${report.requests.length} requests · ${report.scripts.count} scripts ${report.scripts.wireKB} KB wire / ${report.scripts.unpackedKB} KB unpacked · TTFB ${report.ttfb ?? "?"}ms · FCP ${report.fcp ?? "?"}ms · LCP ${report.lcp ? `${report.lcp.at}ms ${report.lcp.element}` : "?"} · CLS ${report.cls} · smoke ${smoke ? `🔴 ${heavy} heavy, ${lazy} lazy, ${shifts} shifts` : "clean"}`,
     smoke ? STYLE.red : STYLE.milestone,
   );
-  out.groupCollapsed("[load] biggest scripts");
-  out.table(report.scripts.biggest);
-  out.groupEnd();
+  traceConsole.groupCollapsed("[load] biggest scripts");
+  traceConsole.table(report.scripts.biggest);
+  traceConsole.groupEnd();
 }
 
 function markKind(name: string): { kind: LoadTraceKind; label: string } {
@@ -288,7 +288,7 @@ export function installLoadTrace(): void {
     /* older browser */
   }
   (window as unknown as { __matrxLoadTrace: () => LoadTraceReport }).__matrxLoadTrace = loadTraceReport;
-  out.log("%c[load] trace ON — timeline prints when the page settles (?trace=off to silence)", STYLE.milestone);
+  traceConsole.log("%c[load] trace ON — timeline prints when the page settles (?trace=off to silence)", STYLE.milestone);
 
   push({ at: 0, kind: "nav", name: "navigation start", detail: window.location.pathname });
   const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
