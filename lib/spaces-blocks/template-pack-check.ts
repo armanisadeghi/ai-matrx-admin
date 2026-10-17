@@ -116,7 +116,10 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   const keys = new Set<string>();
   pages.forEach((p, i) => {
     const at = `pages[${i}]`;
-    if (!isObj(p)) return say(at, "A page is an object with key, parent, title and blocks.");
+    if (!isObj(p)) {
+      say(at, "A page is an object with key, parent, title and blocks.");
+      return;
+    }
     if (!str(p.key) || !PAGE_KEY.test(p.key)) say(`${at}.key`, `"${String(p.key)}" must be lowercase letters, digits and single dashes ("weekly-review").`);
     else if (keys.has(p.key)) say(`${at}.key`, `"${p.key}" is used by two pages; each page key is unique.`);
     else keys.add(p.key);
@@ -135,7 +138,10 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
     if (!isObj(p)) return;
     let at: string | null = p.parent;
     for (let hops = 0; at !== null && hops <= pages.length; hops++) {
-      if (at === p.key) return say(`pages[${i}].parent`, "This page is its own ancestor; the pages must form one tree under pages[0].");
+      if (at === p.key) {
+        say(`pages[${i}].parent`, "This page is its own ancestor; the pages must form one tree under pages[0].");
+        return;
+      }
       at = parentOf.get(at) ?? null;
     }
   });

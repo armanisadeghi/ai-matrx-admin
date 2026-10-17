@@ -242,7 +242,7 @@ export function packPagesInOrder(pages: PackPage[]): PackPage[] {
 }
 
 /** What `custom.template_declare` is sent for a pack: the records declaration plus the pack and the card face. */
-export function packDeclaration<D extends { card: Record<string, unknown> }>(pack: SpaceTemplatePack, declaration: D): D & { spacePack: Omit<SpaceTemplatePack, "spec"> } {
+export function packDeclaration<D extends { card: object }>(pack: SpaceTemplatePack, declaration: D): D & { spacePack: Omit<SpaceTemplatePack, "spec"> } {
   const { spec: _spec, ...rest } = pack;
   return { ...declaration, card: { ...declaration.card, name: pack.title, space: packCardFace(pack) }, spacePack: rest };
 }
