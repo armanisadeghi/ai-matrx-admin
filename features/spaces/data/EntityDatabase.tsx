@@ -12,7 +12,8 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
-import { EntityChartBlock, RecordsMount, TablePage, type ChartKind, type EntityColumn, type EntityRow } from "@ai-matrx/records-ui";
+import { EntityChartBlock, RecordsMount, TablePage } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import type { ChartKind, EntityColumn, EntityRow } from "@ai-matrx/records-ui";
 import type { RecordsConfig } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import { ArrowDownUp, ArrowUpRight, Database, Kanban, PieChart, List, ListFilter, Maximize2, PanelRight, Plus, Search, SlidersHorizontal, Square, Table2, X } from "lucide-react";

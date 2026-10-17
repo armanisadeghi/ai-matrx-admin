@@ -26,12 +26,7 @@ import { useMemo } from "react";
 import { AlertTriangle, ArrowUpRight, Database, TableProperties } from "lucide-react";
 import { tableKindSlug, type Field } from "@ai-matrx/records";
 import { RecordsProvider } from "@ai-matrx/records/react";
-import {
-  RecordLabelProvider,
-  RecordValue,
-  RecordsUiProvider,
-  scalarText,
-} from "@ai-matrx/records-ui";
+import { useRecordsUiModule, withRecordsUi } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { MatrxDataTable, MatrxTableCard } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Button } from "@/components/ui/button";
@@ -67,6 +62,18 @@ function DoorLink({ href, children }: { href: string; children: React.ReactNode 
   );
 }
 
+/**
+ * The providers every records-ui value needs. They load with the values behind the one front-door
+ * edge (records-ui front door, 2026-10-16); what they wrap reads the module with `useRecordsUiModule`.
+ */
+const RecordsUiValues = withRecordsUi<{ children: React.ReactNode }>("RecordsAnswerView", function RecordsUiValuesLoaded({ ru, children }) {
+  return (
+    <ru.RecordsUiProvider value={{}}>
+      <ru.RecordLabelProvider>{children}</ru.RecordLabelProvider>
+    </ru.RecordsUiProvider>
+  );
+});
+
 /** The Table's facts and the provider every records-ui value needs, or a sentence. */
 function WithTable({
   tableId,
@@ -82,9 +89,7 @@ function WithTable({
   if (kind.state === "refused") return <Line>{kind.sentence}</Line>;
   return (
     <TableRecordsProvider organizationId={kind.facts.organization_id}>
-      <RecordsUiProvider value={{}}>
-        <RecordLabelProvider>{children({ name: kind.name, fields: kind.fields })}</RecordLabelProvider>
-      </RecordsUiProvider>
+      <RecordsUiValues>{children({ name: kind.name, fields: kind.fields })}</RecordsUiValues>
     </TableRecordsProvider>
   );
 }
@@ -106,6 +111,7 @@ function RowsCard({
   name: string | null;
   fields: Field[];
 }) {
+  const { scalarText, RecordValue } = useRecordsUiModule("RecordsAnswerView's rows");
   const openSaveToTable = useOpenSaveToTable();
   // Only the Fields the answer carries, in the Table's own order.
   const shown = useMemo(
@@ -124,7 +130,7 @@ function RowsCard({
           <RecordValue field={field} value={row.values[field.key]} recordId={row.recordId} inCell />
         ),
       })),
-    [shown],
+    [shown, scalarText, RecordValue],
   );
   const title = name ?? "Table";
   const count = answer.total ?? answer.rows.length;

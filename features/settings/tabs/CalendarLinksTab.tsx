@@ -7,7 +7,7 @@
  */
 
 import { CalendarClock } from "lucide-react";
-import { CalendarLinks, RecordsUiProvider } from "@ai-matrx/records-ui";
+import { CalendarLinks, RecordsUiProvider } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";

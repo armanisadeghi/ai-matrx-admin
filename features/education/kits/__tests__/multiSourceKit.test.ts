@@ -30,7 +30,7 @@ jest.mock("@/features/scopes/service/scopeDoors", () => ({
   }),
 }));
 jest.mock("@/features/organizations/organizationsIAmIn", () => ({
-  organizationsIAmIn: async () => new Set(["org-1", "org-2"]),
+  recentOrganizationIds: async () => ({ ids: new Set(["org-1", "org-2"]), hasMore: false }),
 }));
 jest.mock("@/features/sources/api/sourcesApi", () => ({ keepSource: jest.fn() }));
 jest.mock("@/features/files/api/files", () => ({ getFileMetadata: jest.fn() }));

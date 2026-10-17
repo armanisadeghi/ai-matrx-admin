@@ -12,7 +12,8 @@
 import { readVersionNow, updateRecordAt } from "@/lib/records/record-versions";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
-import { ConditionGroup, DashboardCanvas, FieldEditor, FormBuilder, FormLookFrame, NotifyRuleEditor, Peek, RecordForm, ViewSwitcher, type ConditionField } from "@ai-matrx/records-ui";
+import { ConditionGroup, DashboardCanvas, FieldEditor, FormBuilder, FormLookFrame, NotifyRuleEditor, Peek, RecordForm, ViewSwitcher } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import type { ConditionField } from "@ai-matrx/records-ui";
 import type { PublicForm } from "@/features/forms/service";
 import { PublicFormRunner } from "@/app/(link)/f/[formId]/PublicFormRunner";
 import { spacesFormForAnswering } from "./form-actions";

@@ -17,7 +17,7 @@
  *     choices" back first…", and "Status choices" is right there in the same list.
  */
 import { useState } from "react";
-import { RefusalNotice } from "@ai-matrx/records-ui";
+import { RefusalNotice } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { RecordsError } from "@ai-matrx/records";
 import { Button } from "@/components/ui/button";
 import { formatCount } from "@ai-matrx/kit/format";

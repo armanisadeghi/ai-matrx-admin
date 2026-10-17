@@ -5,7 +5,8 @@
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { fieldDeclarationFor, tokenFor, type NewFieldSpec } from "@ai-matrx/records/core";
-import { FieldEditor, type PickableFieldType } from "@ai-matrx/records-ui";
+import { FieldEditor } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import type { PickableFieldType } from "@ai-matrx/records-ui";
 import { useRecordsClient, useTable, useTables } from "@ai-matrx/records/react";
 import {
   AlignLeft,

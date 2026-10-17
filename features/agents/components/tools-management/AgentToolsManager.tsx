@@ -116,7 +116,7 @@ import type {
 import { createClient } from "@/utils/supabase/client";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import {
   isOrgKnobGatedTool,
   toolsWithheldInOrganization,
@@ -890,7 +890,7 @@ function ServerToolsTab({
     (state) => selectAgentById(state, agentId)?.organizationId ?? null,
   );
   const gateUserId = useAppSelector(selectUserId);
-  const { organizations: gateOrganizations } = useUserOrganizations();
+  const { organizations: gateOrganizations } = useOrganizationsWith([agentOrganizationId]);
   const agentOrganizationName =
     gateOrganizations.find((org) => org.id === agentOrganizationId)?.name ??
     "this agent's organization";

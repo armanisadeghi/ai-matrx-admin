@@ -38,7 +38,7 @@ import { attachVirtualRoots } from "@/features/files/redux/virtual-thunks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { rememberFileOrganization } from "@/features/files/api/fileOrganization";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { MobileStack } from "../MobileStack";
 import { isFileTab } from "../FileTabsBody";
 import { SidebarModeProvider } from "../desktop/SidebarModeToggle";
@@ -76,7 +76,7 @@ export function SingleFileShell({ fileId, organizationId, className }: SingleFil
   rememberFileOrganization(fileId, organizationId);
   // The shell header believes the file: never a red "Choose org" over a file that opens in its
   // own organization — a quiet "Viewing in <org>" when she is in it, else nothing (VERIFIER-21 #7).
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([organizationId]);
   useDeclarePageObjectOrganization(
     organizationId
       ? {

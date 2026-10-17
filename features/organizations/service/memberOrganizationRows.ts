@@ -130,7 +130,13 @@ export function primeMemberOrganizationRows(userId: string, answer: MemberOrgani
 }
 
 /** A write that changed her organizations, or a refresh: the next read asks again. */
+const forgetHooks = new Set<() => void>();
+/** Something that learned from her organizations (the by-id lookup cache) forgets with them. */
+export function onMemberOrganizationsForgotten(hook: () => void): void {
+  forgetHooks.add(hook);
+}
 export function forgetMemberOrganizationRows(): void {
   shared.clear();
+  for (const hook of forgetHooks) hook();
   dropUnreadBootSeeds(); // no boot seed outlives a write or refresh
 }

@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useAppStore } from "@/lib/redux/hooks";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { toast } from "@/lib/toast";
 import {
   fetchDistillationApproaches,
@@ -199,7 +199,7 @@ export function CapturePlanPage({
   const settings = useCapturePlanSettings(rulebook.id, rulebook.organization_id);
   // Reminders are filed in the RULEBOOK's organization (a child of it), never
   // the selected one — which is why the lane needs no organization notice.
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([rulebook.organization_id]);
   const reminderOrganizationId = organizations.some(
     (org) => org.id === rulebook.organization_id,
   )

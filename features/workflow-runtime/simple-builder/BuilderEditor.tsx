@@ -15,12 +15,9 @@ import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { useFields } from "@ai-matrx/records/react";
 import type { Field, RecordsDataSource } from "@ai-matrx/records";
 import { createRecordsClient } from "@ai-matrx/records/core";
-import {
-  ConditionGroup,
-  personActor,
-  fieldName,
-  type ConditionField,
-} from "@ai-matrx/records-ui";
+import { ConditionGroup } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { personActor, fieldName } from "@ai-matrx/records-ui/helpers";
+import type { ConditionField } from "@ai-matrx/records-ui";
 import {
   RecordPicker,
   TablePicker,

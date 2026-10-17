@@ -1,0 +1,1626 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0255",
+  "version": 1,
+  "title": "Employee Directory",
+  "description": "Find anyone: teams, managers, skills, time zones and anniversaries.",
+  "forWho": "Teams of every size",
+  "icon": {
+    "emoji": "📇"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "team",
+  "tags": [
+    "directory",
+    "people",
+    "org-chart",
+    "teams"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-employee-directory",
+    "catalogueId": "SP0255",
+    "useCase": "Gareth Pembroke coordinates operations at a twelve-person software company and uses this so everyone can find who to ask and where they work.",
+    "industry": "software_it",
+    "vertical": "Employee directory",
+    "job": "team_hr",
+    "audience": "organization",
+    "teaches": "gallery",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Sandpiper Works",
+      "describes": "A twelve-person software company with an Austin office and remote teammates.",
+      "address": {
+        "line1": "90 Emberglass Road",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78701",
+        "country": "US"
+      },
+      "phone": "(512) 555-0149",
+      "website": "sandpiperworks.net",
+      "email": "hello@sandpiperworks.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-employee-directory",
+    "tables": [
+      {
+        "token": "team",
+        "name": "Teams",
+        "labelSingular": "Team",
+        "labelPlural": "Teams",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "team_name",
+        "describes": "Each team, who leads it and what it exists to do.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "team_name",
+            "label": "Team",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "mission",
+            "label": "Mission",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "channel",
+            "label": "Chat channel",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "profile_list",
+            "label": "Members",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "profile",
+            "multi": true
+          },
+          {
+            "key": "member_count",
+            "label": "Active headcount",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "profile_list",
+            "pick": "profile_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Active",
+                "On leave"
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t-lead",
+            "values": {
+              "team_name": "Leadership",
+              "lead": "tm-astrid",
+              "mission": "Set direction and keep the company healthy.",
+              "channel": "#leadership",
+              "profile_list": [
+                "pf-astrid",
+                "pf-gareth"
+              ]
+            }
+          },
+          {
+            "key": "t-prod",
+            "values": {
+              "team_name": "Product",
+              "lead": "tm-kofi",
+              "mission": "Decide what to build next and why.",
+              "channel": "#product",
+              "profile_list": [
+                "pf-kofi",
+                "pf-lucia",
+                "pf-odalys"
+              ]
+            }
+          },
+          {
+            "key": "t-eng",
+            "values": {
+              "team_name": "Engineering",
+              "lead": "tm-bjorn",
+              "mission": "Build and run the software reliably.",
+              "channel": "#engineering",
+              "profile_list": [
+                "pf-bjorn",
+                "pf-sana",
+                "pf-ezra",
+                "pf-priyanka"
+              ]
+            }
+          },
+          {
+            "key": "t-care",
+            "values": {
+              "team_name": "Customer care",
+              "lead": "tm-hana",
+              "mission": "Help customers succeed within a day.",
+              "channel": "#customer-care",
+              "profile_list": [
+                "pf-mirela",
+                "pf-hana",
+                "pf-theo"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "profile",
+        "name": "Profiles",
+        "labelSingular": "Profile",
+        "labelPlural": "Profiles",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "id-card",
+        "titleField": "profile_name",
+        "describes": "Where each person works, who they report to, what they are good at and whether they are active.",
+        "subject": "thing",
+        "independentOf": {
+          "team": "A person can join a team whenever they started at the company.",
+          "person": "A profile exists as soon as the person is added."
+        },
+        "statusImplies": [],
+        "fields": [
+          {
+            "key": "profile_name",
+            "label": "Profile",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "person",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team",
+            "relationMax": 1
+          },
+          {
+            "key": "manager",
+            "label": "Manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Austin",
+              "Remote"
+            ],
+            "choiceColors": {
+              "Austin": "orange",
+              "Remote": "teal"
+            }
+          },
+          {
+            "key": "timezone",
+            "label": "Time zone",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pacific",
+              "Central",
+              "Eastern"
+            ],
+            "choiceColors": {
+              "Pacific": "violet",
+              "Central": "amber",
+              "Eastern": "blue"
+            }
+          },
+          {
+            "key": "employment",
+            "label": "Employment type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Full-time",
+              "Part-time",
+              "Contract"
+            ],
+            "choiceColors": {
+              "Full-time": "green",
+              "Part-time": "amber",
+              "Contract": "slate"
+            }
+          },
+          {
+            "key": "skills",
+            "label": "Skills",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "multi": true,
+            "choices": [
+              "Strategy",
+              "Finance",
+              "Roadmaps",
+              "Research",
+              "Interface design",
+              "Prototyping",
+              "Backend",
+              "Databases",
+              "Frontend",
+              "Accessibility",
+              "Mobile",
+              "Testing",
+              "Onboarding",
+              "Writing",
+              "Training",
+              "Escalations",
+              "Chat support",
+              "SQL",
+              "Dashboards",
+              "Vendors",
+              "Facilities"
+            ],
+            "choiceColors": {
+              "Strategy": "blue",
+              "Finance": "green",
+              "Roadmaps": "amber",
+              "Research": "red",
+              "Interface design": "violet",
+              "Prototyping": "teal",
+              "Backend": "orange",
+              "Databases": "pink",
+              "Frontend": "slate",
+              "Accessibility": "yellow",
+              "Mobile": "brown",
+              "Testing": "gray",
+              "Onboarding": "blue",
+              "Writing": "green",
+              "Training": "amber",
+              "Escalations": "red",
+              "Chat support": "violet",
+              "SQL": "teal",
+              "Dashboards": "orange",
+              "Vendors": "pink",
+              "Facilities": "slate"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "On leave",
+              "Alumni"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "On leave": "amber",
+              "Alumni": "slate"
+            },
+            "required": true,
+            "default": "Active"
+          },
+          {
+            "key": "chat",
+            "label": "Chat link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "emergency",
+            "label": "Emergency contact",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "summarize"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pf-astrid",
+            "values": {
+              "profile_name": "Astrid Lundqvist",
+              "person": "tm-astrid",
+              "team": "t-lead",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Full-time",
+              "skills": [
+                "Strategy",
+                "Finance"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/astrid"
+            }
+          },
+          {
+            "key": "pf-kofi",
+            "values": {
+              "profile_name": "Kofi Mensah-Boateng",
+              "person": "tm-kofi",
+              "team": "t-prod",
+              "manager": "tm-astrid",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Full-time",
+              "skills": [
+                "Roadmaps",
+                "Research"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/kofi"
+            }
+          },
+          {
+            "key": "pf-lucia",
+            "values": {
+              "profile_name": "Lucía Santamaría",
+              "person": "tm-lucia",
+              "team": "t-prod",
+              "manager": "tm-kofi",
+              "location": "Remote",
+              "timezone": "Pacific",
+              "employment": "Full-time",
+              "skills": [
+                "Interface design",
+                "Prototyping"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/lucia"
+            }
+          },
+          {
+            "key": "pf-bjorn",
+            "values": {
+              "profile_name": "Björn Halvorsen",
+              "person": "tm-bjorn",
+              "team": "t-eng",
+              "manager": "tm-astrid",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Full-time",
+              "skills": [
+                "Backend",
+                "Databases"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/bjorn"
+            }
+          },
+          {
+            "key": "pf-sana",
+            "values": {
+              "profile_name": "Sana Qureshi",
+              "person": "tm-sana",
+              "team": "t-eng",
+              "manager": "tm-bjorn",
+              "location": "Remote",
+              "timezone": "Eastern",
+              "employment": "Full-time",
+              "skills": [
+                "Frontend",
+                "Accessibility"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/sana"
+            }
+          },
+          {
+            "key": "pf-ezra",
+            "values": {
+              "profile_name": "Ezra Caldwell",
+              "person": "tm-ezra",
+              "team": "t-eng",
+              "manager": "tm-bjorn",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Full-time",
+              "skills": [
+                "Mobile",
+                "Testing"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/ezra"
+            }
+          },
+          {
+            "key": "pf-mirela",
+            "values": {
+              "profile_name": "Mirela Dragomir",
+              "person": "tm-mirela",
+              "team": "t-care",
+              "manager": "tm-hana",
+              "location": "Remote",
+              "timezone": "Eastern",
+              "employment": "Full-time",
+              "skills": [
+                "Onboarding",
+                "Writing"
+              ],
+              "status": "On leave",
+              "chat": "https://chat.sandpiperworks.net/mirela"
+            }
+          },
+          {
+            "key": "pf-hana",
+            "values": {
+              "profile_name": "Hana Yoshida",
+              "person": "tm-hana",
+              "team": "t-care",
+              "manager": "tm-astrid",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Full-time",
+              "skills": [
+                "Training",
+                "Escalations"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/hana"
+            }
+          },
+          {
+            "key": "pf-theo",
+            "values": {
+              "profile_name": "Théo Lambert",
+              "person": "tm-theo",
+              "team": "t-care",
+              "manager": "tm-hana",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Part-time",
+              "skills": [
+                "Chat support"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/theo"
+            }
+          },
+          {
+            "key": "pf-priyanka",
+            "values": {
+              "profile_name": "Priyanka Bhatt",
+              "person": "tm-priyanka",
+              "team": "t-eng",
+              "manager": "tm-bjorn",
+              "location": "Remote",
+              "timezone": "Pacific",
+              "employment": "Full-time",
+              "skills": [
+                "SQL",
+                "Dashboards"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/priyanka"
+            }
+          },
+          {
+            "key": "pf-gareth",
+            "values": {
+              "profile_name": "Gareth Pembroke",
+              "person": "tm-gareth",
+              "team": "t-lead",
+              "manager": "tm-astrid",
+              "location": "Austin",
+              "timezone": "Central",
+              "employment": "Contract",
+              "skills": [
+                "Vendors",
+                "Facilities"
+              ],
+              "status": "Active",
+              "chat": "https://chat.sandpiperworks.net/gareth"
+            }
+          },
+          {
+            "key": "pf-odalys",
+            "values": {
+              "profile_name": "Odalys Ferreira",
+              "person": "tm-odalys",
+              "team": "t-prod",
+              "manager": "tm-kofi",
+              "location": "Remote",
+              "timezone": "Eastern",
+              "employment": "Full-time",
+              "skills": [
+                "Roadmaps"
+              ],
+              "status": "Alumni",
+              "chat": "https://chat.sandpiperworks.net/odalys"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each team has one lead.",
+        "fromTable": "team",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "teams_led"
+      },
+      {
+        "describes": "A team lists its member profiles.",
+        "fromTable": "team",
+        "fromField": "profile_list",
+        "toTable": "profile",
+        "flavor": "referenced",
+        "cardinality": "many",
+        "onDelete": "set_null",
+        "inverseKey": "team_of_profile"
+      },
+      {
+        "describes": "Each profile describes one person.",
+        "fromTable": "profile",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "profiles"
+      },
+      {
+        "describes": "Each profile sits in one team.",
+        "fromTable": "profile",
+        "fromField": "team",
+        "toTable": "team",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "members"
+      },
+      {
+        "describes": "Each profile has one manager.",
+        "fromTable": "profile",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "reports"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-astrid",
+            "values": {
+              "full_name": "Astrid Lundqvist",
+              "role": "Chief executive",
+              "work_email": "astrid@sandpiperworks.net",
+              "mobile": "(512) 555-0150",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-kofi",
+            "values": {
+              "full_name": "Kofi Mensah-Boateng",
+              "role": "Head of product",
+              "work_email": "kofi@sandpiperworks.net",
+              "mobile": "(512) 555-0151",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-lucia",
+            "values": {
+              "full_name": "Lucía Santamaría",
+              "role": "Product designer",
+              "work_email": "lucia@sandpiperworks.net",
+              "mobile": "(512) 555-0152",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-bjorn",
+            "values": {
+              "full_name": "Björn Halvorsen",
+              "role": "Engineering lead",
+              "work_email": "bjorn@sandpiperworks.net",
+              "mobile": "(512) 555-0153",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-sana",
+            "values": {
+              "full_name": "Sana Qureshi",
+              "role": "Software engineer",
+              "work_email": "sana@sandpiperworks.net",
+              "mobile": "(512) 555-0154",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-ezra",
+            "values": {
+              "full_name": "Ezra Caldwell",
+              "role": "Software engineer",
+              "work_email": "ezra@sandpiperworks.net",
+              "mobile": "(512) 555-0155",
+              "start_date": "@today-14m"
+            }
+          },
+          {
+            "key": "tm-mirela",
+            "values": {
+              "full_name": "Mirela Dragomir",
+              "role": "Support specialist",
+              "work_email": "mirela@sandpiperworks.net",
+              "mobile": "(512) 555-0156",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-hana",
+            "values": {
+              "full_name": "Hana Yoshida",
+              "role": "Head of customer care",
+              "work_email": "hana@sandpiperworks.net",
+              "mobile": "(512) 555-0157",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-theo",
+            "values": {
+              "full_name": "Théo Lambert",
+              "role": "Support specialist",
+              "work_email": "theo@sandpiperworks.net",
+              "mobile": "(512) 555-0158",
+              "start_date": "@today-8m"
+            }
+          },
+          {
+            "key": "tm-priyanka",
+            "values": {
+              "full_name": "Priyanka Bhatt",
+              "role": "Data analyst",
+              "work_email": "priyanka@sandpiperworks.net",
+              "mobile": "(512) 555-0159",
+              "start_date": "@today-20m"
+            }
+          },
+          {
+            "key": "tm-gareth",
+            "values": {
+              "full_name": "Gareth Pembroke",
+              "role": "Operations coordinator",
+              "work_email": "gareth@sandpiperworks.net",
+              "mobile": "(512) 555-0160",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-odalys",
+            "values": {
+              "full_name": "Odalys Ferreira",
+              "role": "Former product manager",
+              "work_email": "odalys@sandpiperworks.net",
+              "mobile": "(512) 555-0161",
+              "start_date": "@today-6y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "update_profile",
+        "name": "Update my profile",
+        "describes": "How anyone adds their location, skills and chat link.",
+        "audience": "staff",
+        "table": "profile",
+        "fields": [
+          {
+            "fieldKey": "profile_name",
+            "ask": "Your name as it should appear?",
+            "required": true
+          },
+          {
+            "fieldKey": "location",
+            "ask": "Where do you work from?"
+          },
+          {
+            "fieldKey": "timezone",
+            "ask": "Which time zone are you in?"
+          },
+          {
+            "fieldKey": "skills",
+            "ask": "What are you good at?"
+          },
+          {
+            "fieldKey": "chat",
+            "ask": "Link to your chat profile?"
+          }
+        ],
+        "submitLabel": "Save",
+        "confirmation": "Thanks. The directory is updated."
+      }
+    ],
+    "dimensions": [],
+    "extras": [],
+    "views": [
+      {
+        "token": "all_profiles",
+        "name": "All people",
+        "table": "profile",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "profile_by_location",
+        "name": "By location",
+        "table": "profile",
+        "kind": "kanban",
+        "groupBy": "location"
+      },
+      {
+        "token": "profile_status",
+        "name": "By status",
+        "table": "profile",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_teams",
+        "name": "All teams",
+        "table": "team",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_people",
+        "name": "Contact details",
+        "table": "team_member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "anniversaries",
+        "name": "Work anniversaries",
+        "table": "team_member",
+        "kind": "calendar",
+        "dateField": "start_date"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Employee Directory assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "profile",
+          "describes": "Every person's profile: team, manager, location and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "team",
+          "describes": "The teams people belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many people work remotely?",
+        "whyItMatters": "Gareth plans in-person days around remote headcount.",
+        "expect": {
+          "table": "profile",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "location": "Remote"
+          },
+          "answer": 5,
+          "unit": "people"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open the people list.",
+        "action": {
+          "kind": "open",
+          "surface": "all_profiles"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_profiles",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open by location.",
+        "action": {
+          "kind": "open",
+          "surface": "profile_by_location"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "profile_by_location",
+          "minItems": 10
+        }
+      },
+      {
+        "says": "Open work anniversaries.",
+        "action": {
+          "kind": "open",
+          "surface": "anniversaries"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "anniversaries",
+          "minItems": 8
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-17",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "sandpiperworks.net"
+      ],
+      "fictionalStreets": [
+        "Emberglass Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "directory",
+      "parent": null,
+      "title": "Employee Directory",
+      "icon": {
+        "emoji": "📇"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Find anyone, see who they work with and where they are. Keep your own profile current; the directory is only as useful as it is accurate."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Search"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "People"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "profile",
+              "view": "all_profiles"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-g",
+                "name": "People",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-t",
+                "name": "All people",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "v-l",
+                "name": "By location",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "location"
+              },
+              {
+                "id": "v-s",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              }
+            ],
+            "activeViewId": "v-g"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Teams"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "team",
+              "view": "all_teams"
+            },
+            "inline": true,
+            "title": "Teams",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-tg",
+                "name": "Teams",
+                "layout": "gallery",
+                "icon": "LayoutGrid"
+              },
+              {
+                "id": "v-tt",
+                "name": "All teams",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "v-tg"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "New this year"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "team_member",
+                      "view": "all_people"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-n",
+                        "name": "Newest first",
+                        "layout": "list",
+                        "icon": "List",
+                        "sorts": [
+                          {
+                            "field": "start_date",
+                            "direction": "desc"
+                          }
+                        ]
+                      }
+                    ],
+                    "activeViewId": "v-n"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Work anniversaries"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "team_member",
+                      "view": "anniversaries"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "v-a",
+                        "name": "Anniversaries",
+                        "layout": "calendar",
+                        "icon": "Calendar",
+                        "dateField": "start_date"
+                      }
+                    ],
+                    "activeViewId": "v-a"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:org-chart"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:directory-dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:directory-guide"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Alumni"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "profile",
+              "view": "all_profiles"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "v-al",
+                "name": "Alumni",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Alumni"
+                }
+              }
+            ],
+            "activeViewId": "v-al"
+          }
+        }
+      ]
+    },
+    {
+      "key": "org-chart",
+      "parent": "directory",
+      "title": "Who reports to whom",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The company is small enough to fit on one page. Each person reports to the person shown in the Manager column."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "profile",
+              "view": "all_profiles"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "o1",
+                "name": "By team",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "team"
+              },
+              {
+                "id": "o2",
+                "name": "Reporting lines",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "o1"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Level"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Executive"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Astrid Lundqvist"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Team leads"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kofi, Björn, Hana"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Everyone else"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Report to their team lead"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "directory-dashboard",
+      "parent": "directory",
+      "title": "Directory at a glance",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "profile",
+                      "view": "all_profiles"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d1",
+                        "name": "People by team",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "team",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "profile",
+                      "view": "all_profiles"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d2",
+                        "name": "People by location",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "location",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "profile",
+                      "view": "all_profiles"
+                    },
+                    "inline": true,
+                    "title": "People",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d3",
+                        "name": "By employment type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "employment",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time zones"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "profile",
+              "view": "all_profiles"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d4",
+                "name": "By time zone",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "timezone",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "d4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On leave right now"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "profile",
+              "view": "all_profiles"
+            },
+            "inline": true,
+            "title": "People",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d5",
+                "name": "On leave",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "On leave"
+                }
+              }
+            ],
+            "activeViewId": "d5"
+          }
+        }
+      ]
+    },
+    {
+      "key": "directory-guide",
+      "parent": "directory",
+      "title": "Keeping the directory current",
+      "icon": {
+        "emoji": "🛠️"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A five minute routine each quarter."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Everyone opens their profile and checks location, time zone and skills."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Managers confirm reporting lines after any team change."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When someone leaves, change Status to Alumni instead of deleting them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add new people from the team table, then fill in their profile."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Work phones and emails live on the team table. Everything else lives on the profile."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Info"
+          }
+        }
+      ]
+    }
+  ]
+}

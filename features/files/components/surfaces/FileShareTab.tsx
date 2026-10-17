@@ -43,7 +43,7 @@ import {
   selectFileById,
 } from "@/features/files/redux/selectors";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { ShareLinkDialogBody } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import { PermissionsDialogBody } from "@/features/files/components/core/PermissionsDialog/PermissionsDialog";
@@ -59,7 +59,7 @@ export function FileShareTab({ fileId, className }: FileShareTabProps) {
   const file = useAppSelector((s) => selectFileById(s, fileId));
   const currentUserId = useAppSelector(selectUserId);
   // The FILE's own organization (the record's, never the active one).
-  const { organizations: memberOrgs } = useUserOrganizations("all");
+  const { organizations: memberOrgs } = useOrganizationsWith([file?.organizationId], "all");
   const organizationName = file?.organizationId
     ? (memberOrgs.find((o) => o.id === file.organizationId)?.name ?? null)
     : null;

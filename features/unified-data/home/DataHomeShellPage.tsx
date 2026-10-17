@@ -15,7 +15,7 @@
 import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { RecordsMount } from "@ai-matrx/records-ui";
+import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { recordStoreShare } from "@/features/sharing/components/RecordStoreShareSurface";
 import { RecordScopedChat } from "@/features/unified-data/record-chat/RecordScopedChat";
@@ -26,7 +26,7 @@ import { openOverlay } from "@/lib/redux/slices/overlaySlice";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { ALL_ORGANIZATIONS, ORG_FILTER_PARAM, dataHomeOrganizationHref } from "@/features/unified-data/hub/dataHomeScope";
 import type { OrganizationState } from "@/features/organizations/useOrganizationRequired";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { getOrganizationMembers } from "@/features/organizations/service";
 import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
@@ -47,11 +47,11 @@ export function DataHomeShellPage({ making }: { making: DataHomeMaking }) {
   const dispatch = useAppDispatch();
   const userId = useAppSelector(selectUserId);
   const searchParams = useSearchParams();
-  const { organizations: myOrganizations, loading: myOrganizationsLoading } = useUserOrganizations();
-  // THE ORGANIZATION FILTER is the shell's (`?org_filter=`). The mount is bound to it when it names
+    // THE ORGANIZATION FILTER is the shell's (`?org_filter=`). The mount is bound to it when it names
   // one of the person's organizations (so the store switch, realtime and members follow), exactly as
   // the old page; under All organizations the mount carries none and the doors answer for the person.
   const addressPick = searchParams.get(ORG_FILTER_PARAM);
+  const { organizations: myOrganizations, loading: myOrganizationsLoading } = useOrganizationsWith([addressPick]);
   const namedOrganization = addressPick ? myOrganizations.find((org) => org.id === addressPick) : undefined;
   const organizationId: string | null = namedOrganization ? namedOrganization.id : null;
   const acrossAll = !addressPick || (!myOrganizationsLoading && !namedOrganization);

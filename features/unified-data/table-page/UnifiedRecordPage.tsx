@@ -8,7 +8,9 @@
 // own `useUnifiedTable` / `UnifiedTableBody`, so a record opens exactly when its table would.
 
 import { useRouter } from "next/navigation";
-import { RecordPanel, RecordsSkeleton, recordNameIn } from "@ai-matrx/records-ui";
+import { RecordPanel } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { RecordsSkeleton } from "@ai-matrx/records-ui/skeleton";
+import { recordNameIn } from "@ai-matrx/records-ui/helpers";
 import { useRecord, useRecordsClient, useTable } from "@ai-matrx/records/react";
 import { Eye, FileText, Table2 } from "lucide-react";
 import { TieredBreadcrumb } from "@/components/official/tiered-breadcrumb/TieredBreadcrumb";

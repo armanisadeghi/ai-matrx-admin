@@ -16,7 +16,7 @@ import { type ReactNode } from "react";
 import { readTheHomeAgain } from "@/features/unified-data/home/readTheHomeAgain";
 import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
-import { RecordsMount, TablesHome } from "@ai-matrx/records-ui";
+import { RecordsMount, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { TEMPLATE_GALLERY_HREF } from "./gallery/galleryHref";
 
 import { Button } from "@ai-matrx/design-system";

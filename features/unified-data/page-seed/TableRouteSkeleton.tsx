@@ -5,7 +5,7 @@
 // paints the rows that table showed last time. One component, drawn by the route's `loading.tsx`
 // AND by the table page while it waits for its first reads, so the two frames are the same box.
 
-import { RecordsSkeleton, TablePageSkeleton } from "@ai-matrx/records-ui";
+import { RecordsSkeleton, TablePageSkeleton } from "@ai-matrx/records-ui/skeleton";
 
 export function TableRouteSkeleton({ tableId }: { tableId?: string | null }) {
   return (

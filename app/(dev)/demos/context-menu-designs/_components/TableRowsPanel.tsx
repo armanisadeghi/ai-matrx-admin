@@ -8,7 +8,9 @@
 // Rows are fixtures; every handler only says what it would run.
 
 import { ExternalLink, Star, Table2 } from "lucide-react";
-import { tableActions, whatYouMayDo, type TableActionSubject } from "@ai-matrx/records-ui";
+import { whatYouMayDo } from "@ai-matrx/records-ui/helpers";
+import { tableActions } from "@ai-matrx/records-ui/object-actions";
+import type { TableActionSubject } from "@ai-matrx/records-ui";
 import { ItemContextMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { toItemMenuConfig } from "@/features/unified-data/actions/tableActionAdapters";

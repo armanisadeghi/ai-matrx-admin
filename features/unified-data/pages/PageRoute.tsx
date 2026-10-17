@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { Button } from "@ai-matrx/design-system/controls";
-import { PageScreen } from "@ai-matrx/records-ui";
+import { PageScreen } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useAppSelector } from "@/lib/redux/hooks";

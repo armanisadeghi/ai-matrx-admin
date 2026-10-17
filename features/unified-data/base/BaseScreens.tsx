@@ -17,7 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
-import { isInterface, isPage } from "@ai-matrx/records-ui";
+import { isInterface, isPage } from "@ai-matrx/records-ui/helpers";
 import { MakeMount } from "@/features/make/MakeMount";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { createClient } from "@/utils/supabase/client";

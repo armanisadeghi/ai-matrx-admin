@@ -22,7 +22,8 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Database, DownloadCloud, Rows3 } from "lucide-react";
-import { Peek, RecordsMount, TablesHome, recordsDataSource, rowName } from "@ai-matrx/records-ui";
+import { Peek, RecordsMount, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { recordsDataSource, rowName } from "@ai-matrx/records-ui/helpers";
 import { useRecords, useTable } from "@ai-matrx/records/react";
 
 import { Button } from "@/components/ui/button";

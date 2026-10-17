@@ -14,7 +14,7 @@ import { Check, History, MessageCircle, Pencil, Plus, X } from "lucide-react";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { RecordsMount } from "@ai-matrx/records-ui";
+import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { RecordPageHeader, type RecordPageAction } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useAppSelector } from "@/lib/redux/hooks";

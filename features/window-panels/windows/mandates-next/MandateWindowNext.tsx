@@ -31,7 +31,7 @@ import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import { isSystemHomedMandate } from "@/features/mandates/admin/useMandateSystemSeat";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import {
   fetchMandateConsoleData,
   type MandateDefinitionRow,
@@ -107,8 +107,8 @@ function MandateWindowNextInner({
     selectAdminFeature(s, "mandate.system-seat"),
   );
   const userId = useAppSelector(selectUserId);
-  const { organizations } = useUserOrganizations();
   const [rows, setRows] = useState<MandateDefinitionRow[] | null>(null);
+  const { organizations } = useOrganizationsWith((rows ?? []).map((r) => r.organization_id));
   const [bindingsById, setBindingsById] = useState<
     Record<string, { deleted_at?: string | null }[]>
   >({});

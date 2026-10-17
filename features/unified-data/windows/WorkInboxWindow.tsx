@@ -15,7 +15,7 @@
  */
 
 import Link from "next/link";
-import { ActionInbox, RecordsMount } from "@ai-matrx/records-ui";
+import { ActionInbox, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { WindowPanel } from "@/features/window-panels/WindowPanel";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

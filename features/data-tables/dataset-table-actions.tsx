@@ -16,7 +16,7 @@
  * 🚨 NO NEW WRITE PATH LIVES HERE.
  */
 
-import { whatYouMayDo } from "@ai-matrx/records-ui";
+import { whatYouMayDo } from "@ai-matrx/records-ui/helpers";
 import { tableActions, tableLink, type ObjectAction } from "@ai-matrx/records-ui/object-actions";
 
 import type { ContextMenuEntityRef, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";

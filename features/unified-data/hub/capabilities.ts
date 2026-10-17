@@ -23,7 +23,8 @@
 
 import type { RecordsClient } from "@ai-matrx/records/core";
 import type { RecordsDataSource, Table } from "@ai-matrx/records";
-import { isInterface, isPage, type VisibilityLane } from "@ai-matrx/records-ui";
+import { isInterface, isPage } from "@ai-matrx/records-ui/helpers";
+import type { VisibilityLane } from "@ai-matrx/records-ui";
 
 import * as doors from "./doors";
 import type { ChangedByKind, DataHomeItemKind, DataHomeItemRow, DataHomeTableRow, DoorFailure, TableFactRow } from "./doors";

@@ -10,7 +10,9 @@
 // read, the menu carries the global design alone.
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { recordActions, recordNameIn, toDropdownEntries, useRecordActionHost, useRecordRights } from "@ai-matrx/records-ui";
+import { recordActions, recordNameIn } from "@ai-matrx/records-ui/helpers";
+import { toDropdownEntries } from "@ai-matrx/records-ui/object-actions";
+import { useRecordsUiModule } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useRecord, useTable, type ReadRow } from "@ai-matrx/records/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraItem, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
@@ -47,9 +49,11 @@ export function recordPageSection(actions: Actions, name: string): ContextMenuEx
 
 /** Reads the record's actions into `into` (a hook host, so it renders nothing). */
 function RecordActionsSource({ tableId, row, name, into }: { tableId: string; row: ReadRow; name: string; into: { current: ContextMenuExtraSection | null } }) {
-  const host = useRecordActionHost({ tableId, row });
+  // Drawn inside the table page's lazy `RecordsMount`, so records-ui's hooks come through the front door.
+  const ru = useRecordsUiModule("RecordPageMenu");
+  const host = ru.useRecordActionHost({ tableId, row });
   // The record's own level (the same read RecordPanel makes, so no second request).
-  const rights = useRecordRights(row.id);
+  const rights = ru.useRecordRights(row.id);
   const section = recordPageSection(recordActions({ record: { id: row.id, tableId, name }, rights, host }), name);
   useEffect(() => {
     into.current = section;

@@ -17,7 +17,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, FolderOpen, Share2 } from "lucide-react";
-import { RecordsMount } from "@ai-matrx/records-ui";
+import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import type { RecordsDataSource } from "@ai-matrx/records";
 

@@ -7,7 +7,7 @@
 // here because ChartBlock's donut has no center value (NEEDS row). Groups past 200 are cut by the store
 // and the tile says so, as Notion does ("Only showing 200 options").
 
-import { ChartBlock } from "@ai-matrx/records-ui";
+import { ChartBlock } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { choiceSlug, measureKey, useFields, useRecords, useRecordsClient, useRecordWrites, type AggregateMeasure, type AggregateRow, type Field, type ReadRow } from "@ai-matrx/records/react";
 import { useEffect, useRef, useState } from "react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

@@ -1,35 +1,50 @@
-// features/organizations/organizationsIAmIn.ts — LANE GATES-TAIL (VERIFIER-21 #7)
+// features/organizations/organizationsIAmIn.ts — LANE GATES-TAIL (VERIFIER-21 #7); bounded 2026-10-17.
 //
-// THE ORGANIZATIONS THIS PERSON IS IN — once per session, for the reads that only a member may
-// make (a roster, an organization's knobs). Access is personal: a person can be given a table
-// of an organization she is not in, and every open of it asked those member-only doors about
-// that organization and was refused with 403 (`iam.has_org_access_for`: direct membership).
-// Such a read is not hers to make, so it is not asked for. Null when her memberships could not
-// be read — the caller then asks as before and lets the door answer.
+// "IS SHE IN THIS ORGANIZATION?" — for the reads that only a member may make (a roster, an
+// organization's knobs). Access is personal: a person can be given a table of an organization she is
+// not in, and every open of it asked those member-only doors about that organization and was refused
+// with 403 (`iam.has_org_access_for`: direct membership). Such a read is not hers to make, so it is
+// not asked for.
+//
+// BOUNDED ORGANIZATIONS (2026-10-17): she may be in hundreds, and the store holds only a page of them.
+// So membership is asked BY ID (`iam.my_organizations_by_ids`, shared + cached in
+// `organizationLookup`) — never answered by looking in a list. Null when the read failed — the caller
+// then asks as before and lets the door answer.
+//
+// AN ARCHIVED ORGANIZATION IS NOT ONE SHE IS IN (2026-10-08). Her membership rows are kept when an
+// organization is archived (so a restore gives everything back), but `iam.has_org_access_for` closes
+// it — every member-only door refuses it with 403.
 
+import { forgetOrganizationLookups, isMemberOfOrganization, lookupOrganizations } from "@/features/organizations/service/organizationLookup";
 import { readMemberOrganizationRows } from "@/features/organizations/service/memberOrganizationRows";
 
-let mine: Promise<Set<string> | null> | null = null;
-
-// AN ARCHIVED ORGANIZATION IS NOT ONE SHE IS IN (2026-10-08). Her membership rows
-// are kept when an organization is archived (so a restore gives everything back),
-// but `iam.has_org_access_for` closes it — every member-only door refuses it with
-// 403. Counting those rows made /education/kits ask `context_tree_types` once per
-// archived organization: 100 refusals per load for the test admin. Only an
-// organization whose row she can read AND that is not archived counts.
-export function organizationsIAmIn(): Promise<Set<string> | null> {
-  if (!mine) {
-    mine = readMemberOrganizationRows()
-      .then((r) => (r.ok ? new Set(r.rows.filter((row) => !row.archived_at).map((row) => row.id)) : null))
-      .catch(() => null);
-  }
-  return mine;
+/** True when she is a live member of `organizationId`; null when that could not be read. */
+export async function memberOfLiveOrganization(organizationId: string): Promise<boolean | null> {
+  const found = await lookupOrganizations([organizationId]);
+  const org = found.get(organizationId);
+  if (org) return !org.archivedAt;
+  return isMemberOfOrganization(organizationId); // false (not hers) or null (read failed)
 }
 
-/** False only when her memberships were read and do not include `organizationId`. */
+/** False only when her membership was read and `organizationId` is not a live one of hers. */
 export async function mayReadAsMember(organizationId: string): Promise<boolean> {
-  const set = await organizationsIAmIn();
-  return set === null || set.has(organizationId);
+  const mine = await memberOfLiveOrganization(organizationId);
+  return mine === null || mine;
+}
+
+/**
+ * The live organizations she used most recently — THE FIRST PAGE, never all of them. For a screen
+ * that must gather something across "her organizations" and has no server-side way to ask without
+ * ids (study kits): it covers this page, and says so (`hasMore`). Null when they could not be read.
+ */
+export async function recentOrganizationIds(): Promise<{ ids: Set<string>; hasMore: boolean } | null> {
+  try {
+    const r = await readMemberOrganizationRows();
+    if (!r.ok) return null;
+    return { ids: new Set(r.rows.filter((row) => !row.archived_at).map((row) => row.id)), hasMore: r.hasMore };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -50,5 +65,5 @@ export async function askAsMember<T>(
 
 /** Test seam. */
 export function __resetOrganizationsIAmInForTest(): void {
-  mine = null;
+  forgetOrganizationLookups();
 }

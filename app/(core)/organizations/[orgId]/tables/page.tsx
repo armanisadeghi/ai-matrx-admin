@@ -9,7 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/utils/supabase/client";
 import { useResolvedOrganization } from "@/features/organizations/hooks";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { RecordsMount, WhereItLives } from "@ai-matrx/records-ui";
+import { RecordsMount, WhereItLives } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 import { PlatformTableLine } from "@/features/unified-data/hub/PlatformTableLine";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";

@@ -23,7 +23,7 @@ import { NotionSyncBar } from "@/features/spaces/io/NotionSyncBar";
 import { SyncIntoWorkspaceButton } from "@/features/unified-data/connect-database/SyncIntoWorkspaceButton";
 import { TableWorkbookLinkButton } from "@/features/workbooks/table-link/TableWorkbookLinkButton";
 import type { PageView, ViewAddressState } from "@ai-matrx/records-ui";
-import { VIEW_ADDRESS_KEYS, viewAddressFromParams, viewAddressToParams } from "@ai-matrx/records-ui";
+import { VIEW_ADDRESS_KEYS, viewAddressFromParams, viewAddressToParams } from "@ai-matrx/records-ui/helpers";
 import type { RecordFilter } from "@ai-matrx/records";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
@@ -33,7 +33,7 @@ import { TableAccessBar } from "./TableAccessBar";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TableSwitcher } from "@/features/unified-data/components/TableSwitcher";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating, currentPathWithSearch } from "@/lib/url-state/addressWithoutNavigating";
 import { HeldWritesOnTable } from "@/features/record-change-approvals/HeldWritesOnTable";
 import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
@@ -186,7 +186,7 @@ export function UnifiedDataTablePage({ tableId }: { tableId: string }) {
   };
   const mount = useUnifiedTable({ tableId, address });
   const { object, shared, knownOrganizationName, readingOrganizationId, allTablesHref, whereItLives } = mount;
-  const { organizations: myOrganizations } = useUserOrganizations();
+  const { organizations: myOrganizations } = useOrganizationsWith([object.state === "found" ? object.organizationId : null]);
   /**
    * THE VIEW AS DRAWN (V24-TAILS): TablePage reports the saved view with the person's look laid
    * over it, so the capture names "grouped by Trade (your own look)" and never "not chosen".

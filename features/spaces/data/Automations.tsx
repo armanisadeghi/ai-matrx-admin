@@ -21,7 +21,7 @@ import { automationWebhookUrl, isButtonField } from "@ai-matrx/records";
 import { postJson, resolveBaseUrl } from "@/lib/python-client";
 import type { AutomationAction, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
 import { useMyLevel, useRecordsClient, type Field } from "@ai-matrx/records/react";
-import { whatYouMayDo } from "@ai-matrx/records-ui";
+import { whatYouMayDo } from "@ai-matrx/records-ui/helpers";
 
 import { FlowStepEditor, stepCount, type Step } from "./AutomationSteps";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";

@@ -21,7 +21,8 @@ import { useEffect, useState } from "react";
 import { ClipboardList } from "lucide-react";
 import { RecordsProvider, useEntityFieldMutation, useEntityFields } from "@ai-matrx/records/react";
 import type { Field } from "@ai-matrx/records";
-import { FIELD_SENSITIVITY_LABEL, FieldEditor, RefusalLine, fieldTypeLabel } from "@ai-matrx/records-ui";
+import { FieldEditor, RefusalLine } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { FIELD_SENSITIVITY_LABEL, fieldTypeLabel } from "@ai-matrx/records-ui/helpers";
 import { ConfirmDelete } from "@ai-matrx/design-system/controls";
 
 import { Badge } from "@/components/ui/badge";

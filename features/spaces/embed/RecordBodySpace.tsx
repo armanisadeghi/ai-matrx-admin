@@ -23,7 +23,7 @@ import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useState, type ErrorInfo, type ReactNode } from "react";
 
-import { bodyFieldOf, recordNameIn } from "@ai-matrx/records-ui";
+import { bodyFieldOf, recordNameIn } from "@ai-matrx/records-ui/helpers";
 import { useFields, useRecordsClient, useTable } from "@ai-matrx/records/react";
 
 import { captureReactRenderError } from "@/lib/diagnostics/captureReactError";

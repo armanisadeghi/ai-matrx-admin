@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { InterfaceScreen } from "@ai-matrx/records-ui";
+import { InterfaceScreen } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useAppSelector } from "@/lib/redux/hooks";

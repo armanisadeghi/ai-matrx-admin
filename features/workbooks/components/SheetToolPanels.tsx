@@ -8,7 +8,7 @@
 
 import { useMemo, useState } from "react";
 import { Button, Field, Select, SettingRow, Switch } from "@ai-matrx/design-system/controls";
-import { FormBuilder } from "@ai-matrx/records-ui";
+import { FormBuilder } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";

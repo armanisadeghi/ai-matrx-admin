@@ -17,7 +17,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { VersionLedger, updateRecordAt, versionRefusalLabel } from "@/lib/records/record-versions";
 import type { GridContextSnapshot } from "./recordStoreTableScope";
 import { useFields, useRecordsClient, useTable } from "@ai-matrx/records/react";
-import { saveTableDescription } from "@ai-matrx/records-ui";
+import { loadRecordsUi } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { SurfaceRuntimeProvider, type SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createDataTablesScope } from "@/features/surfaces/manifests/data-tables.surface";
@@ -201,7 +201,9 @@ export function RecordStoreTableSurface({
     }
     const label = versionRefusalLabel(answer.error);
     return { ok: false, says: label ? `${label}: ${answer.error.message}` : answer.error.message };
-  }, tableId ? (text) => saveTableDescription(client, tableId, text) : undefined);
+  }, tableId
+    ? async (text) => (await loadRecordsUi("RecordStoreTableSurface.saveTableDescription")).saveTableDescription(client, tableId, text)
+    : undefined);
   const snapshot = latest.current;
   if (!enabled) return <>{children}</>;
   return (

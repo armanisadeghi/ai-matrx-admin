@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { displayResolutionOrgId, usePageOrgFilter } from "../display-org";
 import { AGENT_ICON, INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -275,9 +275,9 @@ export function MandatePeekModal({ mandate, isOpen, onClose, href }: MandatePeek
   const facts = useMandateFacts(mandate, isOpen);
   useTransientPeek(isOpen, onClose);
   const override = usePeekHrefOverride();
-  const { organizations } = useUserOrganizations();
   const pageOrgFilter = usePageOrgFilter();
   const ready = facts.status === "ready" ? facts.facts : null;
+  const { organizations } = useOrganizationsWith([pageOrgFilter, ready?.homeOrganizationId]);
   // Display ruling: page org filter, else the mandate's own home org - never the active org.
   const ladderOrgId = displayResolutionOrgId({
     pageOrgFilter,

@@ -33,7 +33,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
-import { FormLookFrame } from "@ai-matrx/records-ui";
+import { FormLookFrame } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { isPortalAccent, type PortalStyle as RecordsPortalStyle } from "@ai-matrx/records";
 import { prefillFromLink, publicForm, publicFormOptions, type PublicForm } from "@/features/forms/service";
 

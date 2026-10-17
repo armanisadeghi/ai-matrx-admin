@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle2, ImageUp, PenLine } from "lucide-react";
-import { SignaturePad } from "@ai-matrx/records-ui";
+import { SignaturePad } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
 
 import { useAppDispatch } from "@/lib/redux/hooks";

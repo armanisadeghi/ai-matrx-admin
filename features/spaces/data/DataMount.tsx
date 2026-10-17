@@ -6,7 +6,7 @@
 // config (the /data page's: session-carrying client, the person as actor, realtime, the app's host
 // ports), bound to the TABLE's own organization — never the active one (access ladder).
 
-import { RecordsMount } from "@ai-matrx/records-ui";
+import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { RecordsConfig } from "@ai-matrx/records";
 import { useRef, type ReactNode } from "react";
 

@@ -10,7 +10,9 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { FormRunner, type FormSubmitOutcome } from "@ai-matrx/records-ui";
+import { FormRunner } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import type { ComponentProps } from "react";
+import type { FormSubmitOutcome } from "@ai-matrx/records-ui";
 import type { Field } from "@ai-matrx/records";
 
 import type { PortalFormSpec } from "@/features/portals/service";
@@ -72,7 +74,7 @@ export function PortalFormRunner({
   return (
     <>
       <FormRunner
-        form={spec as unknown as Parameters<typeof FormRunner>[0]["form"]}
+        form={spec as unknown as ComponentProps<typeof FormRunner>["form"]}
         fields={form.fields as unknown as Field[]}
         onSubmit={submit}
       />

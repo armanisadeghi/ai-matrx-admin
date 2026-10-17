@@ -30,15 +30,8 @@ import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 import { useRecordsDataSource, type RecordsDataSource } from "./recordsDataSource";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  personActor,
-  setPersonTimeZone,
-  tableRightsAt,
-  type AgentBuildAsk,
-  type OpenRecordsAsk,
-  type RecordsUiHost,
-  type TableAskRequest,
-} from "@ai-matrx/records-ui";
+import { personActor, setPersonTimeZone, tableRightsAt } from "@ai-matrx/records-ui/helpers";
+import type { AgentBuildAsk, OpenRecordsAsk, RecordsUiHost, TableAskRequest } from "@ai-matrx/records-ui";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";

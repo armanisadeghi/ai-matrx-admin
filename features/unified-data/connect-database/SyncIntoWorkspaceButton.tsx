@@ -17,7 +17,7 @@ import { Button, Select } from "@ai-matrx/design-system/controls";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { toast } from "@/lib/toast";
 
 const WHOLE_TABLE = "__whole_table__";
@@ -25,7 +25,6 @@ const WHOLE_TABLE = "__whole_table__";
 export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: string; organizationId: string | null }) {
   const router = useRouter();
   const client = useRecordsClient();
-  const { organizations } = useUserOrganizations();
   const [open, setOpen] = useState(false);
   const [views, setViews] = useState<{ value: string; label: string }[]>([{ value: WHOLE_TABLE, label: "Whole table" }]);
   const [view, setView] = useState(WHOLE_TABLE);
@@ -43,12 +42,8 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
   const sourceOrg = organizationId ?? client.config.organizationId;
   // NO SILENT DEFAULT: nothing is picked until the person picks. Other workspaces come first; this
   // table's own workspace is offered last, named as such, for a deliberate same-workspace copy.
-  const others = organizations.filter((o) => o.id !== sourceOrg).map((o) => ({ value: o.id, label: o.name }));
-  const here = organizations.find((o) => o.id === sourceOrg);
   const orgOptions = [
     { value: "", label: "Pick a workspace" },
-    ...others,
-    ...(here ? [{ value: here.id, label: `${here.name} (this workspace)` }] : []),
   ];
   const destination = dest;
 
@@ -91,7 +86,7 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
             </label>
             <label className="flex flex-col gap-1 text-sm">
               Workspace
-              <Select<string> aria-label="Workspace" value={destination} options={orgOptions} onValueChange={setDest} />
+              <OrganizationChooser value={destination || null} placeholder="Pick a workspace" onChange={(org) => setDest(org.id)} className="w-full justify-start" />
             </label>
             <p className="text-xs text-muted-foreground">A read-only copy that follows this view</p>
             <div className="flex justify-end">

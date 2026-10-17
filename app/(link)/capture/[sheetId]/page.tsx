@@ -30,7 +30,7 @@
 import { use, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CaptureRun, RecordsMount } from "@ai-matrx/records-ui";
+import { CaptureRun, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

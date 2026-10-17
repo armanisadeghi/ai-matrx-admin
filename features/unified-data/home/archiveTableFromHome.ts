@@ -11,7 +11,8 @@
 
 import type { RecordsClient } from "@ai-matrx/records/core";
 import type { RecordsError } from "@ai-matrx/records";
-import { announceTableArchived, refusalForAPerson, type RecordsUiHost } from "@ai-matrx/records-ui";
+import { announceTableArchived, refusalForAPerson } from "@ai-matrx/records-ui/helpers";
+import type { RecordsUiHost } from "@ai-matrx/records-ui";
 
 /** The pass size the package's own loop starts at; halves on a timeout, never below the floor. */
 const PASS = 20;

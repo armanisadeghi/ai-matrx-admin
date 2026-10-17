@@ -13,7 +13,8 @@
  * Sits INSIDE `RecordsMount` (it reads through the mount's client, as this person).
  */
 import { useEffect, type ReactNode } from "react";
-import { gridContextSnapshot, useRecordRights } from "@ai-matrx/records-ui";
+import { gridContextSnapshot } from "@ai-matrx/records-ui/helpers";
+import { useRecordsUiModule } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useFields, useRecord, useRecordChangeRevision, useRowActions, useTable } from "@ai-matrx/records/react";
 import type { RowAction } from "@ai-matrx/records";
 
@@ -34,7 +35,8 @@ export function RecordStoreRecordSurface({
   const table = useTable(tableId);
   const fields = useFields(tableId);
   const record = useRecord(recordId);
-  const rights = useRecordRights(recordId);
+  // Drawn inside the table body's lazy `RecordsMount`, so records-ui's rights hook comes through the front door.
+  const rights = useRecordsUiModule("RecordStoreRecordSurface").useRecordRights(recordId);
   const revision = useRecordChangeRevision(recordId);
   const actions = useRowActions(tableId as never);
   const { onGridContext } = channel;

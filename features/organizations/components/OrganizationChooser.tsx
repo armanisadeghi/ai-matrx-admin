@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { Building2 } from "lucide-react";
 import { Button, OrganizationPicker, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { pagedPickerProps, usePagedOrganizations } from "@/features/organizations/hooks/usePagedOrganizations";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 
@@ -18,6 +19,8 @@ export interface OrganizationChooserProps {
   valueName?: string | null;
   onChange: (organization: { id: string; name: string; slug: string }) => void;
   placeholder?: string;
+  /** An organization the host does not offer (the one it is already in). */
+  excludeId?: string | null;
   disabled?: boolean;
   className?: string;
 }
@@ -32,15 +35,18 @@ export function OrganizationChooser({
   valueName,
   onChange,
   placeholder = "Pick an organization",
+  excludeId = null,
   disabled,
   className,
 }: OrganizationChooserProps) {
   const [open, setOpen] = useState(false);
   const paged = usePagedOrganizations();
+  // The chosen organization may be beyond the loaded page: asked by id.
+  const named = useOrganizationsWith([value]);
   const [picked, setPicked] = useState<{ id: string; name: string } | null>(null);
   const label =
     (picked?.id === value ? picked.name : null) ??
-    paged.loadedOrganizations.find((o) => o.id === value)?.name ??
+    named.organizations.find((o) => o.id === value)?.name ??
     valueName ??
     (value ? "Organization" : placeholder);
 
@@ -56,7 +62,7 @@ export function OrganizationChooser({
       <PopoverContent align="start" sideOffset={6} className="w-80 p-1">
         <OrganizationPicker
           hideHeading
-          organizations={paged.organizations.map((org) => ({
+          organizations={paged.organizations.filter((org) => org.id !== excludeId).map((org) => ({
             id: org.id,
             name: org.name,
             abbreviation: org.abbreviation,

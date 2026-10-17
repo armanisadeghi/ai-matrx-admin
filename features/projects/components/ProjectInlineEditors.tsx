@@ -50,7 +50,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/utils/cn";
 import { toast } from "@/lib/toast";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { parseDateOnly, toDateOnly, formatDateOnly } from "@ai-matrx/kit/dates";
 import { updateProject } from "../service";
 import type {
@@ -501,7 +502,7 @@ export function ProjectDateField({
 }
 
 export function ProjectOrgPicker({ project, canEdit, onPatch }: FieldProps) {
-  const { organizations } = useUserOrganizations();
+  const { organizations } = useOrganizationsWith([project.organizationId]);
   const currentOrg =
     organizations.find((o) => o.id === project.organizationId) ?? null;
   if (!canEdit) {
@@ -513,24 +514,14 @@ export function ProjectOrgPicker({ project, canEdit, onPatch }: FieldProps) {
     );
   }
   return (
-    <Select
-      value={project.organizationId ?? ""}
-      onValueChange={(v) =>
-        save(project.id, { organizationId: v }, { organizationId: v }, onPatch)
+    <OrganizationChooser
+      value={project.organizationId ?? null}
+      valueName={currentOrg?.name ?? null}
+      placeholder="Organization"
+      onChange={(org) =>
+        save(project.id, { organizationId: org.id }, { organizationId: org.id }, onPatch)
       }
-    >
-      <SelectTrigger className="w-auto">
-        <Building2 className="h-3.5 w-3.5" />
-        <SelectValue placeholder="Organization" />
-      </SelectTrigger>
-      <SelectContent>
-        {organizations.map((o) => (
-          <SelectItem key={o.id} value={o.id}>
-            {o.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    />
   );
 }
 

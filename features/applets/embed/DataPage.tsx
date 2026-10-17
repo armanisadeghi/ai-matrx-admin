@@ -8,7 +8,7 @@
 // package's `<Applet id>`. Data reach is the viewer's own: the page reads through the store's doors under
 // her session, so an Applet sees nothing she could not open herself.
 
-import { PageScreen } from "@ai-matrx/records-ui";
+import { PageScreen } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

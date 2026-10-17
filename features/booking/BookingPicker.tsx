@@ -23,7 +23,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { coerceTypedAnswer, fieldKindFor, type Field, type FieldKind } from "@ai-matrx/records";
-import { FieldControl, RecordsUiProvider } from "@ai-matrx/records-ui";
+import { FieldControl, RecordsUiProvider } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import type { BookingSlot, PublicBooking } from "@/features/booking/service";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

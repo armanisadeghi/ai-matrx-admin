@@ -1,6 +1,7 @@
 -- inverse of 20261017015000_defects_g_a_delivery_settles_when_pg_net_answers.sql
 -- lane: DEFECTS
 -- lock: custom
+-- chair-step: drops the trigger automation_delivery_settles on net._http_response and custom._automation_delivery_on_response, restores the prior custom.automation_delivery_tick body, drops custom._automation_delivery_settle and re-schedules the one-minute pg_cron job custom-automation-delivery-tick.
 drop trigger if exists automation_delivery_settles on net._http_response;
 drop function if exists custom._automation_delivery_on_response();
 CREATE OR REPLACE FUNCTION custom.automation_delivery_tick()

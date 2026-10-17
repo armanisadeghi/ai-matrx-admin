@@ -14,7 +14,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFields, useRecordsClient } from "@ai-matrx/records/react";
-import { TablePage, readLooks, viewFromRow, type TablePageProps, type ViewAddressState } from "@ai-matrx/records-ui";
+import { TablePage } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { readLooks, viewFromRow } from "@ai-matrx/records-ui/helpers";
+import type { TablePageProps, ViewAddressState } from "@ai-matrx/records-ui";
 
 import { useDataSources, useFetchSpec } from "@/features/data-sources/hooks";
 import { hasChosenColumns, openingHiddenFields } from "@/features/data-sources/openingColumns";

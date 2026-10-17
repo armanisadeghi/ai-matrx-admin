@@ -13,7 +13,7 @@ import { ProInput } from "@/components/official/ProInput";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Select } from "@ai-matrx/design-system/controls";
-import { CUSTOM_FIELD_ADDABLE_TYPES, recordsDataSource } from "@ai-matrx/records-ui";
+import { CUSTOM_FIELD_ADDABLE_TYPES, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";

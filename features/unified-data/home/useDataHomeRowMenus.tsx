@@ -30,16 +30,8 @@ import { RecordsProvider, useRecordsClient } from "@ai-matrx/records/react";
 import { createRecordsClient } from "@ai-matrx/records/core";
 import { restoreTableIn } from "@/features/unified-data/hub/doors";
 import { onReadTheHomeAgain } from "./readTheHomeAgain";
-import {
-  ArchiveDeliberatelyDialog,
-  codeDependsRefusal,
-  TableDuplicateDialog,
-  TableRenameDialog,
-  TableSettings,
-  WhereItLives,
-  useRecordsUi,
-  whatYouMayDo,
-} from "@ai-matrx/records-ui";
+import { ArchiveDeliberatelyDialog, TableDuplicateDialog, TableRenameDialog, TableSettings, WhereItLives, useScreenRecordsUiHost } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { codeDependsRefusal, whatYouMayDo } from "@ai-matrx/records-ui/helpers";
 import { tableActions, type BuiltOnDestination, type ObjectAction, type TableActionHost } from "@ai-matrx/records-ui/object-actions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 
@@ -260,7 +252,8 @@ export function useDataHomeRowMenus({
   });
   const router = useRouter();
   const client = useRecordsClient();
-  const recordsUi = useRecordsUi();
+  // The host the data home's lazy `RecordsMount` was given (records-ui's `useRecordsUi`, through the front door).
+  const recordsUi = useScreenRecordsUiHost();
   const stars = useStarToggle();
   const [asked, setAsked] = useState<Asked | null>(null);
   const ask = (what: Asked["what"], row: DataHomeRow) =>

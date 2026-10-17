@@ -17,7 +17,8 @@ import { Button, Input, Select } from "@ai-matrx/design-system/controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { optionKey, optionLabel, type AutomationTrigger, type Field, type RuleExpression } from "@ai-matrx/records";
 import { useOptionalRecordsClient, useTables } from "@ai-matrx/records/react";
-import { ConditionGroup, type ConditionField } from "@ai-matrx/records-ui";
+import { ConditionGroup } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import type { ConditionField } from "@ai-matrx/records-ui";
 
 import { fetchMandateCatalogue, type MandateCatalogue } from "@/features/mandates/catalogue";
 import { useMandateInputSurface } from "@/features/mandates/input-surface";

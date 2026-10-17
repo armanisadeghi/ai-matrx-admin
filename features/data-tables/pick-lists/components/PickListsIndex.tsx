@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ListChecks, Trash2 } from "lucide-react";
-import { ArchivedDisclosure, RecordsMount } from "@ai-matrx/records-ui";
+import { ArchivedDisclosure, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import type { RecordsDataSource, RecordsError } from "@ai-matrx/records";
 import { BasicInput, Skeleton } from "@ai-matrx/design-system";

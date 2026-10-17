@@ -14,7 +14,7 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { createClient } from "@/utils/supabase/client";
 import { mandateDefinitions } from "@/lib/supabase/mandateStorage";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { mandateHomeBound } from "../mandate-home";
 
 const homes = new Map<string, string | null>();
@@ -44,8 +44,8 @@ export function __resetMandateHomeCache(): void {
  * and is loud in the console — the label then says "Everyone", as before.
  */
 export function useMandateHomeBound(mandateKey: AnyMandateKey): { ready: boolean; homeName: string | null } {
-  const { organizations, loading: orgsLoading } = useUserOrganizations();
   const [homeId, setHomeId] = useState<string | null | undefined>(() => homes.get(mandateKey));
+  const { organizations, loading: orgsLoading } = useOrganizationsWith([homeId]);
 
   useEffect(() => {
     if (homes.has(mandateKey)) {

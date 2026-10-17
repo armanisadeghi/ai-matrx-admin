@@ -23,7 +23,7 @@
 
 import Link from "next/link";
 import { Link2 } from "lucide-react";
-import { RecordsMount } from "@ai-matrx/records-ui";
+import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { EntityBackLinkItem } from "@ai-matrx/records";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";

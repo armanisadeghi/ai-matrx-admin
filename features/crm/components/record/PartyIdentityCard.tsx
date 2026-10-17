@@ -40,7 +40,7 @@ import {
 } from "./record-copy";
 import { SectionCard } from "./SectionCard";
 import { EntityBackLinks } from "@/features/unified-data/components/EntityBackLinks";
-import { RecordsMount, StandardRecordForm } from "@ai-matrx/records-ui";
+import { RecordsMount, StandardRecordForm } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { StandardColumn } from "@ai-matrx/records-ui";
 import { useCustomFieldsHost } from "@/features/unified-data/components/useCustomFieldsHost";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";

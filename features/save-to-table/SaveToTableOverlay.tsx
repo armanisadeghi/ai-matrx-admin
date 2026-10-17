@@ -13,7 +13,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RecordsMount, SaveToTable } from "@ai-matrx/records-ui";
+import { RecordsMount, SaveToTable } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { SaveToTableSource } from "@ai-matrx/records-ui";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { whereANewTableIsBorn } from "@/features/data-tables/data-source/where-a-table-is-born";

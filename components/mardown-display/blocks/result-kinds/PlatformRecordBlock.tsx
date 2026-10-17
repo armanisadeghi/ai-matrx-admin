@@ -52,14 +52,8 @@ import React from "react";
 import { Database, EyeOff, Info, Lock } from "lucide-react";
 import { isTableKind, type Field } from "@ai-matrx/records";
 import { RecordsProvider } from "@ai-matrx/records/react";
-import {
-  ProvenanceBadge,
-  RecordLabelProvider,
-  RecordValue,
-  RecordsUiProvider,
-  cardTitleField,
-  cardWords,
-  useRecordLabels } from "@ai-matrx/records-ui";
+import { cardTitleField } from "@ai-matrx/records-ui/helpers";
+import { withRecordsUi, type RecordsUiModule } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { PanelRightTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import InfoHint from "@/components/official/InfoHint";
@@ -209,21 +203,35 @@ const TableCardLoading: React.FC<{ className?: string }> = ({ className }) => (
   </div>
 );
 
-const TableRecordBody: React.FC<{
+type TableRecordBodyProps = {
   value: Record<string, unknown>;
   table: Extract<TableKindState, { state: "ready" }>;
   recordsTick: number;
   className?: string;
-}> = ({ value, table, recordsTick, className }) => {
+};
+
+// The card's fields draw with records-ui's own value cells, label lookup and provenance badge, so the
+// providers and the body load together behind the one front-door edge (records-ui front door, 2026-10-16).
+const TableRecordBody = withRecordsUi<TableRecordBodyProps>("PlatformRecordBlock", function TableRecordBodyLoaded({ ru, ...props }) {
+  return (
+    <ru.RecordsUiProvider value={{}}>
+      <ru.RecordLabelProvider>
+        <TableRecordFields ru={ru} {...props} />
+      </ru.RecordLabelProvider>
+    </ru.RecordsUiProvider>
+  );
+});
+
+const TableRecordFields: React.FC<TableRecordBodyProps & { ru: RecordsUiModule }> = ({ ru, value, table, recordsTick, className }) => {
   const read = useTableRecordDocument(value, recordsTick);
-  const labels = useRecordLabels(table.fields);
+  const labels = ru.useRecordLabels(table.fields);
   const canvas = useOptionalCanvas();
   const { open } = useCanvas();
   if (read.state === "loading") return <TableCardLoading className={className} />;
   if (read.state === "refused") return <TableCardRefused label="Record unavailable" sentence={read.sentence} className={className} />;
 
   const titleField = cardTitleField(table.fields, table.titleKey);
-  const title = cardWords({ id: read.recordId ?? "", document: read.document, hidden: read.hidden } as never, titleField, labels).text;
+  const title = ru.cardWords({ id: read.recordId ?? "", document: read.document, hidden: read.hidden } as never, titleField, labels).text;
   const openInCanvas = canvas
     ? () => {
         open({ type: "kind_value", data: value, metadata: { title } });
@@ -246,8 +254,8 @@ const TableRecordBody: React.FC<{
           <React.Fragment key={field.id}>
             <dt className="truncate text-muted-foreground">{field.label || field.key}</dt>
             <dd className="flex min-w-0 items-center gap-1.5 break-words text-foreground" data-field-key={field.key}>
-              <RecordValue field={field} value={read.document[field.key]} document={read.document} withheld={read.hidden[field.key] ?? null} />
-              <ProvenanceBadge document={read.document} fieldKey={field.key} />
+              <ru.RecordValue field={field} value={read.document[field.key]} document={read.document} withheld={read.hidden[field.key] ?? null} />
+              <ru.ProvenanceBadge document={read.document} fieldKey={field.key} />
             </dd>
           </React.Fragment>
         ))}
@@ -268,11 +276,7 @@ const TableRecordCard: React.FC<{ value: Record<string, unknown>; className?: st
   if (table.state === "refused") return <TableCardRefused label="No access to this table" sentence={table.sentence} className={className} />;
   return (
     <TableCardRecordsProvider organizationId={table.facts.organization_id}>
-      <RecordsUiProvider value={{}}>
-        <RecordLabelProvider>
-          <TableRecordBody value={value} table={table} recordsTick={table.recordsTick} className={className} />
-        </RecordLabelProvider>
-      </RecordsUiProvider>
+      <TableRecordBody value={value} table={table} recordsTick={table.recordsTick} className={className} />
     </TableCardRecordsProvider>
   );
 };

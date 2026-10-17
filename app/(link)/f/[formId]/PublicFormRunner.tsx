@@ -27,16 +27,10 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FormRunner,
-  RecordsUiProvider,
-  endingsFromDocument,
-  hiddenFromLink,
-  themeFromDocument,
-  welcomeFromDocument,
-  type FormSubmitOutcome,
-  type RecordsUiHost,
-} from "@ai-matrx/records-ui";
+import { FormRunner, RecordsUiProvider } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { endingsFromDocument, hiddenFromLink, themeFromDocument, welcomeFromDocument } from "@ai-matrx/records-ui/helpers";
+import type { ComponentProps } from "react";
+import type { FormSubmitOutcome, RecordsUiHost } from "@ai-matrx/records-ui";
 import { RichContentStaticInline } from "@ai-matrx/rich-content/levels/RichContentStaticProse";
 import type { Field, RuleExpression } from "@ai-matrx/records";
 
@@ -467,7 +461,7 @@ export function PublicFormRunner({
         <div className={placeChecked ? undefined : "invisible"} aria-busy={!placeChecked} data-form-place-checked={placeChecked ? "" : undefined}>
         <FormRunner
           key={runKey}
-          form={spec as unknown as Parameters<typeof FormRunner>[0]["form"]}
+          form={spec as unknown as ComponentProps<typeof FormRunner>["form"]}
           fields={form.fields as unknown as Field[]}
           honeypotKey={form.honeypot_key}
           onSubmit={submit}

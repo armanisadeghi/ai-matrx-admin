@@ -12,15 +12,19 @@
 import { useMemo, useState } from "react";
 import L from "leaflet";
 import { MapContainer, Marker, Tooltip, useMap, useMapEvents } from "react-leaflet";
-import { clusterPins, type MapCanvasProps } from "@ai-matrx/records-ui";
+import type { MapCanvasProps } from "@ai-matrx/records-ui";
+import { useRecordsUiModule } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { FitBounds, InvalidateOnResize, OsmTiles, PIN, bubbleIcon } from "./MapCanvas";
 
 function Pins({ pins, onOpen, selectedId }: Pick<MapCanvasProps, "pins" | "onOpen" | "selectedId">) {
+  // Drawn by records-ui's MapLayout (the `mapCanvas` port) inside the lazy table page, so
+  // `clusterPins` comes from the front door's loaded module.
+  const { clusterPins } = useRecordsUiModule("RecordsMapCanvas");
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
-  const clusters = useMemo(() => clusterPins(pins, zoom), [pins, zoom]);
+  const clusters = useMemo(() => clusterPins(pins, zoom), [pins, zoom, clusterPins]);
   return (
     <>
       {clusters.map((c) =>

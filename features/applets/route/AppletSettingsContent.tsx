@@ -64,7 +64,7 @@ import {
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { APPLETS_SURFACE_NAME } from "@/features/surfaces/manifests/applets.manifest";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
-import { useUserOrganizations } from "@/features/organizations/hooks";
+import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { validateAppCategory, validateAppTags } from "./applet-entity-writes";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ProInput } from "@/components/official/ProInput";
@@ -124,8 +124,8 @@ export function AppletSettingsContent({ appId }: AppletSettingsContentProps) {
 
   // This is an OBJECT page: the app already knows its organization, so a red
   // "Choose org" over it would be a lie (GATES-TAIL, VERIFIER-23 #8 note (a)).
-  const { organizations: myOrganizations } = useUserOrganizations();
   const appOrganizationId = app?.organization_id ?? null;
+  const { organizations: myOrganizations } = useOrganizationsWith([appOrganizationId]);
   useDeclarePageObjectOrganization(
     appOrganizationId
       ? {

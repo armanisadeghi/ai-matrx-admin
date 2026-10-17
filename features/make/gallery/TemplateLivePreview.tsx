@@ -17,6 +17,7 @@ import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 import type { TemplatePreviewProps } from "@ai-matrx/records-ui";
+import { loadRecordsUi } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
 import { BookingPicker } from "@/features/booking/BookingPicker";
 import type { PublicBooking } from "@/features/booking/service";
@@ -25,7 +26,7 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
   const [Live, setLive] = useState<{ Preview: ComponentType<TemplatePreviewProps>; refusal: string } | null>(null);
   useEffect(() => {
     let gone = false;
-    void Promise.all([import("@ai-matrx/records-ui"), import("@ai-matrx/records/memory")]).then(([ui, memory]) => {
+    void Promise.all([loadRecordsUi("TemplateLivePreview"), import("@ai-matrx/records/memory")]).then(([ui, memory]) => {
       if (!gone) setLive({ Preview: ui.TemplatePreview, refusal: memory.PREVIEW_REFUSAL.message });
     });
     return () => {

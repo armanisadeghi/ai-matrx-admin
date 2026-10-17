@@ -39,7 +39,8 @@ import { useEffect, useState, type ReactNode } from "react";
 // which was the same twenty lines: the second page to want them would have
 // copied them, and the third would have copied them differently.
 
-import { CustomFieldsSection, RecordsMount, recordsDataSource } from "@ai-matrx/records-ui";
+import { CustomFieldsSection, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { Button } from "@ai-matrx/design-system";
 import { entityRecordHome } from "@/features/unified-data/hub/doors";
 import { cn } from "@/lib/utils";

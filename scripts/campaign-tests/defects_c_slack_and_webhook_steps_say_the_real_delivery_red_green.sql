@@ -69,7 +69,53 @@ begin
 end
 $t$;
 
--- D4: a settle that breaks is recorded in ops.system_error and pg_net's own insert still lands.
+-- D5/D6 (review B1): an answer that never lands settles as Failed with no schedule - when the next delivery is queued
+-- (D5) and when the automation's runs are read (D6). RED before 20261017018000_defects_j_a_lost_delivery_answer_settles_without_a_schedule.sql.
+do $t$
+declare
+  v_org uuid; v_jobs uuid; e jsonb; v_run uuid; d jsonb; v_auto uuid; v_wo uuid;
+begin
+  select dj.v into v_org from dj where k = 'org';
+  select dj.v into v_jobs from dj where k = 'jobs';
+  -- D5
+  e := custom._automation_step(v_org, v_jobs, null, '{"id": "defects-c-d5", "spec": {"name": "x"}}'::jsonb, '{}'::jsonb, '{}'::jsonb, null,
+         '{"on": "test"}'::jsonb, 1, '{"do": "webhook", "url": "https://example.com/defects-c-d5"}'::jsonb);
+  insert into custom.record (organization_id, table_id, data_class, data)
+  values (v_org, null, 'automation_run', jsonb_build_object('status', 'ran', 'says', 'Every step finished.', 'steps', jsonb_build_array(e)))
+  returning id into v_run;
+  update custom.automation_delivery set created_at = now() - interval '11 minutes' where request_id = (e ->> 'request_id')::bigint;
+  perform custom._automation_step(v_org, v_jobs, null, '{"id": "defects-c-d5b", "spec": {"name": "x"}}'::jsonb, '{}'::jsonb, '{}'::jsonb, null,
+         '{"on": "test"}'::jsonb, 1, '{"do": "webhook", "url": "https://example.com/defects-c-d5b"}'::jsonb);
+  select data into d from custom.record where id = v_run;
+  if d -> 'steps' -> 0 ->> 'status' <> 'failed' or d -> 'steps' -> 0 ->> 'says' not like '%never answered%' then
+    raise exception 'D5 RED: a delivery with no answer for 11 minutes still says % after the next one was queued', d -> 'steps' -> 0 ->> 'says';
+  end if;
+  raise notice 'D5 PASS - %', d -> 'steps' -> 0 ->> 'says';
+  -- D6
+  select f.id into v_wo from custom.record f where f.organization_id = v_org and f.table_id = custom.field_kernel_id()
+     and f.data ->> 'entity_definition_id' = v_jobs::text and f.data ->> 'key' = 'wo' and f.deleted_at is null;
+  perform set_config('role', 'authenticated', true);
+  v_auto := (custom.automation_declare(v_org, v_jobs, jsonb_build_object('name', 'Tell the webhook', 'enabled', true,
+              'trigger', jsonb_build_object('on', 'row_added'),
+              'actions', jsonb_build_array(jsonb_build_object('do', 'webhook', 'url', 'https://example.com/defects-c-d6'))), null) ->> 'automation_id')::uuid;
+  perform set_config('role', 'postgres', true);
+  e := custom._automation_step(v_org, v_jobs, null, jsonb_build_object('id', v_auto, 'spec', jsonb_build_object('name', 'Tell the webhook')),
+         '{}'::jsonb, '{}'::jsonb, null, '{"on": "test"}'::jsonb, 1, '{"do": "webhook", "url": "https://example.com/defects-c-d6"}'::jsonb);
+  insert into custom.record (organization_id, table_id, data_class, data)
+  values (v_org, null, 'automation_run', jsonb_build_object('automation_id', v_auto, 'status', 'ran', 'says', 'Every step finished.', 'steps', jsonb_build_array(e)))
+  returning id into v_run;
+  update custom.automation_delivery set created_at = now() - interval '11 minutes' where request_id = (e ->> 'request_id')::bigint;
+  perform set_config('role', 'authenticated', true);
+  d := custom.automation_runs(v_auto, 50, null, v_org);
+  perform set_config('role', 'postgres', true);
+  if d -> 'runs' -> 0 -> 'steps' -> 0 ->> 'status' <> 'failed' then
+    raise exception 'D6 RED: reading the runs showed a delivery 11 minutes without an answer as %', d -> 'runs' -> 0 -> 'steps' -> 0 ->> 'says';
+  end if;
+  raise notice 'D6 PASS - the runs read says: %', d -> 'runs' -> 0 -> 'steps' -> 0 ->> 'says';
+end
+$t$;
+
+-- D4 (runs LAST: it plants a broken settle for the rest of this transaction): a settle that breaks is recorded in ops.system_error and pg_net's own insert still lands.
 create or replace function custom._automation_delivery_settle(p_request_id bigint) returns boolean
   language plpgsql as $f$ begin raise exception 'defects-d4 planted break'; end $f$;
 do $t$
@@ -89,7 +135,7 @@ end
 $t$;
 
 do $t$ begin
-  raise notice 'GREEN D1-D4: queued says queued; pg_net''s answer settles it (404 fails the run by name, 200 says Sent); a broken settle is recorded, never fails pg_net.';
+  raise notice 'GREEN D1-D6: queued says queued; pg_net''s answer settles it (404 fails the run by name, 200 says Sent); no answer in 10 minutes fails it when the next delivery is queued or the runs are read; a broken settle is recorded, never fails pg_net.';
 end
 $t$;
 
