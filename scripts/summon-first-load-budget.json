@@ -11,8 +11,8 @@
     "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)"
   ],
   "routes": {
-    "(core)/notes": 400000,
-    "(core)/dashboard": 400000,
-    "(public)/pricing": 400000
+    "(core)/notes": 147337,
+    "(core)/dashboard": 144429,
+    "(public)/pricing": 115998
   }
 }
