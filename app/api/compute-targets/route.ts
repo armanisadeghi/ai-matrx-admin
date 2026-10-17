@@ -24,7 +24,7 @@ import { isJsonObject } from "@/types/json";
 import { filesDb } from "@/features/files/filesDb";
 import { getClaimsUser } from "@ai-matrx/auth";
 import { isRestDeadlineError } from "@/utils/supabase/restDeadline";
-import { onlyComputers } from "@/lib/app-instances/computers";
+import { onlyRealComputers } from "@/lib/app-instances/computers";
 
 const DEVICE_FRESHNESS_WINDOW_MS = 10 * 60 * 1000;
 
@@ -89,7 +89,8 @@ export async function GET() {
       .eq("user_id", user.id)
       .is("deleted_at", null)
       .order("updated_at", { ascending: false }),
-    onlyComputers(
+    // A picker that chooses a real machine for real work: never a test copy (onlyRealComputers).
+    onlyRealComputers(
       supabase
         .from("app_instances")
         .select(

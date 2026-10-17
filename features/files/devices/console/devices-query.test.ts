@@ -5,9 +5,15 @@
  * `onlyComputers(query, client).then((q) => q.maybeSingle())` — awaited the builder (running it) and then
  * called `.maybeSingle()` on the response; against this double that throws, so the test is red on it.
  */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { __resetNonComputerPlatformsForTests } from "@/lib/app-instances/computers";
 
-import { fetchConsoleDevice, fetchConsoleDevices, isTestDevice } from "./devices-query";
+import { onlyRealComputers } from "@/lib/app-instances/computers";
+
+import { consoleDeviceVerdict, fetchConsoleDevice, fetchConsoleDevices, isTestDevice } from "./devices-query";
+import { refusalText } from "./DeviceUnavailable";
 
 type Row = Record<string, unknown>;
 
@@ -25,6 +31,12 @@ class Builder implements PromiseLike<{ data: Row[]; error: null }> {
   }
   order(): this {
     return this;
+  }
+  /** Only `not(col, "like", "prefix%")`. */
+  not(column: string, operator: string, value: string): Builder {
+    if (operator !== "like" || !value.endsWith("%")) throw new Error(`double: unsupported not(${column}, ${operator})`);
+    const prefix = value.slice(0, -1);
+    return new Builder(this.rows.filter((r) => !String(r[column] ?? "").startsWith(prefix)));
   }
   /** Only the computer filter's shape: `platform.is.null,platform.not.in.("a","b")`. */
   or(filter: string): Builder {
@@ -54,12 +66,17 @@ const ROWS: Row[] = [
   { id: "old", user_id: ME, platform: null, is_active: true, deleted_at: null },
   { id: "theirs", user_id: "user-2", platform: "darwin", is_active: true, deleted_at: null },
 ];
+/** Rows only the verdict reads (a device page by id: removed or turned off rows are still found). */
+const MORE: Row[] = [
+  { id: "gone", user_id: ME, platform: "darwin", is_active: false, deleted_at: "2026-10-17T00:00:00Z" },
+  { id: "off", user_id: ME, platform: "darwin", is_active: false, deleted_at: null },
+];
 
 function client() {
   return {
     from: (table: string) => {
       if (table !== "app_instances") throw new Error(`double: unexpected table ${table}`);
-      return new Builder(ROWS);
+      return new Builder([...ROWS, ...(verdictRows ? MORE : [])]);
     },
     schema: (schema: string) => ({
       from: (table: string) => {
@@ -72,7 +89,11 @@ function client() {
   } as never;
 }
 
-beforeEach(() => __resetNonComputerPlatformsForTests());
+let verdictRows = false;
+beforeEach(() => {
+  __resetNonComputerPlatformsForTests();
+  verdictRows = false;
+});
 
 describe("fetchConsoleDevice (one computer, through the computer filter)", () => {
   it("returns this person's computer row", async () => {
@@ -101,5 +122,52 @@ describe("fetchConsoleDevices (the list, through onlyComputers)", () => {
     expect(isTestDevice({ instance_id: "inst_aa12f3fb87a094fc61d8ad5fe49a4022" })).toBe(false);
     expect(isTestDevice({ instance_id: "server:aidream:host.local" })).toBe(false);
     expect(isTestDevice({ instance_id: null })).toBe(false);
+  });
+});
+
+describe("the device page names the REAL reason it cannot open (never a false 'no access')", () => {
+  beforeEach(() => {
+    verdictRows = true;
+  });
+  it("opens the person's own computer, a test copy included", async () => {
+    await expect(consoleDeviceVerdict(client(), ME, "mac")).resolves.toMatchObject({ kind: "ok" });
+    await expect(consoleDeviceVerdict(client(), ME, "test-copy")).resolves.toMatchObject({ kind: "ok" });
+  });
+  it("not found: no such row", async () => {
+    await expect(consoleDeviceVerdict(client(), ME, "nope")).resolves.toEqual({ kind: "not_found" });
+    expect(refusalText({ kind: "not_found" }).title).toBe("Device not found");
+  });
+  it("not yours: someone else's computer (the access gate's case)", async () => {
+    await expect(consoleDeviceVerdict(client(), ME, "theirs")).resolves.toEqual({ kind: "not_yours" });
+  });
+  it("removed", async () => {
+    await expect(consoleDeviceVerdict(client(), ME, "gone")).resolves.toEqual({ kind: "removed" });
+    expect(refusalText({ kind: "removed" }).title).toBe("This device was removed");
+  });
+  it("not a computer: a browser install", async () => {
+    await expect(consoleDeviceVerdict(client(), ME, "tab")).resolves.toEqual({ kind: "not_a_computer", platform: "web" });
+    expect(refusalText({ kind: "not_a_computer", platform: "web" }).title).toBe("This isn't a computer");
+  });
+  it("turned off", async () => {
+    await expect(consoleDeviceVerdict(client(), ME, "off")).resolves.toMatchObject({ kind: "turned_off" });
+    expect(refusalText({ kind: "turned_off", device: {} as never }).title).toBe("This device is turned off");
+  });
+  it("the page shows the access gate ONLY for someone else's device", () => {
+    const page = readFileSync(join(__dirname, "../../../../app/(core)/devices/[deviceId]/page.tsx"), "utf8");
+    expect(page).toMatch(/if \(!verdict \|\| verdict\.kind === "not_yours"\)/);
+    expect(page).toMatch(/<DeviceUnavailable verdict=\{verdict\} \/>/);
+  });
+});
+
+describe("pickers that choose a real machine for real work never offer a test copy", () => {
+  it("onlyRealComputers keeps real computers and drops the test copy", async () => {
+    const q = client() as unknown as { from: (t: string) => Builder };
+    const { data } = (await onlyRealComputers(q.from("app_instances").eq("user_id", ME), client())) as unknown as { data: Row[] };
+    expect(data.map((r) => r.id).sort()).toEqual(["mac", "old"]);
+  });
+  it("the compute-target and local-tools pickers read through it", () => {
+    for (const f of ["app/api/compute-targets/route.ts", "app/api/local-instances/route.ts"]) {
+      expect(readFileSync(join(__dirname, "../../../..", f), "utf8")).toMatch(/onlyRealComputers\(/);
+    }
   });
 });

@@ -93,19 +93,26 @@ function DeviceListRow({ device, status, now }: { device: DeviceRow; status: Rel
   );
 }
 
+/**
+ * Recent vs "Show older", from the rows alone. Never from the relay's live answers: those arrive after
+ * the first paint, and moving a row then shifted every row under the person's finger (2026-10-17: a tap
+ * on "E2E test Mac" opened "Lane B core conformance").
+ */
+export function partitionByAge<T extends DeviceRow>(devices: readonly T[], now: number): { recent: T[]; older: T[] } {
+  const isOlder = (d: T) => {
+    const iso = lastSeenIso(d, null);
+    return !iso || now - Date.parse(iso) > OLDER_AFTER_MS;
+  };
+  return { recent: devices.filter((d) => !isOlder(d)), older: devices.filter(isOlder) };
+}
+
 export function DeviceList({ devices, error }: { devices: DeviceRow[]; error: string | null }) {
   const now = useNow();
   const statuses = useRelayStatuses(devices.map((d) => d.id));
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const [titleHidden, setTitleHidden] = useState(false);
   const [showOlder, setShowOlder] = useState(false);
-  const isOlder = (d: DeviceRow) => {
-    if (statuses[d.id]?.online) return false;
-    const iso = lastSeenIso(d, statuses[d.id]);
-    return !iso || now - Date.parse(iso) > OLDER_AFTER_MS;
-  };
-  const recent = devices.filter((d) => !isOlder(d));
-  const older = devices.filter(isOlder);
+  const { recent, older } = partitionByAge(devices, now);
 
   // iOS large title: once it scrolls under the header, the header carries the title.
   useEffect(() => {
