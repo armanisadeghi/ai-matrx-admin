@@ -15,21 +15,23 @@ import { ArrowLeft, Zap } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
-import { cancelHostToolCall, resumeHostToolCall, runHostToolCall } from "@ai-matrx/chat/agents/identity/tool-calls";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { CATALOG_SEARCH_PATH, newToolCallKey, toolPriceText, type CatalogSearchResponse, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
+import { CATALOG_SEARCH_PATH, toolPriceText, type CatalogSearchResponse, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { getJson } from "@/lib/python-client";
-import { extractErrorMessage } from "@/utils/errors";
 
 import { GiveToAgentDialog } from "./GiveToAgentDialog";
 import { ToolResult } from "./ToolResult";
-import { inputsToSend, jobFamilyOf, reliabilityFacts, speedText } from "./toolFacts";
+import { KeepInCrm, AddressStatus } from "./people/KeepInCrm";
+import { emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
+import { FollowUpCard, NextSteps, type FollowUp } from "./people/ToolFollowUps";
+import { jobFamilyOf, reliabilityFacts, speedText } from "./toolFacts";
+import { useToolCall } from "./useToolCall";
 import { useToolRunForm } from "./useToolRunForm";
 
 const draftKey = (userId: string, toolId: string) => `tools-home:draft:${userId}:${toolId}`;
@@ -47,6 +49,18 @@ function writeDraft(userId: string, toolId: string, values: Record<string, unkno
     window.sessionStorage.setItem(draftKey(userId, toolId), JSON.stringify(values));
   } catch {
     // Private window or full storage: the form still works, the draft just isn't kept.
+  }
+}
+
+/** `?with=` is a small JSON object of text inputs; anything else is ignored, never trusted. */
+function readWith(raw: string | null): Record<string, unknown> {
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed).filter(([, v]) => typeof v === "string"));
+  } catch {
+    return {};
   }
 }
 
@@ -83,75 +97,74 @@ export function ToolPage({
   const noun = card?.display_noun ?? facts?.displayNoun ?? "";
   const priceHint = card?.price_hint_points ?? facts?.priceHintPoints ?? null;
 
-  const [values, setValues] = useState<Record<string, unknown>>(() => (typeof window === "undefined" || !userId ? {} : readDraft(userId, toolId)));
-  const [view, setView] = useState<ToolCallView | null>(null);
-  const [clientError, setClientError] = useState<string | null>(null);
+  // `?with=` fills the box (a lookup started from the one search box) and `&run=1` presses it once.
+  const [values, setValues] = useState<Record<string, unknown>>(() => {
+    if (typeof window === "undefined" || !userId) return {};
+    // A stored call page starts with an empty box: the typed draft belongs to a different question than the answer shown.
+    return { ...(callId ? {} : readDraft(userId, toolId)), ...readWith(params.get("with")) };
+  });
   const [giving, setGiving] = useState(false);
-  const abort = useRef<AbortController | null>(null);
-  const resumed = useRef<string | null>(null);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [followViews, setFollowViews] = useState<Record<string, ToolCallView | null>>({});
+  const autoRan = useRef(false);
 
   // Defaults fill what the person left alone, once the form arrives.
   const inputs = form.data?.schema.inputs ?? [];
   const merged: Record<string, unknown> = {};
   for (const input of inputs) merged[input.name] = values[input.name] ?? input.default ?? "";
 
-  useEffect(() => () => abort.current?.abort(), []);
+  // The URL may name the Tool by its job ("company_profile"); every call goes by the Tool's id.
+  const realToolId = facts?.toolId || toolId;
 
   const pin = (nextCallId: string | null) => {
     const next = new URLSearchParams(params.toString());
     next.set("tool", toolId);
+    next.delete("with");
+    next.delete("run");
     if (nextCallId) next.set("call", nextCallId);
     else next.delete("call");
     replaceAddressWithoutNavigating(`${window.location.pathname}?${next.toString()}`);
   };
 
-  const run = async (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
-    abort.current?.abort();
-    const controller = new AbortController();
-    abort.current = controller;
-    setClientError(null);
-    const send = inputsToSend({ ...merged, ...overrides });
-    try {
-      const done = await runHostToolCall({
-        request: {
-          tool_id: toolId,
-          inputs: send,
-          idempotency_key: newToolCallKey(),
-          cache_policy: "prefer",
-          spend_approval_id: spendApprovalId ?? null,
-          wait_s: 25,
-        },
-        signal: controller.signal,
-        onUpdate: (next) => {
-          setView(next);
-          if (next.call_id && resumed.current !== next.call_id) {
-            // Pinned once, and marked as ours so the resume effect below does not read it again.
-            resumed.current = next.call_id;
-            pin(next.call_id);
-          }
-        },
-      });
-      setView(done);
-    } catch (cause) {
-      if (controller.signal.aborted) return;
-      setClientError(extractErrorMessage(cause, "The Tool could not be reached. Nothing was charged."));
-    }
+  const call = useToolCall(realToolId, pin);
+  const view = call.view;
+
+  const run = (overrides: Record<string, unknown> = {}, spendApprovalId?: string) => {
+    setFollowUps([]);
+    setFollowViews({});
+    return call.run(merged, overrides, spendApprovalId);
   };
 
   // `?call=` picks a call up again after a reload or a closed tab: same record, no new spend.
   useEffect(() => {
-    if (!callId || resumed.current === callId) return;
-    resumed.current = callId;
-    const controller = new AbortController();
-    abort.current = controller;
-    resumeHostToolCall(callId, { signal: controller.signal, onUpdate: setView }).then(setView, (cause: unknown) => {
-      if (!controller.signal.aborted) setClientError(extractErrorMessage(cause, "That answer could not be opened."));
-    });
+    if (callId) call.resume(callId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callId]);
 
-  const stop = () => {
-    if (view?.call_id) void cancelHostToolCall(view.call_id).then(setView, () => undefined);
-  };
+  // A lookup started from the search box: one press, made once, when the form is ready.
+  useEffect(() => {
+    if (autoRan.current || callId || !form.data || params.get("run") !== "1") return;
+    autoRan.current = true;
+    void run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.data, callId]);
+
+  const stop = call.stop;
+  const clientError = call.clientError;
+
+  const startedKeys = new Set(followUps.map((f) => `${f.jobKey}:${JSON.stringify(f.inputs)}`));
+  const pickStep = (step: NextStep) =>
+    setFollowUps((prev) => [...prev, { id: `${step.jobKey}:${prev.length}`, jobKey: step.jobKey, inputs: step.inputs }]);
+  const settleFollow = (id: string, next: ToolCallView | null) => setFollowViews((prev) => (prev[id] === next ? prev : { ...prev, [id]: next }));
+
+  // The address an email check confirmed for this answer, if one has.
+  const answerEmail = kindOf(view?.output) === "work_email" ? String((view?.output as Record<string, unknown>).email ?? "") : "";
+  const confirmed = Object.values(followViews).find((v) => {
+    if (v?.status !== "succeeded" || emailVerdictWords(v.output)?.tone !== "good") return false;
+    return String((v.output as Record<string, unknown>).email ?? "").toLowerCase() === answerEmail.toLowerCase();
+  });
+  const confirmedEmail = confirmed ? answerEmail : null;
+  const verdictView = Object.values(followViews).find((v) => v?.status === "succeeded" && kindOf(v.output) === "email_verdict" && String((v.output as Record<string, unknown>).email ?? "").toLowerCase() === answerEmail.toLowerCase());
 
   const family = jobFamilyOf(card?.job_family);
   const price = toolPriceText({ price_hint_points: priceHint });
@@ -234,7 +247,19 @@ export function ToolPage({
           )}
         </div>
         <div className="min-w-0">
-          <ToolResult view={view} clientError={clientError} onRunAgain={() => void run()} onCancel={stop} />
+          <div className="flex flex-col gap-3">
+            <ToolResult view={view} clientError={clientError} onRunAgain={() => void run()} onCancel={stop} onReopen={call.reopen} />
+            {view?.status === "succeeded" ? (
+              <>
+                <AddressStatus output={view.output} verdict={verdictView?.output} />
+                <KeepInCrm output={view.output} inputs={merged} confirmedEmail={confirmedEmail} />
+                <NextSteps steps={nextSteps(view.output)} started={startedKeys} onPick={pickStep} />
+              </>
+            ) : null}
+            {followUps.map((f) => (
+              <FollowUpCard key={f.id} followUp={f} onView={settleFollow} />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -243,11 +268,11 @@ export function ToolPage({
           approval={approval}
           onSettled={(answer) => {
             if (answer.spendApprovalId) void run({}, answer.spendApprovalId);
-            else setView(null);
+            else call.clear();
           }}
         />
       ) : null}
-      {giving ? <GiveToAgentDialog toolId={toolId} toolName={title} onClose={() => setGiving(false)} /> : null}
+      {giving ? <GiveToAgentDialog toolId={realToolId} toolName={title} onClose={() => setGiving(false)} /> : null}
     </div>
   );
 }

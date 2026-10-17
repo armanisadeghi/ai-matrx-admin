@@ -1,6 +1,6 @@
 // scripts/shape-shot.mjs — screenshot one app route in headless Chromium, signed in through the
 // single-use dev-login nonce (the in-app browser pane blocks the sealed kind frame; this does not).
-//   node scripts/shape-shot.mjs <path> <out.png> [--member] [--dark] [--width=1200] [--height=900] [--wait=12000] [--type="text then Enter in the first input"] [--click="text"]
+//   node scripts/shape-shot.mjs <path> <out.png> [--member] [--dark] [--width=1200] [--height=900] [--wait=12000] [--type="text then Enter in the first input"] [--click="text | text2 | ..."]
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -48,11 +48,12 @@ if (typed) {
   await page.keyboard.press("Enter");
   await page.waitForTimeout(Number(flag("wait", 12000)));
 }
-const click = flag("click", "");
-if (click) {
-  await page.getByText(click, { exact: false }).first().click();
-  await page.waitForTimeout(Number(flag("wait", 12000)));
+const clicks = flag("click", "").split("|").filter(Boolean);
+for (const text of clicks) {
+  await page.getByText(text, { exact: false }).first().click();
+  await page.waitForTimeout(clicks.length > 1 ? 3000 : Number(flag("wait", 12000)));
 }
+if (clicks.length > 1) await page.waitForTimeout(Number(flag("wait", 12000)));
 await page.screenshot({ path: out, fullPage: false });
 console.log(JSON.stringify({ out, url: page.url(), consoleErrors: bad.slice(0, 5) }));
 await browser.close();

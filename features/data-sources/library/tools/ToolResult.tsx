@@ -27,12 +27,18 @@ export function ToolResult({
   clientError,
   onRunAgain,
   onCancel,
+  onReopen,
+  showRaw = true,
 }: {
   view: ToolCallView | null;
   /** The call could not be sent or read at all (nothing reached the server). */
   clientError: string | null;
   onRunAgain: () => void;
   onCancel: () => void;
+  /** Read the saved call again (after a lost connection). */
+  onReopen?: () => void;
+  /** Builders see the raw data beside the answer; a marketer's look-up leaves it out. */
+  showRaw?: boolean;
 }) {
   const [pane, setPane] = useState<Pane>("answer");
   const seesDollars = useSeesDollars();
@@ -64,6 +70,25 @@ export function ToolResult({
     );
   }
 
+  if (clientError && isCallRunning(view.status)) {
+    return (
+      <div data-tool-result="lost-touch">
+        <EmptyState
+          icon={<CircleAlert className="h-5 w-5" />}
+          title="Lost touch with this call"
+          line={clientError}
+          action={
+            onReopen ? (
+              <Button variant="outline" onClick={onReopen}>
+                Reopen it
+              </Button>
+            ) : undefined
+          }
+        />
+      </div>
+    );
+  }
+
   if (isCallRunning(view.status)) {
     return (
       <div data-tool-result="running" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
@@ -76,9 +101,11 @@ export function ToolResult({
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {view.points_held > 0 ? <span>{formatPoints(view.points_held)} held until it finishes</span> : null}
-          <Button variant="quiet" className="ml-auto" onClick={onCancel}>
-            Stop
-          </Button>
+          {view.stage === "done" || view.stage === "storing" ? null : (
+            <Button variant="quiet" className="ml-auto" onClick={onCancel}>
+              Stop
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -129,7 +156,7 @@ export function ToolResult({
   return (
     <div data-tool-result="succeeded" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        {view.raw != null ? (
+        {showRaw && view.raw != null ? (
           <SegmentedControl<Pane>
             aria-label="View"
             value={pane}
@@ -148,8 +175,10 @@ export function ToolResult({
         </span>
       </div>
       <div className="rounded-xl border border-border bg-card p-4">
-        {pane === "raw" && view.raw != null ? (
-          <ResultJson data={view.raw} showSource />
+        {showRaw && pane === "raw" && view.raw != null ? (
+          <div data-kind-source="explicit">
+            <ResultJson data={view.raw} showSource />
+          </div>
         ) : (
           <AnswerValueView value={view.output} emptyText="The answer came back empty." />
         )}

@@ -16,6 +16,7 @@ import {
   Video,
   Megaphone,
   Plus,
+  Search,
   Target,
   TrendingUp,
   Users,
@@ -38,6 +39,7 @@ import { TrackAccountDialog } from "./TrackAccountDialog";
 // (still one click per tab) before it ever folds the tabs into a dropdown.
 const TAB_ICONS: Record<SocialsTabId, LucideIcon> = {
   accounts: Users,
+  research: Search,
   studio: Clapperboard,
   outliers: TrendingUp,
   swipe: Bookmark,

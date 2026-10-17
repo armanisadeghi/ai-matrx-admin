@@ -12,7 +12,6 @@
 import React, { useEffect, useState } from "react";
 import { Plus, X, AlertCircle, Layers, SlidersHorizontal } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { ScrollFade } from "@/components/ui/scroll-fade";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { useOpenScopeBatchImportWindow } from "@/features/overlays/openers/scopeBatchImportWindow";
 import {
@@ -198,14 +197,17 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
 
   return (
     <>
-      <div className="flex items-center gap-2 min-w-0">
+      {/* Every chip stays visible: they wrap, never scroll out of sight. On a phone the chips take
+          their own full-width line under the label and the Add / Batch buttons (375px clipped
+          them to one and a half chips, 2026-10-16). */}
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5">
         <Label className="text-xs text-muted-foreground shrink-0">
           Variables
         </Label>
 
-        <ScrollFade
-          orientation="horizontal"
-          className="flex items-center gap-1.5 flex-nowrap min-w-0 flex-1 py-0.5"
+        <div
+          data-variable-chips=""
+          className="order-last flex w-full min-w-0 flex-wrap items-center gap-1.5 py-0.5 sm:order-none sm:w-auto sm:flex-1"
         >
           {variables.map((variable) => {
             // A bound model control is used by the model setting, not the text.
@@ -300,9 +302,9 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
               </div>
             );
           })}
-        </ScrollFade>
+        </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="ml-auto flex items-center gap-1 shrink-0">
           <button
             type="button"
             className="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
@@ -332,10 +334,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
               ({undeclaredNames.length})
             </span>
           </Label>
-          <ScrollFade
-            orientation="horizontal"
-            className="flex items-center gap-1.5 flex-nowrap min-w-0 flex-1 py-0.5"
-          >
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 py-0.5">
             {undeclaredNames.map((name) => (
               <button
                 type="button"
@@ -349,7 +348,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
                 <Plus className="w-3 h-3 shrink-0 opacity-70" />
               </button>
             ))}
-          </ScrollFade>
+          </div>
         </div>
       )}
     </>

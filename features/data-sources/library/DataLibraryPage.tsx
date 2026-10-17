@@ -101,6 +101,7 @@ export function DataLibraryPage() {
                 go({ tool: hit.tool_id });
               }}
               onGive={setGiving}
+              onLookup={(plan) => go({ tool: plan.jobKey, with: JSON.stringify(plan.inputs), run: "1", call: null })}
               dataSection={<DataSourcesDoor query={query} onOpen={() => go({ view: "data" })} />}
             />
           ) : (

@@ -122,6 +122,17 @@ export const MARKETING_BRAND_SECTIONS = [
   },
   {
     slug: "socials",
+    name: "Look up",
+    titlePrefix: "Social Look Up",
+    description:
+      "Look up any account, topic, ad or post — what it costs shows before you press.",
+    letter: "Lu",
+    iconName: "Search",
+    group: "Social",
+    subPath: "research",
+  },
+  {
+    slug: "socials",
     name: "Studio",
     titlePrefix: "Social Studio",
     description:
