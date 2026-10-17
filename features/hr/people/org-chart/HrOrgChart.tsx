@@ -10,14 +10,19 @@
 //     placed" tray. A person with no manager on the as-of date is a fact about
 //     the org, not a rendering problem to hide.
 //  2. A CYCLE RENDERS A BADGE AND A DOOR TO FIX IT — never an infinite layout.
-//     The badge comes from the server's `cycles[]`; the termination guarantee is
-//     in `layout.ts`.
+//     The badge comes from the server's `cycles[]` (plus any loop the forest
+//     build itself refused); the termination guarantee is in the shared
+//     `components/official/org-chart/forest.ts`.
 //  3. NO-MANAGER-DATA IS AN EXPLICIT SCREEN with a door to bulk manager
 //     assignment — never an empty canvas that looks broken.
 //  4. THE AS-OF CHIP IS PERSISTENT AND TRAVELS. It stays on screen, it goes into
-//     the export filename and the export header, and changing it RE-FETCHES
-//     WITHOUT RE-LAYING-OUT FROM SCRATCH — persisting nodes keep their slot, so
-//     a reorg reads as a reorg.
+//     the export filename and is burned into the PNG/PDF, and changing it
+//     RE-FETCHES WITHOUT RE-LAYING-OUT FROM SCRATCH — siblings sort by name, so
+//     persisting nodes keep their slot and a reorg reads as a reorg.
+//
+// The drawing is THE org chart primitive (`components/official/org-chart/`):
+// layout, pan/zoom, search, collapse, minimap and the one PNG/PDF export path.
+// This file owns only the HR data, the HR card and the HR states.
 //  5. THE HISTORY CONTROL IS ABSENT WHEN `history_available` IS FALSE. Not
 //     disabled. An employee who may not see history does not learn that history
 //     exists from a greyed date picker.
@@ -27,19 +32,10 @@
 // registered, so the box renders honestly disabled with a registered promise
 // behind it rather than pretending to work or silently vanishing.
 
-import { useState, useRef} from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  AlertTriangle,
-  CalendarClock,
-  ChevronDown,
-  ChevronRight,
-  Download,
-  Minus,
-  Plus,
-  Users,
-} from "lucide-react";
+import { AlertTriangle, CalendarClock, Download, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,11 +43,11 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  OrgChart,
+  type OrgChartCrossLink,
+  type OrgChartEdgeKind,
+} from "@/components/official/org-chart/OrgChart";
+import { buildParentForest } from "@/components/official/org-chart/forest";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -66,6 +62,7 @@ import type {
   HrDenied,
   HrFailed,
   HrOrgChart as HrOrgChartData,
+  HrOrgChartNode,
   HrOrgChartUnplaced,
 } from "../../types";
 import { formatFullDate } from "../shared/HrStatusChip";
@@ -73,19 +70,23 @@ import { HrWorkerClassChip } from "../shared/HrWorkerClassChip";
 import { HrEmployeePhoto } from "../../shared/HrEmployeePhoto";
 import {
   downloadOrgChartCsv,
-  downloadOrgChartPdf,
-  downloadOrgChartPng,
+  orgChartExportBase,
   orgChartExportName,
 } from "./orgChartExport";
-import {
-  LEVEL_GAP_Y,
-  NODE_HEIGHT,
-  NODE_WIDTH,
-  ancestorsOf,
-  layoutOrgChart,
-  type OrgLayout,
-} from "./layout";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+
+const CARD_WIDTH = 220;
+const CARD_HEIGHT = 104;
+
+const HR_EDGE_KINDS: Record<string, OrgChartEdgeKind> = {
+  manager: { label: "Reports to", color: "hsl(var(--muted-foreground) / 0.55)" },
+  dotted: {
+    label: "Dotted line",
+    description: "A second reporting line beside the manager.",
+    color: "hsl(var(--primary))",
+    dashed: true,
+  },
+};
 
 // ── The fetch ───────────────────────────────────────────────────────────────
 
@@ -146,66 +147,9 @@ export function HrOrgChart() {
 
   const chart = useOrgChart(organizationId, asOfParam);
 
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const captureRef = useRef<HTMLDivElement | null>(null);
-  const [exporting, setExporting] = useState(false);
-
-  /*
-    PNG and PDF rasterise the LIVE node, so both share one path: the same
-    guard, the same failure sentence, the same toast naming the file. The
-    as-of date comes from the loaded chart, never from the picker — an export
-    must describe the data on screen, not a date somebody typed a moment ago
-    that has not loaded yet.
-  */
-  const exportImage = async (kind: "png" | "pdf") => {
-    if (exporting) return;
-    const node = captureRef.current;
-    /*
-      🚨 NOT A SILENT RETURN. On a date with no chart drawn — the "No managers
-      assigned yet" state — there is no node to rasterise, and returning quietly
-      makes the menu item do exactly the nothing this whole row was filed over.
-      CSV still works there because it exports the DATA, not the drawing; these
-      two cannot, and say so.
-    */
-    if (!data) {
-      toast.error("There is no chart loaded yet, so there is nothing to export.");
-      return;
-    }
-    if (!node) {
-      toast.error(
-        "There is no chart drawn on this date, so there is no picture to export. " +
-          "The CSV still works — it exports the rows rather than the drawing.",
-      );
-      return;
-    }
-    setExporting(true);
-    try {
-      if (kind === "png") await downloadOrgChartPng(node, data.as_of);
-      else await downloadOrgChartPdf(node, data.as_of);
-      toast.success(`Exported ${orgChartExportName(data.as_of, kind)}`);
-    } catch (e) {
-      // Said as a fact. Rasterising can fail on a huge chart or a blocked font,
-      // and a silent no-op here is the defect this whole row was filed over.
-      toast.error(
-        e instanceof Error && e.message.trim()
-          ? `The ${kind.toUpperCase()} was not created. ${e.message}`
-          : `The ${kind.toUpperCase()} was not created.`,
-      );
-    } finally {
-      setExporting(false);
-    }
-  };
   const [showDotted, setShowDotted] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  // The NL query's answer, when the mandate is wired: a highlighted set of
-  // nodes ON THIS CHART, never a chat reply. Held here so the chart owns it.
-  const [highlighted] = useState<Set<string>>(new Set());
-
   const data = chart.data;
   const nodes = data?.nodes ?? [];
-  const managerOf = new Map(
-    nodes.map((node) => [node.employment_id, node.manager_employment_id]),
-  );
   const employmentToEmployee = new Map(
     nodes.map((node) => [node.employment_id, node.employee_id]),
   );
@@ -214,39 +158,32 @@ export function HrOrgChart() {
       null)
     : null;
 
-  // Focus expands ancestry: a focused node inside a collapsed branch is a node
-  // the user cannot see, which is the opposite of focusing it.
-  const effectiveCollapsed = new Set(collapsed);
-  if (focusEmployment) {
-    for (const ancestor of ancestorsOf(focusEmployment, managerOf)) {
-      effectiveCollapsed.delete(ancestor);
-    }
-  }
-
-  // 🚨 THE LAYOUT IS PURE, AND THAT IS WHAT KEEPS NODES IN PLACE ACROSS AN
-  // AS-OF CHANGE. Sibling order is a function of the people (their names), not
-  // of what was on screen a moment ago — so anyone under the same manager on
-  // both dates occupies the same slot on both, and the only thing that moves is
-  // the thing that actually changed. See `layout.ts` rule 2 for why the
-  // remember-last-render alternative was rejected.
-  const layout: OrgLayout = layoutOrgChart({
-    nodes: nodes.map((node) => ({
-      id: node.employment_id,
-      managerId: node.manager_employment_id,
-      // A withheld node still sorts — by the label the viewer actually sees, so
-      // the ordering they observe is stable and explicable.
-      sortKey: node.display_name ?? withheldLabel(node).text,
-    })),
-    collapsed: effectiveCollapsed,
-    dottedLines: showDotted
-      ? (data?.dotted_lines ?? []).map((line) => ({
-          from: line.manager_employment_id,
-          to: line.employment_id,
-        }))
-      : [],
+  // 🚨 SIBLING ORDER IS A FUNCTION OF THE PEOPLE (their names), not of what was
+  // on screen a moment ago — so anyone under the same manager on both dates
+  // occupies the same slot on both, and the only thing that moves is the thing
+  // that actually changed. The build also carries the cycle guard: a reporting
+  // loop is entered once and the closing link refused, never followed forever.
+  const forest = buildParentForest(nodes, {
+    id: (node) => node.employment_id,
+    parentId: (node) => node.manager_employment_id,
+    // A withheld node still sorts — by the label the viewer actually sees, so
+    // the ordering they observe is stable and explicable.
+    sortKey: (node) => node.display_name ?? withheldLabel(node).text,
+    edgeKind: "manager",
   });
+  const crossLinks: OrgChartCrossLink[] = showDotted
+    ? (data?.dotted_lines ?? []).map((line) => ({
+        key: `dotted:${line.manager_employment_id}->${line.employment_id}`,
+        fromKey: line.manager_employment_id,
+        toKey: line.employment_id,
+        kind: "dotted",
+      }))
+    : [];
 
-  const cycleEmployments = new Set(data?.cycles ?? []);
+  const cycleEmployments = new Set([
+    ...(data?.cycles ?? []),
+    ...forest.cycleLinks.map((link) => link.childId),
+  ]);
   const setAsOf = (value: string | null) => {
     router.push(
       hrOrgChartHref({ org: orgRef, focus: focusParam, asOf: value }),
@@ -318,82 +255,21 @@ export function HrOrgChart() {
               </Label>
             </div>
 
-            <div className="inline-flex items-center rounded-md border border-border">
-              <Button
-                icon={<Minus aria-hidden />}
-                type="button"
-                variant="quiet"
-                aria-label="Zoom out"
-                onClick={() => setZoom((z) => Math.max(0.4, z - 0.15))}
-              />
-              <span className="w-11 text-center text-xs text-muted-foreground">
-                {Math.round(zoom * 100)}%
-              </span>
-              <Button
-                icon={<Plus aria-hidden />}
-                type="button"
-                variant="quiet"
-                aria-label="Zoom in"
-                onClick={() => setZoom((z) => Math.min(1.6, z + 0.15))}
-              />
-            </div>
-
+            {/* PNG and PDF are the chart's own download buttons (one export path
+                for every org chart); the CSV is HR's rows, so it lives here. */}
             <Button
+              icon={<Download aria-hidden />}
               type="button"
               variant="outline"
-              onClick={() =>
-                setCollapsed(
-                  collapsed.size > 0
-                    ? new Set()
-                    : new Set(
-                        layout.nodes
-                          .filter((node) => node.depth >= 1 && node.hasChildren)
-                          .map((node) => node.id),
-                      ),
-                )
-              }
+              disabled={!data}
+              onClick={() => {
+                if (!data) return;
+                downloadOrgChartCsv(data);
+                toast.success(`Exported ${orgChartExportName(data.as_of, "csv")}`);
+              }}
             >
-              {collapsed.size > 0 ? "Expand all" : "Collapse to top two levels"}
+              CSV
             </Button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  icon={<Download aria-hidden />}
-                  type="button"
-                  variant="outline"
-                >
-                  Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onSelect={() => {
-                    if (!data) return;
-                    downloadOrgChartCsv(data);
-                    toast.success(
-                      `Exported ${orgChartExportName(data.as_of, "csv")}`,
-                    );
-                  }}
-                >
-                  CSV — the chart&apos;s rows, with the as-of date
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    void exportImage("pdf");
-                  }}
-                >
-                  PDF — the chart as drawn, dated on the page
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={() => {
-                    void exportImage("png");
-                  }}
-                >
-                  PNG — the chart as drawn, dated on the image
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
 
@@ -449,104 +325,93 @@ export function HrOrgChart() {
         ) : focusEmployment === null && focusParam ? (
           <NotEmployedOnDate asOf={asOf} employeeId={focusParam} org={orgRef} />
         ) : (
-          <div className="min-h-0 flex-1 overflow-auto p-4">
-            <div
+          <div className="flex min-h-0 flex-1 flex-col">
+            <OrgChart<HrOrgChartNode>
+              className="flex-1"
+              roots={forest.roots}
+              edgeKinds={HR_EDGE_KINDS}
+              crossLinks={crossLinks}
+              cardWidth={CARD_WIDTH}
+              cardHeight={CARD_HEIGHT}
+              focusKey={focusEmployment}
+              persistKey={organizationId ? `hr:${organizationId}` : undefined}
+              // An as-of change redraws the chart; the view stays where it is so
+              // the people who persist visibly keep their place.
+              framing="once"
+              getSearchText={(node) =>
+                [
+                  node.display_name ?? withheldLabel(node).text,
+                  node.job_title,
+                  node.department,
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+              }
+              ariaLabel="Org chart"
               /*
-                The capture node for PNG and PDF. It is the SCALED wrapper, so an
-                export is exactly the chart the person is looking at — including
-                withheld nodes, which stay statements rather than turning back
-                into names on the way out.
+                The export rasterises the LIVE cards, so withheld nodes stay
+                statements rather than turning back into names on the way out.
+                The as-of date comes from the loaded chart, never the picker — an
+                export describes the data on screen.
               */
-              ref={captureRef}
-              // `max-w-none` here and on the scaled layer: the phone
-              // `* { max-width: 100% }` default (globals.css) would clamp a
-              // chart wider than the screen to the viewport — cropping every
-              // export and the scroll area. The sizes are the layout's own.
-              className="max-w-none"
-              style={{
-                width: layout.width * zoom,
-                height: (layout.height + NODE_HEIGHT) * zoom,
+              exportTitle="Org chart"
+              exportCaption={asOf ? `Org chart as of ${asOf}` : undefined}
+              exportFileName={asOf ? orgChartExportBase(asOf) : undefined}
+              renderCard={(placed, state) => {
+                const node = placed.node.data;
+                const employeeId =
+                  employmentToEmployee.get(node.employment_id) ?? "";
+                return (
+                  <ChartNode
+                    focused={state.selected}
+                    highlighted={state.matched}
+                    inCycle={cycleEmployments.has(node.employment_id)}
+                    childCount={placed.childCount}
+                    name={node.display_name ?? withheldLabel(node).text}
+                    jobTitle={node.job_title}
+                    department={node.department}
+                    workerClass={node.worker_class}
+                    nameWithheld={isWithheld(node)}
+                    // Belt and braces: the door already nulls this for a
+                    // withheld node, and a face is not a thing to leak twice.
+                    photoFileId={isWithheld(node) ? null : node.photo_file_id}
+                    statementAuthored={withheldLabel(node).authored}
+                    // No door for a withheld node — see `ChartNode.href`.
+                    href={
+                      isWithheld(node)
+                        ? null
+                        : hrEmployeeHref(employeeId, null, { org: orgRef })
+                    }
+                    /*
+                      🚨 A WITHHELD NODE GETS NO DOORS AT ALL, AND THE REPORTS
+                      LINK IS THE ONE THAT LOOKED HARMLESS. It carries
+                      `managerEmployeeId` — a working handle to the person whose
+                      name we just withheld — so the node suppressed the name and
+                      then published the id needed to go and read it. Verified
+                      live: the id appeared in the href on a peer's chart.
+
+                      It was also a DEAD END for that viewer. The directory
+                      filtered by an opted-out manager returns 0 rows for a peer
+                      (measured), so a node promising "2 reports" led to a list
+                      showing none.
+
+                      The count still renders, as text: the structure is not the
+                      thing being hidden. Same treatment the as-of view already
+                      gets, for the same reason — no door where the door cannot
+                      answer.
+                    */
+                    reportsHref={
+                      isAsOfView || isWithheld(node)
+                        ? null
+                        : hrPeopleHref({
+                            org: orgRef,
+                            managerEmployeeId: employeeId,
+                          })
+                    }
+                  />
+                );
               }}
-            >
-              <div
-                className="relative max-w-none origin-top-left"
-                style={{
-                  width: layout.width,
-                  height: layout.height + NODE_HEIGHT,
-                  transform: `scale(${zoom})`,
-                }}
-              >
-                <ChartEdges layout={layout} />
-                {layout.nodes.map((placed) => {
-                  const node = nodes.find((n) => n.employment_id === placed.id);
-                  if (!node) return null;
-                  const employeeId = employmentToEmployee.get(placed.id) ?? "";
-                  return (
-                    <ChartNode
-                      key={placed.id}
-                      x={placed.x}
-                      y={placed.y}
-                      focused={placed.id === focusEmployment}
-                      highlighted={highlighted.has(placed.id)}
-                      inCycle={cycleEmployments.has(placed.id)}
-                      collapsed={placed.collapsed}
-                      childCount={placed.childCount}
-                      onToggle={() =>
-                        setCollapsed((current) => {
-                          const next = new Set(current);
-                          if (next.has(placed.id)) next.delete(placed.id);
-                          else next.add(placed.id);
-                          return next;
-                        })
-                      }
-                      name={node.display_name ?? withheldLabel(node).text}
-                      jobTitle={node.job_title}
-                      department={node.department}
-                      workerClass={node.worker_class}
-                      nameWithheld={isWithheld(node)}
-                      // Belt and braces: the door already nulls this for a
-                      // withheld node, and a face is not a thing to leak twice.
-                      photoFileId={isWithheld(node) ? null : node.photo_file_id}
-                      statementAuthored={withheldLabel(node).authored}
-                      // No door for a withheld node — see `ChartNode.href`.
-                      href={
-                        isWithheld(node)
-                          ? null
-                          : hrEmployeeHref(employeeId, null, { org: orgRef })
-                      }
-                      /*
-                        🚨 A WITHHELD NODE GETS NO DOORS AT ALL, AND THE REPORTS
-                        LINK IS THE ONE THAT LOOKED HARMLESS. It carries
-                        `managerEmployeeId` — a working handle to the person whose
-                        name we just withheld — so the node suppressed the name and
-                        then published the id needed to go and read it. Verified
-                        live: the id appeared in the href on a peer's chart.
-
-                        It was also a DEAD END for that viewer. The directory
-                        filtered by an opted-out manager returns 0 rows for a peer
-                        (measured), so a node promising "2 reports" led to a list
-                        showing none — the same confidently-wrong-count defect this
-                        lane has fixed twice elsewhere.
-
-                        The count still renders, as text: the structure is not the
-                        thing being hidden. Same treatment the as-of view already
-                        gets, for the same reason — no door where the door cannot
-                        answer.
-                      */
-                      reportsHref={
-                        isAsOfView || isWithheld(node)
-                          ? null
-                          : hrPeopleHref({
-                              org: orgRef,
-                              managerEmployeeId: employeeId,
-                            })
-                      }
-                      canFixCycle={can("identity.write")}
-                    />
-                  );
-                })}
-              </div>
-            </div>
+            />
           </div>
         )}
 
@@ -562,39 +427,6 @@ export function HrOrgChart() {
 }
 
 // ── Canvas pieces ───────────────────────────────────────────────────────────
-
-function ChartEdges({ layout }: { layout: OrgLayout }) {
-  const byId = new Map(layout.nodes.map((node) => [node.id, node]));
-  return (
-    <svg
-      className="pointer-events-none absolute inset-0 max-w-none"
-      width={layout.width}
-      height={layout.height + NODE_HEIGHT}
-      aria-hidden
-    >
-      {layout.edges.map((edge) => {
-        const from = byId.get(edge.from);
-        const to = byId.get(edge.to);
-        if (!from || !to) return null;
-        const x1 = from.x + NODE_WIDTH / 2;
-        const y1 = from.y + NODE_HEIGHT;
-        const x2 = to.x + NODE_WIDTH / 2;
-        const y2 = to.y;
-        const midY = y1 + (LEVEL_GAP_Y - NODE_HEIGHT) / 2;
-        return (
-          <path
-            key={`${edge.from}->${edge.to}${edge.dotted ? "-dotted" : ""}`}
-            d={`M ${x1} ${y1} V ${midY} H ${x2} V ${y2}`}
-            fill="none"
-            stroke="hsl(var(--border))"
-            strokeWidth={1.5}
-            strokeDasharray={edge.dotted ? "4 3" : undefined}
-          />
-        );
-      })}
-    </svg>
-  );
-}
 
 /**
  * 🚨 THE SUPPRESSION KEY IS THE NAME, NOT THE PREFERENCE. `hr_org_chart` sends
@@ -630,14 +462,11 @@ function withheldLabel(node: { disclosure_statement?: string | null }): {
 }
 
 function ChartNode(props: {
-  x: number;
-  y: number;
   focused: boolean;
   highlighted: boolean;
   inCycle: boolean;
-  collapsed: boolean;
+  /** Direct reports in the data. Collapsing the team is the chart's own toggle, which names nobody. */
   childCount: number;
-  onToggle: () => void;
   name: string;
   jobTitle: string | null;
   department: string | null;
@@ -676,29 +505,22 @@ function ChartNode(props: {
    * app's fallback, which must be styled so it cannot be read as the employer's.
    */
   statementAuthored: boolean;
-  canFixCycle: boolean;
 }) {
-  // The team-toggle label reads about a person, and there is no person to name.
-  const teamLabel = props.nameWithheld ? "this team" : `${props.name}'s team`;
   return (
     <div
       className={cn(
         // The transition is what makes an as-of change LEGIBLE AS A CHANGE:
         // a person who moved slides to their new place instead of the whole
         // chart blinking into a different arrangement.
-        "absolute flex flex-col justify-center rounded-lg border bg-card px-2.5 py-1.5 transition-[left,top] duration-300",
+        // The chart glides the card to its new place on an as-of change, which
+        // makes a moved person LEGIBLE AS A CHANGE rather than a redraw.
+        "flex h-full w-full flex-col justify-center rounded-lg border bg-card px-2.5 py-1.5 pb-3",
         props.focused
           ? "border-primary ring-2 ring-primary/30"
           : props.highlighted
             ? "border-primary/60"
             : "border-border",
       )}
-      style={{
-        left: props.x,
-        top: props.y,
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
-      }}
     >
       <div className="flex min-w-0 items-center gap-1">
         {/* Absent on a withheld node — see `photoFileId`. */}
@@ -759,22 +581,6 @@ function ChartNode(props: {
       <div className="flex items-center gap-1">
         {props.childCount > 0 ? (
           <>
-            <button
-              type="button"
-              onClick={props.onToggle}
-              aria-label={
-                props.collapsed
-                  ? `Expand ${teamLabel}`
-                  : `Collapse ${teamLabel}`
-              }
-              className="inline-flex h-11 w-11 items-center justify-center rounded-sm text-[0.6875rem] text-muted-foreground hover:text-foreground lg:h-4 lg:w-4"
-            >
-              {props.collapsed ? (
-                <ChevronRight className="h-3 w-3" aria-hidden />
-              ) : (
-                <ChevronDown className="h-3 w-3" aria-hidden />
-              )}
-            </button>
             {props.reportsHref ? (
               <Link
                 href={props.reportsHref}

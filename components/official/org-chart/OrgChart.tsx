@@ -121,6 +121,16 @@ export interface OrgChartProps<T> {
   cardHeight?: number;
   /** Name for downloads (PNG / PDF of the whole chart). Omit to hide the download buttons. */
   exportTitle?: string;
+  /** Text burned under the exported chart. Default "<exportTitle> · <today>" (HR: the as-of date). */
+  exportCaption?: string;
+  /** Download file name without extension. Default "<exportTitle-slug>-<today>". */
+  exportFileName?: string;
+  /**
+   * "follow" (default) keeps the whole chart framed as it grows until the person
+   * moves the view. "once" frames it on first draw only — a chart that is redrawn
+   * for another date keeps the view, so persisting cards visibly stay put.
+   */
+  framing?: "follow" | "once";
   /** Extra controls rendered at the left of the top bar. */
   toolbar?: ReactNode;
   /**
@@ -197,6 +207,9 @@ export function OrgChart<T>({
   toolbar,
   highlight,
   exportTitle,
+  exportCaption,
+  exportFileName,
+  framing = "follow",
   emptyState,
   ariaLabel = "Org chart",
   className,
@@ -296,8 +309,9 @@ export function OrgChart<T>({
   const sizeKey = `${layout.width}x${layout.height}@${viewport.w}x${viewport.h}`;
   useEffect(() => {
     if (touched || layout.nodes.length === 0 || framedSize.current === sizeKey) return;
+    if (framing === "once" && framedSize.current) return;
     if (fitTo({ x: 0, y: 0, width: layout.width, height: layout.height })) framedSize.current = sizeKey;
-  }, [sizeKey, touched, layout.nodes.length, layout.width, layout.height, fitTo]);
+  }, [sizeKey, touched, framing, layout.nodes.length, layout.width, layout.height, fitTo]);
 
   const fitAll = () => fitTo({ x: 0, y: 0, width: layout.width, height: layout.height });
 
@@ -336,7 +350,12 @@ export function OrgChart<T>({
     if (!worldRef.current || !exportTitle || exporting) return;
     setExporting(true);
     try {
-      await exportChart(worldRef.current, { width: layout.width, height: layout.height }, { title: exportTitle, format });
+      const saved = await exportChart(
+        worldRef.current,
+        { width: layout.width, height: layout.height },
+        { title: exportTitle, format, caption: exportCaption, fileName: exportFileName },
+      );
+      toast.success(`Exported ${saved}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "The chart could not be downloaded.");
     } finally {

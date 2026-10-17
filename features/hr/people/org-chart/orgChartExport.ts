@@ -5,8 +5,8 @@
 // and the as-of date on EVERY row — because a chart export without the date it
 // was true on is an assertion nobody can check.
 //
-// The as-of date also travels in the FILENAME and in a header line, so a file
-// that leaves this app carries what it is.
+// The as-of date also travels in the FILENAME, so a file that leaves this app
+// carries what it is.
 //
 // It is safe to build client-side precisely because it carries nothing the chart
 // does not already draw: display name, title, department, location, manager,
@@ -20,8 +20,13 @@ import { toDelimitedText } from "@ai-matrx/alchemy/operate/read";
 import type { Json } from "@ai-matrx/alchemy/operate";
 import { downloadFile } from "@ai-matrx/kit/download";
 
+/** File name without extension — shared with the chart's PNG/PDF export. */
+export function orgChartExportBase(asOf: string): string {
+  return `org-chart-as-of-${asOf}`;
+}
+
 export function orgChartExportName(asOf: string, extension: string): string {
-  return `org-chart-as-of-${asOf}.${extension}`;
+  return `${orgChartExportBase(asOf)}.${extension}`;
 }
 
 /** Depth of each node, computed the same way the layout does. */
@@ -126,95 +131,10 @@ export function downloadOrgChartCsv(chart: HrOrgChart): void {
 
 /*
   ── PDF and PNG ────────────────────────────────────────────────────────────
-  R-L1 B4 promises PDF · PNG · CSV. CSV was built; these two were
-  `announceComingSoon` stubs, so two thirds of a promised row did nothing.
-
-  🚨 THE AS-OF DATE TRAVELS INTO THE FILE, NOT JUST THE FILENAME. A chart is
-  only true of a date, and an image outlives the screen it was taken from — a
-  PNG in somebody's slide deck with no date on it is a claim about today
-  forever. The filename carries it, and so does a caption burnt into the image
-  and a header line drawn on the PDF page, because a filename does not survive
+  Not here. They are the shared chart's own export (`components/official/
+  org-chart/exportChart.ts`, the one path every org chart uses through the
+  Alchemy capture door and the kit download door). HrOrgChart passes the as-of
+  caption and `orgChartExportBase(asOf)`, so the date is burned into the image
+  and the PDF page and travels in the filename — a filename does not survive
   being pasted into a document.
-
-  These rasterise the LIVE chart node rather than re-drawing it, so what is
-  exported is exactly what the person is looking at — including the withheld
-  nodes rendered as statements, which must not turn back into names in an
-  export.
 */
-
-/**
- * Shared by both raster paths: the chart as a canvas, at a readable scale. A picture of a
- * visual surface (SVG connectors, transforms, modern colours) is Alchemy's html-to-image door,
- * `renderElement`; html2canvas (`captureElement`) is for documents.
- */
-async function rasterise(node: HTMLElement): Promise<HTMLCanvasElement> {
-  const { renderElement } = await import("@ai-matrx/alchemy/operate/capture");
-  return renderElement(node, {
-    // 2× so text stays legible when the image is scaled in a deck or a print.
-    pixelRatio: 2,
-    backgroundColor: getComputedStyle(document.body).backgroundColor || "#ffffff",
-  });
-}
-
-/** Push bytes at the browser through the one anchor-download path. */
-function saveBlob(blob: Blob, filename: string): void {
-  downloadFile(filename, blob, blob.type);
-}
-
-export async function downloadOrgChartPng(
-  node: HTMLElement,
-  asOf: string,
-): Promise<void> {
-  const canvas = await rasterise(node);
-
-  // The caption is drawn ON the image, under the chart, so the date cannot be
-  // separated from the picture the way a filename can.
-  const pad = 56;
-  const out = document.createElement("canvas");
-  out.width = canvas.width;
-  out.height = canvas.height + pad;
-  const ctx = out.getContext("2d");
-  if (!ctx) throw new Error("This browser would not give us a canvas to draw on.");
-  ctx.fillStyle = getComputedStyle(document.body).backgroundColor || "#ffffff";
-  ctx.fillRect(0, 0, out.width, out.height);
-  ctx.drawImage(canvas, 0, 0);
-  ctx.fillStyle = getComputedStyle(document.body).color || "#111111";
-  ctx.font = "24px system-ui, -apple-system, Segoe UI, sans-serif";
-  ctx.fillText(`Org chart as of ${asOf}`, 16, canvas.height + 36);
-
-  const { canvasToBlob } = await import("@ai-matrx/alchemy/operate/capture");
-  saveBlob(await canvasToBlob(out, "image/png"), orgChartExportName(asOf, "png"));
-}
-
-export async function downloadOrgChartPdf(
-  node: HTMLElement,
-  asOf: string,
-): Promise<void> {
-  const canvas = await rasterise(node);
-  const { pagesToPdf } = await import("@ai-matrx/alchemy/operate/capture");
-  // Landscape: an org chart is wider than it is tall almost by definition.
-  // The whole chart fits on one page rather than being cropped — a truncated
-  // org chart silently drops people, which is worse than a small one.
-  /*
-    🚨 COMPRESSED, AND JPEG RATHER THAN PNG. A PNG data URL embeds
-    uncompressed: a four-node chart came out at 13 MB, which is not a file
-    anyone will email. A chart is flat colour and text, so JPEG at high quality
-    is visually indistinguishable here and an order of magnitude smaller, and
-    "FAST" turns on the PDF writer's own deflate on top. The PNG export stays
-    lossless — that is the one for archiving; the PDF is the one for sending.
-  */
-  const pdf = await pagesToPdf(
-    [
-      {
-        image: canvas,
-        imageType: "JPEG",
-        quality: 0.92,
-        compression: "FAST",
-        placement: { top: 44, right: 24, bottom: 24, left: 24 },
-        header: { text: `Org chart as of ${asOf}`, x: 24, y: 28, fontSize: 12 },
-      },
-    ],
-    { orientation: "landscape", unit: "pt", format: "a4" },
-  );
-  saveBlob(pdf, orgChartExportName(asOf, "pdf"));
-}

@@ -6,12 +6,16 @@
 // chart is panned. A caption with the chart's name and the date is drawn onto
 // the image itself: a picture of an organization outlives the screen it was
 // taken from, and a filename does not survive being pasted into a deck.
+//
+// ONE export path for every org chart (agents, HR). A chart that is true only of
+// a date (HR's as-of view) passes its own `caption` and `fileName`, so the date
+// is burned into the PNG/PDF and travels in the filename.
 
 import { downloadFile } from "@ai-matrx/kit/download";
 
 export type ChartExportFormat = "png" | "pdf";
 
-function fileName(title: string, ext: string): string {
+function defaultFileName(title: string, ext: string): string {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "org-chart";
   return `${slug}-${new Date().toISOString().slice(0, 10)}.${ext}`;
 }
@@ -23,8 +27,16 @@ function save(blob: Blob, name: string) {
 export async function exportChart(
   world: HTMLElement,
   size: { width: number; height: number },
-  opts: { title: string; format: ChartExportFormat },
-): Promise<void> {
+  opts: {
+    title: string;
+    format: ChartExportFormat;
+    /** Text burned under the chart. Default: "<title> · <today>". */
+    caption?: string;
+    /** File name without extension. Default: "<title-slug>-<today>". */
+    fileName?: string;
+  },
+): Promise<string> {
+  const name = (ext: string) => (opts.fileName ? `${opts.fileName}.${ext}` : defaultFileName(opts.title, ext));
   const { renderElement, canvasToBlob, pagesToPdf } = await import("@ai-matrx/alchemy/operate/capture");
   const background = getComputedStyle(document.body).backgroundColor || "#ffffff";
   const pad = 32;
@@ -38,7 +50,9 @@ export async function exportChart(
     filter: (n) => !(n instanceof HTMLElement && (n.dataset.noPan !== undefined || n.getAttribute("aria-label") === "Add below")),
   });
 
-  const caption = `${opts.title} · ${new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}`;
+  const caption =
+    opts.caption ??
+    `${opts.title} · ${new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}`;
   const band = 72;
   const out = document.createElement("canvas");
   out.width = chart.width;
@@ -53,8 +67,8 @@ export async function exportChart(
   ctx.fillText(caption, pad * 2, chart.height + 46);
 
   if (opts.format === "png") {
-    save(await canvasToBlob(out, "image/png"), fileName(opts.title, "png"));
-    return;
+    save(await canvasToBlob(out, "image/png"), name("png"));
+    return name("png");
   }
   // The whole chart on one page — cropping would silently drop boxes.
   // JPEG + FAST: a PNG data URL embeds uncompressed (megabytes for a few cards).
@@ -62,5 +76,6 @@ export async function exportChart(
     [{ image: out, imageType: "JPEG", quality: 0.92, compression: "FAST", placement: { top: 24, right: 24, bottom: 24, left: 24 } }],
     { orientation: out.width >= out.height ? "landscape" : "portrait", unit: "pt", format: "a4" },
   );
-  save(pdf, fileName(opts.title, "pdf"));
+  save(pdf, name("pdf"));
+  return name("pdf");
 }

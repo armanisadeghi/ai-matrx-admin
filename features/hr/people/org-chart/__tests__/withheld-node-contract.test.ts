@@ -69,7 +69,7 @@ describe("org chart — the withheld node (§4.2)", () => {
   });
 
   it("gives a withheld node NO profile door, in the canvas and the tray", () => {
-    expect(chart).toContain("isWithheld(node)\n                          ? null");
+    expect(chart).toMatch(/href=\{\s*isWithheld\(node\)\s*\? null/);
     expect(chart).toContain("{props.href ? (");
     // The tray renders a <span> for a withheld person rather than a Link.
     expect(chart).toContain("const withheld = isWithheld(person);");
@@ -83,20 +83,21 @@ describe("org chart — the withheld node (§4.2)", () => {
     expect(chart).toContain("props.statementAuthored ? (");
   });
 
-  it("never interpolates a withheld name into the team-toggle label", () => {
-    // `teamLabel` is the indirection that makes this true; the raw
-    // `${props.name}'s team` form must not come back.
-    expect(chart).toContain('const teamLabel = props.nameWithheld');
-    expect(chart).not.toContain("`Expand ${props.name}'s team`");
-    expect(chart).not.toContain("`Collapse ${props.name}'s team`");
+  it("never interpolates a name into the team-toggle label", () => {
+    // Collapsing a team is the shared chart's own toggle ("Show N below" /
+    // "Collapse"), which names nobody. A per-person toggle label must not come
+    // back on the HR card.
+    expect(chart).not.toMatch(/\$\{props\.name\}'s team/);
+    expect(chart).not.toMatch(/aria-label=\{[^}]*props\.name/);
   });
 
   it("keeps the node in the tree rather than dropping it", () => {
-    // 🚨 The node is laid out from `nodes` with no withheld filter anywhere: a gap
+    // 🚨 The forest is built from `nodes` with no withheld filter anywhere: a gap
     // where a node should be is itself a disclosure, because everyone can see
     // exactly who is missing and where. If a `filter` on name_withheld ever
     // appears, this is the test that should fail.
     expect(chart).not.toMatch(/\.filter\([^)]*name_withheld/);
+    expect(chart).toContain("buildParentForest(nodes, {");
   });
 
   it("types the door's real projection — nullable name, optional preference", () => {
