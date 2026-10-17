@@ -22,10 +22,12 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, Hammer, Loader2, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Hammer, Plus } from "lucide-react";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { AgentListDropdown, useAgentListCore } from "@ai-matrx/agents/catalog/react";
 import { Button, RegionSkeleton, Tile } from "@ai-matrx/design-system/controls";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ExamplesField, filledExamples } from "@/features/agents/factory/components/ExamplesField";
 import { startAgentBuild } from "@/features/agents/factory/service";
@@ -70,6 +72,8 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   const [navigating, startNavigation] = useTransition();
   const boxRef = useRef<HTMLTextAreaElement>(null);
   const openMode = STUDIO_MODES.find((m) => m.id === open)!;
+  const importModes = STUDIO_MODES.filter((m) => m.inImportMenu);
+  const importing = navigating && importModes.some((m) => m.id === leaving);
 
   const { agents, isLoading } = useAgentListCore({ consumerId: "agent-studio-start", visibleTabs: ["mine", "shared"] });
   const recent = recentAgents(agents);
@@ -157,12 +161,12 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
   return (
     <StudioStage headline={openMode.headline ?? openMode.title} headlineKey={`h-${open}`} onBack={onBack} aside={planLink}>
       <div
-        className="mt-6 grid grid-cols-2 gap-2 @xl:flex @xl:flex-wrap @xl:justify-center"
+        className="mt-6 grid grid-cols-2 gap-2 @xl:flex @xl:justify-center"
         role="group"
         aria-label="Ways to start"
         data-testid="studio-modes"
       >
-        {STUDIO_MODES.map((mode) => {
+        {STUDIO_MODES.filter((m) => !m.inImportMenu).map((mode) => {
           const inPlace = opensInPlace(mode);
           const pending = !inPlace && leaving === mode.id && navigating;
           return (
@@ -171,21 +175,42 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
               variant="outline"
               // An in-place way in is a toggle (only the open one is pressed). One that opens another
               // page is not a toggle: a quiet chevron says "goes somewhere", a spinner while it goes.
-              iconEnd={inPlace ? undefined : pending ? <Loader2 className="animate-spin" /> : <ChevronRight />}
+              iconEnd={inPlace ? undefined : pending ? <Spinner size="xs" label="Opening" /> : <ChevronRight />}
               pressed={inPlace && open === mode.id}
               aria-pressed={inPlace ? open === mode.id : undefined}
               aria-busy={pending || undefined}
               title={mode.comingSoonId ? `${mode.title} — Coming soon` : mode.line}
               data-testid={`studio-mode-${mode.id}`}
               onClick={() => pick(mode)}
-              onPointerEnter={() => {
-                if (mode.href) router.prefetch(mode.href);
-              }}
             >
               {mode.label}
             </Button>
           );
         })}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              iconEnd={importing ? <Spinner size="xs" label="Opening" /> : <ChevronDown />}
+              aria-busy={importing || undefined}
+              className="col-span-2 @xl:col-span-1"
+              data-testid="studio-mode-import"
+              onPointerEnter={() => importModes.forEach((m) => m.href && router.prefetch(m.href))}
+            >
+              Import
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center">
+            {importModes.map((mode) => (
+              <DropdownMenuItem key={mode.id} onSelect={() => pick(mode)} data-testid={`studio-mode-${mode.id}`}>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-foreground">{mode.label}</span>
+                  <span className="type-meta text-muted-foreground">{mode.line}</span>
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* The open way in. Closed panels stay mounted (hidden) so what was typed in them survives. */}

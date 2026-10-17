@@ -58,7 +58,7 @@ export function ExamplesField({ examples, onChange, disabled, supplied = 0 }: Ex
         />
       ))}
       <Button variant="quiet" icon={<Plus />} onClick={() => onChange([...examples, ""])} disabled={disabled}>
-        Add example
+        Add an example
       </Button>
     </div>
   );

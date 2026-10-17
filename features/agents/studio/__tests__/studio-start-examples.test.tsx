@@ -1,5 +1,5 @@
 /**
- * Build-first: "Describe it" asks for no examples up front. One quiet "Add a real example"
+ * Build-first: "Describe it" asks for no examples up front. One quiet "Add an example"
  * opens the shared Examples field with a single box (it used to open with three empty boxes).
  */
 import { act } from "react";
@@ -24,6 +24,7 @@ jest.mock("@/components/official/VoiceTextarea", () => ({
 jest.mock("@/features/agents/factory/service", () => ({ startAgentBuild: jest.fn() }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: jest.fn() }));
 jest.mock("@ai-matrx/kit/coming-soon", () => ({ announceComingSoon: jest.fn() }));
+jest.mock("@/components/ui/dropdown-menu", () => ({ DropdownMenu: () => null, DropdownMenuTrigger: () => null, DropdownMenuContent: () => null, DropdownMenuItem: () => null }));
 
 import { StudioStart } from "../components/StudioStart";
 
@@ -34,16 +35,17 @@ describe("StudioStart — Describe it", () => {
     act(() => {
       createRoot(host).render(<StudioStart onStart={() => undefined} onBack={() => undefined} initialJob="Write listing descriptions" />);
     });
-    expect(host.querySelectorAll('textarea[aria-label^="Example"]')).toHaveLength(0);
+    const describe = host.querySelector('[data-testid="studio-describe"]') as HTMLElement;
+    expect(describe.querySelectorAll('textarea[aria-label^="Example"]')).toHaveLength(0);
     const add = host.querySelector('[data-testid="studio-add-example"]') as HTMLButtonElement;
     expect(add).not.toBeNull();
     act(() => add.click());
-    expect(host.querySelectorAll('textarea[aria-label^="Example"]')).toHaveLength(1);
+    expect(describe.querySelectorAll('textarea[aria-label^="Example"]')).toHaveLength(1);
     expect(host.querySelector('[data-testid="studio-add-example"]')).toBeNull();
   });
 });
 
-describe("StudioStart — From examples I already have", () => {
+describe("StudioStart — From my examples", () => {
   it("builds through the factory only once two examples are in, each as a proof case with its baseline", async () => {
     const { startAgentBuild } = jest.requireMock("@/features/agents/factory/service") as { startAgentBuild: jest.Mock };
     startAgentBuild.mockResolvedValue("build-1");
