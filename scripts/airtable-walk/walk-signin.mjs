@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import { markBrowserAgentTraffic } from "../lib/agent-traffic.mjs";
 const REPO = new URL("../..", import.meta.url).pathname;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-export const MAX_WAIT_MS = 30 * 60_000;
+export const MAX_WAIT_MS = 60 * 60_000;
 
 const parked = (page) => page.url().includes("/__dev-walk");
 
