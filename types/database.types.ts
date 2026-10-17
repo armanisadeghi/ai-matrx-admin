@@ -2991,6 +2991,33 @@ export type Database = {
         }
         Returns: string
       }
+      list_rows_by_ids: {
+        Args: { p_ids: string[] }
+        Returns: {
+          access_level: string
+          agent_type: string
+          category: string
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          is_active: boolean
+          is_archived: boolean
+          is_favorite: boolean
+          is_owner: boolean
+          model_id: string
+          name: string
+          offering_id: string
+          orchestra: Json
+          organization_id: string
+          organization_name: string
+          shared_by_email: string
+          source_agent_id: string
+          tags: string[]
+          task_id: string
+          updated_at: string
+        }[]
+      }
       message_flag_problems: {
         Args: never
         Returns: {
@@ -38713,6 +38740,14 @@ export type Database = {
           p_table_id: string
         }
         Returns: Json
+      }
+      _automation_delivery_settle: {
+        Args: { p_request_id: number }
+        Returns: boolean
+      }
+      _automation_delivery_settle_stale: {
+        Args: { p_automation_id: string }
+        Returns: number
       }
       _automation_fields: {
         Args: { p_organization_id: string; p_table_id: string }
@@ -104759,6 +104794,10 @@ export type Database = {
       is_provisioning: { Args: never; Returns: boolean }
       is_service_only_history: { Args: { p_token: string }; Returns: boolean }
       is_sqlstate: { Args: { p_code: string }; Returns: boolean }
+      is_test_app_instance: {
+        Args: { p_instance_id: string }
+        Returns: boolean
+      }
       kernel_equivalence_answers: { Args: never; Returns: Json }
       kernel_equivalence_check: { Args: never; Returns: Json }
       kernel_equivalence_expected: { Args: never; Returns: Json }
@@ -106353,6 +106392,7 @@ export type Database = {
         }
         Returns: string
       }
+      sweep_idle_test_app_instances: { Args: never; Returns: string[] }
       sweep_orphaned_associations: {
         Args: { p_dry_run?: boolean }
         Returns: {
@@ -125322,7 +125362,7 @@ export type Database = {
           cost_usd: number | null
           created_at: string
           created_by: string | null
-          dataset_id: string
+          dataset_id: string | null
           deleted_at: string | null
           error: string | null
           error_code: string | null
@@ -125360,7 +125400,7 @@ export type Database = {
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
-          dataset_id: string
+          dataset_id?: string | null
           deleted_at?: string | null
           error?: string | null
           error_code?: string | null
@@ -125398,7 +125438,7 @@ export type Database = {
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
-          dataset_id?: string
+          dataset_id?: string | null
           deleted_at?: string | null
           error?: string | null
           error_code?: string | null
@@ -141966,6 +142006,8 @@ export type Database = {
         Returns: Json
       }
       catalog_call_attempts: { Args: { p_call: string }; Returns: Json }
+      catalog_call_begin_finish: { Args: { p_id: string }; Returns: Json }
+      catalog_call_cancel: { Args: { p_id: string }; Returns: Json }
       catalog_call_claim: {
         Args: { p_id: string; p_lease_s: number }
         Returns: Json
@@ -155264,29 +155306,7 @@ export type Database = {
           requests: number | null
           run_id: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_request_workflow_run_id_fkey"
-            columns: ["run_id"]
-            isOneToOne: false
-            referencedRelation: "_run_facts"
-            referencedColumns: ["run_id"]
-          },
-          {
-            foreignKeyName: "user_request_workflow_run_id_fkey"
-            columns: ["run_id"]
-            isOneToOne: false
-            referencedRelation: "run"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_request_workflow_run_id_fkey"
-            columns: ["run_id"]
-            isOneToOne: false
-            referencedRelation: "v_engram_confirmed_run"
-            referencedColumns: ["run_id"]
-          },
-        ]
+        Relationships: []
       }
       _run_facts: {
         Row: {
