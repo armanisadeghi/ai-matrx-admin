@@ -29,6 +29,9 @@
  */
 
 import { useEffect, useState } from "react";
+import EverythingFeed from "./EverythingFeed";
+import { KIND_KEY } from "@ai-matrx/content-ir";
+import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
 import { useFollowedRunSummaries, useResolvedFollowed } from "./followed-work-store";
 import { useFollowedWork } from "./followed-work";
 import { RunTestReplaysStrip } from "@/features/ai-test-mode/RunTestReplaysStrip";
@@ -212,6 +215,9 @@ export function useAiWatchPanel({
   // Selection: a door's target, else the person's pick, else the newest live call. A new run
   // on the page clears the pick, so the window always moves to the round being watched.
   const [picked, setPicked] = useState<string | null>(null);
+  // "This page" = the tab's own runs; "Everything" = the platform-wide feed (background AI no tab started).
+  const [mode, setMode] = useState<"page" | "everything">("page");
+  const [everythingPick, setEverythingPick] = useState<string | null>(null);
   const [appliedFocus, setAppliedFocus] = useState<number | null>(null);
   const newestRun = pageWorkflowRunIds.length ? history.at(-1) ?? null : null;
   const [pickRun, setPickRun] = useState<string | null>(newestRun);
@@ -227,16 +233,39 @@ export function useAiWatchPanel({
   const current = picked ?? autoSelection(groups, newestRun);
   const currentRun = registry.find((r) => r.key === current || r.requestIds.includes(current ?? ""));
   const currentCall = groups.flatMap((g) => g.calls).find((c) => c.key === current);
-  const serverId = currentRun?.serverRequestId ?? currentCall?.serverId ?? null;
+  const serverId = mode === "everything" ? everythingPick : (currentRun?.serverRequestId ?? currentCall?.serverId ?? null);
 
   if (legacy) return { state: "legacy", body: null, serverId: null, conversationId };
   if (!canWatch) return { state: "denied", body: null, serverId: null, conversationId };
 
   const callCount = groups.reduce((n, g) => n + g.calls.length, 0);
 
+  const modeTabs = (
+    <div className="flex shrink-0 gap-1 border-b border-border p-1" role="tablist" aria-label="Watch AI scope">
+      {(["page", "everything"] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          role="tab"
+          aria-selected={mode === m}
+          data-testid={`ai-watch-mode-${m}`}
+          onClick={() => setMode(m)}
+          className={cn("flex-1 rounded px-2 py-0.5", mode === m ? "bg-muted font-medium" : "text-muted-foreground hover:bg-muted/60")}
+        >
+          {m === "page" ? "This page" : "Everything"}
+        </button>
+      ))}
+    </div>
+  );
+
   const body = (
     <>
       <div className={cn("flex shrink-0 flex-col overflow-y-auto border-border text-xs", framed ? "w-60 border-r" : "max-h-44 w-full border-b")} data-testid="ai-watch-rail">
+        {modeTabs}
+        {mode === "everything" ? (
+          <EverythingFeed selectedId={everythingPick} onSelect={setEverythingPick} framed={framed} />
+        ) : (
+          <>
         {listError ? (
           <div className="p-2">
             <ErrorNotice title="The runs could not be read" message={listError} />
@@ -284,15 +313,17 @@ export function useAiWatchPanel({
             ))}
           </div>
         ))}
+          </>
+        )}
       </div>
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-        {currentCall && groups.find((g) => g.calls.includes(currentCall))?.workflowRunId ? (
+        {mode === "page" && currentCall && groups.find((g) => g.calls.includes(currentCall))?.workflowRunId ? (
           <RunTestReplaysStrip runId={groups.find((g) => g.calls.includes(currentCall))?.workflowRunId as string} />
         ) : null}
         <AiWatchRunView
           key={serverId ?? current ?? "none"}
           serverId={serverId}
-          requestIds={currentRun?.requestIds ?? []}
+          requestIds={mode === "everything" ? [] : (currentRun?.requestIds ?? [])}
         />
       </div>
     </>
@@ -534,7 +565,7 @@ function LaneAnswer({ requestId, recorded, live }: { requestId: string; recorded
             {rows.map((r, i) => (
               <div key={i} style={{ paddingLeft: r.depth * 12 }} className="flex gap-2">
                 {r.label ? <dt className="shrink-0 text-muted-foreground">{r.label}</dt> : null}
-                {r.text !== null ? <dd className="min-w-0 break-words text-foreground">{r.text}</dd> : null}
+                {r.text !== null ? <dd className="min-w-0 break-words text-foreground"><RowText text={r.text} /></dd> : null}
               </div>
             ))}
           </dl>
@@ -544,6 +575,16 @@ function LaneAnswer({ requestId, recorded, live }: { requestId: string; recorded
       ) : null}
     </div>
   );
+}
+
+/**
+ * One scalar of a recorded or forming answer. Prose that itself carries the `__kind` key (a goal that
+ * quotes its own output spec) goes through the answer pipeline, which routes it to the kind's view or
+ * its fallback — the key is never printed as screen text, and never stripped from the stored value.
+ */
+export function RowText({ text }: { text: string }) {
+  if (!text.includes(KIND_KEY)) return <>{text}</>;
+  return <AnswerValueView text={text} density="inline" />;
 }
 
 function RecordedLaneAnswer({ text }: { text: string }) {
@@ -560,7 +601,7 @@ function RecordedLaneAnswer({ text }: { text: string }) {
           {rows.map((r, i) => (
             <div key={i} style={{ paddingLeft: r.depth * 12 }} className="flex gap-2">
               {r.label ? <dt className="shrink-0 text-muted-foreground">{r.label}</dt> : null}
-              {r.text !== null ? <dd className="min-w-0 break-words text-foreground">{r.text}</dd> : null}
+              {r.text !== null ? <dd className="min-w-0 break-words text-foreground"><RowText text={r.text} /></dd> : null}
             </div>
           ))}
         </dl>

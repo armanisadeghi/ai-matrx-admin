@@ -17,26 +17,25 @@
 
 import { BookOpenCheck } from "lucide-react";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { KwGuidelinesPanel } from "./KwGuidelinesPanel";
 
 export function GuidelinesWorkbench() {
   const { site } = useMarketingSite();
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <header className="shrink-0 border-b border-border px-3 py-2.5 sm:px-4">
-        <h1 className="flex items-center gap-2 text-base font-semibold text-foreground">
+    <div className="h-full overflow-y-auto bg-textured">
+      <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
+        <header className="mb-3 flex items-center gap-1.5">
           <BookOpenCheck className="h-4 w-4 text-muted-foreground" />
-          Business guidelines
-        </h1>
-        <p className="mt-0.5 max-w-2xl text-xs leading-5 text-muted-foreground">
-          What the AI must know about this business before it judges a
-          keyword — written once, read by every classification and valuation
-          run for this site.
-        </p>
-      </header>
-
-      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col overflow-hidden px-3 py-3 sm:px-4">
+          <h1 className="text-base font-semibold text-foreground">
+            Business guidelines
+          </h1>
+          <AboutPeek
+            title="Business guidelines"
+            about="What the AI must know about this business before it judges a keyword. Written once, read by every classification and valuation run for this site."
+          />
+        </header>
         <KwGuidelinesPanel siteId={site.id} />
       </div>
     </div>

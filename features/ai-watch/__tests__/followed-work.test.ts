@@ -60,6 +60,20 @@ describe("followed server work", () => {
     expect(r.steps[0].status).toBe("pass");
   });
 
+  it("the fact judge's own call is a followed step of its case result", () => {
+    const r = resolveTestRun({ key: "test_run:t1", id: "t1" }, { status: "done" }, [
+      {
+        id: "r1", case_id: "c", status: "done", verdict: "pass_judged", verdict_reason: null, conversation_id: "c-9", user_request_ids: ["ur-9"],
+        outcome: { judge: { conversation_id: "c-judge", request_id: "ur-judge", verdict: "holds" } },
+      },
+    ]);
+    const j = r.steps.find((s) => s.id === "judge.r1");
+    expect(j?.conversationId).toBe("c-judge");
+    expect(j?.mandateKey).toBe("agent_tests.fact_judge");
+    expect(r.userRequestIds).toContain("ur-judge");
+    expect(r.conversationIds).toContain("c-judge");
+  });
+
   it("the work's calls are their own rail group, headed by the work", () => {
     const scopes = [{ key: "factory_build:b1", label: "Agent Factory build", userRequestIds: ["ur-1"], conversationIds: ["c-2"] }];
     const rows = [

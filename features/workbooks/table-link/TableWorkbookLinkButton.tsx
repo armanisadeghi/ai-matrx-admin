@@ -53,12 +53,14 @@ export function TableWorkbookLinkButton({ tableId }: { tableId: string }) {
     router.push(made.data.href);
   };
 
-  if (linked === null) return null;
+  // While the linked-workbook lookup is in flight the control is already in its place (the same quiet icon
+  // button, not yet pressable): the header cluster keeps one shape from first paint instead of gaining the
+  // button, and shifting its neighbours, when the lookup lands.
   const icon = busy ? <Loader2 className="animate-spin" aria-hidden /> : <FileSpreadsheet aria-hidden />;
 
-  if (linked.length === 0) {
+  if (linked === null || linked.length === 0) {
     return (
-      <Button variant="quiet" icon={icon} disabled={busy} onClick={() => void openNew()} title="Open as a linked workbook" aria-label="Open as workbook" data-table-open-as-workbook="" />
+      <Button variant="quiet" icon={icon} disabled={busy || linked === null} onClick={() => void openNew()} title="Open as a linked workbook" aria-label="Open as workbook" data-table-open-as-workbook="" />
     );
   }
 

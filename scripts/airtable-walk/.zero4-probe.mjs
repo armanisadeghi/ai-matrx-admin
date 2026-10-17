@@ -13,6 +13,7 @@ if (!href) {
 }
 console.log("href", href);
 const ctx = await browser.newContext({ storageState: state, viewport: { width: WIDTH, height: 900 } });
+if (process.env.WARM) { const w = await ctx.newPage(); await w.goto(process.env.ORIGIN + href, { waitUntil: "domcontentloaded", timeout: 180000 }); await w.waitForTimeout(9000); await w.close(); }
 const page = await ctx.newPage();
 await page.addInitScript(() => {
   window.__cls = [];

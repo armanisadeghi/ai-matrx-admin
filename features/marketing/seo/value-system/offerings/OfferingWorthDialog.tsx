@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -113,9 +114,16 @@ export function OfferingWorthDialog({
 
         <div className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label htmlFor="offering-worth-points" className="text-xs">
-              Points added to the baseline
-            </Label>
+            <span className="flex items-center gap-1">
+              <Label htmlFor="offering-worth-points" className="text-xs">
+                Points added to the baseline
+              </Label>
+              <AboutPeek
+                title="Points"
+                about="Every keyword placed on this offering or beneath it starts at the site baseline plus these points. Negative counts it down; there is no upper limit."
+              />
+            </span>
+            {/* ui-exception: points are a raw number */}
             <Input
               id="offering-worth-points"
               inputMode="decimal"
@@ -124,11 +132,7 @@ export function OfferingWorthDialog({
               placeholder={inherited ? String(inherited.worthPoints) : "0"}
               className="w-32" aria-invalid={trimmed !== "" && invalid}
             />
-            <p className="text-[11px] text-muted-foreground">
-              Every keyword placed on this offering, or beneath it, starts at
-              the site baseline plus these points. Use a negative number to
-              count it down. There is no upper limit.
-            </p>
+            <p className="text-[11px] text-muted-foreground">May be negative.</p>
           </div>
 
           <OptionRow
@@ -147,18 +151,20 @@ export function OfferingWorthDialog({
           {negative ? (
             <p className="flex items-start gap-1.5 rounded border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-[11px] leading-snug text-destructive-ink">
               <TriangleAlert className="mt-0.5 h-3 w-3 shrink-0" />
-              <span>
-                Keywords under this never count as wins. This ruling forces
-                every keyword beneath it to the Negative level, whatever the
-                points say.
-              </span>
+              <span>Keywords under this never count as wins.</span>
             </p>
           ) : null}
 
           <div className="grid gap-1.5">
-            <Label htmlFor="offering-worth-notes" className="text-xs">
-              Why is it worth this?
-            </Label>
+            <span className="flex items-center gap-1">
+              <Label htmlFor="offering-worth-notes" className="text-xs">
+                Why is it worth this?
+              </Label>
+              <AboutPeek
+                title="Worth reason"
+                about="Kept with the ruling, so the next person and every agent reads your reason."
+              />
+            </span>
             <ProTextarea
               id="offering-worth-notes"
               value={notes}
@@ -167,10 +173,6 @@ export function OfferingWorthDialog({
               rows={2}
               className="text-base sm:text-sm"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Kept with the ruling, so the next person and every agent reads
-              your reason instead of guessing it.
-            </p>
           </div>
         </div>
 

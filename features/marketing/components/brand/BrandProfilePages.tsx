@@ -11,16 +11,25 @@ import { Loader2, Plus, X } from "lucide-react";
 import { AutosaveIndicator } from "@/components/AutosaveIndicator";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useUnsavedChangesGuard } from "@/lib/navigation/useUnsavedChangesGuard";
 import { isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ProInput } from "@/components/official/ProInput";
 import { useBrand, useUpdateBrand } from "@/features/marketing/data/hooks";
-import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
+import {
+  LoadingSurface,
+  SectionCard,
+} from "@/features/marketing/components/shared/MarketingUi";
 import {
   HASHTAG_USES,
   displayHashtag,
@@ -65,17 +74,31 @@ function PageFrame({
   children: ReactNode;
 }) {
   // A typed-but-unsaved edit is never lost to a link, Back or a refresh.
-  useUnsavedChangesGuard({ when: dirty && !busy, what: `your changes to ${title}` });
+  useUnsavedChangesGuard({
+    when: dirty && !busy,
+    what: `your changes to ${title}`,
+  });
   return (
     <div className="h-full overflow-y-auto bg-textured">
-      <div className="mx-auto w-full max-w-4xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
+      <div className="mx-auto w-full max-w-6xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
         <header className="mb-3 flex items-center justify-between gap-3">
-          <h1 className="text-base font-semibold text-foreground" title={hint}>
-            {title}
-          </h1>
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-base font-semibold text-foreground">{title}</h1>
+            <AboutPeek title={title} about={hint} />
+          </div>
           <div className="flex items-center gap-3">
             <AutosaveIndicator
-              status={busy ? "saving" : dirty ? "unsaved" : saved.failed ? "error" : saved.savedAt ? "saved" : "idle"}
+              status={
+                busy
+                  ? "saving"
+                  : dirty
+                    ? "unsaved"
+                    : saved.failed
+                      ? "error"
+                      : saved.savedAt
+                        ? "saved"
+                        : "idle"
+              }
               lastSavedAt={saved.savedAt}
             />
             <Button
@@ -105,9 +128,10 @@ function Field({
 }) {
   return (
     <div className="grid gap-1.5">
-      <Label className="text-xs" title={hint}>
-        {label}
-      </Label>
+      <div className="flex items-center gap-1">
+        <Label className="text-xs">{label}</Label>
+        {hint ? <AboutPeek title={label} about={hint} /> : null}
+      </div>
       {children}
     </div>
   );
@@ -138,7 +162,10 @@ function Text({
   );
 }
 
-function useProfileSave(brand: MarketingBrand, report: (next: SaveReport) => void) {
+function useProfileSave(
+  brand: MarketingBrand,
+  report: (next: SaveReport) => void,
+) {
   const update = useUpdateBrand();
   const save = async (edited: BrandProfile) => {
     try {
@@ -151,7 +178,9 @@ function useProfileSave(brand: MarketingBrand, report: (next: SaveReport) => voi
       toast.success("Saved");
     } catch (error) {
       report({ savedAt: null, failed: true });
-      toast.error("Could not save", { description: extractErrorMessage(error) });
+      toast.error("Could not save", {
+        description: extractErrorMessage(error),
+      });
     }
   };
   return { save, busy: update.isPending };
@@ -163,22 +192,48 @@ function WithBrand({
   render,
 }: {
   brandId: string;
-  render: (brand: MarketingBrand, saved: SaveReport, report: (next: SaveReport) => void) => ReactNode;
+  render: (
+    brand: MarketingBrand,
+    saved: SaveReport,
+    report: (next: SaveReport) => void,
+  ) => ReactNode;
 }) {
   const brand = useBrand(brandId);
   // Held here, above the per-version remount, so "Saved" survives the editor restarting clean.
-  const [saved, setSaved] = useState<SaveReport>({ savedAt: null, failed: false });
+  const [saved, setSaved] = useState<SaveReport>({
+    savedAt: null,
+    failed: false,
+  });
   if (!brand.data) return <LoadingSurface label="Loading brand…" />;
-  return <div key={brand.data.version} className="contents">{render(brand.data, saved, setSaved)}</div>;
+  return (
+    <div key={brand.data.version} className="contents">
+      {render(brand.data, saved, setSaved)}
+    </div>
+  );
 }
 
 // ── Messaging ────────────────────────────────────────────────────────────
 
 export function BrandMessagingPage({ brandId }: { brandId: string }) {
-  return <WithBrand brandId={brandId} render={(brand, saved, report) => <MessagingEditor brand={brand} saved={saved} report={report} />} />;
+  return (
+    <WithBrand
+      brandId={brandId}
+      render={(brand, saved, report) => (
+        <MessagingEditor brand={brand} saved={saved} report={report} />
+      )}
+    />
+  );
 }
 
-function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; saved: SaveReport; report: (next: SaveReport) => void }) {
+function MessagingEditor({
+  brand,
+  saved,
+  report,
+}: {
+  brand: MarketingBrand;
+  saved: SaveReport;
+  report: (next: SaveReport) => void;
+}) {
   const stored = parseBrandProfile(brand.profile);
   const { save, busy } = useProfileSave(brand, report);
   const [mission, setMission] = useState(stored.mission ?? "");
@@ -190,21 +245,37 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
     thirty_second: stored.elevator_pitches?.thirty_second ?? "",
     sixty_second: stored.elevator_pitches?.sixty_second ?? "",
   });
-  const [pillars, setPillars] = useState<Array<{ title: string; proof: string }>>(
-    (stored.messaging_pillars ?? []).map((p) => ({ title: p.title, proof: p.proof_points.join("\n") })),
+  const [pillars, setPillars] = useState<
+    Array<{ title: string; proof: string }>
+  >(
+    (stored.messaging_pillars ?? []).map((p) => ({
+      title: p.title,
+      proof: p.proof_points.join("\n"),
+    })),
   );
   const [content, setContent] = useState<ContentPillar[]>(
-    (stored.content_pillars ?? []).map((p) => ({ name: p.name, description: p.description ?? "" })),
+    (stored.content_pillars ?? []).map((p) => ({
+      name: p.name,
+      description: p.description ?? "",
+    })),
   );
   const [tags, setTags] = useState<BrandHashtag[]>(stored.hashtags ?? []);
-  const [aliases, setAliases] = useState((stored.brand_aliases ?? []).join("\n"));
+  const [aliases, setAliases] = useState(
+    (stored.brand_aliases ?? []).join("\n"),
+  );
   const [usp, setUsp] = useState(stored.usp ?? "");
   const [promise, setPromise] = useState(stored.brand_promise ?? "");
-  const [personality, setPersonality] = useState((stored.personality ?? []).join("\n"));
+  const [personality, setPersonality] = useState(
+    (stored.personality ?? []).join("\n"),
+  );
   const [imagery, setImagery] = useState(stored.imagery_style ?? "");
   const [iconography, setIconography] = useState(stored.iconography ?? "");
-  const [vocabUse, setVocabUse] = useState((stored.vocabulary?.use ?? []).join("\n"));
-  const [vocabAvoid, setVocabAvoid] = useState((stored.vocabulary?.avoid ?? []).join("\n"));
+  const [vocabUse, setVocabUse] = useState(
+    (stored.vocabulary?.use ?? []).join("\n"),
+  );
+  const [vocabAvoid, setVocabAvoid] = useState(
+    (stored.vocabulary?.avoid ?? []).join("\n"),
+  );
 
   const edited: BrandProfile = {
     ...stored,
@@ -217,9 +288,10 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
       thirty_second: pitches.thirty_second.trim() || undefined,
       sixty_second: pitches.sixty_second.trim() || undefined,
     },
-    messaging_pillars: pillars.map(
-      (p): MessagingPillar => ({ title: p.title, proof_points: lines(p.proof) }),
-    ),
+    messaging_pillars: pillars.map((p): MessagingPillar => ({
+      title: p.title,
+      proof_points: lines(p.proof),
+    })),
     content_pillars: content,
     hashtags: tags,
     brand_aliases: lines(aliases),
@@ -242,155 +314,332 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
       onSave={() => void save(edited)}
       saved={saved}
     >
-      <Card className="grid gap-3 p-4 sm:grid-cols-2">
-        <Field label="Mission" hint="Why the brand exists, today">
-          <Text label="Mission" value={mission} onChange={setMission} rows={3} />
-        </Field>
-        <Field label="Vision" hint="What the world looks like if it succeeds">
-          <Text label="Vision" value={vision} onChange={setVision} rows={3} />
-        </Field>
-        <Field label="Values (one per line)">
-          <Text label="Values" value={values} onChange={setValues} rows={4} />
-        </Field>
-        <Field label={isPersonBrand(brand) ? "Story" : "Brand story"}>
-          <Text label="Story" value={story} onChange={setStory} rows={4} />
-        </Field>
-      </Card>
+      <SectionCard
+        title="Purpose"
+        about="Why the brand exists, what it stands for and its story."
+      >
+        <div className="grid gap-3 p-3 sm:grid-cols-2">
+          <Field label="Mission" hint="Why the brand exists, today">
+            <Text
+              label="Mission"
+              value={mission}
+              onChange={setMission}
+              rows={3}
+            />
+          </Field>
+          <Field label="Vision" hint="What the world looks like if it succeeds">
+            <Text label="Vision" value={vision} onChange={setVision} rows={3} />
+          </Field>
+          <Field label="Values (one per line)" hint="What the brand holds to">
+            <Text label="Values" value={values} onChange={setValues} rows={4} />
+          </Field>
+          <Field
+            label={isPersonBrand(brand) ? "Story" : "Brand story"}
+            hint="The brand story, in short"
+          >
+            <Text label="Story" value={story} onChange={setStory} rows={4} />
+          </Field>
+        </div>
+      </SectionCard>
 
-      <Card className="grid gap-3 p-4 sm:grid-cols-2">
-        <Field label="Also known as (one per line)" hint="Other names, spellings and abbreviations">
-          <Text label="Aliases" value={aliases} onChange={setAliases} rows={3} />
-        </Field>
-        <Field label="Personality (one per line)" hint="Traits, e.g. warm, expert, direct">
-          <Text label="Personality" value={personality} onChange={setPersonality} rows={3} />
-        </Field>
-        <Field label="Unique selling point" hint="What only this brand offers">
-          <Text label="Unique selling point" value={usp} onChange={setUsp} rows={2} />
-        </Field>
-        <Field label="Brand promise" hint="What every customer can count on">
-          <Text label="Brand promise" value={promise} onChange={setPromise} rows={2} />
-        </Field>
-        <Field label="Imagery style" hint="Photos and visuals the brand uses">
-          <Text label="Imagery style" value={imagery} onChange={setImagery} rows={2} />
-        </Field>
-        <Field label="Iconography" hint="Icon style">
-          <Text label="Iconography" value={iconography} onChange={setIconography} rows={2} />
-        </Field>
-        <Field label="Words we use (one per line)">
-          <Text label="Words we use" value={vocabUse} onChange={setVocabUse} rows={3} />
-        </Field>
-        <Field label="Words we avoid (one per line)">
-          <Text label="Words we avoid" value={vocabAvoid} onChange={setVocabAvoid} rows={3} />
-        </Field>
-      </Card>
+      <SectionCard
+        title="Voice and identity"
+        about="Names, personality, promise, visual style and the words the brand uses or avoids."
+      >
+        <div className="grid gap-3 p-3 sm:grid-cols-2">
+          <Field
+            label="Also known as (one per line)"
+            hint="Other names, spellings and abbreviations"
+          >
+            <Text
+              label="Aliases"
+              value={aliases}
+              onChange={setAliases}
+              rows={3}
+            />
+          </Field>
+          <Field
+            label="Personality (one per line)"
+            hint="Traits, e.g. warm, expert, direct"
+          >
+            <Text
+              label="Personality"
+              value={personality}
+              onChange={setPersonality}
+              rows={3}
+            />
+          </Field>
+          <Field
+            label="Unique selling point"
+            hint="What only this brand offers"
+          >
+            <Text
+              label="Unique selling point"
+              value={usp}
+              onChange={setUsp}
+              rows={2}
+            />
+          </Field>
+          <Field label="Brand promise" hint="What every customer can count on">
+            <Text
+              label="Brand promise"
+              value={promise}
+              onChange={setPromise}
+              rows={2}
+            />
+          </Field>
+          <Field label="Imagery style" hint="Photos and visuals the brand uses">
+            <Text
+              label="Imagery style"
+              value={imagery}
+              onChange={setImagery}
+              rows={2}
+            />
+          </Field>
+          <Field label="Iconography" hint="Icon style">
+            <Text
+              label="Iconography"
+              value={iconography}
+              onChange={setIconography}
+              rows={2}
+            />
+          </Field>
+          <Field label="Words we use (one per line)" hint="Preferred terms">
+            <Text
+              label="Words we use"
+              value={vocabUse}
+              onChange={setVocabUse}
+              rows={3}
+            />
+          </Field>
+          <Field label="Words we avoid (one per line)" hint="Terms to keep out">
+            <Text
+              label="Words we avoid"
+              value={vocabAvoid}
+              onChange={setVocabAvoid}
+              rows={3}
+            />
+          </Field>
+        </div>
+      </SectionCard>
 
-      <Card className="grid gap-3 p-4">
-        <h2 className="text-sm font-medium text-foreground">Elevator pitches</h2>
-        <Field label="10 seconds">
-          <Text label="10 second pitch" value={pitches.ten_second} onChange={(v) => setPitches({ ...pitches, ten_second: v })} />
-        </Field>
-        <Field label="30 seconds">
-          <Text label="30 second pitch" value={pitches.thirty_second} onChange={(v) => setPitches({ ...pitches, thirty_second: v })} rows={3} />
-        </Field>
-        <Field label="60 seconds">
-          <Text label="60 second pitch" value={pitches.sixty_second} onChange={(v) => setPitches({ ...pitches, sixty_second: v })} rows={4} />
-        </Field>
-      </Card>
+      <SectionCard
+        title="Elevator pitches"
+        about="The brand in 10, 30 and 60 seconds, for when someone asks what you do."
+      >
+        <div className="grid gap-3 p-3">
+          <Field label="10 seconds" hint="The one-breath version">
+            <Text
+              label="10 second pitch"
+              value={pitches.ten_second}
+              onChange={(v) => setPitches({ ...pitches, ten_second: v })}
+            />
+          </Field>
+          <Field label="30 seconds" hint="The short version">
+            <Text
+              label="30 second pitch"
+              value={pitches.thirty_second}
+              onChange={(v) => setPitches({ ...pitches, thirty_second: v })}
+              rows={3}
+            />
+          </Field>
+          <Field label="60 seconds" hint="The full version">
+            <Text
+              label="60 second pitch"
+              value={pitches.sixty_second}
+              onChange={(v) => setPitches({ ...pitches, sixty_second: v })}
+              rows={4}
+            />
+          </Field>
+        </div>
+      </SectionCard>
 
-      <Card className="grid gap-3 p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">Messaging pillars</h2>
-          <Button variant="quiet" icon={<Plus />} onClick={() => setPillars([...pillars, { title: "", proof: "" }])}>
+      <SectionCard
+        title="Messaging pillars"
+        about="The few big ideas every message returns to, each with the proof behind it."
+        headerExtra={
+          <Button
+            variant="quiet"
+            icon={<Plus />}
+            onClick={() => setPillars([...pillars, { title: "", proof: "" }])}
+          >
             Add
           </Button>
-        </div>
-        {pillars.map((pillar, index) => (
-          <div key={index} className="grid gap-2 rounded-lg border border-border p-3">
-            <div className="flex items-center gap-2">
-              <ProInput
-                aria-label="Pillar title"
-                value={pillar.title}
-                placeholder="Certified, documented destruction"
-                onChange={(event) =>
-                  setPillars(pillars.map((p, i) => (i === index ? { ...p, title: event.target.value } : p)))
+        }
+      >
+        <div className="grid gap-3 p-3">
+          {pillars.map((pillar, index) => (
+            <div
+              key={index}
+              className="grid gap-2 rounded-lg border border-border p-3"
+            >
+              <div className="flex items-center gap-2">
+                <ProInput
+                  aria-label="Pillar title"
+                  value={pillar.title}
+                  placeholder="Certified, documented destruction"
+                  onChange={(event) =>
+                    setPillars(
+                      pillars.map((p, i) =>
+                        i === index ? { ...p, title: event.target.value } : p,
+                      ),
+                    )
+                  }
+                />
+                <Button
+                  variant="quiet"
+                  aria-label="Remove pillar"
+                  icon={<X />}
+                  onClick={() =>
+                    setPillars(pillars.filter((_, i) => i !== index))
+                  }
+                />
+              </div>
+              <Text
+                label="Proof points, one per line"
+                placeholder="Proof points, one per line"
+                value={pillar.proof}
+                rows={3}
+                onChange={(v) =>
+                  setPillars(
+                    pillars.map((p, i) =>
+                      i === index ? { ...p, proof: v } : p,
+                    ),
+                  )
                 }
               />
-              <Button variant="quiet" aria-label="Remove pillar" icon={<X />} onClick={() => setPillars(pillars.filter((_, i) => i !== index))} />
             </div>
-            <Text
-              label="Proof points, one per line"
-              placeholder="Proof points, one per line"
-              value={pillar.proof}
-              rows={3}
-              onChange={(v) => setPillars(pillars.map((p, i) => (i === index ? { ...p, proof: v } : p)))}
-            />
-          </div>
-        ))}
-      </Card>
+          ))}
+        </div>
+      </SectionCard>
 
-      <Card className="grid gap-3 p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">Content pillars</h2>
-          <Button variant="quiet" icon={<Plus />} onClick={() => setContent([...content, { name: "", description: "" }])}>
+      <SectionCard
+        title="Content pillars"
+        about="Recurring themes the brand publishes about."
+        headerExtra={
+          <Button
+            variant="quiet"
+            icon={<Plus />}
+            onClick={() =>
+              setContent([...content, { name: "", description: "" }])
+            }
+          >
             Add
           </Button>
+        }
+      >
+        <div className="grid gap-3 p-3">
+          {content.map((pillar, index) => (
+            <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+              <ProInput
+                aria-label="Content pillar name"
+                value={pillar.name}
+                placeholder="Compliance explained"
+                onChange={(event) =>
+                  setContent(
+                    content.map((p, i) =>
+                      i === index ? { ...p, name: event.target.value } : p,
+                    ),
+                  )
+                }
+              />
+              <ProInput
+                aria-label="Content pillar description"
+                value={pillar.description ?? ""}
+                placeholder="What this theme covers"
+                onChange={(event) =>
+                  setContent(
+                    content.map((p, i) =>
+                      i === index
+                        ? { ...p, description: event.target.value }
+                        : p,
+                    ),
+                  )
+                }
+              />
+              <Button
+                variant="quiet"
+                aria-label="Remove content pillar"
+                icon={<X />}
+                onClick={() =>
+                  setContent(content.filter((_, i) => i !== index))
+                }
+              />
+            </div>
+          ))}
         </div>
-        {content.map((pillar, index) => (
-          <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
-            <ProInput
-              aria-label="Content pillar name"
-              value={pillar.name}
-              placeholder="Compliance explained"
-              onChange={(event) => setContent(content.map((p, i) => (i === index ? { ...p, name: event.target.value } : p)))}
-            />
-            <ProInput
-              aria-label="Content pillar description"
-              value={pillar.description ?? ""}
-              placeholder="What this theme covers"
-              onChange={(event) => setContent(content.map((p, i) => (i === index ? { ...p, description: event.target.value } : p)))}
-            />
-            <Button variant="quiet" aria-label="Remove content pillar" icon={<X />} onClick={() => setContent(content.filter((_, i) => i !== index))} />
-          </div>
-        ))}
-      </Card>
+      </SectionCard>
 
-      <Card className="grid gap-3 p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">Hashtags</h2>
-          <Button variant="quiet" icon={<Plus />} onClick={() => setTags([...tags, { tag: "", use: "branded" }])}>
+      <SectionCard
+        title="Hashtags"
+        about="Tags the brand owns or follows, and how each is used."
+        headerExtra={
+          <Button
+            variant="quiet"
+            icon={<Plus />}
+            onClick={() => setTags([...tags, { tag: "", use: "branded" }])}
+          >
             Add
           </Button>
+        }
+      >
+        <div className="grid gap-3 p-3">
+          {tags.map((entry, index) => (
+            <div key={index} className="grid grid-cols-[1fr_9rem_auto] gap-2">
+              {/* ui-exception: a hashtag is a raw social identifier */}
+              <Input
+                aria-label="Hashtag"
+                value={displayHashtag(entry.tag)}
+                placeholder="#ShredItRight"
+                onChange={(event) =>
+                  setTags(
+                    tags.map((t, i) =>
+                      i === index ? { ...t, tag: event.target.value } : t,
+                    ),
+                  )
+                }
+              />
+              <Select
+                value={entry.use}
+                onValueChange={(value) =>
+                  setTags(
+                    tags.map((t, i) =>
+                      i === index
+                        ? {
+                            ...t,
+                            use:
+                              HASHTAG_USES.find((u) => u === value) ??
+                              "branded",
+                          }
+                        : t,
+                    ),
+                  )
+                }
+              >
+                <SelectTrigger
+                  aria-label="Hashtag use"
+                  className="h-9 text-base sm:text-sm"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {HASHTAG_USES.map((use) => (
+                    <SelectItem key={use} value={use}>
+                      {use[0].toUpperCase() + use.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="quiet"
+                aria-label="Remove hashtag"
+                icon={<X />}
+                onClick={() => setTags(tags.filter((_, i) => i !== index))}
+              />
+            </div>
+          ))}
         </div>
-        {tags.map((entry, index) => (
-          <div key={index} className="grid grid-cols-[1fr_9rem_auto] gap-2">
-            {/* ui-exception: a hashtag is a raw social identifier */}
-            <Input
-              aria-label="Hashtag"
-              value={displayHashtag(entry.tag)}
-              placeholder="#ShredItRight"
-              onChange={(event) => setTags(tags.map((t, i) => (i === index ? { ...t, tag: event.target.value } : t)))}
-            />
-            <Select
-              value={entry.use}
-              onValueChange={(value) =>
-                setTags(tags.map((t, i) => (i === index ? { ...t, use: HASHTAG_USES.find((u) => u === value) ?? "branded" } : t)))
-              }
-            >
-              <SelectTrigger aria-label="Hashtag use" className="h-9 text-base sm:text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {HASHTAG_USES.map((use) => (
-                  <SelectItem key={use} value={use}>
-                    {use[0].toUpperCase() + use.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="quiet" aria-label="Remove hashtag" icon={<X />} onClick={() => setTags(tags.filter((_, i) => i !== index))} />
-          </div>
-        ))}
-      </Card>
+      </SectionCard>
     </PageFrame>
   );
 }
@@ -398,15 +647,36 @@ function MessagingEditor({ brand, saved, report }: { brand: MarketingBrand; save
 // ── Claims & compliance ──────────────────────────────────────────────────
 
 export function BrandClaimsPage({ brandId }: { brandId: string }) {
-  return <WithBrand brandId={brandId} render={(brand, saved, report) => <ClaimsEditor brand={brand} saved={saved} report={report} />} />;
+  return (
+    <WithBrand
+      brandId={brandId}
+      render={(brand, saved, report) => (
+        <ClaimsEditor brand={brand} saved={saved} report={report} />
+      )}
+    />
+  );
 }
 
-function ClaimsEditor({ brand, saved, report }: { brand: MarketingBrand; saved: SaveReport; report: (next: SaveReport) => void }) {
+function ClaimsEditor({
+  brand,
+  saved,
+  report,
+}: {
+  brand: MarketingBrand;
+  saved: SaveReport;
+  report: (next: SaveReport) => void;
+}) {
   const stored = parseBrandProfile(brand.profile);
   const { save, busy } = useProfileSave(brand, report);
-  const [approved, setApproved] = useState((stored.approved_claims ?? []).join("\n"));
-  const [forbidden, setForbidden] = useState((stored.forbidden_claims ?? []).join("\n"));
-  const [disclaimers, setDisclaimers] = useState((stored.disclaimers ?? []).join("\n"));
+  const [approved, setApproved] = useState(
+    (stored.approved_claims ?? []).join("\n"),
+  );
+  const [forbidden, setForbidden] = useState(
+    (stored.forbidden_claims ?? []).join("\n"),
+  );
+  const [disclaimers, setDisclaimers] = useState(
+    (stored.disclaimers ?? []).join("\n"),
+  );
   const edited: BrandProfile = {
     ...stored,
     approved_claims: lines(approved),
@@ -414,28 +684,65 @@ function ClaimsEditor({ brand, saved, report }: { brand: MarketingBrand; saved: 
     disclaimers: lines(disclaimers),
   };
   const dirty =
-    JSON.stringify([edited.approved_claims, edited.forbidden_claims, edited.disclaimers]) !==
-    JSON.stringify([stored.approved_claims ?? [], stored.forbidden_claims ?? [], stored.disclaimers ?? []]);
+    JSON.stringify([
+      edited.approved_claims,
+      edited.forbidden_claims,
+      edited.disclaimers,
+    ]) !==
+    JSON.stringify([
+      stored.approved_claims ?? [],
+      stored.forbidden_claims ?? [],
+      stored.disclaimers ?? [],
+    ]);
   return (
     <PageFrame
       title={`${brand.name} · Claims`}
-      hint="What may be said, what never may, and the legal wording that goes with it"
+      hint="What may be said, what never may, and the legal wording"
       busy={busy}
       dirty={dirty}
       onSave={() => void save(edited)}
       saved={saved}
     >
-      <Card className="grid gap-3 p-4">
-        <Field label="Approved claims (one per line)" hint="Statements the brand can make as written">
-          <Text label="Approved claims" value={approved} onChange={setApproved} rows={3} />
-        </Field>
-        <Field label="Forbidden claims (one per line)" hint="Never say these, in any channel">
-          <Text label="Forbidden claims" value={forbidden} onChange={setForbidden} rows={3} />
-        </Field>
-        <Field label="Disclaimers (one per line)" hint="Required wording to attach where it applies">
-          <Text label="Disclaimers" value={disclaimers} onChange={setDisclaimers} rows={3} />
-        </Field>
-      </Card>
+      <SectionCard
+        title="Claims"
+        about="What may be said as written, what must never be said, and the required legal wording."
+      >
+        <div className="grid gap-3 p-3">
+          <Field
+            label="Approved claims (one per line)"
+            hint="Statements the brand can make as written"
+          >
+            <Text
+              label="Approved claims"
+              value={approved}
+              onChange={setApproved}
+              rows={3}
+            />
+          </Field>
+          <Field
+            label="Forbidden claims (one per line)"
+            hint="Never say these, in any channel"
+          >
+            <Text
+              label="Forbidden claims"
+              value={forbidden}
+              onChange={setForbidden}
+              rows={3}
+            />
+          </Field>
+          <Field
+            label="Disclaimers (one per line)"
+            hint="Required wording to attach where it applies"
+          >
+            <Text
+              label="Disclaimers"
+              value={disclaimers}
+              onChange={setDisclaimers}
+              rows={3}
+            />
+          </Field>
+        </div>
+      </SectionCard>
     </PageFrame>
   );
 }

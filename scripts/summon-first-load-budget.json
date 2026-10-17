@@ -1,0 +1,18 @@
+{
+  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs). Ratchet only down (--update). 2026-10-17 before the fix: /notes 323466, /dashboard 321775, /pricing 294513.",
+  "forbidden": [
+    "^summon/window/(WindowPanel|WindowSidebar|LayoutIcon|useWindowPanel|icons)",
+    "^summon/window/(chrome|mobile|utils|tray/TrayChip)",
+    "^summon/window/popout/(?!PopoutContext|usePopoutContainer)",
+    "^summon/lite",
+    "^summon/url",
+    "^summon/persistence",
+    "^summon/(dialog|sheet|testing)",
+    "^app:features/overlays/definitions/(registry|register|overlay-definitions\\.gen|render-map)"
+  ],
+  "routes": {
+    "(core)/notes": 400000,
+    "(core)/dashboard": 400000,
+    "(public)/pricing": 400000
+  }
+}

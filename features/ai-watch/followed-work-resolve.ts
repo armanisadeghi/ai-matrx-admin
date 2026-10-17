@@ -105,6 +105,8 @@ interface TestResultRow {
   verdict_reason: string | null;
   conversation_id: string | null;
   user_request_ids: string[] | null;
+  /** `outcome.judge` carries the fact judge's own call ids (server `agent_tests` judge step). */
+  outcome?: { judge?: { conversation_id?: string | null; request_id?: string | null; verdict?: string | null; model?: string | null } | null } | null;
 }
 
 /** An eval run: one step per case result (its answer run) with the judge's verdict beside it. */
@@ -115,15 +117,30 @@ export function resolveTestRun(
   readAt = Date.now(),
 ): Resolved {
   const status = typeof run?.status === "string" ? run.status : null;
-  const steps: FollowedStep[] = results.map((r) => ({
-    id: `result.${r.id}`,
-    label: `case ${r.case_id ?? r.id.slice(0, 8)}`,
-    status: r.verdict ?? r.status,
-    mandateKey: null,
-    userRequestId: r.user_request_ids?.[0] ?? null,
-    conversationId: r.conversation_id,
-    record: r,
-  }));
+  const steps: FollowedStep[] = [];
+  for (const r of results) {
+    steps.push({
+      id: `result.${r.id}`,
+      label: `case ${r.case_id ?? r.id.slice(0, 8)}`,
+      status: r.verdict ?? r.status,
+      mandateKey: null,
+      userRequestId: r.user_request_ids?.[0] ?? null,
+      conversationId: r.conversation_id,
+      record: r,
+    });
+    const judge = r.outcome?.judge;
+    if (judge && (judge.conversation_id || judge.request_id)) {
+      steps.push({
+        id: `judge.${r.id}`,
+        label: `fact judge · case ${r.case_id ?? r.id.slice(0, 8)}`,
+        status: judge.verdict ?? null,
+        mandateKey: "agent_tests.fact_judge",
+        userRequestId: judge.request_id ?? null,
+        conversationId: judge.conversation_id ?? null,
+        record: judge,
+      });
+    }
+  }
   return {
     key: work.key,
     kind: "test_run",
@@ -134,8 +151,8 @@ export function resolveTestRun(
     inputs: run,
     state: { result_count: results.length },
     steps,
-    userRequestIds: uniq(results.flatMap((r) => r.user_request_ids ?? [])),
-    conversationIds: uniq(results.map((r) => r.conversation_id)),
+    userRequestIds: uniq(steps.map((st) => st.userRequestId).concat(results.flatMap((r) => r.user_request_ids ?? []))),
+    conversationIds: uniq(steps.map((st) => st.conversationId)),
     readAt,
   };
 }
@@ -153,7 +170,7 @@ export async function readFollowed(work: FollowedWork): Promise<Resolved> {
       supabase
         .schema("agent")
         .from("test_result")
-        .select("id, case_id, status, verdict, verdict_reason, conversation_id, user_request_ids")
+        .select("id, case_id, status, verdict, verdict_reason, conversation_id, user_request_ids, outcome")
         .eq("test_run_id", work.id)
         .limit(500),
     ]);

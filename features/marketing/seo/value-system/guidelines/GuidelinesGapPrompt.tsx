@@ -29,6 +29,7 @@ import {
   getKwGuidelines,
   kwGuidelinesQueryKey,
 } from "@/features/marketing/search-console/data-kw-guidelines";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
 import { GuidelinesDraftButton } from "./GuidelinesDraft";
 
 /** The one staleness line, shared with `seo.gsc_site_meaning_health`. */
@@ -62,7 +63,8 @@ export function GuidelinesGapPrompt({
 
   const text = stored.data.guidelines?.trim() ?? "";
   const age = daysSinceGuidelinesEdit(stored.data.updated_at);
-  const stale = text.length > 0 && age !== null && age > GUIDELINES_STALE_AFTER_DAYS;
+  const stale =
+    text.length > 0 && age !== null && age > GUIDELINES_STALE_AFTER_DAYS;
   if (text.length > 0 && !stale) return null;
 
   const href = marketingRoutes.site(brandId, siteId, "/value/guidelines");
@@ -70,7 +72,7 @@ export function GuidelinesGapPrompt({
   return (
     <section
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2.5",
+        "flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2",
         stale
           ? "border-warning/40 bg-warning/5"
           : "border-primary/30 bg-primary/5",
@@ -82,27 +84,19 @@ export function GuidelinesGapPrompt({
       ) : (
         <BookOpenCheck className="h-4 w-4 shrink-0 text-primary" />
       )}
-      <p className="min-w-0 flex-1 text-xs leading-snug text-foreground">
-        {stale ? (
-          <>
-            <span className="font-medium">
-              Your business guidelines have not been edited in {age} days.
-            </span>{" "}
-            The AI still rules on every keyword from that text, so a sentence
-            that stopped being true keeps deciding things. Re-read it before
-            the next classification sweep.
-          </>
-        ) : (
-          <>
-            <span className="font-medium">
-              You have told the AI nothing about this business.
-            </span>{" "}
-            Every AI run reads one plain-text document about what you sell and
-            who you serve before it judges a keyword — and yours is empty, so
-            every answer comes from universal signals alone.
-          </>
-        )}
+      <p className="min-w-0 flex-1 text-xs font-medium text-foreground">
+        {stale
+          ? `Business guidelines not edited in ${age} days.`
+          : "No business guidelines yet."}
       </p>
+      <AboutPeek
+        title="Business guidelines"
+        about={
+          stale
+            ? "The AI still rules on every keyword from that text, so a sentence that stopped being true keeps deciding things. Re-read it before the next classification sweep."
+            : "Every AI run reads one plain-text document about what you sell and who you serve before it judges a keyword. Yours is empty, so every answer comes from universal signals alone."
+        }
+      />
       <span className="flex shrink-0 items-center gap-1.5">
         <GuidelinesDraftButton siteId={siteId} hasDocument={stale} />
         <Link

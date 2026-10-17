@@ -20,7 +20,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { AboutPeek } from "@/features/marketing/components/shared/AboutPeek";
+import { ProInput } from "@/components/official/ProInput";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { cn } from "@/styles/themes/utils";
@@ -102,7 +103,7 @@ export function OfferingEditDialog({
             <Label htmlFor="offering-name" className="text-xs">
               Name
             </Label>
-            <Input
+            <ProInput
               id="offering-name"
               autoFocus
               value={name}
@@ -137,16 +138,19 @@ export function OfferingEditDialog({
           </div>
 
           <div className="grid gap-1.5">
-            <Label htmlFor="offering-parent-search" className="text-xs">
-              Part of
-            </Label>
-            <p className="text-[11px] text-muted-foreground">
-              {parentName
-                ? `Sits under “${parentName}” in this brand's catalog.`
-                : "The top of its own branch."}{" "}
-              This only organizes the catalog; each site still chooses what it offers.
+            <span className="flex items-center gap-1">
+              <Label htmlFor="offering-parent-search" className="text-xs">
+                Part of
+              </Label>
+              <AboutPeek
+                title="Part of"
+                about="Organizes the catalog only; each site still chooses what it offers."
+              />
+            </span>
+            <p className="type-secondary text-muted-foreground">
+              {parentName ? `Under “${parentName}”` : "Top of its own branch"}
             </p>
-            <Input
+            <ProInput
               id="offering-parent-search"
               value={parentSearch}
               onChange={(event) => setParentSearch(event.target.value)}

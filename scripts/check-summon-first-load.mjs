@@ -41,7 +41,7 @@ export function groupOf(source) {
   const s = source.replace(/\\/g, "/");
   const pkg = s.match(/@ai-matrx\/summon\/(?:dist|src)\/(.+)$/);
   if (pkg) return `summon/${pkg[1]}`;
-  const def = s.match(/features\/overlays\/(definitions|host)\//);
+  const def = s.match(/features\/overlays\/((?:definitions|host)\/.+)$/);
   if (def) return `app:features/overlays/${def[1]}`;
   return null;
 }
@@ -60,13 +60,18 @@ function routeChunks(route) {
 }
 
 const perChunk = new Map();
+let mapped = 0;
 function attribute(chunk) {
   if (perChunk.has(chunk)) return perChunk.get(chunk);
   const { SourceMapConsumer } = require("source-map-js");
   const js = readFileSync(join(nextDir, chunk), "utf8");
   const url = (js.match(/\/\/# sourceMappingURL=(\S+)\s*$/) ?? [])[1];
   const mapFile = url ? join(nextDir, dirname(chunk), url) : null;
-  if (!mapFile || !existsSync(mapFile)) die(2, `${chunk} has no source map: rebuild with \`scripts/build-lab/run.sh <label> --maps\``);
+  if (!mapFile || !existsSync(mapFile)) {
+    perChunk.set(chunk, new Map()); // polyfills ship without a map; a build with none at all fails below
+    return perChunk.get(chunk);
+  }
+  mapped += 1;
   const lines = js.split("\n");
   const smc = new SourceMapConsumer(JSON.parse(readFileSync(mapFile, "utf8")));
   const maps = [];
@@ -110,6 +115,7 @@ const forbidden = budget.forbidden.map((p) => new RegExp(p));
 let failed = false;
 for (const [route, allowed] of Object.entries(budget.routes)) {
   const { rows, total } = measure(route);
+  if (mapped === 0) die(2, "no first-load chunk has a source map: rebuild with `scripts/build-lab/run.sh <label> --maps`");
   const bad = rows.filter((r) => forbidden.some((re) => re.test(r.g)));
   const gz = rows.reduce((a, r) => a + r.gz, 0);
   console.log(`${route}: summon + overlay app code ${total} B min (~${gz} B gz), budget ${allowed} B min`);

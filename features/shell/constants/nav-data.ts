@@ -1894,6 +1894,7 @@ export const primaryNavItems: ShellNavItem[] = [
       // Not exact: every /user-settings/* page lights Account, not only the landing.
       { label: "Settings", href: SETTINGS_BASE, iconName: "Settings", color: "slate", group: "You" },
       { label: "Welcome", href: "/welcome", iconName: "Rocket", guestHidden: true, group: "You" },
+      { label: "Meet Matrx", href: "/meet-matrx", iconName: "Compass", guestHidden: true, group: "You" },
       { label: "Access Log", href: "/me/access-log", iconName: "Eye", guestHidden: true, group: "You" },
       { label: "Bring Your Export", href: "/exports", iconName: "FileInput", guestHidden: true, group: "You" },
       { label: "Trash", href: "/trash", iconName: "Trash2", exact: true, color: "slate", guestHidden: true, group: "You" },
