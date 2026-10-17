@@ -208,6 +208,8 @@ export const STUDIO_BOARD_SETTING = "studio_brand_id";
 export const PARENT_BOARD_SETTING = "parent_board_id";
 export const LAYOUT_SETTING = "layout";
 export const CANVAS_LAYOUT_SETTING = "canvas_layout";
+/** The page's chapter order (frame ids) as page layout was last left: page layout comes back in it. */
+export const CHAPTER_ORDER_SETTING = "chapter_order";
 export const DEFAULT_PAGE_TITLE = "Untitled page";
 
 export function parentBoardIdOf(settings: Json | JsonObject | null | undefined): string | null {

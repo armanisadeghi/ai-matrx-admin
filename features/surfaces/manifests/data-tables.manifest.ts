@@ -32,6 +32,7 @@ import type {
   SurfaceWriteTarget,
 } from "@ai-matrx/chat/surfaces/types";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { TABLE_CHAT_ROLE } from "./data-tables.chat-role";
 import { FIELD_DATA_TYPES } from "@/features/data-tables/types";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
@@ -490,15 +491,7 @@ is_read_only tells you whether you may write at all; on a shared table you can r
       // open table and proposes the page's two writes (table_description, one cell) for a confirm.
       // Already runs from the per-record chat (RecordScopedChat); disclosed here so it shows in the top
       // Agents menu on the table page.
-      name: "table_chat",
-      label: "Table chat",
-      description:
-        "Answers questions about this whole table from what is on screen, and proposes a table description or a single-cell edit for you to confirm.",
-      kind: "single",
-      mandateKey: MANDATE_KEYS.data__table_chat,
-      defaultAgentId: null,
-      autoRun: "never",
-      sortOrder: 90,
+      ...TABLE_CHAT_ROLE,
     },
   ],
 };

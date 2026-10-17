@@ -12,8 +12,11 @@ import { useEffect, useRef } from "react";
 import type { BoardCameraStore } from "../engine/camera-store";
 import { type Rect, screenToWorld } from "../engine/camera";
 import { boundsOfPoints, isConnector } from "../engine/shapes";
+import type { JsonValue } from "@/types/json";
+import { CANVAS_LAYOUT_SETTING, CHAPTER_ORDER_SETTING, LAYOUT_SETTING } from "../persistence/boardsService";
 import {
   type BoardLayoutMode,
+  interruptedLeave,
   type CanvasSnapshot,
   canvasSnapshot,
   chapterOrder,
@@ -49,7 +52,8 @@ export function usePageLayout<T extends BoardTileBase>({
   store,
   layout,
   snapshot,
-  onKeepCanvas,
+  chapterOrder: storedOrder,
+  saveLayout,
   restoredView,
 }: {
   board: BoardStore<T>;
@@ -57,31 +61,67 @@ export function usePageLayout<T extends BoardTileBase>({
   layout: BoardLayoutMode;
   /** The kept canvas positions (settings), read when leaving page layout. */
   snapshot: CanvasSnapshot | null;
-  onKeepCanvas?: (snapshot: CanvasSnapshot | null) => void;
+  /** The page's chapter order as it was last left (settings), applied when page layout comes back. */
+  chapterOrder: readonly string[] | null;
+  /**
+   * Write the layout settings in ONE write and resolve only once it landed (not optimistic): the
+   * layout prop flips after it, so nothing re-lays before the canvas is safely kept.
+   */
+  saveLayout?: (patch: Record<string, JsonValue | null>) => Promise<void>;
   /** The board opened at the viewer's own last view (keep it, rather than opening at the top). */
   restoredView: boolean;
 }) {
   const snapshotRef = useRef(snapshot);
-  const keepRef = useRef(onKeepCanvas);
+  const orderRef = useRef(storedOrder);
   useEffect(() => {
     snapshotRef.current = snapshot;
-    keepRef.current = onKeepCanvas;
+    orderRef.current = storedOrder;
   });
+  /** The chapter order the next page arrangement applies (set on the switch into page layout). */
+  const entryOrder = useRef<readonly string[] | null>(null);
 
-  // ── switching: keep the canvas on the way in, put it back on the way out ──
+  /**
+   * Switch layouts. Into page layout: the canvas positions and the layout go out in ONE settings
+   * write, and the board re-lays only after it landed (a failed write leaves the canvas as it was
+   * and rejects). Back to canvas: the layout and the page's chapter order are written, then the
+   * kept canvas is put back. The kept canvas is never deleted (the next switch in replaces it).
+   */
+  const switchLayout = async (next: BoardLayoutMode): Promise<void> => {
+    if (next === layout) return;
+    if (!saveLayout) throw new Error("This board cannot change its layout.");
+    if (next === "page") {
+      const kept = canvasSnapshot(pageScene(board));
+      await saveLayout({ [LAYOUT_SETTING]: "page", [CANVAS_LAYOUT_SETTING]: kept as unknown as JsonValue });
+      return;
+    }
+    const order = chapterOrder(board.read().frames).map((f) => f.id);
+    await saveLayout({ [LAYOUT_SETTING]: null, [CHAPTER_ORDER_SETTING]: order });
+  };
+
+  // ── switching landed: re-lay (page) or put the canvas back (canvas) ───────
   const was = useRef(layout);
   useEffect(() => {
     const before = was.current;
     was.current = layout;
-    if (before === layout) return;
+    if (before === layout) {
+      // Opening on the canvas after a switch back that did not finish saving: finish it.
+      if (layout === "canvas" && interruptedLeave(pageScene(board), snapshotRef.current, orderRef.current)) {
+        board.reflow(restoreCanvas(pageScene(board), snapshotRef.current!));
+        board.clearHistory();
+      }
+      return;
+    }
+    // Undo never crosses a layout switch (an older step holds the other layout's positions).
+    board.clearHistory();
     if (layout === "page") {
-      keepRef.current?.(canvasSnapshot(pageScene(board)));
+      entryOrder.current = orderRef.current;
       return;
     }
     const kept = snapshotRef.current;
     if (kept) board.reflow(restoreCanvas(pageScene(board), kept));
-    keepRef.current?.(null);
-    if (store) requestAnimationFrame(() => store.fitAll());
+    board.clearHistory();
+    // Fit once the tiles have registered at their restored places.
+    if (store) requestAnimationFrame(() => requestAnimationFrame(() => store.fitAll()));
   }, [layout, board, store]);
 
   // ── page layout: keep the document arranged, camera on the column ─────────
@@ -97,7 +137,8 @@ export function usePageLayout<T extends BoardTileBase>({
     const run = () => {
       timer = null;
       if (pressing) return; // the press's end runs it
-      const plan = planPageLayout(pageScene(board));
+      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined);
+      entryOrder.current = null;
       if (plan.moves.length) board.reflow(plan.moves);
       store.setPageLock({ column: plan.column });
     };
@@ -179,5 +220,5 @@ export function usePageLayout<T extends BoardTileBase>({
     board.reflow(moves);
   };
 
-  return { moveChapter, landNew };
+  return { moveChapter, landNew, switchLayout };
 }

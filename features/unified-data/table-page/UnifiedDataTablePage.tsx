@@ -16,6 +16,8 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTable } from "@ai-matrx/records/react";
+import { useShellChatContext } from "@ai-matrx/chat/canvas/workspace/shell-chat-page-context";
+import { TABLE_CHAT_ROLE } from "@/features/surfaces/manifests/data-tables.chat-role";
 import { SyncedTableBar } from "@/features/unified-data/connect-database/SyncedTableBar";
 import { FetchedTableBar } from "@/features/data-sources/FetchedTableBar";
 import { LiveDataColumnButton } from "@/features/data-sources/live-column/LiveDataColumnButton";
@@ -156,6 +158,10 @@ function TableCapture({
 
 export function UnifiedDataTablePage({ tableId }: { tableId: string }) {
   const router = useRouter();
+  // "Open Side Chat" on a table opens the table's own expert (the Data Table Assistant), from the
+  // role the data-tables manifest declares. Behaviour only: it never replaces a conversation the
+  // person already has, and the person can still switch agents.
+  useShellChatContext({ chatMandateKey: TABLE_CHAT_ROLE.mandateKey });
   /**
    * THE ADDRESS IS THE PAGE'S STATE, AND EVERY LINK HAS TO LAND. Each of these was once a dead
    * link of the same shape — in the address and read by nothing (`?dashboard=` from
