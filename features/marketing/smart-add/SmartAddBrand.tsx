@@ -251,6 +251,9 @@ function resumeTyped(a: SmartAddAddress): { seeds: RoundSeeds; keys: { website: 
 }
 
 /** `url`: the Smart Add page's address binding (useSmartAddAddress); absent in enrich and the lab. */
+/** A second identical round start within this window is a duplicate wake, not a new question. */
+const DUPLICATE_START_WINDOW_MS = 10_000;
+
 export function SmartAddBrand({
   onCreated,
   onValidating,
@@ -383,6 +386,9 @@ export function SmartAddBrand({
   // Sign-up welcome: every round's subject is stable (`signup_welcome:<user id>`, then `…:2`…), so a reload finds it.
   const welcomeRoundCount = useRef(0);
   const groundedSent = useRef(false);
+  // Identical round starts fired within seconds (several effects can wake on one change) bill the same
+  // lookups twice. Fingerprint → start time; a failed start forgets its print so Retry still works.
+  const recentStarts = useRef(new Map<string, number>());
   const [affiliations, setAffiliations] = useState<string[]>([]);
   // Anchor cards answered "Namesake" (a different person with my name): web.brand_relation_kind `namesake`.
   const [namesakes, setNamesakes] = useState<Set<string>>(new Set());
@@ -436,6 +442,10 @@ export function SmartAddBrand({
       person,
     });
     if (!seeds.website && seeds.socials.length === 0 && !woken.name && !woken.location && !find && !groundedRound && !email) return;
+    const startPrint = JSON.stringify([seeds, woken, firstData, find, groundedRound, email]);
+    const startedAt = recentStarts.current.get(startPrint);
+    if (startedAt !== undefined && Date.now() - startedAt < DUPLICATE_START_WINDOW_MS) return;
+    recentStarts.current.set(startPrint, Date.now());
     emailPending.current = "";
     factsSaw.current = facts.saw;
     firstData = facts.wake;
@@ -519,6 +529,7 @@ export function SmartAddBrand({
       if (find) anchorRunId.current = runId;
     } catch (error) {
       if (groundedRound) groundedSent.current = false;
+      recentStarts.current.delete(startPrint);
       setRounds((r) => r.map((x) => (x.id === id ? { ...x, error: plainStartError(error) } : x)));
     }
   };
