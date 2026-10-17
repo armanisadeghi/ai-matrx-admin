@@ -22,6 +22,7 @@
 
 import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
+import { surfaceManifestHost } from "./surfaceManifestHost";
 import {
   lazySlotsFrom,
   SlotLoadingBlock,
@@ -264,6 +265,7 @@ registerChatUi({
   attachConversationResource,
   detachConversationResource,
   getSurfaceManifest,
+  ...surfaceManifestHost,
   usePageCapture,
   usePageCaptureContribution,
   useHeldWriteTableName,
