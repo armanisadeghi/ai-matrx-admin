@@ -92,6 +92,7 @@ export function isTrackedRole(value: string): value is TrackedRole {
 /** The Socials section's tabs: route segments under `/socials`. */
 export const SOCIALS_TABS = [
   { id: "accounts", label: "Accounts" },
+  { id: "research", label: "Look up" },
   { id: "studio", label: "Studio" },
   { id: "outliers", label: "Outliers" },
   { id: "swipe", label: "Swipe file" },

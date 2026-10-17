@@ -49,6 +49,7 @@ const ROUTES = [
   [`${B}/inbox`, "In"],
   [`${B}/settings`, "St"],
   [`${B}/socials`, "Sa"],
+  [`${B}/socials/research`, "Lu"],
   [`${B}/socials/studio`, "Sk"],
   [`${B}/socials/outliers`, "Ot"],
   [`${B}/socials/swipe`, "Sf"],

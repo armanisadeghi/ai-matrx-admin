@@ -18,6 +18,7 @@ and SI-07c (Ads, KPIs) fill the other tabs and **build on the modules listed her
 |---|---|
 | `/socials` | redirect to `/socials/accounts` (temporary redirect, never a cached 308) |
 | `/socials/accounts` | `AccountsTab` (live) |
+| `/socials/research` | `ResearchTab` (Look up, L12c): any account, topic, ads or post's comments through catalog Tools |
 | `/socials/outliers` | `OutliersTab` (live, SI-07b1) |
 | `/socials/kpis` | `KpisTab` (live, SI-08) |
 | `/socials/{studio,swipe,ads}` | `SocialsTabPlaceholder` — a registry row each (`marketing.social.<tab>`), announced through `announceComingSoon`; replace the page body, keep the route |
@@ -269,3 +270,13 @@ Each collection's menu has Link to / Unlink from this brand (`setCollectionBrand
 **Change Log: connected accounts refresh on click, Auto-update opt-in 2026-10-14.** An own account read through a connection has two row actions in `AccountsTab`: **Refresh stats** (one read, tooltip names the points or "Free", `POST /social/connected-accounts/refresh`) and **Auto-update** (per account, off by default, daily, a confirm names the points per run and an estimated month before it turns on; `PUT /social/connected-accounts/{id}/auto-update`). Costs come from `GET /social/connected-accounts/plans` through `useConnectedPlans`. Nothing turns on by itself (no blind paid automations).
 
 **Change Log: connected account updates, free reads automatic 2026-10-14 (supersedes the Auto-update opt-in above).** The Auto-update row action and its confirm are gone. `AccountsTab` has an **Updates** column: for a free read (`plan.automatic`) a canonical `Select` of the server's `frequency_options` (Off / Every hour / Every 6 hours, the default / Every 12 hours / Daily; `PUT /social/connected-accounts/{id}/frequency` `{hours}` via `setConnectedFrequency`); for a paid read (X) the cell reads "Refresh only · <points>" and offers no choice — the server refuses to automate it too. Labels come from `frequencyLabel` in `useConnectedPlans.ts`. Server design and load numbers: aidream `services/social/FEATURE.md` § Account updates.
+
+## Look up (L12c, third-party-services program)
+
+`research/ResearchTab.tsx` at `/socials/research`. Every answer is a catalog Tool run through `/tools/calls` (the Tools home's `useToolCall` + `ToolResult`, the shared `SimpleBoxForm`, the kind renderers, `ToolResultTableBar` for "Save to a table"); nothing here calls a vendor or the old `/social/*` doors.
+
+- `research/sources.ts` (pure, tested): modes (Account & posts · Search a topic · Ads · Comments), the platform chips, and for each source which Tools make one look-up and which of the box's answers each is sent (`stepInputs`). Western platforms = `social_profile` + `social_posts`; Xiaohongshu = account search + note search; Douyin, WeChat = account search. A Tool the catalog does not carry is reported by name (`stepsServed`), and a source no Tool serves (Weibo) says so in words — never an empty screen.
+- `useResearchTools` finds the Tools by job key (one catalog read per family). The look-up's call ids ride the address (`?calls=`), so a reload opens the same paid answers with no second charge.
+- The cost shown is the call's own `points_charged` per card and their sum under the box; before the press, the sum of the Tools' price hints.
+- Brand-scoped route only for navigation: the calls carry the person's active organization like every Tool call; nothing is written to the brand's tracked accounts (Track account stays the way to follow one).
+- The older Ads search (`AdsTab`) still reads through the social server door (itself on the catalog since L2) because Save to swipe file and Track advertiser need the stored ad rows a Tool call does not write; Look up → Ads is the quick, table-saving read.
