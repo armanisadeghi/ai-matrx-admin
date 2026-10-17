@@ -204,6 +204,8 @@ def check_workflow(path: Path, allow: dict[str, str]) -> list[str]:
         with_nested = props.get("with", ("", []))[1] if "uses" in props else []
         text = "\n".join([runs_on_value, *runs_on_nested, *strategy_nested, *with_nested])
         text = "\n".join(_strip_comment(t) if not t.strip().startswith("#") else "" for t in text.splitlines())
+        if RUNNER_SWITCH in text.lower():
+            problems.append(f"{where}: runs-on reads vars.LINUX_RUNNER directly -- only pick-runner.yml reads it (it holds a RunsOn label template, not JSON); use needs: pick-runner and ${{{{ fromJSON(needs.pick-runner.outputs.linux) }}}}, or a literal ubuntu-* for a light job")
         costly = sorted({m.group(0) for m in COSTLY_RUNNER.finditer(text)})
         for family, cap in MAX_SCHEDULED_PER_WEEK.items():
             named = [c for c in costly if c.lower().startswith(family)]
@@ -246,7 +248,9 @@ def check_root(root: Path, manifest_checks: bool = True) -> list[str]:
 
 MANIFEST = ".github/ci-cost.json"
 # GitHub's billing API pricePerUnit (read 2026-10-11): Actions Linux, Windows, macOS 3-core.
-PRICE_PER_MINUTE = {"linux": 0.006, "windows": 0.010, "macos": 0.062, "self-hosted": 0.0}
+# "runs-on": RunsOn EC2 runners in our own AWS account -- no GitHub bill, but AWS bills them, so the manifest
+# must carry a MEASURED price (prices_usd_per_minute["runs-on"] > 0) and the header's runs_on block.
+PRICE_PER_MINUTE = {"linux": 0.006, "windows": 0.010, "macos": 0.062, "self-hosted": 0.0, "runs-on": 0.0}
 WEEKLY_CEILING_USD = 100.0
 DISPATCH_TRIGGERS = {"schedule", "workflow_run"}
 DISPATCH_CALL = re.compile(
@@ -263,18 +267,26 @@ def _job_families(props: dict[str, tuple[str, list[str]]]) -> list[str]:
     text = "\n".join([runs_on_value, *runs_on_nested, *props.get("strategy", ("", []))[1], *with_nested])
     text = "\n".join("" if t.strip().startswith("#") else _strip_comment(t) for t in text.splitlines()).lower()
     fams = {f for f in ("macos", "windows") if re.search(rf"\b{f}-", text) or re.search(rf"\b{f}\b", text)}
-    if RUNNER_SWITCH in text:
-        # `runs-on: ${{ fromJSON(vars.LINUX_RUNNER || '"ubuntu-latest"') }}`: the repository variable names the
-        # self-hosted pool ($0 billed); its literal is only the one-step fallback, priced in the header.
-        return sorted(fams | {"self-hosted"})
+    if PICK_RUNNER in text:
+        # `runs-on: ${{ fromJSON(needs.pick-runner.outputs.linux) }}`: RunsOn on AWS while LINUX_RUNNER is set and
+        # healthy, GitHub-hosted Linux otherwise -- priced as RunsOn, the flip-back price kept in the header.
+        return sorted(fams | {"runs-on"})
     if re.search(r"\b(ubuntu|linux)\b|ubuntu-", text) or not fams:
         fams.add("self-hosted" if "self-hosted" in text and not re.search(r"ubuntu|linux", text) else "linux")
     return sorted(fams)
 
 
-#: The one-step switch (Arman approved self-hosted runners, 2026-10-15): a job whose runs-on reads this
-#: repository variable runs on the self-hosted pool while it is set, on GitHub-hosted Linux when unset.
+#: The one-step switch (Arman approved RunsOn, 2026-10-16): ONLY .github/workflows/pick-runner.yml reads the
+#: LINUX_RUNNER variable (a RunsOn label template, not JSON); a job reading it directly breaks the day it is set.
 RUNNER_SWITCH = "vars.linux_runner"
+PICK_RUNNER = "needs.pick-runner.outputs"
+
+
+def runs_on_fallback_usd(manifest: dict) -> float:
+    """What the RunsOn legs would bill per week on GitHub-hosted Linux (LINUX_RUNNER unset or RunsOn unhealthy)."""
+    linux = float({**PRICE_PER_MINUTE, **manifest.get("prices_usd_per_minute", {})}.get("linux", PRICE_PER_MINUTE["linux"]))
+    return round(sum(float(leg.get("runs_per_week", 0) or 0) * float(leg.get("minutes_per_run", 0) or 0) * linux
+                     for w in manifest.get("workflows", {}).values() for os_name, leg in w.get("legs", {}).items() if os_name == "runs-on"), 2)
 
 
 def self_hosted_fallback_usd(manifest: dict) -> float:
@@ -486,6 +498,14 @@ def check_manifest(root: Path, shapes: dict[str, dict]) -> list[str]:
             problems.append(f"{MANIFEST}: workflows run on self-hosted runners but the header's self_hosted.host does not name the machine")
         if abs(float(sh.get("fallback_usd_per_week", -1)) - fallback) > 0.011 * max(1, len(entries)):
             problems.append(f"{MANIFEST}: self_hosted.fallback_usd_per_week {sh.get('fallback_usd_per_week')} is not what the self-hosted legs bill on GitHub-hosted Linux (${fallback:.2f}/week) -- the price of flipping the switch back must be on record")
+    if any("runs-on" in shape["legs"] for shape in shapes.values()):
+        ro = manifest.get("runs_on") or {}
+        if not float(prices.get("runs-on", 0) or 0) > 0:
+            problems.append(f"{MANIFEST}: RunsOn legs need prices_usd_per_minute.runs-on > 0 -- AWS bills every RunsOn minute; record the measured $/min")
+        if not str(ro.get("price_basis", "")).strip():
+            problems.append(f"{MANIFEST}: RunsOn legs need runs_on.price_basis (where the $/min was measured)")
+        if abs(float(ro.get("fallback_usd_per_week", -1)) - runs_on_fallback_usd(manifest)) > 0.011 * max(1, len(entries)):
+            problems.append(f"{MANIFEST}: runs_on.fallback_usd_per_week {ro.get('fallback_usd_per_week')} is not what the RunsOn legs bill on GitHub-hosted Linux (${runs_on_fallback_usd(manifest):.2f}/week) -- the price of the rollback must be on record")
     total = manifest_total(manifest)
     if abs(total - float(manifest.get("total_usd_per_week", -1))) > 0.011 * max(1, len(entries)):
         problems.append(f"{MANIFEST}: total_usd_per_week {manifest.get('total_usd_per_week')} is not the sum of its workflows ({total:.2f})")
@@ -867,7 +887,7 @@ def _leg(jobs: list[str], runs: float, minutes: float, os_name: str, price: floa
 
 def _entry(triggers: list[str], crons: list[str], legs: dict) -> dict:
     return {"triggers": triggers, "crons": crons, "benefit": "fixture", "owner_reason": "fixture", "legs": legs,
-            "usd_per_week": round(sum(l["usd_per_week"] for l in legs.values()), 2)}
+            "usd_per_week": round(sum(leg["usd_per_week"] for leg in legs.values()), 2)}
 
 
 def _manifest(entries: dict, share: float, visibility: str = "private") -> dict:
@@ -894,6 +914,21 @@ on:
 jobs:
   shot:
     runs-on: ${{ fromJSON(vars.LINUX_RUNNER || '"ubuntu-latest"') }}
+    timeout-minutes: 20
+    steps:
+      - run: echo hi
+"""
+
+PICK_WF = """\
+name: pick
+on:
+  push:
+jobs:
+  pick-runner:
+    uses: ./.github/workflows/pick-runner.yml
+  shot:
+    needs: pick-runner
+    runs-on: ${{ fromJSON(needs.pick-runner.outputs.linux) }}
     timeout-minutes: 20
     steps:
       - run: echo hi
@@ -968,29 +1003,36 @@ def money_self_test() -> int:
 
         VISIBILITY_PROBE = _private
         try:
-            def sh_run(legs: dict, header: dict | None) -> tuple[list[str], float]:
-                manifest = _manifest({"capture.yml": _entry(["push"], [], legs)}, 0)
+            def ro_run(wf_text: str, legs: dict, header: dict | None, price: float) -> tuple[list[str], float]:
+                (root / ".github/workflows/capture.yml").write_text(wf_text)
+                manifest = _manifest({"capture.yml": _entry(["push"], [], legs)}, 50)
+                manifest["prices_usd_per_minute"] = {"runs-on": price}
                 if header is not None:
-                    manifest["self_hosted"] = header
+                    manifest["runs_on"] = header
                 (root / MANIFEST).write_text(json.dumps(manifest))
                 return check_root(root), manifest_billed(manifest)
 
-            header = {"host": "box-1", "fallback_usd_per_week": 1.2}
-            problems, billed = sh_run({"self-hosted": _leg(["shot"], 20, 10, "self-hosted")}, header)
-            if problems or billed != 0:
-                print(f"SELF-TEST FAIL: a LINUX_RUNNER job on a self-hosted leg must bill $0 and pass a $0 share: {problems} billed={billed}")
+            leg = {"jobs": ["shot"], "runs_per_week": 20, "minutes_per_run": 10, "usd_per_week": 0.5}
+            header = {"price_basis": "fixture", "fallback_usd_per_week": 1.2}
+            problems, billed = ro_run(PICK_WF, {"runs-on": leg}, header, 0.0025)
+            if problems or billed != 0.5:
+                print(f"SELF-TEST FAIL: a pick-runner job on a priced RunsOn leg must pass and bill its AWS $: {problems} billed={billed}")
                 return 1
-            problems, _ = sh_run({"linux": _leg(["shot"], 20, 10, "linux")}, header)
-            if not any("runs self-hosted" in p for p in problems):
-                print(f"SELF-TEST FAIL: a LINUX_RUNNER job priced as a GitHub-hosted linux leg slipped through: {problems}")
+            problems, _ = ro_run(PICK_WF, {"runs-on": {**leg, "usd_per_week": 0.0}}, header, 0.0)
+            if not any("prices_usd_per_minute.runs-on > 0" in p for p in problems):
+                print(f"SELF-TEST FAIL: a RunsOn leg priced at $0 slipped through: {problems}")
                 return 1
-            problems, _ = sh_run({"self-hosted": _leg(["shot"], 20, 10, "self-hosted")}, None)
-            if not any("self_hosted.host" in p for p in problems) or not any("fallback_usd_per_week" in p for p in problems):
-                print(f"SELF-TEST FAIL: self-hosted legs without the host and the flip-back price passed: {problems}")
+            problems, _ = ro_run(PICK_WF, {"runs-on": leg}, None, 0.0025)
+            if not any("runs_on.price_basis" in p for p in problems) or not any("fallback_usd_per_week" in p for p in problems):
+                print(f"SELF-TEST FAIL: RunsOn legs without the price basis and the rollback price passed: {problems}")
+                return 1
+            problems, _ = ro_run(SWITCH_WF, {"linux": _leg(["shot"], 20, 10, "linux")}, header, 0.0025)
+            if not any("reads vars.LINUX_RUNNER directly" in p for p in problems):
+                print(f"SELF-TEST FAIL: a job reading vars.LINUX_RUNNER directly slipped through: {problems}")
                 return 1
         finally:
             VISIBILITY_PROBE = saved
-    print("money self-test ok: LINUX_RUNNER jobs bill $0 on a self-hosted leg, need the host and the flip-back price on record")
+    print("money self-test ok: pick-runner jobs bill their measured AWS price on a RunsOn leg, need the price basis and the rollback price; direct LINUX_RUNNER readers fail")
     print("money self-test ok: public standard runner bills $0; public larger runner and private repos bill in full; visibility mismatch and a missing header fail")
     return 0
 
@@ -1039,15 +1081,21 @@ def manifest_self_test() -> int:
         case("cron change not in the manifest", cron, "tests.yml: schedule changed")
         def stale(e): e["gone.yml"] = _entry(["push"], [], {"linux": _leg(["a"], 1, 1, "linux")})
         case("stale entry", stale, ".github/ci-cost.json: stale entry 'gone.yml'")
-        def no_leg(e): e["tests.yml"]["legs"].pop("macos"); e["tests.yml"]["usd_per_week"] = e["tests.yml"]["legs"]["linux"]["usd_per_week"]
+        def no_leg(e):
+            e["tests.yml"]["legs"].pop("macos")
+            e["tests.yml"]["usd_per_week"] = e["tests.yml"]["legs"]["linux"]["usd_per_week"]
         case("OS leg missing (runner change)", no_leg, "tests.yml: runs macos (mac) with no macos leg")
         def jobs(e): e["tests.yml"]["legs"]["linux"]["jobs"] = []
         case("job added without the manifest", jobs, "tests.yml: the linux leg's jobs are")
         def maths(e): e["capture.yml"]["legs"]["macos"]["usd_per_week"] = 0.01
         case("leg dollars that do not add up", maths, "capture.yml: the macos leg says $0.01/week")
-        def under(e): e["tests.yml"]["legs"] = {"linux": _leg(["unit"], 3, 5, "linux"), "macos": _leg(["mac"], 3, 10, "macos")}; e["tests.yml"]["usd_per_week"] = round(sum(l["usd_per_week"] for l in e["tests.yml"]["legs"].values()), 2)
+        def under(e):
+            e["tests.yml"]["legs"] = {"linux": _leg(["unit"], 3, 5, "linux"), "macos": _leg(["mac"], 3, 10, "macos")}
+            e["tests.yml"]["usd_per_week"] = round(sum(leg["usd_per_week"] for leg in e["tests.yml"]["legs"].values()), 2)
         case("runs/week below what the crons fire", under, "tests.yml: its crons fire ~7 times a week")
-        def big(e): e["capture.yml"]["legs"]["macos"] = _leg(["shot"], 100, 10, "macos"); e["capture.yml"]["usd_per_week"] = 62.0
+        def big(e):
+            e["capture.yml"]["legs"]["macos"] = _leg(["shot"], 100, 10, "macos")
+            e["capture.yml"]["usd_per_week"] = 62.0
         case("repo over its share", big, ".github/ci-cost.json: this repo's CI costs ~$")
         found_all: list[str] = []
         for label, mutate, expect in cases:
