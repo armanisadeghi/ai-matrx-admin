@@ -22,6 +22,7 @@ import { ConditionGroup, type ConditionField } from "@ai-matrx/records-ui";
 import { fetchMandateCatalogue, type MandateCatalogue } from "@/features/mandates/catalogue";
 import { useMandateInputSurface } from "@/features/mandates/input-surface";
 import { useAppDispatch } from "@/lib/redux/hooks";
+import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 
 import { stepCount, type Step } from "./automation-step-count";
 
@@ -408,6 +409,27 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
   );
 }
 
+/** The calendar step's time zone: starts on the person's own zone (the resolved one) and is kept in the step, so what runs is what shows. */
+function CalendarZone({ value, onChange }: { value: string; onChange: (zone: string) => void }) {
+  const personal = usePersonTimeZone();
+  useEffect(() => {
+    if (!value && personal) onChange(personal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, personal]);
+  const zone = value || personal;
+  const options = useMemo(() => {
+    let names: string[] = [];
+    try {
+      names = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.("timeZone") ?? [];
+    } catch {
+      names = [];
+    }
+    if (zone && !names.includes(zone)) names = [zone, ...names];
+    return names.map((n) => ({ value: n, label: n.replace(/_/g, " ") }));
+  }, [zone]);
+  return <Pick label="Time zone" value={zone} onChange={onChange} options={options} />;
+}
+
 const KIND_TITLE: Record<string, string> = {
   find: "Find records",
   update: "Update records",
@@ -585,6 +607,7 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
           {(str(step.action) || "create") !== "cancel" ? (
             <>
               <TokenText label="Title" value={str(step.title)} onChange={(v) => set({ title: v })} sources={sources} placeholder="Title" />
+              <CalendarZone value={str(step.timezone)} onChange={(v) => set({ timezone: v })} />
               <TokenText label="Starts" value={str(step.starts_at)} onChange={(v) => set({ starts_at: v })} sources={sources} placeholder="Start date and time" />
               <TokenText label="Ends" value={str(step.ends_at)} onChange={(v) => set({ ends_at: v })} sources={sources} placeholder="End (blank: one hour later)" />
               <TokenText label="Guests" value={str(step.attendees)} onChange={(v) => set({ attendees: v })} sources={sources} placeholder="Guest emails" />
