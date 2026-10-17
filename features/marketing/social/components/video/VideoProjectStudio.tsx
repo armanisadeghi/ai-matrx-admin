@@ -535,7 +535,7 @@ function VariantsPanel({
     <div className="flex flex-col gap-3">
       {loading ? <RegionSkeleton shape="cards" count={3} aria-label="Loading variants" /> : null}
       {variants.length ? (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-3">
           {variants.map((v) => (
             <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} />
           ))}
@@ -615,7 +615,7 @@ function VariantsPanel({
 function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome }) {
   const materialized = v.baseVersion === head ? materializeVariant(doc, v as unknown as VariantOverride) : null;
   return (
-    <div className="flex min-w-0 flex-col gap-2 rounded-lg border border-border p-2">
+    <div className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-lg border border-border p-2">
       <div className="flex min-w-0 items-center gap-1.5">
         <span className="type-label truncate text-foreground">{v.label}</span>
         <Badge tone={outcome?.status === "failed" ? "destructive" : outcome?.status === "rendered" ? "success" : "neutral"} className="ml-auto">
