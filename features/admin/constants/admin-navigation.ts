@@ -656,6 +656,11 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         ])],
       },
       {
+        name: "Build waste",
+        iconName: "PackageX",
+        destinations: [destination("/administration/billing/build-waste")],
+      },
+      {
         name: "Plans",
         iconName: "Tags",
         destinations: [destination("/administration/billing/plans")],

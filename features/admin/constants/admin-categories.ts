@@ -320,6 +320,13 @@ export const adminCategoriesData: AdminCategory[] = [
         isNew: true,
       },
       {
+        title: "Build Waste",
+        description: "Package builds (npm, PyPI, Docker) that shipped nothing new: per package, minutes, cost and why.",
+        iconName: "PackageX",
+        link: "/administration/billing/build-waste",
+        isNew: true,
+      },
+      {
         title: "Plans & Pricing",
         description:
           "Every plan's name, prices, tagline, badge and listing, plus its allowances — what the pricing page and upgrade dialogs show.",
