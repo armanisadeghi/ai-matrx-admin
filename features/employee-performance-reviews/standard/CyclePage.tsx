@@ -85,7 +85,7 @@ export function CyclePage({ cycleId }: { cycleId: string }) {
       ),
     },
     { id: "manager", header: "Manager", accessorFn: (r) => r.managerName, filter: "text", width: 200 },
-    { id: "status", header: "Status", accessorFn: (r) => statusLabel(r.status), filter: "text", width: 150, cell: (r) => <Badge tone={statusTone(r.status)}>{statusLabel(r.status)}</Badge> },
+    { id: "status", header: "Status", accessorFn: (r) => statusLabel(r.status), filter: "select", width: 150, cell: (r) => <Badge tone={statusTone(r.status)}>{statusLabel(r.status)}</Badge> },
     {
       id: "outstanding",
       header: "Waiting on",

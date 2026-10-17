@@ -144,6 +144,7 @@ const proofRunColumns: MatrxColumnDef<ProofRunSummary>[] = [
     id: "mode",
     header: "Mode",
     accessorKey: "mode",
+    filter: "select",
     cell: (row) => (
       <span className="whitespace-nowrap uppercase text-muted-foreground">
         {row.mode}
@@ -191,6 +192,7 @@ const proofRunColumns: MatrxColumnDef<ProofRunSummary>[] = [
     id: "trigger",
     header: "Trigger",
     accessorKey: "trigger_source",
+    filter: "select",
     cell: (row) => (
       <span className="whitespace-nowrap text-muted-foreground">
         {row.trigger_source}

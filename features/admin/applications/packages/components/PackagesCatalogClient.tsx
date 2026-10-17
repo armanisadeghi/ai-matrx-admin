@@ -84,6 +84,7 @@ const columns: MatrxColumnDef<NpmPackageCatalogRow>[] = [
     id: "publishedAt",
     accessorKey: "publishedAt",
     header: "Latest publish",
+    format: { id: "datetime" },
     cell: (row) =>
       row.publishedAt ? (
         <time dateTime={row.publishedAt} className="text-xs">

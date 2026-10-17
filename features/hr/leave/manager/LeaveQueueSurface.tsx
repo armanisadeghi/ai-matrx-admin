@@ -443,6 +443,7 @@ export function LeaveQueueSurface() {
       id: "due_at",
       accessorKey: "due_at",
       header: "Due",
+      format: { id: "datetime" },
       sortable: true,
       filter: "auto",
       mobileHidden: true,

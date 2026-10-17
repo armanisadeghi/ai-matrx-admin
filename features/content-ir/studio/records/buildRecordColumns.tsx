@@ -321,8 +321,8 @@ export function buildRecordColumns(
       label: "Created",
       header: "Created",
       accessorKey: "createdAt",
+      format: { id: "datetime" },
       cell: (row) => timeCell(row.createdAt),
-      filter: false,
       defaultSortDirection: "desc",
     },
     {
@@ -342,6 +342,7 @@ export function buildRecordColumns(
       accessorFn: (row) => row.conversationId ?? "",
       cell: (row) => sourceCell(row),
       sortable: false,
+      // table-filter-off: a conversation link, not a set of values
       filter: false,
       mobileHidden: true,
     },

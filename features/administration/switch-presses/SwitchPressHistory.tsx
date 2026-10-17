@@ -75,7 +75,7 @@ export function SwitchPressHistory() {
   );
 
   const columns: MatrxColumnDef<SwitchPress>[] = [
-    { id: "pressed_at", header: "When", width: 180, accessorFn: (r) => r.pressed_at, cell: (r) => <span className="tabular-nums">{when(r.pressed_at)}</span> },
+    { id: "pressed_at", header: "When", width: 180, format: { id: "datetime" }, accessorFn: (r) => r.pressed_at, cell: (r) => <span className="tabular-nums">{when(r.pressed_at)}</span> },
     { id: "seam", header: "Switch", width: 190, accessorFn: (r) => r.seam_key, cell: (r) => <span className="block truncate font-mono text-xs">{r.seam_key}</span> },
     { id: "direction", header: "To", width: 70, accessorFn: (r) => r.direction },
     { id: "outcome", header: "Outcome", width: 100, accessorFn: (r) => r.outcome },

@@ -170,6 +170,7 @@ function DriftDashboard() {
         id: "updated_at",
         accessorKey: "updated_at",
         header: "Updated",
+        format: { id: "datetime" },
         cell: (row) => (
           <span className="text-muted-foreground">
             {row.updated_at

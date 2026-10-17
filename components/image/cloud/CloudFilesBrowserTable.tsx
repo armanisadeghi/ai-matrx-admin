@@ -164,6 +164,7 @@ export function CloudFilesBrowserTable({
       {
         id: "type",
         header: "Type",
+        filter: "select",
         accessorFn: (row) =>
           row.kind === "folder" ? "Folder" : getCloudFileKindLabel(row.file),
         width: 150,

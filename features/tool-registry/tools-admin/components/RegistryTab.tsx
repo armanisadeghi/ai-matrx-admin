@@ -156,6 +156,7 @@ function membershipColumns(): MatrxColumnDef<BundleMembership>[] {
     {
       id: "type",
       header: "Type",
+      filter: "select",
       accessorFn: (row) => (row.bundle.is_system ? "system" : "personal"),
       width: 100,
       cell: (row) => (

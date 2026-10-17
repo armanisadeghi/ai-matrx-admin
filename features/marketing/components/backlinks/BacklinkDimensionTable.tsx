@@ -561,6 +561,7 @@ export function BacklinkDimensionTable({
             id: "status",
             header: "Status",
             sortable: false,
+            // table-filter-off: server source does not filter status yet
             filter: false,
             accessorFn: (row) =>
               parseDimensionExtras(row.extras).statusCode ?? "",
@@ -599,6 +600,7 @@ export function BacklinkDimensionTable({
       id: "first_seen_at",
       accessorKey: "first_seen_at",
       header: "First seen",
+      // table-filter-off: server source does not filter first_seen_at yet
       filter: false,
       cell: (row) => <DateCell iso={row.first_seen_at} />,
     },
@@ -606,6 +608,7 @@ export function BacklinkDimensionTable({
       id: "last_seen_at",
       accessorKey: "last_seen_at",
       header: "Last seen",
+      // table-filter-off: server source does not filter last_seen_at yet
       filter: false,
       cell: (row) => <DateCell iso={row.last_seen_at} />,
     },

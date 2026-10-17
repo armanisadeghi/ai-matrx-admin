@@ -246,6 +246,8 @@ export function DeviceFleetTable({
       id: "trustState",
       accessorFn: (row) => TRUST_LABEL[row.trustState],
       header: "Status",
+      filter: "select",
+      filterOptions: Object.values(TRUST_LABEL).map((label) => ({ value: label, label })),
       cell: (row) => (
         <Badge variant={row.trustState === "trusted" ? "success" : row.trustState === "revoked" ? "destructive" : "secondary"}>
           {TRUST_LABEL[row.trustState]}
@@ -275,6 +277,7 @@ export function DeviceFleetTable({
       id: "lastSeen",
       accessorFn: (row) => row.lastSeenAt ?? "",
       header: "Last seen",
+      format: { id: "datetime" },
       cell: (row) => formatLastSeen(row.lastSeenAt),
     },
     {

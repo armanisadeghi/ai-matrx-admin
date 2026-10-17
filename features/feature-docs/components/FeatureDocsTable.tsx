@@ -152,8 +152,8 @@ const columns: MatrxColumnDef<FeatureDocListRow>[] = [
     accessorKey: "synced_at",
     header: "Synced",
     label: "Synced",
+    format: { id: "datetime" },
     sortValue: (row) => row.synced_at ?? "",
-    filter: false,
     cell: (row) =>
       row.synced_at ? (
         <span

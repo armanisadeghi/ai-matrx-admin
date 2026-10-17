@@ -298,7 +298,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
   });
 
   const columns: MatrxColumnDef<SpendAlarmOccurrence>[] = [
-    { id: "occurred_at", accessorKey: "occurred_at", header: "When", cell: (o) => when(o.occurred_at), sortValue: (o) => o.occurred_at },
+    { id: "occurred_at", accessorKey: "occurred_at", header: "When", format: { id: "datetime" }, cell: (o) => when(o.occurred_at), sortValue: (o) => o.occurred_at },
     { id: "repeat_count", accessorKey: "repeat_count", header: "Times" },
     {
       id: "run",
