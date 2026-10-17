@@ -11,6 +11,7 @@ import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { AgentListInlinePicker } from "@ai-matrx/agents/catalog/react";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
+import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 import { getModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { Button } from "@ai-matrx/design-system/controls";
 
@@ -37,6 +38,7 @@ export function GiveToAgentDialog({
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const agent = useAppSelector((s) => (agentId ? selectAgentById(s, agentId) : undefined));
+  const agentName = useAgentName(agentId) ?? agent?.name;
   const has = Boolean(agent?.tools?.includes(toolId));
 
   // The agent's tool list is read fresh when one is picked, so "already on it" is true.
@@ -63,7 +65,7 @@ export function GiveToAgentDialog({
       await dispatch(
         applyOwnedAgentToolDelta({ agentId, addToolIds: add ? [toolId] : [], removeToolIds: add ? [] : [toolId] }),
       ).unwrap();
-      toast.success(add ? `${toolName} is on ${agent?.name ?? "your agent"}` : `${toolName} removed from ${agent?.name ?? "your agent"}`);
+      toast.success(add ? `${toolName} is on ${agentName ?? "your agent"}` : `${toolName} removed from ${agentName ?? "your agent"}`);
     } catch (cause) {
       setProblem(extractErrorMessage(cause, "That didn't save. Try again."));
     } finally {
@@ -76,7 +78,7 @@ export function GiveToAgentDialog({
       <DialogContent className="max-w-lg" data-give-to-agent="">
         <DialogHeader>
           <DialogTitle className="truncate">Give {toolName} to an agent</DialogTitle>
-          <DialogDescription>{agent?.name ? `Giving it to ${agent.name}` : "Pick one of your agents."}</DialogDescription>
+          <DialogDescription>{agentName ? `Giving it to ${agentName}` : "Pick one of your agents."}</DialogDescription>
         </DialogHeader>
         <AgentListInlinePicker
           consumerId="tools-home-give-to-agent"
