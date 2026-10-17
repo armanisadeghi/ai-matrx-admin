@@ -70,7 +70,14 @@ export function useCloudBrowser(
   /** Show (or start) only a run on this target — the Computer tab passes
    *  `"sandbox"` so its screen is the person's own machine. */
   target?: service.StartTarget,
+  /**
+   * `followProgress: false` — a surface that never shows the written step list
+   * (the Computer tab draws the live screen) does not poll `action_event`
+   * every 2 s for it. Default true (the Cloud Browser panel's default face).
+   */
+  options: { followProgress?: boolean } = {},
 ) {
+  const followProgress = options.followProgress ?? true;
   const dispatch = useAppDispatch();
   const { userId, activeUserName } = useUser();
   const me = useMemo(
@@ -117,7 +124,10 @@ export function useCloudBrowser(
   // D-8 tier 1 — the DEFAULT face stays live for as long as this panel is
   // mounted. `load` above is the one-shot hydrate; this is what keeps it true.
   // Stops on unmount, on a terminal run, and while the tab is hidden.
-  const { refreshProgress } = useWrittenProgress(run?.id ?? null, run?.state ?? null);
+  const { refreshProgress } = useWrittenProgress(
+    followProgress ? (run?.id ?? null) : null,
+    run?.state ?? null,
+  );
 
   // A fleet-backed start now returns its durable run while the worker is still
   // provisioning. Written-progress only reads action events, so it cannot

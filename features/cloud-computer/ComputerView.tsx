@@ -124,7 +124,8 @@ export function ComputerView({ conversationId }: { conversationId?: string }) {
 /** The machine is up: its screen as the agent's browser stream. */
 function ComputerScreen({ conversationId }: { conversationId?: string }) {
   // Only a run ON the machine: never adopt or start a cold fleet browser here.
-  const cb = useCloudBrowser(undefined, null, "sandbox");
+  // The tab shows the screen, never the written step list: no progress poll.
+  const cb = useCloudBrowser(undefined, null, "sandbox", { followProgress: false });
   // ONE chip: the composer's browser pill already stands for this computer, so
   // a "Cloud Browser" profile value chip left by an earlier pane is cleared.
   useCloudBrowserProfileContextSync(conversationId, null);
