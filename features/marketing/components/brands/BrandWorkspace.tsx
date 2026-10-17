@@ -3,7 +3,7 @@
 import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -40,7 +40,6 @@ import {
   ListTree,
   Mail,
   MapPin,
-  Palette,
   Pencil,
   Phone,
   Printer,
@@ -80,7 +79,7 @@ import { BusinessFactEditorDialog } from "@/features/marketing/components/brands
 import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
 import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
-import { CaptureThumb } from "@/features/marketing/components/shared/CaptureThumb";
+import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -204,43 +203,6 @@ function factValueText(fact: BusinessFact): string {
  * favicon, a blocked hotlink) shows the asset's initial in a monogram tile,
  * never the browser's broken-image alt text.
  */
-function AssetTileImage({ src, label }: { src: string; label: string }) {
-  // The failure belongs to one src: a new src starts clean without an effect resetting state.
-  const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const failed = failedSrc === src;
-  const setFailed = (value: boolean) => setFailedSrc(value ? src : null);
-  const ref = useRef<HTMLImageElement | null>(null);
-  useEffect(() => {
-    // A cached failure can settle before React attaches onError.
-    const img = ref.current;
-    if (img && img.complete && img.naturalWidth === 0) setFailedSrc(src);
-  }, [src]);
-  if (failed) {
-    return (
-      <span
-        role="img"
-        aria-label={label}
-        title={label}
-        className="flex h-14 w-14 items-center justify-center rounded-md border border-border bg-muted text-lg font-semibold uppercase text-muted-foreground"
-      >
-        {label.trim().charAt(0) || "?"}
-      </span>
-    );
-  }
-  return (
-    // Confirmed assets reference the brand's own public URLs.
-    <img
-      ref={ref}
-      src={src}
-      alt=""
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
-      className="max-h-full max-w-full object-contain"
-    />
-  );
-}
-
 function assetPreviewUrl(asset: BrandAsset): string | null {
   return asset.source_url &&
     /\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(asset.source_url)
@@ -553,7 +515,7 @@ function BusinessFactGroup({
   const showLabel = subLabels.size > 1;
   const GroupIcon = FACT_KIND_ICONS[kind];
   return (
-    <section className="min-w-0" data-fact-group={kind}>
+    <section className="min-w-0 overflow-hidden rounded-md border border-border" data-fact-group={kind}>
       <div className="flex h-9 items-center gap-2 bg-muted px-3">
         <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${FACT_TONE_CLASS[factTone(kind)]}`}>
           <GroupIcon className="h-3.5 w-3.5" />
@@ -990,7 +952,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover object-top"
+                  className="absolute inset-0 h-full w-full object-contain p-1"
                   onError={(event) => {
                     event.currentTarget.parentElement?.style.setProperty("display", "none");
                   }}
@@ -1288,7 +1250,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   {overviewCopy.factsEmpty}
                 </p>
               ) : (
-                <div className="divide-y divide-border">
+                // Groups sit side by side on wide screens, so one phone number never spans the whole page.
+                <div className="grid items-start gap-3 p-3 lg:grid-cols-2 2xl:grid-cols-3">
                   {factGroups.map(([kind, groupFacts]) => (
                     <BusinessFactGroup
                       key={kind}
@@ -1348,126 +1311,69 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             {(assets.data ?? []).length === 0 ? (
               <p className="px-4 py-2.5 text-xs text-muted-foreground">No confirmed assets yet.</p>
             ) : (
-              <ul className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 lg:grid-cols-6">
-                {sortedAssets.map((asset) => {
-                  const preview = assetPreviewUrl(asset);
-                  const color = assetColorValue(asset);
+              <BrandAssetGallery
+                items={sortedAssets.map((asset) => ({
+                  asset,
+                  preview: assetPreviewUrl(asset),
+                  color: assetColorValue(asset),
+                  label: isBrandAssetKind(asset.kind)
+                    ? BRAND_ASSET_KIND_LABELS[asset.kind]
+                    : (humanizeIdentifier(asset.kind) || asset.kind),
+                }))}
+                onOpen={(asset) => {
+                  if (asset.source_url) openOutbound(asset.source_url, "_blank", "noopener");
+                }}
+                renderActions={(asset) => {
                   const kindLabel = isBrandAssetKind(asset.kind)
                     ? BRAND_ASSET_KIND_LABELS[asset.kind]
                     : (humanizeIdentifier(asset.kind) || asset.kind);
                   return (
-                    <li
-                      key={asset.id}
-                      className="group overflow-hidden rounded-md border border-border bg-muted/20"
-                    >
-                      <div className="relative">
-                        {asset.file_id ? (
-                          // File-backed asset (uploaded / generated) — renders
-                          // through the canonical Files pipeline and opens the
-                          // platform file viewer.
-                          <CaptureThumb
-                            fileId={asset.file_id}
-                            alt={asset.title ?? asset.kind}
-                            aspectClassName="aspect-square"
-                            className="rounded-none border-0"
-                          />
-                        ) : (
-                          <div
-                            className={
-                              asset.source_url
-                                ? "flex aspect-square cursor-pointer items-center justify-center bg-card p-2"
-                                : "flex aspect-square items-center justify-center bg-card p-2"
-                            }
-                            onClick={() => {
-                              if (asset.source_url) {
-                                openOutbound(
-                                  asset.source_url,
-                                  "_blank",
-                                  "noopener",
-                                );
-                              }
-                            }}
-                          >
-                            {preview ? (
-                              // Confirmed assets reference the brand's own public URLs.
-                              <AssetTileImage
-                                src={preview}
-                                label={asset.title ?? kindLabel}
-                              />
-                            ) : color ? (
-                              <span
-                                className="h-14 w-14 rounded-full border border-border shadow-inner"
-                                style={{ backgroundColor: color }}
-                                title={color}
-                              />
-                            ) : asset.kind === "color" ? (
-                              <Palette className="h-6 w-6 text-muted-foreground/50" />
-                            ) : (
-                              <Globe2 className="h-6 w-6 text-muted-foreground/50" />
-                            )}
-                          </div>
-                        )}
-                        {asset.is_primary ? (
-                          <span
-                            title="Primary asset"
-                            className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-md bg-card/90 shadow-sm"
-                          >
-                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          </span>
-                        ) : null}
-                        <div className="absolute right-1 top-1 flex items-center gap-0.5 rounded-md bg-card/90 opacity-0 shadow-sm transition-opacity focus-within:opacity-100 group-hover:opacity-100">
-                          <CopyButtons
-                            size="xs"
-                            label={`${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`}
-                            data={() =>
-                              webCopy({
-                                kind: "web-brand-asset",
-                                label: `${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`,
-                                description:
-                                  "One human-confirmed brand asset (logo, favicon, imagery, or color).",
-                                surface: `Brand assets — ${current.name}`,
-                                data: asset,
-                                lines: [
-                                  ["Asset", kindLabel],
-                                  ["Title", asset.title],
-                                  ["Source URL", asset.source_url],
-                                  ["Primary", asset.is_primary ? "yes" : "no"],
-                                ],
-                                attributes: { brand_id: current.id, asset_id: asset.id, kind: asset.kind },
-                              }).agent()
-                            }
-                            dataType="Agent"
-                          />
-                          {canEdit ? (
-                            <>
-                              <RowActionButton
-                                title="Edit asset"
-                                onClick={() =>
-                                  setAssetEditor({ open: true, asset })
-                                }
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </RowActionButton>
-                              <RowActionButton
-                                title="Delete asset"
-                                destructive
-                                onClick={() => setDeletingAsset(asset)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </RowActionButton>
-                            </>
-                          ) : null}
-                        </div>
-                      </div>
-                      <p className="truncate border-t border-border px-2 py-1 text-[10px] font-medium text-muted-foreground">
-                        {kindLabel}
-                        {asset.title ? ` · ${asset.title}` : ""}
-                        {color ? ` · ${color}` : ""}
-                      </p>
-                    </li>
+                    <>
+                    <CopyButtons
+                      size="xs"
+                      label={`${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`}
+                      data={() =>
+                        webCopy({
+                          kind: "web-brand-asset",
+                          label: `${kindLabel}${asset.title ? ` · ${asset.title}` : ""}`,
+                          description:
+                            "One human-confirmed brand asset (logo, favicon, imagery, or color).",
+                          surface: `Brand assets — ${current.name}`,
+                          data: asset,
+                          lines: [
+                            ["Asset", kindLabel],
+                            ["Title", asset.title],
+                            ["Source URL", asset.source_url],
+                            ["Primary", asset.is_primary ? "yes" : "no"],
+                          ],
+                          attributes: { brand_id: current.id, asset_id: asset.id, kind: asset.kind },
+                        }).agent()
+                      }
+                      dataType="Agent"
+                    />
+                    {canEdit ? (
+                      <>
+                        <RowActionButton
+                          title="Edit asset"
+                          onClick={() =>
+                            setAssetEditor({ open: true, asset })
+                          }
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </RowActionButton>
+                        <RowActionButton
+                          title="Delete asset"
+                          destructive
+                          onClick={() => setDeletingAsset(asset)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </RowActionButton>
+                      </>
+                    ) : null}
+                    </>
                   );
-                })}
-              </ul>
+                }}
+              />
             )}
           </SectionCard>
         </div>

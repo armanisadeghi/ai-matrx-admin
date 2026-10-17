@@ -203,29 +203,37 @@ export function RelationRowView({ row, canEdit }: { row: Row; canEdit: boolean }
       </li>
     );
   }
-  const body = (
-    <span className="flex min-w-0 flex-1 items-center gap-2">
-      {row.thumb ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={proxiedExternalImageUrl(row.thumb)} alt="" className="size-5 shrink-0 rounded object-contain" data-testid="brand-relation-thumb" />
-      ) : row.url && !contact ? (
-        <Favicon hostname={h} size={16} />
-      ) : null}
-      {contact ? null : <span className="truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>}
-      {chip?.platform && !contact ? <span className="shrink-0 text-xs text-muted-foreground">{chip.platform}</span> : null}
-      {row.matchOnly ? (
-        <span className="min-w-0 shrink truncate text-xs text-muted-foreground" data-testid="brand-relation-address">
+  // Kept-for-matching rows carry an address and a reason: they get their own second line, never squeezed beside the name.
+  const detail = row.matchOnly && (row.url || g?.reason) ? (
+    <span className="flex min-w-0 flex-col gap-0.5 pl-6 text-xs text-muted-foreground">
+      {row.url ? (
+        <span className="truncate" title={row.url} data-testid="brand-relation-address">
           {row.url}
         </span>
       ) : null}
-      {h && !chip && !contact && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
-      {row.sentiment ? (
-        <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
+      {g?.reason ? (
+        <span className="line-clamp-2" data-testid="brand-relation-reason">{g.reason}</span>
       ) : null}
-      {row.matchOnly && g?.reason ? (
-        <span className="shrink-0 text-xs text-muted-foreground" data-testid="brand-relation-reason">{g.reason}</span>
-      ) : null}
-      {row.kindLabel ? <span className="ml-auto shrink-0 text-xs text-muted-foreground">{row.kindLabel}</span> : null}
+    </span>
+  ) : null;
+  const body = (
+    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <span className="flex min-w-0 items-center gap-2">
+        {row.thumb ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={proxiedExternalImageUrl(row.thumb)} alt="" className="size-5 shrink-0 rounded object-contain" data-testid="brand-relation-thumb" />
+        ) : row.url && !contact ? (
+          <Favicon hostname={h} size={16} />
+        ) : null}
+        {contact ? null : <span className="min-w-0 truncate text-sm text-foreground" title={row.label}>{chip ? chip.text : row.label}</span>}
+        {chip?.platform && !contact ? <span className="shrink-0 text-xs text-muted-foreground">{chip.platform}</span> : null}
+        {h && !chip && !contact && !row.thumb && !row.matchOnly && h !== row.label ? <span className="min-w-0 shrink truncate text-xs text-muted-foreground">{h}</span> : null}
+        {row.sentiment ? (
+          <span className={`size-1.5 shrink-0 rounded-full ${SENTIMENT_DOT[row.sentiment] ?? ""}`} aria-label={row.sentiment} />
+        ) : null}
+        {row.kindLabel ? <span className="ml-auto shrink-0 text-xs text-muted-foreground">{row.kindLabel}</span> : null}
+      </span>
+      {detail}
     </span>
   );
   return (
