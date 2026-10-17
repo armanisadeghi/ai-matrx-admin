@@ -111,7 +111,8 @@ function liveFiles() {
     .split("\n")
     // A test outside the fence may exercise Spaces (e.g. a platform iframe-isolation test covering Spaces
     // embeds): tests are not app code, so they never couple the app to the fence (owner, 2026-10-08).
-    .filter((p) => p && !insideFence(p) && !p.startsWith("node_modules/") && p !== "scripts/check-spaces-fence.mjs" && !/(^|\/)__tests__\/|\.test\.[jt]sx?$/.test(p))
+    // The record-prove harness (scripts/record-prove/) is the same: a proof script, never shipped.
+    .filter((p) => p && !insideFence(p) && !p.startsWith("node_modules/") && p !== "scripts/check-spaces-fence.mjs" && !/(^|\/)__tests__\/|\.test\.[jt]sx?$|^scripts\/record-prove\//.test(p))
     .map((path) => {
       try {
         return { path, source: readFileSync(path, "utf8") };
