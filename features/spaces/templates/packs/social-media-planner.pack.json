@@ -1,0 +1,1701 @@
+{
+ "packVersion": 1,
+ "catalogueId": "SP0153",
+ "version": 1,
+ "title": "Social Media Planner",
+ "description": "Plan posts across platforms on one calendar, with hashtag sets and results.",
+ "forWho": "Social managers, creators and small brands",
+ "icon": {
+  "emoji": "📱"
+ },
+ "cover": {
+  "url": "gallery:photo-golden-palms",
+  "offsetY": 50
+ },
+ "category": "marketing",
+ "tags": [
+  "social",
+  "planner",
+  "posts",
+  "hashtags"
+ ],
+ "spec": {
+  "specVersion": 1,
+  "id": "spaces-sp0153",
+  "catalogueId": "SP0153",
+  "useCase": "Camille Dupont-Ng runs a four-person creative studio and uses this to plan posts for every platform and see which ones perform.",
+  "industry": "cross_industry",
+  "vertical": "Social media",
+  "job": "content",
+  "audience": "organization",
+  "teaches": "calendar",
+  "strengths": [],
+  "requires": [],
+  "business": {
+   "name": "Wavecrest Creative",
+   "describes": "A small creative studio producing photo and video content for coastal brands.",
+   "address": {
+    "line1": "19 Driftwood Row",
+    "city": "Santa Monica",
+    "region": "CA",
+    "postalCode": "90401",
+    "country": "US"
+   },
+   "phone": "(310) 555-0120",
+   "website": "wavecrestcreative.net",
+   "email": "hello@wavecrestcreative.net",
+   "timezone": "America/Los_Angeles"
+  },
+  "cleanupTag": "use-case:spaces-sp0153",
+  "tables": [
+   {
+    "token": "hashtag_set",
+    "name": "Hashtag sets",
+    "labelSingular": "Hashtag set",
+    "labelPlural": "Hashtag sets",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "hash",
+    "titleField": "set_name",
+    "describes": "Reusable hashtag groups for each platform.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "set_name",
+      "label": "Set name",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "tags",
+      "label": "Tags",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "platforms",
+      "label": "Platforms",
+      "parityType": "multi_select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Instagram",
+       "TikTok",
+       "YouTube",
+       "LinkedIn",
+       "X"
+      ],
+      "choiceColors": {
+       "Instagram": "blue",
+       "TikTok": "green",
+       "YouTube": "amber",
+       "LinkedIn": "violet",
+       "X": "teal"
+      }
+     },
+     {
+      "key": "posts",
+      "label": "Posts",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "post",
+      "multi": true
+     },
+     {
+      "key": "use_count",
+      "label": "Times used",
+      "parityType": "rollup",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "via": "posts",
+      "pick": "post_title",
+      "agg": "count"
+     }
+    ],
+    "rows": [
+     {
+      "key": "hs01",
+      "values": {
+       "set_name": "Surf and shore",
+       "tags": "#surflife #coastline #sunsetsession #oceanmood",
+       "platforms": [
+        "Instagram",
+        "TikTok"
+       ],
+       "posts": [
+        "po01",
+        "po13",
+        "po18"
+       ]
+      }
+     },
+     {
+      "key": "hs02",
+      "values": {
+       "set_name": "Behind the lens",
+       "tags": "#behindthescenes #creatorlife #filmmaking #shotoniphone",
+       "platforms": [
+        "Instagram",
+        "TikTok",
+        "YouTube"
+       ],
+       "posts": [
+        "po02",
+        "po09",
+        "po10",
+        "po15",
+        "po17",
+        "po20"
+       ]
+      }
+     },
+     {
+      "key": "hs03",
+      "values": {
+       "set_name": "Small business tips",
+       "tags": "#smallbusiness #brandstrategy #contentplanning #marketingtips",
+       "platforms": [
+        "LinkedIn",
+        "Instagram"
+       ],
+       "posts": [
+        "po04",
+        "po11",
+        "po12",
+        "po19"
+       ]
+      }
+     },
+     {
+      "key": "hs04",
+      "values": {
+       "set_name": "Travel mood",
+       "tags": "#wanderlust #roadtripdiaries #hiddengems #coastaldrive",
+       "platforms": [
+        "Instagram",
+        "TikTok"
+       ],
+       "posts": [
+        "po06",
+        "po08"
+       ]
+      }
+     },
+     {
+      "key": "hs05",
+      "values": {
+       "set_name": "Gear talk",
+       "tags": "#camerabag #editingworkflow #lensreview #creatorgear",
+       "platforms": [
+        "YouTube",
+        "Instagram"
+       ],
+       "posts": [
+        "po03",
+        "po05",
+        "po14"
+       ]
+      }
+     },
+     {
+      "key": "hs06",
+      "values": {
+       "set_name": "Weekly roundup",
+       "tags": "#weeklywins #creativeprocess #mondaymotivation",
+       "platforms": [
+        "LinkedIn",
+        "X"
+       ],
+       "posts": [
+        "po07",
+        "po16"
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "independentOf": {
+     "hashtag_set": "Hashtag set and this record each keep their own dates and status.",
+     "owner": "Anyone on the team can own this, whenever they joined."
+    },
+    "token": "post",
+    "name": "Posts",
+    "labelSingular": "Post",
+    "labelPlural": "Posts",
+    "type": "entity",
+    "display": "grid",
+    "weight": "light",
+    "ordered": false,
+    "icon": "share-2",
+    "titleField": "post_title",
+    "describes": "Every post across platforms, its format, status and results.",
+    "subject": "thing",
+    "fields": [
+     {
+      "key": "post_title",
+      "label": "Post",
+      "parityType": "text",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "required": true
+     },
+     {
+      "key": "platform",
+      "label": "Platform",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Instagram",
+       "TikTok",
+       "YouTube",
+       "LinkedIn",
+       "X"
+      ],
+      "choiceColors": {
+       "Instagram": "blue",
+       "TikTok": "green",
+       "YouTube": "amber",
+       "LinkedIn": "violet",
+       "X": "teal"
+      }
+     },
+     {
+      "key": "format",
+      "label": "Format",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Reel",
+       "Carousel",
+       "Story",
+       "Short",
+       "Long video",
+       "Text"
+      ],
+      "choiceColors": {
+       "Reel": "blue",
+       "Carousel": "green",
+       "Story": "amber",
+       "Short": "violet",
+       "Long video": "teal",
+       "Text": "orange"
+      }
+     },
+     {
+      "key": "pillar",
+      "label": "Pillar",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Education",
+       "Behind the scenes",
+       "Inspiration",
+       "Promotion",
+       "Community"
+      ],
+      "choiceColors": {
+       "Education": "blue",
+       "Behind the scenes": "green",
+       "Inspiration": "amber",
+       "Promotion": "violet",
+       "Community": "teal"
+      }
+     },
+     {
+      "key": "status",
+      "label": "Status",
+      "parityType": "select",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "choices": [
+       "Idea",
+       "Drafting",
+       "Designing",
+       "Scheduled",
+       "Posted"
+      ],
+      "choiceColors": {
+       "Idea": "blue",
+       "Drafting": "green",
+       "Designing": "amber",
+       "Scheduled": "violet",
+       "Posted": "teal"
+      },
+      "required": true,
+      "default": "Idea"
+     },
+     {
+      "key": "publish_on",
+      "label": "Publish date",
+      "parityType": "datetime",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "format": "date"
+     },
+     {
+      "key": "owner",
+      "label": "Owner",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "team_member",
+      "relationMax": 1
+     },
+     {
+      "key": "hashtag_set",
+      "label": "Hashtag set",
+      "parityType": "relation",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "relationTarget": "hashtag_set",
+      "relationMax": 1
+     },
+     {
+      "key": "caption",
+      "label": "Caption",
+      "parityType": "long_text",
+      "sensitivity": "internal",
+      "contextPolicy": "include"
+     },
+     {
+      "key": "reach",
+      "label": "Reach",
+      "parityType": "number",
+      "sensitivity": "confidential",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "likes",
+      "label": "Likes",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "saves",
+      "label": "Saves",
+      "parityType": "number",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "rules": [
+       {
+        "kind": "min",
+        "value": 0
+       },
+       {
+        "kind": "max",
+        "value": 10000000
+       }
+      ]
+     },
+     {
+      "key": "engagement",
+      "label": "Engagement rate percent",
+      "parityType": "formula",
+      "sensitivity": "internal",
+      "contextPolicy": "include",
+      "formula": "IF({Reach} > 0, ({Likes} + {Saves}) / {Reach} * 100, 0)"
+     }
+    ],
+    "rows": [
+     {
+      "key": "po01",
+      "values": {
+       "post_title": "Golden hour on the pier",
+       "platform": "Instagram",
+       "format": "Reel",
+       "pillar": "Inspiration",
+       "status": "Posted",
+       "publish_on": "@today-20d",
+       "owner": "tm-02",
+       "hashtag_set": "hs01",
+       "caption": "Slow pan across the pier at sunset.",
+       "reach": 18400,
+       "likes": 1320,
+       "saves": 410
+      }
+     },
+     {
+      "key": "po02",
+      "values": {
+       "post_title": "Five shots every beginner should try",
+       "platform": "Instagram",
+       "format": "Carousel",
+       "pillar": "Education",
+       "status": "Posted",
+       "publish_on": "@today-17d",
+       "owner": "tm-01",
+       "hashtag_set": "hs02",
+       "caption": "Swipe through the shot list.",
+       "reach": 9200,
+       "likes": 780,
+       "saves": 640
+      }
+     },
+     {
+      "key": "po03",
+      "values": {
+       "post_title": "Packing the camera bag",
+       "platform": "TikTok",
+       "format": "Short",
+       "pillar": "Behind the scenes",
+       "status": "Posted",
+       "publish_on": "@today-15d",
+       "owner": "tm-02",
+       "hashtag_set": "hs05",
+       "caption": "Fast cut of the kit.",
+       "reach": 41000,
+       "likes": 3900,
+       "saves": 950
+      }
+     },
+     {
+      "key": "po04",
+      "values": {
+       "post_title": "How we plan a month of content",
+       "platform": "LinkedIn",
+       "format": "Text",
+       "pillar": "Education",
+       "status": "Posted",
+       "publish_on": "@today-12d",
+       "owner": "tm-04",
+       "hashtag_set": "hs03",
+       "caption": "Three steps, no jargon.",
+       "reach": 6100,
+       "likes": 290,
+       "saves": 120
+      }
+     },
+     {
+      "key": "po05",
+      "values": {
+       "post_title": "Editing walkthrough: color grade",
+       "platform": "YouTube",
+       "format": "Long video",
+       "pillar": "Education",
+       "status": "Posted",
+       "publish_on": "@today-10d",
+       "owner": "tm-02",
+       "hashtag_set": "hs05",
+       "caption": "Twelve-minute tutorial.",
+       "reach": 12700,
+       "likes": 1010,
+       "saves": 380
+      }
+     },
+     {
+      "key": "po06",
+      "values": {
+       "post_title": "Coastal drive diary, part one",
+       "platform": "Instagram",
+       "format": "Reel",
+       "pillar": "Inspiration",
+       "status": "Posted",
+       "publish_on": "@today-7d",
+       "owner": "tm-01",
+       "hashtag_set": "hs04",
+       "caption": "First stretch of the road trip.",
+       "reach": 15800,
+       "likes": 1140,
+       "saves": 520
+      }
+     },
+     {
+      "key": "po07",
+      "values": {
+       "post_title": "Weekly roundup",
+       "platform": "X",
+       "format": "Text",
+       "pillar": "Community",
+       "status": "Posted",
+       "publish_on": "@today-6d",
+       "owner": "tm-03",
+       "hashtag_set": "hs06",
+       "caption": "Wins from the week.",
+       "reach": 2300,
+       "likes": 98,
+       "saves": 12
+      }
+     },
+     {
+      "key": "po08",
+      "values": {
+       "post_title": "Coastal drive diary, part two",
+       "platform": "TikTok",
+       "format": "Short",
+       "pillar": "Inspiration",
+       "status": "Scheduled",
+       "publish_on": "@today+1d",
+       "owner": "tm-01",
+       "hashtag_set": "hs04",
+       "caption": "The cliff overlook."
+      }
+     },
+     {
+      "key": "po09",
+      "values": {
+       "post_title": "Reader question: lighting indoors",
+       "platform": "Instagram",
+       "format": "Story",
+       "pillar": "Community",
+       "status": "Scheduled",
+       "publish_on": "@today+2d",
+       "owner": "tm-03",
+       "hashtag_set": "hs02",
+       "caption": "Answer three questions."
+      }
+     },
+     {
+      "key": "po10",
+      "values": {
+       "post_title": "Studio tour",
+       "platform": "YouTube",
+       "format": "Long video",
+       "pillar": "Behind the scenes",
+       "status": "Designing",
+       "publish_on": "@today+6d",
+       "owner": "tm-02",
+       "hashtag_set": "hs02",
+       "caption": "Eight-minute walk through the studio."
+      }
+     },
+     {
+      "key": "po11",
+      "values": {
+       "post_title": "Spring booking slots open",
+       "platform": "Instagram",
+       "format": "Carousel",
+       "pillar": "Promotion",
+       "status": "Designing",
+       "publish_on": "@today+4d",
+       "owner": "tm-04",
+       "hashtag_set": "hs03",
+       "caption": "Three slide pricing overview."
+      }
+     },
+     {
+      "key": "po12",
+      "values": {
+       "post_title": "Three mistakes in client briefs",
+       "platform": "LinkedIn",
+       "format": "Text",
+       "pillar": "Education",
+       "status": "Drafting",
+       "publish_on": "@today+8d",
+       "owner": "tm-04",
+       "hashtag_set": "hs03",
+       "caption": "Short post with a checklist."
+      }
+     },
+     {
+      "key": "po13",
+      "values": {
+       "post_title": "Sunrise timelapse",
+       "platform": "TikTok",
+       "format": "Short",
+       "pillar": "Inspiration",
+       "status": "Drafting",
+       "publish_on": "@today+9d",
+       "owner": "tm-02",
+       "hashtag_set": "hs01",
+       "caption": "Ninety seconds compressed."
+      }
+     },
+     {
+      "key": "po14",
+      "values": {
+       "post_title": "Gear review: a compact tripod",
+       "platform": "YouTube",
+       "format": "Long video",
+       "pillar": "Education",
+       "status": "Idea",
+       "owner": "tm-02",
+       "hashtag_set": "hs05",
+       "caption": "Test on sand and rock."
+      }
+     },
+     {
+      "key": "po15",
+      "values": {
+       "post_title": "Community photo walk recap",
+       "platform": "Instagram",
+       "format": "Carousel",
+       "pillar": "Community",
+       "status": "Idea",
+       "owner": "tm-03",
+       "hashtag_set": "hs02",
+       "caption": "Best frames from attendees."
+      }
+     },
+     {
+      "key": "po16",
+      "values": {
+       "post_title": "A week of Mondays",
+       "platform": "X",
+       "format": "Text",
+       "pillar": "Community",
+       "status": "Idea",
+       "owner": "tm-03",
+       "hashtag_set": "hs06",
+       "caption": "Light thread."
+      }
+     },
+     {
+      "key": "po17",
+      "values": {
+       "post_title": "Day in the life of an editor",
+       "platform": "TikTok",
+       "format": "Short",
+       "pillar": "Behind the scenes",
+       "status": "Idea",
+       "owner": "tm-02",
+       "hashtag_set": "hs02",
+       "caption": "Coffee to export."
+      }
+     },
+     {
+      "key": "po18",
+      "values": {
+       "post_title": "Tide chart explained",
+       "platform": "Instagram",
+       "format": "Reel",
+       "pillar": "Education",
+       "status": "Scheduled",
+       "publish_on": "@today+3d",
+       "owner": "tm-01",
+       "hashtag_set": "hs01",
+       "caption": "Why timing matters for shots."
+      }
+     },
+     {
+      "key": "po19",
+      "values": {
+       "post_title": "Client story: Pelican Cove Inn",
+       "platform": "LinkedIn",
+       "format": "Text",
+       "pillar": "Promotion",
+       "status": "Drafting",
+       "publish_on": "@today+11d",
+       "owner": "tm-04",
+       "hashtag_set": "hs03",
+       "caption": "Results from a rebrand shoot."
+      }
+     },
+     {
+      "key": "po20",
+      "values": {
+       "post_title": "Behind the scenes reel",
+       "platform": "Instagram",
+       "format": "Reel",
+       "pillar": "Behind the scenes",
+       "status": "Scheduled",
+       "publish_on": "@today+5d",
+       "owner": "tm-02",
+       "hashtag_set": "hs02",
+       "caption": "One-minute cut."
+      }
+     }
+    ]
+   }
+  ],
+  "relationships": [
+   {
+    "describes": "Posts lists its post records.",
+    "fromTable": "hashtag_set",
+    "fromField": "posts",
+    "toTable": "post",
+    "flavor": "referenced",
+    "cardinality": "many",
+    "onDelete": "restrict",
+    "inverseKey": "hashtag_set_listed_posts"
+   },
+   {
+    "describes": "Owner links to one team member.",
+    "fromTable": "post",
+    "fromField": "owner",
+    "toTable": "team_member",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "set_null",
+    "inverseKey": "posts_owned"
+   },
+   {
+    "describes": "Hashtag set links to one hashtag set.",
+    "fromTable": "post",
+    "fromField": "hashtag_set",
+    "toTable": "hashtag_set",
+    "flavor": "referenced",
+    "cardinality": "one",
+    "onDelete": "restrict",
+    "inverseKey": "posts_with"
+   }
+  ],
+  "sharedBlocks": [
+   {
+    "block": "team_member",
+    "rows": [
+     {
+      "key": "tm-01",
+      "values": {
+       "full_name": "Camille Dupont-Ng",
+       "role": "Creative director",
+       "work_email": "camille@wavecrestcreative.net",
+       "mobile": "(310) 555-0121",
+       "start_date": "@today-4y"
+      }
+     },
+     {
+      "key": "tm-02",
+      "values": {
+       "full_name": "Baptiste Oyelaran",
+       "role": "Video editor",
+       "work_email": "baptiste@wavecrestcreative.net",
+       "mobile": "(310) 555-0122",
+       "start_date": "@today-2y"
+      }
+     },
+     {
+      "key": "tm-03",
+      "values": {
+       "full_name": "Hana Ishikawa",
+       "role": "Community manager",
+       "work_email": "hana@wavecrestcreative.net",
+       "mobile": "(310) 555-0123",
+       "start_date": "@today-3y"
+      }
+     },
+     {
+      "key": "tm-04",
+      "values": {
+       "full_name": "Rowan Delacroix",
+       "role": "Copywriter",
+       "work_email": "rowan@wavecrestcreative.net",
+       "mobile": "(310) 555-0124",
+       "start_date": "@today-10m"
+      }
+     }
+    ]
+   }
+  ],
+  "forms": [
+   {
+    "token": "post_idea",
+    "name": "Suggest a post",
+    "describes": "How anyone adds a post idea.",
+    "audience": "staff",
+    "table": "post",
+    "fields": [
+     {
+      "fieldKey": "post_title",
+      "ask": "What is the post about?",
+      "required": true
+     },
+     {
+      "fieldKey": "platform",
+      "ask": "Which platform?"
+     },
+     {
+      "fieldKey": "pillar",
+      "ask": "Which pillar does it serve?"
+     },
+     {
+      "fieldKey": "caption",
+      "ask": "Any notes for the caption?"
+     }
+    ],
+    "submitLabel": "Add the idea",
+    "confirmation": "Thanks. It is on the board as an Idea."
+   }
+  ],
+  "dimensions": [],
+  "extras": [],
+  "views": [
+   {
+    "token": "all_sets",
+    "name": "All sets",
+    "table": "hashtag_set",
+    "kind": "grid",
+    "isDefault": true,
+    "sorts": [
+     {
+      "field": "set_name",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "post_calendar",
+    "name": "Calendar",
+    "table": "post",
+    "kind": "calendar",
+    "isDefault": true,
+    "dateField": "publish_on",
+    "allDay": true
+   },
+   {
+    "token": "post_board",
+    "name": "Board",
+    "table": "post",
+    "kind": "kanban",
+    "groupBy": "status"
+   },
+   {
+    "token": "all_posts",
+    "name": "All posts",
+    "table": "post",
+    "kind": "grid",
+    "sorts": [
+     {
+      "field": "publish_on",
+      "direction": "asc"
+     }
+    ]
+   },
+   {
+    "token": "all_team",
+    "name": "Team",
+    "table": "team_member",
+    "kind": "grid",
+    "isDefault": true
+   }
+  ],
+  "agent": {
+   "platformAgent": {
+    "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+    "name": "Answers From Your Tables"
+   },
+   "name": "Social assistant",
+   "variables": [
+    {
+     "name": "primary_table",
+     "table": "post",
+     "describes": "Every post across platforms, its format, status and results."
+    },
+    {
+     "name": "related_tables",
+     "table": "hashtag_set",
+     "describes": "The records the primary table links to."
+    }
+   ],
+   "question": {
+    "ask": "How many posts have been posted so far?",
+    "whyItMatters": "Camille compares posted counts to the monthly plan.",
+    "expect": {
+     "table": "post",
+     "measure": {
+      "op": "count"
+     },
+     "filter": {
+      "status": "Posted"
+     },
+     "answer": 7,
+     "unit": "posts"
+    }
+   }
+  },
+  "walk": [
+   {
+    "says": "Open the post calendar.",
+    "action": {
+     "kind": "open",
+     "surface": "post_calendar"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "post_calendar",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the post board.",
+    "action": {
+     "kind": "open",
+     "surface": "post_board"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "post_board",
+     "minItems": 10
+    }
+   },
+   {
+    "says": "Open the hashtag sets.",
+    "action": {
+     "kind": "open",
+     "surface": "all_sets"
+    },
+    "expect": {
+     "kind": "renders",
+     "surface": "all_sets",
+     "minItems": 6
+    }
+   }
+  ],
+  "foundation": [],
+  "provenance": {
+   "kind": "synthesized",
+   "authoredBy": "Spaces template library builder (Claude)",
+   "authoredOn": "2026-10-17",
+   "noRealPeople": true,
+   "sources": [],
+   "fictionalDomains": [
+    "wavecrestcreative.net"
+   ],
+   "fictionalStreets": [
+    "Driftwood Row"
+   ]
+  },
+  "version": 1
+ },
+ "pages": [
+  {
+   "key": "social-media-planner",
+   "parent": null,
+   "title": "Social Media Planner",
+   "icon": {
+    "emoji": "📱"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "callout",
+     "text": [
+      {
+       "text": "One calendar for every platform. Plan on the calendar, move posts across the board, and record results once they are out."
+      }
+     ],
+     "background": "pink",
+     "props": {
+      "icon": "Smartphone"
+     }
+    },
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:performance"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:how-to-use"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.5
+       },
+       "children": [
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:content-pillars"
+         }
+        },
+        {
+         "type": "page",
+         "props": {
+          "spaceId": "page:post-checklist"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Master calendar"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "post",
+       "view": "post_calendar"
+      },
+      "inline": true,
+      "title": "Posts",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-calendar",
+        "name": "Calendar",
+        "layout": "calendar",
+        "icon": "Calendar",
+        "dateField": "publish_on"
+       },
+       {
+        "id": "view-board",
+        "name": "Board",
+        "layout": "kanban",
+        "icon": "SquareKanban",
+        "groupField": "status"
+       },
+       {
+        "id": "view-all-posts",
+        "name": "All posts",
+        "layout": "grid",
+        "icon": "Table",
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-grid-preview",
+        "name": "Grid preview",
+        "layout": "gallery",
+        "icon": "LayoutGrid"
+       }
+      ],
+      "activeViewId": "view-calendar"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "By platform"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "post",
+       "view": "all_posts"
+      },
+      "inline": true,
+      "title": "Posts",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-instagram",
+        "name": "Instagram",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "platform": "Instagram"
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-tiktok",
+        "name": "TikTok",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "platform": "TikTok"
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-youtube",
+        "name": "YouTube",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "platform": "YouTube"
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-linkedin",
+        "name": "LinkedIn",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "platform": "LinkedIn"
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       },
+       {
+        "id": "view-x",
+        "name": "X",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "platform": "X"
+        },
+        "sorts": [
+         {
+          "field": "publish_on",
+          "direction": "asc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-instagram"
+     }
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Hashtag library"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "hashtag_set",
+       "view": "all_sets"
+      },
+      "inline": true,
+      "title": "Hashtag sets",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-all-sets",
+        "name": "All sets",
+        "layout": "grid",
+        "icon": "Table"
+       }
+      ],
+      "activeViewId": "view-all-sets"
+     }
+    }
+   ],
+   "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+   }
+  },
+  {
+   "key": "performance",
+   "parent": "social-media-planner",
+   "title": "Performance",
+   "icon": {
+    "emoji": "📈"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "columnList",
+     "children": [
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "post",
+           "view": "all_posts"
+          },
+          "inline": true,
+          "title": "Posts",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-posts-by-platform",
+            "name": "Posts by platform",
+            "layout": "chart",
+            "chart": {
+             "type": "donut",
+             "groupBy": "platform",
+             "op": "count",
+             "centerValue": true
+            },
+            "icon": "ChartPie"
+           }
+          ],
+          "activeViewId": "view-posts-by-platform"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.33
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "post",
+           "view": "all_posts"
+          },
+          "inline": true,
+          "title": "Posts",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-reach-by-platform",
+            "name": "Reach by platform",
+            "layout": "chart",
+            "chart": {
+             "type": "bar",
+             "groupBy": "platform",
+             "op": "sum",
+             "field": "reach"
+            },
+            "icon": "ChartColumn"
+           }
+          ],
+          "activeViewId": "view-reach-by-platform"
+         }
+        }
+       ]
+      },
+      {
+       "type": "column",
+       "props": {
+        "width": 0.34
+       },
+       "children": [
+        {
+         "type": "database",
+         "props": {
+          "source": {
+           "kind": "template",
+           "table": "post",
+           "view": "all_posts"
+          },
+          "inline": true,
+          "title": "Posts",
+          "linked": true,
+          "showTitle": false,
+          "views": [
+           {
+            "id": "view-likes-by-pillar",
+            "name": "Likes by pillar",
+            "layout": "chart",
+            "chart": {
+             "type": "bar",
+             "groupBy": "pillar",
+             "op": "sum",
+             "field": "likes"
+            },
+            "icon": "ChartColumn"
+           }
+          ],
+          "activeViewId": "view-likes-by-pillar"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "heading",
+     "text": [
+      {
+       "text": "Posted"
+      }
+     ],
+     "props": {
+      "level": 2
+     }
+    },
+    {
+     "type": "database",
+     "props": {
+      "source": {
+       "kind": "template",
+       "table": "post",
+       "view": "all_posts"
+      },
+      "inline": true,
+      "title": "Posts",
+      "linked": true,
+      "showTitle": true,
+      "views": [
+       {
+        "id": "view-results",
+        "name": "Results",
+        "layout": "grid",
+        "icon": "Table",
+        "filters": {
+         "status": "Posted"
+        },
+        "sorts": [
+         {
+          "field": "reach",
+          "direction": "desc"
+         }
+        ]
+       }
+      ],
+      "activeViewId": "view-results"
+     }
+    }
+   ]
+  },
+  {
+   "key": "how-to-use",
+   "parent": "social-media-planner",
+   "title": "How to use this planner",
+   "icon": {
+    "emoji": "📘"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Add an idea with a platform and pillar."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Pick a hashtag set from the library."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Move the card across the board as it is written and designed."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "Set the publish date so it shows on the calendar."
+      }
+     ]
+    },
+    {
+     "type": "numbered",
+     "text": [
+      {
+       "text": "After it is out, enter reach, likes and saves."
+      }
+     ]
+    },
+    {
+     "type": "toggle",
+     "text": [
+      {
+       "text": "Adding another platform"
+      }
+     ],
+     "children": [
+      {
+       "type": "text",
+       "text": [
+        {
+         "text": "Add the new name to the Platform choices on the table, then add a view filtered to it."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "content-pillars",
+   "parent": "social-media-planner",
+   "title": "Content pillars",
+   "icon": {
+    "emoji": "🏛️"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "table",
+     "props": {
+      "headerRow": true,
+      "headerColumn": false,
+      "rows": [
+       {
+        "cells": [
+         [
+          {
+           "text": "Pillar"
+          }
+         ],
+         [
+          {
+           "text": "Purpose"
+          }
+         ],
+         [
+          {
+           "text": "Share of posts"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Education"
+          }
+         ],
+         [
+          {
+           "text": "Teach one useful thing"
+          }
+         ],
+         [
+          {
+           "text": "30 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Behind the scenes"
+          }
+         ],
+         [
+          {
+           "text": "Show how the work happens"
+          }
+         ],
+         [
+          {
+           "text": "25 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Inspiration"
+          }
+         ],
+         [
+          {
+           "text": "Show finished work"
+          }
+         ],
+         [
+          {
+           "text": "20 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Community"
+          }
+         ],
+         [
+          {
+           "text": "Answer and celebrate people"
+          }
+         ],
+         [
+          {
+           "text": "15 percent"
+          }
+         ]
+        ]
+       },
+       {
+        "cells": [
+         [
+          {
+           "text": "Promotion"
+          }
+         ],
+         [
+          {
+           "text": "Say what we offer"
+          }
+         ],
+         [
+          {
+           "text": "10 percent"
+          }
+         ]
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "key": "post-checklist",
+   "parent": "social-media-planner",
+   "title": "Post checklist",
+   "icon": {
+    "emoji": "✅"
+   },
+   "settings": {
+    "fullWidth": true
+   },
+   "blocks": [
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Caption reads well without the image"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Hashtag set attached"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Alt text written"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Cover frame chosen"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    },
+    {
+     "type": "todo",
+     "text": [
+      {
+       "text": "Link or call to action included"
+      }
+     ],
+     "props": {
+      "checked": false
+     }
+    }
+   ]
+  }
+ ],
+ "waivers": []
+}
