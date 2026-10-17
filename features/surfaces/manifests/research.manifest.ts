@@ -493,7 +493,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "default_search_provider",
     label: "Search provider",
     description:
-      "The provider the topic's searches run through (e.g. serper, brave). Empty when no topic is open.",
+      "The provider the topic's searches run through (a plain service label). Empty when no topic is open.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 12,

@@ -7,6 +7,12 @@
 import type { SeoProviderSpendRow } from "./spend";
 
 const CATEGORY_BY_PROVIDER: Record<string, string> = {
+  // what the server sends a member: a category slug, never a vendor id (G4 leak 5)
+  seo_data: "SEO data",
+  web_search: "Web search",
+  social_data: "Social data",
+  messaging: "Messaging",
+  // a platform admin's raw vendor rows
   dataforseo: "SEO data",
   brave: "Web search",
   serpapi: "Web search",

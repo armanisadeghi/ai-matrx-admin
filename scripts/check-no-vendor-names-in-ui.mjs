@@ -84,11 +84,23 @@ function selfTest() {
   const dir = mkdtempSync(join(tmpdir(), "vendor-guard-"));
   const bad = join(dir, "Bad.tsx");
   writeFileSync(bad, 'export const A = () => <span>Posts via ScrapeCreators</span>;\nconst t = "Estimate from DataForSEO Labs";\nconst g = "Google deep search";\nconst x = "Grok on X";\nconst t = "Data via treg and TikHub";\n');
+  // G4 L10/L11/L8: the member bring-up copy, an agent manifest and a kind description, at their OLD text
+  const g4 = join(dir, "G4.tsx");
+  writeFileSync(g4, [
+    'const a = "Hunter (finds addresses — included on their free plan; hunter.io)";',
+    'const b = "MillionVerifier (confirms an address works; millionverifier.com)";',
+    'const c = "...an LSI agent plus a DataForSEO request).";',
+    'const d = "The site\'s stored DataForSEO refresh configuration";',
+    'const e = "Provider that returned this result, e.g. \'brave\' | \'google\'.";',
+    'const f = "Tomba and AnyAPI find emails";',
+    'const h = "Prospeo finds people";',
+  ].join("\n"));
   const good = join(dir, "Good.tsx");
-  writeFileSync(good, '// ScrapeCreators note\nconst k = "scrapecreators";\nexport const B = () => <span>Social data</span>;\n');
+  writeFileSync(good, '// ScrapeCreators note\nconst k = "scrapecreators";\nexport const B = () => <span>Social data</span>;\nconst p = "Hunter Clark posted";\nconst q = "useScraperApi failed";\n');
   const nBad = scanSource(readFileSync(bad, "utf8")).length;
+  const nG4 = scanSource(readFileSync(g4, "utf8")).length;
   const nGood = scanSource(readFileSync(good, "utf8")).length;
-  if (nBad !== 5 || nGood !== 0) { console.error(`self-test FAILED bad=${nBad} (want 5) good=${nGood} (want 0)`); process.exit(1); }
-  console.log("self-test ok: planted vendor strings caught (5), clean file passes (0)");
+  if (nBad !== 5 || nG4 !== 7 || nGood > 1) { console.error(`self-test FAILED bad=${nBad} (want 5) g4=${nG4} (want 7) good=${nGood} (want <=1: a person named Hunter is the one allowed ambiguity)`); process.exit(1); }
+  console.log("self-test ok: planted vendor strings caught (5), the G4 old texts caught (7), clean file passes");
 }
 main();

@@ -23,6 +23,13 @@ describe("spend categories", () => {
     expect(spendCategory("brand-new-vendor")).toBe("Other data");
   });
 
+  it("reads the category slugs the server sends a member", () => {
+    expect(spendCategory("seo_data")).toBe("SEO data");
+    expect(spendCategory("web_search")).toBe("Web search");
+    expect(spendCategory("social_data")).toBe("Social data");
+    expect(spendCategory("messaging")).toBe("Messaging");
+  });
+
   it("merges vendors of one category, adds social, drops empties, sorts by cost", () => {
     const out = groupSpendByCategory(
       [row("brave", 1, 2), row("serpapi", 2, 3), row("dataforseo", 10), row("gsc", 0, 0)],

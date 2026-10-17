@@ -490,7 +490,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "search_engine",
     label: "Search engine",
     description:
-      `Stages which engine the Search Lab (/scraper/search) uses: ${SEARCH_LAB_ENGINE_VALUES.map((v) => `"${v}"`).join(" | ")} — "compare" runs Brave and Google side by side. Anything else is refused. A Google search spends a shared monthly allowance, so this only stages the choice: the user still presses Search. Read back from search_engine. Refused while is_scraping is true.`,
+      `Stages which engine the Search Lab (/scraper/search) uses: ${SEARCH_LAB_ENGINE_VALUES.map((v) => `"${v}"`).join(" | ")} — "compare" runs web search and Google side by side. Anything else is refused. A Google search spends a shared monthly allowance, so this only stages the choice: the user still presses Search. Read back from search_engine. Refused while is_scraping is true.`,
     valueType: "string",
     updatesValue: "search_engine",
     mode: "draft",

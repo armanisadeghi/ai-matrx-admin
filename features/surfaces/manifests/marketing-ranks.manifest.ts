@@ -182,7 +182,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tracking_modes",
     label: "Available tracking modes",
     description:
-      "The catalog of tracking modes the add-keyword form offers, each with its id, user-facing label, provider, engine, search_type, whether a location is required, and a hint (Google national / local area / map pack, Brave, and the AI-answer engines). Always present — it is a static capability catalog, not loaded data — and it is the authoritative list of what CAN be tracked here.",
+      "The catalog of tracking modes the add-keyword form offers, each with its id, user-facing label, provider, engine, search_type, whether a location is required, and a hint (Google national / local area / map pack, web search, and the AI-answer engines). Always present — it is a static capability catalog, not loaded data — and it is the authoritative list of what CAN be tracked here.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 1400,
