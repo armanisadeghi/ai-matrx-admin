@@ -1339,6 +1339,19 @@
   }
 }
 
+/* A page narrower than 560px (a phone, or a tablet beside the sidebar) stacks its columns like the phone does:
+   SpacePage sets data-narrow from the content's own width, never the window's. */
+.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group {
+  flex-direction: column;
+}
+.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group > .bn-block-outer {
+  padding: 0;
+  flex-grow: 1 !important;
+}
+.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-column) > .react-renderer > .bn-block-content {
+  display: none;
+}
+
 /* The app's global h1–h3 rules must not reach block headings. */
 .spaces-editor [data-content-type="heading"] .bn-inline-content {
   font-weight: 600;
