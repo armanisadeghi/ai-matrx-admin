@@ -14,7 +14,7 @@ const RULEBOOK = {
 
 describe("ruleImproveOfferVariables", () => {
   it("renders the Rulebook facts the caller holds", () => {
-    const v = ruleImproveOfferVariables({ rulebook: RULEBOOK });
+    const v = ruleImproveOfferVariables("CTX", { rulebook: RULEBOOK });
     expect(v.rulebook_name).toBe("Pallet grading");
     expect(v.rulebook_description).toBe("How we grade pallets");
     expect(v.rulebook_sections).toBe("- G: General\n- Q: Quality");
@@ -24,11 +24,12 @@ describe("ruleImproveOfferVariables", () => {
   });
 
   it("carries the rule's review state and a checkup suggestion's evidence", () => {
-    const v = ruleImproveOfferVariables({
+    const v = ruleImproveOfferVariables("CTX", {
       rule: { feedback: " too strict ", rejected: true, chapter: "Ch. 3" },
       suggestion: { evidence: "I always weigh first", reason: "Said twice" },
     });
     expect(v).toEqual({
+      rulebook_context: "CTX",
       rule_feedback: "too strict",
       rule_was_rejected: true,
       rule_chapter: "Ch. 3",
@@ -37,13 +38,13 @@ describe("ruleImproveOfferVariables", () => {
     });
   });
 
-  it("sends nothing it does not hold, and never a by-name key", () => {
-    expect(ruleImproveOfferVariables({})).toEqual({});
-    const v = ruleImproveOfferVariables({
+  it("always carries the guaranteed rulebook_context, sends nothing else it does not hold, and never rule / expert_input", () => {
+    expect(ruleImproveOfferVariables("CTX", {})).toEqual({ rulebook_context: "CTX" });
+    const v = ruleImproveOfferVariables("CTX", {
       rulebook: { ...RULEBOOK, description: "", sections: {}, rules: [], source: {} } as unknown as Rulebook,
       rule: { feedback: "" },
     }) as Record<string, unknown>;
-    expect(v).toEqual({ rulebook_name: "Pallet grading" });
-    for (const k of ["rule", "expert_input", "rulebook_context"]) expect(k in v).toBe(false);
+    expect(v).toEqual({ rulebook_context: "CTX", rulebook_name: "Pallet grading" });
+    for (const k of ["rule", "expert_input"]) expect(k in v).toBe(false);
   });
 });

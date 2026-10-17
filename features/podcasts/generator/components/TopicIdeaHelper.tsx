@@ -29,15 +29,17 @@ import type { PodcastClientTopicIdeaRequestOffer } from "@ai-matrx/agents/genera
 const IDEA_COUNT = 5;
 
 /** The offered facts a caller may add (mapped-only; dropped on the default pin). */
-export type TopicIdeaOfferFacts = Pick<
-  Partial<PodcastClientTopicIdeaRequestOffer>,
-  | "show_title"
-  | "show_description"
-  | "existing_topic_ideas"
-  | "episode_format"
-  | "language"
-  | "host_count"
-  | "target_audience"
+export type TopicIdeaOfferFacts = Partial<
+  Pick<
+    PodcastClientTopicIdeaRequestOffer,
+    | "show_title"
+    | "show_description"
+    | "existing_topic_ideas"
+    | "episode_format"
+    | "language"
+    | "host_count"
+    | "target_audience"
+  >
 >;
 
 /** Bank the whole generated batch on the show (D151). Never throws at the UI. */
@@ -134,7 +136,9 @@ export function TopicIdeaHelper({
         }}
         expectedKind="topic_ideas"
         uiOptions={{ selectionMode: "single" }}
-        {...(showId ? { onBatch: (value: unknown) => bankTopicIdeas(showId, value) } : {})}
+        {...(showId
+          ? { onBatch: (value: unknown) => bankTopicIdeas(showId, value) }
+          : {})}
         onResolve={(value) => {
           const topic = topicFromIdea(value);
           if (topic) onPick(topic);

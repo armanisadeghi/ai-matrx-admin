@@ -473,9 +473,11 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
           mandateKey: IMAGE_PROMPT_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
-            intent_or_content: args.spec,
-            style: args.style || "No specific style — pick the best fit.",
-            ...imagePromptOfferValues(args.facts),
+            ...imagePromptOfferValues(
+              args.spec,
+              args.style || "No specific style — pick the best fit.",
+              args.facts,
+            ),
           },
           live: { instanceId: liveInstanceId, label: "Writing the image prompt" },
         },
@@ -510,8 +512,7 @@ export function generatePageImageTwoStep(args: GeneratePageImageTwoStepArgs) {
           mandateKey: PAGE_IMAGE_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
-            image_description: imagePrompt,
-            ...pageImageOfferValues(args.facts, args.spec, args.style),
+            ...pageImageOfferValues(imagePrompt, args.facts, args.spec, args.style),
           },
           live: { instanceId: liveInstanceId, label: "Rendering the image" },
         },
@@ -567,10 +568,12 @@ export function generatePageImageAllInOne(args: GeneratePageImageAllInOneArgs) {
           mandateKey: PAGE_IMAGE_ALL_IN_ONE_MANDATE_KEY,
           surfaceKey: args.surfaceKey,
           variables: {
-            intent_or_content: args.spec,
-            style: args.style || "No specific style — pick the best fit.",
-            count: "1",
-            ...allInOneOfferValues(args.facts),
+            ...allInOneOfferValues(
+              args.spec,
+              args.style || "No specific style — pick the best fit.",
+              1,
+              args.facts,
+            ),
           },
           live: {
             instanceId: liveWindowId(args.surfaceKey, args.liveInstanceId),

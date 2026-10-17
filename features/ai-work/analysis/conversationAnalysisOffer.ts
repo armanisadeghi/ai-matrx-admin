@@ -1,6 +1,8 @@
 /**
- * Declared offer values of provision `conversation.analysis`, sent by name
- * beside `conversation_id`. The analysis panel launches on the MANDATE door
+ * Declared offer values of provision `conversation.analysis`. `conversation_id`
+ * is GUARANTEED (the mandate door refuses the run without it — 422
+ * `mandate_inputs_rejected`), so the builder takes it and the return type keeps
+ * it required (guard: `pnpm check:offer-guarantees`). The analysis panel launches on the MANDATE door
  * (`launchAgentExecution({ mandateKey })`), where the server drops these
  * mapped-only names unless a binding's consumption map names one — so the
  * current Holders receive exactly what they did before. Every value comes from
@@ -21,16 +23,14 @@ export interface ConversationAnalysisFacts {
   initial_agent_id?: string | null;
 }
 
-export type ConversationAnalysisOfferValues = Omit<
-  Partial<ConversationAnalysisOffer>,
-  "__kind" | "conversation_id"
->;
+export type ConversationAnalysisOfferValues = Omit<ConversationAnalysisOffer, "__kind">;
 
 export function buildConversationAnalysisOffer(
+  conversationId: string,
   facts: ConversationAnalysisFacts | null | undefined,
 ): ConversationAnalysisOfferValues {
-  if (!facts) return {};
-  const out: ConversationAnalysisOfferValues = {};
+  const out: ConversationAnalysisOfferValues = { conversation_id: conversationId };
+  if (!facts) return out;
   const text = (v: string | null | undefined) =>
     typeof v === "string" && v.trim() ? v.trim() : undefined;
   const put = <K extends keyof ConversationAnalysisOfferValues>(

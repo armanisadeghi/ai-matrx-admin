@@ -81,8 +81,7 @@ export function ConversationAnalyzePanel({
           config: { displayMode: "direct", autoRun: true, allowChat: true },
           runtime: {
             variables: {
-              ...buildConversationAnalysisOffer(conversation),
-              conversation_id: conversationId,
+              ...buildConversationAnalysisOffer(conversationId, conversation),
             },
           },
           onConversationCreated: (id) =>

@@ -220,7 +220,7 @@ export type InterviewLaunchVariables = {
   /** Present in `primed` mode ONLY — the key is absent in `blank_slate`. */
   rulebook_document?: string;
 } & Pick<
-  Partial<MasterworkScoutInterviewOffer>,
+  MasterworkScoutInterviewOffer,
   | "expert_name"
   | "rulebook_name"
   | "rulebook_status"

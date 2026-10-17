@@ -107,11 +107,10 @@ export function useEpisodeChapters(
         surfaceKey: "podcast-episode-chapters",
         sourceFeature: "podcasts",
         variables: {
-          episode_script: episode.script,
           duration_hint: formatDurationHint(episode.duration_seconds),
           granularity_hint: "",
           // Mapped-only offered facts (dropped on the default pin).
-          ...chapteringOfferVariables(episode),
+          ...chapteringOfferVariables(episode.script, episode),
         },
         onConversationCreated: (conversationId) => {
           windowRef.current?.update({ conversationId, pending: false });

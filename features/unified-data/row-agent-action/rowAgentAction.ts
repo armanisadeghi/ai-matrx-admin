@@ -104,6 +104,11 @@ export function rowAgentOffer(args: {
   return offer;
 }
 
+export type RowAgentMappedValues = Pick<
+  DataTableRowActionOffer,
+  "acting_person_level" | "organization_id" | "hidden_field_keys"
+>;
+
 /**
  * The Provision's MAPPED-ONLY values (declared `pass_by_name=False`): the reader's level on the
  * table, the table's organization, and which fields the read door hid from this reader. They
@@ -115,7 +120,7 @@ export function rowAgentMappedValues(args: {
   level: PermissionLevel | null;
   organizationId: string;
   document: Record<string, unknown>;
-}): Pick<DataTableRowActionOffer, "acting_person_level" | "organization_id" | "hidden_field_keys"> {
+}): RowAgentMappedValues {
   const hidden = args.document._hidden;
   const hiddenKeys =
     hidden && typeof hidden === "object" && !Array.isArray(hidden) ? Object.keys(hidden) : [];
@@ -123,7 +128,7 @@ export function rowAgentMappedValues(args: {
     ...(args.level ? { acting_person_level: args.level } : {}),
     ...(args.organizationId ? { organization_id: args.organizationId } : {}),
     ...(hiddenKeys.length > 0 ? { hidden_field_keys: hiddenKeys } : {}),
-  } satisfies Partial<DataTableRowActionOffer>;
+  } satisfies RowAgentMappedValues;
 }
 
 /** The launch the older grid makes, for this row — `data.row_action` in the flexible panel. */

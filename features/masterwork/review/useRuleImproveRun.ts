@@ -120,9 +120,8 @@ export function useRuleImproveRun(
             )
           : "",
         expert_input: request.expertInput.trim(),
-        rulebook_context: request.context,
-        // Mapped-only offered facts (dropped on the default pin).
-        ...ruleImproveOfferVariables(request.offer ?? {}),
+        // `rulebook_context` (guaranteed) + mapped-only offered facts.
+        ...ruleImproveOfferVariables(request.context, request.offer ?? {}),
       },
       expect: "json",
       timeoutMs: 120_000,

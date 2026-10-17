@@ -374,6 +374,19 @@ export function buildThreadAgentContextEntries(
   ];
 }
 
+export type ThreadOfferedValues = Pick<
+  WarRoomThreadContextOffer,
+  | "room_title"
+  | "project_name"
+  | "thread_title"
+  | "thread_task_title"
+  | "thread_task_status"
+  | "thread_note"
+  | "sibling_thread_titles"
+  | "attached_resource_titles"
+  | "delegation_mode"
+>;
+
 /**
  * The MAPPED-ONLY offered values of Provision `war_room.thread_context`
  * (mandate `war_room.thread`, declared `pass_by_name=False` in aidream
@@ -390,18 +403,7 @@ export function buildThreadOfferedValues(
   state: RootState,
   threadId: string,
   delegationMode: string,
-): Pick<
-  WarRoomThreadContextOffer,
-  | "room_title"
-  | "project_name"
-  | "thread_title"
-  | "thread_task_title"
-  | "thread_task_status"
-  | "thread_note"
-  | "sibling_thread_titles"
-  | "attached_resource_titles"
-  | "delegation_mode"
-> {
+): ThreadOfferedValues {
   const thread = selectThreadById(threadId)(state);
   if (!thread) return { delegation_mode: delegationMode };
 
@@ -445,5 +447,5 @@ export function buildThreadOfferedValues(
     ...(siblingTitles.length > 0 ? { sibling_thread_titles: siblingTitles } : {}),
     ...(resourceTitles.length > 0 ? { attached_resource_titles: resourceTitles } : {}),
     delegation_mode: delegationMode,
-  } satisfies Partial<WarRoomThreadContextOffer>;
+  } satisfies ThreadOfferedValues;
 }

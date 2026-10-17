@@ -1,6 +1,11 @@
 /**
  * page-image-offer-values.ts — pure builders for the image provisions' mapped-only
  * offered values (consumed by generate-page-image.ts).
+ *
+ * The GUARANTEED values of each provision (`intent_or_content`, `style`,
+ * `image_description`, `count`) are parameters here: the mandate door refuses
+ * the run (422 mandate_inputs_rejected) without them, so omitting one is a
+ * type error, never a runtime refusal.
  */
 
 import { compactOfferValues } from "@/features/marketing/lib/offer-values";
@@ -38,61 +43,93 @@ export type PageImageFacts = Partial<
   >
 >;
 
-/** `marketing.image_prompt` mapped-only offers, from the caller's facts. */
+/** `marketing.image_prompt`: the guaranteed spec + style, plus the caller's mapped-only facts. */
 export function imagePromptOfferValues(
+  intentOrContent: string,
+  style: string,
   facts: PageImageFacts | undefined,
-): Partial<MarketingImagePromptOffer> {
-  if (!facts) return {};
-  return compactOfferValues({
-    page_url: facts.page_url,
-    page_path: facts.page_path,
-    image_description: facts.image_description,
-    alt_text: facts.alt_text,
-    placement: facts.placement,
-    page_target_keyword: facts.page_target_keyword,
-    image_type: facts.image_type,
-    site_name: facts.site_name,
-    site_url: facts.site_url,
-    width_px: facts.width_px,
-    height_px: facts.height_px,
-    file_format: facts.file_format,
-    site_media_rules: facts.site_media_rules,
-  } satisfies Partial<MarketingImagePromptOffer>);
+): Omit<MarketingImagePromptOffer, "__kind"> {
+  return {
+    intent_or_content: intentOrContent,
+    style,
+    ...(facts
+      ? compactOfferValues({
+          page_url: facts.page_url,
+          page_path: facts.page_path,
+          image_description: facts.image_description,
+          alt_text: facts.alt_text,
+          placement: facts.placement,
+          page_target_keyword: facts.page_target_keyword,
+          image_type: facts.image_type,
+          site_name: facts.site_name,
+          site_url: facts.site_url,
+          width_px: facts.width_px,
+          height_px: facts.height_px,
+          file_format: facts.file_format,
+          site_media_rules: facts.site_media_rules,
+        } satisfies PageImageFacts)
+      : {}),
+  };
 }
 
-/** `marketing.page_image` mapped-only offers: the ordered spec and style the
- *  prompt was written from, plus the caller's facts. */
+/** `marketing.page_image`: the guaranteed rendered prompt, plus the ordered
+ *  spec and style it was written from and the caller's facts. */
 export function pageImageOfferValues(
+  imageDescription: string,
   facts: PageImageFacts | undefined,
   spec: string,
   style: string,
-): Partial<MarketingPageImageOffer> {
-  return compactOfferValues({
-    image_spec: spec,
-    style,
-    page_url: facts?.page_url,
-    page_path: facts?.page_path,
-    alt_text: facts?.alt_text,
-    placement: facts?.placement,
-    width_px: facts?.width_px,
-    height_px: facts?.height_px,
-    file_format: facts?.file_format,
-    site_name: facts?.site_name,
-  } satisfies Partial<MarketingPageImageOffer>);
+): Omit<MarketingPageImageOffer, "__kind"> {
+  return {
+    image_description: imageDescription,
+    ...compactOfferValues({
+      image_spec: spec,
+      style,
+      page_url: facts?.page_url,
+      page_path: facts?.page_path,
+      alt_text: facts?.alt_text,
+      placement: facts?.placement,
+      width_px: facts?.width_px,
+      height_px: facts?.height_px,
+      file_format: facts?.file_format,
+      site_name: facts?.site_name,
+    } satisfies Partial<Pick<MarketingPageImageOffer, MappedPageImageKeys>>),
+  };
 }
 
-/** `marketing.page_image_all_in_one` mapped-only offers. */
+type MappedPageImageKeys =
+  | "image_spec"
+  | "style"
+  | "page_url"
+  | "page_path"
+  | "alt_text"
+  | "placement"
+  | "width_px"
+  | "height_px"
+  | "file_format"
+  | "site_name";
+
+/** `marketing.page_image_all_in_one`: guaranteed spec, style and count, plus mapped-only facts. */
 export function allInOneOfferValues(
+  intentOrContent: string,
+  style: string,
+  count: number,
   facts: PageImageFacts | undefined,
-): Partial<MarketingPageImageAllInOneOffer> {
-  if (!facts) return {};
-  return compactOfferValues({
-    page_url: facts.page_url,
-    page_path: facts.page_path,
-    image_description: facts.image_description,
-    alt_text: facts.alt_text,
-    placement: facts.placement,
-    page_target_keyword: facts.page_target_keyword,
-    site_name: facts.site_name,
-  } satisfies Partial<MarketingPageImageAllInOneOffer>);
+): Omit<MarketingPageImageAllInOneOffer, "__kind"> {
+  return {
+    intent_or_content: intentOrContent,
+    style,
+    count,
+    ...(facts
+      ? compactOfferValues({
+          page_url: facts.page_url,
+          page_path: facts.page_path,
+          image_description: facts.image_description,
+          alt_text: facts.alt_text,
+          placement: facts.placement,
+          page_target_keyword: facts.page_target_keyword,
+          site_name: facts.site_name,
+        } satisfies PageImageFacts)
+      : {}),
+  };
 }
