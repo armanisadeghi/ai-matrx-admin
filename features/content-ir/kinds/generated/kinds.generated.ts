@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1578 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1592 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "c4a86dc58f4f";
+export const KIND_REGISTRY_FINGERPRINT = "8286b6bf6bac";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -92,13 +92,18 @@ export interface AdItem {
   };
   format?: string | null;
   library: "meta" | "tiktok" | "google" | "linkedin";
+  row_key?: string | null;
+  audience?: string | null;
   ended_at?: string | null;
   headline?: string | null;
+  shown_on?: string | null;
   is_active?: boolean | null;
+  video_url?: string | null;
   started_at?: string | null;
   impressions?: number | null;
   landing_url?: string | null;
   advertiser_id?: string | null;
+  thumbnail_url?: string | null;
   platform_ad_id: string;
   advertiser_name?: string | null;
 }
@@ -1469,6 +1474,27 @@ export interface AutopsyOpportunityAssessment {
 }
 
 /**
+ * One link from another website to the site (each field is a table column).
+ *  *
+ *  * From kind `backlink_rows`.
+ */
+export interface BacklinkRow {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  anchor?: string | null;
+  followed?: boolean | null;
+  link_type?: string | null;
+  first_seen?: string | null;
+  source_url: string;
+  target_url: string;
+  page_strength?: number | null;
+  source_domain?: string | null;
+  domain_strength?: number | null;
+}
+
+/**
  * * Shared by 2 kinds (voice_fingerprint, voice_measure_result).
  */
 export interface BannedStructure {
@@ -2372,6 +2398,7 @@ export interface CommentItem {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   };
+  row_key?: string | null;
   platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
   posted_at?: string | null;
   author_name?: string | null;
@@ -3255,10 +3282,15 @@ export interface EmailCandidate {
   position?: string | null;
   full_name?: string | null;
   last_name?: string | null;
+  seniority?: string | null;
   confidence?: number | null;
   department?: string | null;
   first_name?: string | null;
+  last_checked?: string | null;
+  linkedin_url?: string | null;
+  phone_number?: string | null;
   verification?: string | null;
+  decision_maker?: boolean | null;
 }
 
 /**
@@ -3893,6 +3925,26 @@ export interface FontItem {
 }
 
 /**
+ * One Tool the search found, with how to call it now.
+ *  *
+ *  * From kind `found_tools`.
+ */
+export interface FoundTool {
+  doc?: string;
+  added?: boolean;
+  state?: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  job_key: string;
+  how_to_call?: string;
+  display_name: string;
+  display_noun?: string;
+  price_points?: number | null;
+}
+
+/**
  * * From kind `news_freshness_check_result`.
  */
 export interface FreshnessGate {
@@ -4188,6 +4240,23 @@ export interface Holder {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * One public holiday (each field is a table column).
+ *  *
+ *  * From kind `holiday_list`.
+ */
+export interface HolidayRow {
+  date: string;
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  local_name?: string | null;
+  nationwide?: boolean | null;
+  holiday_type?: string | null;
 }
 
 /**
@@ -4834,6 +4903,24 @@ export interface KeywordRef {
 }
 
 /**
+ * One keyword and how it performs (each field is a table column).
+ *  *
+ *  * From kind `keyword_data`.
+ */
+export interface KeywordRow {
+  cpc?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  keyword: string;
+  difficulty?: number | null;
+  competition?: number | null;
+  results_count?: number | null;
+  search_volume?: number | null;
+}
+
+/**
  * * From kind `kg_graph_neighborhood`.
  */
 export interface KgGraphEdge {
@@ -5201,6 +5288,31 @@ export interface Lexical {
     __kind?: string;
     [key: string]: number | string | undefined;
   };
+}
+
+/**
+ * One flat record from a catalog, registry or archive (each field is a table column).
+ *  *
+ *  * From kind `library_items`.
+ */
+export interface LibraryRow {
+  link: string;
+  tags?: string | null;
+  year?: string | null;
+  title: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  source?: string | null;
+  summary?: string | null;
+  creators?: string | null;
+  image_url?: string | null;
+  item_type?: string | null;
+  identifier?: string | null;
+  metric_label?: string | null;
+  metric_value?: number | null;
+  identifier_label?: string | null;
 }
 
 /**
@@ -6196,6 +6308,21 @@ export interface MoveWhen {
 }
 
 /**
+ * One business or brand an AI assistant named in its answer, in the order it appeared.
+ *  *
+ *  * From kind `ai_visibility_mentions`.
+ */
+export interface NamedBrand {
+  name: string;
+  rank?: number | null;
+  type?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * * From kind `digital_pr_reputation_brief_v1`.
  */
 export interface Narrative {
@@ -7053,6 +7180,30 @@ export interface PersonNamesake {
 }
 
 /**
+ * One person a search found: who, what role, where, and whether contact details are on file.
+ *  *
+ *  * From kind `people_results`.
+ */
+export interface PersonResult {
+  id?: string | null;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  company?: string | null;
+  updated?: string | null;
+  headline?: string | null;
+  location?: string | null;
+  full_name?: string | null;
+  has_email?: boolean | null;
+  has_phone?: string | null;
+  last_name?: string | null;
+  first_name?: string | null;
+  profile_url?: string | null;
+}
+
+/**
  * * From kind `brand_intake_profile`.
  */
 export interface PersonaItem {
@@ -7321,8 +7472,11 @@ export interface PositiveFlag {
 export interface Post {
   url?: string | null;
   is_ad?: boolean | null;
+  likes?: number | null;
   media?: MediaItem[];
   music?: string | null;
+  saves?: number | null;
+  views?: number | null;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
@@ -7336,11 +7490,17 @@ export interface Post {
     [key: string]: JsonValue | string | undefined;
   };
   format?: string | null;
+  shares?: number | null;
   caption?: string | null;
   metrics?: Metrics;
+  row_key?: string | null;
   hashtags?: string[];
   platform: "tiktok" | "instagram" | "youtube" | "linkedin" | "facebook" | "x" | "threads" | "pinterest" | "reddit" | "snapchat" | "mastodon" | "twitch";
   posted_at?: string | null;
+  author_name?: string | null;
+  author_handle?: string | null;
+  comment_count?: number | null;
+  thumbnail_url?: string | null;
   duration_seconds?: number | null;
   platform_post_id: string;
 }
@@ -8262,6 +8422,28 @@ export interface ReviewFinding {
    */
   __kind?: string;
   suggestion?: string | null;
+}
+
+/**
+ * One customer review (each field is a table column).
+ *  *
+ *  * From kind `customer_reviews`.
+ */
+export interface ReviewRow {
+  url?: string | null;
+  date?: string | null;
+  text?: string | null;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  author?: string | null;
+  rating?: number | null;
+  language?: string | null;
+  verified?: boolean | null;
+  review_id: string;
+  app_version?: string | null;
 }
 
 /**
@@ -11479,6 +11661,25 @@ export interface WebSearchResultRow {
   engine: string;
   endpoint?: string | null;
   description?: string;
+}
+
+/**
+ * * From kind `wechat_accounts`.
+ */
+export interface WechatAccount {
+  name?: string | null;
+  owner?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  followers?: number | null;
+  account_id?: string | null;
+  avatar_url?: string | null;
+  last_published?: number | null;
+  average_top_likes?: number | null;
+  average_top_reads?: number | null;
+  articles_this_week?: number | null;
 }
 
 /**
@@ -14877,6 +15078,24 @@ export interface AiExtractResult {
 }
 
 /**
+ * What an AI assistant answered to one question, which brands it named and which sites it cited.
+ *  *
+ *  * Kind `ai_visibility_mentions` (registry v1).
+ */
+export interface AiVisibilityMentions {
+  brand?: string | null;
+  items?: NamedBrand[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "ai_visibility_mentions";
+  answer?: string | null;
+  engine?: string | null;
+  question?: string | null;
+  cited_sites?: string[];
+}
+
+/**
  * Output of ``seo.ai_visibility.panel.declare`` — the saved/updated panel.
  *  *
  *  * Kind `ai_visibility_panel` (registry v8).
@@ -15699,9 +15918,22 @@ export interface AuthorityNewsjackingArticle {
 }
 
 /**
+ * The individual links from other websites to one site.
+ *  *
+ *  * Kind `backlink_rows` (registry v1).
+ */
+export interface BacklinkRows {
+  items?: BacklinkRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "backlink_rows";
+}
+
+/**
  * How many links point at one website and from how many different websites.
  *  *
- *  * Kind `backlinks_summary` (registry v1).
+ *  * Kind `backlinks_summary` (registry v2).
  */
 export interface BacklinksSummary {
   rank?: number | null;
@@ -15711,11 +15943,21 @@ export interface BacklinksSummary {
   __kind?: "backlinks_summary";
   domain: string;
   backlinks?: number | null;
+  first_seen?: string | null;
+  spam_score?: number | null;
+  text_links?: number | null;
+  image_links?: number | null;
   referring_ips?: number | null;
+  redirect_links?: number | null;
+  referring_pages?: number | null;
+  backlinks_change?: number | null;
+  broken_backlinks?: number | null;
   referring_domains?: number | null;
   referring_subnets?: number | null;
   dofollow_backlinks?: number | null;
   nofollow_backlinks?: number | null;
+  harmful_linking_websites?: number | null;
+  referring_domains_change?: number | null;
 }
 
 /**
@@ -21657,6 +21899,39 @@ export interface CompanyEndowmentPortfolio {
 }
 
 /**
+ * What one company does, how big it is, where it is and where to find it online.
+ *  *
+ *  * Kind `company_profile` (registry v1).
+ */
+export interface CompanyProfile {
+  city?: string | null;
+  name?: string | null;
+  phone?: string | null;
+  state?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "company_profile";
+  domain?: string | null;
+  address?: string | null;
+  country?: string | null;
+  founded?: number | null;
+  funding?: string | null;
+  revenue?: string | null;
+  industry?: string | null;
+  logo_url?: string | null;
+  sic_code?: string | null;
+  employees?: number | null;
+  naics_code?: string | null;
+  description?: string | null;
+  twitter_url?: string | null;
+  website_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  headcount_growth_12m?: number | null;
+}
+
+/**
  * Kind `comparison_criterion` (registry v7).
  */
 export interface ComparisonCriterion {
@@ -24414,6 +24689,21 @@ export interface CustomScriptResult {
 }
 
 /**
+ * What customers say about one business or app: stars, headline, text and date for each review.
+ *  *
+ *  * Kind `customer_reviews` (registry v1).
+ */
+export interface CustomerReviews {
+  items?: ReviewRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "customer_reviews";
+  subject?: string | null;
+  reviewed_on?: string | null;
+}
+
+/**
  * Kind `data.build_or_ask.offer` (registry v16).
  */
 export interface DataBuildOrAskOffer {
@@ -25354,7 +25644,7 @@ export interface DocumentQuadDetection {
 /**
  * How strong one website's links are, scored 0 to 100, with the counts behind it.
  *  *
- *  * Kind `domain_authority` (registry v1).
+ *  * Kind `domain_authority` (registry v2).
  */
 export interface DomainAuthority {
   /**
@@ -25365,9 +25655,17 @@ export interface DomainAuthority {
   spam_score?: number | null;
   last_crawled?: string | null;
   linking_pages?: number | null;
+  outgoing_pages?: number | null;
   page_authority?: number | null;
   domain_authority?: number | null;
+  outgoing_domains?: number | null;
+  lost_linking_pages?: number | null;
   linking_root_domains?: number | null;
+  lost_linking_domains?: number | null;
+  page_linking_domains?: number | null;
+  nofollow_linking_pages?: number | null;
+  nofollow_linking_domains?: number | null;
+  subdomain_linking_domains?: number | null;
 }
 
 /**
@@ -26392,7 +26690,7 @@ export interface ElectronicsIntakeAnalysis {
 /**
  * Addresses found for a company (or one person at it) — unverified until a person confirms one.
  *  *
- *  * Kind `email_candidates` (registry v2).
+ *  * Kind `email_candidates` (registry v3).
  */
 export interface EmailCandidates {
   /**
@@ -26406,7 +26704,7 @@ export interface EmailCandidates {
 /**
  * Whether one address can receive mail, as one check saw it.
  *  *
- *  * Kind `email_verdict` (registry v1).
+ *  * Kind `email_verdict` (registry v2).
  */
 export interface EmailVerdict {
   free?: boolean | null;
@@ -26419,6 +26717,7 @@ export interface EmailVerdict {
   result?: string | null;
   quality?: string | null;
   subresult?: string | null;
+  suggestion?: string | null;
 }
 
 /**
@@ -28110,6 +28409,23 @@ export interface FormattedDatetime {
 }
 
 /**
+ * The Tools a catalog search found for an agent, best first.
+ *  *
+ *  * Kind `found_tools` (registry v2).
+ */
+export interface FoundTools {
+  note?: string;
+  added?: string[];
+  query?: string;
+  tools?: FoundTool[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "found_tools";
+  verdict?: string;
+}
+
+/**
  * Kind `foundry.agent_planning.offer` (registry v11).
  */
 export interface FoundryAgentPlanningOffer {
@@ -29334,6 +29650,22 @@ export interface HindsightReplayVerdict {
   reasoning: string;
   quality_delta?: string;
   regression_risk?: string;
+}
+
+/**
+ * A country's public holidays for one year.
+ *  *
+ *  * Kind `holiday_list` (registry v1).
+ */
+export interface HolidayList {
+  year: number;
+  items?: HolidayRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "holiday_list";
+  country?: string | null;
+  country_code: string;
 }
 
 /**
@@ -30934,6 +31266,19 @@ export interface KeywordClassificationBatchV1 {
 }
 
 /**
+ * Search volume, cost per click, competition and ranking difficulty for a list of keywords.
+ *  *
+ *  * Kind `keyword_data` (registry v1).
+ */
+export interface KeywordData {
+  items?: KeywordRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "keyword_data";
+}
+
+/**
  * Kind `keyword_list` (registry v6).
  */
 export interface KeywordList {
@@ -31957,6 +32302,44 @@ export interface LessonScriptSet {
      */
     __kind?: string;
   };
+}
+
+/**
+ * One record from a catalog, registry or archive: a paper, package, museum object or book.
+ *  *
+ *  * Kind `library_item` (registry v1).
+ */
+export interface LibraryItem {
+  link: string;
+  tags?: string | null;
+  year?: string | null;
+  title: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "library_item";
+  source?: string | null;
+  summary?: string | null;
+  creators?: string | null;
+  image_url?: string | null;
+  item_type?: string | null;
+  identifier?: string | null;
+  metric_label?: string | null;
+  metric_value?: number | null;
+  identifier_label?: string | null;
+}
+
+/**
+ * Several records from a catalog, registry or archive.
+ *  *
+ *  * Kind `library_items` (registry v1).
+ */
+export interface LibraryItems {
+  items?: LibraryRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "library_items";
 }
 
 /**
@@ -39761,6 +40144,19 @@ export interface PdfTextExtraction {
 }
 
 /**
+ * People found at a company or for a role, one row each.
+ *  *
+ *  * Kind `people_results` (registry v1).
+ */
+export interface PeopleResults {
+  items?: PersonResult[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "people_results";
+}
+
+/**
  * Kind `perimeter_entry` (registry v4).
  */
 export interface PerimeterEntry {
@@ -40069,6 +40465,29 @@ export interface PersonalizationWriteResult {
     status: "written" | "insufficient_evidence";
     confidence: number;
   })[];
+}
+
+/**
+ * Whether a phone number is real, what kind of line it is and who carries it. It never says who owns it.
+ *  *
+ *  * Kind `phone_check` (registry v1).
+ */
+export interface PhoneCheck {
+  valid?: boolean | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "phone_check";
+  number?: string | null;
+  region?: string | null;
+  carrier?: string | null;
+  country?: string | null;
+  prepaid?: boolean | null;
+  timezone?: string | null;
+  line_type?: string | null;
+  activity_score?: number | null;
+  display_number?: string | null;
+  network_status?: string | null;
 }
 
 /**
@@ -44679,6 +45098,23 @@ export interface Relation {
    * The id of the record or platform thing this points at.
    */
   _record_id: string;
+}
+
+/**
+ * The latest release of an app or package: version, date and a link to the notes.
+ *  *
+ *  * Kind `release_info` (registry v1).
+ */
+export interface ReleaseInfo {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "release_info";
+  source?: string | null;
+  version: string;
+  notes_url?: string | null;
+  released_at?: string | null;
 }
 
 /**
@@ -51568,6 +52004,23 @@ export interface SerpPlacement {
 }
 
 /**
+ * Whether one online service is up right now, in one word and a link to its status page.
+ *  *
+ *  * Kind `service_status` (registry v1).
+ */
+export interface ServiceStatus {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "service_status";
+  status: "operational" | "minor" | "major" | "critical" | "unknown";
+  vendor: string;
+  headline?: string | null;
+  checked_at?: string | null;
+  status_url?: string | null;
+}
+
+/**
  * Kind `setting_value` (registry v3).
  */
 export interface SettingValue {
@@ -51892,7 +52345,7 @@ export interface SocialPostBreakdownOffer {
 /**
  * One page of ads from an ad library.
  *  *
- *  * Kind `social_data_ads` (registry v1).
+ *  * Kind `social_data_ads` (registry v2).
  */
 export interface SocialDataAds {
   items?: AdItem[];
@@ -51907,7 +52360,7 @@ export interface SocialDataAds {
 /**
  * One page of comments on a post.
  *  *
- *  * Kind `social_data_comments` (registry v1).
+ *  * Kind `social_data_comments` (registry v2).
  */
 export interface SocialDataComments {
   items?: CommentItem[];
@@ -51954,7 +52407,7 @@ export interface SocialDataPost {
 /**
  * One page of posts (an account's posts, a search, trending).
  *  *
- *  * Kind `social_data_posts` (registry v1).
+ *  * Kind `social_data_posts` (registry v2).
  */
 export interface SocialDataPosts {
   items?: Post[];
@@ -60820,6 +61273,19 @@ export interface WebViewportMetaV1 {
 }
 
 /**
+ * Official WeChat accounts that match a keyword, with followers and reach.
+ *  *
+ *  * Kind `wechat_accounts` (registry v1).
+ */
+export interface WechatAccounts {
+  items?: WechatAccount[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "wechat_accounts";
+}
+
+/**
  * The face the wheel landed on, and what that face resolved to.
  *  *
  *  * Kind `wheel_choice` (registry v4).
@@ -60954,7 +61420,7 @@ export interface WorkClaim {
 /**
  * One person's work address as a source found it — unverified until a person confirms it.
  *  *
- *  * Kind `work_email` (registry v1).
+ *  * Kind `work_email` (registry v2).
  */
 export interface WorkEmail {
   email: string;
@@ -60962,11 +61428,16 @@ export interface WorkEmail {
    * The registered kind this payload is an instance of.
    */
   __kind?: "work_email";
+  domain?: string | null;
+  company?: string | null;
+  seen_on?: string | null;
   position?: string | null;
   full_name?: string | null;
   last_name?: string | null;
   confidence?: number | null;
   first_name?: string | null;
+  linkedin_url?: string | null;
+  phone_number?: string | null;
   verification?: string | null;
 }
 
@@ -61725,6 +62196,7 @@ export type GeneratedKindSlug =
   | "ai_answer"
   | "ai_cost_summary"
   | "ai_extract_result"
+  | "ai_visibility_mentions"
   | "ai_visibility_panel"
   | "ai_visibility_panel_list"
   | "ai_visibility_panel_preview"
@@ -61755,6 +62227,7 @@ export type GeneratedKindSlug =
   | "asset_variant"
   | "audio.speech.offer"
   | "authority_newsjacking_article"
+  | "backlink_rows"
   | "backlinks_summary"
   | "basic_card"
   | "batch_review"
@@ -61871,6 +62344,7 @@ export type GeneratedKindSlug =
   | "commerce_intake.valuation_dossier.offer"
   | "communications.sms_assistant_turn.offer"
   | "company_endowment_portfolio"
+  | "company_profile"
   | "comparison_criterion"
   | "comparison_set"
   | "competitor_live_intelligence_v1"
@@ -61947,6 +62421,7 @@ export type GeneratedKindSlug =
   | "crm_contact_save_result"
   | "crm_fold_settings"
   | "custom_script_result"
+  | "customer_reviews"
   | "data.build_or_ask.offer"
   | "data.formula_box.offer"
   | "data.table_row_action.offer"
@@ -62067,6 +62542,7 @@ export type GeneratedKindSlug =
   | "flattened_list_result"
   | "follow_up_question"
   | "formatted_datetime"
+  | "found_tools"
   | "foundry.agent_planning.offer"
   | "gate1_market_evidence"
   | "gather_result"
@@ -62101,6 +62577,7 @@ export type GeneratedKindSlug =
   | "hindsight.replay_judge.offer"
   | "hindsight.reviewer.offer"
   | "hindsight_replay_verdict"
+  | "holiday_list"
   | "hook_set"
   | "http_response"
   | "human_answer"
@@ -62153,6 +62630,7 @@ export type GeneratedKindSlug =
   | "json"
   | "json_path_result"
   | "keyword_classification_batch_v1"
+  | "keyword_data"
   | "keyword_list"
   | "keyword_relationship_list"
   | "keyword_relationship_map"
@@ -62196,6 +62674,8 @@ export type GeneratedKindSlug =
   | "kpi_snapshot"
   | "lesson_script_section"
   | "lesson_script_set"
+  | "library_item"
+  | "library_items"
   | "link_buckets"
   | "list_change_proposal_item_v1"
   | "list_change_proposal_v1"
@@ -62457,6 +62937,7 @@ export type GeneratedKindSlug =
   | "pdf.content_cleaning.offer"
   | "pdf_table_extraction"
   | "pdf_text_extraction"
+  | "people_results"
   | "perimeter_entry"
   | "person_anchor_candidates"
   | "person_basics"
@@ -62472,6 +62953,7 @@ export type GeneratedKindSlug =
   | "personal_staff.front_line.offer"
   | "personalization_target_result"
   | "personalization_write_result"
+  | "phone_check"
   | "pick_list"
   | "pick_list_approval_result"
   | "pick_list_item_update_result"
@@ -62631,6 +63113,7 @@ export type GeneratedKindSlug =
   | "regex_replace_result"
   | "register_term"
   | "relation"
+  | "release_info"
   | "render_binding"
   | "rendered_text"
   | "rental_listing_summary"
@@ -62835,6 +63318,7 @@ export type GeneratedKindSlug =
   | "serial_observation_timeline"
   | "serp_analysis"
   | "serp_placement"
+  | "service_status"
   | "setting_value"
   | "shapes.picker_description.offer"
   | "shell_execution"
@@ -63168,6 +63652,7 @@ export type GeneratedKindSlug =
   | "web_ttfb_server_response_v1"
   | "web_url_design_quality_v1"
   | "web_viewport_meta_v1"
+  | "wechat_accounts"
   | "wheel_choice"
   | "wheel_image"
   | "wheel_spin_result"
@@ -63306,6 +63791,7 @@ export interface KindPayloadBySlug {
   "ai_answer": AiAnswer;
   "ai_cost_summary": AiCostSummary;
   "ai_extract_result": AiExtractResult;
+  "ai_visibility_mentions": AiVisibilityMentions;
   "ai_visibility_panel": AiVisibilityPanel;
   "ai_visibility_panel_list": AiVisibilityPanelList;
   "ai_visibility_panel_preview": AiVisibilityPanelPreview;
@@ -63336,6 +63822,7 @@ export interface KindPayloadBySlug {
   "asset_variant": AssetVariant;
   "audio.speech.offer": AudioSpeechOffer;
   "authority_newsjacking_article": AuthorityNewsjackingArticle;
+  "backlink_rows": BacklinkRows;
   "backlinks_summary": BacklinksSummary;
   "basic_card": BasicCard;
   "batch_review": BatchReview;
@@ -63452,6 +63939,7 @@ export interface KindPayloadBySlug {
   "commerce_intake.valuation_dossier.offer": CommerceIntakeValuationDossierOffer;
   "communications.sms_assistant_turn.offer": CommunicationsSmsAssistantTurnOffer;
   "company_endowment_portfolio": CompanyEndowmentPortfolio;
+  "company_profile": CompanyProfile;
   "comparison_criterion": ComparisonCriterion;
   "comparison_set": ComparisonSet;
   "competitor_live_intelligence_v1": CompetitorLiveIntelligenceV1;
@@ -63528,6 +64016,7 @@ export interface KindPayloadBySlug {
   "crm_contact_save_result": CrmContactSaveResult;
   "crm_fold_settings": CrmFoldSettings;
   "custom_script_result": CustomScriptResult;
+  "customer_reviews": CustomerReviews;
   "data.build_or_ask.offer": DataBuildOrAskOffer;
   "data.formula_box.offer": DataFormulaBoxOffer;
   "data.table_row_action.offer": DataTableRowActionOffer;
@@ -63648,6 +64137,7 @@ export interface KindPayloadBySlug {
   "flattened_list_result": FlattenedListResult;
   "follow_up_question": FollowUpQuestion;
   "formatted_datetime": FormattedDatetime;
+  "found_tools": FoundTools;
   "foundry.agent_planning.offer": FoundryAgentPlanningOffer;
   "gate1_market_evidence": Gate1MarketEvidence;
   "gather_result": GatherResult;
@@ -63682,6 +64172,7 @@ export interface KindPayloadBySlug {
   "hindsight.replay_judge.offer": HindsightReplayJudgeOffer;
   "hindsight.reviewer.offer": HindsightReviewerOffer;
   "hindsight_replay_verdict": HindsightReplayVerdict;
+  "holiday_list": HolidayList;
   "hook_set": HookSet;
   "http_response": HttpResponse;
   "human_answer": HumanAnswer;
@@ -63734,6 +64225,7 @@ export interface KindPayloadBySlug {
   "json": Json;
   "json_path_result": JsonPathResult;
   "keyword_classification_batch_v1": KeywordClassificationBatchV1;
+  "keyword_data": KeywordData;
   "keyword_list": KeywordList;
   "keyword_relationship_list": KeywordRelationshipList;
   "keyword_relationship_map": KeywordRelationshipMap;
@@ -63777,6 +64269,8 @@ export interface KindPayloadBySlug {
   "kpi_snapshot": KpiSnapshot;
   "lesson_script_section": LessonScriptSection;
   "lesson_script_set": LessonScriptSet;
+  "library_item": LibraryItem;
+  "library_items": LibraryItems;
   "link_buckets": LinkBuckets;
   "list_change_proposal_item_v1": ListChangeProposalItemV1;
   "list_change_proposal_v1": ListChangeProposalV1;
@@ -64038,6 +64532,7 @@ export interface KindPayloadBySlug {
   "pdf.content_cleaning.offer": PdfContentCleaningOffer;
   "pdf_table_extraction": PdfTableExtraction;
   "pdf_text_extraction": PdfTextExtraction;
+  "people_results": PeopleResults;
   "perimeter_entry": PerimeterEntry;
   "person_anchor_candidates": PersonAnchorCandidates;
   "person_basics": PersonBasics;
@@ -64053,6 +64548,7 @@ export interface KindPayloadBySlug {
   "personal_staff.front_line.offer": PersonalStaffFrontLineOffer;
   "personalization_target_result": PersonalizationTargetResult;
   "personalization_write_result": PersonalizationWriteResult;
+  "phone_check": PhoneCheck;
   "pick_list": PickList;
   "pick_list_approval_result": PickListApprovalResult;
   "pick_list_item_update_result": PickListItemUpdateResult;
@@ -64212,6 +64708,7 @@ export interface KindPayloadBySlug {
   "regex_replace_result": RegexReplaceResult;
   "register_term": RegisterTerm;
   "relation": Relation;
+  "release_info": ReleaseInfo;
   "render_binding": RenderBinding;
   "rendered_text": RenderedText;
   "rental_listing_summary": RentalListingSummary;
@@ -64416,6 +64913,7 @@ export interface KindPayloadBySlug {
   "serial_observation_timeline": SerialObservationTimeline;
   "serp_analysis": SerpAnalysis;
   "serp_placement": SerpPlacement;
+  "service_status": ServiceStatus;
   "setting_value": SettingValue;
   "shapes.picker_description.offer": ShapesPickerDescriptionOffer;
   "shell_execution": ShellExecution;
@@ -64749,6 +65247,7 @@ export interface KindPayloadBySlug {
   "web_ttfb_server_response_v1": WebTtfbServerResponseV1;
   "web_url_design_quality_v1": WebUrlDesignQualityV1;
   "web_viewport_meta_v1": WebViewportMetaV1;
+  "wechat_accounts": WechatAccounts;
   "wheel_choice": WheelChoice;
   "wheel_image": WheelImage;
   "wheel_spin_result": WheelSpinResult;
@@ -64891,6 +65390,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "ai_answer",
   "ai_cost_summary",
   "ai_extract_result",
+  "ai_visibility_mentions",
   "ai_visibility_panel",
   "ai_visibility_panel_list",
   "ai_visibility_panel_preview",
@@ -64921,6 +65421,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "asset_variant",
   "audio.speech.offer",
   "authority_newsjacking_article",
+  "backlink_rows",
   "backlinks_summary",
   "basic_card",
   "batch_review",
@@ -65037,6 +65538,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "commerce_intake.valuation_dossier.offer",
   "communications.sms_assistant_turn.offer",
   "company_endowment_portfolio",
+  "company_profile",
   "comparison_criterion",
   "comparison_set",
   "competitor_live_intelligence_v1",
@@ -65113,6 +65615,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "crm_contact_save_result",
   "crm_fold_settings",
   "custom_script_result",
+  "customer_reviews",
   "data.build_or_ask.offer",
   "data.formula_box.offer",
   "data.table_row_action.offer",
@@ -65233,6 +65736,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "flattened_list_result",
   "follow_up_question",
   "formatted_datetime",
+  "found_tools",
   "foundry.agent_planning.offer",
   "gate1_market_evidence",
   "gather_result",
@@ -65267,6 +65771,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "hindsight.replay_judge.offer",
   "hindsight.reviewer.offer",
   "hindsight_replay_verdict",
+  "holiday_list",
   "hook_set",
   "http_response",
   "human_answer",
@@ -65319,6 +65824,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "json",
   "json_path_result",
   "keyword_classification_batch_v1",
+  "keyword_data",
   "keyword_list",
   "keyword_relationship_list",
   "keyword_relationship_map",
@@ -65362,6 +65868,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "kpi_snapshot",
   "lesson_script_section",
   "lesson_script_set",
+  "library_item",
+  "library_items",
   "link_buckets",
   "list_change_proposal_item_v1",
   "list_change_proposal_v1",
@@ -65623,6 +66131,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "pdf.content_cleaning.offer",
   "pdf_table_extraction",
   "pdf_text_extraction",
+  "people_results",
   "perimeter_entry",
   "person_anchor_candidates",
   "person_basics",
@@ -65638,6 +66147,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "personal_staff.front_line.offer",
   "personalization_target_result",
   "personalization_write_result",
+  "phone_check",
   "pick_list",
   "pick_list_approval_result",
   "pick_list_item_update_result",
@@ -65797,6 +66307,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "regex_replace_result",
   "register_term",
   "relation",
+  "release_info",
   "render_binding",
   "rendered_text",
   "rental_listing_summary",
@@ -66001,6 +66512,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "serial_observation_timeline",
   "serp_analysis",
   "serp_placement",
+  "service_status",
   "setting_value",
   "shapes.picker_description.offer",
   "shell_execution",
@@ -66334,6 +66846,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "web_ttfb_server_response_v1",
   "web_url_design_quality_v1",
   "web_viewport_meta_v1",
+  "wechat_accounts",
   "wheel_choice",
   "wheel_image",
   "wheel_spin_result",
