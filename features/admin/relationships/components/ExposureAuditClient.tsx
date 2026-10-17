@@ -193,6 +193,7 @@ const COLUMNS: MatrxColumnDef<ExposureAuditRow>[] = [
   {
     accessorKey: "visibility",
     header: "Visibility",
+    // table-filter-off: server source does not filter visibility yet
     filter: false,
     sortable: false,
     width: 100,
@@ -294,6 +295,7 @@ const COLUMNS: MatrxColumnDef<ExposureAuditRow>[] = [
   {
     accessorKey: "updated_at",
     header: "Updated",
+    // table-filter-off: server source does not filter updated_at yet
     filter: false,
     sortable: false,
     align: "right",

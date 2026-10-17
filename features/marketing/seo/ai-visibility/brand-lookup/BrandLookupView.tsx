@@ -201,7 +201,7 @@ function PromptsTable({ rows }: { rows: MentioningPrompt[] }) {
     { accessorKey: "question", header: "Prompt", filter: "text" },
     { accessorKey: "platform", header: "Platform", filter: "select", cell: (r) => platformName(r.platform) },
     { accessorKey: "ai_search_volume", header: "AI volume", filter: "number", align: "right", cell: (r) => num(r.ai_search_volume) },
-    { accessorKey: "last_seen", header: "Last seen", filter: "text", cell: (r) => (r.last_seen ? shortDate(r.last_seen) : num(null)) },
+    { accessorKey: "last_seen", header: "Last seen", format: { id: "datetime" }, cell: (r) => (r.last_seen ? shortDate(r.last_seen) : num(null)) },
     {
       accessorKey: "brands_mentioned",
       header: "Brands named",

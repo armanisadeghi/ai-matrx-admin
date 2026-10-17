@@ -118,7 +118,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
   const history: HistoryLine[] = data ? mergeHistory(data.entry, data.endpoints, data.providers) : [];
 
   const sourceColumns: MatrxColumnDef<SourceRow>[] = [
-    { id: "source", accessorFn: (r) => r.name, header: "Source", width: 200 },
+    { id: "source", accessorFn: (r) => r.name, header: "Source", width: 200, filter: "select" },
     { id: "state", accessorFn: (r) => stateWords(r.ep.state).label, header: "State", width: 120, filter: "select", tone: (r) => stateWords(r.ep.state).tone },
     {
       id: "actions",

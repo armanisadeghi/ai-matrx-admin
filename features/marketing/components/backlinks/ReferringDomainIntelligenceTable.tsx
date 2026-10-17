@@ -325,6 +325,7 @@ export function ReferringDomainIntelligenceTable({
       id: "domain_type",
       accessorKey: "domain_type",
       header: "Kind of site",
+      // table-filter-off: server source does not filter domain_type yet
       filter: false,
       cell: (row) => (
         <span className="text-xs">

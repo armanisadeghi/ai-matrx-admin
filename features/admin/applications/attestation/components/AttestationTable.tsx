@@ -219,6 +219,7 @@ export function AttestationTable({
     {
       id: "last_read_at",
       header: "Last read",
+      format: { id: "datetime" },
       accessorFn: (row) => row.last_read_at ?? "",
       cell: (row) =>
         row.last_read_at ? (

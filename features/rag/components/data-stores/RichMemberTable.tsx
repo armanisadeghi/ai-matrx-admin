@@ -95,6 +95,7 @@ function memberColumns(): MatrxColumnDef<RichMember>[] {
       accessorKey: "sourceKind",
       header: "Source",
       label: "Source",
+      filter: "select",
       width: 120,
       cell: (member) => (
         <Badge variant="outline" className="px-1 py-0 text-[9px]">

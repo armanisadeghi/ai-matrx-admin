@@ -337,6 +337,7 @@ export function WorkItemsPanel({
         accessorKey: "status",
         header: "Lifecycle",
         width: 126,
+        // table-filter-off: server source does not filter status yet
         filter: false,
         sortable: false,
         cell: (row) => <StatusBadge status={row.status} />,

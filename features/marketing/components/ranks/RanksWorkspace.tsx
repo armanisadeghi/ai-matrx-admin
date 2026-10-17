@@ -392,7 +392,7 @@ function HistoryDialog({
       id: "observed_at",
       accessorKey: "observed_at",
       header: "Observed",
-      filter: "text",
+      format: { id: "datetime" },
       cell: (point) => formatDate(point.observed_at),
     },
     {

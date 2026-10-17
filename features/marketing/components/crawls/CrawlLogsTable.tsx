@@ -55,6 +55,7 @@ export function CrawlLogsTable({ crawlId }: { crawlId: string }) {
       id: "occurred_at",
       accessorKey: "occurred_at",
       header: "Time",
+      // table-filter-off: server source does not filter occurred_at yet
       filter: false,
       cell: (row) => (
         <span className="whitespace-nowrap text-xs">

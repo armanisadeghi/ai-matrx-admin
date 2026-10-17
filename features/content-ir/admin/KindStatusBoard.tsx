@@ -129,6 +129,7 @@ export default function KindStatusBoard({
       id: "kind",
       header: "Kind",
       accessorKey: "kind",
+      filter: "select",
       width: 240,
       cell: (row) => <KindNameCell row={row} />,
     },

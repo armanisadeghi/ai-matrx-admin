@@ -176,6 +176,7 @@ export function AnnouncementsTableClient() {
         id: "created_at",
         accessorKey: "created_at",
         header: "Created",
+        format: { id: "datetime" },
         cell: (r) => (
           <span className="text-xs text-muted-foreground">
             {new Date(r.created_at).toLocaleDateString()}

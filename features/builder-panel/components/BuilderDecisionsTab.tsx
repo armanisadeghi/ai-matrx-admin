@@ -33,7 +33,7 @@ const SIGNAL_COLUMNS: MatrxColumnDef<PathSignal>[] = [
     cell: (signal) => signal.op ? (signal.fired
       ? <CircleDot className="h-3.5 w-3.5 text-primary" aria-label="fired" />
       : <span className="text-muted-foreground">no</span>) : null },
-  { id: "source", header: "Source", accessorKey: "source", filter: "text", hidden: true },
+  { id: "source", header: "Source", accessorKey: "source", filter: "select", hidden: true },
 ];
 
 type PathCost = ReturnType<typeof costByPath>[number];
@@ -155,7 +155,7 @@ function SweepSection({ sweep, focus }: { sweep: SweepFeed; focus?: FindYouFeed[
 }
 
 const FIND_COLUMNS: MatrxColumnDef<FindRow & { id: string }>[] = [
-  { id: "at", header: "Time", accessorFn: (r) => new Date(r.at).toLocaleTimeString(), filter: "text" },
+  { id: "at", header: "Time", accessorFn: (r) => r.at, format: { id: "datetime" }, cell: (r) => new Date(r.at).toLocaleTimeString() },
   { id: "kind", header: "Kind", accessorKey: "kind", filter: "select" },
   { id: "text", header: "Decision", accessorKey: "text", filter: "text",
     cell: (r) => <span title={r.url ?? r.text}>{r.text}</span> },

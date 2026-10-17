@@ -468,6 +468,7 @@ export default function DeprecatedModelsAudit({
       {
         id: "provider",
         header: "Provider",
+        filter: "select",
         accessorFn: (entry) => entry.model.maker ?? "",
         cell: (entry) => entry.model.maker ?? "—",
       },

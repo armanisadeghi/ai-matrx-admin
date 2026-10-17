@@ -209,6 +209,7 @@ export function buildDealColumns(args: {
       accessorKey: "expected_close_date",
       header: "Expected close",
       sortable: true,
+      format: { id: "date" },
       filter: "select",
       filterOptions: DATE_BUCKET_OPTIONS.map((o) => ({
         value: o.value,
@@ -222,7 +223,8 @@ export function buildDealColumns(args: {
       accessorKey: "status",
       header: "Status",
       sortable: false,
-      filter: false, // the toolbar facet owns this — two controls would fight
+      // table-filter-off: the toolbar status facet owns this filter — two controls would fight
+      filter: false,
       mobileHidden: true,
       cell: (row) => dealStatusBadge(row.status),
       width: 90,
@@ -232,6 +234,7 @@ export function buildDealColumns(args: {
       accessorKey: "stage_entered_at",
       header: "In stage since",
       sortable: true,
+      // table-filter-off: server source does not filter stage_entered_at yet
       filter: false,
       mobileHidden: true,
       cell: (row) => (
@@ -246,6 +249,7 @@ export function buildDealColumns(args: {
       accessorKey: "updated_at",
       header: "Updated",
       sortable: true,
+      format: { id: "datetime" },
       filter: "select",
       filterOptions: DATE_BUCKET_OPTIONS,
       mobileHidden: true,

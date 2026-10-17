@@ -1749,6 +1749,7 @@ function UntrackedTable({
       {
         accessorKey: "captured_at",
         header: "Observed",
+        format: { id: "datetime" },
         cell: (row) => formatDate(row.captured_at),
         width: 180,
       },
@@ -2020,6 +2021,7 @@ export function SeoChangeTrackingWorkspace({
       {
         accessorKey: "deployed_at",
         header: "Deployed",
+        format: { id: "date" },
         cell: (row) => formatDateOnly(row.deployed_at),
         width: 130,
       },

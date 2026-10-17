@@ -124,7 +124,7 @@ const BULK_APPROVE_COLUMNS: MatrxColumnDef<PeriodGridRow>[] = [
     id: "state",
     header: "State",
     accessorFn: (row) => row.state,
-    filter: "text",
+    filter: "select",
     width: 140,
     cell: (row) => <RowStateChip state={row.state} />,
   },

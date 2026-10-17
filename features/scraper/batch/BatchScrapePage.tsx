@@ -474,6 +474,7 @@ export default function BatchScrapePage() {
       id: "status",
       header: "Status",
       accessorFn: (row) => row.status,
+      filter: "select",
       cell: (row) => <StatusBadge status={row.status} />,
     },
     {

@@ -160,6 +160,7 @@ export function HrTaskTable({
             accessorKey: "due_at",
             header: "Due",
             sortable: true,
+            format: { id: "datetime" },
             filter: "auto",
             cell: (row) => (
                 <span

@@ -296,6 +296,7 @@ export function InstallationsClient({
         id: "last_seen",
         accessorKey: "last_seen",
         header: "Last seen",
+        format: { id: "datetime" },
         cell: (row) =>
           row.last_seen ? (
             <span

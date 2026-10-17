@@ -322,6 +322,7 @@ export function RequestsContent({ result }: Props) {
         id: "created_at",
         accessorKey: "created_at",
         header: "Created",
+        format: { id: "datetime" },
         width: 140,
         cell: (r) => (
           <span className="whitespace-nowrap text-xs text-muted-foreground">

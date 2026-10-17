@@ -258,6 +258,7 @@ export function PodcastsTable({
       {
         accessorKey: "display_mode",
         header: "Mode",
+        filter: "select",
         cell: (episode) => (
           <span className="rounded-full bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
             {episode.display_mode}
