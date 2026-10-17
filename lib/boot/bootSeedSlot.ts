@@ -37,3 +37,4 @@ export function dropUnreadBootSeeds(): void {
 /** The window globals the streamed scripts write (`BootSeedScript`). */
 export const STREAMED_CORE_SEED_GLOBAL = "__matrxCoreBootSeed";
 export const STREAMED_KNOB_SEED_GLOBAL = "__matrxKnobBootSeed";
+export const STREAMED_USAGE_SEED_GLOBAL = "__matrxUsageBootSeed";

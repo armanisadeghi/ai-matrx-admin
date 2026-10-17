@@ -9,10 +9,10 @@ import {
   type AdminLevel,
 } from "@/utils/supabase/userSessionData";
 import type { BaseReduxState } from "@/types/reduxTypes";
-import { readUsageSnapshotServer } from "@/features/entitlements/usage-gate/usageReadServer";
+import { readUsageSnapshotServer, streamedUsageSeedServer } from "@/features/entitlements/usage-gate/usageReadServer";
 import { readCoreBootSeedServer, readKnobSeedServer } from "@/lib/boot/coreBootSeed.server";
 import { BootSeedScript } from "@/lib/boot/BootSeedScript";
-import { STREAMED_CORE_SEED_GLOBAL, STREAMED_KNOB_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
+import { STREAMED_CORE_SEED_GLOBAL, STREAMED_KNOB_SEED_GLOBAL, STREAMED_USAGE_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
 import type { CoreBootSeed, KnobSnapshotSeed } from "@/lib/boot/coreBootSeedShape";
 import { WEB_DEVICE_ID_COOKIE, parseWebDeviceIdCookie } from "@/lib/scoped-config/deviceIdCookie";
 // Phase 4 PR 4.C: removed `setGlobalUserIdAndToken` import — `lib/globalState.ts`
@@ -109,6 +109,8 @@ export default async function AppLayout({
   let knobSeed: Promise<KnobSnapshotSeed[] | null> | null = null;
   let streamedCoreSeed: Promise<CoreBootSeed | null> | null = null;
   let coreSeedLanded = false;
+  // The usage seed's late answer, streamed when it missed the first-byte deadline.
+  let usageStreamed: Promise<unknown> | null = null;
 
   if (user) {
     // 🚨 THE CORE SET, IN ONE PARALLEL ROUND (first-paint fetch contract, Arman
@@ -173,6 +175,7 @@ export default async function AppLayout({
       coreBootSeed,
     };
     coreSeedLanded = coreBootSeed !== null;
+    if (usageSnapshot === null) usageStreamed = streamedUsageSeedServer(supabase);
     timing.end({ seeded: coreSeedLanded, usage: usageSnapshot !== null });
   } else {
     const guestUserData = mapUserData(null, undefined, false);
@@ -199,6 +202,11 @@ export default async function AppLayout({
       {knobSeed ? (
         <Suspense fallback={null}>
           <BootSeedScript name={STREAMED_KNOB_SEED_GLOBAL} seed={knobSeed} />
+        </Suspense>
+      ) : null}
+      {usageStreamed ? (
+        <Suspense fallback={null}>
+          <BootSeedScript name={STREAMED_USAGE_SEED_GLOBAL} seed={usageStreamed} />
         </Suspense>
       ) : null}
       {children}

@@ -10,6 +10,7 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { parseUsageSnapshot, type UsageSnapshot } from "./usageState";
+import { STREAMED_USAGE_SEED_GLOBAL } from "@/lib/boot/bootSeedSlot";
 
 export async function readUsageSnapshot(): Promise<UsageSnapshot | null> {
   try {
@@ -27,4 +28,18 @@ export async function readUsageSnapshot(): Promise<UsageSnapshot | null> {
     console.warn("[usage-gate] billing.user_usage_state read threw — call proceeds", err);
     return null;
   }
+}
+
+/**
+ * The layout's late usage answer, streamed as an inline script when its read
+ * missed the first-byte deadline (`usageReadServer.ts`). Taken once; parsed
+ * again here so a malformed global never seeds. Null when none has arrived.
+ */
+export function takeStreamedUsageSeed(): UsageSnapshot | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as Record<string, unknown>;
+  const raw = w[STREAMED_USAGE_SEED_GLOBAL];
+  if (raw === undefined) return null;
+  delete w[STREAMED_USAGE_SEED_GLOBAL];
+  return parseUsageSnapshot(raw);
 }

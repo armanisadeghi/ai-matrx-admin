@@ -10,6 +10,9 @@
 //     fetched by the thing that shows them, when it opens (the messaging inbox, the file tree, …);
 //   - a relation in the route's `mustRead` never leaves — the page SHOWS it, so it must load it
 //     (on-demand data has to be demanded by the thing that shows it, or the screen sits empty);
+//   - the route's `maxReads` is exceeded — the whole load's Supabase request count (the first-paint
+//     contract: the layout's core set is ONE seeded read, a route adds one or two of its own; a boot
+//     read that splits back out of the seed shows up here first). SHRINK-ONLY, like `repeats`;
 //   - an (operation, relation) pair leaves more than once and is not in that route's `repeats`
 //     allowance (a SHRINK-ONLY baseline: legitimately distinct reads of one relation, e.g. a chunked
 //     IN list). An allowance whose read is gone entirely fails too, so it only shrinks.
@@ -123,6 +126,10 @@ for (const route of targets) {
     if (count === 0) findings.push(`STALE ALLOWANCE  ${key} allowed ${limit}, now ${count} — lower it in scripts/page-load-budget.json`);
   }
   const total = [...seen.values()].reduce((sum, d) => sum + d.count, 0);
+  const maxReads = budget.routes[route]?.maxReads;
+  if (typeof maxReads === "number" && total > maxReads) {
+    findings.push(`OVER BUDGET  ${total} reads (max ${maxReads}) — ${[...seen.keys()].join(", ")}`);
+  }
   console.log(`${findings.length ? "RED  " : "ok   "} ${route}  ${total} reads, ${seen.size} distinct`);
   for (const line of findings) console.log(`       ${line}`);
   red += findings.length;
