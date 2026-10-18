@@ -10,7 +10,7 @@
 //     client on its debugging port are never touched;
 //   - a detached launcher older than the longest hold is closed with its browser;
 //   - the watchdog's machine-memory reading is real and complete; status prints it.
-// The "browsers" are copies of /bin/sleep inside a fake Playwright browsers dir
+// The "browsers" are symlinks to /bin/bash (running a sleep) inside a fake Playwright browsers dir
 // (MATRX_PLAYWRIGHT_BROWSERS_DIR), so no real browser, server or shared state is touched.
 //
 //   node --test scripts/preview-stale-sessions.test.mjs
@@ -18,7 +18,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { copyFileSync, chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -126,10 +126,15 @@ function fakeBrowsersDir() {
   const dir = tempDir("pw-browsers-");
   const bin = join(dir, "chromium_headless_shell-0000", "chrome-headless-shell");
   mkdirSync(dirname(bin), { recursive: true });
-  copyFileSync("/bin/sleep", bin);
-  chmodSync(bin, 0o755);
+  // A symlink to bash, not a copy: macOS kills a copied platform binary (code signature); ps shows the
+  // path the process was started by, which is what the sweep matches on; and bash (unlike sleep)
+  // accepts browser-like flags and keeps running with a child, like a browser with a renderer.
+  symlinkSync("/bin/bash", bin);
   return { dir, bin };
 }
+
+/** argv of a fake browser that lives `sec` seconds and carries browser-like flags. */
+const browserArgv = (bin, sec, ...flags) => [bin, "-c", `sleep ${sec}; :`, "chrome-headless-shell", ...flags];
 
 // ── holds ────────────────────────────────────────────────────────────────────
 
@@ -193,10 +198,10 @@ test("an orphaned Playwright browser is closed after its grace; one whose launch
   const dir = tempDir("stale-browsers-");
   const { dir: pw, bin } = fakeBrowsersDir();
   const env = { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "120" };
-  const lost = orphan([bin, "601", "--headless"]);
+  const lost = orphan(browserArgv(bin, 601, "--headless"));
   assert.equal(ppidOf(lost), 1, "the fake browser is an orphan");
   // A browser whose launcher (a live python) still runs: its parent is not launchd.
-  const kept = detachedLauncher([bin, "602"], REPO_ROOT).child;
+  const kept = detachedLauncher(browserArgv(bin, 602), REPO_ROOT).child;
   // An orphan OUTSIDE the Playwright dir (someone's own process): never ours.
   const foreign = orphan(["/bin/sleep", "603"]);
 
@@ -215,7 +220,7 @@ test("an orphaned Playwright browser is closed after its grace; one whose launch
 test("a dry run names the orphan and closes nothing", () => {
   const dir = tempDir("stale-browsers-");
   const { dir: pw, bin } = fakeBrowsersDir();
-  const lost = orphan([bin, "604"]);
+  const lost = orphan(browserArgv(bin, 604));
   const out = sourced(dir, "sweep_orphan_browsers --dry-run", { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" }).out;
   assert.match(out, new RegExp(`Playwright browser pid ${lost}: its launcher is gone`));
   assert.ok(isAlive(lost));
@@ -243,7 +248,7 @@ os._exit(0)
   const helperOut = spawnSync("/usr/bin/python3", ["-c", py], { encoding: "utf8" });
   const port = Number(helperOut.stdout.trim());
   assert.ok(port > 0);
-  const attached = orphan([bin, "605", `--remote-debugging-port=${port}`]);
+  const attached = orphan(browserArgv(bin, 605, `--remote-debugging-port=${port}`));
   sourced(dir, "sweep_orphan_browsers", { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" });
   assert.ok(isAlive(attached), "a CDP client is attached, so the browser stays");
   const holder = spawnSync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:ESTABLISHED", "-t"], { encoding: "utf8" }).stdout.trim().split("\n");
@@ -254,7 +259,7 @@ test("a detached launcher from agent scratch, older than the longest hold, is cl
   const dir = tempDir("stale-browsers-");
   const { dir: pw, bin } = fakeBrowsersDir();
   const scratch = tempDir("agent-scratch-");
-  const { launcher, child } = detachedLauncher([bin, "606"], scratch);
+  const { launcher, child } = detachedLauncher(browserArgv(bin, 606), scratch);
   assert.equal(ppidOf(launcher), 1, "the launcher is detached from every session");
   assert.equal(ppidOf(child), launcher);
   const env = { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" };
@@ -268,7 +273,7 @@ test("a detached launcher from agent scratch, older than the longest hold, is cl
 test("a detached launcher outside scratch dirs (a long-lived service) is never closed", () => {
   const dir = tempDir("stale-browsers-");
   const { dir: pw, bin } = fakeBrowsersDir();
-  const { launcher, child } = detachedLauncher([bin, "607"], "/");
+  const { launcher, child } = detachedLauncher(browserArgv(bin, 607), "/");
   sourced(dir, "sweep_orphan_browsers 0", { MATRX_PLAYWRIGHT_BROWSERS_DIR: pw, MATRX_PREVIEW_ORPHAN_GRACE_SEC: "0" });
   assert.ok(isAlive(launcher) && isAlive(child));
 });

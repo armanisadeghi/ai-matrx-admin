@@ -81,14 +81,18 @@ export function PortalBlocks({ membership, data }: { membership: PortalMembershi
                     No {c.d.table.name.toLowerCase()} yet.
                   </p>
                 ) : (
-                  <ChartBlock
-                    block={chartResult({ ...b, title }, c.ctx)}
-                    subject={b.table_id}
-                    tableName={c.d.table.name}
-                    dataLabels
-                    centerValue={b.kind === "donut"}
-                    variant="card"
-                  />
+                  // The chart chunk loads after the first paint; the slot is already as tall as the drawn
+                  // chart (one number per kind), so what follows it never moves when it arrives.
+                  <div className={b.kind === "donut" ? "min-h-[180px]" : "min-h-[210px]"}>
+                    <ChartBlock
+                      block={chartResult({ ...b, title }, c.ctx)}
+                      subject={b.table_id}
+                      tableName={c.d.table.name}
+                      dataLabels
+                      centerValue={b.kind === "donut"}
+                      variant="card"
+                    />
+                  </div>
                 )
               ) : (
                 <ItemList membership={membership} block={b} d={c.d} />
