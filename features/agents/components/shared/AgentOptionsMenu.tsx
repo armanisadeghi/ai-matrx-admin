@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@ai-matrx/chat/store/hooks";
-import { applyOrganizationContextHeader } from "@ai-matrx/chat/host/server/organization-context";
+import { applyHostOrganizationContextHeader } from "@ai-matrx/chat/host/server/organization-context";
 
 import { invalidateAgentCache } from "@ai-matrx/chat/agents/redux/agent-definition/invalidate-agent-cache.thunk";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
@@ -203,7 +203,7 @@ async function convertToTemplate(
     method: "POST",
     // The template is filed in the organization the person selected — the
     // route refuses without it rather than filing in a own organization.
-    headers: applyOrganizationContextHeader({}, organizationId),
+    headers: applyHostOrganizationContextHeader({}, organizationId),
   });
   if (!response.ok) {
     const data = await response

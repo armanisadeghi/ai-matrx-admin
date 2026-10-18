@@ -21,7 +21,7 @@ import {
   History,
   LayoutDashboard,
 } from "lucide-react";
-import { WindowPanel } from "@ai-matrx/chat/host/ui-slots";
+import { WindowPanelSlot } from "@ai-matrx/chat/host/ui-slots";
 import { useAppDispatch, useAppSelector } from "@ai-matrx/chat/store/hooks";
 import { cn } from "@ai-matrx/design-system";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
@@ -31,7 +31,7 @@ import { formatJson } from "@ai-matrx/kit/json-format";
 import {
   fetchFullAgent,
 } from "@/features/agents/redux/fetch-full-agent.thunk";
-import { NonEditableContextMenu } from "@ai-matrx/chat/host/ui-slots";
+import { NonEditableContextMenuSlot } from "@ai-matrx/chat/host/ui-slots";
 import { buildAgentMenuSection, agentEntityRef } from "@ai-matrx/chat/agents/menu/agent-actions";
 
 // ─── Agent definition selectors ───────────────────────────────────────────────
@@ -1021,7 +1021,7 @@ function AgentDebugWindowInner({
   });
 
   return (
-    <WindowPanel
+    <WindowPanelSlot
       id="agent-debug-window"
       title={title}
       onClose={onClose}
@@ -1055,7 +1055,7 @@ function AgentDebugWindowInner({
               here means is the agent being inspected, same shared "Agent"
               section AgentContentWindow/AgentMemoryWindow/etc. use. */}
           {/* context-menu-exempt: surfaceName — no registered surface manifest for this window */}
-          <NonEditableContextMenu
+          <NonEditableContextMenuSlot
             sourceFeature="agent-builder"
             contentSource={{ type: "raw" }}
             entity={agentEntityRef(selectedAgentId, agentName ?? null)}
@@ -1090,7 +1090,7 @@ function AgentDebugWindowInner({
               <HistoryTab conversationId={selectedConversationId} />
             )}
           </div>
-          </NonEditableContextMenu>
+          </NonEditableContextMenuSlot>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
@@ -1104,7 +1104,7 @@ function AgentDebugWindowInner({
           </p>
         </div>
       )}
-    </WindowPanel>
+    </WindowPanelSlot>
   );
 }
 

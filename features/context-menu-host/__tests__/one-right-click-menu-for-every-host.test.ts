@@ -8,7 +8,7 @@
  * test/renderer/cloud-chat-context-menu.test.ts). Both hosts therefore build the same designed
  * tree. This is red if the web swaps in any other right-click component.
  */
-import { NonEditableContextMenu as ChatSlotMenu } from "@ai-matrx/chat/host/ui-slots";
+import { NonEditableContextMenuSlot as ChatSlotMenu } from "@ai-matrx/chat/host/ui-slots";
 import { NonEditableContextMenu as EngineMenu } from "@ai-matrx/context-menu/react";
 
 test("the web's chat right-click slot is the context-menu engine's component", () => {

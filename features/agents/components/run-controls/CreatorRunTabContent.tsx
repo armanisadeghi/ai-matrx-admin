@@ -22,7 +22,7 @@ import {
 } from "react";
 import { RotateCcw, AppWindow, SlidersHorizontal, Brain } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@ai-matrx/chat/store/hooks";
-import { CHAT_WINDOWS, openOverlay } from "@ai-matrx/chat/host/windows";
+import { CHAT_WINDOWS, openOverlayThroughHost } from "@ai-matrx/chat/host/windows";
 import { useChatWindows, useHasChatManagedWindow } from "@ai-matrx/chat/host/windows-react";
 import {
   selectIsMemoryEnabledForConversation,
@@ -38,7 +38,7 @@ import { RunSettingsEditor } from "@ai-matrx/chat/agents/components/run-controls
 import { ContextPoliciesTab } from "@ai-matrx/chat/agents/components/run-controls/ContextPoliciesTab";
 import { PayloadTab } from "./PayloadTab";
 import { SystemInstructionEditor } from "@/features/agents/components/builder/message-builders/system-instructions/SystemInstructionEditor";
-import { WindowPanel } from "@ai-matrx/chat/host/ui-slots";
+import { WindowPanelSlot } from "@ai-matrx/chat/host/ui-slots";
 import { StreamDebugPanel } from "@ai-matrx/chat/agents/components/debug/StreamDebugPanel";
 import { AgentWidgetInvokerTester } from "./AgentWidgetInvokerTester";
 import { RequestStatsPanel } from "@ai-matrx/chat/agents/components/run-controls/panels/RequestStatsPanel";
@@ -151,7 +151,7 @@ function ActionsTab({
 
   const handleOpenMemoryInspector = useCallback(() => {
     dispatch(
-      openOverlay({
+      openOverlayThroughHost({
         overlayId: CHAT_WINDOWS.observationalMemoryWindow,
         data: { initialSelectedConversationId: conversationId },
       }),
@@ -332,7 +332,7 @@ export function useCreatorRunWindows({
   const windowPanels = (
     <>
       {streamDebugWindowOpen && (
-        <WindowPanel
+        <WindowPanelSlot
           id={streamDebugId}
           title="Stream Debug"
           width={680}
@@ -343,10 +343,10 @@ export function useCreatorRunWindows({
           bodyClassName="flex min-h-0 flex-col overflow-hidden p-0"
         >
           <StreamDebugPanel conversationId={displayId} />
-        </WindowPanel>
+        </WindowPanelSlot>
       )}
       {runSettingsWindowOpen && (
-        <WindowPanel
+        <WindowPanelSlot
           id={runSettingsId}
           title="Run Settings"
           width={420}
@@ -358,7 +358,7 @@ export function useCreatorRunWindows({
           <div className="p-3">
             <RunSettingsEditor conversationId={conversationId} />
           </div>
-        </WindowPanel>
+        </WindowPanelSlot>
       )}
     </>
   );
