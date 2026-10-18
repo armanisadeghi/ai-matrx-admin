@@ -1,2 +1,51 @@
+# Merge conflicts from scripts/sync-main.py
 
+This folder is permanent. When every list below is empty, nothing from `scripts/sync-main.py` is
+open in this repo. (`scripts/sync-main.py` removes empty folders left inside it on every run.)
+
+## What the items are
+- **Held file** — `_conflicts/<stamp>/<path>.held`. LOCAL and GITHUB changed the same code.
+  GITHUB's version is live in the repo at `<path>`; LOCAL's version is inside the `.held` file,
+  below a FACTS block computed from git. Both versions stay in git permanently; each `.held` file
+  has the `git show` commands that print either one.
+- **Docs/comments, both versions kept** — a file in the repo where a clashing passage now holds
+  both versions between three marker lines (LOCAL first, then GITHUB).
+
+## Marking an item done
+- Held file: the final code is in `<path>`, the `.held` file is deleted, its line below is deleted.
+- Docs/comments: the passage is edited, the three marker lines are deleted, its line below is deleted.
+- `python3 scripts/check-conflict-markers.py` lists everything still open, or prints `clean`.
+- `python3 scripts/sync-main.py` commits and syncs.
+
+## Escalation
+An item is passed up by moving its line to the next section (Needs a manager -> Needs the boss
+agent -> Needs Arman) with ` — <question> — <what was checked> — <who>` added to the end of it.
+Its files stay as they are.
+
+## Needs a manager
+
+## Needs the boss agent
+
+## Needs Arman
+
+## Docs and comments — both versions kept
+
+## Held files
+
+## Resolution log
+- 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
+- 2026-10-14 22:15 PDT — Claude agent resolved the three `_conflicts/2026-10-14-214146/` items by keeping live: `Automations.tsx` + its test (LOCAL was the superseded c6bb8abbe6 iteration — `useTableRights`/"Needs Editor access" — that 3fb2492162 replaced with `useMyLevel`/`whatYouMayDo`/"Needs Edit access"); `atdbfix_block_ids_green.mts` (LOCAL re-added the `.ts` import suffix that 35a2e511b5 dropped on purpose). Jest test 3/3 green; `check:matrx-imports` OK.
+
+- 2026-10-15 10:58 PDT — Codex resolved the reappeared ledger hold: current ledger is an exact superset of both 699dfd597df9 and 5ff9d28bc789, including atshare_a and atshare_b with matching source SHA256. Urgent owner mail delivered to Codex 01a14071-6f02-7fc3-8730-1a10be37ac27. Ledger unchanged. Full ledger gate separately reports three pre-existing inverse share_edit_content checksum mismatches.
+- 2026-10-15 10:58 PDT — Codex resolved the lock hold by retaining the current canonical refresh: alchemy 0.23.55, associations 0.14.59, chat 0.8.110, data 0.29.39, records 0.99.27 supersede both held versions; Univer action-recorder 1.0.4 retained. The removed direct @univerjs/docs importer matches package.json (package remains transitively). Urgent mail delivered to owners 9faeecae-0838-4785-ba3b-0d8dcf4d6027 and 9bebd132-b256-460e-938e-501370a8709a. All 33 Matrx packages verified at npm latest, exactly once; lockfile keys and linkage checked.
+- 2026-10-15 11:02 PDT — npm published rich-content 0.2.171 during the final recheck. Ran canonical direct and transitive Matrx updates; retained all existing upgrades. Reviewed its source diff: optional rawWithThinking callback added, with no required existing-caller change. Duplicate and lock-key checks pass.
+- 2026-10-15 PDT — Claude agent resolved `_conflicts/2026-10-15-111530/scripts/campaign-tests/atauto3_green.sql.held` by keeping LOCAL (eb6468429e): a superset of GITHUB plus section 3 (button runs a script); its 2j any-order check replaces GITHUB's `order by created_at desc limit 1`, which is nondeterministic because both orders share one transaction's now().
+- 2026-10-15 PDT — Claude agent resolved `_conflicts/2026-10-15-124519/pnpm-lock.yaml.held` by keeping the live lockfile: LOCAL (2427110285) was only @ai-matrx version bumps plus the new `@ai-matrx/office` importer, all already in live; live is newer on the only four differences (coding-sessions 0.3.221, media 0.15.101, records 0.99.29, records-ui 0.115.95). Verified: `check-matrx-packages.mjs` 34 packages at npm latest exactly once, `check-lockfile-keys.py` exit 0, `pnpm install --frozen-lockfile --lockfile-only` exit 0.
+- 2026-10-15 16:5x PDT — Claude ship-all (ff122907) resolved `_conflicts/2026-10-15-163653/pnpm-lock.yaml.held` by keeping the live lockfile: it already carries LOCAL's only addition (@ai-matrx/chat 0.8.114, the release-blocker fix) and GITHUB's removal of the direct realtime/content-ir-react/rich-editor importers; released as v0.4.3282.
+- 2026-10-16 06:45 PDT — Claude ship-all resolver cleared `_conflicts/2026-10-16-061515/` (34 items). 32 kept live: each LOCAL blob was byte-identical to a version GitHub's own history already held after the merge base (replayed commits, e.g. 9d2428e637 = f295729c57), and GitHub then deleted (handlers moved into @ai-matrx/chat 0.8.131, docs into @ai-matrx/office) or rewrote them. pnpm-lock kept live (LOCAL only had chat 0.8.130; `check-matrx-packages` 31 at npm latest once). persist.ts merged: live plus LOCAL's restored sameFactOnBrand (MKT-179) and mandate-aware found_by (MKT-180) that b131e3f0300 had silently reverted; smart-add jest 439/439. sync-main now auto-resolves the replayed class (test_sync_main_replayed_side.py).
+- 2026-10-16 PDT — Claude resolver (lane from 5a756706) cleared `_conflicts/2026-10-16-104553/` (7 items). newFindings.ts + its test: kept live (5cd33f4cf4d moved duplicate detection to the server's `context.resolution` and deleted `discovery-duplicates`, which LOCAL still imports). BrandWorkspace.tsx: kept live (92cab0575ad gate-in-nav + fixed setup-status line) and restored LOCAL's richer `webCopy` payloads on the site and asset CopyButtons, which the 10:54 sweep had silently downgraded; LOCAL's `BusinessFactValue` (EmailValue/PhoneValue/...) NOT taken: those exports are not in installed @ai-matrx/design-system 0.86.162 (unpublished, aidream contact-values src) — recover with `git show e92b27e278:_conflicts/2026-10-16-104553/features/marketing/components/brands/BrandWorkspace.tsx.held` once published. BrandOfferingsWorkspace.tsx: kept live (both cleared the header band; ee3f2de5883 at 10:42 re-affirmed the outer `pt-[var(--shell-header-h)]`; LOCAL's h1/max-w changes already in live). ChangesReview.tsx: kept GITHUB's edited file (SmartAddBrand.tsx still imports it, LOCAL's own SmartAddBrand still imported it, no replacement exists — the deletion was not a refactor). row-classes.json: regenerated (`pnpm checks:classify`, 198 repo-only / 70 live-db; adds LOCAL's host-config-browser rows), `--check` green. contact-values-baseline.json: kept live — LOCAL dropped HrDirectoryCards/directoryColumns/FormattedFieldValue but those files still carry 5 hand-built links, so LOCAL's baseline would fail; `check:contact-values` green. Verified: smart-add jest 458/458, `pnpm type-check` exit 0.
+- 2026-10-16 17:0x PDT — Claude ship-all resolved `_conflicts/2026-10-16-165503/pnpm-lock.yaml.held` by keeping the live lockfile: LOCAL's only difference was @ai-matrx/rich-content 0.2.189, which live already carries.
+- 2026-10-16 23:15 PDT — Claude ship-all resolved `_conflicts/2026-10-16-224306/pnpm-lock.yaml.held` by keeping the live lockfile: every difference is a version bump where live is newer (agents 0.59.130, chat 0.8.151, coding-sessions 0.3.257, context-menu 0.1.43, rich-content 0.2.198, summon 0.1.1); no non-@ai-matrx differences.
+- 2026-10-17 03:00 PDT — Claude ship-all resolved `_conflicts/2026-10-17-023900/features/unified-data/windows/WorkInboxWindow.tsx.held` by keeping live: 0f737d30ccf (02:48) already carries both sides' one-line upgrades — LOCAL's `recordsUiLazy` front-door import and GITHUB's `@ai-matrx/summon/window` WindowPanel.
+- 2026-10-17 22:5x PDT — Claude resolver (lane from ship-all 22:13) cleared 7 holds. LEDGER.json ×2 (`2026-10-17-090152`, `2026-10-17-171512`): kept live — HEAD, origin/main and the working copy each carry every entry of all four sides (6255b362d6, 1a873af6b8, 796df9f5b5, e141618108) with identical checksum/applied_at. pnpm-lock.yaml ×4 (`090152`, `132308`, `150031`, `201440`): kept live — no side has an @ai-matrx version newer than live; the only non-Matrx differences are older versions live already upgraded (@tanstack/react-query 5.104.3→5.104.4, pdfkit 0.19.1→0.20.2, pdfmake 0.3.11→0.3.12, js-md5 gone with old pdfkit). Verified `check-matrx-packages.mjs --duplicates` (33 packages, one version each), `pnpm install --frozen-lockfile --lockfile-only` exit 0, `check-lockfile-keys.py` exit 0. record-toasts.baseline.json (`132308`): kept live (GitHub) — same id set as LOCAL — and added LOCAL's accepted reason for `ExamplesStart.tsx \`${file.name} did not open\`` (Arman, 2026-10-17), which GitHub's rewrite dropped; `check:record-toasts` + self-test green.
 - 2026-10-17 23:2x PDT — Claude resolver (lane from 10d1f900) cleared the three smart-add holds in `_conflicts/2026-10-17-225804/` by keeping live: `webDecisions.ts`, `enrich/ChangesReview.tsx`, `__tests__/enrichWebDecisions.test.ts`. LOCAL (daa3eb47e4 snapshot, 22:37) was the in-progress form of a35b6b4efa0 (23:06), which landed after it and carries every LOCAL addition (`markCount`/`visitMarks`, "decided this visit", the only-Ask-me-later/Ignore test) and then deliberately drops the "N answered this visit" tail (restored answers come back as answered) and moves the breakdown to its own line. Verified: smart-add jest 541/541; `pnpm type-check` has no smart-add errors (7 unrelated, in PortalBlocksEditor.tsx, board cover-items.tsx, one app/ file).
