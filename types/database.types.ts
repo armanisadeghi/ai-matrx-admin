@@ -9306,6 +9306,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           default_currency: string | null
+          deleted_at: string | null
           details_submitted: boolean
           disconnected_at: string | null
           display_name: string | null
@@ -9326,6 +9327,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           default_currency?: string | null
+          deleted_at?: string | null
           details_submitted?: boolean
           disconnected_at?: string | null
           display_name?: string | null
@@ -9346,6 +9348,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           default_currency?: string | null
+          deleted_at?: string | null
           details_submitted?: boolean
           disconnected_at?: string | null
           display_name?: string | null
@@ -9436,6 +9439,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string
+          deleted_at: string | null
           description: string | null
           id: string
           livemode: boolean
@@ -9459,6 +9463,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           livemode?: boolean
@@ -9482,6 +9487,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           livemode?: boolean
@@ -9517,6 +9523,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string
+          deleted_at: string | null
           description: string | null
           enabled: boolean
           id: string
@@ -9537,6 +9544,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          deleted_at?: string | null
           description?: string | null
           enabled?: boolean
           id?: string
@@ -9557,6 +9565,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          deleted_at?: string | null
           description?: string | null
           enabled?: boolean
           id?: string
@@ -83042,6 +83051,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
           host: string
           id: string
           last_check_at: string | null
@@ -83057,6 +83067,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           host: string
           id?: string
           last_check_at?: string | null
@@ -83072,6 +83083,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
           host?: string
           id?: string
           last_check_at?: string | null
@@ -84475,6 +84487,7 @@ export type Database = {
       }
       _org_availability_arm: { Args: never; Returns: undefined }
       _org_availability_token: { Args: never; Returns: string }
+      _org_domain_access: { Args: { p_organization_id: string }; Returns: Json }
       _org_records_owned_by: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: {
@@ -85529,6 +85542,39 @@ export type Database = {
         Args: { p_limit?: number; p_organization_id: string }
         Returns: Json
       }
+      org_domain_admin_check: {
+        Args: {
+          p_action: string
+          p_domain_id: string
+          p_host: string
+          p_organization_id: string
+        }
+        Returns: Json
+      }
+      org_domain_record: {
+        Args: {
+          p_actor: string
+          p_domain_id: string
+          p_error: string
+          p_host: string
+          p_organization_id: string
+          p_status: string
+          p_verification: Json
+        }
+        Returns: Json
+      }
+      org_domain_resolve: { Args: { p_host: string }; Returns: Json }
+      org_domain_route_set: {
+        Args: {
+          p_domain_id: string
+          p_organization_id: string
+          p_path_prefix: string
+          p_target_id: string
+          p_target_kind: string
+        }
+        Returns: Json
+      }
+      org_domains: { Args: { p_organization_id: string }; Returns: Json }
       org_lane_visibility_sql: {
         Args: { p_alias?: string; p_token: string }
         Returns: string
