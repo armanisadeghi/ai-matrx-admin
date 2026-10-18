@@ -335,6 +335,7 @@
     "check:unpinned-security-columns": "tsx scripts/check-unpinned-security-columns.ts",
     "check:unpinned-security-columns:self-test": "tsx scripts/check-unpinned-security-columns.ts --self-test",
     "check:payment-tables-no-client-writes": "tsx scripts/check-payment-tables-no-client-writes.ts",
+    "check:payment-settle-rules": "tsx scripts/check-payment-settle-rules.ts",
     "check:client-writes-are-granted": "tsx scripts/check-client-writes-are-granted.ts",
     "check:client-writes-are-granted:self-test": "tsx scripts/check-client-writes-are-granted.ts --self-test",
     "db:apply": "tsx scripts/apply-migration.ts",
