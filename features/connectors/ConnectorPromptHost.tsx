@@ -20,7 +20,8 @@ import { ConnectorPromptCard } from "./ConnectorPromptCard";
 import { accountHealth, anyProductConnected } from "./health";
 import { useGoogleConnectorState } from "./google-adapter";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
-import { readConnectorHint } from "./connectedHint";
+import { readConnectorHint, rememberConnectorHint } from "./connectedHint";
+import { useShellCounts } from "@/lib/boot/shellCounts";
 import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
 
 /**
@@ -54,6 +55,20 @@ export function ConnectorPromptHost({
   const [engaged, setEngaged] = useState(false);
   const [hint, setHint] = useState(() => readConnectorHint(provider.id, userId));
   useEffect(() => setHint(readConnectorHint(provider.id, userId)), [provider.id, userId]);
+  // The shell's ONE lazy after-paint read (`platform.shell_counts`, already made for the header's
+  // counts) says whether this person has an active Google connection in OUR records — no Google
+  // call, no extra request. It becomes the device's hint, so a new person or a new device learns
+  // "not connected" without anyone opening Settings (review A2, 2026-10-18), and a connection made
+  // on another device clears a stale "not connected".
+  const shellGoogleConnected = useShellCounts().data?.googleConnected ?? null;
+  useEffect(() => {
+    if (shellGoogleConnected === null || !userId) return;
+    const previous = readConnectorHint(provider.id, userId);
+    const next = { connected: shellGoogleConnected, blocked: previous?.blocked ?? false };
+    if (previous?.connected === next.connected) return;
+    rememberConnectorHint(provider.id, userId, next);
+    setHint(next);
+  }, [provider.id, userId, shellGoogleConnected]);
   const state = useGoogleConnectorState({ enabled: engaged });
   const openConsent = useOpenConnectorConsentDialog();
 

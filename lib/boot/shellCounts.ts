@@ -60,10 +60,16 @@ export interface ShellCounts {
   needsYou: number | null;
   /** Pending KG suggestions, before the person's acknowledgements and the confidence floor. */
   kgPending: number | null;
+  /**
+   * Has an active Google connection (own or one of their organizations'), from OUR connection
+   * records, no Google call. `null` = the database could not say. The new-chat Connect Google
+   * card offers itself only when this (or the device's last Google answer) says no.
+   */
+  googleConnected: boolean | null;
 }
 
 export type ShellSection =
-  "inbox" | "work" | "assists" | "needsYou" | "kgPending";
+  "inbox" | "work" | "assists" | "needsYou" | "kgPending" | "googleConnected";
 
 /**
  * True when the shell read has SETTLED and did not give this section: the whole read failed with
@@ -127,6 +133,7 @@ export function parseShellCounts(data: unknown): ShellCounts {
     assists: intOrNull(d.assists),
     needsYou: intOrNull(d.needs_you),
     kgPending: intOrNull(d.kg_pending),
+    googleConnected: typeof d.google_connected === "boolean" ? d.google_connected : null,
   };
 }
 
