@@ -44,6 +44,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 import {
   MatrxDataTable,
   type MatrxColumnDef,
@@ -1238,7 +1239,7 @@ export function SourcesPage() {
               <Link href={sourceHref(r.id)} className="block space-y-1 py-1">
                 <div className="flex items-center gap-2">
                   {sourceKindGroup(r.source_kind) === "web_page" ? (
-                    <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <SiteIcon site={r.canonical_identity} fallback={Globe} size={14} />
                   ) : null}
                   <span className="truncate font-medium">{r.name}</span>
                 </div>

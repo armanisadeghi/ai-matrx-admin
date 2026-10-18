@@ -20,6 +20,7 @@ import {
   Play,
   Tag,
 } from "lucide-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 import { cn } from "@/lib/utils";
 import MarkdownCore from "@ai-matrx/rich-content/markdown-core/MarkdownCore";
 import { ExternalImage, Pill, SiteFavicon } from "./scraper-kind-shared";
@@ -199,7 +200,7 @@ export function PageVideoBlock({ serverData, className }: BlockProps) {
         <ExternalImage src={poster} alt="" className="h-12 w-20 shrink-0 rounded bg-muted" />
       ) : (
         <span className="flex h-12 w-20 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground">
-          <Play className="h-4 w-4" />
+          <SiteIcon site={src} fallback={Play} size={20} />
         </span>
       )}
       <div className="min-w-0 flex-1">
@@ -493,7 +494,7 @@ export function PageMetadataBlock({ serverData, className }: BlockProps) {
 
       {canonical && (
         <div className="flex items-center gap-1.5 text-xs">
-          <Link2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <SiteIcon site={canonical} fallback={Link2} size={14} />
           <span className="shrink-0 text-muted-foreground">canonical</span>
           <OutboundLink
             href={canonical}

@@ -33,6 +33,7 @@ import {
   Loader2,
   Paperclip,
 } from "lucide-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { formatDurationMs, formatFileSize } from "@ai-matrx/kit/format";
 import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
@@ -128,7 +129,7 @@ export function MediaAssetLink({
           className,
         )}
       >
-        <Link2 className="h-3.5 w-3.5 shrink-0" />
+        <SiteIcon site={data.linkHref} fallback={Link2} size={14} />
         <span className="truncate">{text}</span>
       </OutboundLink>
     );
