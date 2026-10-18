@@ -61,8 +61,13 @@ class LivePlantsAreNeverSwept(unittest.TestCase):
         os.environ["PLANT_STATE_DIR"] = self.state
         self.cwd = os.getcwd()
         os.chdir(self.repo)
+        # The sweep check has its own suite (test_sync_main_sweep_hold.py); this throwaway repo has
+        # no scripts/check-sweep-resolves.mjs and sync-main pauses without it (cfd95c34963).
+        self.orig_holds = sm.sweep_holds
+        sm.sweep_holds = lambda: []
 
     def tearDown(self):
+        sm.sweep_holds = self.orig_holds
         os.chdir(self.cwd)
         if self.old_env is None:
             os.environ.pop("PLANT_STATE_DIR", None)
@@ -147,7 +152,7 @@ class LivePlantsAreNeverSwept(unittest.TestCase):
         self.write("planted.py", "x = 1\n")
         sweep = ("import importlib.util,sys;"
                  "s=importlib.util.spec_from_file_location('sm',%r);m=importlib.util.module_from_spec(s);"
-                 "s.loader.exec_module(m);m.sweep_message_body=lambda f:'t';m.commit_all()" % SYNC)
+                 "s.loader.exec_module(m);m.sweep_message_body=lambda f:'t';m.sweep_holds=lambda:[];m.commit_all()" % SYNC)
         p = subprocess.run([sys.executable, plant, "--file", os.path.join(self.repo, "planted.py"),
                             "--old", "x = 1", "--new", "x = 99", "--expect", "green", "--",
                             sys.executable, "-c", sweep],

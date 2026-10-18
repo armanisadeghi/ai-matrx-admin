@@ -56,6 +56,9 @@ class AuthorsBody(unittest.TestCase):
 class SweepCommit(unittest.TestCase):
     def test_commit_keeps_subject_and_adds_body(self):
         orig, cwd = sm.lookup_authors, os.getcwd()
+        # The sweep check has its own suite (test_sync_main_sweep_hold.py); this throwaway repo has
+        # no scripts/check-sweep-resolves.mjs and sync-main pauses without it (cfd95c34963).
+        orig_holds, sm.sweep_holds = sm.sweep_holds, lambda: []
         with tempfile.TemporaryDirectory() as d:
             try:
                 for c in (["init", "-q"], ["config", "user.email", "t@t"], ["config", "user.name", "t"]):
@@ -72,6 +75,7 @@ class SweepCommit(unittest.TestCase):
             finally:
                 os.chdir(cwd)
                 sm.lookup_authors = orig
+                sm.sweep_holds = orig_holds
 
     def test_lookup_missing_tool_does_not_block(self):
         with tempfile.TemporaryDirectory() as d:

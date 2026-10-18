@@ -42,6 +42,11 @@ class Repo:
             sh(self.work, "git", *c)
         self.write(".gitignore", ".matrx/sync-paused\n")
         self.write("features/chat/kept.ts", "export const kept = 1;\n")
+        # sync-main pauses when its sweep checker is missing (cfd95c34963). These switches are not
+        # about that check (test_sync_main_sweep_hold.py runs the real one), so the sandbox gets a
+        # stand-in that reports nothing held, in the exact shape sync-main validates.
+        self.write("scripts/check-sweep-resolves.mjs",
+                   'console.log(JSON.stringify({ checked: 0, deletions: 0, hold: [], seconds: 0 }));\n')
         sh(self.work, "git", "add", "-A")
         sh(self.work, "git", "commit", "-q", "-m", "init")
         sh(self.work, "git", "push", "-q", "origin", "main")
@@ -171,7 +176,7 @@ class Pause(Base):
         self.assertFalse(self.r.exists(PAUSE))
 
     def test_ship_sh_releases_nothing_while_paused(self):
-        os.makedirs(os.path.join(self.r.work, "scripts"))
+        os.makedirs(os.path.join(self.r.work, "scripts"), exist_ok=True)
         shutil.copy(SHIP, os.path.join(self.r.work, "ship.sh"))
         shutil.copy(SCRIPT, os.path.join(self.r.work, "scripts", "sync-main.py"))
         marker = os.path.join(self.r.tmp, "released")
@@ -201,10 +206,11 @@ class EveryPushPathHonoursThePause(Base):
     def setUp(self):
         super().setUp()
         r = self.r
-        os.makedirs(os.path.join(r.work, "scripts"))
+        os.makedirs(os.path.join(r.work, "scripts"), exist_ok=True)
         shutil.copy(SCRIPT, os.path.join(r.work, "scripts", "sync-main.py"))
         shutil.copy(self.RELEASE, os.path.join(r.work, "scripts", "release.sh"))
-        for helper in ("release-stage.sh", "release-outcome.sh", "vercel-ignore-build.sh"):
+        for helper in ("release-stage.sh", "release-outcome.sh", "vercel-ignore-build.sh",
+                       "check-lockfile-keys.py", "lockfile-twins.sh", "lockfile-frozen.sh"):
             src = os.path.join(os.path.dirname(self.RELEASE), helper)
             if os.path.exists(src):
                 shutil.copy(src, os.path.join(r.work, "scripts", helper))
