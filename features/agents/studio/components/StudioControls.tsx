@@ -16,14 +16,14 @@
  *   the Builder's own edit path (unsaved), "Battle it" runs it on the cases, "Keep" saves it.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlaskConical, Swords } from "lucide-react";
 import Link from "next/link";
 import { Badge, Button, EmptyState, Tabs } from "@ai-matrx/design-system/controls";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
-import { debriefKey, setDebrief, useDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
+import { debriefKey, getDebrief, setDebrief, useDebrief } from "@ai-matrx/chat/agents/debrief/debrief-store";
 import { parseAgentDebrief, type DebriefProposal } from "@ai-matrx/chat/agents/debrief/debrief-proposals";
 import { DebriefProposalCards } from "@ai-matrx/chat/agents/debrief/DebriefProposalCards";
 import { ProInput } from "@/components/official/ProInput";
@@ -36,6 +36,7 @@ import { StudioCases } from "./StudioCases";
 import { StudioBattle } from "./StudioBattle";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { candidateFromProposal, type StudioCandidate } from "../battle";
+import { loadImproveRecord, saveImprovePart } from "../improve-record";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
@@ -80,6 +81,28 @@ export function StudioControls({
   const dispatch = useAppDispatch();
   const record = useAppSelector((s) => (agentId ? selectAgentById(s, agentId) : undefined));
   const [candidate, setCandidate] = useState<StudioCandidate | null>(null);
+  /** A candidate is an unsaved draft: write it down as it changes, and re-apply it to the Builder record on reload. */
+  const restored = useRef<string | null>(null);
+  useEffect(() => {
+    if (!agentId || !record || !runConversationId || restored.current === runConversationId) return;
+    restored.current = runConversationId;
+    void loadImproveRecord(runConversationId).then(
+      (saved) => {
+        const c = saved.candidate;
+        if (!c || candidate) return;
+        if (c.messages) dispatch(setAgentMessages({ id: agentId, messages: c.messages as typeof record.messages }));
+        if (c.modelId) dispatch(setAgentField({ id: agentId, field: "modelId", value: c.modelId }));
+        setCandidate(c);
+      },
+      () => undefined, // nothing saved yet reads as no candidate; the next change writes it
+    );
+  }, [agentId, record, runConversationId, candidate, dispatch]);
+  const remember = (c: StudioCandidate | null) => {
+    if (!runConversationId) return;
+    void saveImprovePart(runConversationId, "candidate", c).catch((e: unknown) =>
+      toast.error("The candidate was not remembered", { description: e instanceof Error ? e.message : String(e) }),
+    );
+  };
 
   /** "Try as candidate": the proposal goes into the Builder's own record (unsaved), never a copy. */
   const tryProposal = (proposal: DebriefProposal): StudioCandidate | null => {
@@ -93,6 +116,7 @@ export function StudioControls({
     if (c.messages) dispatch(setAgentMessages({ id: agentId, messages: c.messages as typeof record.messages }));
     if (c.modelId) dispatch(setAgentField({ id: agentId, field: "modelId", value: c.modelId }));
     setCandidate(c);
+    remember(c);
     return c;
   };
   const discard = () => {
@@ -100,11 +124,13 @@ export function StudioControls({
     dispatch(resetAgentField({ id: agentId, field: "messages" }));
     dispatch(resetAgentField({ id: agentId, field: "modelId" }));
     setCandidate(null);
+    remember(null);
   };
   const keep = async () => {
     if (!agentId) return;
     await dispatch(saveAgent(agentId)).unwrap();
     setCandidate(null);
+    remember(null);
     onSaved();
   };
   return (
@@ -303,6 +329,33 @@ function DebriefTab({
   useEffect(() => {
     if (forkId) followServerWork({ kind: "conversation", id: forkId, label: "Debrief", source: "agent studio" });
   }, [forkId]);
+  // The answer is written down when it lands and brought back on reload (its fork is the server-side body).
+  const loadedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!runConversationId || !messageId || !key || loadedFor.current === key || getDebrief(key)) return;
+    loadedFor.current = key;
+    void loadImproveRecord(runConversationId).then(
+      (saved) => {
+        const d = saved.debrief;
+        if (d && d.message_id === messageId && !getDebrief(key)) {
+          setDebrief(key, { status: "done", text: d.text, model: d.model, forkConversationId: d.fork_conversation_id, error: null });
+        }
+      },
+      () => undefined,
+    );
+  }, [runConversationId, messageId, key]);
+  const doneText = debrief?.status === "done" ? debrief.text : null;
+  const doneFork = debrief?.forkConversationId ?? null;
+  const doneModel = debrief?.model ?? null;
+  useEffect(() => {
+    if (!runConversationId || !messageId || !doneText) return;
+    void saveImprovePart(runConversationId, "debrief", {
+      message_id: messageId,
+      fork_conversation_id: doneFork,
+      model: doneModel,
+      text: doneText,
+    }).catch(() => undefined);
+  }, [runConversationId, messageId, doneText, doneFork, doneModel]);
   if (!runConversationId || !messageId) {
     return <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Run the agent first" line="Debrief reads its latest answer" />;
   }
