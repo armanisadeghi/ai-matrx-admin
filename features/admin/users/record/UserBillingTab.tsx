@@ -7,7 +7,8 @@
 // reuse ChangePlanDialog, GiveFreeMonthsDialog and ResetUsageDialog (billing.usage_reset_apply).
 // The full usage drill is a link-out (usagePersonHref), never an embed.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRecordLoad } from "./useRecordLoad";
 import { ExternalLink, Gift, RotateCcw, WalletCards } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
 import { ErrorNotice, readOf } from "@ai-matrx/design-system";
@@ -139,9 +140,6 @@ const COLUMNS: MatrxColumnDef<BillingEvent>[] = [
 ];
 
 export function UserBillingTab({ userId, overview, reload }: UserTabBodyProps) {
-  const [events, setEvents] = useState<BillingEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
   const [version, setVersion] = useState(0);
   const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
   const [freeMonths, setFreeMonths] = useState<FreeMonthsPerson[] | null>(null);
@@ -151,21 +149,8 @@ export function UserBillingTab({ userId, overview, reload }: UserTabBodyProps) {
   const plan = overview.plan;
   const windows = overview.usage?.windows ?? [];
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    listBillingEvents(userId)
-      .then((list) => {
-        if (!alive) return;
-        setEvents(list);
-        setError(null);
-      })
-      .catch((e: unknown) => alive && setError(e))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [userId, version]);
+  const { data: eventsData, loading, error } = useRecordLoad(listBillingEvents, userId, version);
+  const events = eventsData ?? [];
 
   const changed = () => {
     setVersion((v) => v + 1);

@@ -6,6 +6,7 @@
 // Organizations page uses (service/orgMembership.ts), so the server's refusals and audit apply.
 
 import { useEffect, useState } from "react";
+import { useRecordLoad } from "./useRecordLoad";
 import { Building2, Plus, Trash2 } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
 import { Badge, Button, SearchField, Select } from "@ai-matrx/design-system/controls";
@@ -109,7 +110,7 @@ function AddToOrganizationDialog({
         </DialogHeader>
         <div className="space-y-3">
           <SearchField value={query} placeholder="Search organizations…" onChange={(e) => setQuery(e.target.value)} aria-label="Search organizations" />
-          {searchError ? <p className="type-secondary text-destructive">{searchError}</p> : null}
+          {searchError ? <ErrorNotice size="inline" message={searchError} error={searchError} operation="Search organizations" /> : null}
           {query.trim().length >= 2 && results.length === 0 && !searchError ? (
             <p className="type-secondary text-muted-foreground">No organization matches</p>
           ) : null}
@@ -143,29 +144,13 @@ function AddToOrganizationDialog({
 }
 
 export function UserOrganizationsTab({ userId, overview, reload }: UserTabBodyProps) {
-  const [rows, setRows] = useState<PersonMembership[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
   const [version, setVersion] = useState(0);
   const [saving, setSaving] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const label = personTitle(overview);
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    listPersonMemberships(userId)
-      .then((list) => {
-        if (!alive) return;
-        setRows(list);
-        setError(null);
-      })
-      .catch((e: unknown) => alive && setError(e))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [userId, version]);
+  const { data: rowsData, loading, error } = useRecordLoad(listPersonMemberships, userId, version);
+  const rows = rowsData ?? [];
 
   const refresh = () => {
     setVersion((v) => v + 1);

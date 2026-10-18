@@ -100,7 +100,6 @@ export function directChargeSessionParams(input: {
     client_reference_id: input.paymentId,
     metadata: { matrx_payment_id: input.paymentId, matrx_record_id: input.recordId, matrx_organization_id: input.organizationId },
     payment_intent_data: {
-      application_fee_amount: 100,
       metadata: { matrx_payment_id: input.paymentId, matrx_record_id: input.recordId },
     },
   };

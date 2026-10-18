@@ -313,7 +313,7 @@ export function rowsVisibleOf(where: SeededWhere): number | null {
  * The cards each board column holds (lane SKELETON-HEIGHT-2): the table's opening view's counts, and only for
  * a block whose open view IS that board (same layout, same grouping Field). Anything else is not predicted.
  */
-export function columnCardsOf(where: SeededWhere, view: { layout: string; groupField?: string | undefined }): number[] | null {
+export function columnCardsOf(where: SeededWhere, view: { layout: string; groupField?: string | null | undefined }): number[] | null {
   const open = (where.data as { opening_view?: { layout?: unknown; group_field?: unknown; groups?: unknown } } | null)?.opening_view;
   if (where.error || !open || view.layout !== "kanban" || open.layout !== "kanban" || !view.groupField || open.group_field !== view.groupField) return null;
   const groups = Array.isArray(open.groups) ? open.groups : [];

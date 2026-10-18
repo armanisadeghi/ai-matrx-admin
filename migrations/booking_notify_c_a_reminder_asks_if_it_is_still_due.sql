@@ -94,7 +94,13 @@ insert into platform.client_callable_door
   (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, non_client_lane, signed_in_callers, anonymous_callers)
 values ('custom','_booking_end_reminders','p_organization_id uuid, p_ref text',array['uuid'::regtype,'text'::regtype]::oid[],
         'Matched with the organization; it only marks that one booking''s waiting reminder rows skipped.','booking_notify_c_a_reminder_asks_if_it_is_still_due.sql',
-        'internal: not a door. Called by custom._booking_messages and custom.booking_cancel.',false,false)
+        'internal: not a door. Called by custom._booking_messages and custom.booking_cancel.',false,false),
+       ('communication','notification_still_due','p_id uuid',array['uuid'::regtype]::oid[],
+        'Reads one notification row by id and runs only the allow-listed communication.still_due_* guard it names; answers due or not. Changes nothing.','booking_notify_c_a_reminder_asks_if_it_is_still_due.sql',
+        'internal: not a door. Called by the notification dispatcher (service lane) just before a send.',false,false),
+       ('communication','still_due_booking','p_organization_id uuid, p_args jsonb',array['uuid'::regtype,'jsonb'::regtype]::oid[],
+        'Matched with the organization; reads one booking record''s status and time and answers due or not. Changes nothing.','booking_notify_c_a_reminder_asks_if_it_is_still_due.sql',
+        'internal: not a door. Called by communication.notification_still_due.',false,false)
 on conflict do nothing;
 
 CREATE OR REPLACE FUNCTION custom._booking_messages(p_organization_id uuid, p_form_id uuid, p_record_id uuid, p_submission_id uuid, p_event text)

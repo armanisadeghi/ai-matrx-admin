@@ -6,7 +6,8 @@
 // detail.reason), newest first. Actor words come from the batched admin label lookup so the
 // column sorts and filters by name.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRecordLoad } from "./useRecordLoad";
 import { History } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -160,26 +161,10 @@ const COLUMNS: MatrxColumnDef<HistoryRow>[] = [
 ];
 
 export function UserHistoryTab({ userId }: UserTabBodyProps) {
-  const [rows, setRows] = useState<HistoryRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
   const [version, setVersion] = useState(0);
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    listUserAdminHistory(userId)
-      .then((list) => {
-        if (!alive) return;
-        setRows(list);
-        setError(null);
-      })
-      .catch((e: unknown) => alive && setError(e))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [userId, version]);
+  const { data: rowsData, loading, error } = useRecordLoad(listUserAdminHistory, userId, version);
+  const rows = rowsData ?? [];
 
   return (
     <div data-testid="user-history-tab">
