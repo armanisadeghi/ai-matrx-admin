@@ -152,6 +152,14 @@ begin
    where organization_id = v_org and event_key = 'custom.booking.made' and recipient_user_id = c_admin
      and dedupe_key like format('booking:%s:host:booked:%%', v_ref);
   if v_n < 1 then raise exception '3: the host was not told of the booking'; end if;
+  -- THE HOST'S EMAIL has an address (a user recipient has no literal; the producer must look it up),
+  -- or it is a named skip and the host hears only in AI Matrx.
+  if not exists (select 1 from communication.notification
+                  where organization_id = v_org and event_key = 'custom.booking.made' and channel = 'email'
+                    and recipient_user_id = c_admin and status = 'render_pending' and to_address is not null
+                    and dedupe_key like format('booking:%s:host:booked:%%', v_ref)) then
+    raise exception '3: the host''s email was not queued with an address';
+  end if;
   raise notice 'TEST 3 PASSED — host told (% channel rows)', v_n;
 
   -- 4. A MOVE: old reminders are ended, the booker is told the new time, new reminders are due.

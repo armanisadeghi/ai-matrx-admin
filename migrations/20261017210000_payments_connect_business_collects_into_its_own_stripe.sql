@@ -11,74 +11,91 @@
 --   billing.org_payment_account  one connected Stripe account per organization
 --   billing.payment_ask          WHERE money is asked: a form / booking page (anon_form) or a table (portal pay)
 --   billing.payment              one row per Checkout Session, settled by the server
--- Deny-by-default RLS on all three. Members read through the public RPCs below; the server
--- (service_role) is the only writer of accounts and payments.
+-- All three go through the provisioner (standard RLS). Members read through the billing RPCs
+-- below; the server (service_role) is the only writer of accounts and payments.
 
-create table if not exists billing.org_payment_account (
-  organization_id    uuid primary key references iam.organizations(id) on delete cascade,
-  stripe_account_id  text not null unique,
-  livemode           boolean not null default false,
-  charges_enabled    boolean not null default false,
-  payouts_enabled    boolean not null default false,
-  details_submitted  boolean not null default false,
-  country            text,
-  default_currency   text,
-  display_name       text,
-  connected_by       uuid references iam.users(id) on delete set null,
-  disconnected_at    timestamptz,
-  created_at         timestamptz not null default now(),
-  updated_at         timestamptz not null default now()
-);
-alter table billing.org_payment_account enable row level security;
 
-create table if not exists billing.payment_ask (
-  id                uuid primary key default gen_random_uuid(),
-  organization_id   uuid not null references iam.organizations(id) on delete cascade,
-  subject_kind      text not null check (subject_kind in ('form', 'table')),
-  subject_id        uuid not null,
-  table_id          uuid not null,
-  enabled           boolean not null default true,
-  amount_mode       text not null default 'fixed' check (amount_mode in ('fixed', 'field')),
-  amount_cents      integer check (amount_cents is null or amount_cents >= 50),
-  amount_field      text,
-  currency          text not null default 'usd' check (currency ~ '^[a-z]{3}$'),
-  description       text,
-  status_field_key  text not null default 'payment',
-  created_by        uuid references iam.users(id) on delete set null,
-  created_at        timestamptz not null default now(),
-  updated_at        timestamptz not null default now(),
-  unique (subject_kind, subject_id),
-  check ((amount_mode = 'fixed' and amount_cents is not null) or (amount_mode = 'field' and amount_field is not null))
-);
-alter table billing.payment_ask enable row level security;
-create index if not exists payment_ask_org_idx on billing.payment_ask (organization_id);
-
-create table if not exists billing.payment (
-  id                          uuid primary key default gen_random_uuid(),
-  organization_id             uuid not null references iam.organizations(id) on delete cascade,
-  ask_id                      uuid references billing.payment_ask(id) on delete set null,
-  subject_kind                text not null,
-  subject_id                  uuid not null,
-  record_id                   uuid not null,
-  amount_cents                integer not null check (amount_cents > 0),
-  currency                    text not null,
-  description                 text,
-  stripe_account_id           text not null,
-  livemode                    boolean not null default false,
-  stripe_checkout_session_id  text unique,
-  stripe_payment_intent_id    text,
-  status                      text not null default 'pending'
-                                check (status in ('pending', 'paid', 'failed', 'expired', 'refunded')),
-  paid_at                     timestamptz,
-  created_at                  timestamptz not null default now(),
-  updated_at                  timestamptz not null default now()
-);
-alter table billing.payment enable row level security;
-create index if not exists payment_record_idx on billing.payment (organization_id, record_id);
-create index if not exists payment_intent_idx on billing.payment (stripe_payment_intent_id);
+-- payment_ask and payment are entity-shaped, so they go through the provisioner (base columns,
+-- registry, triggers and standard RLS: members of the organization read, the server writes).
+do $$
+begin
+  if to_regclass('billing.org_payment_account') is null then
+    perform platform.create_entity_table(
+      p_schema => 'billing', p_table => 'org_payment_account',
+      p_token => 'billing_org_payment_account', p_label => 'Payment Account',
+      p_fields => array[
+        'stripe_account_id text NOT NULL UNIQUE',
+        'livemode boolean NOT NULL DEFAULT false',
+        'charges_enabled boolean NOT NULL DEFAULT false',
+        'payouts_enabled boolean NOT NULL DEFAULT false',
+        'details_submitted boolean NOT NULL DEFAULT false',
+        'country text',
+        'default_currency text',
+        'display_name text',
+        'connected_by uuid REFERENCES iam.users(id) ON DELETE SET NULL',
+        'disconnected_at timestamptz'
+      ],
+      p_variant => 'entity', p_versioned => false, p_soft_delete => false,
+      p_visibility => 'none', p_category => false, p_listed => false,
+      p_org_default => false, p_gin_jsonb => false);
+    alter table billing.org_payment_account add constraint org_payment_account_org_key unique (organization_id);
+    create index if not exists org_payment_account_connected_by_idx on billing.org_payment_account (connected_by);
+  end if;
+  if to_regclass('billing.payment_ask') is null then
+    perform platform.create_entity_table(
+      p_schema => 'billing', p_table => 'payment_ask',
+      p_token => 'billing_payment_ask', p_label => 'Payment Ask',
+      p_fields => array[
+        $f$subject_kind text NOT NULL CHECK (subject_kind IN ('form', 'table'))$f$,
+        'subject_id uuid NOT NULL',
+        'table_id uuid NOT NULL',
+        'enabled boolean NOT NULL DEFAULT true',
+        $f$amount_mode text NOT NULL DEFAULT 'fixed' CHECK (amount_mode IN ('fixed', 'field'))$f$,
+        'amount_cents integer CHECK (amount_cents IS NULL OR amount_cents >= 50)',
+        'amount_field text',
+        $f$currency text NOT NULL DEFAULT 'usd' CHECK (currency ~ '^[a-z]{3}$')$f$,
+        'description text',
+        $f$status_field_key text NOT NULL DEFAULT 'payment'$f$
+      ],
+      p_variant => 'entity', p_versioned => false, p_soft_delete => false,
+      p_visibility => 'none', p_category => false, p_listed => false,
+      p_org_default => false, p_gin_jsonb => false);
+    alter table billing.payment_ask add constraint payment_ask_subject_key unique (subject_kind, subject_id);
+    alter table billing.payment_ask add constraint payment_ask_amount_shape check (
+      (amount_mode = 'fixed' and amount_cents is not null) or (amount_mode = 'field' and amount_field is not null));
+  end if;
+  if to_regclass('billing.payment') is null then
+    perform platform.create_entity_table(
+      p_schema => 'billing', p_table => 'payment',
+      p_token => 'billing_payment', p_label => 'Payment',
+      p_fields => array[
+        'ask_id uuid REFERENCES billing.payment_ask(id) ON DELETE SET NULL',
+        'subject_kind text NOT NULL',
+        'subject_id uuid NOT NULL',
+        'record_id uuid NOT NULL',
+        'amount_cents integer NOT NULL CHECK (amount_cents > 0)',
+        'currency text NOT NULL',
+        'description text',
+        'stripe_account_id text NOT NULL',
+        'livemode boolean NOT NULL DEFAULT false',
+        'stripe_checkout_session_id text UNIQUE',
+        'stripe_payment_intent_id text',
+        $f$status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed', 'expired', 'refunded'))$f$,
+        'paid_at timestamptz'
+      ],
+      p_variant => 'entity', p_versioned => false, p_soft_delete => false,
+      p_visibility => 'none', p_category => false, p_listed => false,
+      p_org_default => false, p_gin_jsonb => false);
+    create index if not exists payment_record_idx on billing.payment (organization_id, record_id);
+    create index if not exists payment_intent_idx on billing.payment (stripe_payment_intent_id);
+    create index if not exists payment_ask_idx on billing.payment (ask_id);
+    create trigger trg_same_org_billing_payment_ask_id before insert or update of ask_id on billing.payment
+      for each row execute function platform.assert_same_org('ask_id', 'billing.payment_ask');
+  end if;
+end $$;
 
 -- ─── Reads for members ──────────────────────────────────────────────────────────────
-create or replace function public.org_payments_status(p_organization_id uuid)
+create or replace function billing.org_payments_status(p_organization_id uuid)
 returns jsonb
 language plpgsql stable security definer set search_path to ''
 as $$
@@ -106,10 +123,8 @@ begin
     'updated_at', r.updated_at
   );
 end; $$;
-revoke all on function public.org_payments_status(uuid) from public, anon;
-grant execute on function public.org_payments_status(uuid) to authenticated, service_role;
 
-create or replace function public.payment_asks(p_organization_id uuid)
+create or replace function billing.payment_asks(p_organization_id uuid)
 returns jsonb
 language plpgsql stable security definer set search_path to ''
 as $$
@@ -129,14 +144,12 @@ begin
     from billing.payment_ask a where a.organization_id = p_organization_id
   ), '[]'::jsonb);
 end; $$;
-revoke all on function public.payment_asks(uuid) from public, anon;
-grant execute on function public.payment_asks(uuid) to authenticated, service_role;
 
 -- ─── Set an ask (org admins) ────────────────────────────────────────────────────────
 -- p_spec: { enabled, amount_mode: fixed|field, amount_cents, amount_field, currency, description }
 -- Declares the plain text Field `payment` on the subject table through the store's own door the
 -- first time, so the record carries Unpaid / Paid / Failed / Refunded where people already look.
-create or replace function public.payment_ask_set(
+create or replace function billing.payment_ask_set(
   p_organization_id uuid, p_subject_kind text, p_subject_id uuid, p_spec jsonb
 ) returns jsonb
 language plpgsql security definer set search_path to ''
@@ -199,8 +212,6 @@ begin
   end if;
   return jsonb_build_object('id', v_id, 'table_id', v_table);
 end; $$;
-revoke all on function public.payment_ask_set(uuid, text, uuid, jsonb) from public, anon;
-grant execute on function public.payment_ask_set(uuid, text, uuid, jsonb) to authenticated, service_role;
 
 -- ─── Settle (server only) ───────────────────────────────────────────────────────────
 -- Idempotent and forward-only: pending → paid|failed|expired, paid → refunded. A paid payment is
@@ -266,21 +277,10 @@ revoke all on function billing.payment_mark_unpaid(uuid) from public, anon, auth
 grant execute on function billing.payment_mark_unpaid(uuid) to service_role;
 
 grant usage on schema billing to service_role;
-grant select, insert, update on billing.org_payment_account, billing.payment_ask, billing.payment to service_role;
-
--- ─── Admin read + service policies (billing.* posture: no authenticated row access) ─────
-do $$
-declare t text;
-begin
-  foreach t in array array['org_payment_account', 'payment_ask', 'payment'] loop
-    execute format('create policy platform_admin_read on billing.%I for select to authenticated using ((select public.is_platform_admin()))', t);
-  end loop;
-end $$;
-grant select on billing.org_payment_account, billing.payment_ask, billing.payment to authenticated;
 
 -- ─── Client doors (signed-in only; each checks membership or admin first) ─────────────
 insert into platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason,
-  declared_by, non_client_lane, signed_in_callers, anonymous_callers, gate_predicate)
+  declared_by, non_client_lane, signed_in_callers, anonymous_callers, gate_predicate, argument_rules)
 select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid), platform.door_argtypes(p.proargtypes),
        case p.proname
          when 'org_payments_status' then 'Whether ONE named organization has its own Stripe account connected for collecting payments, and its state. Refuses an organization the caller is not a member of.'
@@ -288,10 +288,34 @@ select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid
          else 'Sets where an organization asks for payment. Org admins only (public.is_org_admin); the form must belong to that organization.'
        end,
        '20261017210000_payments_connect_business_collects_into_its_own_stripe', null, true, false,
-       case p.proname when 'payment_ask_set' then 'public.is_org_admin(p_organization_id)' else 'public.is_org_member(p_organization_id)' end
+       case p.proname when 'payment_ask_set' then 'public.is_org_admin(p_organization_id)' else 'public.is_org_member(p_organization_id)' end,
+       case p.proname when 'payment_ask_set' then
+         '{"version": 1, "arguments": {"p_organization_id": {"type": "uuid", "position": 1, "optional": false, "check": "public.is_org_admin(p_organization_id), decided before the first read", "foreign": {"bounded": true, "note": "A foreign organization raises 42501 before anything is read or written."}}, "p_subject_kind": {"type": "text", "position": 2, "optional": false, "foreign": {"not_an_id": true}}, "p_subject_id": {"type": "uuid", "position": 3, "optional": false, "check": "a form must be custom.anon_form in p_organization_id; a table id is only stored against p_organization_id", "foreign": {"bounded": true, "note": "A form from another organization answers not found; nothing is written for it."}}, "p_spec": {"type": "jsonb", "position": 4, "optional": false, "foreign": {"not_an_id": true}}}}'::jsonb
+       else
+         '{"version": 1, "arguments": {"p_organization_id": {"type": "uuid", "position": 1, "optional": false, "check": "public.is_org_member(p_organization_id), decided before the first read", "foreign": {"bounded": true, "note": "A foreign organization raises 42501 before any row is read."}}}}'::jsonb
+       end
   from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace
- where n.nspname = 'public' and p.proname in ('org_payments_status', 'payment_asks', 'payment_ask_set')
+ where n.nspname = 'billing' and p.proname in ('org_payments_status', 'payment_asks', 'payment_ask_set')
 on conflict do nothing;
-grant execute on function public.org_payments_status(uuid) to authenticated;
-grant execute on function public.payment_asks(uuid) to authenticated;
-grant execute on function public.payment_ask_set(uuid, text, uuid, jsonb) to authenticated;
+grant execute on function billing.org_payments_status(uuid) to authenticated;
+grant execute on function billing.payment_asks(uuid) to authenticated;
+grant execute on function billing.payment_ask_set(uuid, text, uuid, jsonb) to authenticated;
+grant execute on function billing.org_payments_status(uuid), billing.payment_asks(uuid), billing.payment_ask_set(uuid, text, uuid, jsonb) to service_role;
+
+-- ─── Server-only doors (declared so nobody ever grants them to a client) ───────────────
+insert into platform.client_callable_door (schema_name, function_name, identity_args, identity_argtypes, reason,
+  declared_by, non_client_lane, signed_in_callers, anonymous_callers)
+select n.nspname, p.proname, pg_catalog.pg_get_function_identity_arguments(p.oid), platform.door_argtypes(p.proargtypes),
+       case p.proname
+         when 'payment_settle' then 'p_checkout_session_id: looked up in billing.payment; an unknown session answers settled=false and writes nothing.'
+         else 'p_payment_id: looked up in billing.payment; a missing or non-pending payment writes nothing.'
+       end,
+       '20261017210000_payments_connect_business_collects_into_its_own_stripe',
+       case p.proname
+         when 'payment_settle' then 'server_only: the Next.js payments return route and the Stripe Connect webhook, after Stripe itself confirmed the session; a browser can never mark money paid.'
+         else 'server_only: the payments checkout route, right after it opens a Stripe Checkout Session for the record.'
+       end,
+       false, false
+  from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'billing' and p.proname in ('payment_settle', 'payment_mark_unpaid')
+on conflict do nothing;
