@@ -17,6 +17,7 @@
 import type { ValidateFunction } from "ajv";
 import { Ajv2020 } from "ajv/dist/2020";
 import { allTables, validateTemplate, type AgentSnapshotRow, type TemplateSpec } from "@ai-matrx/records/templates";
+import { readColorPair, readShadow, readTypeStyle } from "@ai-matrx/design-system/field-formats";
 
 import { buildSpaceSnapshotSchema } from "./jsonSchema";
 import { validateSnapshot } from "./schema";
@@ -114,6 +115,8 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   for (const t of every) {
     if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
   }
+
+  for (const t of every) checkLookValues(t, say);
 
   // ── 3. the page tree ───────────────────────────────────────────────────────
   const pages = Array.isArray(pack.pages) ? pack.pages : [];
@@ -239,6 +242,43 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   }
   waivers.forEach((w, i) => (used.has(i) || !isObj(w) ? null : say(`waivers[${i}]`, `No finding at "${String(w.at)}" any more; remove the waiver.`)));
   return out;
+}
+
+/** The design looks a seed value must be readable by (a value its look cannot read draws as raw JSON). */
+const LOOK_READERS: Record<string, { reads: (v: unknown) => boolean; shape: string }> = {
+  color_pair: { reads: (v) => readColorPair(v) !== null, shape: '{"light":"#ffffff","dark":"#0b0d12"} (hex colours)' },
+  type_style: { reads: (v) => readTypeStyle(v) !== null, shape: '{"font":"system-ui","weight":400,"size":15,"lineHeight":24,"letterSpacing":0} (letterSpacing in em)' },
+  shadow: { reads: (v) => readShadow(v) !== null, shape: '{"x":0,"y":4,"blur":8,"spread":0,"color":"#0f172a1a"} or {"layers":[…]} (hex colours with alpha, never rgba())' },
+  measure: { reads: (v) => typeof v === "number" && Number.isFinite(v), shape: "a number (the unit is the column's)" },
+};
+
+/** Every sample value of a column wearing a design look is one the look can draw; a per-row ground names a real row. */
+function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, says: string) => void) {
+  const fields = (t.fields ?? []) as Array<{ key: string; look?: { id: string; options?: Record<string, unknown> } }>;
+  const titleKey = (t as { titleField?: string }).titleField;
+  const names = new Set((t.rows ?? []).map((r) => String((r.values as Record<string, unknown>)?.[titleKey ?? ""] ?? "")));
+  for (const f of fields) {
+    const look = f.look;
+    if (!look) continue;
+    const reader = LOOK_READERS[look.id];
+    const at = `spec.tables (${t.token}).fields (${f.key}).look`;
+    (t.rows ?? []).forEach((r, i) => {
+      const v = (r.values as Record<string, unknown>)?.[f.key];
+      if (v === undefined || v === null || !reader || reader.reads(v)) return;
+      say(`spec.tables (${t.token}).rows[${i}].values.${f.key}`, `The ${look.id} look cannot read ${JSON.stringify(v)}; write ${reader.shape}.`);
+    });
+    const on = (look.options?.contrastWith as { readsOnField?: unknown } | undefined)?.readsOnField;
+    if (on === undefined) continue;
+    if (typeof on !== "string" || !fields.some((x) => x.key === on)) {
+      say(`${at}.options.contrastWith.readsOnField`, `"${String(on)}" is not a field of "${t.token}"; name the text column that says which row each colour is read on.`);
+      continue;
+    }
+    (t.rows ?? []).forEach((r, i) => {
+      const ground = (r.values as Record<string, unknown>)?.[on];
+      if (typeof ground === "string" && ground.trim() && !names.has(ground))
+        say(`spec.tables (${t.token}).rows[${i}].values.${on}`, `No row is named "${ground}"; a colour is read on another row of this table, by its name.`);
+    });
+  }
 }
 
 const BOARD_KEY = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

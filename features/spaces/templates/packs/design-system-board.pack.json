@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 2,
+  "version": 3,
   "title": "Design system board",
   "description": "Colours, type, spacing, corners and shadows as editable sections of one board.",
   "forWho": "Product teams keeping one design system",
@@ -591,7 +591,7 @@
             "key": "shd-01",
             "values": {
               "name": "shadow-sm",
-              "value": "{\"x\":0,\"y\":1,\"blur\":2,\"spread\":0,\"color\":\"rgba(15,23,42,0.08)\"}",
+              "value": "{\"x\":0,\"y\":1,\"blur\":2,\"spread\":0,\"color\":\"#0f172a14\"}",
               "usage_note": "Cards resting on the page."
             }
           },
@@ -599,7 +599,7 @@
             "key": "shd-02",
             "values": {
               "name": "shadow-md",
-              "value": "{\"layers\":[{\"x\":0,\"y\":4,\"blur\":8,\"spread\":-2,\"color\":\"rgba(15,23,42,0.10)\"},{\"x\":0,\"y\":2,\"blur\":4,\"spread\":-2,\"color\":\"rgba(15,23,42,0.06)\"}]}",
+              "value": "{\"layers\":[{\"x\":0,\"y\":4,\"blur\":8,\"spread\":-2,\"color\":\"#0f172a1a\"},{\"x\":0,\"y\":2,\"blur\":4,\"spread\":-2,\"color\":\"#0f172a0f\"}]}",
               "usage_note": "Menus and popovers that float over content."
             }
           },
@@ -607,7 +607,7 @@
             "key": "shd-03",
             "values": {
               "name": "shadow-lg",
-              "value": "{\"layers\":[{\"x\":0,\"y\":16,\"blur\":32,\"spread\":-8,\"color\":\"rgba(15,23,42,0.18)\"},{\"x\":0,\"y\":6,\"blur\":12,\"spread\":-4,\"color\":\"rgba(15,23,42,0.08)\"}]}",
+              "value": "{\"layers\":[{\"x\":0,\"y\":16,\"blur\":32,\"spread\":-8,\"color\":\"#0f172a2e\"},{\"x\":0,\"y\":6,\"blur\":12,\"spread\":-4,\"color\":\"#0f172a14\"}]}",
               "usage_note": "Dialogs, the highest layer on screen."
             }
           }
@@ -767,7 +767,7 @@
         "Quillan Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [],
   "board": {

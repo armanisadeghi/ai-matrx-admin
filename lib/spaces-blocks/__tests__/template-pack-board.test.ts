@@ -48,6 +48,16 @@ describe("checkPack: the board key", () => {
     expect(found).toContain("board.chapters[0].tiles[0].text");
     expect(found).toContain("board.chapters[6].tiles[0].kind");
   });
+  it("names a seed value its design look cannot draw, and a ground row that does not exist", () => {
+    const p = fresh();
+    const shadow = p.spec.tables.find((t) => t.token === "shadow")!;
+    shadow.rows[0].values.value = JSON.stringify({ x: 0, y: 1, blur: 2, spread: 0, color: "rgba(15,23,42,0.08)" });
+    const color = p.spec.tables.find((t) => t.token === "color")!;
+    color.rows[1].values.reads_on = "page";
+    const found = ats(p);
+    expect(found).toContain("spec.tables (shadow).rows[0].values.value");
+    expect(found).toContain("spec.tables (color).rows[1].values.reads_on");
+  });
   it("puts the board on the card face; the top board comes first", () => {
     expect(packCardFace(PACK).board).toEqual({ title: "Design system", chapters: 8, pages: 1 });
     expect(packCardFace(PACK).pages).toBe(0);
