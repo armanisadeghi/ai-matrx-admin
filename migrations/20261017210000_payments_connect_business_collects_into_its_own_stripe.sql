@@ -24,7 +24,7 @@ create table if not exists billing.org_payment_account (
   country            text,
   default_currency   text,
   display_name       text,
-  connected_by       uuid references auth.users(id) on delete set null,
+  connected_by       uuid references iam.users(id) on delete set null,
   disconnected_at    timestamptz,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
@@ -44,7 +44,7 @@ create table if not exists billing.payment_ask (
   currency          text not null default 'usd' check (currency ~ '^[a-z]{3}$'),
   description       text,
   status_field_key  text not null default 'payment',
-  created_by        uuid references auth.users(id) on delete set null,
+  created_by        uuid references iam.users(id) on delete set null,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now(),
   unique (subject_kind, subject_id),
