@@ -231,9 +231,14 @@ import socket, os, sys, time
 s = socket.socket(); s.bind(("127.0.0.1", 0)); s.listen(1)
 port = s.getsockname()[1]
 c = socket.create_connection(("127.0.0.1", port)); a, _ = s.accept()
+sys.stdout.write(f"{port}\\n"); sys.stdout.flush()
 if os.fork() == 0:
-    time.sleep(600); sys.exit(0)
-print(port)
+    os.setsid()
+    devnull = os.open(os.devnull, os.O_RDWR)
+    for fd in (0, 1, 2):
+        os.dup2(devnull, fd)
+    time.sleep(600); os._exit(0)
+os._exit(0)
 `;
   const helperOut = spawnSync("/usr/bin/python3", ["-c", py], { encoding: "utf8" });
   const port = Number(helperOut.stdout.trim());
@@ -289,7 +294,7 @@ test("the watchdog writes the memory reading and names itself while it watches a
   const dir = tempDir("stale-monitor-");
   const fake = orphan(["/bin/sleep", "600"]);
   const env = { ...process.env, MATRX_PREVIEW_STATE_DIR: dir, MATRX_PREVIEW_START_CMD: "true", MATRX_PREVIEW_MEMORY_SOURCE: "rss" };
-  const mon = spawnSync("bash", ["-c", `( "${SCRIPT}" monitor ${fake} & echo $! ) ; sleep 4`], { env, encoding: "utf8" });
+  const mon = spawnSync("bash", ["-c", `( "${SCRIPT}" monitor ${fake} </dev/null >/dev/null 2>&1 & echo $! ) ; sleep 4`], { env, encoding: "utf8" });
   const monPid = Number(mon.stdout.trim().split("\n")[0]);
   spawned.push(monPid);
   assert.ok(existsSync(join(dir, "memory")), "memory written on the first tick");

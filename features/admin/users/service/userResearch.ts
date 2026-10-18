@@ -24,6 +24,7 @@ export async function readUserResearch(ownerId: string): Promise<UserResearch[]>
 export async function readUserResearchAbout(ownerId: string, subjectId: string): Promise<UserResearch | null> {
   const { data, error } = await client.schema("crm").from("party_research").select("*")
     .eq("created_by", ownerId).eq("subject_id", subjectId).is("deleted_at", null).maybeSingle();
+  // access-errors: ok — owner-scoped read of my own rows; the Notes tab shows the failure with its source named.
   if (error) throw new Error(error.message);
   return data ? UserResearchSchema.parse(data) : null;
 }

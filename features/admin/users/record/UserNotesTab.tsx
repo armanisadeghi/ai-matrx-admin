@@ -19,7 +19,7 @@ import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import AppLink from "@/components/navigation/AppLink";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { toast } from "@/lib/toast";
+import { recordToast, toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -182,7 +182,7 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
         orgId: organizationId,
       });
       if (!linked.ok) {
-        toast.error(`Note saved in Notes ("${note.label}") but not linked to this person: ${linked.error.message}`);
+        recordToast.error({ type: "note", id: note.id, title: note.label }, `Saved in Notes, not linked to this person: ${linked.error.message}`);
       } else {
         setDraft("");
       }
