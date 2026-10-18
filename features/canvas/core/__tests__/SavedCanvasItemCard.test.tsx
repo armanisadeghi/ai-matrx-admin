@@ -98,7 +98,7 @@ describe("SavedCanvasItemCard", () => {
     expect(host.querySelector('button[aria-label="Open Structured_info"]')).not.toBeNull();
   });
 
-  it("puts the badge in flow beside a truncating title, labelled for people", async () => {
+  it("puts the badge in flow beside a truncating title, labeled for people", async () => {
     await renderCard();
     const badge = byText("Structured info")[0].closest("[title]")!;
     expect(badge.className).not.toContain("absolute");

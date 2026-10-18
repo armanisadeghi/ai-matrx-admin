@@ -64,7 +64,7 @@ export default function NotesFilterSheet({
     if (isOpen) setLocal(filters);
   }, [isOpen, filters]);
 
-  // The homes the person's notes live in (scope ids), labelled by the home tree.
+  // The homes the person's notes live in (scope ids), labeled by the home tree.
   const homes = useNoteHomes();
   const folders = React.useMemo(() => {
     const s = new Set<string>();

@@ -1,5 +1,5 @@
 // THE PRODUCT LIST for the new app frame — one row per tile the app grid
-// shows. DRAFT (owner lineup, 2026-10-17): names, families, colours and menus
+// shows. DRAFT (owner lineup, 2026-10-17): names, families, colors and menus
 // are not final; change them HERE only. Rulings: Data is never "Sheets";
 // Intelligence is ONE system (Mandates + their agents and workflows +
 // Hindsight + Replay); Applets are separate from the industry samples, which
@@ -427,7 +427,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
         items: [
           { id: "c-1", label: "Quarterly plan outline", icon: MessageSquare },
           { id: "c-2", label: "Rewrite the intake form", icon: MessageSquare },
-          { id: "c-3", label: "Summarise the Lopez call", icon: MessageSquare },
+          { id: "c-3", label: "Summarize the Lopez call", icon: MessageSquare },
         ],
       },
     ],

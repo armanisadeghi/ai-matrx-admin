@@ -1,6 +1,6 @@
 // Remind cancels (N2): on the page remind.walk.mjs made (PAGE=<id>), the member moves the date 30 minutes out with
-// "5 minutes before" (a new waiting reminder), turns Remind to None (it is cancelled), sets "1 hour before" again,
-// then deletes the line (cancelled again). Each step prints what the chip holds; the database rows are read beside it.
+// "5 minutes before" (a new waiting reminder), turns Remind to None (it is canceled), sets "1 hour before" again,
+// then deletes the line (canceled again). Each step prints what the chip holds; the database rows are read beside it.
 //   MEMBER=1 SPACES_WALK_ORG="Ashford Labs" PAGE=<id> node features/spaces/__tests__/walk/remind-cancel.walk.mjs
 import { open, act, shot } from "./lib.mjs";
 

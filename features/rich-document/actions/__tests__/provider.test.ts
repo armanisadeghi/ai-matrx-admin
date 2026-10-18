@@ -4,7 +4,7 @@
  *
  * Breaks each test names:
  * - the provider silently overwrites a duplicate id (the old registry did) → "refused" goes red.
- * - a disabled action is drawn greyed instead of absent (R1) → "disabled is absent" goes red.
+ * - a disabled action is drawn grayed instead of absent (R1) → "disabled is absent" goes red.
  * - a source-writing action shows on a read-only copy → "read-only" goes red.
  * - the package registry and the app's synchronous list disagree → "one answer" goes red.
  */
@@ -42,7 +42,7 @@ describe("rich-document provider", () => {
     expect(getAction("copy-markdown")).toBe(first);
   });
 
-  it("R1: a disabled action is absent, never a greyed row", () => {
+  it("R1: a disabled action is absent, never a grayed row", () => {
     const ctx = chatContext("assistant");
     const extra: RichDocumentAction = {
       id: "test:needs-a-table",

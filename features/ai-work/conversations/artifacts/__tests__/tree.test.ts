@@ -66,7 +66,7 @@ describe("buildArtifactTree", () => {
     expect(file.name).toBe("desk-v2.html");
   });
 
-  it("recognises HTML artifacts by MIME or extension", () => {
+  it("recognizes HTML artifacts by MIME or extension", () => {
     expect(
       isHtmlArtifact(toArtifactFile(row("x.html", { mime_type: "text/html" }))),
     ).toBe(true);

@@ -117,12 +117,12 @@ async function main() {
     console.log(line);   // printed as it happens, so a lock timeout later still leaves the evidence
   };
 
-  // E4/E5 run BEFORE the one transaction: the guard honours an approval recorded in the same transaction, so
+  // E4/E5 run BEFORE the one transaction: the guard honors an approval recorded in the same transaction, so
   // a SECOND connection commits a Confidential Table with maker_is_reader (clone only, archived again below) and
   // a later transaction tries the change without the door.
   const fields = [{ name: "item", key: "item", label: "Item", type: "text" }, { name: "checked_on", key: "checked_on", label: "Checked on", type: "text" }];
   const later = await (async () => {
-    // The approval the door recorded lives in THIS transaction and the guard honours an approval of the same
+    // The approval the door recorded lives in THIS transaction and the guard honors an approval of the same
     // transaction, so the two "without the door" checks run on a SECOND connection: one committed transaction
     // makes the Table Confidential with maker_is_reader (clone only, archived again below), the next tries.
     const two = new pg.Client({ user: env.user, password: env.password, host: env.host, database: env.database, port: 5432, ssl: { rejectUnauthorized: false } });

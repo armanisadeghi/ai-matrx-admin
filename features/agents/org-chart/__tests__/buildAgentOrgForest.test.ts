@@ -27,7 +27,7 @@ describe("buildAgentOrgForest", () => {
     expect(content.children[0].key).toBe("agent:seo/agent:content/agent:writer");
   });
 
-  it("puts a manual box above an automatic subtree and colours each link by kind", () => {
+  it("puts a manual box above an automatic subtree and colors each link by kind", () => {
     const forest = buildAgentOrgForest({
       orchestras: new Map([["content", orch("writer")]]),
       conductorIds: new Set(["content"]),

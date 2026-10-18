@@ -8,7 +8,7 @@
 // 🚨 EVERY OPTIONAL COLUMN IS PUBLISHED BY THE DOOR, NOT BY THIS FILE.
 // `page.columns` carries `{hire_date, manager, worker_class, employment_detail}`;
 // `false` means the column is ABSENT from the table — not rendered empty, not
-// rendered greyed. §4.2 applies to columns exactly as it applies to fields, and a
+// rendered grayed. §4.2 applies to columns exactly as it applies to fields, and a
 // column of blanks announces that the data exists and that this viewer is not
 // getting it.
 //

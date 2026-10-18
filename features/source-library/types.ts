@@ -262,7 +262,7 @@ export interface NotYetASource {
     offered_action: string;
 }
 
-/** §4.2 — the Source row (one catalogued video today). */
+/** §4.2 — the Source row (one catalogd video today). */
 export interface VideoRow {
     id: string;
     external_id: string;
@@ -289,7 +289,7 @@ export interface VideoRow {
      * would populate it is not built yet, so EVERY row on a live channel comes
      * back `null` today — a client that types this as `string[]` and reads
      * `.length` takes the whole page down, which is exactly what happened on
-     * the one catalogued Library on 2026-09-17. Never widen this to `string[]`.
+     * the one catalogd Library on 2026-09-17. Never widen this to `string[]`.
      */
     caption_languages: string[] | null;
     /**
@@ -418,7 +418,7 @@ export type SyncEvent =
           quota_units_spent: number;
           metrics: LibraryMetrics;
           /**
-           * What the catalogue LEFT OUT, and why. A blog crawl reaches taxonomy
+           * What the catalog LEFT OUT, and why. A blog crawl reaches taxonomy
            * pages, pagination, nav widgets and assets; waitbutwhy.com reported 346
            * "Posts" against its own sitemap's 202 and nothing on screen could have
            * said so. Absent or empty means nothing was discarded — never "we did
@@ -431,7 +431,7 @@ export type SyncEvent =
            * Sources it just persisted — a shape that looks like a
            * reconciliation bug rather than a real provider change — and the
            * server refused the retirement rather than deleting the
-           * catalogue out from under a person. `removed_count` stays 0 in
+           * catalog out from under a person. `removed_count` stays 0 in
            * that case; this is the only field that says "0 removed" means
            * "refused" rather than "nothing was gone".
            */
@@ -468,7 +468,7 @@ export const SYNC_TERMINAL_TYPES = [
 export interface SelectionDescriptor {
     /**
      * `media.selection_item.source_row_id` and the transcript association both
-     * use the catalogued Source id. `video_ids` is a different, legacy-shaped
+     * use the catalogd Source id. `video_ids` is a different, legacy-shaped
      * name used only by the classifier endpoint; sending it here makes
      * Pydantic fall back to an empty Selection, which means the whole Library.
      */

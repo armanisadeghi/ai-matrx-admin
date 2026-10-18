@@ -112,7 +112,7 @@ try {
   // the label's text node, climbed `node.closest("div")` — which on this page
   // goes PAST the <label> to the container holding every question — and took
   // `scope.querySelector("input")`, i.e. the first input on the page, seven
-  // times. The booking landed with the LICENCE PLATE in `customer_name` and no
+  // times. The booking landed with the LICENSE PLATE in `customer_name` and no
   // phone, email or vehicle at all, and it was reported as a pass with a note.
   const { filled, readBack } = await fillByLabel(page, CUSTOMER);
   note.fieldsReadBack = readBack;

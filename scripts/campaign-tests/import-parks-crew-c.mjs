@@ -54,7 +54,7 @@ async function main() {
   console.log("url:", page.url());
   console.log("title:", await page.title());
 
-  // Look for anything labelled "Import" on the table page.
+  // Look for anything labeled "Import" on the table page.
   const importCandidates = await page.locator("text=/^Import$/i").all();
   console.log(`found ${importCandidates.length} "Import" text matches`);
   if (importCandidates.length === 0) {

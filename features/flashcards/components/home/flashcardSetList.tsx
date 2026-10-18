@@ -148,7 +148,7 @@ function StudyCell({ row }: { row: FlashcardSetListRow }) {
       className="flex items-center"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Phone card: labelled one-tap buttons; the grid: icons + tooltips. */}
+      {/* Phone card: labeled one-tap buttons; the grid: icons + tooltips. */}
       <span className="contents sm:hidden">
         <PlayTapButton
           href={flashcardStudyHref(row)}

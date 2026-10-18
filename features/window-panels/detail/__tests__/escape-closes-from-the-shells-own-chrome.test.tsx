@@ -9,7 +9,7 @@
 // panel closed on Escape. A comment that lies about the code beneath it is the
 // sentence a future agent trusts.
 //
-// The behaviour chosen is the one `@ai-matrx/detail`'s keyboard model specifies:
+// The behavior chosen is the one `@ai-matrx/detail`'s keyboard model specifies:
 // "Escape → close", from any control inside the detail — chrome included. The
 // exclusions are the model's own two: something OPEN over the detail, and a text
 // field holding uncommitted edits.

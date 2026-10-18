@@ -5,7 +5,7 @@
 // ONE block, completely — what we were trying to get, every rung the ladder
 // actually reached, the exact words the other side used, and what would unblock it.
 //
-// 🚨 THE RUNG TRAIL IS SHOWN, NOT SUMMARISED. The ladder's law is that no rung is
+// 🚨 THE RUNG TRAIL IS SHOWN, NOT SUMMARIZED. The ladder's law is that no rung is
 // silently skipped; a screen that collapsed the trail into "failed" would undo that
 // law at the last step. Every entry the server wrote is rendered, in order, with its
 // own reason and note.

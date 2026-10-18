@@ -38,7 +38,7 @@ const ROWS: Row[] = [
   ["editor.help.updates", "Updates", "file-actions", "See what changed in this editor recently.", "Editor Help → Updates"],
   // ── Workbook only ──
   ["workbooks.group", "Group rows and columns", "workbooks", "Group rows or columns so they collapse and expand together.", "Workbook View → Group"],
-  ["workbooks.pivot-table", "Pivot table", "workbooks", "Summarise a range with a pivot table on a new sheet.", "Workbook Insert → Pivot table"],
+  ["workbooks.pivot-table", "Pivot table", "workbooks", "Summarize a range with a pivot table on a new sheet.", "Workbook Insert → Pivot table"],
   ["workbooks.slicer", "Slicer", "workbooks", "Add a slicer that filters charts and tables from one control.", "Workbook Data → Add a slicer"],
   // ── Document only ──
   ["documents.show-nonprinting", "Show non-printing characters", "documents", "Show spaces, tabs and paragraph marks while you write.", "Document View → Show"],

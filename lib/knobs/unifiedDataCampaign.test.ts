@@ -117,7 +117,7 @@ describe("the unified record store has no switch", () => {
         expect(withFixture.map((v) => v.file)).toContain(stray);
         expect(withFixture.find((v) => v.file === stray)!.message).toMatch(/NOT in ENTRY_POINTS/);
 
-        // GREEN — remove it from what is scanned and the same judgement is clean.
+        // GREEN — remove it from what is scanned and the same judgment is clean.
         expect(judge(scanFiles([], REPO_ROOT), ENTRY_POINTS, REPO_ROOT, new Set())).toEqual([]);
     });
 

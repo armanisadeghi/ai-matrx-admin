@@ -74,7 +74,7 @@ scenario("participant-roster-hidden-kinds", async ({ cast }) => {
   for (const p of [host, guest]) {
     const o = await seeUntil(p, "the people list", (x) => x.participants.length >= 2, TIMEOUTS.noticeMs);
     const names = o.participants.map((x) => x.name);
-    expect(names.filter((n) => /^EG_|egress|recorder|recording|ingress|agent|bot|^PA_/i.test(n)), `${p.opts.label} sees only people in the list (or the recorder labelled); saw ${names.join(", ")}`).toEqual([]);
+    expect(names.filter((n) => /^EG_|egress|recorder|recording|ingress|agent|bot|^PA_/i.test(n)), `${p.opts.label} sees only people in the list (or the recorder labeled); saw ${names.join(", ")}`).toEqual([]);
     expect(names.length, `two humans in the call, listed once each: ${names.join(", ")}`).toBe(2);
   }
   await press(host, "Stop recording", host.page.getByRole("button", { name: /^Stop recording$/ }), 10_000);

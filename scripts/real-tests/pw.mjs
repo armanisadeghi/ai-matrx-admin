@@ -142,7 +142,7 @@ switch (cmd) {
   case "type": await page.keyboard.type(args.join(" "), { delay: 10 }); out("typed"); break;
   case "press": await page.keyboard.press(args[0]); out("pressed"); break;
   case "upload": await L(args[0]).setInputFiles(args.slice(1)); out("uploaded"); break;
-  // Labelled so a script's own return value (e.g. scrollTo's) is never mistaken for page text.
+  // Labeled so a script's own return value (e.g. scrollTo's) is never mistaken for page text.
   case "eval": console.log("[eval result] " + JSON.stringify(await page.evaluate(args.join(" ")))); break;
   case "shot": await page.screenshot({ path: args[0] }); out(args[0]); break;
   case "console": out(await page.evaluate(() => { const e = window.__rtErrs ?? []; window.__rtErrs = []; return e; })); break;

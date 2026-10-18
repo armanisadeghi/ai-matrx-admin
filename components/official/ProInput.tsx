@@ -30,7 +30,7 @@
  * - **Floating label** — pass `floatingLabel="…"` for a dense-form label that
  *   animates inside the border. See "Labelling" below.
  *
- * ## Labelling
+ * ## Labeling
  *
  * - **Above-label** (default for spacious forms) — wrap with `<Field>`:
  *   ```tsx

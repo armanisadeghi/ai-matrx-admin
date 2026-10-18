@@ -9,11 +9,11 @@
  * characters — never a guess, and never hidden behind a click.
  *
  * Three rules the UI enforces:
- *   * Heavy kinds (full page bodies, raw payloads) are labelled and never
+ *   * Heavy kinds (full page bodies, raw payloads) are labeled and never
  *     pre-selected. Selecting 4.98M characters of page text must be a decision.
  *   * A kind row shows the count that WILL be used after its filters, not the
  *     raw holding — the number next to the checkbox is the number you get.
- *   * Nothing is silently unavailable: a kind with zero items renders greyed
+ *   * Nothing is silently unavailable: a kind with zero items renders grayed
  *     with "none yet" rather than disappearing, because "we have none" is
  *     information (it is exactly what a gap analysis is looking for).
  */

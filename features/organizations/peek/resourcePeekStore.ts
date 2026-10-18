@@ -14,7 +14,7 @@
 export type ResourcePeekTrigger = "hover" | "click";
 
 export interface ResourcePeekRequest {
-  /** Peek catalogue key (`peekKeyForToken`) — what `PEEK_REGISTRY` / the entity registry answer for. */
+  /** Peek catalog key (`peekKeyForToken`) — what `PEEK_REGISTRY` / the entity registry answer for. */
   kind: string;
   /** The record's id. */
   id: string;

@@ -439,7 +439,7 @@ export function closeDirectiveItemWindow(instanceId: string): void {
 }
 
 /**
- * A record row's copy control, labelled by the record's live name — the same
+ * A record row's copy control, labeled by the record's live name — the same
  * one the row shows — and "this task" (the package's type-generic label) while
  * it loads, never an id (G9).
  */
@@ -490,7 +490,7 @@ export const matrxDirectiveHost: DirectiveHost = {
   renderCopy,
   nouns: matrxDirectiveNouns,
   itemKind: matrxDirectiveItemKind,
-  // A failure the app recognises gets its own plain words; the raw server text
+  // A failure the app recognizes gets its own plain words; the raw server text
   // stays behind the card's "Details".
   explainFailure: explainDirectiveFailure,
   reportError: (message: string) =>

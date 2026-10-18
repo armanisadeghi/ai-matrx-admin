@@ -195,7 +195,7 @@ export default function TextareaTiersDemo() {
 
           <DemoCard
             title="With (optional) tag"
-            subtitle="Greyed inline marker — non-required fields read clearly."
+            subtitle="Grayed inline marker — non-required fields read clearly."
             code={`<Field label="Subtitle" htmlFor="subtitle" optional>
   <ProTextarea id="subtitle" … />
 </Field>`}

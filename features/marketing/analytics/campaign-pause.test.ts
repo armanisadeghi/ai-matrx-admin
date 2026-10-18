@@ -14,7 +14,7 @@
   and is what the live defect would be: `syncSiteAnalytics` must consult the gate
   BEFORE it dispatches anything, so a refusal can never reach Google. So the gate
   module is mocked to refuse, and the test proves nothing was dispatched. The
-  second test pins the live phase's real behaviour: an approved phase gets
+  second test pins the live phase's real behavior: an approved phase gets
   through to the API and the result is surfaced honestly.
 */
 

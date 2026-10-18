@@ -31,7 +31,7 @@ const catalog = JSON.parse(readFileSync(MANIFEST, "utf-8"));
 const nouns = {};
 /**
  * THE AUTO-VIEW's display table (KD4): the human label + family for EVERY
- * catalogued noun, not just the plain-id ones. The prefix floor names a shape
+ * catalogd noun, not just the plain-id ones. The prefix floor names a shape
  * the frontend has never heard of, and it must name it the way the catalog
  * does — "Agent · Agents", never the raw `agent` token — or the routing
  * language gets a view for free and a legible name never.
@@ -98,7 +98,7 @@ export interface CatalogNounDisplay {
 }
 
 /**
- * Every catalogued noun's display identity — what THE AUTO-VIEW names a shape
+ * Every catalogd noun's display identity — what THE AUTO-VIEW names a shape
  * with when no custom renderer claims it. Read through
  * \`features/matrx-envelope/directiveHost.tsx\` (matrxDirectiveNouns),
  * never directly.

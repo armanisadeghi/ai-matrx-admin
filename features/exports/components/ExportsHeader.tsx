@@ -4,7 +4,7 @@
 //
 // The ONE shared header for the /exports family (core-route-headers § "Sibling
 // routes sharing one header get ONE shared header component"). The route owns
-// only the centre zone; the shell owns both edges.
+// only the center zone; the shell owns both edges.
 
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";

@@ -8,7 +8,7 @@
  * when stale, refresh on demand, and the attendee → Person join. What it does NOT
  * own: any rendering decision, and any notion of "now" other than one clock read
  * per pass (a component that called `new Date()` in three places could group an
- * event into a day it then labelled differently).
+ * event into a day it then labeled differently).
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";

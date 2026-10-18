@@ -11,7 +11,7 @@
 // mixed list would show the same work twice under two names. The Rulebook is
 // the row; every Masterwork it produced is a chip on it — named, and a door.
 //
-// Modelled on AgentBrowseCards: a few NAMED actions plus the same complete "…"
+// Modeled on AgentBrowseCards: a few NAMED actions plus the same complete "…"
 // menu the table row has. No icon quizzes.
 
 import { useState } from "react";

@@ -3,7 +3,7 @@ import { createRouteMetadata } from "@/utils/route-metadata";
 export const metadata = createRouteMetadata("/libraries", {
   title: "Libraries",
   description:
-    "Paste a YouTube channel and have every video catalogued in seconds — longs, Shorts and live separated, with metrics, transcripts and what to do next.",
+    "Paste a YouTube channel and have every video catalogd in seconds — longs, Shorts and live separated, with metrics, transcripts and what to do next.",
   letter: "LB",
   additionalMetadata: {
     keywords: [

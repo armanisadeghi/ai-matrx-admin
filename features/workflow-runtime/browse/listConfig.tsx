@@ -54,7 +54,7 @@ const formatStatusFacet = (value: string) =>
   value === "__none__" ? "Never run" : runStatusLabel(value);
 
 /**
- * Bridges useWorkflowRowActions (behaviour + modal state) to the shell's
+ * Bridges useWorkflowRowActions (behavior + modal state) to the shell's
  * actions contract, and renders the modals those actions open — singletons
  * keyed by the row being acted on, never one modal per row.
  */

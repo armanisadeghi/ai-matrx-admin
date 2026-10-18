@@ -456,7 +456,7 @@ function PlannedPageSegment({
             </Button>
           ) : (
             // A control that cannot act says why, rather than sitting there
-            // greyed out.
+            // grayed out.
             <CannotOffer>Name the planned page to create it.</CannotOffer>
           )}
         </>

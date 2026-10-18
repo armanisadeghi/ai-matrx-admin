@@ -325,7 +325,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "clean_run_status",
     label: "Clean run status",
     description:
-      "Streaming phase of the Clean container's last run: idle | launching | pending | connecting | streaming | awaiting-tools | complete | error | cancelled | timeout.",
+      "Streaming phase of the Clean container's last run: idle | launching | pending | connecting | streaming | awaiting-tools | complete | error | canceled | timeout.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 10,

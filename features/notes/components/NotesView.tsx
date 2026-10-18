@@ -434,7 +434,7 @@ export function NotesView({
   );
   // THE HEADER RENDERS ON THE SERVER (page-pass /notes 2026-09-28): the view
   // switch and the note's header tools waited for the client to activate the
-  // tab (activeTabId), so the first HTML had an empty header centre for as
+  // tab (activeTabId), so the first HTML had an empty header center for as
   // long as the bundle and the note load took. The note the URL names is known
   // on the server, so the header draws for it at once.
   const headerNoteId = activeTabId ?? initialActiveTab ?? null;
@@ -511,7 +511,7 @@ export function NotesView({
       // Ctrl+F — open find bar (and re-focus + select-all if already open).
       // We explicitly exclude Shift here so the Ctrl+Shift+F handler below
       // owns the "global search" shortcut and the two cannot double-fire.
-      // `e.key` honours CapsLock (caps→"F"), so normalize before comparing.
+      // `e.key` honors CapsLock (caps→"F"), so normalize before comparing.
       const keyLower = e.key.length === 1 ? e.key.toLowerCase() : e.key;
       if (mod && !e.altKey && !e.shiftKey && keyLower === "f") {
         e.preventDefault();

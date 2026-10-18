@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 /**
- * Lane SCOPE-ADMIN-2 — the three behaviours the retired slices used to own,
+ * Lane SCOPE-ADMIN-2 — the three behaviors the retired slices used to own,
  * driven through a real store over the real root reducer:
  *
  *   1. CATALOG — context-item definitions are read from the tree's catalogs

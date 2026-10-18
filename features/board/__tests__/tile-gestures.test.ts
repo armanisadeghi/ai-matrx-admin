@@ -59,7 +59,7 @@ describe("tile resize math", () => {
     expect(r.w / r.h).toBeCloseTo(start.w / start.h, 6);
   });
 
-  it("Shift on a left edge scales the height about the centre and keeps the right edge", () => {
+  it("Shift on a left edge scales the height about the center and keeps the right edge", () => {
     const r = resizeRect(start, "w", -100, 0, { z: 1, keepAspect: true });
     expect(r.w).toBe(500);
     expect(r.h).toBeCloseTo(375, 6);

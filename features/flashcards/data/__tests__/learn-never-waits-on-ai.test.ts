@@ -1,6 +1,6 @@
 /**
  * Learn never makes a learner wait on the meaning check (table stakes):
- * an answer that matches after normalisation is correct instantly with no AI
+ * an answer that matches after normalization is correct instantly with no AI
  * call, and a verdict that lands after the learner moved on is applied to the
  * card's stage then — never by holding Continue.
  */

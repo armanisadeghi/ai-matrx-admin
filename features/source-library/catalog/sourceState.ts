@@ -1,11 +1,11 @@
 /**
  * features/source-library/catalog/sourceState.ts
  *
- * SOURCE-CONVERGENCE §1 rule 6 and §8.6 — whether one catalogued item IS a
+ * SOURCE-CONVERGENCE §1 rule 6 and §8.6 — whether one catalogd item IS a
  * Source yet, as one pure function of the row, so the cell, the polling and
  * the tests can never disagree about it.
  *
- * A catalogued video is a LISTING until its words land through the door: the
+ * A catalogd video is a LISTING until its words land through the door: the
  * server says so on the row (`not_yet_a_source`, with the Action that makes it
  * one), and says which Source it became once it did (`processed_document_id`).
  * The screen repeats those two facts; it never infers a Source from a

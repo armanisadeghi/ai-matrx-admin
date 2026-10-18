@@ -70,7 +70,7 @@ export function formatTimeInViewerZone(iso: string | null): string {
  *
  * `Intl.DateTimeFormat.format(new Date("not-a-date"))` throws `RangeError: Invalid time value`. In
  * a render path that is not an error message — it unmounts the subtree, and the reader is shown
- * NOTHING with no console trace they would recognise. That is one of the two candidates for the
+ * NOTHING with no console trace they would recognize. That is one of the two candidates for the
  * "evidence drawer opens nothing" class, and it is entirely avoidable: a value we cannot read is a
  * finding to display, never a reason to blank the panel.
  */

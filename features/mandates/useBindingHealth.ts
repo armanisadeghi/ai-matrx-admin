@@ -10,7 +10,7 @@
  * `sync_declared_provisions` rewrite them on every aidream boot. So a binding
  * that was valid on Monday can stop fitting on Wednesday, and nothing told the
  * person who made it. Until this hook, `/mandates` mirrored only the
- * runtime's PRECEDENCE, so a binding the server had stopped honouring still
+ * runtime's PRECEDENCE, so a binding the server had stopped honoring still
  * rendered as "Yours".
  *
  * TWO ERAS, TWO RULES — exactly the server's own rules, never a guess:

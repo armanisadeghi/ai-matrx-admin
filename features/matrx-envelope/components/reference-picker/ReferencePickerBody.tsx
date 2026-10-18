@@ -195,7 +195,7 @@ const ACTION_LABEL: Partial<Record<DirectiveClass, string>> = {
  * between enabling and the effect running, and that one frame printed
  * "Linking is the only action available" for Task (G11A review, 2026-10-07).
  * The effect's own state is not a dependency (live 2026-09-30: an effect that
- * re-ran on its own setState cancelled its request and spun forever).
+ * re-ran on its own setState canceled its request and spun forever).
  */
 function useDirectiveNoun(
   token: string,

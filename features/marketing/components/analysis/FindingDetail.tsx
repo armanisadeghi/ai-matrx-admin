@@ -380,7 +380,7 @@ export function FindingDetail({ findingId }: { findingId: string }) {
   };
   const itemLabel = data.item?.label || humanizeItemKey(finding.item_key);
   // The analyzer writes a plain-language sentence on EVERY result — that is
-  // the floor this screen always has, including for a check whose catalogue
+  // the floor this screen always has, including for a check whose catalog
   // row (label/description) does not exist yet.
   const reasoning = latest ? resultReasoning(latest.metadata) : null;
   // A broken address is explained from who still asks for it — the catalogue's

@@ -258,7 +258,7 @@ export function CodeWorkspaceContextMenu({
 
   // Surface write handlers — one per declared `writeTargets` entry on the
   // code-editor manifest. Every one validates and THROWS on a bad shape or on
-  // a state it cannot honour (no editor, no selection, no open file); the
+  // a state it cannot honor (no editor, no selection, no open file); the
   // writeback seam turns throws into safe error envelopes the agent reads.
   // All three reuse the SAME `executeEdits` paths the right-click AI actions
   // above use, so an agent edit joins Monaco's undo stack exactly like the

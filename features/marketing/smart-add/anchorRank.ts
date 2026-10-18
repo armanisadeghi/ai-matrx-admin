@@ -1,7 +1,7 @@
 /**
  * Smart Add · person: rank candidate accounts by what is already KNOWN about the person (2026-10-14).
  *
- * After a confirmed find (their own site, a licence page) or with typed facts (city, occupation, company), a card
+ * After a confirmed find (their own site, a license page) or with typed facts (city, occupation, company), a card
  * that links to the found site or carries those facts goes first; a namesake whose stated location is another city
  * and who carries no other anchor drops to the end. Pure; the order is stable for equal scores.
  */

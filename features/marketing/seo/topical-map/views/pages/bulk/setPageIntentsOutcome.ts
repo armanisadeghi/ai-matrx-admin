@@ -47,7 +47,7 @@ function readCount(source: Record<string, unknown>, key: string): number | null 
 }
 
 /**
- * The KEPT row, recognised by its own shape rather than by a type assertion —
+ * The KEPT row, recognized by its own shape rather than by a type assertion —
  * `kept_existing` is the only thing that tells a kept row from a set one, and
  * both carry `ok: true`.
  */
@@ -134,7 +134,7 @@ export function toSetPageIntentsOutcome(result: SetPageIntentsResult): SetPageIn
  *
  * `seo.set_page_intents` is per SITE, so a selection spanning two sites is two
  * calls and two results. The person made ONE decision, so they are shown one
- * answer — but every row is carried through, never summarised away.
+ * answer — but every row is carried through, never summarized away.
  *
  * `map_id` is the first result's: every site in a selection reaches this screen
  * through the same map, and a synthesised blank would be a fact nobody stated.

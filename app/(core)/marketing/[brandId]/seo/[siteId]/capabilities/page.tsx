@@ -14,11 +14,11 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 /**
  * What's measured and switched on for THIS site, and each capability's
  * evidence. The old `…/sites/[siteId]/capabilities` route was a redirect out
- * to the flat catalogue; the catalogue now lives here, bound to the site.
+ * to the flat catalog; the catalog now lives here, bound to the site.
  *
  * `SeoCapabilitiesWorkspace` selects its site from `?site=<uuid>` (and offers a
  * switcher over the whole portfolio), so this route stamps the site on the URL
- * rather than forking a second, site-bound copy of the catalogue.
+ * rather than forking a second, site-bound copy of the catalog.
  */
 export default async function MarketingSeoCapabilitiesPage({
   params,

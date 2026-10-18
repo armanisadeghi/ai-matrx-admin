@@ -88,7 +88,7 @@ import { DocumentInline } from "@/features/chat-tool-renderers/renderers/documen
   true;
 
 // jsdom has no ResizeObserver; the artifact view's scroll fade observes its
-// box. A no-op observer is the jsdom stand-in, not a behaviour under test.
+// box. A no-op observer is the jsdom stand-in, not a behavior under test.
 class NoopResizeObserver {
   observe() {}
   unobserve() {}

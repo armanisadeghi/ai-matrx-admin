@@ -52,7 +52,7 @@ describe("renderStaleArchiveSql", () => {
     expect(sql).not.toMatch(/DELETE FROM/i);
   });
 
-  it("revives a re-declared row and honours skipTables", () => {
+  it("revives a re-declared row and honors skipTables", () => {
     const p = plan();
     expect(renderStaleArchiveSql(p)).toMatch(/SET deleted_at = NULL WHERE deleted_at IS NOT NULL/);
     const skipped = renderStaleArchiveSql(p, { skipTables: ["ui.ui_surface_value"] });

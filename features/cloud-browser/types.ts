@@ -396,7 +396,7 @@ export interface CloudBrowserLoadError {
   /** Quotable in a report; null for client-side failures. */
   requestId: string | null;
   /**
-   * The server's error code, when it sent one. The panel keys its behaviour
+   * The server's error code, when it sent one. The panel keys its behavior
    * on this, never on the sentence: a capacity refusal is a WAIT the panel
    * carries out itself (see `isWaitingForCapacity`), not a dead "Try again".
    */

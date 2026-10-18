@@ -3,7 +3,7 @@
 // Learn mode — Quizlet Learn parity. Every card climbs two stages in short
 // rounds: RECOGNIZE (multiple choice, the same questions Test builds via
 // buildQuizQuestions) then RECALL (type the answer). A typed answer that
-// matches after normalisation is correct instantly with no AI call; anything
+// matches after normalization is correct instantly with no AI call; anything
 // else is graded on meaning (gradeTypedSemantic) IN THE BACKGROUND — the
 // learner never waits on it. Continuing before the verdict steps the machine
 // with the spelling grade, and the verdict is applied when it lands

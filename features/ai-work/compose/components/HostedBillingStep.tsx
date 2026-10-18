@@ -147,7 +147,7 @@ export function HostedBillingStep({
   const connectUntilLink = async (): Promise<OwnPlanStatus> => {
     const outcome = await connectClaudeAccount(undefined, new AbortController().signal);
     if (outcome.kind === "signed_in" || outcome.kind === "awaiting") return outcome.status;
-    if (outcome.kind === "cancelled") throw new Error("Connect was cancelled.");
+    if (outcome.kind === "cancelled") throw new Error("Connect was canceled.");
     throw new Error(outcome.message);
   };
 
@@ -160,7 +160,7 @@ export function HostedBillingStep({
     await run("code", async () => {
       const outcome = await redeemClaudeCode(value, undefined, new AbortController().signal);
       if (outcome.kind === "settled") return outcome.status;
-      if (outcome.kind === "cancelled") throw new Error("The sign-in was cancelled.");
+      if (outcome.kind === "cancelled") throw new Error("The sign-in was canceled.");
       throw new Error(outcome.message);
     });
   };

@@ -84,7 +84,7 @@ async function pickFromSelect(page, triggerLabel, option) {
     }
     return true;
   }, triggerLabel);
-  if (!opened) throw new Error(`no select trigger labelled "${triggerLabel}"`);
+  if (!opened) throw new Error(`no select trigger labeled "${triggerLabel}"`);
   const { v } = await until(`the "${triggerLabel}" list`, async () => {
     return page.evaluate((want) => {
       const opt = Array.from(document.querySelectorAll("[role='option']")).find((o) =>

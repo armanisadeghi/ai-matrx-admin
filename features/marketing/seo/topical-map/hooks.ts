@@ -480,7 +480,7 @@ export function usePageIntents(
    * holds the rows the pages workspace LISTED; a second reader (the graph's
    * convergence rollup, which keeps its own pages) mounted beside it in a
    * window host must never replace that listing with its own window (Lane C,
-   * C-7). The outline/graph colouring reads `intentsByPageId`, which only the
+   * C-7). The outline/graph coloring reads `intentsByPageId`, which only the
    * feeding reader fills.
    */
   behaviour: { feed: boolean } = { feed: true },

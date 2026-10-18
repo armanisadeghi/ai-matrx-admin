@@ -47,7 +47,7 @@
  * with every `theme` message, and `matrx:sandbox:size` carries the frame's
  * true content height and whether the host's cap is holding it back. A frame
  * still speaking 1 cannot be themed, so it is refused with a sentence rather
- * than rendered in the wrong colours.
+ * than rendered in the wrong colors.
  *
  * 3 (S5b, 2026-09-12): the host sends THE READER'S VIEWPORT WIDTH and the
  * width the component is actually allotted, with `init` and on every change

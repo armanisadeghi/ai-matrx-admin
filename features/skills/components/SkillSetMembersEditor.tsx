@@ -26,7 +26,7 @@ const MAX_SUGGESTIONS = 8;
 interface SkillSetMembersEditorProps {
   memberIds: string[];
   onChange: (next: string[]) => void;
-  /** The catalogue to pick from (the set itself is excluded). */
+  /** The catalog to pick from (the set itself is excluded). */
   skills: SkillRow[];
   /** Id of the set being edited — never offered as its own member. */
   setId?: string;
@@ -161,7 +161,7 @@ export function SkillSetMembersEditor({
   );
 }
 
-/** The editor wired to the visible skills catalogue (for forms that do not hold it). */
+/** The editor wired to the visible skills catalog (for forms that do not hold it). */
 export function SkillSetMembersField(
   props: Omit<SkillSetMembersEditorProps, "skills">,
 ) {

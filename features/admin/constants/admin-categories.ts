@@ -892,7 +892,7 @@ export const adminCategoriesData: AdminCategory[] = [
       },
       {
         // KI-046 declared this destination in `admin-navigation.ts` without a
-        // catalogue entry, and `destination()` THROWS on a missing one at module
+        // catalog entry, and `destination()` THROWS on a missing one at module
         // load — so every admin page died on import until this landed.
         title: "Keyword Value Settings",
         description:
@@ -1114,7 +1114,7 @@ export const adminCategoriesData: AdminCategory[] = [
       {
         title: "Change Policy",
         description:
-          "Platform defaults for every AI-proposed change type (the C-18 catalogue), plus which organizations have diverged from them — each a door to that org's own change-policy page.",
+          "Platform defaults for every AI-proposed change type (the C-18 catalog), plus which organizations have diverged from them — each a door to that org's own change-policy page.",
         iconName: "ShieldCheck",
         link: "/administration/users/change-policy",
         isNew: true,
@@ -1317,7 +1317,7 @@ export const adminCategoriesData: AdminCategory[] = [
       {
         title: "Style Guide",
         description:
-          "How every screen should look: the twelve basics, text styles, colour, spacing and the component for each job.",
+          "How every screen should look: the twelve basics, text styles, color, spacing and the component for each job.",
         iconName: "Palette",
         link: "/administration/ui/style-guide",
         isNew: true,
@@ -1860,7 +1860,7 @@ export const adminCategoriesData: AdminCategory[] = [
       {
         title: "Lite Window",
         description:
-          "The lightweight window panel in practice \u2014 the admin-build copy of the /demos/lite-window examples, for reviewing behaviour where it actually ships.",
+          "The lightweight window panel in practice \u2014 the admin-build copy of the /demos/lite-window examples, for reviewing behavior where it actually ships.",
         iconName: "PanelTop",
         link: "/administration/ui/lite-window",
         isNew: true,

@@ -214,7 +214,7 @@ describe("applySelector", () => {
     expect(byRank.items.map((i) => i.id)).toEqual(["src-a", "src-b"]);
   });
 
-  it("honours topN and counts what it cut", () => {
+  it("honors topN and counts what it cut", () => {
     const r = applySelector(m(), {
       kind: "search.result",
       mode: "filtered",

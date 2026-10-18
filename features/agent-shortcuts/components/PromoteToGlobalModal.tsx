@@ -309,7 +309,7 @@ export function PromoteToGlobalModal({
       </Button>
       {/* Clickable and honest: handlePromote already owns the exact refusal
           sentence for every missing piece, so the reader hears it instead of
-          staring at a greyed button. Only work-in-flight disables. */}
+          staring at a grayed button. Only work-in-flight disables. */}
       <Button variant="primary" onClick={handlePromote} disabled={isProcessing}>
         {isProcessing ? (
           <>

@@ -22,7 +22,7 @@ export interface GoogleAccountSelectProps {
   /**
    * A reviewer must name the account before a provider read can begin. This is
    * deliberately opt-in: the established workspace picker keeps its existing
-   * selected-account behaviour.
+   * selected-account behavior.
    */
   requireExplicitSelection?: boolean;
 }

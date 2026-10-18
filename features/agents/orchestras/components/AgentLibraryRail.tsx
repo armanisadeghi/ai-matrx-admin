@@ -1,7 +1,7 @@
 // features/agents/orchestras/components/AgentLibraryRail.tsx
 //
 // The builder's left rail: every agent the user can add to the Orchestra. It reuses the
-// CANONICAL agent catalogue (`@ai-matrx/agents/catalog`, the same one
+// CANONICAL agent catalog (`@ai-matrx/agents/catalog`, the same one
 // /agents/all and every picker use) — its own `useAgentConsumer` slot + the
 // package's filtered selectors + <DesktopFilterPanel> — so
 // Mine/Shared/All tabs, category/tag filters, sort and search all work exactly as

@@ -469,7 +469,7 @@ export interface MasterworkRunHandle<TResult>
   extends DurableRunHandle<TResult> {
   /**
    * THE RUN'S OWN TYPED PROGRESS — a row per resource with a state, the chunk
-   * counts, the running rule total, and the server's labouring sentence while
+   * counts, the running rule total, and the server's laboring sentence while
    * its heartbeat cannot land. Reduced HERE rather than in each dialog, so
    * every Masterwork lane inherits the same honest movement instead of the
    * flat string log that read as frozen (acquisition-frontier §7.3).

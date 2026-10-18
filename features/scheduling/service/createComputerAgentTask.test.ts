@@ -25,7 +25,7 @@ const input = {
   description: null,
   deviceId: "device-1",
   agentId: "agent-1",
-  prompt: "Summarise my desktop",
+  prompt: "Summarize my desktop",
   variables: { a: 1 },
   authMode: "ask",
   maxRuntimeSeconds: 900,
@@ -46,7 +46,7 @@ describe("an agent scheduled on one computer", () => {
       device_id: "device-1",
       name: "Morning brief",
       description: null,
-      agent: { agent_id: "agent-1", prompt: "Summarise my desktop", variables: { a: 1 }, auth_mode: "ask", max_runtime_seconds: 900, max_concurrent: 1 },
+      agent: { agent_id: "agent-1", prompt: "Summarize my desktop", variables: { a: 1 }, auth_mode: "ask", max_runtime_seconds: 900, max_concurrent: 1 },
       trigger: { type: "interval", every_seconds: 3600 },
     });
     // A create is never an edit, and an agent task carries no tool.

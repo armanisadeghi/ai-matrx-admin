@@ -11,19 +11,19 @@
  *   - `app/(admin)/administration/ui/official-components/page.tsx`
  *     — the list/browse landing: a category sidebar (grouped via
  *     `categoryGroups`/`getCategoriesByGroup`) plus a filtered grid over the
- *     static `componentList` catalogue (`parts/component-list.tsx`). Search
+ *     static `componentList` catalog (`parts/component-list.tsx`). Search
  *     text and the selected category both live in the URL (`?q=`, `?category=`)
  *     — genuinely routed identity, so both are reliably knowable at any moment.
  *   - `app/(admin)/administration/ui/official-components/[componentId]/page.tsx`
- *     — the detail page for one catalogue entry: its name, categories, tags,
+ *     — the detail page for one catalog entry: its name, categories, tags,
  *     description, source path, a live rendered demo (dynamically imported
  *     from `component-displays/<id>`), and a short "related components" list
  *     sharing a category.
  *
- * What an agent bound here may safely do: read which catalogue entry (or
+ * What an agent bound here may safely do: read which catalog entry (or
  * search/filter state) the admin is looking at and reason about the component
  * library — explain a component, suggest related ones, help write copy for a
- * new catalogue entry. `componentList` itself is a static in-repo registry,
+ * new catalog entry. `componentList` itself is a static in-repo registry,
  * not a database — nothing here is live application data.
  *
  * Emitters: TWO, one per route (wired 2026-08-12, `readiness: "partial"`).
@@ -40,12 +40,12 @@
  * params, `componentList.length`, `filteredComponents.length`, the found
  * `ComponentEntry`, `relatedComponents.length`) — no value is synthesized and
  * none is emitted blank to look populated. `current_component_description` is
- * omitted, not blanked, when a catalogue entry authors none.
+ * omitted, not blanked, when a catalog entry authors none.
  *
  * Both `getScope` callbacks are SYNCHRONOUS and allocation-only by design: the
  * Surface Context window polls `getScope` every 400ms for as long as it is
  * open, so an emitter that fetched would hammer the backend behind an idle
- * debug panel. Nothing here can fetch — the catalogue is a static in-repo
+ * debug panel. Nothing here can fetch — the catalog is a static in-repo
  * array — and no module-level snapshot store is needed, because each page
  * already holds every value it emits in live render state.
  *
@@ -61,7 +61,7 @@
  *
  * Assigned as a write-target campaign chip on the theory that
  * `current_component_description` / `_categories` / `_tags` are authored
- * catalogue metadata — the skill's YES class. They are not, because THIS
+ * catalog metadata — the skill's YES class. They are not, because THIS
  * REGISTRY IS NOT EDITABLE ANYWHERE. The prerequisite question ("is it
  * editable, and where does an edit persist?") answers NO, so no amount of
  * emitter wiring would earn a target. Evidence, all re-verified against
@@ -114,7 +114,7 @@
  * Note the two halves are INDEPENDENT, which is the point of doing the mount
  * anyway: the earlier ruling paired them ("mounting an emitter is only worth
  * it in service of a target set that cannot exist here"), but read value does
- * not depend on write value. This is the internal catalogue of the design
+ * not depend on write value. This is the internal catalog of the design
  * system, so an agent that can see which component an admin is looking at —
  * and the other 60 it could suggest instead — is useful precisely BECAUSE the
  * registry is immutable: the agent's job here is to explain and recommend,
@@ -146,7 +146,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Component detail",
     sortOrder: 200,
     description:
-      "The single catalogue entry open on the detail page: its identity, categorization, description, source path, and related entries.",
+      "The single catalog entry open on the detail page: its identity, categorization, description, source path, and related entries.",
   },
 ];
 
@@ -167,7 +167,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "total_component_count",
     label: "Total component count",
     description:
-      "Total number of entries in the static componentList catalogue, regardless of any filter. A constant of the registry — the same on both the list and detail pages.",
+      "Total number of entries in the static componentList catalog, regardless of any filter. A constant of the registry — the same on both the list and detail pages.",
     valueType: "number",
     alwaysAvailable: true,
     typicalCharCount: 3,
@@ -200,7 +200,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "filtered_component_count",
     label: "Filtered component count",
     description:
-      "Number of catalogue entries currently shown in the grid after applying the search query or category filter. Equals total_component_count when neither filter is active. Absent on the detail page.",
+      "Number of catalog entries currently shown in the grid after applying the search query or category filter. Equals total_component_count when neither filter is active. Absent on the detail page.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 3,
@@ -213,7 +213,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_component_id",
     label: "Open component id",
     description:
-      "componentId route param of the entry open on the detail page — its catalogue key, e.g. \"matrx-data-table\". Absent on the list page.",
+      "componentId route param of the entry open on the detail page — its catalog key, e.g. \"matrx-data-table\". Absent on the list page.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 24,
@@ -224,7 +224,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_component_name",
     label: "Open component name",
     description:
-      "Human display name of the open catalogue entry, e.g. \"Matrx Data Table\". Absent on the list page.",
+      "Human display name of the open catalog entry, e.g. \"Matrx Data Table\". Absent on the list page.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 40,
@@ -235,7 +235,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_component_description",
     label: "Open component description",
     description:
-      "The catalogue entry's own description text, as authored in component-list.tsx. Absent on the list page; may be empty if the entry has none.",
+      "The catalog entry's own description text, as authored in component-list.tsx. Absent on the list page; may be empty if the entry has none.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 160,
@@ -268,7 +268,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "current_component_tags",
     label: "Open component tags",
     description:
-      "Optional free-text tags on the open catalogue entry, used for search matching. Absent on the list page; empty array when the entry has none.",
+      "Optional free-text tags on the open catalog entry, used for search matching. Absent on the list page; empty array when the entry has none.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 60,
@@ -279,7 +279,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "related_component_count",
     label: "Related component count",
     description:
-      "Number of other catalogue entries shown in the \"Related Components\" panel (entries sharing at least one category with the open one, capped at 3). Absent on the list page.",
+      "Number of other catalog entries shown in the \"Related Components\" panel (entries sharing at least one category with the open one, capped at 3). Absent on the list page.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 1,
@@ -297,17 +297,17 @@ export const adminOfficialComponentsManifest: SurfaceManifest = {
     "Official component library admin",
   readiness: "partial",
   readinessNote:
-    "Emitters wired on BOTH routes (list page + [componentId] detail page) and verified live: all 12 surface-specific values reach an agent, each read off the same expression the page renders. Partial rather than verified only because the injected baselines `selection` / `context` are never populated — neither page mounts a v3 context menu to capture a selection. Write targets are ruled out permanently while the catalogue stays a hardcoded const array: the registry has no backing table, no edit form and no mutation path, so it is a read-only report — see the WRITE TARGETS section of this file's docblock before re-assigning it.",
+    "Emitters wired on BOTH routes (list page + [componentId] detail page) and verified live: all 12 surface-specific values reach an agent, each read off the same expression the page renders. Partial rather than verified only because the injected baselines `selection` / `context` are never populated — neither page mounts a v3 context menu to capture a selection. Write targets are ruled out permanently while the catalog stays a hardcoded const array: the registry has no backing table, no edit form and no mutation path, so it is a read-only report — see the WRITE TARGETS section of this file's docblock before re-assigning it.",
   label: "Official Components",
   urlPattern: "/administration/ui/official-components",
   intro: `<surface_intro>
 This is an ADMIN surface: the Official Component Library registry at /administration/ui/official-components — a gallery of every reusable component the platform ships as "official" (must work on import, never locally restyled).
 
-page_section tells you which page you're on: "list" is the searchable/category-filtered grid over the static componentList catalogue; "detail" is one component's own page (its description, source path, live demo, and related components).
+page_section tells you which page you're on: "list" is the searchable/category-filtered grid over the static componentList catalog; "detail" is one component's own page (its description, source path, live demo, and related components).
 
 On the list page, search_query and selected_category describe the active filter and filtered_component_count / total_component_count give the counts. On the detail page, the current_component_* values describe exactly the one open entry.
 
-What you may safely do: explain a component, suggest related ones from current_component_categories, or help draft catalogue metadata (name, description, tags) for a new entry. componentList is a static in-repo registry, not live application data.
+What you may safely do: explain a component, suggest related ones from current_component_categories, or help draft catalog metadata (name, description, tags) for a new entry. componentList is a static in-repo registry, not live application data.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(

@@ -193,7 +193,7 @@ export default function ConnectorStripDemo() {
           ))}
         </div>
         <p className="text-[11px] text-muted-foreground">
-          {CONNECTORS.length} in the catalogue · {connectorsFor("strip").length}{" "}
+          {CONNECTORS.length} in the catalog · {connectorsFor("strip").length}{" "}
           earn a slot under the input · Google Search Console is directory-only
           (connectable today, just too niche for the strip).
         </p>

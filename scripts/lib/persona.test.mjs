@@ -33,7 +33,7 @@ test("a persona is a realistic person on the fixtures domain, never reachable by
   assert.equal(new Set(people.map((p) => p.email)).size, 25);
 });
 
-test("the company comes from the real use-case templates and a named one is honoured", async () => {
+test("the company comes from the real use-case templates and a named one is honored", async () => {
   const p = await makePersona({ useCase: "harbor-dental-new-patient-intake" });
   assert.equal(p.company, "Harbor Dental Group");
   await assert.rejects(makePersona({ useCase: "acme-widgets" }), /not a template/);

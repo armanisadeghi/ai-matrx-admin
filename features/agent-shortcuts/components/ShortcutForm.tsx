@@ -616,7 +616,7 @@ export function ShortcutForm({
               initialTab="system"
               // 🚨 HARD, not a default. `initialTab` alone is applied once per
               // mount and loses to the consumer's remembered tab, so the
-              // forbidden catalogue was still one click (or one remembered
+              // forbidden catalog was still one click (or one remembered
               // session) away — the same hole VISION-RECONCILIATION D2 found on
               // the mandate binding screen's system rung.
               visibleTabs={["system"]}

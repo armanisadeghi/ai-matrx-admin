@@ -161,7 +161,7 @@ export function describeItemFilter(filter: ExportItemFilter): string {
     parts.push(words.join(" or "));
   }
   if (filter.kind) parts.push(`of type ${filter.kind.split(",").join(" or ")}`);
-  if (filter.labels) parts.push(`labelled ${filter.labels.split(",").join(" or ")}`);
+  if (filter.labels) parts.push(`labeled ${filter.labels.split(",").join(" or ")}`);
   if (filter.author) parts.push(`from ${filter.author}`);
   if (filter.container_id) parts.push("in one thread or channel");
   if (filter.has_attachment === true) parts.push("with an attachment");

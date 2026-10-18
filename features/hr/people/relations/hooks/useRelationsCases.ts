@@ -182,7 +182,7 @@ function viewerRoleFromBasis(
  *
  * When `hintedKind` is null (a link that dropped `?kind=`) this probes the
  * incident door first and the corrective-action door second. The losing probe
- * writes a denial to `hr.access_audit`, which is correct behaviour, not a bug —
+ * writes a denial to `hr.access_audit`, which is correct behavior, not a bug —
  * see `hrRelationsCaseHref`.
  *
  * 🚨 THE VETO CAN FIRE BETWEEN TWO READS. Adding an `accused` party

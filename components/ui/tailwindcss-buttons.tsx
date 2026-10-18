@@ -153,11 +153,11 @@ export const buttons = [
         ),
     },
     {
-        name: "Favourite",
-        description: "Favourite button for your website",
+        name: "Favorite",
+        description: "Favorite button for your website",
         component: (
             <button className="px-8 py-2  bg-black text-white text-sm rounded-md font-semibold hover:bg-black/[0.8] hover:shadow-lg">
-                Favourite
+                Favorite
             </button>
         ),
     },

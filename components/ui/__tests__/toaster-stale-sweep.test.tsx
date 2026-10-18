@@ -5,7 +5,7 @@
  * nothing / then broke" report: sonner PAUSES a toast's dismiss timer while the
  * document is hidden, so in a background tab nothing ever expires and toasts
  * stack. Nine were stacked at once, and `document.elementFromPoint()` at the
- * centre of the shortcut editor's sticky-footer Save button returned the sonner
+ * center of the shortcut editor's sticky-footer Save button returned the sonner
  * `<li>` rather than the button. The control was enabled, looked alive, and
  * silently ate the click — a dead control wearing an honest face.
  *

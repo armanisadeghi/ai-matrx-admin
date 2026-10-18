@@ -157,7 +157,7 @@ export interface SpaceEditorProps {
   onReady?: (editor: SpacesEditor) => void;
   /**
    * H3 live co-editing: the body is the room's shared Yjs fragment (`initialBlocks` is then unused — the
-   * fragment already holds the page) and other members' cursors draw in their colours.
+   * fragment already holds the page) and other members' cursors draw in their colors.
    */
   collab?: { fragment: Y.XmlFragment; provider: { awareness: Awareness }; user: { name: string; color: string } };
 }

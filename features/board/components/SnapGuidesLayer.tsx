@@ -2,7 +2,7 @@
 
 /**
  * SnapGuidesLayer — the thin lines drawn while a tile is dragged or resized
- * (Figma smart guides): one line through every aligned edge / centre, and a
+ * (Figma smart guides): one line through every aligned edge / center, and a
  * bracketed segment over each gap that matches a neighbouring gap. Lives in
  * world space as ONE leaf that subscribes to the overlay, so a drag re-renders
  * this and nothing else; strokes are `non-scaling` so they stay 1 screen px at

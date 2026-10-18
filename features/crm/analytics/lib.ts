@@ -9,7 +9,7 @@
 // denominator is zero. A campaign that has sent nothing does not have a 0%
 // reply rate — it has no reply rate, and the surface must say so. A 0% shown
 // where "not started" is the truth is the single most expensive lie a report
-// can tell: it reads as failure and gets a working campaign cancelled.
+// can tell: it reads as failure and gets a working campaign canceled.
 //
 // 🚨 ABSENCE IS NEVER LOSS. Nothing here derives a negative from missing data.
 // A stage with no rows is a stage nobody has reached yet.

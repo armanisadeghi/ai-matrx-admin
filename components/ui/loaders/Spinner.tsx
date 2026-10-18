@@ -96,7 +96,7 @@ const Spinner = forwardRef<HTMLDivElement, SpinnerProps>(
                 {...props}
             >
                 {/* Sized like the circles it holds: an unsized wrapper put the
-                    absolute circles' corner at the centre, so every spinner
+                    absolute circles' corner at the center, so every spinner
                     drew down-right of its box, over the text beside it. */}
                 <div className={cn("relative shrink-0", SPINNER_BOX[normalizedSize])}>
                     <div

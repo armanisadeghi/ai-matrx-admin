@@ -91,7 +91,7 @@ const main = async () => {
   // 1 — THE INBOX: a checklist step is a work item, and it reached the person it belongs to.
   await page.goto(`${ORIGIN}/data`, { waitUntil: "domcontentloaded" });
   await shoot(page, "01-inbox-checklist-steps-are-work", [
-    "Verify the state dental hygiene licence",
+    "Verify the state dental hygiene license",
     "Submit credentialing to Delta and Cigna",
   ]);
 

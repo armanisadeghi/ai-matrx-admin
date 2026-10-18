@@ -5,9 +5,9 @@
  * errors don't have an 'Alchemy' icon… find all places that need it").
  *
  * What an error display IS — semantic, per element, parsed from the JSX — lives
- * in `error-display-census.ts`: role="alert" boxes of any colour, red-styled
+ * in `error-display-census.ts`: role="alert" boxes of any color, red-styled
  * elements rendering an error value or a failure sentence, failure sentences in
- * any colour, and amber / role="status" notices rendering an error value. Each
+ * any color, and amber / role="status" notices rendering an error value. Each
  * one must carry the menu IN ITS OWN BOX (or sit inside a primitive that draws
  * it: ErrorNotice, ErrorBox, a destructive Alert, ErrorBoundaryView). A carrier
  * elsewhere in the file never excuses a box (RC-B12 verify F9).
@@ -86,11 +86,11 @@ const count = (jsx: string) =>
 describe("the error-display detector (self-test — each RC-B12 verify hole, red then green)", () => {
   it("a red lifecycle notice is information, not an error (RC-B12 r13 ruling) — unless it carries an error or failure words", () => {
     const shown = (body: string) => findErrorDisplays(`export function C(p: any) { return (${body}); }`).length;
-    // "This meeting was cancelled: “{reason}”" in a destructive box: nothing failed.
-    expect(shown('<div className="border-destructive/30 bg-destructive/5">This meeting was cancelled{p.reason ? `: ${p.reason}` : "."}</div>')).toBe(0);
+    // "This meeting was canceled: “{reason}”" in a destructive box: nothing failed.
+    expect(shown('<div className="border-destructive/30 bg-destructive/5">This meeting was canceled{p.reason ? `: ${p.reason}` : "."}</div>')).toBe(0);
     // The same box reporting a failure is still an error.
-    expect(shown('<div className="bg-destructive/5 text-destructive-ink">This meeting was cancelled but the invite could not be sent</div>')).toBe(1);
-    expect(shown('<div className="text-destructive">The event was cancelled: {p.error}</div>')).toBe(1);
+    expect(shown('<div className="bg-destructive/5 text-destructive-ink">This meeting was canceled but the invite could not be sent</div>')).toBe(1);
+    expect(shown('<div className="text-destructive">The event was canceled: {p.error}</div>')).toBe(1);
     // Red text with a message value and no lifecycle fact still counts (round 3).
     expect(shown('<p className="text-destructive">{p.reason}</p>')).toBe(1);
   });
@@ -106,10 +106,10 @@ describe("the error-display detector (self-test — each RC-B12 verify hole, red
   it("probe C: red text rendering an error without role=alert counts", () => {
     expect(count('<p className="text-destructive">Failed to save: {error}</p>')).toBe(1);
   });
-  it("probe D: a grey role=alert box counts", () => {
+  it("probe D: a gray role=alert box counts", () => {
     expect(count('<div role="alert" className="text-muted-foreground">{error}</div>')).toBe(1);
   });
-  it("a failure sentence counts in any colour, and an amber status notice rendering an error counts", () => {
+  it("a failure sentence counts in any color, and an amber status notice rendering an error counts", () => {
     expect(count("<h2>Something went wrong</h2>")).toBe(1);
     expect(count("<p>We couldn't load this note.</p>")).toBe(1);
     expect(count('<div role="status" className="text-amber-700">{error.message}</div>')).toBe(1);
@@ -148,12 +148,12 @@ describe("round-2 holes (RC-B12 verify R2-1), red then green", () => {
     expect(count('{load.status === "error" ? <p className="text-xs text-destructive">{load.detail}</p> : null}')).toBe(1);
     expect(count('{failed && <span className="text-amber-700">{text}</span>}')).toBe(1);
   });
-  it("more failure phrasings count in any colour", () => {
+  it("more failure phrasings count in any color", () => {
     expect(count('<p className="text-sm">Unable to load your projects.</p>')).toBe(1);
     expect(count("<p>Error loading data</p>")).toBe(1);
     expect(count('<span className="text-xs">Save failed — {err}</span>')).toBe(1);
   });
-  it("an inline red colour counts", () => {
+  it("an inline red color counts", () => {
     expect(count('<p style={{ color: "red" }}>{error}</p>')).toBe(1);
   });
   it("a row that is red only under a condition is not the error box (its menu would show on every row)", () => {
@@ -220,7 +220,7 @@ describe("round-4 probes (RC-B12 verify, theoretical shapes), red then green", (
     expect(count('<Badge variant="destructive">{error}</Badge>')).toBe(1);
     expect(count('<Badge variant="destructive">Archived</Badge>')).toBe(0);
   });
-  it("'Oops! That didn't work.' counts in any colour", () => {
+  it("'Oops! That didn't work.' counts in any color", () => {
     expect(count("<p>Oops! That didn't work.</p>")).toBe(1);
   });
   it("a destructive card with three plain wrappers is one box: a title line and a message line share one menu", () => {
@@ -251,7 +251,7 @@ describe("round-5 probes (RC-B12 verify), red then green", () => {
     expect(count('<p role="alert">{error}<span style={{ display: "none" }}><ErrorAlchemyMenu /></span></p>')).toBe(1);
     expect(count('<p role="alert">{error}{false && <ErrorAlchemyMenu />}</p>')).toBe(1);
   });
-  it("'This page crashed' and 'The server refused the request' count in any colour", () => {
+  it("'This page crashed' and 'The server refused the request' count in any color", () => {
     expect(count("<p>This page crashed.</p>")).toBe(1);
     expect(count("<p>The server refused the request.</p>")).toBe(1);
   });
@@ -542,7 +542,7 @@ describe("a count from a failed read is a lie too (RC-B12 round 13)", () => {
     expect(counts("const q = useRateLimits(); return <KpiTile label=\"Limits\" value={q.rows.length} loading={q.isLoading} />;")).toBe(1);
     // read= on a component that never takes it proves nothing.
     expect(counts(`const q = useRateLimits(); return <StatTile label="Limits" value={q.rows.length} ${read} />;`)).toBe(1);
-    // A same-file component whose props take `read` honours it.
+    // A same-file component whose props take `read` honors it.
     expect(
       findUngatedCounts(
         `function StatChip({ value, read }: any) { return <UntrustedCount value={value} read={read} label="x" />; }\nexport function C(p: any) { const q = useX(); return <StatChip value={q.rows.length} ${read} />; }`,
@@ -556,7 +556,7 @@ describe("a failure is never an info toast (RC-B12 round 11)", () => {
   it("self-test: the GenerateShellClient shape counts; a cancellation and plain info do not", () => {
     expect(soft('try { await p.run(); } catch (err) { const msg = err instanceof Error ? err.message : "Generate failed"; toast.info(msg); }')).toBe(1);
     expect(soft('toast.info("Upload failed — try again");')).toBe(1);
-    expect(soft('try { await p.run(); } catch { toast.info("Authorization cancelled — nothing changed."); }')).toBe(0);
+    expect(soft('try { await p.run(); } catch { toast.info("Authorization canceled — nothing changed."); }')).toBe(0);
     expect(soft('toast.info("Copied to your clipboard");')).toBe(0);
     expect(soft('try { await p.run(); } catch (err) { toast.error(String(err)); }')).toBe(0);
   });

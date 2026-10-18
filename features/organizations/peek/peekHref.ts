@@ -18,7 +18,7 @@
  * (`features/scopes/registry/entityRegistry.ts` → `hrefFor`), and every peek,
  * every `EntityRef`, and every association row picks it up at once.
  *
- * NOTE the token, not the peek's catalogue key: six peek keys differ from the
+ * NOTE the token, not the peek's catalog key: six peek keys differ from the
  * canonical token (`flashcard`→`fc_set`, `quiz`→`quiz_session`,
  * `canvas`→`canvas_item`, `sandbox`→`sandbox_instance`, `agent_app`→`app`,
  * `picklist`→`structured_list`).

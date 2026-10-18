@@ -2,7 +2,7 @@
 
 // features/mandates/admin-list/listConfig.tsx
 //
-// The admin mandate list as an entity-list config — modelled on /agents/all
+// The admin mandate list as an entity-list config — modeled on /agents/all
 // (features/agents/browse/listConfig.tsx): the name is a real link to the
 // mandate's page, a row click opens the quick look (MandatePeek), and the
 // row menu carries Quick look / Open / new tab / copy. The service is built

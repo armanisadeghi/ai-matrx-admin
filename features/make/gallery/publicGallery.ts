@@ -5,7 +5,7 @@
 // unique and stable across versions) — the same page signed in or out. Signed in, "Use this template"
 // installs there; a guest signs up and returns to it. Catalogue-id and version-id addresses redirect.
 //
-// THE DOOR (one source, G3): the same catalogue door the signed-in gallery reads, `custom.templates`,
+// THE DOOR (one source, G3): the same catalog door the signed-in gallery reads, `custom.templates`,
 // asked for platform templates only. A signed-out read reaches it only when the database lets the
 // anonymous caller in. Until then — or while the template family is not on this database at all —
 // the read answers `closed` and the pages render an honest empty gallery; they never crash and never
@@ -18,7 +18,7 @@ import { GALLERY_PAGE, type GalleryAnswer, type GalleryCard } from "./catalogue"
 
 export const PUBLIC_GALLERY_PATH = "/templates";
 
-/** One template's page: its readable address, else the catalogue id (which redirects to the address). */
+/** One template's page: its readable address, else the catalog id (which redirects to the address). */
 export const publicTemplateHref = (card: Pick<GalleryCard, "slug" | "catalogue_id">) =>
   `${PUBLIC_GALLERY_PATH}/${encodeURIComponent(card.slug ?? card.catalogue_id)}`;
 
@@ -27,7 +27,7 @@ export const jobHref = (job: string) => `${PUBLIC_GALLERY_PATH}/job/${encodeURIC
 
 /**
  * WORKSPACES (Arman, 2026-10-18 "Yes, public gallery"): the Space templates — platform `custom.template` rows
- * whose card carries `space` — on the same catalogue, listed at /templates/workspaces and per Space category.
+ * whose card carries `space` — on the same catalog, listed at /templates/workspaces and per Space category.
  */
 export const WORKSPACES_PATH = `${PUBLIC_GALLERY_PATH}/workspaces`;
 export const workspacesHref = (category?: string | null) => (category ? `${WORKSPACES_PATH}/${encodeURIComponent(category)}` : WORKSPACES_PATH);
@@ -60,7 +60,7 @@ export const INSTALL_ON_RETURN = "install";
 export const templateSignUpHref = (card: Pick<GalleryCard, "slug" | "catalogue_id">) =>
   signUpHref(`${publicTemplateHref(card)}?${INSTALL_ON_RETURN}=1`);
 
-/** What a signed-out read of the catalogue answered. */
+/** What a signed-out read of the catalog answered. */
 export type PublicRead =
   | { state: "open"; cards: GalleryCard[] }
   /** The door is not on this database, or refuses a caller with no session. */
@@ -99,7 +99,7 @@ export async function readPublicCatalogueWith(rpc: Rpc): Promise<PublicRead> {
     if (error) {
       const reason = closedReason(error);
       if (reason) return { state: "closed", reason };
-      throw new Error(`The template catalogue could not be read: ${error.message ?? error.code ?? "unknown error"}`);
+      throw new Error(`The template catalog could not be read: ${error.message ?? error.code ?? "unknown error"}`);
     }
     const answer = data as GalleryAnswer;
     cards.push(...answer.cards);

@@ -63,7 +63,7 @@ function itemFindingsHref(
 }
 
 /**
- * The Audit tab's window into the REAL per-page analysis rows the catalogue
+ * The Audit tab's window into the REAL per-page analysis rows the catalog
  * workers write (`web.analysis_result` → `v_page_score` / `v_site_score`;
  * `web.finding` → the register). Renders honest freshness ("computed at"),
  * an explicit never-analyzed state, and a direct Analyze command — analysis
@@ -117,9 +117,9 @@ export function CatalogueAnalysisPanel() {
   const copy = data
     ? webCopy({
         kind: "web-site-analysis-overview",
-        label: `Catalogue analysis — ${site.domain}`,
+        label: `Catalog analysis — ${site.domain}`,
         description:
-          "Current per-page analysis scores and open findings from the deterministic audit catalogue (web.analysis_result / web.finding).",
+          "Current per-page analysis scores and open findings from the deterministic audit catalog (web.analysis_result / web.finding).",
         surface: `Site audit — ${site.domain}`,
         data,
         lines: [
@@ -159,7 +159,7 @@ export function CatalogueAnalysisPanel() {
   return (
     <SectionCard
       anchor="catalogue_analysis"
-      title="Catalogue analysis"
+      title="Catalog analysis"
       headerExtra={
         <>
           {data && data.openByItem.length > OPEN_ITEM_PREVIEW ? (
@@ -274,7 +274,7 @@ export function CatalogueAnalysisPanel() {
                         <span className="min-w-0">
                           {/* Readable name first — a rollup keyed by
                               `ttfb_server_response` is not a UI. An item key
-                              the catalogue has not labelled yet (a check the
+                              the catalog has not labeled yet (a check the
                               server added since) humanizes rather than
                               disappearing. */}
                           <span className="block truncate text-xs text-foreground">

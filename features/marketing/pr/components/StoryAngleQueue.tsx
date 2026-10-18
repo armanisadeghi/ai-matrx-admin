@@ -12,7 +12,7 @@
  *    never answers the question that unblocks three angles.
  *  • The DEFAULT view is live work, and live work is mostly angles with proof
  *    still to gather (backend fact 1). That is the product working, not a
- *    backlog — the copy and the colour say so.
+ *    backlog — the copy and the color say so.
  *  • Expansion happens inside the row and grows DOWNWARD only, so nothing above
  *    the click point moves.
  *  • Every row keeps its footprint whether expanded or not — fixed-width score
@@ -512,7 +512,7 @@ function AngleRow({
               </div>
               <div className="min-w-0">
                 <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                  Analysed
+                  Analyzed
                 </dt>
                 <dd className="text-foreground">
                   {formatDateOnly(angle.analyzed_at)}

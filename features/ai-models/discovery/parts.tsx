@@ -80,7 +80,7 @@ export function ImagePicker({
 
 /**
  * Page, shelf and shelf title: page and shelf are picked from what exists (plus "a new shelf"),
- * the title is text. `automatic` is the placement promote would choose by itself; it is labelled.
+ * the title is text. `automatic` is the placement promote would choose by itself; it is labeled.
  */
 export function PlacementFields({
   value,

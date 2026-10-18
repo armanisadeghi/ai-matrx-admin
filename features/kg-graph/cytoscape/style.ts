@@ -16,7 +16,7 @@ import type { KgChromeTheme } from "../constants";
 export const KG_CLASS = {
   /** Out-of-focus elements during neighbour highlight / search — dimmed. */
   faded: "kg-faded",
-  /** The hovered or pinned node at the centre of a neighbour highlight. */
+  /** The hovered or pinned node at the center of a neighbour highlight. */
   focus: "kg-focus",
   /** An edge inside the focused neighbourhood. */
   highlight: "kg-highlight",

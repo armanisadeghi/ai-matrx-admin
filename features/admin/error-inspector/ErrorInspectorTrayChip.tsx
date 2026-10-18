@@ -5,7 +5,7 @@
  *
  * Shown in the body of the Error Inspector's minimized window shell. It turns
  * the live captured-error tallies into a single glanceable mark: a bug icon
- * coloured by the LOUDEST tier present (blue when clear, then yellow → amber →
+ * colored by the LOUDEST tier present (blue when clear, then yellow → amber →
  * red), the total distinct-error count, and a tiny per-tier breakdown.
  *
  * State isolation (the whole point of a minimized preview):
@@ -16,7 +16,7 @@
  *    tree in DeferredSingletons), so even its own re-renders can't touch the
  *    active route. It only mounts while the window is minimized.
  *
- * The colour language matches `errorTiers.ts` and the rest of the inspector;
+ * The color language matches `errorTiers.ts` and the rest of the inspector;
  * the layout is the shared `TrayStatusChip` primitive.
  */
 
@@ -30,7 +30,7 @@ export default function ErrorInspectorTrayChip() {
 
   const total = red + orange + yellow;
 
-  // Loudest present tier wins the icon colour; blue ("monitoring") when clear.
+  // Loudest present tier wins the icon color; blue ("monitoring") when clear.
   const tone: TrayStatusTone =
     red > 0
       ? "critical"

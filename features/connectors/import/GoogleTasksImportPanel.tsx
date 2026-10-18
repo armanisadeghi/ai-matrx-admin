@@ -380,7 +380,7 @@ export function GoogleTasksImportPanel({
           {/* 🚨 REFRESH NEVER SILENTLY RE-RUNS A REQUEST WE KNOW WILL FAIL
               (F-113): while the server is waiting to be told WHICH account to
               read, the same read is the same refusal, and the choice is below.
-              It used to stay on screen greyed out with the reason in a `title=`
+              It used to stay on screen grayed out with the reason in a `title=`
               tooltip — a reason a sighted person never sees and a touch user
               cannot reach (check:hidden-alerts, 2026-09-22). The notice below
               carries the same truth VISIBLY and owns both the account chooser

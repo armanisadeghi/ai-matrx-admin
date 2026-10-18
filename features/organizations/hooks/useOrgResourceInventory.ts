@@ -3,7 +3,7 @@
 /**
  * useOrgResourceInventory
  * -----------------------
- * Owned + shared counts for every org resource catalogue entry. Thin wrapper
+ * Owned + shared counts for every org resource catalog entry. Thin wrapper
  * over the generalized `useContainerInventory` (column = "organization_id"),
  * which also runs the org-only "shared-with-org" (permissions) pass.
  *

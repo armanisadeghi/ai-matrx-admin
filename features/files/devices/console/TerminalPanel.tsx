@@ -94,7 +94,7 @@ function readFontSize(deviceId: string): number {
 export function TerminalPanel({ client, deviceId, blocked, live, resourceId, onResourceChange, visible, hiddenOnPhone = false }: TerminalPanelProps) {
   const isMobile = useIsMobile();
   const pageVisible = usePageVisible();
-  /** Unmounting (navigating away) closes the client; its CANCELLED is not a failure to report. */
+  /** Unmounting (navigating away) closes the client; its CANCELED is not a failure to report. */
   const unmountedRef = useRef(false);
   const [fontSize, setFontSize] = useState<number>(TERMINAL_DEFAULTS.fontSize);
   const offline = blocked !== null;
@@ -168,7 +168,7 @@ export function TerminalPanel({ client, deviceId, blocked, live, resourceId, onR
           void refreshSessions();
           return;
         }
-        // Leaving the page (or this panel unmounting) ends the stream with CANCELLED: not news.
+        // Leaving the page (or this panel unmounting) ends the stream with CANCELED: not news.
         if (unmountedRef.current || (isDesktopProtocolError(error) && error.code === "CANCELLED")) return;
         setEnded("failed");
         toast.error("The terminal stopped", { description: error instanceof Error ? error.message : String(error) });

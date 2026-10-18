@@ -282,7 +282,7 @@ function MarketingConnectionsContent({ reviewMode }: { reviewMode: boolean }) {
       });
     } catch (error) {
       if (isGoogleAuthorizationCancelled(error)) {
-        toast.info("YouTube authorization cancelled");
+        toast.info("YouTube authorization canceled");
         return;
       }
       // access-errors: ok — verified OAuth outcome from the provider flow, not an RLS guess

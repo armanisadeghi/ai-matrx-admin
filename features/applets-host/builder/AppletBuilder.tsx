@@ -383,7 +383,7 @@ export function AppletBuilder({
       stepTo("Reading your tables");
       const current = record.hasContent ? await readBuilderApplet(client, record.id) : null;
       const runOrg = current?.organizationId ?? record.organizationId;
-      // What she attached: its material rides THE attach path every round, its jobs the catalogue.
+      // What she attached: its material rides THE attach path every round, its jobs the catalog.
       const refs = record.references;
       const catalogue = await readAppletCatalogue(client, { organizationId: runOrg, request, attachedJobs: attachedJobKeys(refs), describe: describeJob });
       // The frame (already the preview's) answers which names each module really exports; the checks read
@@ -412,7 +412,7 @@ export function AppletBuilder({
           ...(fix ? { hostTurn: fixHostTurn(fix.message) } : { userInput: request }),
           // Structured parts ride context, never her message: the record as it stands (the refused answer
           // in a fix round) and the check that refused it (removed on her own turns); what she attached, by
-          // name, and the catalogue again when she attached jobs (a job attached after the first round).
+          // name, and the catalog again when she attached jobs (a job attached after the first round).
           context: {
             applet: fixedApplet ? JSON.stringify(fixedApplet) : current ? JSON.stringify(current.applet) : null,
             last_check: fix ? JSON.stringify({ file: fix.where, message: fix.message }) : null,

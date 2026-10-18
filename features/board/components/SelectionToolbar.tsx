@@ -3,7 +3,7 @@
 /**
  * SelectionToolbar — THE floating context toolbar over the board's current
  * selection (FigJam / Miro / tldraw). One per board, screen-space chrome in
- * the viewport's overlay: it sits centred just above the selection's bounds
+ * the viewport's overlay: it sits centerd just above the selection's bounds
  * (below them when there is no room above), follows a pan, zoom or move by
  * writing its own style (no React render per frame), and steps out of the way
  * while a press is down, the camera moves, a tile is being worked in, a tile is
@@ -26,7 +26,7 @@
  * Building blocks: `SelectionToolbarButton` (an icon button with a tooltip
  * label + shortcut), `SelectionToolbarMenu` (a button opening a popover of
  * choices), `SelectionToolbarDivider`, `ColorSwatches` (the board's semantic
- * palette, light + dark), `ChoiceRow` (a row of labelled options).
+ * palette, light + dark), `ChoiceRow` (a row of labeled options).
  */
 
 import { type ReactNode, useEffect, useRef } from "react";
@@ -46,14 +46,14 @@ export interface SelectionToolbarSection {
   applies: (selection: readonly string[]) => boolean;
   render: (selection: readonly string[]) => ReactNode;
   /**
-   * `shared` (default) controls work on everything selected (order, duplicate, delete, a colour all
+   * `shared` (default) controls work on everything selected (order, duplicate, delete, a color all
    * support) and always show inline. `type` controls belong to one kind of object; when the selection
    * mixes kinds they fold into one "By type" menu so the toolbar stays short (FigJam).
    */
   scope?: "shared" | "type";
   /** Names a `type` section inside the "By type" menu ("Sticky notes"). */
   label?: string;
-  /** Show only when the selection mixes kinds (a colour every kind in the mix supports). */
+  /** Show only when the selection mixes kinds (a color every kind in the mix supports). */
   mixedOnly?: boolean;
 }
 
@@ -231,7 +231,7 @@ export function SelectionToolbarButton({
   );
 }
 
-/** A button that opens a small popover of choices (colour, weight, size). */
+/** A button that opens a small popover of choices (color, weight, size). */
 export function SelectionToolbarMenu({ label, trigger, children }: { label: string; trigger: ReactNode; children: ReactNode }) {
   return (
     <Popover>
@@ -305,7 +305,7 @@ export const COLOR_LABEL: Record<ShapeColor, string> = {
   teal: "Teal",
 };
 
-/** A labelled row of options (stroke weight, dash, text size). */
+/** A labeled row of options (stroke weight, dash, text size). */
 export function ChoiceRow<V extends string>({
   label,
   value,

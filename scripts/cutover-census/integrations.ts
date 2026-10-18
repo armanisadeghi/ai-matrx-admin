@@ -373,7 +373,7 @@ export const INTEGRATIONS: Integration[] = [
   {
     id: "F19", repo: "matrx-frontend", plan: "R", disposition: "repointed",
     what: "Outbound webhooks on a table's changes",
-    why: "INTEG-CLIENTS 8f84843995: store-table webhook (G4); older row.* labelled",
+    why: "INTEG-CLIENTS 8f84843995: store-table webhook (G4); older row.* labeled",
     plain: "a table webhook still listens only to older row events",
     owner: "matrx-frontend features/files/webhooks",
     claims: { "matrx-frontend": ["features/files/webhooks/**"] },
@@ -400,7 +400,7 @@ export const INTEGRATIONS: Integration[] = [
     plain: "", owner: "—",
     claims: { "matrx-frontend": ["app/api/cms/collections/route.ts", "features/cms/services/cmsService.ts", "app/(core)/cms/**"] },
   },
-  { id: "F23", repo: "matrx-frontend", plan: "—", disposition: "nothing", what: "Mandates console's udt_name (a catalogue column)", why: "not the store", plain: "", owner: "—" },
+  { id: "F23", repo: "matrx-frontend", plan: "—", disposition: "nothing", what: "Mandates console's udt_name (a catalog column)", why: "not the store", plain: "", owner: "—" },
   { id: "F24", repo: "matrx-frontend", plan: "—", disposition: "nothing", what: "platform.saved_view for MatrxDataTable / CRM", why: "not the older store", plain: "", owner: "—" },
   { id: "F25", repo: "matrx-frontend", plan: "—", disposition: "nothing", what: "Documents (udt_documents)", why: "OUT of scope", plain: "", owner: "—" },
   {

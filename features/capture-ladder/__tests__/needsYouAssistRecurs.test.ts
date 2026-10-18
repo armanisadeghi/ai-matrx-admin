@@ -20,7 +20,7 @@ import type { CaptureHandoff } from "@/features/capture-ladder/types";
 
 const emitted: unknown[] = [];
 const resolved: string[][] = [];
-/** Keys the person DISMISSED. The mock honours the real function's contract. */
+/** Keys the person DISMISSED. The mock honors the real function's contract. */
 let silencedByAPerson = new Set<string>();
 
 jest.mock("@/features/assists/service", () => ({
@@ -122,7 +122,7 @@ describe("the waiting-for-your-browser notice recurs", () => {
     expect(emitted).toHaveLength(1);
 
     // Episode two: a new page is queued. The person was never asked anything,
-    // so there is nothing to honour — they must be told.
+    // so there is nothing to honor — they must be told.
     const outcome = await produceNeedsYouAssist({
       userId: USER,
       organizationId: ORG,

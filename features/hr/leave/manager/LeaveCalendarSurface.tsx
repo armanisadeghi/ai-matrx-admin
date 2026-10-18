@@ -23,7 +23,7 @@
  *  1. **§10's overlap-warning band.** The amber band fires when more people are out on a day
  *     than `staffing_requirement` or a blackout's `max_concurrent_out` permits — and
  *     `hr_leave_calendar` returns NEITHER threshold (verified against the live function body,
- *     2026-08-27). A band drawn without one would be this screen inventing a staffing judgement
+ *     2026-08-27). A band drawn without one would be this screen inventing a staffing judgment
  *     nobody configured. What ships instead is the honest half: the number of people out on
  *     each day, which is the fact the band would have been derived from.
  *  2. **§10's team / leave-type / policy filters.** `hr.leave_calendar` DECLARES `p_filters`
@@ -286,7 +286,7 @@ function DayCell({
           {parseIsoDay(day).getUTCDate()}
         </span>
         {/*
-          The FACT, not a judgement. §10's amber band needs a threshold this door does not
+          The FACT, not a judgment. §10's amber band needs a threshold this door does not
           return; the count is what the band would have been derived from.
         */}
         {entries.length > 0 ? (

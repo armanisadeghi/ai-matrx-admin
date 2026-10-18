@@ -1,6 +1,6 @@
 // features/research/admin/template-detail.test.ts
 //
-// A RESEARCH TEMPLATE'S SETTINGS ARE LABELLED FIELDS, NEVER RAW JSON.
+// A RESEARCH TEMPLATE'S SETTINGS ARE LABELED FIELDS, NEVER RAW JSON.
 //
 // The try-everything guide (2026-09-23, step 21) opened a template's own
 // `/detail/research_template/<id>` page and found five settings columns —
@@ -40,7 +40,7 @@ function field(fields: ReturnType<typeof researchTemplateDetailFields>, key: str
   return fields.find((f) => f.key === key);
 }
 
-describe("researchTemplateDetailFields — labelled settings, never a JSON block", () => {
+describe("researchTemplateDetailFields — labeled settings, never a JSON block", () => {
   it("never renders a field in monospace — no field carries `mono: true`", () => {
     // `mono: true` is exactly the generic formatter's marker for "this is a
     // JSON.stringify dump" (`lib/detail/format.ts`). A curated field list has
@@ -63,7 +63,7 @@ describe("researchTemplateDetailFields — labelled settings, never a JSON block
     expect(tags?.text).toBe("overview, services, leadership");
   });
 
-  it("unpacks default_search_params into one labelled field per key, not a JSON object", () => {
+  it("unpacks default_search_params into one labeled field per key, not a JSON object", () => {
     const fields = researchTemplateDetailFields(ROW);
     const country = field(fields, "default_search_params:country");
     expect(country).toBeDefined();
@@ -75,7 +75,7 @@ describe("researchTemplateDetailFields — labelled settings, never a JSON block
     }
   });
 
-  it("renders every configured agent role as a real door, labelled by what it does — never a bare id in a bracket", () => {
+  it("renders every configured agent role as a real door, labeled by what it does — never a bare id in a bracket", () => {
     const fields = researchTemplateDetailFields(ROW);
     const updater = field(fields, "updater_agent_id");
     expect(updater?.label).toBe("Research Report Updater");

@@ -149,7 +149,7 @@ export function ContentPlanHeader() {
 
   // The routed site resolved to nothing the caller can read (same settled
   // condition as the workbench body, which renders the AccessGate). A full
-  // picker labelled "Pick a site" over a gated record is a lie — the user DID
+  // picker labeled "Pick a site" over a gated record is a lie — the user DID
   // pick one — and its view tabs all lead into the same refusal. Mirror the
   // MarketingSiteLayoutClient FallbackHeader: a back door and nothing else;
   // the gate below owns the explanation.

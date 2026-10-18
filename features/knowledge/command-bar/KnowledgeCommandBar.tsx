@@ -3,7 +3,7 @@
 /**
  * ⌘K — "Search your knowledge", everywhere (KNOWLEDGE-HUB.md §5.1, phase H2).
  *
- * The behaviours are copied from named champions, on purpose:
+ * The behaviors are copied from named champions, on purpose:
  *  - Raycast: one list for results AND commands, top hit pinned first, ↵ acts
  *    on the selected row, ⌘K on a row opens its ACTION PANEL (Open · File
  *    under… · Attach to this chat · Copy link · Share), Esc steps back out.
@@ -982,7 +982,7 @@ export default function KnowledgeCommandBar({
         className="bg-transparent"
       >
       {/* The dialog's own close button sits 16px from the top; this header row
-          is ~48px tall, so centre the button on it. */}
+          is ~48px tall, so center the button on it. */}
       <style>{`[role="dialog"]:has([data-testid="knowledge-command-bar"]) > button.absolute { top: 0.25rem; }`}</style>
       <div data-testid="knowledge-command-bar" className="flex min-h-0 flex-col">
         <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-3 py-2 pr-12">

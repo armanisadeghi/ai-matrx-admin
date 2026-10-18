@@ -30,7 +30,7 @@
  * which is why this guard is a CENSUS of the page rather than a reproduction
  * of the one link the walk happened to press.
  *
- * The primitive's own held-arrival behaviour is proven in
+ * The primitive's own held-arrival behavior is proven in
  * `lib/deep-link/useDeepLinkArrival.test.tsx` ("holds the arrival until the
  * record it needs has loaded, never drops it"); this file proves the page
  * actually USES it.

@@ -117,7 +117,7 @@ describe("a stalled section never freezes the run", () => {
       const n = sectionOf(opts.variables);
       attempts[n] = (attempts[n] ?? 0) + 1;
       if (n === "4" && attempts[n] === 1) {
-        throw new Error("Postgres cancelled this statement to break a lock collision (55P03)");
+        throw new Error("Postgres canceled this statement to break a lock collision (55P03)");
       }
       return cards(n) as never;
     });

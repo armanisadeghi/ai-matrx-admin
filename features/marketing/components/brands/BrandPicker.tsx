@@ -12,7 +12,7 @@ import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganiza
 
 /**
  * `organizationId` null = brands across ALL the person's organizations, each
- * labelled with its organization when they belong to more than one (the org is
+ * labeled with its organization when they belong to more than one (the org is
  * a label, never a filter or a group — active-org law). Pass an id only to
  * narrow to a record's own organization.
  */

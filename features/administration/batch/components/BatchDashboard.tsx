@@ -14,7 +14,7 @@
  * there was no surface anywhere that showed it. It is therefore an alert
  * band at the top, not a number in a row.
  *
- * Modelled on Stripe's payments dashboard (a money-truth band over a dense,
+ * Modeled on Stripe's payments dashboard (a money-truth band over a dense,
  * filterable ledger) and Linear's issue list (chip filters, quiet rows,
  * expand in place). Reads go straight to Supabase under RLS; the tables are
  * `ledger` — the server writes, admins read.

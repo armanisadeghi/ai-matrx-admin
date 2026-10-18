@@ -133,7 +133,7 @@ describe("the board model", () => {
     };
     const board = new BoardStore<Tile>({ tiles, shapes: [arrow] });
     const before = connectorEnds(board.shapes[0], board.targetOf);
-    expect(before[1].x).toBeGreaterThan(200); // clipped to the tile's right edge, not its centre
+    expect(before[1].x).toBeGreaterThan(200); // clipped to the tile's right edge, not its center
     expect(before[1].x).toBeLessThan(220);
     board.moveTile("t1", 0, 300);
     const after = connectorEnds(board.shapes[0], board.targetOf);

@@ -5,7 +5,7 @@
  * the header. Every action targets a saved cloud file (the /[id] route
  * guarantees `sourceCloudFileId` is non-null by the time the user gets here).
  *
- * Catalogue exposed:
+ * Catalog exposed:
  *   • Adjust — popover with brightness / contrast / saturation / sharpness
  *     sliders → op="adjust" on POST /images/edit
  *   • Auto color — one-click → op="auto_color"

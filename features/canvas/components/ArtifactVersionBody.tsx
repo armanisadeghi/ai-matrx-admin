@@ -4,7 +4,7 @@
  * One selected artifact version, as a person reads it (KIND_NEVER_RAW S5,
  * round 4): the version's data through `AnswerValueView` (a kind → its own
  * component), never `JSON.stringify` in a `<pre>`. The stored text stays what
- * restore and the diff read; "View JSON" is the explicit, labelled raw toggle.
+ * restore and the diff read; "View JSON" is the explicit, labeled raw toggle.
  */
 
 import React, { useState } from "react";

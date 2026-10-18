@@ -7,7 +7,7 @@
  * get subtly wrong at each one:
  *
  * 🚨 **THE DOOR IS A PATCH, AND "NOT MENTIONED" IS NOT "SET TO NULL".** Every optional column
- * carries its own `p_set_*` flag precisely so that changing a name cannot erase a colour the
+ * carries its own `p_set_*` flag precisely so that changing a name cannot erase a color the
  * caller never mentioned — which is what the older `public.cat_update` does, and what several of
  * these call sites were working around by hand. The flag says "I am writing this column"; the
  * value says what to write. Omitting the value while setting the flag writes NULL, which is how

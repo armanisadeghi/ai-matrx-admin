@@ -99,7 +99,7 @@ function DimensionRow({ d }: { d: PlanDimension }) {
     used !== null && limit !== null && limit > 0
       ? Math.min(100, Math.round((used / limit) * 100))
       : 0;
-  // Colour only earns attention near the top of the range; a bar that is red at
+  // Color only earns attention near the top of the range; a bar that is red at
   // 40% teaches people to ignore it.
   const tone =
     pct >= 100 ? "bg-destructive" : pct >= 80 ? "bg-amber-500" : "bg-primary";

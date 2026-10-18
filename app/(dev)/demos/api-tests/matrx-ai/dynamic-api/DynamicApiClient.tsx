@@ -640,7 +640,7 @@ export default function DynamicApiClient() {
       setTiming({ start, end: Date.now() });
       if (controller.signal.aborted) {
         setExecStatus("idle");
-        toast.info("Cancelled");
+        toast.info("Canceled");
       } else {
         const msg = getUserMessage(err) || "Request failed";
         setErrorMessage(msg);

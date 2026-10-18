@@ -6,7 +6,7 @@
 // gallery and Airtable Universe — filter by industry, job and feature; every card says what it
 // installs; preview before install; one-click install with live progress.
 //
-// ONE SOURCE (G3): every card is read through the catalogue door `custom.templates` (card fields
+// ONE SOURCE (G3): every card is read through the catalog door `custom.templates` (card fields
 // only; `installed_in` marks what the active organization already has). Install, remove and
 // restore go through the family's budgeted doors with `runTemplateDoor` from
 // `@ai-matrx/records/templates` — each call does what fits its budget and the progress ticks per
@@ -16,7 +16,7 @@
 // imports `@ai-matrx/records*` a registered runtime entry that reads the store switch. This file is
 // that one entry ("make-template-gallery"). No store switch is asked — the store is never off.
 //
-// ORGANIZATIONS (access ladder): the catalogue read is not filtered by the active organization
+// ORGANIZATIONS (access ladder): the catalog read is not filtered by the active organization
 // (platform cards are everyone's). The active organization only names where an install lands and
 // whose saved templates fill "Your organization's" row. With none chosen, Install asks for one and
 // then proceeds — it never picks a default.
@@ -72,12 +72,12 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 export const templatePreviewHref = (id: string) => `/templates/${encodeURIComponent(id)}`;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The catalogue door.
+// The catalog door.
 // ─────────────────────────────────────────────────────────────────────────────
 
 type Read<T> = { phase: "reading" } | { phase: "failed"; why: string } | { phase: "read"; data: T };
 
-/** Every card the filter matches: the door pages at 200, so a long catalogue is read to its end. */
+/** Every card the filter matches: the door pages at 200, so a long catalog is read to its end. */
 async function readCatalogue(filter: Record<string, unknown>): Promise<{ total: number; cards: GalleryCard[] }> {
   const doors = storeDoors(createClient());
   const cards: GalleryCard[] = [];
@@ -118,11 +118,11 @@ function useCatalogue(key: string | null, filter: Record<string, unknown>): Read
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function TemplateGallerySection() {
-  // org-filter: write-target the active organization is where an install lands and whose saved templates fill its own row; the catalogue itself is read unfiltered
+  // org-filter: write-target the active organization is where an install lands and whose saved templates fill its own row; the catalog itself is read unfiltered
   const active = useOrganizationRequired();
   const organizationId = active.organizationState === "ready" ? active.organizationId : null;
   const [filters, setFilters] = useState<GalleryFilters>({});
-  // Facets come from the whole catalogue, so a filter never offers a value that returns nothing.
+  // Facets come from the whole catalog, so a filter never offers a value that returns nothing.
   const all = useCatalogue("all", galleryFilter({}));
   const filterKey = JSON.stringify({ ...filters, organizationId });
   const shown = useCatalogue(filterKey, galleryFilter(filters, { scope: "platform", installedIn: organizationId }));

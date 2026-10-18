@@ -1034,7 +1034,7 @@ export function runShapeDoctor(input: ShapeDoctorInput): ShapeDoctorReport {
       } else {
         loading = {
           status: "warn",
-          detail: `UNKNOWN slug "${declaredLoading}" (${loadingSource}) — not in the loading library; ignored at runtime in favour of the derived silhouette`,
+          detail: `UNKNOWN slug "${declaredLoading}" (${loadingSource}) — not in the loading library; ignored at runtime in favor of the derived silhouette`,
         };
         reds.push({
           severity: "red",

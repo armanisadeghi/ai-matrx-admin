@@ -36,7 +36,7 @@ export function MandateBrowseCards({
       {rows.map((row) => {
         const layer = layerMeta(row.resolved_layer);
         const health = healthMeta(row.health);
-        // See MandateBrowseRows: a dropped rung gets words, not just a colour.
+        // See MandateBrowseRows: a dropped rung gets words, not just a color.
         const dropped = healthExplanation(row.health);
         return (
           <article

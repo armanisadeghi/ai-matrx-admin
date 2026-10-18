@@ -28,7 +28,7 @@ export interface MicrosoftConnection {
   readonly id: string;
   readonly accountEmail: string | null;
   readonly accountName: string | null;
-  /** Delegated Graph scopes Microsoft actually returned, normalised. */
+  /** Delegated Graph scopes Microsoft actually returned, normalized. */
   readonly scopes: readonly string[];
   readonly status: string;
   readonly lastVerifiedAt: string | null;

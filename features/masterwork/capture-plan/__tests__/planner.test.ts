@@ -524,7 +524,7 @@ describe("G3 — the plan ends itself", () => {
     expect(stop.reason).toBe("horizon_reached");
   });
 
-  it("honours `horizon_only` — a flat curve does not end that plan", () => {
+  it("honors `horizon_only` — a flat curve does not end that plan", () => {
     const plan = planWith(
       [
         { method: "monologue", ruleIds: [] },

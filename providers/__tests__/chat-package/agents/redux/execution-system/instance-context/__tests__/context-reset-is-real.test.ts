@@ -101,7 +101,7 @@ describe("instance context — reset really clears", () => {
     ).toEqual([]);
   });
 
-  it("removeContextEntry drops exactly one key and keeps the merge behaviour", () => {
+  it("removeContextEntry drops exactly one key and keeps the merge behavior", () => {
     const store = makeStore();
     store.dispatch(
       setContextEntries({

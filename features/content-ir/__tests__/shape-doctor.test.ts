@@ -666,7 +666,7 @@ describe("shape doctor — n/a classification", () => {
   // The undeclared branch has THREE honest states once the runtime derives a
   // loader from the kind's own schema (react/loading/infer-loading-slug.ts):
   // derived => ok and silent, not derivable => the yellow (now a true claim),
-  // and no map at all => exactly the pre-inference behaviour.
+  // and no map at all => exactly the pre-inference behavior.
   describe("loading column — undeclared kinds and the derived loader", () => {
     const renderable = (id: string): DoctorKindComponent => ({
       id: `c-${id}`,
@@ -727,7 +727,7 @@ describe("shape doctor — n/a classification", () => {
       expect(finding.message).toContain("not distinctive enough to derive one");
     });
 
-    it("a caller supplying NO inferred map keeps the exact pre-inference behaviour", () => {
+    it("a caller supplying NO inferred map keeps the exact pre-inference behavior", () => {
       const report = run(undefined);
       for (const kind of ["derivable", "shapeless"]) {
         expect(row(report, kind).assets.loading.status).toBe("missing");
@@ -1528,7 +1528,7 @@ describe("derived-schema-rejects-example — the browser's field model must acce
 
   it("does not flag a plain nested pydantic model (an undeclared $def converts in place)", () => {
     expect(
-      reds(makeKind({ kind: "applet_build_result", isActive: true, emittedJsonSchema: APPLET_SCHEMA, sampleData: { applet: { name: "Favourite Movies" }, note: "Built it." } })),
+      reds(makeKind({ kind: "applet_build_result", isActive: true, emittedJsonSchema: APPLET_SCHEMA, sampleData: { applet: { name: "Favorite Movies" }, note: "Built it." } })),
     ).toEqual([]);
   });
 

@@ -144,7 +144,7 @@ const FIX =
 
 /**
  * THE SCRATCH PREFIX (DC-027 #8, 2026-09-15). Every live self-test that registers a scratch
- * relation names it `zz_<guard>_selftest_<run>` so it is recognisable and sorts last. A `zz_` row in
+ * relation names it `zz_<guard>_selftest_<run>` so it is recognizable and sorts last. A `zz_` row in
  * the live registry is a teardown that did not finish; a `zz_` token in the INSTALLED package is
  * that leftover already shipped to every client. Both happened: `check:staff-door --self-test` left
  * `zz_staff_door_selftest_mu0wnnb1_token` registered on 2026-09-14, aidream f1b781fb2 synced it,

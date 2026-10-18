@@ -164,7 +164,7 @@ export default function DeferredSingletonCore() {
         <TutorialHost />
       </Suspense>
       {/* Render-free. Reads `?org=` — the organization every deep link the
-          platform emits now names — and honours it against the LIVE membership
+          platform emits now names — and honors it against the LIVE membership
           list, announcing a move and refusing a link that is not this
           account's in words. Global, because a notification's door can land on
           any route, and the cold-boot half (appContextPolicy) does not run for

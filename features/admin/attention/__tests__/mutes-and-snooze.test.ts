@@ -62,7 +62,7 @@ describe("local item mutes", () => {
     expect(map["outages:b"]).toBeUndefined();
   });
 
-  it("an expired mute is pruned as it is read — never honoured", () => {
+  it("an expired mute is pruned as it is read — never honored", () => {
     muteItem("outages:a", MUTE_CHOICES[0].ms, NOW);
     expect(readMuteMap(NOW + MUTE_CHOICES[0].ms + 1)).toEqual({});
     expect(JSON.parse(window.localStorage.getItem("matrx.admin-attention.muted") ?? "{}")).toEqual({});

@@ -68,7 +68,7 @@ function CopyButton({
   );
 }
 
-/** One line of a unified diff, coloured by its marker. */
+/** One line of a unified diff, colored by its marker. */
 function DiffLine({ line }: { line: string }) {
   const tone = line.startsWith("+++")
     ? "text-muted-foreground"

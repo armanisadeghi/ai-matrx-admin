@@ -3,7 +3,7 @@
 // features/settings/universal/UniversalSettingsContext.tsx
 //
 // ONE read of the configuration registry for the whole settings surface. The
-// left nav and the centre pane are different component trees, and both need
+// left nav and the center pane are different component trees, and both need
 // the same answer ("which domains have settings, and what are they?"), so the
 // read lives in a provider mounted once by each settings shell rather than
 // fetched twice with two chances to disagree.
@@ -133,7 +133,7 @@ export function resolverRequestForTarget({
  * their own value. That list is a different shape from a rung: there are many
  * rows at one rung, they are discovered rather than supplied by the host, and
  * reading them for all ~600 registered keys on every page load would be a
- * catalogue read nobody asked for. So the state is a cache keyed by full key,
+ * catalog read nobody asked for. So the state is a cache keyed by full key,
  * filled when a person opens that key's exceptions.
  */
 export type RungOverridesState =

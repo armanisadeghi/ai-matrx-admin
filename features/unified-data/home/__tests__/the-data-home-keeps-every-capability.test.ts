@@ -1,7 +1,7 @@
 /**
  * THE REBUILT DATA HOME KEEPS EVERY CAPABILITY OF TODAY'S PAGE (DATA-HOME-3-SPEC §3 census, Lane A
  * acceptance 7 and the source-grep half of 5). Adopt, never replace: each of the 18 census items is
- * asserted on the new page — behaviourally where the rows decide it, by reading the source where
+ * asserted on the new page — behaviorally where the rows decide it, by reading the source where
  * it is wiring.
  */
 import { readFileSync } from "node:fs";

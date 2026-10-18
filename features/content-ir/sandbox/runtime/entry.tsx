@@ -121,7 +121,7 @@ class FrameErrorBoundary extends React.Component<
  * ELEMENT, never on `<html>`.
  *
  * 🚨 WHY NOT ON THE ROOT. `color-scheme: dark` on the root element makes the
- * browser paint the document's CANVAS with its own dark colour (#121212), and
+ * browser paint the document's CANVAS with its own dark color (#121212), and
  * a canvas is opaque. The frame is deliberately transparent so whatever
  * surface the host placed it on — a card, a chat bubble, the page — shows
  * through and the component looks the same framed as unframed. Measured in

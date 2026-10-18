@@ -242,7 +242,7 @@ const STANDARD_COLUMNS = new Set([
   "archived_by", "organization_id", "user_id", "owner_id", "project_id", "version", "is_public", "is_archived",
   "is_active", "metadata", "sort_order", "position",
 ]);
-/** A table whose other columns are all in here is a labelled bag. */
+/** A table whose other columns are all in here is a labeled bag. */
 const LABEL_BAG = new Set(["label", "slug", "name", "title", "description", "category_id", "kind", "type", ...BAG_COLUMNS]);
 
 function blankSql(text: string): string {

@@ -77,7 +77,7 @@ export function ContainerResourceSheet({
         const { data, error } = await q;
         if (error) throw error;
         // MATRX-EXCEPTION: table + title column are resolved from the org
-        // resource catalogue at runtime (any cardable kind), so the row
+        // resource catalog at runtime (any cardable kind), so the row
         // shape cannot be a compile-time DbRpcRow guard.
         const rows = (data ?? []) as unknown as Array<Record<string, unknown>>;
         const byId = new Map<string, Item>(
@@ -193,7 +193,7 @@ export function ContainerResourceSheet({
                     {/* Was: an inert <span> title, a hand-rolled Eye peek
                         button, and a hand-rolled new-tab <a> — i.e. a local
                         copy of EntityRef missing the Open door entirely.
-                        Resolved by TOKEN, not by `entry.key`: six catalogue
+                        Resolved by TOKEN, not by `entry.key`: six catalog
                         keys differ from their canonical token and would
                         silently lose both the route and the peek. */}
                     <EntityRef

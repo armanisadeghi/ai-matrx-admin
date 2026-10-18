@@ -44,7 +44,7 @@
  * trailing-zero decimal `1000.0` / `1024.0`, and the computed bases `2 ** 20`,
  * `10 ** 6`, `Math.pow(2, 20)`, `Math.pow(10, 6)`. LEFT OPEN, with the reason:
  *   · `bytes >> 20` (bit-shift division). A new OPERATOR arm, and `>> 10` is
- *     ordinary in hashing, colour maths and bit packing, so the arm would have
+ *     ordinary in hashing, color maths and bit packing, so the arm would have
  *     to carry its own false-positive story for a spelling nobody writes.
  *   · `Intl.NumberFormat(…, { unit: "megabyte" })` and `.toExponential()`. Not
  *     arithmetic at all: no divisor and no unit literal, so neither the divisor

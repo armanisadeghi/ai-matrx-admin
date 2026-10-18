@@ -50,7 +50,7 @@ const grid = (points: GridPoint[], over: Partial<GridResultData["summary"]> = {}
 });
 
 describe("bubbleFor", () => {
-  it("colours a found rank by band", () => {
+  it("colors a found rank by band", () => {
     expect(bubbleFor(pt({ rank: 2 }), 20)).toMatchObject({ text: "2", tone: "top3" });
     expect(bubbleFor(pt({ rank: 7 }), 20)).toMatchObject({ text: "7", tone: "top10" });
     expect(bubbleFor(pt({ rank: 15 }), 20)).toMatchObject({ text: "15", tone: "ranked" });

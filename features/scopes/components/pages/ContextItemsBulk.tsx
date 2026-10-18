@@ -83,7 +83,7 @@ function buildActions(
           fields: [{ name: "category", prompt: "Category" }],
         });
         const category = answers?.category?.trim();
-        // Cancelled or empty: resolve with nothing so the selection stays.
+        // Canceled or empty: resolve with nothing so the selection stays.
         if (!category) return;
         return runPerRow(
           selection,

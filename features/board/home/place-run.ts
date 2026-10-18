@@ -3,7 +3,7 @@
  * Start panel, a picker, a paste, a drop.
  *
  * A RUN of adds fills the view in reading order (`placeInFlow`): the first
- * tile lands centred where the person is looking, the next ones fill the row
+ * tile lands centerd where the person is looking, the next ones fill the row
  * across the view, then the next row down — like text (Miro, FigJam). The run
  * continues while the person's view is where the last add left it; a pan or
  * zoom starts a new run where they now look.
@@ -11,7 +11,7 @@
  * The camera never flies to a new tile any more: it pans by the smallest
  * amount that brings it on screen, and only when it is not (`revealCamera`).
  * Flying to each new tile is what made 15 adds a 7,000-unit staircase: the
- * next add searched from the centre of the last one.
+ * next add searched from the center of the last one.
  *
  * A drop passes `at` (the drop point): the tile goes to the nearest free spot
  * there and no run is kept.
@@ -41,12 +41,12 @@ const REVEAL_MARGIN = 48;
 /**
  * THE READABLE FLOOR FOR ADDING. A tile added while the person is zoomed out past this (a Fit of 12
  * tiles sits at ~15%, title-card level) would land as a speck in a gap — "I added a War Room and
- * nothing appeared" — so an add measures and places at this zoom around the view's centre and the
+ * nothing appeared" — so an add measures and places at this zoom around the view's center and the
  * camera flies there. Fit itself never changes: it stays exact (every tile in view, whatever the zoom).
  */
 export const READABLE_ADD_ZOOM = 0.5;
 
-/** The view as it is at the readable floor (same centre), or itself when it is already readable. */
+/** The view as it is at the readable floor (same center), or itself when it is already readable. */
 export function atReadableZoom(view: PlacementView): PlacementView {
   if (view.camera.z >= READABLE_ADD_ZOOM) return view;
   const { camera, size, insets } = view;
@@ -121,7 +121,7 @@ export function placeTiles<T extends BoardTileBase>(
   return { rects, run: { flow, camera: reveal ?? view.camera }, reveal };
 }
 
-/** The world point at the centre of the board area not under chrome. */
+/** The world point at the center of the board area not under chrome. */
 export function clearViewCentre(view: PlacementView): { x: number; y: number } {
   const { camera, size, insets } = view;
   return screenToWorld(

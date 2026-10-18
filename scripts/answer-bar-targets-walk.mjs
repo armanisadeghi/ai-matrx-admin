@@ -1,7 +1,7 @@
 // scripts/answer-bar-targets-walk.mjs — THE ANSWER-BAR HIT-TARGET GUARD (live).
 //
 // Defect (verifier round 2, 2026-09-27): at 375px the answer ⋯ overlapped 👍,
-// so tapping the centre of 👍 opened the menu — compact modal (5px) and the
+// so tapping the center of 👍 opened the menu — compact modal (5px) and the
 // Chat window (19px), where an 8th target ("Continue in chat mode") made the
 // row wider than the host. The row squeezed instead of wrapping, and the 44px
 // touch targets spilled under the ⋯. Fix: the answer bar wraps
@@ -10,7 +10,7 @@
 // jsdom computes no layout, so this measures the REAL app in a real engine at
 // 375x812 with a coarse pointer, as admin@admin.com, on each host you name:
 //   • no two targets in one answer bar overlap;
-//   • the element under the centre of each target IS that target;
+//   • the element under the center of each target IS that target;
 //   • no target is clipped off the viewport;
 //   • every target is at least 44x44 (the ⋯-less copy chip may be 40).
 // Exit 1 on any failure. Needs the shared dev server (:3001).
@@ -58,7 +58,7 @@ try {
           if (r.height < min || r.width < min - 4) problems.push(`${label} is ${Math.round(r.width)}x${Math.round(r.height)}`);
           if (r.left < 0 || r.right > innerWidth) problems.push(`${label} is clipped`);
           const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-          if (hit && r.top >= 0 && r.bottom <= innerHeight && !(hit === el || el.contains(hit))) problems.push(`centre of ${label} hits ${hit.closest("button")?.getAttribute("aria-label") ?? hit.tagName}`);
+          if (hit && r.top >= 0 && r.bottom <= innerHeight && !(hit === el || el.contains(hit))) problems.push(`center of ${label} hits ${hit.closest("button")?.getAttribute("aria-label") ?? hit.tagName}`);
           for (let j = i + 1; j < boxes.length; j++) {
             const b = boxes[j].r;
             const ox = Math.min(r.right, b.right) - Math.max(r.left, b.left);

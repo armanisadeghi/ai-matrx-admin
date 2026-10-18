@@ -381,7 +381,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "task_status",
     label: "Task status",
     description:
-      "Stages a lifecycle status into the draft. One of: inbox | planned | active | completed | cancelled | dismissed. The user still saves.",
+      "Stages a lifecycle status into the draft. One of: inbox | planned | active | completed | canceled | dismissed. The user still saves.",
     valueType: "string",
     updatesValue: "active_task_lifecycle_status",
     mode: "draft",

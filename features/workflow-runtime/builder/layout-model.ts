@@ -2,7 +2,7 @@
  * The builder's layout model — ORDER + SIZE, never coordinates.
  *
  * The stored document keeps Grafana-style `{x, y, w, h}` grid positions
- * (surface/config.ts, ruling R7) and the renderer keeps honouring them. But a
+ * (surface/config.ts, ruling R7) and the renderer keeps honoring them. But a
  * person authoring a run page must never see, type, or drag a coordinate: the
  * old builder's x/y/w/h steppers are exactly the "no alignment, no
  * consideration of how a human would interact with this" that this rebuild

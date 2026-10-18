@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The floating toolbar's sections for drawn shapes (stroke colour, fill,
+ * The floating toolbar's sections for drawn shapes (stroke color, fill,
  * weight / dash / opacity, text size and alignment) and for any selection
  * (layer order, duplicate, delete). Each change is ONE undo step across
  * everything selected (`BoardStore.restyleShapes`). See `SelectionToolbar`.
@@ -62,8 +62,8 @@ export function shapeStyleSection<T extends BoardTileBase>(board: BoardStore<T>)
 }
 
 /**
- * One colour for a MIXED selection (shapes, strokes and text together): shown only when the toolbar
- * folds the per-type controls, and only when every selected object takes a stroke colour.
+ * One color for a MIXED selection (shapes, strokes and text together): shown only when the toolbar
+ * folds the per-type controls, and only when every selected object takes a stroke color.
  */
 export function sharedColorSection<T extends BoardTileBase>(board: BoardStore<T>): SelectionToolbarSection {
   const b = board as unknown as AnyBoard;

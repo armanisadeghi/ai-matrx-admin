@@ -9,7 +9,7 @@
  * Every Masterwork ingest dialog drew the same footer: a "Cancel" button that
  * was `disabled={running}`. So for the two to five minutes a distillation
  * actually takes — the only minutes in which anybody would want to stop it —
- * the control was greyed out, and closing the dialog any other way left the run
+ * the control was grayed out, and closing the dialog any other way left the run
  * (and its spend) going on the server. The census recorded it as "leaving, not
  * stopping"; the deeper truth was that `platform.masterwork_run` had no cancel
  * path at all, so an honest Stop was impossible to build.
@@ -18,7 +18,7 @@
  *
  *   nothing running   → "Cancel" (or whatever the surface calls leaving)
  *   running, stoppable→ "Stop this run" — which really stops it
- *   running, no path  → the leave button, labelled as leaving
+ *   running, no path  → the leave button, labeled as leaving
  *
  * That last branch is the reason `cancel` is nullable rather than a boolean:
  * a domain whose runs cannot be stopped is structurally unable to render a
@@ -81,7 +81,7 @@ export interface DurableRunStoppedProps {
 
 /**
  * What a person sees after they stop something. Deliberately NOT the failure
- * notice: nothing went wrong, so there is no alarm colour, no warning icon and
+ * notice: nothing went wrong, so there is no alarm color, no warning icon and
  * no pressure to try again — only the one fact they will wonder about, which is
  * whether the work that had already landed survived.
  */

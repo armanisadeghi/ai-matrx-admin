@@ -15,7 +15,7 @@ const DESCRIBED: Record<SampleKey, { title: string; blurb: string; icon: StudioT
   candidateProfileShort: { title: "Candidate profile (short)", blurb: "A recruiter's short candidate write-up with headings and bullet lists.", icon: "ListChecks" },
   candidateProfileFull: { title: "Candidate profile (full)", blurb: "The full candidate profile — nested sections, emphasis and lists.", icon: "ListChecks" },
   candidateProfileLimitedMarkdown: { title: "Candidate profile (plain)", blurb: "The same profile with almost no markdown — how plain text renders.", icon: "Quote" },
-  candidateProfileStructured: { title: "Candidate profile (structured)", blurb: "A structured profile with labelled fields.", icon: "Table" },
+  candidateProfileStructured: { title: "Candidate profile (structured)", blurb: "A structured profile with labeled fields.", icon: "Table" },
   appSuggestions: { title: "App suggestions", blurb: "An AI brainstorm of app ideas with numbered sections.", icon: "GitBranch" },
   gptSample: { title: "SEO essentials — GPT", blurb: "GPT's concise SEO checklist.", icon: "BarChart3" },
   googleSampleShort: { title: "SEO essentials — Gemini (short)", blurb: "Gemini's short SEO answer.", icon: "BarChart3" },

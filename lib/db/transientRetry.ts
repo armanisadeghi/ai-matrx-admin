@@ -23,7 +23,7 @@
 //
 // THE CLASS, not the instance: any call in a content-carrying surface that dies
 // on a retryable server condition and hands the caller nothing but the raw
-// Postgres sentence. The remedy is the same everywhere — recognise the codes the
+// Postgres sentence. The remedy is the same everywhere — recognize the codes the
 // server itself calls retryable, try again briefly, and SAY SO when you did.
 //
 // THE THREE RULES THIS FOLLOWS
@@ -88,7 +88,7 @@ interface TransientFact {
 }
 
 const TRANSIENT_SQLSTATES: ReadonlyMap<string, TransientFact> = new Map([
-  // Provably nothing was written: the server itself cancelled or rolled back.
+  // Provably nothing was written: the server itself canceled or rolled back.
   ["57014", { meaning: "the statement was canceled by the server's timeout", mayHaveCommitted: false }],
   ["57P03", { meaning: "the server cannot accept connections yet", mayHaveCommitted: false }],
   ["40001", { meaning: "the transaction lost a serialization race", mayHaveCommitted: false }],

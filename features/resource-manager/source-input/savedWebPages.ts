@@ -1,7 +1,7 @@
 /**
  * "Websites" in Use existing — the web pages a person saved as Sources.
  *
- * The Resources grid's Websites tile has no registry token (its catalogue entry
+ * The Resources grid's Websites tile has no registry token (its catalog entry
  * is the scraper's share key), so the kind inventory (`entity_kind_counts` /
  * `reference_search_candidates`, one token each) cannot count or list it. A
  * saved web page IS a Source row (`docproc.processed_documents`) whose kind is

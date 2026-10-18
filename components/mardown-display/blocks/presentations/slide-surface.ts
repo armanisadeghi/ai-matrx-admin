@@ -1,7 +1,7 @@
 /**
  * The surface a slide is drawn on — decided by the DECK's theme, never by the app's light/dark mode.
  * One pure resolver feeds every drawing path (editor canvas, rail, Present, home cards, share view,
- * PDF, HTML, PPTX), so a slide is the same colours wherever it appears.
+ * PDF, HTML, PPTX), so a slide is the same colors wherever it appears.
  */
 
 import type { CSSProperties } from "react";
@@ -11,7 +11,7 @@ export type SlideSurfaceMode = "light" | "dark";
 
 export interface SlideSurface {
   mode: SlideSurfaceMode;
-  /** The slide's page colour (hex). */
+  /** The slide's page color (hex). */
   background: string;
   /** Body text on the page. */
   foreground: string;
@@ -53,13 +53,13 @@ export function slideSurface(theme: Pick<SlideTheme, "surface" | "backgroundColo
   const lum = bg ? luminance(bg) : null;
   const mode: SlideSurfaceMode = theme?.surface ?? (lum !== null && lum < 0.4 ? "dark" : "light");
   const base = mode === "dark" ? DARK : LIGHT;
-  // A custom background of the matching lightness is honoured; a mismatch (light colour on a dark
+  // A custom background of the matching lightness is honored; a mismatch (light color on a dark
   // surface) would make the text unreadable, so the surface default wins.
   const custom = bg && lum !== null && (lum < 0.4) === (mode === "dark") ? bg.toUpperCase() : null;
   return custom ? { ...base, background: custom } : base;
 }
 
-/** "#RRGGBB" → the "H S% L%" triplet the app's colour tokens use. */
+/** "#RRGGBB" → the "H S% L%" triplet the app's color tokens use. */
 export function hexToHslTriplet(hex: string): string {
   const n = parseInt(hex.replace("#", ""), 16);
   const r = ((n >> 16) & 255) / 255;

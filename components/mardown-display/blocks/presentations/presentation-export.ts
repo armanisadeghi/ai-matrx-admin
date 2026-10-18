@@ -24,7 +24,7 @@ export interface ExportOptions {
     includeMetadata?: boolean;
     /** Build the file and hand it back on the result instead of downloading it (PowerPoint only). */
     returnBlob?: boolean;
-    /** The page colour behind each captured slide (PDF); the deck's surface, default white. */
+    /** The page color behind each captured slide (PDF); the deck's surface, default white. */
     backgroundColor?: string;
     /** The deck's slide size (File → Page setup): the PDF page takes its shape. */
     slideSize?: SlideSize | null;
@@ -59,7 +59,7 @@ export const exportToPDF = async (
         const { filename = presentationTitle, quality = 2, backgroundColor = '#ffffff' } = options;
 
         // A slide is a picture of a surface, so it goes through the browser's own renderer
-        // (gradient text and Tailwind 4 colours survive; html2canvas flattens them), then one PDF
+        // (gradient text and Tailwind 4 colors survive; html2canvas flattens them), then one PDF
         // page each on a page of the deck's slide size (16:9 is 297 x 167 mm) so filling the page never stretches the slide.
         const { renderElement, pagesToPdf } = await import('@ai-matrx/alchemy/operate/capture');
         const pages = [];

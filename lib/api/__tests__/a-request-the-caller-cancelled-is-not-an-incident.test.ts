@@ -1,5 +1,5 @@
 /**
- * A REQUEST THE CALLER CANCELLED IS NOT AN INCIDENT (live 2026-10-01).
+ * A REQUEST THE CALLER CANCELED IS NOT AN INCIDENT (live 2026-10-01).
  *
  * MEASURED: the Error Inspector filed "signal is aborted without reason" for
  * POST /knowledge/search — the search box aborting its own superseded request.
@@ -58,7 +58,7 @@ function search(signal: AbortSignal) {
   } as unknown as Parameters<typeof callApi>[0])(jest.fn(), state, undefined);
 }
 
-describe("callApi and a cancelled request", () => {
+describe("callApi and a canceled request", () => {
   const originalFetch = global.fetch;
   beforeEach(() => {
     captured.length = 0;

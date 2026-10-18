@@ -1,28 +1,28 @@
 /**
- * scripts/check-favicon-letters.ts — TWO CHARACTERS, AND NO TWO TABS OF ONE COLOUR
+ * scripts/check-favicon-letters.ts — TWO CHARACTERS, AND NO TWO TABS OF ONE COLOR
  * MAY WEAR THE SAME BADGE.
  *
- * Every route's browser-tab favicon is a coloured tile carrying a 1–2 character
- * code (or a single emoji). The COLOUR says which family the tab belongs to; the
+ * Every route's browser-tab favicon is a colored tile carrying a 1–2 character
+ * code (or a single emoji). The COLOR says which family the tab belongs to; the
  * letter says which page inside that family.
  *
  * TWO RULES, both from Arman on 2026-09-18/21:
  *
  *  1. **LENGTH — never more than 2 characters.** Three characters is unreadable
- *     at 16px; the glyphs shrink until the badge is a grey smear. When a page
+ *     at 16px; the glyphs shrink until the badge is a gray smear. When a page
  *     will not reduce to two letters, it gets an `emoji` instead (Launchpad is
  *     🚀) — never a third character. 132 three-character codes existed when this
  *     rule landed.
  *
- *  2. **COLLISION IS PER COLOUR.** "Since the color is what sets them apart" —
+ *  2. **COLLISION IS PER COLOR.** "Since the color is what sets them apart" —
  *     `/administration/agents` wears the SAME "AG" as `/agents`, in near-black
  *     instead of rose. So a letter is judged only against the other routes that
- *     resolve to the SAME colour, and two routes where neither is an ancestor of
+ *     resolve to the SAME color, and two routes where neither is an ancestor of
  *     the other may not share one. There is no global uniqueness requirement and
  *     never was a good reason for one: an admin tab and a core tab are already
  *     two different tiles.
  *
- * The colour is resolved by the SHIPPING resolver (`getFaviconConfigByPath`), so
+ * The color is resolved by the SHIPPING resolver (`getFaviconConfigByPath`), so
  * this guard cannot disagree with what the browser renders.
  *
  * WHERE IT LOOKS: `constants/favicon-route-data.ts` (the prefix-matched registry)
@@ -31,7 +31,7 @@
  * corresponds to.
  *
  * THE ESCAPE, for a badge deliberately shared by two unrelated routes of one
- * colour (a compatibility alias, a lab page that DISPLAYS other routes' badges):
+ * color (a compatibility alias, a lab page that DISPLAYS other routes' badges):
  *
  *   // favicon-letter-ok: <why these two tabs may look identical>
  *
@@ -88,8 +88,8 @@ function related(a: string, b: string): boolean {
 }
 
 /**
- * The colour a route's badge actually renders in — the registry's prefix match,
- * or a locked system-family colour. A route we cannot resolve lands in its own
+ * The color a route's badge actually renders in — the registry's prefix match,
+ * or a locked system-family color. A route we cannot resolve lands in its own
  * bucket keyed by the route, which is the conservative reading: we never merge
  * two routes into one family on a guess.
  */
@@ -178,8 +178,8 @@ export function judge(assignments: Assignment[]): Report {
     }
   }
 
-  // Bucket by the colour the badge actually renders in: a letter is only ever
-  // confusable with another letter on the same coloured tile.
+  // Bucket by the color the badge actually renders in: a letter is only ever
+  // confusable with another letter on the same colored tile.
   const byFamily = new Map<string, Assignment[]>();
   for (const a of assignments) {
     const key = `${colorForRoute(a.route)}\u0000${a.letter.toLowerCase()}`;
@@ -224,12 +224,12 @@ function selfTest(): number {
     ["two characters are fine", [A("BT", "/agents/battle/tuning")], "clean"],
     ["an emoji badge is exempt from the cap", [A("🚀", "/launchpad", true)], "clean"],
     [
-      "two unrelated routes of the SAME colour sharing a badge is an offence",
+      "two unrelated routes of the SAME color sharing a badge is an offence",
       [A("BT", "/agents/battle"), A("Bt", "/agents/compare")],
       "collision",
     ],
     [
-      "the same badge on two DIFFERENT colours is fine — the colour sets them apart",
+      "the same badge on two DIFFERENT colors is fine — the color sets them apart",
       [A("AG", "/agents"), A("AG", "/administration/agents")],
       "clean",
     ],
@@ -260,13 +260,13 @@ function selfTest(): number {
     console.log("  ok: route groups are stripped from the derived route");
   }
 
-  // The colour resolver is the half that decides which letters are compared at
+  // The color resolver is the half that decides which letters are compared at
   // all — prove it actually separates admin from core.
   if (colorForRoute("/administration/agents") === colorForRoute("/agents")) {
-    console.error("  SELF-TEST FAILED: admin and core resolve to the same colour");
+    console.error("  SELF-TEST FAILED: admin and core resolve to the same color");
     failed++;
   } else {
-    console.log("  ok: admin and core routes resolve to different colours");
+    console.log("  ok: admin and core routes resolve to different colors");
   }
 
   return failed === 0 ? 0 : 3;
@@ -284,7 +284,7 @@ function main(): number {
   console.log(`check-favicon-letters: ${assignments.length} badge assignments read`);
 
   if (tooLong.length === 0 && collisions.length === 0) {
-    console.log("\nEvery badge is at most 2 characters, and no two tabs of one colour share one.");
+    console.log("\nEvery badge is at most 2 characters, and no two tabs of one color share one.");
     return 0;
   }
 
@@ -294,15 +294,15 @@ function main(): number {
     console.error(
       `\nThree characters is unreadable at 16px. Shorten to two, or — when the page will\n` +
         `not reduce to two letters — give the registry entry an \`emoji\` instead (Launchpad\n` +
-        `is 🚀). The colour already says which family the tab belongs to.`,
+        `is 🚀). The color already says which family the tab belongs to.`,
     );
   }
 
   if (collisions.length > 0) {
-    console.error(`\n${collisions.length} badge(s) worn by unrelated routes of the SAME colour:`);
+    console.error(`\n${collisions.length} badge(s) worn by unrelated routes of the SAME color:`);
     for (const c of collisions) console.error(c);
     console.error(
-      `\nGive each route its own 2-character code within its colour family, or, when two\n` +
+      `\nGive each route its own 2-character code within its color family, or, when two\n` +
         `tabs may genuinely look identical, annotate the line with\n` +
         `  // favicon-letter-ok: <reason>.`,
     );

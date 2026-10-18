@@ -35,7 +35,7 @@ const columns = [
 const config = drillConfigFromColumns(columns, rows, SANDBOX_DRILL);
 
 describe("sandbox drill", () => {
-  it("declares only levels its Dimensions and Measures honour", () => {
+  it("declares only levels its Dimensions and Measures honor", () => {
     expect(drillLevelProblems(config.dimensions, config.measures, { attributeKeys: ["status", "tier", "stop_reason"] })).toEqual([]);
   });
   it("drops nothing it was asked to offer", () => {

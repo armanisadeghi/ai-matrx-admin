@@ -25,7 +25,7 @@
  * dependency array already means an identical re-render does not re-run it, so
  * the latch earns its place only against React's dev-mode double invocation,
  * which jest does not reproduce. The once-per-notice assertions below are
- * therefore a statement of the behaviour a person gets, not a proof of that one
+ * therefore a statement of the behavior a person gets, not a proof of that one
  * line.
  */
 

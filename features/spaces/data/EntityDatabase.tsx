@@ -516,7 +516,7 @@ function EntityBody({ token, entity, view, onOpen, search, onNew }: { token: str
           frameHeight="content"
           fitToWidth={false}
           cellLines="one"
-          // The same table behaviour as a custom table's grid (records-ui Grid): no detail panel and no row
+          // The same table behavior as a custom table's grid (records-ui Grid): no detail panel and no row
           // window of the table's own, a spreadsheet cell cursor — one click selects a cell, Enter opens the
           // record, a typed letter goes to the record window (where a built-in row is written), never to the page.
           detail={{ enabled: false }}

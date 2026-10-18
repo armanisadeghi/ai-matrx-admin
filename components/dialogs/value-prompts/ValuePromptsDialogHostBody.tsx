@@ -67,7 +67,7 @@ export default function ValuePromptsDialogHostBody() {
   const handleOpenChange = React.useCallback(
     (next: boolean) => {
       if (next || !request) return;
-      // Every prompt can be cancelled (Escape, the X, outside click): required fields only
+      // Every prompt can be canceled (Escape, the X, outside click): required fields only
       // disable the submit button; callers get `null`.
       settle(null);
     },

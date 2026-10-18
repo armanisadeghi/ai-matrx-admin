@@ -7,7 +7,7 @@
 // `useAppFlag("name")` (scripts/config-attestation/lib.ts). A computed name is listed as unresolved.
 //
 // An absent flag is `value: undefined` with `ready: true` — the CALLER states what absent means
-// (it must mean today's behaviour). A failed read is `error`, never a quiet default; this hook
+// (it must mean today's behavior). A failed read is `error`, never a quiet default; this hook
 // logs it once per mount.
 import { useEffect, useState } from "react";
 import type { PostgrestError } from "@supabase/supabase-js";
@@ -26,7 +26,7 @@ export function useAppFlag(name: string): AppFlagState {
     let cancelled = false;
     void readAppFlag(name).then(({ value, error }) => {
       if (cancelled) return;
-      if (error) console.error(`[app-flag] flag "${name}" could not be read; its caller keeps current behaviour`, error);
+      if (error) console.error(`[app-flag] flag "${name}" could not be read; its caller keeps current behavior`, error);
       setState({ value, ready: true, error });
     });
     return () => {

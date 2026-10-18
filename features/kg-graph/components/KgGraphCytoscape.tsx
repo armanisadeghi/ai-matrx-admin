@@ -2,7 +2,7 @@
 //
 // The cytoscape render surface — PRESENTATIONAL. It renders the graph container,
 // the minimap, and the on-canvas zoom controls, then wires the app's reactive
-// inputs (data / theme / colour + size encoding / layout / selection / search /
+// inputs (data / theme / color + size encoding / layout / selection / search /
 // fit) to imperative `ops` through thin effects. All cytoscape lifecycle lives in
 // `useKgCytoscape`; all algorithms in `cytoscape/*`.
 //
@@ -122,7 +122,7 @@ export default function KgGraphCytoscape({
 
   // ENCODING → repoint colour/size, lazily running only the analysis the chosen
   // encoding needs (PageRank for importance, Markov for community). Report the
-  // community count so the legend reflects it when colouring by community.
+  // community count so the legend reflects it when coloring by community.
   useEffect(() => {
     const cy = getCy();
     if (!cy) return;

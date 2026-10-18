@@ -80,7 +80,7 @@ describe("a scope badge never says zero before it has counted", () => {
     await act(async () => root.unmount());
   });
 
-  it("a caller that never passes the flag keeps its old, measured behaviour", async () => {
+  it("a caller that never passes the flag keeps its old, measured behavior", async () => {
     const { container, root } = await render(
       <EntityScopeTabs
         scope={makeScope("mine")}

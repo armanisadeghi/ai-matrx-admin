@@ -123,7 +123,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "run_status",
     label: "Run status",
     description:
-      "The engine's status word for the run: pending | running | pausing | paused | interrupted | awaiting_input | cancelling | completed | failed | cancelled (and the engine's other terminal words). Empty while the server has not yet said — never guess the run's state then.",
+      "The engine's status word for the run: pending | running | pausing | paused | interrupted | awaiting_input | canceling | completed | failed | canceled (and the engine's other terminal words). Empty while the server has not yet said — never guess the run's state then.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 12,

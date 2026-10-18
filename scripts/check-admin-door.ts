@@ -36,7 +36,7 @@
  *         three places;
  *      d. the read-kernel fingerprint matches its baseline, so the mirror is
  *         not silently emitting unbounded policies.
- *   2. BEHAVIOURAL — a real org admin who is NOT a platform admin, through
+ *   2. BEHAVIORAL — a real org admin who is NOT a platform admin, through
  *      `public.admin_door_probe`, over a bounded sample per table: the arm
  *      admits 0 rows below `internal` visibility, and 0 such rows are readable
  *      with no ticket (permission / membership / reachability / entity grant /

@@ -1,6 +1,6 @@
 // features/spaces/data/designed-database.ts — the Database Designer's result (mandate `spaces.design_database`)
 // made real: the design JSON is read strictly, its properties become the table's fields (choices with their
-// colours, through the field's `display_format` — the same shape the template installs write), its rows are written
+// colors, through the field's `display_format` — the same shape the template installs write), its rows are written
 // in one call, and its views become the database block's own views. Also the other way round: an existing
 // database read back as the markdown the agent's `current_design` input expects ("Redesign with AI").
 
@@ -104,7 +104,7 @@ export function readDesign(value: unknown): DatabaseDesign {
 
 type NewFieldSpec = NonNullable<Parameters<typeof declareTable>[1]["fields"]>[number];
 
-/** One property as the records door declares it (choices wear their colours through `display_format`, as the template installs write). */
+/** One property as the records door declares it (choices wear their colors through `display_format`, as the template installs write). */
 export function fieldSpec(p: DesignProperty, sort: number): NewFieldSpec {
   const choice = isChoice(p.type);
   const type = p.type === "status" ? "select" : p.type === "date" ? "datetime" : p.type;

@@ -7,7 +7,7 @@
 //
 // The server built that array per viewer kind, which is exactly what makes the
 // sensitivity rule mechanical: a tab whose every field is inaccessible never
-// reaches the client, so it cannot be rendered greyed by accident. A hardcoded
+// reaches the client, so it cannot be rendered grayed by accident. A hardcoded
 // tab list filtered client-side is the review failure this file exists to make
 // impossible — the ONLY local knowledge here is the LABEL for a segment, and an
 // unknown segment gets a humanised fallback rather than being dropped.

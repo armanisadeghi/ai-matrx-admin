@@ -46,7 +46,7 @@ export const TEXT_ALIGNS = ["start", "center", "end"] as const;
 export type TextAlign = (typeof TEXT_ALIGNS)[number];
 export const TEXT_WEIGHTS = ["normal", "bold"] as const;
 export type TextWeight = (typeof TEXT_WEIGHTS)[number];
-/** Sticky note colours (FigJam / Miro); light + dark from `board-accents.css` (`--board-sticky-*`). */
+/** Sticky note colors (FigJam / Miro); light + dark from `board-accents.css` (`--board-sticky-*`). */
 export const STICKY_COLORS = ["yellow", "orange", "pink", "violet", "blue", "green"] as const;
 export type StickyColor = (typeof STICKY_COLORS)[number];
 /** A new sticky's side in world px (FigJam's default square). */
@@ -63,7 +63,7 @@ export interface ShapeStyle {
   textAlign: TextAlign;
   /** Plain canvas text's weight. */
   textWeight: TextWeight;
-  /** A sticky note's colour. */
+  /** A sticky note's color. */
   sticky: StickyColor;
 }
 
@@ -92,7 +92,7 @@ export interface BoardShape {
   points: Point[];
   /** Only what differs from `DEFAULT_SHAPE_STYLE`. */
   style?: Partial<ShapeStyle>;
-  /** Centred text inside a rectangle or oval. */
+  /** Centerd text inside a rectangle or oval. */
   text?: string;
   /** Line / arrow ends attached to objects (they follow them). */
   bind?: ShapeBinding;
@@ -195,13 +195,13 @@ export function strokeWidthOf(shape: Pick<BoardShape, "style">): number {
   return STROKE_WIDTHS[styleOf(shape).size];
 }
 
-/** The CSS colour for a palette key; `alpha` for a fill tint. Light + dark come from the theme. */
+/** The CSS color for a palette key; `alpha` for a fill tint. Light + dark come from the theme. */
 export function shapeColorCss(color: ShapeColor, alpha = 1): string {
   const token = color === "ink" ? "--foreground" : `--board-accent-${color}`;
   return alpha === 1 ? `hsl(var(${token}))` : `hsl(var(${token}) / ${alpha})`;
 }
 
-/** The fill tint's alpha (tldraw's "semi" fill: the colour reads, text on it stays readable). */
+/** The fill tint's alpha (tldraw's "semi" fill: the color reads, text on it stays readable). */
 export const FILL_ALPHA = 0.22;
 
 // ── parsing (the read boundary) ──────────────────────────────────────────────
@@ -325,7 +325,7 @@ const centre = (r: Rect): Point => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
 /** World px between a bound end and its target's outline. */
 const BIND_GAP = 8;
 
-/** Where the ray from the target's centre toward `toward` leaves its outline (+ a small gap). */
+/** Where the ray from the target's center toward `toward` leaves its outline (+ a small gap). */
 function exitPoint(target: BindTarget, toward: Point): Point {
   const c = centre(target.rect);
   const dx = toward.x - c.x;

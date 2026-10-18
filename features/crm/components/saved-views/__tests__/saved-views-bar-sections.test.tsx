@@ -3,7 +3,7 @@
 // Guard (2026-10-03): the CRM views bar showed only views made by me or living in my
 // organizations, so a view shared with me directly never appeared. Views now come from
 // public.saved_view_list_lanes in three sections — Mine, Shared with me, Organization —
-// labelled inline in the bar's one row (no lane row of its own).
+// labeled inline in the bar's one row (no lane row of its own).
 
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";

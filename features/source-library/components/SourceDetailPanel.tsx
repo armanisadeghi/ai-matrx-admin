@@ -245,7 +245,7 @@ export function SourceDetailPanel({
     onClose?: () => void;
     /**
      * Start (or restart) transcription for this video. Optional because the
-     * expensive-click law puts the estimate-and-confirm flow on the catalogue
+     * expensive-click law puts the estimate-and-confirm flow on the catalog
      * screen, not in this panel. When it is not supplied the panel says in words
      * where transcription is started from — it never renders a button that
      * cannot do anything.
@@ -350,7 +350,7 @@ export function SourceDetailPanel({
         ) : (
             <p className="max-w-md text-xs text-muted-foreground">
                 Transcription runs as a job over a selection: select this{" "}
-                {vocabulary.item.one} in the catalogue and choose Transcribe, which shows
+                {vocabulary.item.one} in the catalog and choose Transcribe, which shows
                 the cost before anything runs.
             </p>
         );

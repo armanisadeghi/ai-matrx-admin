@@ -164,7 +164,7 @@ export function OrganizationRequiredNotice({
  * working in" with Sign In / Sign Up in the header directly above it. The link
  * DID carry its organization — `platform.link_carries_its_organization` stamps
  * `?org=<uuid>` onto every in-app notice link and the live rows show it — and
- * `resolveActiveOrgContext` honours that as the rung above the remembered
+ * `resolveActiveOrgContext` honors that as the rung above the remembered
  * choice. None of that can run for somebody the platform has never met. So the
  * sentence names the real state, says the link will still work, and the control
  * is the one that fixes it.
@@ -236,7 +236,7 @@ function SignInFirstNotice({
  * So the states are not a surface's business to spell. Pass the discriminant
  * from `useOrganizationRequired` and this component picks:
  *
- *   `resolving`   → a labelled waiting state that says what is being checked
+ *   `resolving`   → a labeled waiting state that says what is being checked
  *                   (never the refusal, never nothing);
  *   `required`    → the honest terminal refusal with the picker;
  *   `unavailable` → we could not READ the memberships, so we say that, and

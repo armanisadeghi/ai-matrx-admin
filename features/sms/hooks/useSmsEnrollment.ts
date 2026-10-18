@@ -64,7 +64,7 @@ export function useSmsEnrollment(source: "settings" | "sms-demo") {
         const notificationsOn = preferences?.sms_consent_status === "opted_in";
         const personalStaffStatus = preferences?.personal_staff_consent_status ?? null;
         // A number enrolled before the programs were separated has no Personal
-        // Staff row; the send gate honours its earlier consent, so the screen
+        // Staff row; the send gate honors its earlier consent, so the screen
         // says so rather than showing "Off" for texts that still arrive.
         const legacy = personalStaffStatus === null && notificationsOn;
         const current: SmsProgramFlags = {

@@ -243,7 +243,7 @@ function kitName(members: GeneratedArtifact[]): string {
  * keep claiming that hours after the recording finished and became playable.
  * Every kit built with the default targets contains audio, so this is not an
  * edge case — it is the common path, and it is the exact class of shipped lie a
- * behavioural test cannot see (STATE.md §4.1 item 7).
+ * behavioral test cannot see (STATE.md §4.1 item 7).
  *
  * So `study_media` members are re-read from the table and their title/detail
  * replaced with what is true now. One query per kit, only when it has media.
@@ -412,7 +412,7 @@ export async function listKits(): Promise<StudyKit[]> {
   // Real query/sort objects built from the canonical default — never a cast.
   // `archived`/`deep`/`favoritesFirst` are required fields, and forcing them
   // through with `as` would silently change meaning the day the RPC starts
-  // honouring them.
+  // honoring them.
   const byType = new Map<string, string[]>();
   for (let pageNo = 1; ; pageNo++) {
     // A shared preview/production server under concurrent agent-walk load
@@ -570,7 +570,7 @@ export async function listKits(): Promise<StudyKit[]> {
 
 /**
  * Open a kit from its id alone (a link without `?from=`): a kit scope first,
- * then the older single-anchor kit of a stored file. An explicit type is honoured.
+ * then the older single-anchor kit of a stored file. An explicit type is honored.
  */
 export async function resolveKit(sourceId: string, sourceType?: string): Promise<StudyKit | null> {
   if (sourceType) return readKit(sourceType, sourceId);

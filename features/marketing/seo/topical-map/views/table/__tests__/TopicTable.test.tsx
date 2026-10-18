@@ -294,7 +294,7 @@ describe("TopicTable", () => {
     const facet = tableProps?.toolbar?.facets?.[0];
     expect(facet).toMatchObject({ type: "button-group", id: "rows", value: "flat" });
     expect(tableProps?.toolbar?.leading).toBeTruthy();
-    // The flat engine honours the sort: proposed sorts before active? No —
+    // The flat engine honors the sort: proposed sorts before active? No —
     // ascending by the status word: "active" < "proposed".
     const processed = tableProps?.processLocalRows?.(tableProps.data, tableProps.query && "state" in tableProps.query ? tableProps.query.state : { page: 1, pageSize: 100, search: "", anyOf: "", columnFilters: {}, sort: null });
     expect(processed?.map((row) => row.topic.status)).toEqual(["active", "active", "proposed"]);

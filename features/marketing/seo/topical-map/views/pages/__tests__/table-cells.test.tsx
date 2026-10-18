@@ -34,7 +34,7 @@ import { pageColumns } from "../pageColumns";
 const MAP_ID = "map-under-test";
 
 /**
- * The org's `intent_colors` knob, as the lane brief pins it. Every colour on
+ * The org's `intent_colors` knob, as the lane brief pins it. Every color on
  * this screen comes from the knob — never from a constant in a component — so
  * a test must supply one rather than let a default appear from nowhere.
  */

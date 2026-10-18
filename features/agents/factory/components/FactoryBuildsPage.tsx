@@ -50,7 +50,7 @@ const STATUS_OPTIONS = [
   { value: "running", label: "Running" },
   { value: "completed", label: "Completed" },
   { value: "failed", label: "Failed" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "cancelled", label: "Canceled" },
   { value: "pending", label: "Queued" },
 ];
 

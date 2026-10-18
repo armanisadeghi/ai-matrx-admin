@@ -27,7 +27,7 @@ const decision = {
   ],
   escalation: null,
   thresholds_source: "default",
-  flag: "Person · harder: rules written, behaviours not built — this round runs the Person · easy rules",
+  flag: "Person · harder: rules written, behaviors not built — this round runs the Person · easy rules",
 };
 
 function outcome(id: string, runId: string, nodeId: string, output: Record<string, unknown>): NodeOutcomeRow {

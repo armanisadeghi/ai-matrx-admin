@@ -341,7 +341,7 @@ describe("server level renders the same HTML as the client levels", () => {
     copy.innerHTML = container.innerHTML;
     const client = canonical(copy);
     expect(server).toContain("the route tools</strong>");
-    // After the await the client's syntax highlighter has coloured the code
+    // After the await the client's syntax highlighter has colored the code
     // (an async client enhancement the server never runs); compare the code
     // as its text, everything else byte-for-byte.
     const plainCode = (html: string) => {

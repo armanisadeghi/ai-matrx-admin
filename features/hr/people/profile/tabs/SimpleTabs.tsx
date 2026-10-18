@@ -2,7 +2,7 @@
 
 // features/hr/people/profile/tabs/SimpleTabs.tsx
 //
-// The tabs whose BEHAVIOUR is fixed by this spec but whose BODY belongs to
+// The tabs whose BEHAVIOR is fixed by this spec but whose BODY belongs to
 // another lane or to a door that has not shipped. Each one is here — rather than
 // missing — because the server put it in `profile.tabs`, which means this viewer
 // genuinely has something on it. A tab in the bar that renders a blank page is
@@ -107,7 +107,7 @@ export function DocumentsTab({ org }: { org: HrOrgRef }) {
 
       <p className="max-w-prose text-xs text-muted-foreground">
         When a document is under legal hold, the hold and where it came from show
-        on the row, and there is no delete control on it at all — not a greyed
+        on the row, and there is no delete control on it at all — not a grayed
         one.
       </p>
       <span className="sr-only">{org ?? ""}</span>

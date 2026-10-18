@@ -3,7 +3,7 @@
 // features/meet/components/manage/CancelMeetingDialog.tsx
 //
 // CANCEL — a STATE, never a delete: the link keeps resolving and says the
-// meeting was cancelled (with the reason), nobody can join, and every guest who
+// meeting was canceled (with the reason), nobody can join, and every guest who
 // was told about it gets a cancellation that removes it from their calendar.
 // A recurring meeting asks first: this occurrence (an exception) or the whole
 // series. The consequence is named before the click, per the platform's
@@ -72,11 +72,11 @@ export function CancelMeetingDialog({
           reason: reason.trim() || null,
         });
         toast.success(
-          "That occurrence is cancelled. The rest of the series is unchanged.",
+          "That occurrence is canceled. The rest of the series is unchanged.",
         );
       } else {
         await actions.cancel(meeting, reason.trim() || null);
-        toast.success("Meeting cancelled. Its link now says so.");
+        toast.success("Meeting canceled. Its link now says so.");
       }
       if (notify && hasGuests) await actions.announce(meeting.id);
       onDone();
@@ -105,7 +105,7 @@ export function CancelMeetingDialog({
           <DialogDescription>
             {series && occurrence && scope === "occurrence"
               ? "Only this date is taken off the series; every other occurrence and the link stay as they are"
-              : "Nobody can join a cancelled meeting. The link stays and tells anyone who opens it that it was cancelled"}
+              : "Nobody can join a canceled meeting. The link stays and tells anyone who opens it that it was canceled"}
             {hasGuests
               ? ". Guests who were invited get a cancellation that updates their calendar."
               : "."}

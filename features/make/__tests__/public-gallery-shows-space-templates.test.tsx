@@ -11,7 +11,7 @@
 // islands of the Spaces fence (the editor preview and the card icon), which draw in the browser.
 //
 // BREAKS THIS CATCHES: Space templates missing from /templates · a Space template drawn as a table template ·
-// a category page missing a category the catalogue holds · the Space page without its pages, tables or preview ·
+// a category page missing a category the catalog holds · the Space page without its pages, tables or preview ·
 // "Use this template" not leading through sign-up to that template's install.
 
 import { readFileSync } from "node:fs";
@@ -108,7 +108,7 @@ describe("Space templates on the public gallery", () => {
     expect(page.split(slugHref).length - 1).toBe(1);
   });
 
-  it("lists every workspace and each category the catalogue holds", async () => {
+  it("lists every workspace and each category the catalog holds", async () => {
     expect(await html(WorkspaceTemplatesPage())).toContain(slugHref);
     const category = await html(WorkspaceCategoryPage({ params: Promise.resolve({ category: "projects" }) }));
     expect(category).toContain("Projects &amp; tasks workspaces");

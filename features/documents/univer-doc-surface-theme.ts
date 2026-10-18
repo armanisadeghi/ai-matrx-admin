@@ -1,5 +1,5 @@
 /**
- * The colours a Univer DOCUMENT surface paints itself with, in each theme.
+ * The colors a Univer DOCUMENT surface paints itself with, in each theme.
  *
  * ─── THE DEFECT THIS EXISTS FOR ─────────────────────────────────────────────
  * Univer's docs renderer is THEME-BLIND at the top and THEME-SURGICAL at the
@@ -16,10 +16,10 @@
  *
  * At the bottom, every `ctx.fillStyle = <string>` on Univer's rendering context
  * goes through `ICanvasColorService.getRenderColor()`, which in dark mode
- * INVERTS the colour — and THROWS on anything its `ColorKit` cannot parse.
+ * INVERTS the color — and THROWS on anything its `ColorKit` cannot parse.
  * `features/documents/univer-doc-canvas-colors.ts` takes that service off the
- * document canvas so the colours below land verbatim; this file's job is to
- * make sure they are colours nothing in the stack can choke on.
+ * document canvas so the colors below land verbatim; this file's job is to
+ * make sure they are colors nothing in the stack can choke on.
  *
  * Two cold walks, same screen, 2026-09-21, production, dark:
  *   · WALK 18 — a BLACK sheet in a WHITE frame. The host stated nothing, so
@@ -28,7 +28,7 @@
  *   · WALK 19 — NOTHING AT ALL: a 1396x684 canvas, 0.00% non-background
  *     pixels, swallowing a 519-character paragraph that was being saved the
  *     whole time (light mode, reloaded, showed it sitting on the paper). The
- *     host had by then stated its colours — as `hsl(240 4% 16%)`, the
+ *     host had by then stated its colors — as `hsl(240 4% 16%)`, the
  *     space-separated CSS Color 4 form this app's tokens are written in.
  *     ColorKit's `hslToColor` splits on COMMAS and throws on it. The throw is
  *     raised inside the `fillStyle` setter, i.e. inside the render pass, so the
@@ -40,7 +40,7 @@
  *   THE PAGE IS PAPER WITH BLACK INK IN BOTH THEMES; THE FRAME FOLLOWS THE APP.
  *
  * The page stays paper because the INK cannot follow the theme by itself:
- * Univer stores text colour in the document's own runs and defaults it to
+ * Univer stores text color in the document's own runs and defaults it to
  * black, so a dark page is black-on-black unless something inverts the ink too
  * — and the only thing that would is the service whose inversion also blanks
  * the page. Paper with black ink is legible in both themes, is what Word, Pages
@@ -136,7 +136,7 @@ export function domTokenReader(): TokenReader {
  * this app's tokens are written in. The throw lands inside the `fillStyle`
  * setter, i.e. inside the render pass, and takes the whole page down with it —
  * cold walk 19's 1396x684 canvas with 0.00% non-background pixels. Resolving
- * the token to `rgb()` here means the colour is parseable by every consumer,
+ * the token to `rgb()` here means the color is parseable by every consumer,
  * not just by the browser.
  */
 function rgbFromHslToken(raw: string, fallback: string): string {
@@ -151,7 +151,7 @@ function rgbFromHslToken(raw: string, fallback: string): string {
 }
 
 /**
- * The colours this app paints a Univer document surface with, in `mode`.
+ * The colors this app paints a Univer document surface with, in `mode`.
  *
  * Pure: hand it a reader and it is fully determined, which is what the guard
  * drives.
@@ -172,7 +172,7 @@ export function univerDocSurfaceColors(
 // ─── the invariant, and the machinery that judges it ────────────────────────
 
 /**
- * Relative luminance (0 black → 1 white) of any colour string this module can
+ * Relative luminance (0 black → 1 white) of any color string this module can
  * produce: `rgb()`, `rgba()`, `hsl()`, `hsla()` or `#rgb`/`#rrggbb`.
  *
  * Returns `null` for anything it cannot parse. That is not a gap — an
@@ -252,7 +252,7 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 }
 
 /**
- * The colour grammar EVERY consumer in the stack accepts.
+ * The color grammar EVERY consumer in the stack accepts.
  *
  * Not "what a browser accepts" — the browser is the most permissive reader in
  * the chain and was green through both cold walks. The strictest reader is
@@ -280,9 +280,9 @@ const DARK_FRAME_MAX_LUMINANCE = 0.2;
 const PAGE_MIN_LUMINANCE = 0.6;
 
 /**
- * Judge one theme's colours. Returns every violation, empty when clean.
+ * Judge one theme's colors. Returns every violation, empty when clean.
  *
- * THE INVARIANT, in words: every colour is one EVERY reader in the stack
+ * THE INVARIANT, in words: every color is one EVERY reader in the stack
  * accepts — a string the browser takes and Univer's ColorKit throws on empties
  * the whole page (cold walk 19), and one nothing can parse leaves `fillStyle`
  * at its spec default of opaque black (cold walk 18); the page is always paper

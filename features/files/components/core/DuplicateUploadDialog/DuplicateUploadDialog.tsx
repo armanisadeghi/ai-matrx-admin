@@ -11,7 +11,7 @@
  *                      previous versions are recoverable from the
  *                      Versions tab.
  *   - **Make a copy** — proceed with a unique " (1)" / " (2)" name.
- *                      Same as the existing collision behaviour, just
+ *                      Same as the existing collision behavior, just
  *                      now opt-in instead of silent.
  *   - **Skip**       — don't upload this file at all. Useful when the
  *                      identical-content match means the user already

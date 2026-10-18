@@ -1,7 +1,7 @@
 
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
-/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+/** The old catalogue's shape, read from the definitions (the catalog file is gone). */
 const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );

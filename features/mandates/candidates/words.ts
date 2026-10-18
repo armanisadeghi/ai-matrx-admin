@@ -50,7 +50,7 @@ export const CANDIDATE_STATUS_WORD: Record<CandidateStatus, string> = {
   ready: "Ready for your decision",
   promoted: "Promoted",
   discarded: "Discarded",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
 };
 
 export const RECOMMENDATION_WORD: Record<Recommendation, string> = {

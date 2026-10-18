@@ -97,7 +97,7 @@ export function AgentBrowseCards({
             tabIndex={0}
             title="Click to choose action"
             onClick={(e) => {
-              // Cmd/ctrl-click → Run in a new tab (classic card behaviour).
+              // Cmd/ctrl-click → Run in a new tab (classic card behavior).
               if (shouldOpenInNewTab(e)) {
                 openInNewTab(agentRouteHref(row, "/run"));
                 return;

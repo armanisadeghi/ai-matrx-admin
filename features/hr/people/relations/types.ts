@@ -231,7 +231,7 @@ export const HR_CORRECTIVE_ACTION_STATE_LABELS: Record<
  * §4.8's state: `hr._project_row` stamps it onto every row the get and list
  * doors emit, and `hr._door_list` FILTERS with the same function. Reading it off
  * the wire is what keeps the chip and the filter from ever disagreeing — a
- * "Follow-up due" filter that returns a row labelled "Acknowledged" is what two
+ * "Follow-up due" filter that returns a row labeled "Acknowledged" is what two
  * spellings of one rule produces at a day boundary.
  *
  * The local derivation below stays as the fallback for a row that did not come
@@ -594,7 +594,7 @@ export type HrCaseDetail = {
   incident?: HrIncidentRow;
   corrective_action?: HrCorrectiveActionRow;
   parties?: HrIncidentParty[];
-  /** ABSENT for a non-owner. An owner-only panel, never a greyed one. */
+  /** ABSENT for a non-owner. An owner-only panel, never a grayed one. */
   restricted_notes?: HrRestrictedNote[];
   attachments?: { file_id: string; name?: string | null }[];
   capabilities?: string[];

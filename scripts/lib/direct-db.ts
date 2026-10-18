@@ -3,7 +3,7 @@
  *
  * Extracted from `scripts/apply-migration.ts` (DD-149) when a second tool —
  * `pnpm db:based-on`, and the DD-220 arm of `pnpm check:migrations` — needed the
- * same five variables and the same "say where they came from" behaviour. One
+ * same five variables and the same "say where they came from" behavior. One
  * definition, so a second copy can never drift into reading a different env file
  * or quietly downgrading to a weaker transport.
  */

@@ -9,7 +9,7 @@
  *   running              → spinner + "Processing…"
  *   completed            → Lightbulb + "Indexed"
  *   failed               → destructive "Failed" (error in title)
- *   cancelled            → muted "Canceled"
+ *   canceled            → muted "Canceled"
  *
  * `showActions` adds "Process now" (when not running/completed) and
  * "Refresh" (when completed). Self-contained: it owns its own status query,

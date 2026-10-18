@@ -98,7 +98,7 @@ export const PROJECTED_ROLE_COLUMNS = Object.freeze({
 export type SyncedRoleColumn = SyncedTableColumn | keyof typeof PROJECTED_ROLE_COLUMNS;
 
 /**
- * THE ACCOUNT ROLE IS RECOGNISED BY STRUCTURE, NOT BY SPELLING (lane F-81,
+ * THE ACCOUNT ROLE IS RECOGNIZED BY STRUCTURE, NOT BY SPELLING (lane F-81,
  * hostile verifier V-21).
  *
  * The five other roles are naming conventions and nothing more. The ACCOUNT role
@@ -113,7 +113,7 @@ export type SyncedRoleColumn = SyncedTableColumn | keyof typeof PROJECTED_ROLE_C
  * WHAT THE SPELLING LIST MISSED. `ACCOUNT_COLUMNS` enumerated
  * `synced_via_connection_id | connection_id | account_id | refreshed_via_account`,
  * so the reverse census asked "does a mirror carry an ACCOUNT-shaped column no
- * list names?" with a pattern that could only recognise names somebody had
+ * list names?" with a pattern that could only recognize names somebody had
  * already thought of. `web.youtube_video` IS a mirror (`external_id`,
  * `external_url`, `synced_at`) and names its connection side
  * `channel_resource_id` — matching no spelling and no alternative — so
@@ -175,7 +175,7 @@ export const ROLE_COLUMN_SHAPE: Readonly<Record<string, RegExp>> = Object.freeze
  * wherever the mirror table carries one, in the same position for every table
  * — so lane F-56 moved that name into `REFRESHED_COLUMNS` instead of leaving
  * it unread. The mechanism stays: the next name a census finds that would
- * change a screen's behaviour belongs here, with the reason, until the chair
+ * change a screen's behavior belongs here, with the reason, until the chair
  * rules on it — never silently added to a candidate list and never silently
  * dropped.
  */

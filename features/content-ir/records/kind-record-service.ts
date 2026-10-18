@@ -153,7 +153,7 @@ export async function resolveKindDefinitionId(
 /**
  * How many records of `kind` the viewer can reach, across every organization
  * (an optional `organizationId` narrows to one) — ACTIVE only (archived
- * and deleted excluded), because the number stands next to a link labelled
+ * and deleted excluded), because the number stands next to a link labeled
  * "All N <plural>" and a count that includes rows the destination hides is a
  * false sentence.
  */

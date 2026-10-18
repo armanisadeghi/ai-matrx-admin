@@ -272,7 +272,7 @@ function assertNoUnruledCollisions(tokens: Map<string, EntityTokenInfo>): void {
   }
 }
 
-/** The token a noun or phrase resolves to, honouring the rulings above. */
+/** The token a noun or phrase resolves to, honoring the rulings above. */
 function tokenForNoun(noun: string): string | undefined {
   return AMBIGUOUS_NOUN_RULINGS[noun]?.token ?? NOUN_TO_TOKEN[noun];
 }

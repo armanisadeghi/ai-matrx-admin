@@ -109,4 +109,4 @@ describe("validateAppletCategoryWrite", () => {
 // `app_tags` deliberately has no validator in this module — the edit shell
 // imports `validateAppTags` from `features/applets/route/applet-entity-writes`
 // so `app.definition.tags` keeps ONE contract across the admin console and the
-// user-facing surface. Its behaviour is covered where that validator lives.
+// user-facing surface. Its behavior is covered where that validator lives.

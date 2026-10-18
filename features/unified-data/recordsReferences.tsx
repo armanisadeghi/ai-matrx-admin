@@ -80,7 +80,7 @@ function KindValueButton({ value, kind, title }: KindArgs) {
 
 export function recordsRenderKind(args: KindArgs): ReactNode {
   // The ONE decoder says whether this is a directive (it alone understands the retired shell); a
-  // directive it cannot honour falls to the button, whose window shows the value as it is.
+  // directive it cannot honor falls to the button, whose window shows the value as it is.
   if (tryDecodeDirective(args.value, (why) => console.warn(`[records kind cell] ${why}`))) {
     return (
       <span className="min-w-0 max-w-full text-[11px]" data-records-kind-directive="" onClick={(event) => event.stopPropagation()}>

@@ -294,7 +294,7 @@ beforeEach(() => {
 });
 
 describe("VERIFIER-D item A — TopicDetailBody, a fresh composed row, no code change", () => {
-  it("renders the crm_deal group, labelled by the item, with no special-case in this file's own composed data", async () => {
+  it("renders the crm_deal group, labeled by the item, with no special-case in this file's own composed data", async () => {
     const mounted = mount({ includeCounts: true });
     await flush();
     const group = mounted.container.querySelector('[data-association-kind="crm_deal"]');

@@ -39,7 +39,7 @@ describe("ONE error type for one fact", () => {
   // only the second, so every surface fed by `requireSelectedOrgId` — Vault,
   // the authenticator, message templates, HR — fell through to raw-message
   // rendering no matter how correctly it asked.
-  it("requireSelectedOrgId throws what the recogniser recognises", () => {
+  it("requireSelectedOrgId throws what the recogniser recognizes", () => {
     getStoreSingleton.mockReturnValue(storeWith(null));
     let thrown: unknown;
     try {
@@ -51,7 +51,7 @@ describe("ONE error type for one fact", () => {
     expect(isOrganizationRequiredError(thrown)).toBe(true);
   });
 
-  it("the transport kernel throws the same recognisable refusal", () => {
+  it("the transport kernel throws the same recognizable refusal", () => {
     let thrown: unknown;
     try {
       requireOrganizationContext(null);
@@ -61,7 +61,7 @@ describe("ONE error type for one fact", () => {
     expect(isOrganizationRequiredError(thrown)).toBe(true);
   });
 
-  it("a bare Error with the same sentence is NOT recognised — which is exactly why the old throw site was invisible", () => {
+  it("a bare Error with the same sentence is NOT recognized — which is exactly why the old throw site was invisible", () => {
     // The regression this whole class rests on. If `requireSelectedOrgId` ever
     // goes back to `throw new Error(...)`, the first test in this block fails
     // — and this one shows why: the recogniser matches the TYPE, never the

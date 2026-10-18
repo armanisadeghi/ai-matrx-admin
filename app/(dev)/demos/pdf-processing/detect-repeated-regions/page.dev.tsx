@@ -100,7 +100,7 @@ export default function DetectRepeatedRegionsDemo() {
     <PdfWorkbench
       title="Detect repeated regions"
       endpoint="POST /utilities/pdf/detect-repeated-regions"
-      description="Find headers / footers / watermarks / recurring side notes across pages. Each region is rendered with a coloured bbox on the first page it covers so you can verify the detector caught the right zones."
+      description="Find headers / footers / watermarks / recurring side notes across pages. Each region is rendered with a colored bbox on the first page it covers so you can verify the detector caught the right zones."
       source={source}
       onSourceChange={setSource}
       onRun={run}

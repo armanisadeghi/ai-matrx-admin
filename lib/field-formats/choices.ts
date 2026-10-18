@@ -186,7 +186,7 @@ export type ResolvedChoices = {
 
 const EMPTY: FieldChoice[] = [];
 
-/** Options declared directly on the field, normalised and de-duplicated. */
+/** Options declared directly on the field, normalized and de-duplicated. */
 export function inlineChoices(
   options: FieldFormatOptions | undefined,
 ): FieldChoice[] {

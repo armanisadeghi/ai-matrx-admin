@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * One catalogued item's "is it a Source yet?" cell (SOURCE-CONVERGENCE §8.6).
+ * One catalogd item's "is it a Source yet?" cell (SOURCE-CONVERGENCE §8.6).
  *
  *   Source             — Open, to the one Source screen.
  *   Transcribing…      — until the row carries its `processed_document_id`.
  *   Not yet a Source   — the server's sentence, plus Transcribe ONLY when the
  *                        server declared that Action runnable here; otherwise
- *                        the server's reason (or nothing) — never a greyed button.
+ *                        the server's reason (or nothing) — never a grayed button.
  */
 
 import { InfoHint } from "@/components/official/InfoHint";

@@ -247,7 +247,7 @@ export function HelperPanel({ method }: { method: HelperMethod }) {
           <ErrorAlchemyMenu error={session.error} />
         </p>
       ) : null}
-      {session.status === "cancelled" ? <p className="text-xs text-muted-foreground">Cancelled.</p> : null}
+      {session.status === "cancelled" ? <p className="text-xs text-muted-foreground">Canceled.</p> : null}
       {isAdmin ? <AdminBlock info={info} session={session} /> : null}
       {r ? <Results method={method} result={r} /> : null}
       {PAGED_METHODS.includes(method) && r?.more && !busy ? (

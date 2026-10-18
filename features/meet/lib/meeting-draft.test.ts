@@ -168,7 +168,7 @@ describe("which tab a meeting belongs on", () => {
     expect(isPast(stale, now)).toBe(true);
   });
 
-  it("a series is never past until it ends; a cancelled or archived meeting is on its own tab", () => {
+  it("a series is never past until it ends; a canceled or archived meeting is on its own tab", () => {
     expect(isPast(weekly, now)).toBe(false);
     expect(
       isPast(

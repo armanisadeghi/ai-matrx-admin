@@ -1,4 +1,4 @@
-// K1 — "See these records" honours the question's sort. Red before: DrillRecords never sent a sort,
+// K1 — "See these records" honors the question's sort. Red before: DrillRecords never sent a sort,
 // so records of a question sorted by cost came back newest first.
 import type { DrillDefinition } from "@ai-matrx/records";
 

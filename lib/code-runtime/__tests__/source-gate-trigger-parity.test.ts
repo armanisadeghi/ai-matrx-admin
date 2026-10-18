@@ -22,7 +22,7 @@
  *
  * WHAT THIS DOES NOT PROVE: that the LIVE function matches the file. Applying
  * the migration is what makes that true, and the DD-124 rolled-back probes
- * proved the live function's behaviour directly. This guards the drift that
+ * proved the live function's behavior directly. This guards the drift that
  * actually happened — a list growing in the JSON while the SQL stands still.
  */
 

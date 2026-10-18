@@ -5,7 +5,7 @@
  * device identity this tablet keeps. Then it gets out of the way — route 36 owns everything after.
  *
  * 🚨 **THE FAILURE SENTENCE LEAKS NOTHING** (§3.3, L3-66). Not whether the code existed, not whether
- * it expired, not whether it was already claimed, not whether the organisation has the kiosk turned
+ * it expired, not whether it was already claimed, not whether the organization has the kiosk turned
  * on. The server already answers all four with one sentence on purpose — *"That code did not work.
  * Ask an administrator for a new pairing code."* — and this component renders **that sentence,
  * verbatim**, adding no detail of its own. Distinguishing the four cases here would turn a pairing

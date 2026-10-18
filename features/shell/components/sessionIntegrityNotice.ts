@@ -55,6 +55,6 @@ export function sessionIntegrityNotice(input: {
     title: "This browser's session cookies are inconsistent — sign in again",
     description: input.splitCookieJar
       ? "This browser sent two different copies of the sign-in cookie, so the server could not tell who you are. Anything on this page that needs your account will look empty or refuse to save, no matter how many times you retry. We have cleared the stale copy; signing in again restores the page."
-      : "This tab is signed in, but the server did not recognise the session on this request, so anything that needs your account will look empty or refuse to save. Signing in again restores the page.",
+      : "This tab is signed in, but the server did not recognize the session on this request, so anything that needs your account will look empty or refuse to save. Signing in again restores the page.",
   };
 }

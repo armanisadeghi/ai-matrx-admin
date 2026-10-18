@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 /**
  * `pnpm db:based-on <schema.function>` — print the `-- based-on:` header line(s)
- * for a function, read from the LIVE catalogue.
+ * for a function, read from the LIVE catalog.
  *
  * Paste the output into the migration that replaces the body. `pnpm db:apply`
  * recomputes the same hash immediately before executing and refuses the whole
@@ -111,7 +111,7 @@ async function main(): Promise<number> {
   if (argv.length !== 1) {
     console.log(
       `${C.bold}pnpm db:based-on <schema.function | schema.function(argtypes) | migrations/file.sql> [--based-on-target production|clone]${C.reset}\n` +
-        `  Prints the \`-- based-on:\` header line(s) for a function, from the live catalogue.\n` +
+        `  Prints the \`-- based-on:\` header line(s) for a function, from the live catalog.\n` +
         `  Paste them into the migration that replaces the body; db:apply verifies them before it runs.\n` +
         `  --based-on-target (alias --target) picks WHICH database is measured; default production,\n` +
         `  the main database. db:apply recomputes the hash on the database it applies to, so a line\n` +

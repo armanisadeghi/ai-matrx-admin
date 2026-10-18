@@ -327,7 +327,7 @@ export function CropPreview({
                                             ))}
                                         </div>
                                     </div>
-                                    {/* Focal-point handle — sits at the centre of the crop. */}
+                                    {/* Focal-point handle — sits at the center of the crop. */}
                                     <div
                                         className="absolute pointer-events-none flex items-center justify-center"
                                         style={{

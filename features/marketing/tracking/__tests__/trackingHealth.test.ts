@@ -1,7 +1,7 @@
 /**
  * THE ONE TRACKING VERDICT — the derivation the chip, the status board and the panel all read.
  *
- * Every test here is written so that removing the behaviour it names turns it RED. The two that
+ * Every test here is written so that removing the behavior it names turns it RED. The two that
  * matter most are the ones about honesty: a container that is NOT on the live page must not let
  * the verdict read as healthy, and a `not_checked` reconciliation must never be read as a pass.
  */
@@ -116,7 +116,7 @@ describe("trackingHealth", () => {
       now: NOW,
     });
     expect(health.state).toBe("off");
-    // 🚨 NEVER three grey "no": nothing was graded, and the sentence says what would grade it.
+    // 🚨 NEVER three gray "no": nothing was graded, and the sentence says what would grade it.
     expect(health.detail).toContain("Bind a container");
     expect(health.detail).not.toContain("GA4 not installed");
   });

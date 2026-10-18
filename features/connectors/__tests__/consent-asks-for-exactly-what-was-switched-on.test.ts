@@ -253,7 +253,7 @@ describe("buildConsentPlan", () => {
     expect(plan.blocked[0]?.reason).toContain("separately");
   });
 
-  it("renews a dead credential holding YouTube plus Gmail in TWO labelled steps, never one combined press", () => {
+  it("renews a dead credential holding YouTube plus Gmail in TWO labeled steps, never one combined press", () => {
     const dead = {
       ...account([OPENID, GMAIL_SEND, GMAIL_READONLY, YOUTUBE, YOUTUBE_ANALYTICS]),
       usable: false,

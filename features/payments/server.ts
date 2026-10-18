@@ -293,7 +293,7 @@ export async function checkoutRefusal(subjectKind: PaymentSubjectKind, subjectId
 /**
  * Open a Stripe Checkout Session on the business's own account for one record. The amount is
  * computed HERE from the ask and the stored record, never taken from a browser. Marks the record
- * Unpaid. `back` is where the person returns to (paid or cancelled).
+ * Unpaid. `back` is where the person returns to (paid or canceled).
  */
 export async function startCheckout(input: {
   ask: PaymentAsk;

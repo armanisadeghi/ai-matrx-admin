@@ -741,7 +741,7 @@ export default function BatchScrapePage() {
           ) : (
             <div className="flex h-full min-h-0 flex-col gap-2">
               {/* ABSENT when nothing stopped at the person's own browser — not
-                  a greyed button that looks broken. The one honest state for
+                  a grayed button that looks broken. The one honest state for
                   "there is nothing to send" is no control at all. */}
               {ownBrowserRows.length > 0 ? (
                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/40 bg-amber-500/[0.06] px-3 py-2">

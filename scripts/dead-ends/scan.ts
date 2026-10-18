@@ -304,7 +304,7 @@ const TOAST_MODULE_RE = /lib\/toast|^["']sonner["']$/;
  *
  * DELIBERATELY NOT `saved`, `updated`, `renamed`, `deleted`, `copied` on their
  * own: "Note saved" is almost always the record's OWN editor — the user is
- * already there, and the Door Law is honoured. "Deleted" and "Copied" name
+ * already there, and the Door Law is honored. "Deleted" and "Copied" name
  * nothing to open at all. Requiring a creation verb is what keeps this rule off
  * the enormous every-mutation-toast population; the cost is that a genuine
  * "Renamed X" dead end is out of reach (FEATURE.md § Known limits).
@@ -808,7 +808,7 @@ function enclosingFunction(node: ts.Node): ts.Node | null {
 
 /**
  * THE HANDLER ALREADY OPENED IT. `toast.success("Agent created!")` followed by
- * `router.replace(`/agents/${newId}/build`)` is the Door Law honoured in the
+ * `router.replace(`/agents/${newId}/build`)` is the Door Law honored in the
  * strongest possible way — the user is standing on the record. Five of the first
  * ten audited findings were this shape or the next one.
  */
@@ -1040,7 +1040,7 @@ function classifyExpression(
 
   // `{row.agentId ? <EntityRef …/> : <span>{row.agentName}</span>}` — the
   // fallback arm renders the name precisely BECAUSE there is no id to open.
-  // That is the Door Law honoured, not broken.
+  // That is the Door Law honored, not broken.
   if (isIdGuardedFallback(node, property)) return null;
 
   // A name inside a loading/empty placeholder is not the real surface.

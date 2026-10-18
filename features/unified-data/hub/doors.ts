@@ -319,7 +319,7 @@ export interface DataHomeTableRow {
  * tables the app keeps for itself, each with its kind. The door skips every organization whose
  * store is off, so there is no single switch to ask here.
  *
- * `organizationId` — THE ORGANIZATION DROPDOWN, HONOURED IN THE DOOR (lane DATA-HOME-2): named, the
+ * `organizationId` — THE ORGANIZATION DROPDOWN, HONORED IN THE DOOR (lane DATA-HOME-2): named, the
  * door walks only that organization (`p_organization_id`), in every lane and kind; null walks them
  * all. It only narrows: it never admits an organization the walk would not.
  */

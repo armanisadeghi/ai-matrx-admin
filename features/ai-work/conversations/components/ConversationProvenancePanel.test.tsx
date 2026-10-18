@@ -14,7 +14,7 @@
  * it is claimed). A panel that names one tool, drops a session id, hides the
  * seeded verdict, marks two rows as current, or offers native continuation for
  * an unclaimed offer fails here. Two different expected values are asserted per
- * behaviour (claimed vs unclaimed, current vs not) so a constant cannot pass.
+ * behavior (claimed vs unclaimed, current vs not) so a constant cannot pass.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";

@@ -1,7 +1,7 @@
 import { FILE_IMPORT_SYNC_SENTENCE, carriesNotionKey } from "../NotionSyncBar";
 
 describe("a table imported from a Notion file says so on Sync now", () => {
-  it("recognises the importer's key column", () => {
+  it("recognizes the importer's key column", () => {
     expect(carriesNotionKey([{ name: "Name" }, { name: "Notion ID" }])).toBe(true);
     expect(carriesNotionKey([{ name: "notion_id" }])).toBe(true);
   });

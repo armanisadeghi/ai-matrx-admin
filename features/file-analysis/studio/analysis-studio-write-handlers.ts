@@ -29,7 +29,7 @@
  *
  * And one more thing makes a write a LIE: `update` resolves with the row the
  * server actually stored. A 4xx rejects (putJson throws on !ok) — but a server
- * that accepts the PUT and quietly normalises the field away would otherwise
+ * that accepts the PUT and quietly normalizes the field away would otherwise
  * hand the agent a success toast for a change that never landed. So each
  * content handler re-reads the returned row and throws when the value is not
  * what it asked for.
@@ -206,7 +206,7 @@ function resolveLabelAndCategory(
 
   const catalogEntry = deps.labels.find((entry) => entry.id === label);
   if (catalogEntry) {
-    // The catalog owns the pairing. Honouring a conflicting category would
+    // The catalog owns the pairing. Honoring a conflicting category would
     // produce a label/category combination the user's own picker cannot make.
     if (requestedCategory && requestedCategory !== catalogEntry.category) {
       throw new Error(

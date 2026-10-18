@@ -11,7 +11,7 @@
 //   - clickable: opens the full, filtered graph.
 //
 // The layout is deterministic phyllotaxis (sunflower) — biggest/most-important
-// nodes pack toward the centre, filler circles spiral out — so it always looks
+// nodes pack toward the center, filler circles spiral out — so it always looks
 // like a real graph without a layout engine.
 
 "use client";
@@ -42,8 +42,8 @@ interface Pt {
   y: number;
 }
 
-// Sunflower layout: point i at radius ∝ sqrt(i), angle = i·golden. i=0 → centre.
-// Elliptical (rx≠ry) so it fills the card instead of a centred circle.
+// Sunflower layout: point i at radius ∝ sqrt(i), angle = i·golden. i=0 → center.
+// Elliptical (rx≠ry) so it fills the card instead of a centerd circle.
 function phyllotaxis(count: number): Pt[] {
   const pts: Pt[] = [];
   for (let i = 0; i < count; i++) {
@@ -131,7 +131,7 @@ export function KgGraphCard({
   const isLoaded = status === "ready" && real.length > 0;
   const isEmpty = status === "ready" && real.length === 0;
 
-  // Positions for real + filler nodes in one spiral (real first → near centre).
+  // Positions for real + filler nodes in one spiral (real first → near center).
   const positions = useMemo(
     () => phyllotaxis((isLoaded ? real.length : REAL_MAX) + FILLER),
     [isLoaded, real.length],

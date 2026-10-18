@@ -23,7 +23,7 @@
  *    values as filled at the door);
  *  - recorded: the run's own `chat.user_request` row (incl. `metadata.mandate_watch`,
  *    the same frame) + `chat.request_snapshot`, shown only where no live capture
- *    exists and always labelled a recorded copy.
+ *    exists and always labeled a recorded copy.
  *
  * Open it with ONE call: `useWatchAiRun()(…)` (features/overlays/definitions/aiWatchWindow.overlay.tsx).
  */

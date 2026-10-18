@@ -4,7 +4,7 @@
 // board: the ticket number, then the service. In September the office decides the summary
 // should lead with the SERVICE instead, so the dispatcher edits the formula. Before this lane
 // the store answered "saved" and kept yesterday's formula — `expr` was read only inside
-// custom.field_update's behaviour arm, so a patch without a type word beside it was dropped.
+// custom.field_update's behavior arm, so a patch without a type word beside it was dropped.
 //
 // TRANSPORT. Every call goes through @ai-matrx/records-ui's own demo harness lane
 // (`demo/branch-server.ts`), which is how every page of that harness reads and writes: the

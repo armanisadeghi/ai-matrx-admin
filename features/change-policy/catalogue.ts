@@ -29,7 +29,7 @@
  *
  * THE ROW-38 FLOOR IS STRUCTURAL (research finding #4): `change_own_handling_mode`
  * is hard-coded in the BODY of `platform.resolve_change_handling` — the floor
- * holds even if this catalogue, the seed table, or an org row says otherwise.
+ * holds even if this catalog, the seed table, or an org row says otherwise.
  * The `floorHumanOnly` flag here exists so UIs can render the floor honestly;
  * it is not what enforces it.
  *
@@ -106,7 +106,7 @@ export const CHANGE_TYPE_TIERS: readonly ChangeTypeTierMeta[] = [
         tier: 3,
         title: "Substitution",
         reversibilityNote:
-            "Swapping units we already have. The old unit still exists, so reverting is re-pointing — but behaviour differences can be broad.",
+            "Swapping units we already have. The old unit still exists, so reverting is re-pointing — but behavior differences can be broad.",
         defaultTimeoutExpiry: "hold",
     },
     {
@@ -506,7 +506,7 @@ export const CHANGE_TYPE_CATALOGUE: readonly ChangeTypeDef[] = [
         description: "Edit THIS surface — how any kind of change is handled. Human only, always: the system may never widen its own permissions.",
         defaultMode: "off",
         floorHumanOnly: true,
-        note: "Floored structurally in platform.resolve_change_handling — no catalogue edit, seed, or org row can lift it.",
+        note: "Floored structurally in platform.resolve_change_handling — no catalog edit, seed, or org row can lift it.",
         subject: "policy",
     },
     {

@@ -1,6 +1,6 @@
 /**
  * Seed builder for featured document templates: markdown (the ONE markdown →
- * Univer converter) + a theme pass that colours headings, sets the face, and
+ * Univer converter) + a theme pass that colors headings, sets the face, and
  * styles named paragraphs (centered title, gray subtitle, right-aligned date).
  * Text runs are rebuilt per character so they never overlap.
  */
@@ -37,7 +37,7 @@ export function themedDoc(markdown: string, title: string, theme: DocTheme): Par
     for (let i = run.st; i < run.ed && i < per.length; i++) per[i] = { ...(per[i] ?? {}), ...(run.ts ?? {}) };
   }
   const isText = (i: number) => !CONTROL_ONE.test(stream[i]);
-  // Base face + size + heading colour.
+  // Base face + size + heading color.
   for (let i = 0; i < per.length; i++) {
     if (!isText(i)) continue;
     const ts: ITextStyle = { ...(per[i] ?? {}) };

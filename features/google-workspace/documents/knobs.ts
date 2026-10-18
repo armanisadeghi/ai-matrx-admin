@@ -93,7 +93,7 @@ export interface GoogleDocsKnobs {
 /**
  * How long a caller waits for the ladder before acting on the documented
  * default. One `platform.knob_resolve` round trip, generously: long enough that
- * an organization's raised floor is honoured on a normal open, short enough that
+ * an organization's raised floor is honored on a normal open, short enough that
  * a missing row never stops a refresh.
  */
 export const KNOB_RESOLVE_GRACE_MS = 1_500;

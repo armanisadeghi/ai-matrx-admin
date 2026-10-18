@@ -59,7 +59,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       console.error("[notion-oauth:callback]", { status: response.status });
       return done(request, oauth.returnUrl, "Could not finish connecting Notion. Try again.");
     }
-    if (completed.status === "cancelled") return done(request, oauth.returnUrl, "Notion sign-in was cancelled.");
+    if (completed.status === "cancelled") return done(request, oauth.returnUrl, "Notion sign-in was canceled.");
     if (completed.status !== "connected") {
       return done(request, oauth.returnUrl, "Could not finish connecting Notion. Try again.");
     }

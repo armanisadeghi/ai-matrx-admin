@@ -7,7 +7,7 @@
  * - The route header (portaled into the shell): the battle's name, the mode
  *   switcher, and the battle-wide copy/export menu — side things only.
  * - The action bar, in the page right where this component is mounted (the
- *   top of every mode's body): every real action as a small labelled or
+ *   top of every mode's body): every real action as a small labeled or
  *   icon-only button with its full name as the tooltip, Blind test, and Run.
  *   (Arman, 2026-10-02: the page's primary actions were hidden in a "…" menu
  *   in the header; the header is for side things, not the page's work.)

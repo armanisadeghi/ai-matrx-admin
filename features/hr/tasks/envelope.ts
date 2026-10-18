@@ -414,7 +414,7 @@ function parseInboxPagination(rpc: string, source: Obj): HrInbox["pagination"] {
  * `workflow_event.detail` (where `hr._wf_call_hook` puts `{raised, sqlstate, detail: sqlerrm}` —
  * two live rows already carry `column d.decider_employment_id does not exist`),
  * `workflow_failure.detail`, `workflow_instance.payload`, `workflow_step.resolved_user_ids` and
- * `workflow_decision.client_context` all still travelled to the browser on every task open.
+ * `workflow_decision.client_context` all still traveled to the browser on every task open.
  *
  * The rule, in one line: **narrowing in the client cannot unsend a payload.** These maps are typing,
  * not redaction. If a field must not reach a browser, it must not leave `hr.wf_instance` — the

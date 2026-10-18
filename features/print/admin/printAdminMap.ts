@@ -84,7 +84,7 @@ export const printAdminMap: FeatureAdminMap = {
         {
             url: "/print/branded-qr",
             label: "Branded QR codes",
-            description: "Styled QR with brand colours and a centre logo, with the scan-margin cost stated.",
+            description: "Styled QR with brand colors and a center logo, with the scan-margin cost stated.",
             filePath: "app/(core)/print/branded-qr/page.tsx",
             status: "Live",
         },

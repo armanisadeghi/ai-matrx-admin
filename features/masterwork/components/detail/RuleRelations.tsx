@@ -16,7 +16,7 @@
  * connecting aspect inline in `statement`); `relates_to` is the machine-
  * readable half — and THE DOOR LAW says a named relationship the UI can
  * resolve must be rendered AND linked. So every sibling here is a link that
- * scrolls to that rule, labelled with the sibling's real name, never a bare id.
+ * scrolls to that rule, labeled with the sibling's real name, never a bare id.
  *
  * The server never writes an unresolvable reference (`resolve_rule_relations`
  * in `aidream/services/distillation/distill.py` drops what it cannot resolve),

@@ -255,7 +255,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "resource_counts",
     label: "Resource counts by kind",
     description:
-      "Per-kind resource counts for the open organization keyed by catalogue key (agent, file, note, project, task, workflow, dataset, …); a null count means that kind is uncountable client-side. Absent when no org is open or the inventory is still loading.",
+      "Per-kind resource counts for the open organization keyed by catalog key (agent, file, note, project, task, workflow, dataset, …); a null count means that kind is uncountable client-side. Absent when no org is open or the inventory is still loading.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 450,

@@ -327,7 +327,7 @@ function SourceStage({
   );
 }
 
-/** Stage 2 — one row per artifact, in its own colour, saying what it is doing. */
+/** Stage 2 — one row per artifact, in its own color, saying what it is doing. */
 function TargetRow({
   target: t,
   now,

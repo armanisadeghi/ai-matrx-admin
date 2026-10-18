@@ -9,7 +9,7 @@
 //   1. the convergence fill was SOLID (`bg-opacity-*` is gone in Tailwind 4);
 //   2. the card and the compact row ignored the legibility floor;
 //   3. the hue bar on a topic and the hue bar on its facet value were never
-//      proven to be the same colour, which is the whole promise of the legend.
+//      proven to be the same color, which is the whole promise of the legend.
 
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -95,12 +95,12 @@ describe("the convergence fill", () => {
     }
   });
 
-  it("draws a colour it does not know as the missing treatment, and reports it", () => {
+  it("draws a color it does not know as the missing treatment, and reports it", () => {
     const markup = renderToStaticMarkup(
       <TopicCardBody data={topic({ convergenceColor: "bogus" })} />,
     );
     // The `missing` treatment is the dashed muted outline over no fill —
-    // honest about not knowing, never an invisible or a wrong colour.
+    // honest about not knowing, never an invisible or a wrong color.
     expect(markup).toContain("bg-transparent");
     expect(markup).toContain("border-dashed");
     expect(markup).toContain("border-muted-foreground");
@@ -136,7 +136,7 @@ describe("the legibility floor", () => {
 });
 
 describe("the hue bar", () => {
-  it("is deterministic — the same slug is always the same colour", () => {
+  it("is deterministic — the same slug is always the same color", () => {
     expect(hueBar("north-west")).toBe(hueBar("north-west"));
     expect(hueBar("north-west")).toMatch(/^bg-chart-[1-6]$/);
     expect(hueBar(null)).toBeNull();

@@ -14,7 +14,7 @@ import { BATTLE_HOME } from "./ToolBattlePage";
 type Read = { state: "loading" } | { state: "failed"; error: unknown } | { state: "ready"; battles: BattleView[] };
 
 const TONE = { draft: "neutral", running: "info", completed: "success", failed: "destructive", cancelled: "warning" } as const;
-const LABEL = { draft: "Not run", running: "Running", completed: "Done", failed: "No answers", cancelled: "Cancelled" } as const;
+const LABEL = { draft: "Not run", running: "Running", completed: "Done", failed: "No answers", cancelled: "Canceled" } as const;
 
 function best(b: BattleView): string {
   const top = b.summary?.ranking[0];

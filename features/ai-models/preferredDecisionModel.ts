@@ -11,7 +11,7 @@
 // `capabilities.interaction === "decision"`, and when the catalog has none it
 // leaves the picker empty and its ready-check says so (nothing silent).
 //
-// WHERE IT IS HONOURED: `features/ai-models/decisions/DecisionPlayground.tsx`
+// WHERE IT IS HONORED: `features/ai-models/decisions/DecisionPlayground.tsx`
 // seeds its model picker with this answer on mount when no model was chosen.
 // Arman, 2026-09-20: the default decision model comes from the system knobs,
 // never from code.

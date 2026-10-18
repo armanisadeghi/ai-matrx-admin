@@ -132,7 +132,7 @@ function refineHealth(base: DetailRecordType): DetailRecordType["health"] {
           "Google would not give us this file the last time we asked, and did not say why."
         : null;
     if (!produced) {
-      // The connector could not be read at all (or does not recognise the row).
+      // The connector could not be read at all (or does not recognize the row).
       // The record still knows its own state, and silence would be the strip
       // disappearing exactly when it matters most.
       if (!typed) return null;

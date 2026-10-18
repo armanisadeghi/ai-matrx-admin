@@ -3,7 +3,7 @@
 // providers/AgentCatalogHost.tsx
 //
 // THE ONE `@ai-matrx/agents/catalog` mount. Everything the agent picker knows
-// — the rows, the tabs, the sort, the search, the filters, the favourites,
+// — the rows, the tabs, the sort, the search, the filters, the favorites,
 // the counts, the freshness, the mandate-resolved default row — lives in the
 // package behind this provider. A second mount anywhere would build a second
 // view-state registry, so there is exactly one, here, inside StoreProvider

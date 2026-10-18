@@ -423,10 +423,10 @@ export function KnobRow({
           key-rung pairs were offered by the registry and reachable nowhere.
           It is now THE picker — the same `<KnobRungOverrides>` the organization
           configuration page mounts, with the same doors, the same removal
-          confirm and the same read-only behaviour. It renders a rung only when
+          confirm and the same read-only behavior. It renders a rung only when
           a measured database reader can answer it, so a key whose only reader
           is the `hr._knob` dispatcher shows no picker at all rather than
-          selling an exception nothing honours. */}
+          selling an exception nothing honors. */}
       <HrKnobExceptions fullKey={knob.full_key} />
 
       {why ? (

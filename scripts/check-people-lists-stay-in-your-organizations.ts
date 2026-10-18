@@ -22,7 +22,7 @@
  * because `platform.derive_data_class` back-filled its class from what the table happened to
  * look like, and then 941 people were written into the platform's own tenant.
  *
- * WHAT THIS GUARD IS. Two QUERIES over the live catalogue, exactly like
+ * WHAT THIS GUARD IS. Two QUERIES over the live catalog, exactly like
  * `custom.doors_not_masking_fields()` before it — never a list of names in a script:
  *
  *   · `iam.people_lists_a_non_member_can_read()` — a relation `iam.personal_data_relations()`
@@ -60,7 +60,7 @@ const NO_VERDICT = `select relation, why from iam.people_shaped_relations_with_n
  *     policy text.
  *   · the second, without the person-column / crm.party-foreign-key test, so it asks "which
  *     relations carry the arm and have no verdict at all" — hundreds do, because the arm is
- *     right for platform content. If this returns nothing, it is not reading the catalogue.
+ *     right for platform content. If this returns nothing, it is not reading the catalog.
  *
  * Measured 2026-09-20, right after the corrected predicate landed: 1 row and 240 rows.
  */
@@ -134,7 +134,7 @@ async function main(): Promise<void> {
         fail(
           "SELF-TEST FAILED — with the people-shape test dropped the second census still " +
             "returned nothing, although hundreds of relations carry the §6e arm. It is not " +
-            "reading the catalogue.",
+            "reading the catalog.",
         );
       }
       console.log(

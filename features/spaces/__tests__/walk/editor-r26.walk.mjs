@@ -1,4 +1,4 @@
-// Round 26 editor checks on a scratch page (test@test.com): D4/D5 "/" after a block-menu colour change,
+// Round 26 editor checks on a scratch page (test@test.com): D4/D5 "/" after a block-menu color change,
 // "/Page" stays on the page, D6 block menu on a divider, D10 every Notion markdown shortcut.
 // Prints one JSON line per check; exit 1 when any fails.
 //   SPACES_WALK_ORG="Oak & River" node features/spaces/__tests__/walk/editor-r26.walk.mjs [pageId]
@@ -55,7 +55,7 @@ await act(page, async () => {
     await page.keyboard.press("Enter");
     await page.keyboard.type("/");
     await page.waitForTimeout(400);
-    check("slash after colour change", await menuOpen(), { focus: await page.evaluate(() => document.activeElement?.className.slice(0, 24)) });
+    check("slash after color change", await menuOpen(), { focus: await page.evaluate(() => document.activeElement?.className.slice(0, 24)) });
     await page.keyboard.press("Escape");
     await page.keyboard.press("Backspace");
   }

@@ -5,7 +5,7 @@
 // WHAT YOU CAN DROP HERE — rendered from `GET /media/export-adapters`, never
 // from a list in this file.
 //
-// 🚨 THE UNREADABLE HALF IS PART OF THE ANSWER. A format we recognise and
+// 🚨 THE UNREADABLE HALF IS PART OF THE ANSWER. A format we recognize and
 // cannot read (an Outlook .pst, an iMessage database, an Apple Notes archive)
 // is listed here with the server's own `block` sentence, so a person who drops
 // one meets an explanation instead of "unknown file". Hiding them would make
@@ -154,7 +154,7 @@ export function AdapterCatalog({ className }: { className?: string }) {
       {blocked.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold">
-            Recognised, but we cannot read them yet
+            Recognized, but we cannot read them yet
             <span className="ml-2 font-normal tabular-nums text-muted-foreground">
               {catalog.recognised_not_readable} formats
             </span>

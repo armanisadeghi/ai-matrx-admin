@@ -15,7 +15,7 @@ describe("placeLanes", () => {
 });
 
 describe("marks", () => {
-  it("colours first and last only", () => {
+  it("colors first and last only", () => {
     expect(marks({ a: 1, b: 2, c: 3 })).toEqual({ a: "best", c: "worst" });
   });
 });

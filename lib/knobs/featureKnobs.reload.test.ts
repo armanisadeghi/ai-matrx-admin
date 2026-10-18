@@ -2,7 +2,7 @@
 /**
  * THE 60 s KNOB WINDOW SURVIVES A RELOAD (lane PAGE-BUNDLE-2).
  *
- * Every hard load of every page read the whole `platform.feature_knob` catalogue (~3,500 rows, four
+ * Every hard load of every page read the whole `platform.feature_knob` catalog (~3,500 rows, four
  * pages) again, even a reload a second after the last. A reload inside the same minute now reads it
  * from the tab's sessionStorage; past the minute it is read again, so "live within a minute" holds.
  */
@@ -43,7 +43,7 @@ const freshPageLoad = (): Knobs => {
   return mod as unknown as Knobs;
 };
 
-describe("the knob catalogue across reloads", () => {
+describe("the knob catalog across reloads", () => {
   const realNow = Date.now;
   afterEach(() => {
     Date.now = realNow;

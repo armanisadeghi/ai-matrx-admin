@@ -2,7 +2,7 @@
  * Surface manifest — Quick Answers (`matrx-user/keyword-quick-answers`).
  *
  * Overlay surface for the five-keyword ruling window. The canonical
- * `QuickAnswers` child owns the loaded dimension catalogue, server-selected
+ * `QuickAnswers` child owns the loaded dimension catalog, server-selected
  * question, keyword batch, session progress, reason draft, and the existing
  * `setKeywordStamps` persistence path. It exposes that live state to the
  * window's nested `SurfaceRuntimeProvider` at trigger time.
@@ -43,7 +43,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Active question",
     sortOrder: 200,
     description:
-      "The loaded dimension catalogue and the question currently being asked.",
+      "The loaded dimension catalog and the question currently being asked.",
   },
   {
     key: "keyword_batch",
@@ -97,7 +97,7 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "dimension_catalog",
-    label: "Question catalogue",
+    label: "Question catalog",
     description:
       "Every keyword dimension available to this site, including each dimension's metadata and answer choices. Always an array while mounted; empty during initial loading or when the site has no dimensions.",
     valueType: "array",
@@ -111,7 +111,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "active_dimension",
     label: "Active dimension",
     description:
-      "Full catalogue entry for the question currently shown, including metadata and choices. Empty while loading or when no usable question exists.",
+      "Full catalog entry for the question currently shown, including metadata and choices. Empty while loading or when no usable question exists.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 2200,
@@ -290,7 +290,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "is_loading",
     label: "Questions loading",
     description:
-      "True while either the dimension catalogue or current keyword batch is loading or refreshing. Always populated.",
+      "True while either the dimension catalog or current keyword batch is loading or refreshing. Always populated.",
     valueType: "boolean",
     alwaysAvailable: true,
     typicalCharCount: 5,

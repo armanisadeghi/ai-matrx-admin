@@ -7,7 +7,7 @@
  * without saying what it costs, by sending the wrong record or the wrong
  * workspace, and by claiming it worked when the server refused.
  *
- * Every test here was run against the code with the behaviour it names removed,
+ * Every test here was run against the code with the behavior it names removed,
  * and every one of them failed first (see features/google-workspace/FEATURE.md).
  */
 
@@ -307,14 +307,14 @@ test("an available record still renders the Append composer (positive control)",
 });
 
 test(
-  "a Sheet Record renders no Append composer — the Docs API cannot honour it — " +
+  "a Sheet Record renders no Append composer — the Docs API cannot honor it — " +
     "and says where a range write lives instead (Cursor Bugbot, PR 228)",
   async () => {
     const sheet = googleDocumentRow({ sync_status: "available", mime_kind: "spreadsheet" });
     await mount(sheet);
 
     // Never a fake control: the composer that only ever calls
-    // `appendGoogleDocument` and is labelled as adding to a Doc is gone for a
+    // `appendGoogleDocument` and is labeled as adding to a Doc is gone for a
     // Sheet, never disabled-looking (Law 4).
     expect(container.querySelector("[data-google-document-append]")).toBeNull();
     const notice = container.querySelector("[data-google-document-append-unsupported]");

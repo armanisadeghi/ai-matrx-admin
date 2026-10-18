@@ -26,7 +26,7 @@ describe("a conversation citation opens AT its message range", () => {
   it("one message is 'Message N'", () => {
     expect(recordCitationTarget(cite({ sourceId: `${ID}:m0-0` }))?.label).toBe("Message 1");
   });
-  it("is recognised from the part id alone (cards saved before the kind was stamped)", () => {
+  it("is recognized from the part id alone (cards saved before the kind was stamped)", () => {
     expect(recordKindOf(cite({ sourceId: `${ID}:m0-0` }))).toBe("conversation");
   });
 });

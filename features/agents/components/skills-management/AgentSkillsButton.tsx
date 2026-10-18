@@ -8,7 +8,7 @@
  * `features/window-panels/windows/agents/AgentSkillsWindow.tsx`).
  *
  * Replaced the old `AgentSkillsModal` — a blocking Dialog that trapped the
- * user while they browsed the catalogue. The window keeps the builder usable
+ * user while they browsed the catalog. The window keeps the builder usable
  * underneath, and the picker itself now opens each skill's full instructions.
  */
 

@@ -19,7 +19,7 @@ import { kebabCaseToLucidePascalCase } from "@ai-matrx/icons";
 import type { WorkflowDefinitionLike } from "../../trigger-points";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
-/** The five families a step can belong to — drives icon + colour. */
+/** The five families a step can belong to — drives icon + color. */
 export type NodeFamily = "input" | "prepare" | "think" | "agent" | "deliver";
 
 export interface RunStepPresentation {
@@ -141,7 +141,7 @@ function readString(
  * ENGINE runs on and is always present, so it is what this reads.
  *
  * Deliberately partial: it names only the families the run surface changes
- * behaviour on, and returns null for everything else so an unknown type keeps
+ * behavior on, and returns null for everything else so an unknown type keeps
  * exactly today's treatment. Values match the live registry
  * (`GET /workflow/node-types`). The durable fix is the definition write path
  * stamping the registry's own category — filed, not done here.

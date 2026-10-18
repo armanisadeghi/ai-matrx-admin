@@ -40,7 +40,7 @@ function exactRows(filters: string) {
   const values = [...filters.matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]!.replace(/\\(.)/g, "$1"));
   return rows.filter((r) => values.includes(r.label) || values.includes(r.id));
 }
-/** What `ilike` returns for a literal pattern (escapes honoured). */
+/** What `ilike` returns for a literal pattern (escapes honored). */
 function likeRows(pattern: string) {
   const literal = pattern.replace(/\\(.)/g, "$1").toLowerCase();
   return rows.filter((r) => r.label.toLowerCase() === literal);

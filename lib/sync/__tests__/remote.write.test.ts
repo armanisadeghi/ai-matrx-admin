@@ -136,7 +136,7 @@ describe("remoteWrite scheduler", () => {
         scheduler.dispose();
     });
 
-    it("honours policy.remote.debounceMs override", async () => {
+    it("honors policy.remote.debounceMs override", async () => {
         const writeCalls: unknown[] = [];
         const POLICY_DEBOUNCE = 120;
         const policy = definePolicy<{ v: number }>({

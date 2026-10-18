@@ -277,7 +277,7 @@ export function MeaningPanel({
       </div>
       <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 pb-3 scrollbar-thin">
         {/* THE DOOR to industry starter packs. This panel is where the expert
-            discovers the site has no meaning of its own; the pack catalogue is
+            discovers the site has no meaning of its own; the pack catalog is
             where a day-one answer comes from, so the link belongs here. */}
         <Link
           href={`${marketingRoutes.site(brandId, siteId, "/value/packs")}`}

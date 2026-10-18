@@ -13,7 +13,7 @@
  * These pin the ways the new row set could go back to lying:
  *   · "never ran" and "could not be counted" must never render the same
  *   · a count of 1 is "Once", not "1 times"
- *   · a migrated Mandate is never labelled as a person's work
+ *   · a migrated Mandate is never labeled as a person's work
  *   · the panel prints the SERVER's sentences, so this file exercises the
  *     reading it does derive (`runsReading`) and nothing it does not
  */
@@ -104,7 +104,7 @@ describe("runsReading", () => {
 describe("origin labels", () => {
   it("never calls a migrated Mandate a person's work", () => {
     // 207 shortcut Mandates carry origin='user' and were written by the Phase
-    // 6.6 migration; labelling them "Created by a person" sends a reader
+    // 6.6 migration; labeling them "Created by a person" sends a reader
     // looking for an author who was not there that day.
     expect(ORIGIN_LABELS.migration).toBe("Migrated from an older table");
     expect(ORIGIN_LABELS.migration).not.toBe(ORIGIN_LABELS.user);

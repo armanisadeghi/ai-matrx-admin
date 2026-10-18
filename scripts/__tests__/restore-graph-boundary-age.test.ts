@@ -9,7 +9,7 @@
  * never hold, and `W7-GATE` runs T1 over that copy at H+49.
  *
  * TO SEE THESE GO RED: make `boundaryAgeVerdict` return `{ ok: true }` for every age —
- * the behaviour before this change, where staleness was a log line and not a check. The
+ * the behavior before this change, where staleness was a log line and not a check. The
  * over-ceiling cases below fail immediately. (Proven that way in a scratch copy before
  * the change landed; the real module is never weakened to demonstrate it.)
  *

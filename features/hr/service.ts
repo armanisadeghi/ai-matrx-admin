@@ -928,7 +928,7 @@ export function activateHrEmployer(
 // envelope, so `HrResult` already covers them and no call site changes at cutover.
 // A call made before the function exists comes back as `{kind:"failed"}` with
 // Postgres's "could not find the function" — which is a real, visible error rather
-// than a silent no-op, and that is the correct behaviour for a half-shipped lane.
+// than a silent no-op, and that is the correct behavior for a half-shipped lane.
 
 export function createHrEmployee(
   payload: Record<string, unknown>,
@@ -1031,7 +1031,7 @@ export function cancelHrPendingChange(args: {
   return callHrWrite(
     "hr_pending_change_cancel",
     { p_kind: args.kind, p_id: args.id, p_reason: args.reason },
-    { envelope: true, whatFailed: "Cancelling this scheduled change" },
+    { envelope: true, whatFailed: "Canceling this scheduled change" },
   );
 }
 

@@ -13,7 +13,7 @@
 //
 // Every refusal is printed ON THE ROW THAT CAUSED IT (P7). A red row says, in
 // domain words, exactly what stands in the way — the grid never sends a person
-// hunting for a coloured dot's meaning.
+// hunting for a colored dot's meaning.
 
 import {
   MatrxBatchGrid,
@@ -63,7 +63,7 @@ export interface PlacesBatchGridProps {
 }
 
 /**
- * The row's TONE decides the icon, so its colour and its sentence can never
+ * The row's TONE decides the icon, so its color and its sentence can never
  * disagree with the refusal printed beside Apply.
  */
 function statusOf(health: PlaceHealth): BatchGridRowStatus {

@@ -140,8 +140,8 @@ function nullableText(
 }
 
 /**
- * Normalise one tag exactly as the tag inputs in `ContextItemSettingsForm` /
- * `ContextItemAddForm` normalise what the user types.
+ * Normalize one tag exactly as the tag inputs in `ContextItemSettingsForm` /
+ * `ContextItemAddForm` normalize what the user types.
  */
 function normaliseTag(raw: string): string {
   return raw.trim().toLowerCase().replace(/\s+/g, "_");

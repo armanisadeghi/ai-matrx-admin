@@ -14,7 +14,7 @@
  *             policies."
  *
  * Three rounds, three different delivery paths, one noun. So the census is now
- * by BEHAVIOUR — every string a mandate screen can render — rather than by the
+ * by BEHAVIOR — every string a mandate screen can render — rather than by the
  * one delivery path the last recurrence happened to use. It reads the SOURCE of
  * every component the mandate hosts mount, strips comments (an agent's note to
  * the next agent is not copy), and flags any human sentence naming the old
@@ -402,7 +402,7 @@ describe("no mandate screen speaks the old system's nouns", () => {
  * in prose type, one line under the very label the screen already renders
  * correctly ("Task Overview"). Two of them also spoke a raw kind token.
  *
- * So this half of the guard is by BEHAVIOUR, not by source text: it DRIVES the
+ * So this half of the guard is by BEHAVIOR, not by source text: it DRIVES the
  * refusal voice with the snake_case keys a real provision uses and demands that
  * nothing it says back contains one. A sentence assembled from three template
  * holes is only readable by running it, and that is what this does.

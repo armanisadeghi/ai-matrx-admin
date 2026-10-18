@@ -4,7 +4,7 @@
  * user "Failed to save note" must use `toastErrorAlreadyCaptured`, which never
  * files a second, context-free system_error. This used to be asserted by
  * grepping the source for the call name — a change detector that passed while
- * the behaviour could regress. Now the phone editor's Save is driven for real
+ * the behavior could regress. Now the phone editor's Save is driven for real
  * against a rejecting save thunk.
  */
 import React, { act } from "react";
@@ -66,7 +66,7 @@ const row = (): Note => ({
   deleted_at: null, content_hash: null, file_path: null, last_device_id: null, custom_fields: {}, sync_version: 0, search_engine_indexed: null, shown_to: null,
 });
 
-describe("save-failure capture boundary (behaviour)", () => {
+describe("save-failure capture boundary (behavior)", () => {
   it("a rejected Save on the phone shows the already-captured notice, never a fresh toast.error", async () => {
     const store = configureStore({
       reducer: { notes: notesReducer, scopesTree: scopesTreeReducer, storeReads: storeReadsReducer, userAuth: (s = { id: ACTOR, authReady: true }) => s },

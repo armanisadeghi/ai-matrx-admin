@@ -7,7 +7,7 @@
  *
  * Why this hook instead of {@link useFileSrc}: the asset endpoint
  * returns every preset variant in one shot (cover, OG, thumbnail,
- * favicons, etc.) AND it honours the same durable-URL routing rules the
+ * favicons, etc.) AND it honors the same durable-URL routing rules the
  * rest of the system uses (public files get CDN URLs; private/shared get
  * durable authenticated inline URLs). New renderers should default to this hook;
  * `useFileSrc` covers callers that only need the raw inline URL

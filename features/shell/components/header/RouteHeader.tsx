@@ -33,7 +33,7 @@
 //   - Tap buttons self-space (44pt touch target). Don't add gap/padding around
 //     them inside a region; space only non-tap items with margins.
 //
-// Narrow widths (platform behaviour, inherited by every consumer — 2026-09-25):
+// Narrow widths (platform behavior, inherited by every consumer — 2026-09-25):
 //   - RIGHT folds. Pass actions as siblings (fragments are fine); when they do not all
 //     fit beside a title of TITLE_MIN_PX, the leftmost fold into ONE "…" overflow that
 //     opens them as a glass strip. Order your actions lowest-priority first, primary
@@ -43,11 +43,11 @@
 //     never drawn (a `hidden` file input) stays mounted but is never an action.
 //   - The PRIMARY (last) action stays visible — on a phone too: below 768px the other
 //     actions move into the shell's ⋮ sheet, the primary stays in the row (icon-only
-//     when it is a labelled tap button). On a phone a MENU is never the primary (it
+//     when it is a labeled tap button). On a phone a MENU is never the primary (it
 //     would be a second overflow beside the ⋮): it goes to the sheet, and the primary
 //     is the last non-menu action; one marked `data-route-header-secondary` goes to the sheet too. Menus are known by identity (`isMenuAction`); a
 //     page's own menu component declares `routeHeaderMenu = true`. Secondary actions fold first; then a
-//     labelled tap button (`label` + `icon`) goes icon-only — caption kept as its
+//     labeled tap button (`label` + `icon`) goes icon-only — caption kept as its
 //     accessible name and tooltip — instead of folding into "…".
 //   - LEFT always ellipsizes. Loose text inside a flex/grid host element is wrapped in a
 //     truncating span (see route-header-layout.tsx), so a clipped title ends in "…".
@@ -380,7 +380,7 @@ export default function RouteHeader({
       } = liveRef.current;
 
       // Record every action currently in the row; folded ones keep their last width.
-      // An icon-only primary records under its own key so its labelled width survives.
+      // An icon-only primary records under its own key so its labeled width survives.
       rightEl
         ?.querySelectorAll<HTMLElement>("[data-route-header-action]")
         .forEach((el) => {
@@ -489,7 +489,7 @@ export default function RouteHeader({
   // 🚨 THE PRIMARY (last) ACTION NEVER LEAVES THE ROW (2026-09-27): a page's
   // main action is never reachable only through a menu — "Submit all" on
   // /agents/battle, "New meeting" on /meetings. It stays, icon-only when it is
-  // a labelled tap button (caption kept as its accessible name + tooltip).
+  // a labeled tap button (caption kept as its accessible name + tooltip).
   // 🚨 A MENU IS NEVER THE PRIMARY (2026-09-27): a page's own "…" / record
   // menu kept in the row sat beside the shell's ⋮ — two overflow buttons. It
   // goes to the sheet; the primary is the last action that is NOT a menu.
@@ -680,7 +680,7 @@ export default function RouteHeader({
           {rowActions.map((a) => {
             const iconOnly = compactRow && a === rowPrimary;
             // SERVER HTML: whether this is a phone is unknown, and on a phone a
-            // labelled primary is icon-only. Draw both, chosen by the phone
+            // labeled primary is icon-only. Draw both, chosen by the phone
             // breakpoint in CSS, so the first paint already matches the
             // hydrated row at every width (no JS measurement, no re-truncation).
             if (

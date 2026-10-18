@@ -49,7 +49,7 @@ export function CompensationTab({
   org: HrOrgRef;
   className?: string;
 }) {
-  // Defence in depth. The server already omitted the tab; this is the second
+  // Defense in depth. The server already omitted the tab; this is the second
   // lock, and it renders NOTHING rather than a sentence about what is hidden.
   if (profile.comp_visibility === "none") return null;
 

@@ -44,7 +44,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * The response, checked rather than cast. A shape we do not recognise is a
+ * The response, checked rather than cast. A shape we do not recognize is a
  * refusal with a remedy, never a silent success: the policy may or may not have
  * changed, and saying "approved" over an unreadable answer is the screen lying.
  */
@@ -66,7 +66,7 @@ function decision(body: unknown): ApprovalDecisionReply {
     typeof appliedNow !== "boolean"
   ) {
     throw new Error(
-      "The approval service answered in a shape this screen does not recognise, so it cannot say whether the exception was decided. Reload the queue to see where this request stands.",
+      "The approval service answered in a shape this screen does not recognize, so it cannot say whether the exception was decided. Reload the queue to see where this request stands.",
     );
   }
   return {

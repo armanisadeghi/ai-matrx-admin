@@ -48,7 +48,7 @@ interface InstallationsClientProps {
   initialRows: AppInstanceRow[];
   /** Live min_supported_app_version from app_config for this application. */
   minSupportedVersion: string | null;
-  /** The application these instances belong to (for labelling). */
+  /** The application these instances belong to (for labeling). */
   app: string;
 }
 

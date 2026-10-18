@@ -75,10 +75,10 @@ export function CreateShowDialog({
       // (`/podcast/[slug]`) while the overlay's `hrefFor` contract is id-keyed.
       // Registering an id-shaped route here would bake in the wrong-token trap,
       // so the call site passes the slug href explicitly — `resolveEntityDoors`
-      // honours an override exactly. Logged as a registry gap in the handoff.
+      // honors an override exactly. Logged as a registry gap in the handoff.
       recordToast.success(
         // The show's route is keyed by SLUG, so the slug is what the toast
-        // must recognise as "still on this record's page" (the id never
+        // must recognize as "still on this record's page" (the id never
         // appears in `/podcast/[slug]`).
         { type: "pc_show", id: show.id, title: show.slug },
         `Created "${show.title}"`,

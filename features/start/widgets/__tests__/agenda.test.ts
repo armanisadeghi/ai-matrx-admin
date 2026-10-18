@@ -19,7 +19,7 @@ it("different meetings stay separate; a series all in the past shows its last", 
   expect(rows.map((r) => [r.meetingId, r.count])).toEqual([["b", 2], ["c", 1]]);
 });
 
-it("tomorrow and cancelled occurrences are not today's", () => {
+it("tomorrow and canceled occurrences are not today's", () => {
   const tomorrow = new Date(2026, 9, 10, 9).toISOString();
   expect(pickTodaysOccurrences([occ("a", tomorrow), { ...occ("b", at(11)), meetingCancelled: true }], now)).toEqual([]);
 });

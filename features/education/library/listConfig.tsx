@@ -106,7 +106,7 @@ export const educationLibraryListConfig: EntityListConfig<EducationLibraryRow> =
     noneLabels: { status: "No status" },
     /**
      * Three views, cards first. The library shipped table-only, which rendered
-     * eight visually distinct study formats as identical grey rows and could
+     * eight visually distinct study formats as identical gray rows and could
      * not show size, coverage, accuracy, or what is due — the four facts a
      * learner decides on. `useListViewPrefs` remembers the choice per user, so
      * the table remains one click away for anyone who wants to sort and filter.

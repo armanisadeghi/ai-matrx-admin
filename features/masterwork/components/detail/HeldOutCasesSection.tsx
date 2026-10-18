@@ -10,7 +10,7 @@
  * and its later steps and its resolution are read by exactly two callers — the
  * case-oracle node and the unfolding judge.
  *
- * 🚨 So this list shows the LABEL, the date and the licence, and nothing else.
+ * 🚨 So this list shows the LABEL, the date and the license, and nothing else.
  * Never the narrative, never a step, never how it turned out. The read below
  * selects only those columns, so there is nothing in the component's props to
  * leak even by accident — the withholding law enforced by the query, not by

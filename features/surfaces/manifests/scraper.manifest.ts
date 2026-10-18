@@ -426,13 +426,13 @@ const surfaceSpecific: SurfaceValue[] = [
  * `selected_search_hit` are not part of the command at all. They answer a
  * different question, at a different time, against different evidence: "of the
  * N things ALREADY fetched, which one is worth looking at?" That is a real
- * judgement an agent makes well after reading `results_overview` /
+ * judgment an agent makes well after reading `results_overview` /
  * `search_hits`, and it is `mode: "ui"` — nothing is fetched, nothing is
  * persisted, and a wrong pick costs one click to undo. `selected_search_hit`
  * is deliberately the FURTHEST an agent goes toward a scrape: it can put the
  * hit it judged best in front of the user, and the user presses Scrape.
  *
- * `active_result_tab` was considered and declined on the judgement bar: it is a
+ * `active_result_tab` was considered and declined on the judgment bar: it is a
  * pure mechanical view flip, and an agent already holds every representation of
  * the page in its context, so it knows nothing the user doesn't about which tab
  * they want.
@@ -526,7 +526,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "selected_result_page",
     label: "Selected scraped page",
     description:
-      "Opens one ALREADY-SCRAPED page in the results pane — the same as the user clicking it in the Pages sidebar, and it resets the pane to the Pretty tab exactly as that click does. Value is the zero-based index into results_overview (read it first; the order matches). An out-of-range index is refused with the real count. Nothing is fetched and nothing is persisted: this only changes which of the pages already in this session is on screen, so use it to put the page you just analysed in front of the user. Only available in the URL (\"quick\") and Deep (\"full\") modes, where the scraped-pages sidebar and results pane are rendered.",
+      "Opens one ALREADY-SCRAPED page in the results pane — the same as the user clicking it in the Pages sidebar, and it resets the pane to the Pretty tab exactly as that click does. Value is the zero-based index into results_overview (read it first; the order matches). An out-of-range index is refused with the real count. Nothing is fetched and nothing is persisted: this only changes which of the pages already in this session is on screen, so use it to put the page you just analyzed in front of the user. Only available in the URL (\"quick\") and Deep (\"full\") modes, where the scraped-pages sidebar and results pane are rendered.",
     valueType: "number",
     updatesValue: "selected_result_index",
     mode: "ui",

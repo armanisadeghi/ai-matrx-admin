@@ -18,7 +18,7 @@
  *                          learns the user said no and can continue/ask).
  *        - instructions  → submit a non-error `declined_with_instructions`
  *                          result carrying the user's typed redirection.
- *        - cancelled     → submit a non-error `declined` (skipped) result.
+ *        - canceled     → submit a non-error `declined` (skipped) result.
  *   6. On handler throw: submit a `handler_threw` error result.
  *
  * Every result goes through the single `submitToolResult` funnel so the

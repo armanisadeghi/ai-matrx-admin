@@ -6,7 +6,7 @@
  *
  * Floating preview panel. Shows the active source image and the selected
  * preset as a two-pane live preview, updating on every change to fit,
- * position, or background colour. The user can switch between files and
+ * position, or background color. The user can switch between files and
  * presets from inside the window.
  *
  * Rendered inline by `ImageStudioShell` — not a registered summon overlay

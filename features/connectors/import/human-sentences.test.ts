@@ -19,7 +19,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 describe("importMatchKeyWords", () => {
-  it("says how a Person was recognised in words", () => {
+  it("says how a Person was recognized in words", () => {
     expect(importMatchKeyWords("external_id:google_contacts")).toBe(
       "its Google Contacts id",
     );

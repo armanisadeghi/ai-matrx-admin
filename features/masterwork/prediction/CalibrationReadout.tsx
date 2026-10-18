@@ -43,7 +43,7 @@ import {
 
 const CHART_CONFIG = {
   // hsl(...) IS REQUIRED. `--chart-1` holds raw HSL CHANNELS ("12 76% 61%"),
-  // not a colour, so `var(--chart-1)` is an invalid `fill` and recharts fell
+  // not a color, so `var(--chart-1)` is an invalid `fill` and recharts fell
   // back to pure black — a dot that is invisible on a dark card
   // (jobs-bar-2026-09-16 lanes-b, item 15). Every other chart in the repo
   // wraps it; this one did not.

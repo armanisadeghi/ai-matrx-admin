@@ -183,7 +183,7 @@ function bulkConfig(
         }),
         // Returning a RESULT is how an action says it actually ran — see
         // `EntityBulkAction.run`. An action that resolves with nothing is
-        // telling the shell it did not run (the person cancelled its dialog),
+        // telling the shell it did not run (the person canceled its dialog),
         // and the shell then keeps the selection and says nothing.
         run: (selection: EntityBulkSelection<Row>) => {
           runCount += 1;

@@ -1,6 +1,6 @@
 /**
  * DATA-HOME-3F — three fix-before-Arman defects of VERIFY-DATA-HOME-3 (Verify 2):
- *   W3 a phone card is two lines (name, then kind · organization · updated), never labelled
+ *   W3 a phone card is two lines (name, then kind · organization · updated), never labeled
  *      fields, an empty line or "2 more fields";
  *   W4 the archive (the list's Archived filter, TABLE-ACTIONS item 10) is read only when that
  *      filter asks, ONE store page per list page (the first rows draw after one read), with no

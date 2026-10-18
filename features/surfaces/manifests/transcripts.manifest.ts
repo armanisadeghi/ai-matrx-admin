@@ -363,7 +363,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "per_speaker_text",
     label: "Text grouped by speaker",
     description:
-      'Object keyed by speaker label, whose values are that speaker\'s utterances joined by newlines (e.g. `{ "Speaker A": "line one\\nline two", "Speaker B": "..." }`). Empty object when no speakers are labelled or no transcript is open. Powers "summarize Speaker A\'s contributions" actions without per-speaker filtering in widget code.',
+      'Object keyed by speaker label, whose values are that speaker\'s utterances joined by newlines (e.g. `{ "Speaker A": "line one\\nline two", "Speaker B": "..." }`). Empty object when no speakers are labeled or no transcript is open. Powers "summarize Speaker A\'s contributions" actions without per-speaker filtering in widget code.',
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 4000,
@@ -513,7 +513,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *   de-umming, speaker-attribution fixes). The single highest-value thing an
  *   agent does to a raw ASR transcript.
  * - `transcript_speaker_label` — relabelling "Speaker 1" as the real person
- *   is authored labelling derivable from the content ("the host introduces
+ *   is authored labeling derivable from the content ("the host introduces
  *   himself as Dave"), and it is tedious by hand across dozens of segments.
  *
  * DELIBERATELY NOT WRITABLE:

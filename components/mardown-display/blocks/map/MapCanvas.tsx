@@ -24,8 +24,8 @@ export interface MapMarker {
   lng: number;
   label?: string;
   description?: string;
-  /** Draw a round labelled bubble (a rank, a mark) instead of the pin.
-   *  `className` colours it; it is set on a plain element inside the map. */
+  /** Draw a round labeled bubble (a rank, a mark) instead of the pin.
+   *  `className` colors it; it is set on a plain element inside the map. */
   bubble?: { text: string; className: string };
 }
 

@@ -92,7 +92,7 @@ describe("plan catalog", () => {
     ]);
   });
 
-  it("shows only labelled non-points limits, a zero limit as not included", () => {
+  it("shows only labeled non-points limits, a zero limit as not included", () => {
     const starter = plans.find((p) => p.planKey === "starter")!;
     const rows = planFeatureRows(starter);
     expect(rows.map((r) => r.capability)).toEqual(["platform.messages", "outreach.send_volume"]);

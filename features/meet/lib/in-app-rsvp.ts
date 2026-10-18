@@ -17,7 +17,7 @@ export interface InAppRsvpResult {
    * The server could not take the answer at all — no route yet (a deploy in
    * flight, 404) or it failed before writing (5xx). The caller records the
    * answer through the database door instead and says the host was not told.
-   * A 4xx refusal (not invited, cancelled) is NOT this: it throws its sentence.
+   * A 4xx refusal (not invited, canceled) is NOT this: it throws its sentence.
    */
   readonly routeMissing: boolean;
   readonly hostNotified: boolean;

@@ -64,7 +64,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Model registry",
     sortOrder: 100,
     description:
-      "The catalogue of registered models and providers the admin is browsing.",
+      "The catalog of registered models and providers the admin is browsing.",
   },
   {
     key: "browse_state",
@@ -92,7 +92,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Registry standing",
     sortOrder: 500,
     description:
-      "Where the open model sits in the catalogue: deprecation, primary/premium tiering, fallbacks, and web publishing.",
+      "Where the open model sits in the catalog: deprecation, primary/premium tiering, fallbacks, and web publishing.",
   },
 ];
 
@@ -147,7 +147,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "provider_names",
     label: "Provider names",
     description:
-      "Names of the `ai.provider` rows loaded alongside the models (the makers behind the catalogue). Always an array. Public identity only — no endpoint, vendor, or credential information.",
+      "Names of the `ai.provider` rows loaded alongside the models (the makers behind the catalog). Always an array. Public identity only — no endpoint, vendor, or credential information.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 300,
@@ -443,12 +443,12 @@ const surfaceSpecific: SurfaceValue[] = [
  *
  * WHERE THEY LIVE: `AiModelDetailPanel` registers the handlers via
  * `useSurfaceWriteHandlers`, not `AiModelsContainer`. The container mounts the
- * provider and owns the catalogue + the browse state, but the DETAIL PANE owns
+ * provider and owns the catalog + the browse state, but the DETAIL PANE owns
  * the form state, the save path, and the `saving` flag a write has to respect.
  * Both are inside the SAME provider — unlike `schedules` or `shapes`, the
  * detail pane here is a child of the list mount, not a second surface mount —
  * so this is one surface with one set of targets, registered from the
- * component that can actually honour them. Nothing is registered against the
+ * component that can actually honor them. Nothing is registered against the
  * list itself: the list owns only browse state, which is not writable here.
  *
  * MODE: both targets are `mode: "entity"` + `applyPolicy: "ask"`. `draft` is
@@ -565,9 +565,9 @@ This is an ADMIN surface: the super-admin console for the AI model registry at /
 
 The admin browses every registered model (schema ai, table model_definition) with its maker resolved from ai.provider, and opens one model in a side panel to inspect or edit its details, capabilities, controls, constraints, and standing.
 
-How to read the values: model_ids / models_summary / provider_names describe the CATALOGUE; active_tab_label, search_query, active_filters and sort_state describe the admin's current cut of it; every model_* value describes the ONE model open in the detail panel and is absent when nothing is selected. Note that models have no is_active column — model_is_deprecated is the activation signal, and model_is_primary / model_is_premium do the tiering.
+How to read the values: model_ids / models_summary / provider_names describe the CATALOG; active_tab_label, search_query, active_filters and sort_state describe the admin's current cut of it; every model_* value describes the ONE model open in the detail panel and is absent when nothing is selected. Note that models have no is_active column — model_is_deprecated is the activation signal, and model_is_primary / model_is_premium do the tiering.
 
-What you may safely do: read the catalogue and the open model's public facts, audit capability coverage, find stale duplicates or missing deprecations, and propose registry edits. Two fields on the OPEN model you may actually write, each behind a confirm the admin sees: its description and its common (display) name — the authored copy a person reads. Everything else you can only propose. Capabilities, context window, max tokens, ratings, the deprecated/primary/premium flags, web publishing and fallback routing all change what the platform DOES with this model for every caller on it, so the admin applies those in the panel. The model's provider-facing name is a dispatch key, not a label — never propose editing it as if it were copy.
+What you may safely do: read the catalog and the open model's public facts, audit capability coverage, find stale duplicates or missing deprecations, and propose registry edits. Two fields on the OPEN model you may actually write, each behind a confirm the admin sees: its description and its common (display) name — the authored copy a person reads. Everything else you can only propose. Capabilities, context window, max tokens, ratings, the deprecated/primary/premium flags, web publishing and fallback routing all change what the platform DOES with this model for every caller on it, so the admin applies those in the panel. The model's provider-facing name is a dispatch key, not a label — never propose editing it as if it were copy.
 
 Secrecy boundary, and it is strict: serving-vendor identity, endpoint base URLs, auth references, BYOK secret keys, and real-dollar pricing are admin-secret and are NOT present in this scope. Do not ask for them, do not guess them, and never repeat a credential of any kind.
 </surface_intro>`,

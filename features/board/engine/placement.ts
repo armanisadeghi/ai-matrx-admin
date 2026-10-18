@@ -3,7 +3,7 @@
  *
  * A result that arrives while you watch must land where you are looking,
  * never on top of something else (Miro, FigJam and Heptabase all place new
- * cards in the nearest free space to the viewport centre).
+ * cards in the nearest free space to the viewport center).
  *
  * Two rules:
  *   - `findFreeSpot(near)` — ONE tile at a point (a drop, an agent's add): the
@@ -13,7 +13,7 @@
  *   - `placeInFlow(flow)` — a RUN of adds (the Add menu used again and again):
  *     the tiles fill a block across the view in reading order, left to right,
  *     then the next row down, like text. Searching from each new tile's own
- *     centre made 15 adds a diagonal staircase 7,000 units tall: the camera
+ *     center made 15 adds a diagonal staircase 7,000 units tall: the camera
  *     flew to each new tile, so the next search started on top of it and the
  *     ring's first free spot was up and to the right, every time.
  */
@@ -56,7 +56,7 @@ function below(occupied: readonly Rect[], x: number, top: number, size: { w: num
 export function findFreeSpot(
   occupied: readonly Rect[],
   size: { w: number; h: number },
-  /** World point the new tile should be centred on, if free. */
+  /** World point the new tile should be centerd on, if free. */
   near: { x: number; y: number },
   gap = 40,
 ): Rect {
@@ -118,8 +118,8 @@ function landscapeSpan(count: number, size: { w: number; h: number }, gap: numbe
  * The first free spot in the flow in reading order: along each row left to
  * right, rows top to bottom (GRID steps), never wider than the flow (a tile
  * wider than the flow takes a row's start). When `near` is given and that
- * centred spot is free and inside the flow, it wins (a run's first tile lands
- * centred, as `findFreeSpot` would put it).
+ * centerd spot is free and inside the flow, it wins (a run's first tile lands
+ * centerd, as `findFreeSpot` would put it).
  */
 export function placeInFlow(
   occupied: readonly Rect[],

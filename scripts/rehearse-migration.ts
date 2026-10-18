@@ -8,7 +8,7 @@
  *
  * WHY THIS EXISTS. Lane W1-ORG-PREP had to prove exactly that for four chair steps
  * against production's real data, and `pnpm db:apply` had no clone target - so the
- * rehearsal ran through `psql --single-transaction` by hand, with NO judgement, NO
+ * rehearsal ran through `psql --single-transaction` by hand, with NO judgment, NO
  * refusals and NO ledger row, and the lock measurements that found a platform-wide
  * freeze (one `CREATE POLICY` taking ACCESS EXCLUSIVE on twenty-four relations in
  * `auth`, `storage` and `realtime`) were assembled from a second terminal. The method
@@ -24,7 +24,7 @@
  *      - the thing worth the whole exercise - every ACCESS EXCLUSIVE lock on a
  *      relation THE FILE DOES NOT NAME.
  *   2. THE REAL APPLY, by spawning `pnpm db:apply ... --target clone`. Not a
- *      reimplementation: the judgement, the refusals, the guard check, the inverse
+ *      reimplementation: the judgment, the refusals, the guard check, the inverse
  *      ground gate, the chair-step announcement and the marked ledger row are the
  *      runner's, and this harness never writes to the database itself outside the
  *      rolled-back measure pass.
@@ -58,7 +58,7 @@
  * ETIQUETTE. `campaign_watch.build_lock` is a table, one row per object family
  * (`custom` | `platform` | `iam`), taken with `on conflict do nothing` so exactly one holder
  * wins and nobody waits on the database itself. The table is on the clone too - it arrives with
- * every restore of production. A rehearsal that measures lock behaviour on objects a lane is
+ * every restore of production. A rehearsal that measures lock behavior on objects a lane is
  * mid-apply on is measuring that lane, not the file. So the rehearsal takes THE SAME ROWS THE
  * APPLY WOULD, ON THE CLONE, before the first measure pass:
  *
@@ -153,7 +153,7 @@ function usage(): void {
       `  inverse. Prints the lock mode each statement took and flags any ACCESS EXCLUSIVE on a\n` +
       `  relation the file does not name.\n` +
       `  --inverse defaults to migrations/inverse/<name>_down.sql, then <name>.inverse.sql.\n` +
-      `  Every apply goes through \`pnpm db:apply --target clone\`, so the judgement, the\n` +
+      `  Every apply goes through \`pnpm db:apply --target clone\`, so the judgment, the\n` +
       `  refusals and the marked ledger row are the runner's and not this harness's.`,
   );
 }
@@ -343,9 +343,9 @@ function recordBriefLockMeasurement(
  * locks at the same moment, so the span is the same span.
  *
  * It is written keyed by the sha256 of THE FILE'S BYTES. Change one character and the record no
- * longer answers for the file, which is the point: the runner must never honour a measurement
+ * longer answers for the file, which is the point: the runner must never honor a measurement
  * of an earlier draft. A file that declares nothing still gets its record — a measurement is a
- * fact, not a favour — and the runner reads it only when the file claims the exemption.
+ * fact, not a favor — and the runner reads it only when the file claims the exemption.
  */
 function recordPolicyDdlMeasurement(
   filePath: string,
@@ -710,7 +710,7 @@ async function main(): Promise<number> {
         `--target ${target}.\n` +
         `  Its measure pass EXECUTES the file's statements and rolls them back, which is a thing\n` +
         `  you do to a disposable physical copy of production and to nothing else. The clone is\n` +
-        `  the only database where the lock behaviour it measures is production's lock behaviour.\n` +
+        `  the only database where the lock behavior it measures is production's lock behavior.\n` +
         `  Refusing rather than measuring somewhere the numbers would not mean anything.`,
     );
     return 1;
@@ -858,7 +858,7 @@ async function main(): Promise<number> {
     return 1;
   }
   // The holder id. A lane's own id when it named one, so a row its APPLY already holds is
-  // recognised as its own rather than waited on; otherwise a name that says what this is and
+  // recognized as its own rather than waited on; otherwise a name that says what this is and
   // carries the pid, so two rehearsals of the same file are two holders and not one.
   const upStem = basename(upPath).replace(/\.sql$/i, "");
   const heldBy = lane ?? `db:rehearse:${upStem}:${process.pid}`;

@@ -4,7 +4,7 @@
  *
  * The gate is only a gate if it cannot be walked around. Every surface is routed
  * through `useGoogleAuthorizationWindow` and `check:google-auth-gate` keeps it
- * that way — but the last line of defence is here: `requestAuthorizationCode`
+ * that way — but the last line of defense is here: `requestAuthorizationCode`
  * and `startAuthorizationCodeRedirect` take the gate themselves, so a caller
  * that forgets still cannot open a second Google window.
  *

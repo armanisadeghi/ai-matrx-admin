@@ -138,7 +138,7 @@ export function definePolicy<TState>(config: PolicyConfig<TState>): Policy<TStat
     prePaintDescriptors.forEach((d, i) => validatePrePaintDescriptor(d, sliceName, i));
 
     // Rule: persistWhen / persistAfterLoad gate the debounced write scheduler,
-    // the only writer that honours them — warm-cache only.
+    // the only writer that honors them — warm-cache only.
     for (const key of ["persistWhen", "persistAfterLoad"] as const) {
         const fn = config[key];
         if (fn === undefined) continue;

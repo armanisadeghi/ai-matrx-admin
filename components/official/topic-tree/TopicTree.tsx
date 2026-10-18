@@ -10,7 +10,7 @@
  * keyboard model, one drag contract and one row rhythm instead of the three
  * near-identical trees this repo grew before it.
  *
- * Its two parents are named because their behaviour is inherited verbatim:
+ * Its two parents are named because their behavior is inherited verbatim:
  * `features/files/components/core/FileTree` (virtualisation + roving focus) and
  * `features/marketing/content-plan/components/PlanTree.tsx` (drop-on-a-row
  * reparenting, the cycle pre-check and the root drop strip).

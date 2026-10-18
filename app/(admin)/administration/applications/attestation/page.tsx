@@ -1,6 +1,6 @@
 // /administration/applications/attestation — config attestation: for one
 // application build, is every stored config key declared by the code and read by
-// installs? Colours come from platform.config_attestation_status (platform-admin
+// installs? Colors come from platform.config_attestation_status (platform-admin
 // SECURITY DEFINER door); this page renders them.
 // Cross-repo system-of-record: common-docs/systems/platform/app-config/attestation/FEATURE.md
 

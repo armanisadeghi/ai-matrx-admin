@@ -336,7 +336,7 @@ function RetirementPlan({
                   {branch.pages} page(s) ·{" "}
                   {branch.pages_with_no_other_topic} would end on no topic
                 </span>
-                {/* The server's own sentence for what it recognised. */}
+                {/* The server's own sentence for what it recognized. */}
                 {branch.reason ? (
                   <span className="block whitespace-pre-wrap text-muted-foreground">
                     {branch.reason}

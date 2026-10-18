@@ -16,7 +16,7 @@
  *        Sheets & Drive files — not connected" while Docs was connected on the
  *        account beside it.
  *   D2 — PLAN §5.3 asks for a per-product last success and last refusal. When
- *        this suite was written the server recorded neither, so the row modelled
+ *        this suite was written the server recorded neither, so the row modeled
  *        both and carried null honestly. It records both now (lane F-7): what a
  *        REAL record does to a row lives in
  *        `the-health-row-shows-the-real-last-call.test.ts`; what an EMPTY one
@@ -286,7 +286,7 @@ describe("D7 — a consent surface opens on the account that holds the most", ()
   });
 });
 
-describe("D2 — per-product last success and last refusal are modelled, never faked", () => {
+describe("D2 — per-product last success and last refusal are modeled, never faked", () => {
   it("carries null for both while the server records neither", () => {
     const row = productHealth({
       provider,

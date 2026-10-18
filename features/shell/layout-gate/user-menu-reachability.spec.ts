@@ -11,7 +11,7 @@
  *   - the panel measured `top 588`, `height 304`, `bottom 892` — it fits;
  *   - `Dark Mode` measured `top 878, bottom 906` in a 900px window — 6px below
  *     the WINDOW and 14px below the panel that is supposed to contain it;
- *   - `document.elementFromPoint` at its centre answered
+ *   - `document.elementFromPoint` at its center answered
  *     `LABEL.shell-user-menu-backdrop`, not the button;
  *   - `scrollHeight === clientHeight === 304`, `scrollTop 0`, and six wheel
  *     ticks over the panel moved nothing — so scrolling to it was impossible;
@@ -303,7 +303,7 @@ type RowReport = {
 
 /**
  * Every control a human can see in the menu, with where it is and what a
- * mouse click at its centre would actually land on. "Can see" is the engine's
+ * mouse click at its center would actually land on. "Can see" is the engine's
  * own answer (`checkVisibility`), so a row hidden by the fix is not reported
  * and a row that is merely CLIPPED — walk 16's case — still is.
  */
@@ -387,7 +387,7 @@ test("with every group collapsed, no menu control is parked outside the window",
   ).toEqual([]);
 });
 
-test("with every group collapsed, every visible row answers a click at its centre", async ({
+test("with every group collapsed, every visible row answers a click at its center", async ({
   page,
 }) => {
   await mount(page, false);

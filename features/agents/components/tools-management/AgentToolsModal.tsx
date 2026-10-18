@@ -44,7 +44,7 @@ interface AgentToolsModalProps {
   agentId: string;
   /**
    * An alternative way in. The default is the wrench icon beside the model name;
-   * the builder's labelled Tools row (AgentToolsRow) passes a worded "Add"
+   * the builder's labeled Tools row (AgentToolsRow) passes a worded "Add"
    * button instead, because an unlabelled icon is what made a whole verification
    * pass report that the builder had no tools picker at all (2026-09-19).
    */

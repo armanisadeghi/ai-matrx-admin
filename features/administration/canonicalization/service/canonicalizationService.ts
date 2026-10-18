@@ -122,7 +122,7 @@ export async function fetchOverview(): Promise<CanonicalizationOverview> {
     // DISTINCT functions, deliberately the same definition as
     // audit.refresh_log.broken_fn (count(distinct signature) where
     // severity='real') so the tile and the log can never print two numbers for
-    // one thing. Findings-per-severity is separate and labelled as findings.
+    // one thing. Findings-per-severity is separate and labeled as findings.
     brokenFunctionCount: realSignatures.size,
     brokenFunctionBySeverity,
     brokenFunctionRowCount: brokenFns.length,

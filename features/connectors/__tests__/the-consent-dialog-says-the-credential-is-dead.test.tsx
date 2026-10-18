@@ -8,7 +8,7 @@
  *    this account. Nothing it already has is asked for again." — then nine rows,
  *    each just its name, its promise and "What Google is asked for" — then
  *    "Connect selected" and "Google will ask you to approve 9 products again,
- *    which renews the access it stopped honouring. Nothing new is asked for."
+ *    which renews the access it stopped honoring. Nothing new is asked for."
  *
  * "Needs reconnecting" appeared ZERO times and "cannot be used" ZERO times.
  * `ProductRow` rendered a badge for `connected`, `scope_missing` and `refused`
@@ -177,7 +177,7 @@ describe("a dead credential, in the dialog", () => {
     // same claim. Before this, one said nothing was asked for again and the other
     // said nine products would be approved again.
     expect(shown).toContain(
-      // YouTube is its own labelled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
+      // YouTube is its own labeled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
 `approve ${provider.products.length - 1} products again`,
     );
     expect(shown).toContain("nothing new is asked for");

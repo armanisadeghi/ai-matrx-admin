@@ -185,7 +185,7 @@ export function IntelligenceIndicator({
           <PopoverTrigger asChild>
             {/* 🚨 A FINGER-SIZED TARGET (page-pass core 4). The painted mark
                 stays small; on a touch screen the button itself is 44px (the
-                mark centred in it), so it never overlaps a neighbour the way
+                mark centerd in it), so it never overlaps a neighbour the way
                 an invisible ring would. */}
             <button
               type="button"

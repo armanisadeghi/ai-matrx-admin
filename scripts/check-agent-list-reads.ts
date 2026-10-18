@@ -32,7 +32,7 @@ const ROOT = path.resolve(__dirname, "..");
 
 /**
  * An actual READ — `.rpc("agx_get_list" | "agx_get_list_full" | "agx_search")`.
- * Prose that NAMES the RPC is documentation, not a second catalogue, so this
+ * Prose that NAMES the RPC is documentation, not a second catalog, so this
  * matches the call and nothing else.
  */
 const BANNED = /\.rpc\(\s*["'`]agx_(?:get_list\w*|search)["'`]/g;

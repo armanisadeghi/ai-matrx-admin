@@ -13,7 +13,7 @@
  * Rows come from `processed_document_pages` via `useProcessedDocumentPages`.
  * Joined scrolling: an `IntersectionObserver` on per-page anchors in the
  * text columns drives `pdfRef.contentWindow.location.hash = '#page=N'`,
- * which the PDF-rendering iframe honours.
+ * which the PDF-rendering iframe honors.
  *
  * Legacy documents (extracted before per-page persistence shipped) return
  * zero pages from the backend; the panel surfaces a clear re-process CTA

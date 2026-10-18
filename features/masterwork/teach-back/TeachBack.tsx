@@ -449,7 +449,7 @@ export function TeachBack({
             but it went on rendering as a white textarea with a placeholder, a
             caret target and a resize grip — the only sign it was dead was a
             `disabled:opacity-50` you have to compare two screenshots to see, and
-            one grey sentence underneath. So the screen offered an input it would
+            one gray sentence underneath. So the screen offered an input it would
             not accept. Running, it states the topic as a fact instead. */}
         {started ? (
           <p className="mt-1 text-sm text-foreground">
@@ -505,7 +505,7 @@ export function TeachBack({
             {/* 🚨 SAY WHAT ACTUALLY HAPPENS (jobs-bar-2026-09-16, item 9). This
                 promised "It reads out loud" and then nothing ever spoke: each
                 round arrives as text with a "Read it to me" button beside it.
-                A sentence that describes a behaviour the product does not have
+                A sentence that describes a behavior the product does not have
                 is the same defect as a control that does nothing. */}
             {knobs.voiceDefaultOn
               ? "Each round is on screen, with a button to have it read to you."
@@ -715,7 +715,7 @@ export function TeachBack({
               </Button>
             </div>
             {/* 🚨 A DISABLED BUTTON SAYS WHY (jobs-bar-2026-09-16, item 12).
-                "Send this and try again" greys out until there is a correction
+                "Send this and try again" grays out until there is a correction
                 in the box, and said nothing about it — so the Expert who reads
                 an explanation, disagrees with it, and reaches for the button
                 finds a dead control and no reason for it. */}

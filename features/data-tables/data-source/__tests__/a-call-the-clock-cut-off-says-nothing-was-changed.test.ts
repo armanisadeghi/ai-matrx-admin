@@ -6,7 +6,7 @@
  * for a minute. Both doors hit the 8 s clock. Before this lane the column dialog printed
  * "fieldDeclare: timed_out — canceling statement due to statement timeout" (she re-added the column to
  * learn whether it existed) and the row dialog's remedy was "Try a smaller page" — a sentence for a
- * page read, on a create. Postgres cancelled the whole statement, so nothing was written; the seam
+ * page read, on a create. Postgres canceled the whole statement, so nothing was written; the seam
  * says exactly that, in a person's words, and the remedy is "try again", on both doors.
  *
  * RED on the pre-lane seam: `addColumn` returned the door's machine line; `upsertRow` returned

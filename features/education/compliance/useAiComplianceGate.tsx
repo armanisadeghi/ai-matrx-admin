@@ -23,7 +23,7 @@
 //     every account and the gate protected nobody, and a guest could skip it
 //     entirely by never signing in — that hole is now closed too.
 //   - anything else     -> "a parent must approve" (the guardian-consent flow).
-// Because all nine AI entry points already share this primitive, both behaviours
+// Because all nine AI entry points already share this primitive, both behaviors
 // land everywhere from here — never re-implement either dialog at a call site.
 
 "use client";

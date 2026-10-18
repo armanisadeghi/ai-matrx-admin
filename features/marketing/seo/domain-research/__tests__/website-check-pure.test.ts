@@ -142,7 +142,7 @@ describe("the numbers a panel shows at a glance", () => {
 });
 
 describe("the Matrx tile before the server announces compare sources", () => {
-  it("reads the backlinks rank, labelled Link strength, so no second Moz can appear", () => {
+  it("reads the backlinks rank, labeled Link strength, so no second Moz can appear", () => {
     const tiles = authorityTiles(
       {
         authority: view({ output: { domain_authority: 31 } }),

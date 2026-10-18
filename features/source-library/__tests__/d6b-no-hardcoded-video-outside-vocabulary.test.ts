@@ -9,7 +9,7 @@
  * the ONE place a source-kind word is allowed to be chosen. Every other file
  * in this feature must read it, never spell "video(s)" itself.
  *
- * This is a static census, not a behavioural test: it reads every `.ts`/`.tsx`
+ * This is a static census, not a behavioral test: it reads every `.ts`/`.tsx`
  * file this feature ships (excluding tests and `vocabulary.ts` itself, which
  * is where the word legitimately lives — in the `youtube` entry) and fails on
  * any PROSE string literal — one containing a space, so it reads as words a
@@ -48,7 +48,7 @@ const ALLOWED_PROSE: string[] = [
     "YouTube channel, handle, playlist or video link; a podcast name, Apple Podcasts link or RSS feed; a blog, Substack or Medium address; or a SlideShare or Speaker Deck profile",
     // CatalogPasteBox's classification of ONE input kind it detected — a
     // pasted URL that IS a YouTube video, never a stand-in for "the Source".
-    "read as a video — we catalogued the channel it belongs to",
+    "read as a video — we catalogd the channel it belongs to",
     // SourceDetailPanel's `captionsSentence`/`captionsLabel`: `has_captions`
     // and `caption_languages` are populated by the YouTube caption probe and
     // nothing else adapter-side reaches these three sentences today. Real,

@@ -12,7 +12,7 @@
  *
  * Forms outside the task editor use the package's `DateField`
  * (`@ai-matrx/design-system/controls`); `id` / `emptyLabel` remain for a
- * labelled field-variant trigger.
+ * labeled field-variant trigger.
  */
 
 import React from "react";

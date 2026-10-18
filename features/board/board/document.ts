@@ -92,7 +92,7 @@ export interface BoardGroup {
   rect: Rect;
   title: string;
   note?: string;
-  /** The frame's colour (a key of the board palette); absent = the neutral frame. */
+  /** The frame's color (a key of the board palette); absent = the neutral frame. */
   color?: ShapeColor;
   /** The chapter's icon, a Lucide name ("Palette"), set by a template or an agent; absent = read from what it holds. */
   icon?: string;

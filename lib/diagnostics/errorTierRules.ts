@@ -459,7 +459,7 @@ export const DOWNGRADE_RULES: DowngradeRule[] = [
     tier: "yellow",
     persist: false,
     reason:
-      "Request cancelled by navigation / unmount / superseding fetch — expected control flow, not a failure.",
+      "Request canceled by navigation / unmount / superseding fetch — expected control flow, not a failure.",
     addedAt: "2026-06-28",
     match: {
       // supabase-postgrest is included because postgrest-js RESOLVES an aborted
@@ -474,7 +474,7 @@ export const DOWNGRADE_RULES: DowngradeRule[] = [
     tier: "yellow",
     persist: false,
     reason:
-      "React cancelled a superseded Next navigation transition. This is expected control flow when a newer transition wins; retain the local breadcrumb without filing a durable implementation incident.",
+      "React canceled a superseded Next navigation transition. This is expected control flow when a newer transition wins; retain the local breadcrumb without filing a durable implementation incident.",
     addedAt: "2026-09-12",
     match: {
       source: "unhandled-rejection",

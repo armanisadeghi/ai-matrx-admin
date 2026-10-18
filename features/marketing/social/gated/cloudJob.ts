@@ -43,7 +43,7 @@ const LABELS: Record<CloudStage, string> = {
   landing: "Saving",
   done: "Done",
   failed: "Failed",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
 };
 
 const TERMINAL: ReadonlySet<CloudStage> = new Set(["done", "failed", "cancelled", "needs_login"]);

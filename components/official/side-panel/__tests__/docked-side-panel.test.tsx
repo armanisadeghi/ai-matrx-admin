@@ -1,5 +1,5 @@
 /**
- * DockedSidePanel — the three behaviours an independent review found missing
+ * DockedSidePanel — the three behaviors an independent review found missing
  * (2026-09-27), pinned:
  *
  *   1. A remembered width never crushes the page: it is clamped to `maxShare`

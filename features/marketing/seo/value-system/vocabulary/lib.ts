@@ -74,7 +74,7 @@ export function findDraftIssues(
       issues.push({
         value: row.value,
         message:
-          "Needs a name — the name is what every keyword is labelled with.",
+          "Needs a name — the name is what every keyword is labeled with.",
       });
       continue;
     }

@@ -145,11 +145,11 @@ const ALLOW_RE = /personal-seat-ok:\s*\S+/;
 // bringing it back is the same defect.
 const TENANT_RE = /(["'`])platform_(?:orgs|users|all)\1|\bADMIN_(?:SUPPORT_)?LIST_SCOPES\b/;
 const SUPPORT_ONLY_RE = /admin-support-only:\s*\S+/;
-// A HAND-MADE tenant lane: a tab / lane / segment literal labelled
+// A HAND-MADE tenant lane: a tab / lane / segment literal labeled
 // "Organizations" or "Users" (`{ id: "users", label: "Users" }`,
 // `<Tab>Organizations</Tab>`) — the shape the admin mandate window used before
 // it had any scope array to catch.
-// A navigation link labelled "Organizations" (to the org admin pages) is not a
+// A navigation link labeled "Organizations" (to the org admin pages) is not a
 // lane, so a `label:` only counts when its object carries a scope id.
 const TENANT_LABEL_RE = /\blabel:\s*(["'`])(?:Organizations|Users)\1/;
 const TENANT_LANE_ID_RE = /\b(?:id|kind|scope|value):\s*(["'`])(?:orgs|users|platform_orgs|platform_users|platform_all)\1/;
@@ -257,7 +257,7 @@ function selfTest(): void {
       expectRed: true,
     },
     {
-      name: "a navigation link labelled Organizations (not a lane)",
+      name: "a navigation link labeled Organizations (not a lane)",
       findings: scanManagementText("x.tsx", '  {\n    label: "Organizations",\n    href: "/administration/users/organizations",\n  },'),
       expectRed: false,
     },

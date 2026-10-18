@@ -10,7 +10,7 @@
  * These tests are about the three ways a button like that lies to a person:
  * running without saying what it costs, sending the wrong record or the wrong
  * workspace, and claiming it worked when the server refused. Every one of
- * them was run against the code with the behaviour it names removed, and
+ * them was run against the code with the behavior it names removed, and
  * every one of them failed first.
  */
 

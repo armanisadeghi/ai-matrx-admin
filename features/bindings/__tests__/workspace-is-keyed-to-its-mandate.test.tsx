@@ -20,7 +20,7 @@
  * at a second mandate by a props change — never a remount, because a remount is
  * exactly what production did not do. The refusal is held by a stateful stand-in
  * mounted where the workspace's own stateful body sits: it captures the mandate
- * it first saw and keeps saying so, which is precisely the behaviour of a
+ * it first saw and keeps saying so, which is precisely the behavior of a
  * `useState` that nothing resets. If the workspace is keyed to its mandate the
  * stand-in remounts and the first job's words are gone; if it is not, they are
  * still on screen — which is what production showed.

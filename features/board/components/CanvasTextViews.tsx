@@ -5,7 +5,7 @@
  * layer (`ShapesLayer`), so they share the drawings' selection, move, resize,
  * delete, undo, snap and marquee.
  *
- *  - A sticky (FigJam / Miro): a coloured square card, no header. Its words
+ *  - A sticky (FigJam / Miro): a colored square card, no header. Its words
  *    shrink to fit the card. Click it once to select, again (or double-click,
  *    or Enter) to type; Esc leaves; Tab makes the next sticky beside it.
  *  - Plain text (tldraw / Figma): words with no box. It grows with what you
@@ -21,7 +21,7 @@ import { nextStickyBeside } from "../engine/canvas-text";
 
 type AnyBoard = BoardStore<BoardTileBase>;
 
-/** A sticky's card colour (light + dark from `board-accents.css`). */
+/** A sticky's card color (light + dark from `board-accents.css`). */
 export const stickyColorCss = (c: StickyColor): string => `hsl(var(--board-sticky-${c}))`;
 const STICKY_INK = "hsl(var(--board-sticky-ink))";
 

@@ -31,7 +31,7 @@ export function SettingsRouteProvider({
    * is the original defect wearing a link.
    *
    * This is not a default and not a fallback: nothing is chosen for anybody.
-   * It is the organization THE PERSON CLICKED, honoured by this surface only,
+   * It is the organization THE PERSON CLICKED, honored by this surface only,
    * for this read and the writes it makes. With no `org` in the URL the active
    * organization answers exactly as before, and with none of those the pane
    * says so and asks (`UniversalSettingsPane`), per the organization gate.

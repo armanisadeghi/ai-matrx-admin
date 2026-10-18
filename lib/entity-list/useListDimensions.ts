@@ -12,7 +12,7 @@
 //   custom.context_scopes            → a Value named by the URL, to label the control
 // They are called through the scope doors (`scopeDoors()` — `@ai-matrx/records/scopes`) —
 // never a second `.schema("custom")` here. @ai-matrx/records 0.60.9 lists these doors in its
-// generated catalogue but exposes no method for them; when it does, swap the four imports below.
+// generated catalog but exposes no method for them; when it does, swap the four imports below.
 //
 // The server half is `platform.list_dimension_ids` (see ./dimensionFilter.ts). It still reads the
 // links (`platform.associations` → 'scope'): lane 9's board does not move them.

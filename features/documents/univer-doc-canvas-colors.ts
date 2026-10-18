@@ -1,5 +1,5 @@
 /**
- * The document canvas renders the colours it is given, VERBATIM — in every
+ * The document canvas renders the colors it is given, VERBATIM — in every
  * theme.
  *
  * ─── WHY THIS FILE EXISTS ───────────────────────────────────────────────────
@@ -9,9 +9,9 @@
  * `UniverRenderingContext`). The shipped implementation, `CanvasColorService`,
  * does two things once `ThemeService.darkMode` is true:
  *
- *   1. It INVERTS every colour through `invertColorByMatrix`. That is how
+ *   1. It INVERTS every color through `invertColorByMatrix`. That is how
  *      Univer produces a dark document: the white page becomes near-black and
- *      the black ink becomes near-white. It happens to the colours the HOST
+ *      the black ink becomes near-white. It happens to the colors the HOST
  *      pushes in too — a host that states "the page is white paper" gets a
  *      black page (cold walk 18's photograph, 2026-09-21).
  *   2. It calls `new ColorKit(color)` on anything that is not `#hex`,
@@ -29,7 +29,7 @@
  * That is what Word, Pages and Google Docs show by default, it is what the
  * document looks like when it is printed or exported, and it is the only
  * arrangement in which the ink is legible without the host also rewriting the
- * colour stored in every text run. It is unreachable while an inversion sits
+ * color stored in every text run. It is unreachable while an inversion sits
  * between what the host states and what the canvas paints — invert the paper
  * and the ink inverts with it. So the document instance swaps the inverting
  * service for one that resolves Univer's THEME TOKENS and inverts nothing.
@@ -58,7 +58,7 @@ export interface ReplaceableInjector {
 }
 
 /**
- * Swap the dark-mode colour inversion out of ONE Univer instance.
+ * Swap the dark-mode color inversion out of ONE Univer instance.
  *
  * MUST be called after `createUniver` and BEFORE the document unit is created:
  * `ICanvasColorService` is constructor-injected into `Engine`, and the engine
@@ -78,7 +78,7 @@ export function renderDocumentCanvasColorsVerbatim(
       ICanvasColorService,
       {
         // Tokens resolved from the LIVE theme on every call (a theme change
-        // reaches the next frame); real colours pass through untouched.
+        // reaches the next frame); real colors pass through untouched.
         useFactory: (themeService: ThemeService) => ({
           getRenderColor: (color: string) =>
             resolveUniverCanvasColor(color, (token) =>

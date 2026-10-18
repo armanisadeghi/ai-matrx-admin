@@ -220,7 +220,7 @@ export function runLabel(
 /**
  * WHAT GOES IN EACH BOX, SAID IN THE BOX (cold walk 22, friction).
  *
- * A checking Masterwork's first field is labelled "The text (verbatim)" by the
+ * A checking Masterwork's first field is labeled "The text (verbatim)" by the
  * build, and its placeholder read "Type your answer" — the generic invitation
  * every variable textarea falls back to. It is not an answer; it is the text
  * to be checked. A placeholder the field's author DECLARED always wins; for

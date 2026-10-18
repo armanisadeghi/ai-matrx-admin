@@ -1,4 +1,4 @@
-// features/portals/PortalBrand.tsx — the business's own name, logo and colour, drawn the same on
+// features/portals/PortalBrand.tsx — the business's own name, logo and color, drawn the same on
 // every portal screen (lane S6, U12). Server-rendered at a fixed size, so the first paint is the
 // real screen: the logo box is reserved before the picture arrives and nothing shifts.
 //
@@ -8,13 +8,13 @@ import Link from "next/link";
 
 import { monogram, type PortalLook } from "./look";
 
-/** The thin accent band across the top of a portal screen, or nothing for the app's colour. */
+/** The thin accent band across the top of a portal screen, or nothing for the app's color. */
 export function PortalAccentBand({ look }: { look: PortalLook }) {
   if (!look.bandClass) return null;
   return <div aria-hidden className={`fixed inset-x-0 top-0 z-10 h-1 ${look.bandClass}`} />;
 }
 
-/** The logo tile: the business's picture, or its first letter on its colour. */
+/** The logo tile: the business's picture, or its first letter on its color. */
 export function PortalLogo({ look, size = "md" }: { look: PortalLook; size?: "sm" | "md" }) {
   const box = size === "sm" ? "h-9 w-9 text-sm" : "h-12 w-12 text-lg";
   if (look.logoUrl) {

@@ -98,7 +98,7 @@ export function PageBlockedChecksCard({ page }: { page: MarketingPage }) {
         siteId: site.id,
         pageUrl: page.url,
       });
-      // The command wrote new evidence; the analysis catalogue has to re-read
+      // The command wrote new evidence; the analysis catalog has to re-read
       // it before these checks can answer. Refresh what the page shows either
       // way, so the user never stares at a stale "we haven't…".
       await queryClient.invalidateQueries({

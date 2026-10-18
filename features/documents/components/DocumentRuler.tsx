@@ -7,7 +7,7 @@ import { PX_PER_INCH } from "@ai-matrx/office/core";
 import { rulerGeometry } from "@ai-matrx/office/docs/tools";
 
 interface Props {
-  /** Width of the area the page is centred in. */
+  /** Width of the area the page is centerd in. */
   containerWidth: number;
   zoom: number;
   /** The document style, read fresh (page setup changes it). */

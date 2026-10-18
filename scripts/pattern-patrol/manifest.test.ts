@@ -112,7 +112,7 @@ describe("Pattern Patrol typed manifest", () => {
     expect(fleet?.prompt).toContain("BACKLOG GOVERNOR CONTRACT");
     expect(fleet?.prompt).toContain("inspect new or changed runs only");
     expect(fleet?.prompt).toContain(
-      "do not publish a daily catalogue of unchanged defects",
+      "do not publish a daily catalog of unchanged defects",
     );
   });
 

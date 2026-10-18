@@ -21,7 +21,7 @@ describe("every developer / creator site wears its real mark, raw", () => {
     expect(svg).not.toBeNull();
     // A drawn shape, not initials or a stand-in glyph.
     expect([...host.querySelectorAll("path")].map((p) => p.getAttribute("d") ?? "").join("").length).toBeGreaterThan(30);
-    // Raw: nothing wraps it in a coloured tile, and the shape carries the colour itself.
+    // Raw: nothing wraps it in a colored tile, and the shape carries the color itself.
     expect(host.querySelector("[class*='bg-']")).toBeNull();
     expect(host.querySelector("span[style*='background']")).toBeNull();
     expect(svg?.getAttribute("class") ?? "").not.toMatch(/\bbg-/);

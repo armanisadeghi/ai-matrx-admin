@@ -2,7 +2,7 @@
 
 /**
  * Google brand marks — the ONE place every "Google" mention in the app gets its official mark.
- * Always full colour (Google's brand guidelines forbid recolouring the G or product icons).
+ * Always full color (Google's brand guidelines forbid recolouring the G or product icons).
  * Built on the shared connector artwork in `@ai-matrx/chat`, plus Slides and the official
  * "Sign in with Google" / "Continue with Google" button (Google Identity branding guidelines).
  */
@@ -86,7 +86,7 @@ const TEXT: Record<GoogleButtonText, string> = {
 
 /**
  * The official Google button (Google Identity branding guidelines): 40px tall, 12px side padding,
- * 20px G, 10px gap, Roboto Medium 14px, fixed Google colours per theme (never app theme tokens).
+ * 20px G, 10px gap, Roboto Medium 14px, fixed Google colors per theme (never app theme tokens).
  */
 export function GoogleSignInButton({
   theme = "light",

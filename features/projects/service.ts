@@ -56,7 +56,7 @@ import { isUuidShape } from "@ai-matrx/kit/uuid";
  * Resolve the organization this write acts in: the caller's explicit id, else
  * the one the person has SELECTED. There is no fallback organization
  * — `ensureOrgId` refuses instead, and that refusal is re-thrown UNCHANGED so
- * `isOrganizationRequiredError` can still recognise it upstream (wrapping it in
+ * `isOrganizationRequiredError` can still recognize it upstream (wrapping it in
  * `pgErrorToError` used to erase the class and leave the surface with a
  * programmer's sentence it could not classify).
  * Law: common-docs/policies/context-is-carried-never-rebuilt.md.
@@ -675,10 +675,10 @@ export async function cancelProjectInvitation(
 ): Promise<OperationResult> {
   const result = await invitationsService.revoke(invitationId);
   if (isRecordsErr(result)) {
-    console.error("Error cancelling project invitation:", result.error.message);
+    console.error("Error canceling project invitation:", result.error.message);
     return { success: false, error: result.error.message };
   }
-  return { success: true, message: "Invitation cancelled successfully" };
+  return { success: true, message: "Invitation canceled successfully" };
 }
 
 /**

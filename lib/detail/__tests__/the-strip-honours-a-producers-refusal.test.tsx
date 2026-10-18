@@ -13,7 +13,7 @@
 // pressing that Reconnect opened the Google consent window, which cannot repair
 // a quota, an outage or a platform-configuration fault.
 //
-// The contract is three-valued and the hook honours each value:
+// The contract is three-valued and the hook honors each value:
 //   a function → that action · `null` → NO Reconnect · omitted → the host's.
 //
 // The fix was made in `@ai-matrx/detail` first and never reached the frontend,

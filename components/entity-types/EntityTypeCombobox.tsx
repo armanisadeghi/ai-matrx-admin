@@ -11,7 +11,7 @@
 // for platform.associations can never be picked — the write can't fail on a
 // bad token. Consume this instead of hand-rolling a token <select>.
 //
-// Optional `disabledTokens` greys out rows (e.g. pairs that already have a
+// Optional `disabledTokens` grays out rows (e.g. pairs that already have a
 // relationship rule) with a reason badge — they stay visible for search but
 // cannot be selected.
 

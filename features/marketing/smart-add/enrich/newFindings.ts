@@ -1,7 +1,7 @@
 /**
  * Enrich: the other things a round found. "Changes to your brand" diffs the basics (name, logo, sites, accounts…);
  * competitors, people, locations, listings, keywords, offerings and credentials reach the brand through the
- * Inbox and the server's promotion, so this summarises them as counts with a short list, each naming where it
+ * Inbox and the server's promotion, so this summarizes them as counts with a short list, each naming where it
  * now lives. Pure planning here (tested); the one read is `loadNewFindings`.
  */
 

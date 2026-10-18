@@ -284,7 +284,7 @@ describe("a generic workflow run: stages from its steps", () => {
   });
 });
 
-// ── parked, stalled and cancelled runs (adversarial I8, I9, M1) ──────────────────
+// ── parked, stalled and canceled runs (adversarial I8, I9, M1) ──────────────────
 
 describe("a run that is not simply working", () => {
   it("a run parked on a question is Waiting on you, with its ask", () => {
@@ -304,7 +304,7 @@ describe("a run that is not simply working", () => {
     expect(STATUS_WORD[paused.phase]).toBe("Paused");
   });
 
-  it("a cancel the person made is Cancelled, not a failure", () => {
+  it("a cancel the person made is Canceled, not a failure", () => {
     const run = runOf([...started, event(3, { event: "run_cancelled", ts: "2026-10-17T10:01:00Z" })]);
     const view = readBackgroundRun(run, "import");
     expect(view.phase).toBe("cancelled");

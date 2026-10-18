@@ -272,7 +272,7 @@ export async function readSystemOrg(db: Queryable): Promise<string | null> {
   return rows[0] ? String(rows[0].id) : null;
 }
 
-// ── the judgement (pure) ───────────────────────────────────────────────────────────────────────
+// ── the judgment (pure) ───────────────────────────────────────────────────────────────────────
 
 /**
  * The store's stored shape for each word a definition sends — `coalesce(parity_type, type)` and

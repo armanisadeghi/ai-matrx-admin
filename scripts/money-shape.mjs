@@ -60,7 +60,7 @@
 /**
  * A line reduced to the EXPRESSIONS on it: comments gone, plain-quoted string
  * TEXT gone, template TEXT gone but `${…}` interpolations kept. Identical in
- * behaviour to `duration-shape.mjs`'s helper and duplicated for the same
+ * behavior to `duration-shape.mjs`'s helper and duplicated for the same
  * reason every lane module is standalone: these files are distributed
  * byte-for-byte into eight roots by `scripts/sync_ts_package_guard.mjs`, and a
  * shared helper would be a ninth file to keep in step.

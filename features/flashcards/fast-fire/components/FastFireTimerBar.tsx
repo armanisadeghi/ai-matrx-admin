@@ -49,7 +49,7 @@ export function FastFireTimerBar({
     });
   }, [subscribeProgress]);
 
-  // Mic level meter: scaleX driven by the analyser level (0..1).
+  // Mic level meter: scaleX driven by the analyzer level (0..1).
   useEffect(() => {
     return subscribeLevel((level) => {
       if (levelRef.current) {

@@ -24,7 +24,7 @@
  *
  * THE RULE, v2 — NAME ALONE NEVER PROVES BYTES. For every `formatFileSize(<arg>)`:
  *
- *   A. BYTE CONVERSIONS ARE RECOGNISED FIRST, BY SHAPE, and replaced by an opaque
+ *   A. BYTE CONVERSIONS ARE RECOGNIZED FIRST, BY SHAPE, and replaced by an opaque
  *      byte token: `new TextEncoder().encode(s).length`, `encoder.encode(s)`,
  *      `Buffer.byteLength(s, "utf8")`, `new Blob([...]).size`,
  *      `new Uint8Array(x).length`, and the decoded size of base64 text
@@ -250,7 +250,7 @@ const SPAN_END_SEGMENTS = new Set(["start", "begin", "end"]);
 /** Text APIs whose values are strings of characters. */
 const TEXT_SOURCE_RE = /\b(?:textContent|innerText|innerHTML|outerHTML)\b|\bJSON\s*\.\s*stringify\b/;
 
-/** The opaque token a recognised byte conversion is replaced with. */
+/** The opaque token a recognized byte conversion is replaced with. */
 const BYTES_TOKEN = "__BYTES__";
 
 /**
@@ -349,7 +349,7 @@ function firstArgument(argumentText) {
 }
 
 /**
- * STEP A: replace every recognised byte conversion with BYTES_TOKEN, so the
+ * STEP A: replace every recognized byte conversion with BYTES_TOKEN, so the
  * text inside it (`node.textContent`) is never judged as a character source.
  */
 export function neutralizeByteConversions(expression) {
@@ -892,7 +892,7 @@ export function selfTestFormatInputShape() {
     }
   }
   // ── [precedence] A COUNT SEGMENT AFTER A BYTE SEGMENT STILL FIRES.
-  // The root judgement asks about the LAST segment, and a mutation that asks
+  // The root judgment asks about the LAST segment, and a mutation that asks
   // "is a byte word ANYWHERE in the segments" leaves every other leg green
   // while `sizeInChars` and `payloadSizeChars` go silent — a character count
   // wearing the word `size`, which is the exact shape this lane exists for.

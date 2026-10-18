@@ -62,7 +62,7 @@ export interface BoardFrame {
   rect: Rect;
   title: string;
   note?: string;
-  /** A colour of the board palette; absent = the neutral frame. */
+  /** A color of the board palette; absent = the neutral frame. */
   color?: ShapeColor;
   /** The chapter's icon (a Lucide name) a template or agent set; absent = read from what it holds. */
   icon?: string;
@@ -551,7 +551,7 @@ export class BoardStore<T extends BoardTileBase> {
   /**
    * Everything a new object must not land on: tiles, frames and the canvas objects (stickies, text,
    * rectangles, strokes; connectors follow what they bind to, so they never block). A new tile or
-   * sticky at the view centre used to land UNDER an older rectangle or stroke (the drawings layer
+   * sticky at the view center used to land UNDER an older rectangle or stroke (the drawings layer
    * paints over tiles) and hide its header.
    */
   occupiedRects = (opts: { exceptFrame?: string } = {}): Rect[] => {
@@ -572,7 +572,7 @@ export class BoardStore<T extends BoardTileBase> {
    * frame named by `within`, where it may land among that group's tiles. With
    * `flow`, it takes the first free spot of that block in reading order (a run
    * of adds fills the view like text; `near` then only says where a run's
-   * first tile is centred when that spot is free). */
+   * first tile is centerd when that spot is free). */
   addTile = (
     tile: T,
     near?: { x: number; y: number },

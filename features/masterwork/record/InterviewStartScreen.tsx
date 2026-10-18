@@ -142,7 +142,7 @@ export function InterviewStartScreen({
        fold on a 1440×900 desktop and several screens down on a phone. Every
        control here already arrives answered, and pressing Start without
        touching one of them is the intended path, so the intended path was the
-       one thing you could not see. It is pinned now, and the column is centred
+       one thing you could not see. It is pinned now, and the column is centerd
        like every other Masterwork lane instead of stretching nine cards across
        a wide monitor (item 29). */
     <div className="flex h-full flex-col">

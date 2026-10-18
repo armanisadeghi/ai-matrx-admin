@@ -48,7 +48,7 @@ export type PrePaintDescriptor =
 
 /**
  * When storage is empty or malformed, the pre-paint script can consult a
- * CSS media query to honour OS preferences (e.g. prefers-color-scheme).
+ * CSS media query to honor OS preferences (e.g. prefers-color-scheme).
  */
 export interface SystemFallback {
     /** Standard CSS media query, e.g. "(prefers-color-scheme: dark)". */

@@ -8,7 +8,7 @@
 // the querying, so sort, filter and pagination are real server operations over
 // the WHOLE result set — never a re-sort of the loaded page.
 //
-// Three behaviours worth stating plainly:
+// Three behaviors worth stating plainly:
 //   * Every DECLARED capability is server-owned. Sort/filter controls map 1:1
 //     onto `<feature>_list_scoped(p_filters)`; an explicit `false` stays false
 //     when a source cannot truthfully serve that capability.
@@ -234,7 +234,7 @@ function toTableFilters(filters: EntityFilters): ColumnFiltersState {
  *
  * The text value is kept EXACTLY AS TYPED. This table is controlled: whatever
  * comes back out of here is re-rendered into the header's filter box on the
- * next keystroke, so normalising here rewrites what the user is still typing.
+ * next keystroke, so normalizing here rewrites what the user is still typing.
  * Trimming made a space impossible to enter — "New" + space came straight back
  * as "New", and the next letter landed as "NewY". Whitespace-only still means
  * "no filter" — that is a test on the value, not a rewrite of it. A trailing

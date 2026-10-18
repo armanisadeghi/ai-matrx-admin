@@ -109,7 +109,7 @@ test("a returned status is explained in a sentence, never a bare code", async ()
   searchParams = new URLSearchParams("provider=microsoft&microsoft_status=denied");
   await render();
 
-  expect(container.textContent).toContain("You cancelled at Microsoft's sign-in");
+  expect(container.textContent).toContain("You canceled at Microsoft's sign-in");
 });
 
 test("an unknown return code still says something true", () => {

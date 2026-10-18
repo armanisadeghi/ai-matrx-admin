@@ -29,7 +29,7 @@
  * — the census only proves the two lists agree today; `receiptRowMarks` returning
  * an `unknownState` mark, and `noLiveAction` refusing every control over it, is
  * what makes tomorrow's state honest instead of approvable. Both are asserted
- * below, because a census with no runtime behaviour behind it is the V14-4
+ * below, because a census with no runtime behavior behind it is the V14-4
  * failure wearing a measurement costume.
  */
 

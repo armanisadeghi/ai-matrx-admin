@@ -22,7 +22,7 @@
  *
  * The pinned-rung half of the same order is proven on the real `ScopeHolderBar`
  * below: a host that stands on one rung offers no selector, and the holder
- * picker can reach the system catalogue and nothing else.
+ * picker can reach the system catalog and nothing else.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -61,7 +61,7 @@ jest.mock("@ai-matrx/chat/mandates/useMandate", () => ({
 /**
  * 🚨 THE DOOR, ANSWERING AS PRODUCTION ANSWERS (aidream 1363). `mandate.resolve`
  * returns `research_client.output_slides`' system rung with `output_warning`
- * set — the platform's own judgement that the floor RUNS but its output may
+ * set — the platform's own judgment that the floor RUNS but its output may
  * not fit (validation offers, never blocks; it is never dropped for this). The
  * admin route reads THAT ROW and prints THOSE WORDS; it never walks the
  * holder's output schema itself.

@@ -1,4 +1,4 @@
-// At ~800 px the Start panel (empty board) overlapped the Add toolbar: its frame was centred over
+// At ~800 px the Start panel (empty board) overlapped the Add toolbar: its frame was centerd over
 // the whole board with only p-4. The frame now reserves the chrome band the viewport insets name
 // (72 px top for the Add toolbar + zoom bar, 56 px bottom) and the panel scrolls inside what is
 // left, so at any width (and height) it cannot sit under the chrome. jsdom has no layout; the guard

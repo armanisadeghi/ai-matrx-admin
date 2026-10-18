@@ -132,10 +132,10 @@ afterEach(() => {
   activeAccount = before;
 });
 
-it("announces a cancelled same-tab authorization without claiming approval", async () => {
+it("announces a canceled same-tab authorization without claiming approval", async () => {
   activeAccount = { ...before, grantedScopes: [GOOGLE_SCOPE.openid,
     GOOGLE_SCOPE.gmailReadonly, GOOGLE_SCOPE.gmailModify] };
-  runInThisTab.mockRejectedValue(new Error("Authorization cancelled"));
+  runInThisTab.mockRejectedValue(new Error("Authorization canceled"));
   isGoogleAuthorizationCancelled.mockReturnValue(true);
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -147,7 +147,7 @@ it("announces a cancelled same-tab authorization without claiming approval", asy
     );
     expect(action).toBeDefined();
     await act(async () => action?.click());
-    expect(toast.info).toHaveBeenCalledWith("Authorization cancelled — nothing changed.");
+    expect(toast.info).toHaveBeenCalledWith("Authorization canceled — nothing changed.");
     expect(toast.success).not.toHaveBeenCalled();
   } finally {
     act(() => root.unmount());

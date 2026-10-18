@@ -193,7 +193,7 @@ function isValidIso8601(value: string): boolean {
  * Normative `max_length` reader (ruling (f)) — constrains ONLY when the
  * declared value is a non-negative INTEGRAL JSON number. `-1`, `true`, `"5"`,
  * `null`, `2.5`, NaN/Infinity are malformed → IGNORED (never reinterpreted).
- * `2.0` is honoured as `2`: JSON cannot distinguish it from `2`.
+ * `2.0` is honored as `2`: JSON cannot distinguish it from `2`.
  */
 function declaredMaxLength(field: LooseField): number | null {
   const raw = field.max_length;

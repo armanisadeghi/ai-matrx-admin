@@ -156,7 +156,7 @@ export function Minimap({ className }: { className?: string }) {
     canvas.width = MINIMAP_W * dpr;
     canvas.height = MINIMAP_H * dpr;
     let frame: number | null = null;
-    // Theme colours, read only when the theme changes — getComputedStyle
+    // Theme colors, read only when the theme changes — getComputedStyle
     // forces a style flush; read per frame it cost every pan frame a
     // full-board restyle, and read on a 1 s timer it was the idle board's
     // only standing style recalculation.

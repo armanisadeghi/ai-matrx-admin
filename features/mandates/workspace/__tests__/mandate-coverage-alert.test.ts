@@ -6,7 +6,7 @@
  * `shortcut.simple_system_message_generator` and
  * `patrol.purpose_canary_20260829225707`. The LIST said so loudly. The DETAIL
  * page did not: it landed on the Definition tab, where the only trace was the
- * grey line "Declared by: Holder name unavailable". An admin who arrives by
+ * gray line "Declared by: Holder name unavailable". An admin who arrives by
  * link never passes the list, so the page told them nothing was wrong with a
  * job that errors on every call.
  *

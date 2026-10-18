@@ -106,7 +106,7 @@ export function PropertiesPanel({ draft, selected, edit, onDuplicate, onDelete, 
       {multi && showAlign && (
         <div className="flex flex-wrap">
           <Button variant="quiet" aria-label="Align left" icon={<AlignStartVertical />} onClick={() => align("left")} />
-          <Button variant="quiet" aria-label="Align centre" icon={<AlignCenterVertical />} onClick={() => align("hcenter")} />
+          <Button variant="quiet" aria-label="Align center" icon={<AlignCenterVertical />} onClick={() => align("hcenter")} />
           <Button variant="quiet" aria-label="Align right" icon={<AlignEndVertical />} onClick={() => align("right")} />
           <Button variant="quiet" aria-label="Align top" icon={<AlignStartHorizontal />} onClick={() => align("top")} />
           <Button variant="quiet" aria-label="Align middle" icon={<AlignCenterHorizontal />} onClick={() => align("vcenter")} />

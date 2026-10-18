@@ -48,7 +48,7 @@ export const SUB_ORG_SCOPE_SOURCES = [
   { kind: "table", noun: "Table" },
   { kind: "agent", noun: "Agent" },
   // Precedence 70, `platform.rulebook` (`tenant_row`, so `platform.knob_scope_rows`
-  // already lists it with no new branch — the rows come back labelled by the Rulebook's
+  // already lists it with no new branch — the rows come back labeled by the Rulebook's
   // own name). SETTINGS-3, 2026-09-22: the rung was live in `platform.knob_scope_kind`
   // since 2026-09-15 and carried by 22 `masterwork.*` keys, and this list — the ONE place
   // that decides which rungs the universal picker offers — had no entry for it, so
@@ -86,7 +86,7 @@ export function isSubOrgScopeKind(kind: string): kind is SubOrgScopeKind {
  * `agent` rung, the door saved it (`{"ok":true,"origin":"agent_override"}`),
  * this panel listed it back — and its one reader named a `table` rung and
  * nothing else, so not a single row ever changed (V-64, 2026-09-13). A control
- * is ABSENT or HONEST, never a box that accepts a value nothing honours, so a
+ * is ABSENT or HONEST, never a box that accepts a value nothing honors, so a
  * rung nothing can answer is not offered at all.
  *
  * The census is measured live from `pg_proc` and committed by
@@ -133,7 +133,7 @@ export function pickableRungsFor(
  * them. So within `hr.*`, a key the census does not positively name is a key no
  * reader can answer at a row-keyed rung, and offering a picker for it would be
  * the DD-211 defect at 192-key scale: a control that saves a value nothing
- * honours.
+ * honors.
  *
  * The census stays the authority in BOTH directions — a key here is offered
  * only when a measured reader names the rung — so the day an HR lane gives a

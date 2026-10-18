@@ -22,7 +22,7 @@ describe("openingHiddenFields", () => {
     expect(hidden).toHaveLength(8);
   });
 
-  it("does nothing when the table already fits, or the fields are not recognised", () => {
+  it("does nothing when the table already fits, or the fields are not recognized", () => {
     expect(openingHiddenFields(many(["a", "b", "c"]), ["a", "b"], 8)).toBeNull();
     expect(openingHiddenFields(table, ["unknown_one"], 8)).toBeNull();
   });

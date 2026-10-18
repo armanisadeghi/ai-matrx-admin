@@ -375,7 +375,7 @@ async function fetchDbVocab(): Promise<DbVocab> {
   }
   const supabase = createClient(url, key);
   // Completeness reads: the crosswalk asserts "every live slug/token is
-  // classified" — a truncated read silently drops slugs out of that judgement.
+  // classified" — a truncated read silently drops slugs out of that judgment.
   const [kindRows, surfaceRows] = await Promise.all([
     readAllRows<DbKindRow>(
       ({ from, to }) =>

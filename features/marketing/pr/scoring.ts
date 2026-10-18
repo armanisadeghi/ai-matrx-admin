@@ -9,12 +9,12 @@
  *   2. A five-bar COMB beside it — a shape the eye compares across twenty rows
  *      in one sweep without reading a single digit. All five stored scores are
  *      on it, `evidence_quality` included, so nothing on the row is hidden.
- *   3. The five again, labelled, weighted and in the open, inside the expanded
+ *   3. The five again, labeled, weighted and in the open, inside the expanded
  *      row — because a hover is not a door on a touch screen.
  *
  * `priority` is on the comb but carries weight ZERO, and says so. It is not a
  * readiness signal: it is the ORDER of the queue. Folding it into readiness
- * would count the same judgement twice.
+ * would count the same judgment twice.
  *
  * The weights are deliberately un-configurable. A readiness number the user can
  * tune is a number they can no longer compare between angles.
@@ -316,7 +316,7 @@ export function sortAngles(
  * position, any journalist window closing on it, and the distance to pitchable.
  *
  * Returned as lines rather than a sentence so the same content can be a tooltip
- * on the rank chip AND a labelled block inside the open row — a hover is not a
+ * on the rank chip AND a labeled block inside the open row — a hover is not a
  * door on a touch screen.
  */
 export function rankRationale(

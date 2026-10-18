@@ -330,7 +330,7 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
             confirmLabel="Cancel review"
             multiline
             busy={busy}
-            onConfirm={(reason) => act(() => cancelReview(reviewId, reason.trim()), "Review cancelled")}
+            onConfirm={(reason) => act(() => cancelReview(reviewId, reason.trim()), "Review canceled")}
           />
         </div>
       ) : null}
@@ -356,7 +356,7 @@ function Timeline({ review }: { review: ReviewDetail["review"] }) {
           </li>
         ))}
       </ol>
-      {review.cancelledAt ? <p className="text-sm text-muted-foreground">Cancelled {formatDay(review.cancelledAt)}</p> : null}
+      {review.cancelledAt ? <p className="text-sm text-muted-foreground">Canceled {formatDay(review.cancelledAt)}</p> : null}
       {review.reopenHistory.length > 0 ? (
         <ul className="space-y-0.5 text-sm text-muted-foreground">
           {review.reopenHistory.map((h, i) => (

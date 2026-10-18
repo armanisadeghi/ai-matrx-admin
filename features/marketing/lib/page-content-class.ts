@@ -105,7 +105,7 @@ const RESOURCE_QUERY_PATTERNS: RegExp[] = [/(^|&)rest_route=/];
  * to URLs carrying a given query parameter — scoped to one site rather than
  * hardcoded. Mirrors `web.matches_endpoint_rule` (migration 0334) and
  * `matrx_utils.web_page_class.matches_endpoint_rule`, including the two
- * behaviours that are easy to get wrong: a prefix ending in `/` also matches
+ * behaviors that are easy to get wrong: a prefix ending in `/` also matches
  * the bare directory (`/cart/` covers `/cart`), and prefix matching is a
  * literal compare so metacharacters in a stored prefix cannot widen the rule.
  */

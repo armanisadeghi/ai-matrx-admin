@@ -6,7 +6,7 @@
  * mechanisms in Univer produced it, and this file encodes both as
  * fails-before/passes-after proofs:
  *
- *  1. THE COLOUR THE RENDERER THROWS ON. Every `ctx.fillStyle = <string>` on
+ *  1. THE COLOR THE RENDERER THROWS ON. Every `ctx.fillStyle = <string>` on
  *     Univer's rendering context passes through `CanvasColorService`, which in
  *     dark mode calls `new ColorKit(color)` on anything that is not hex / rgb
  *     / rgba. ColorKit's `hslToColor` splits on COMMAS and throws on the
@@ -19,7 +19,7 @@
  *     (docs-ui 0.25.1) re-pins the canvas element's CSS background to
  *     `#fafafa` and calls `setFillColors(undefined, undefined, undefined,
  *     undefined)` on every `RichTextEditingMutation`. A host that states its
- *     colours once watches the page turn white the moment somebody types.
+ *     colors once watches the page turn white the moment somebody types.
  */
 //
 // NOTE ON WHERE THE VENDOR CODE IS DRIVEN: `@univerjs/core` is ESM-only and
@@ -27,7 +27,7 @@
 // (the constructor that threw) lives in `scripts/check-univer-doc-theme.mjs`
 // — run `pnpm check:univer-doc-theme:self-test`, which plants the 2026-09-21
 // strings and proves Univer itself rejects them. This file owns the grammar
-// and the reset behaviour.
+// and the reset behavior.
 import {
   applyUniverDocSurfaceColors,
   DOC_BACKGROUND_COMPONENT_KEY,
@@ -47,7 +47,7 @@ const TOKENS: Record<"light" | "dark", Record<string, string>> = {
 const readerFor = (mode: "light" | "dark") => (name: string) =>
   TOKENS[mode][name] ?? "";
 
-describe("every colour reaches Univer's renderer intact", () => {
+describe("every color reaches Univer's renderer intact", () => {
   it("FAILS-BEFORE: the exact strings shipped on 2026-09-21 are violations", () => {
     // Verbatim what `hslFromToken` produced before this change, and what the
     // dark app therefore handed the canvas on every frame.
@@ -71,7 +71,7 @@ describe("every colour reaches Univer's renderer intact", () => {
   });
 
   it.each(["light", "dark"] as const)(
-    "%s: every stated colour is in the grammar every reader accepts",
+    "%s: every stated color is in the grammar every reader accepts",
     (mode) => {
       const colors = univerDocSurfaceColors(mode, readerFor(mode));
       for (const [slot, value] of Object.entries(colors)) {
@@ -117,7 +117,7 @@ describe("Univer cannot reset the page back to its light defaults", () => {
     return { render, canvasEle, background, applied };
   }
 
-  it("FAILS-BEFORE / PASSES-AFTER: the reset docs-ui runs on every keystroke lands on the host's colours", () => {
+  it("FAILS-BEFORE / PASSES-AFTER: the reset docs-ui runs on every keystroke lands on the host's colors", () => {
     const h = harness();
     const dark = univerDocSurfaceColors("dark", readerFor("dark"));
     expect(applyUniverDocSurfaceColors(h.render, dark).applied).toBe(true);
@@ -153,7 +153,7 @@ describe("Univer cannot reset the page back to its light defaults", () => {
     expect(h.canvasEle.style.backgroundColor).toBe(light.frame);
   });
 
-  it("a colour Univer DOES state explicitly still wins — this never overrides a real caller", () => {
+  it("a color Univer DOES state explicitly still wins — this never overrides a real caller", () => {
     const h = harness();
     applyUniverDocSurfaceColors(
       h.render,

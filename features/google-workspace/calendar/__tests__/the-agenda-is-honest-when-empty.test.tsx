@@ -291,7 +291,7 @@ describe("refresh on open", () => {
     }
   });
 
-  it("honours a knob that says never refresh on open", async () => {
+  it("honors a knob that says never refresh on open", async () => {
     state.accounts = [{ id: "conn-1", usable: true }];
     state.knobMinAge = 86_400;
     state.rows = [row({ synced_at: new Date(Date.now() - 3_600_000).toISOString() })];

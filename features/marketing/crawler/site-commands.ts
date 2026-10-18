@@ -57,7 +57,7 @@ export const SITE_COMMAND_COPY: Record<SiteCommandMode, SiteCommandCopy> = {
   analysis: {
     runningLabel: "Analyzing pages",
     doneLabel: "Page analysis",
-    startingMessage: "Running the audit catalogue over this site’s pages…",
+    startingMessage: "Running the audit catalog over this site’s pages…",
   },
   sitemap_sync: {
     runningLabel: "Syncing sitemaps",

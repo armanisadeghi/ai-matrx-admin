@@ -282,7 +282,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       name: "CreateDeckPage",
       filePath: "features/flashcards/components/create/CreateDeckPage.tsx",
       description:
-        "The one creation page: Sources → Style and details → Make the deck, with a live card-by-card stream; honours Wait for the clean version.",
+        "The one creation page: Sources → Style and details → Make the deck, with a live card-by-card stream; honors Wait for the clean version.",
       tier: "internal",
     },
     {

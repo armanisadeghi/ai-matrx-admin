@@ -106,7 +106,7 @@ describe("ensureOrgId", () => {
     expect(store.getState().appContext.organization_id).toBeNull();
   });
 
-  // Break caught: refusing with a shape the screens cannot recognise, so the
+  // Break caught: refusing with a shape the screens cannot recognize, so the
   // user sees a raw transport sentence instead of the picker.
   it("refuses with the error every surface already renders, carrying the remedy", async () => {
     let caught: unknown;

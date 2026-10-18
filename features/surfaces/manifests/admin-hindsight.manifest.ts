@@ -9,7 +9,7 @@
  * result against what actually happened.
  *
  * Why this surface exists at all: an agent bound here is reasoning ABOUT other
- * agents' behaviour. The values below are deliberately the review substrate —
+ * agents' behavior. The values below are deliberately the review substrate —
  * the enrollment under inspection, the findings on the table, what can be
  * replayed, the spend — because that is the material such an agent weighs.
  * The subjects' own transcripts are NOT declared here: they are reached

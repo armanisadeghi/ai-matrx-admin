@@ -517,7 +517,7 @@ describe("the schema-`custom` exemption does not cover a RETURNS TRIGGER functio
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ATTACK-7 — the two runners had two judgements. These are the rules that changed,
+// ATTACK-7 — the two runners had two judgments. These are the rules that changed,
 // as unit cases; `pnpm check:migration-judgment` proves the OTHER runner agrees
 // with every one of them over migrations/judgment-corpus/.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -617,7 +617,7 @@ describe("ATTACK-7 finding 3 — platform.entity_types is a branch fixture, not 
   });
 });
 
-describe("every judgement refusal carries a stable code — the corpus compares codes, not prose", () => {
+describe("every judgment refusal carries a stable code — the corpus compares codes, not prose", () => {
   it("names the code on a header-flag disagreement", () => {
     let code = "";
     try {

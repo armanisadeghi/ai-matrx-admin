@@ -133,7 +133,7 @@ export function RulebookInputsSection({
                     — the route the promise names, which already existed —
                     exactly as its neighbour "Your words" pairs its window
                     opener with a real `<Link>`. A plain click still opens the
-                    picker in place (the better behaviour: it launches an
+                    picker in place (the better behavior: it launches an
                     Approach's lane into THIS Rulebook without leaving the
                     page), and the navigation is suppressed only once that has
                     actually happened. Anything else — a handler that never

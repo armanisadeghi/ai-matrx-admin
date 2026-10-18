@@ -14,7 +14,7 @@
 //      (`selectedIds` in SetDetailView). `planBulkEnrich` reads it: an explicit
 //      selection IS the plan — including a card that already has layers, because
 //      a user who picks a card deliberately outranks a skip heuristic. With no
-//      selection the old behaviour stands: every card that lacks layers.
+//      selection the old behavior stands: every card that lacks layers.
 //   2. IT DRIVES A LIVE RENDER, NOT A PROGRESS BAR. Each card's run publishes
 //      its own `requestId` (`card_request`) the moment the request row exists,
 //      mid-stream. The tile subscribes to `selectKindEnvelope(requestId,
@@ -235,7 +235,7 @@ export function reduceBulkEnrichRun(
         cards: event.cards.map(plannedToState),
       };
     case "cancel":
-      // Cancelling is a decision about the CURSOR, not about the cards already
+      // Canceling is a decision about the CURSOR, not about the cards already
       // in flight — their rows still land, and the counts below still count
       // them. Marking them "cancelled" here would under-report real work.
       return state.phase === "running" ? { ...state, phase: "cancelled" } : state;
@@ -390,7 +390,7 @@ export function summarizeBulkEnrichCounts(c: BulkEnrichCounts): string {
   if (c.empty > 0) parts.push(`${c.empty} had nothing to add`);
   if (c.failed > 0) parts.push(`${c.failed} failed`);
   // The explicit override, said out loud — a user who picked an already-rich
-  // card must see that we honoured the pick and spent on it.
+  // card must see that we honored the pick and spent on it.
   if (c.reEnriched > 0) {
     parts.push(`${c.reEnriched} you picked already had layers and got more`);
   }

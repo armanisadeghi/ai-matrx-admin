@@ -1,6 +1,6 @@
 // components/admin/markdown-tester/samples-service.ts
 // Direct Supabase CRUD for the SHARED markdown sample library — the
-// platform's public catalogue (admin_markdown_samples_shared_catalogue.sql):
+// platform's public catalog (admin_markdown_samples_shared_catalogue.sql):
 // every signed-in person reads it (the Markdown Studio's read-only starter
 // samples); platform admins write it from the studio in the admin section.
 // Rows belong to the Matrx System org, soft-delete only.
@@ -62,7 +62,7 @@ export async function createSample(
       content: input.content,
       detected_blocks: input.detected_blocks ?? [],
       created_by: userId,
-      // The platform's shared catalogue belongs to the Matrx System org — said explicitly,
+      // The platform's shared catalog belongs to the Matrx System org — said explicitly,
       // never chosen by a default or a trigger (no-db-assigned-org).
       // org-fallback-deliberate: shared starter samples are platform content, owned by the Matrx System org by name.
       organization_id: await resolveSystemOrgId(),

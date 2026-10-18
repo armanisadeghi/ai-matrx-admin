@@ -68,7 +68,7 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
   captureError: jest.fn(),
 }));
 
-/** The knobs are a DB read; this screen's behaviour under them is not what
+/** The knobs are a DB read; this screen's behavior under them is not what
  *  this test is about, so the rows answer with the declared values. */
 jest.mock("@/lib/knobs/featureKnobs", () => ({
   knobInt: async () => 5,
@@ -81,7 +81,7 @@ jest.mock("@/lib/knobs/featureKnobs", () => ({
  * guard, the request and the restore all stay real. The stand-ins keep the
  * exact contract the component relies on — `value` / `onChange` / `disabled`
  * for the box, the body text for the document — so a component that stopped
- * honouring either would still fail here.
+ * honoring either would still fail here.
  */
 jest.mock("@/components/official/ProTextarea", () => ({
   ProTextarea: (props: {

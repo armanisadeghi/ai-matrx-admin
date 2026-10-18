@@ -14,7 +14,7 @@
  *   3. the paged read of `seo.link_gap_domain` straight from Supabase;
  *   4. the human's ruling (approve / reject / snooze, one row or many).
  *
- * Modelled on `useReputationAnalysis` for the abort/teardown shape and on
+ * Modeled on `useReputationAnalysis` for the abort/teardown shape and on
  * `useBacklinkAnalysis` for the seo-target + auth resolution, so a long run
  * behaves the same way everywhere in this workspace.
  */

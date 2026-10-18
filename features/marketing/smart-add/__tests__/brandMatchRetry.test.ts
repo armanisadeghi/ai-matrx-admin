@@ -6,7 +6,7 @@ jest.mock("@/utils/supabase/webDb", () => ({ authenticatedWebDb: jest.fn() }));
 import { isGatewayBlip, withRetryOnGatewayError } from "../brandMatchLive";
 
 describe("withRetryOnGatewayError", () => {
-  it("recognises gateway blips and not real errors", () => {
+  it("recognizes gateway blips and not real errors", () => {
     expect(isGatewayBlip("502 Bad Gateway")).toBe(true);
     expect(isGatewayBlip("TypeError: Failed to fetch")).toBe(true);
     expect(isGatewayBlip('invalid input syntax for type uuid: "x"')).toBe(false);

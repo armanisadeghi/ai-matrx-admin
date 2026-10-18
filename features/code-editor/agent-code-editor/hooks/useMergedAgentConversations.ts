@@ -7,7 +7,7 @@
  * if not already loading/loaded) and returns a single merged, newest-first
  * list. The list also includes LOCAL DRAFTS — conversations that exist in the
  * `conversations` slice but haven't been committed to the server yet
- * (messageCount == 0). Drafts are labelled "Draft <agent name> (N)" where N
+ * (messageCount == 0). Drafts are labeled "Draft <agent name> (N)" where N
  * is the per-agent draft index.
  *
  * Drafts live in Redux for the lifetime of the session, so closing the

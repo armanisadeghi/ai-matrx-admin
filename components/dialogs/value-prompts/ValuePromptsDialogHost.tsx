@@ -12,7 +12,7 @@
  *
  *   import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
  *   const answers = await promptForValues({ title: shortcut.label, fields });
- *   if (answers === null) ... // cancelled (only possible when nothing is required)
+ *   if (answers === null) ... // canceled (only possible when nothing is required)
  */
 
 "use client";

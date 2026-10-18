@@ -9,7 +9,7 @@
 // selection`) over the ONE action registry — so every action it shows is a
 // registered action, gated by the mode table in selection-actions.ts.
 //
-// This file owns the only look-independent behaviour a selection popup has:
+// This file owns the only look-independent behavior a selection popup has:
 //   • position: above the selection, flipped below when there is no room,
 //     clamped to the viewport, following the selection on scroll;
 //   • phone / touch: a bar docked at the bottom edge, never beside the

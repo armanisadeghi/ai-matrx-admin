@@ -11,7 +11,7 @@
  *     `public.org_trash_list(org, null, null, 50, 0)` (the merged page)    — 300 ms
  *     `public.org_trash_counts(org, null)`                                 — 2 s
  * Server-side EXPLAIN ANALYZE Execution Time, statement_timeout 5 s so a runaway kind fails fast.
- * Judgement: judgeTrashTimings (scripts/lib/trash-doors.ts). Exit 1 over a ceiling, 2 UNMEASURED.
+ * Judgment: judgeTrashTimings (scripts/lib/trash-doors.ts). Exit 1 over a ceiling, 2 UNMEASURED.
  * Reads only; writes nothing (every transaction rolls back).
  *
  * This is the guard that would have caught the pre-TRASH-2 /trash: `file` ran >200 s for admin.

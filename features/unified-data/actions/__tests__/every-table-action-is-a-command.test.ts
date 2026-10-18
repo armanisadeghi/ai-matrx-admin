@@ -28,7 +28,7 @@ describe.each(["admin", "viewer"] as const)("a %s", (seat) => {
   const actions = tableActions({ table: TABLE, rights: whatYouMayDo(seat, true), host });
   const commands = toKnowledgeCommands(actions, TABLE.name);
 
-  it("finds every labelled action as a command, with its chord and its reason", () => {
+  it("finds every labeled action as a command, with its chord and its reason", () => {
     expect(commands.map((c) => c.id)).toEqual(actions.filter((a) => a.label).map((a) => `table-action:${a.id}`));
     for (const a of actions) {
       const c = commands.find((x) => x.id === `table-action:${a.id}`)!;

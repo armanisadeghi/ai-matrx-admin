@@ -9,7 +9,7 @@
  * Non-file resources (notes, tasks, webpages, etc.) use
  * `ResourceAttachmentTile` in the same two surfaces.
  *
- * Behaviour:
+ * Behavior:
  *   - Renders the file's representative icon / thumbnail via the central
  *     `MediaThumbnail` (`@ai-matrx/media/react`) — so
  *     image / video files get a real first-frame thumb, everything else

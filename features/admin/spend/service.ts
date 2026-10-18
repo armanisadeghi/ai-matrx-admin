@@ -218,7 +218,7 @@ export async function fetchSpendHeadline(
 // reference patrol's container time at the AWS Fargate list price) while the
 // real bill is a hosting invoice. The explorer's totals are `cost` only, so
 // without this read those runs showed as $0. They are shown in their own
-// labelled block and NEVER added to any invoiced total — adding them would
+// labeled block and NEVER added to any invoiced total — adding them would
 // count the hosting invoice twice.
 //
 // A plain table read, not an RPC: the only rows that carry an estimate are a

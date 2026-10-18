@@ -6,7 +6,7 @@
 // and reused by the Job tab, the Compensation tab, the reporting-line editor and
 // the pay-group workweek control. Every rule below is spec, not preference:
 //
-//  1. THE DATE FIELD IS FIRST, not last. It is labelled **Effective**, never
+//  1. THE DATE FIELD IS FIRST, not last. It is labeled **Effective**, never
 //     "Date", and it is PRE-SET TO TODAY (§6.1).
 //  2. A FUTURE DATE CHANGES THE FORM'S VERB. The primary button reads
 //     **Schedule change**, not Save, and a persistent line states the consequence:

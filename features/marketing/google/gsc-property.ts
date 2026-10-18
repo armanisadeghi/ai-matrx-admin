@@ -565,7 +565,7 @@ export function preflightGscProperty(
  * backfill against it. Live proof: site `d7c4aeb1-…`
  * (`ga4-oauth-qa-00fb6a62a3.invalid`) is bound today to `http://bhrcenter.com/`.
  *
- * So the judgement moved out of the components and into ONE function that
+ * So the judgment moved out of the components and into ONE function that
  * every write path asks BEFORE it writes, on the DRAFT, whether or not the
  * binding is enabled:
  *
@@ -608,14 +608,14 @@ export function judgeGscBindingWrite(
   site: { root_url?: string | null; domain: string },
 ): GscBindingJudgement {
   const ref = (binding.resourceRef ?? "").trim();
-  // Nothing picked: there is no judgement to make, and inventing one would be a
+  // Nothing picked: there is no judgment to make, and inventing one would be a
   // refusal nobody can fix. (`validateSiteIntegrations` owns "enabled with no
   // property".)
   if (!ref) {
     return { allowed: true, refusal: null, sentence: null };
   }
   // ONE JUDGE, ONE ANSWER (round-3 verdict B-N3). An empty `site.domain` used
-  // to return `allowed: true` early — "there is no judgement to make" — while
+  // to return `allowed: true` early — "there is no judgment to make" — while
   // `preflightGscProperty`, which judges off `root_url`, answered MISMATCH on
   // the very same pair and the backfill gate therefore said start. The judge
   // now always asks the pre-flight; only a row with NEITHER a domain nor a

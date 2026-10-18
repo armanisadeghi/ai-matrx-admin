@@ -1,7 +1,7 @@
 /**
  * What the Versions list says about a saved version. A note written for people is shown as written;
  * a note the system wrote (migrations, audits, batches, "undo:" hints, raw ids) is never shown raw.
- * A model swap is said in model names; any other system note is only labelled "System update".
+ * A model swap is said in model names; any other system note is only labeled "System update".
  */
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;

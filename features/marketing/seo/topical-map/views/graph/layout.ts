@@ -21,7 +21,7 @@
 //           map rather than beside it.
 //   - OFF — the same dagre pass, then the unplaced topics are translated CLEAR
 //           of the bounding box of everything the person placed. "Do not
-//           auto-arrange my map" is honoured literally: nothing the person put
+//           auto-arrange my map" is honored literally: nothing the person put
 //           somewhere is flowed around, and the new arrivals appear in a fresh
 //           column to the right of their work.
 //
@@ -93,7 +93,7 @@ function dagrePositions(input: TopicLayoutInput): Map<string, XY> {
   const out = new Map<string, XY>();
   for (const topic of input.topics) {
     const node = graph.node(topic.id);
-    // dagre centres its nodes; React Flow positions by the top-left corner.
+    // dagre centers its nodes; React Flow positions by the top-left corner.
     out.set(topic.id, {
       x: (node?.x ?? 0) - input.width / 2,
       y: (node?.y ?? 0) - input.height / 2,

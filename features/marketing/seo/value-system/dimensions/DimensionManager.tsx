@@ -17,7 +17,7 @@
  * never asks them what a taxonomy is. The two things we add that Airtable does
  * not have, because governance demands them: every choice shows how much data
  * already wears it, and shared-vs-yours is stated on the row rather than
- * implied by whether a control happens to be greyed out.
+ * implied by whether a control happens to be grayed out.
  *
  * WHAT IT DOES NOT DO. There is no delete. A dimension row can vanish; the
  * keywords classified against it cannot. Retirement is a separate change with
@@ -90,7 +90,7 @@ export function DimensionManager() {
   /**
    * ONE box over everything this site means. Deliberately NOT a URL param: a
    * search is a glance, not a place — and the `?dimension=&value=&matcher=`
-   * deep link a result opens has to arrive on the catalogue, not back inside
+   * deep link a result opens has to arrive on the catalog, not back inside
    * the search that produced it.
    */
   const [query, setQuery] = useState("");
@@ -198,7 +198,7 @@ export function DimensionManager() {
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-thin">
         <div className="mx-auto w-full max-w-4xl space-y-4 px-3 py-3 sm:px-4">
           {/* Keyed so the "nobody has authored one yet" case opens the
-              explainer the moment the catalogue answers — a default read on
+              explainer the moment the catalog answers — a default read on
               the first (loading) render would always be false. */}
           {/* KI-022 — the honest gauge that stops anyone trusting a filter over
               a 3%-covered corpus, and the one home the universal-facet meter

@@ -19,7 +19,7 @@ const PROD_CHUNKS: string[] = [
   "__kind\":\"page_brief\",\"brief\":[\"Opening section: concise founder/origin story — who",
   " started the practice, when, and the core motivation (e.g., gap in the market, personal experience, mission-",
   "driven reason); keep it human and specific to build immediate trust.\",\"Credentials",
-  " & expertise block: list practitioner qualifications, licences, professional memberships, and years of experience; this is the primary E",
+  " & expertise block: list practitioner qualifications, licenses, professional memberships, and years of experience; this is the primary E",
   "-E-A-T signal for a services site — be explicit rather than vague.\",\"Philosophy /",
   " approach section: articulate the guiding methodology or values that differentiate this practice from competitors; use first-person or direct",
   " language to make it feel authentic rather than boilerplate.\",\"Team or solo-",

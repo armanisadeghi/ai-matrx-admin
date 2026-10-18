@@ -18,7 +18,7 @@
  *                              when there's no window for that kind — e.g.
  *                              code_file needs file objects a citation lacks)
  *
- * `shouldOpenInNewTab` lets an `<a href>` keep native new-tab behaviour on
+ * `shouldOpenInNewTab` lets an `<a href>` keep native new-tab behavior on
  * modifier / middle click while a plain click opens the window.
  */
 

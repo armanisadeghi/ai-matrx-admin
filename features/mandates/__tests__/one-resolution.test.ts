@@ -421,7 +421,7 @@ describe("a verdict this client cannot run REFUSES, loudly", () => {
 
   // 🚨 D1 CLOSED 2026-09-19. The client used to throw "client-run mandates must
   // be floating" on any `is_version` winner. That was a false access denial:
-  // `POST /ai/mandates/{key}` honours the pin, and `/mandates/[key]` only asks
+  // `POST /ai/mandates/{key}` honors the pin, and `/mandates/[key]` only asks
   // "what runs for you". The captured production error on
   // `workflow.deep_research.keyword_synthesis` was this throw. agentId MUST be
   // the definition id (attribution / EntityRef); the version id rides beside it.

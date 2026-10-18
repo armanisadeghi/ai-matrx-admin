@@ -8,7 +8,7 @@
  * (SPEC-TIME §0 law 6, §1.4, §9.2; R-L3 L3-74). Every payable number on a Time & Attendance surface
  * arrives already computed and snapshot-backed from `hr.work_interval` / `hr.workweek` or from
  * `POST /hr/calc/*`. The one permitted client-side figure in the whole lane is a **preview** total
- * from a `prospective` calc call, visibly labelled as a preview.
+ * from a `prospective` calc call, visibly labeled as a preview.
  *
  * SPEC-TIME §9.2 states the consequence in one sentence, and it is the reason this file exists:
  *
@@ -49,7 +49,7 @@
  * A marker with no reason after the colon is **still reported**, because "allow" with no argument
  * is how an escape hatch becomes a habit.
  *
- * EXIT BEHAVIOUR
+ * EXIT BEHAVIOR
  * --------------
  * Loud, and **advisory by default** — `exit 0` — matching `scripts/check-retired-db-ref.ts` and the
  * repo's scream-never-block rule. `--strict` exits 1 on any finding, and that is the form the
@@ -179,7 +179,7 @@ interface Finding {
 
 const findings: Finding[] = [];
 const scannedFiles: string[] = [];
-/** Escape-hatch markers that carried no reason — reported, never silently honoured. */
+/** Escape-hatch markers that carried no reason — reported, never silently honored. */
 const unreasonedMarkers: Finding[] = [];
 
 function walk(dir: string): void {
@@ -387,7 +387,7 @@ if (unreasonedMarkers.length > 0) {
 
 process.stdout.write(
   `${DIM}How to fix: read the number from hr.work_interval.hours / hr.workweek, or call\n` +
-    `POST /hr/calc/overtime (prospective, labelled a preview). If a line genuinely is not hours\n` +
+    `POST /hr/calc/overtime (prospective, labeled a preview). If a line genuinely is not hours\n` +
     `arithmetic, mark it \`// hr-time-arithmetic-allow: <why>\` — with the reason.${NC}\n`,
 );
 

@@ -16,7 +16,7 @@ describe("rule 27's legs", () => {
   it("runs the inverse FIRST, and the pair twice, when the up is already on the clone", () => {
     expect(rule27Legs(true)).toEqual(["inverse", "up", "inverse", "up"]);
   });
-  it("recognises the runner's real no-op sentence, read from the runner itself", () => {
+  it("recognizes the runner's real no-op sentence, read from the runner itself", () => {
     const runner = readFileSync(resolve(__dirname, "..", "apply-migration.ts"), "utf8");
     expect(runner).toContain(`${ALREADY_APPLIED_SENTENCE} (ledgered`);
     expect(legDidNothing(`[ OK ] ${ALREADY_APPLIED_SENTENCE} (ledgered 2026-09-26). Nothing to do.`)).toBe(true);

@@ -507,7 +507,7 @@ export default function ServerEventInspector({ content: controlled }: ServerEven
                         variant="outline"
                         onClick={handleReplay}
                         disabled={isRunning}
-                        title="Replay events with delay to observe streaming behaviour"
+                        title="Replay events with delay to observe streaming behavior"
                       >
                         Replay
                       </Button>

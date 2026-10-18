@@ -22,7 +22,7 @@
 // Every control here is present and honest or absent. The two that a viewer
 // may not be allowed to run (Unconfirm needs admin; every door needs editor+
 // on the row) are offered, and the database's refusal is shown as the sentence
-// it actually is — never a greyed button with no explanation.
+// it actually is — never a grayed button with no explanation.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -689,7 +689,7 @@ export default function KindRecordsTable({
           noun: "record",
           actions: (selected, ids) => (
             <div className="flex items-center gap-2">
-              {/* Absent, not greyed, when nothing in the selection needs it. */}
+              {/* Absent, not grayed, when nothing in the selection needs it. */}
               {unconfirmedSelected.length > 0 ? (
                 <Button
                   icon={<BadgeCheck />}

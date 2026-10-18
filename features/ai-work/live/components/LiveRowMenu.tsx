@@ -57,7 +57,7 @@ function sessionMenu(
         ],
       },
       // Only the platform actions that need no per-row state: Archive, the
-      // knowledge-graph toggle and favourites would show a state this list
+      // knowledge-graph toggle and favorites would show a state this list
       // never read, and "Open in new tab" would repeat ours.
       ...platform.sections
         .map((section) => ({

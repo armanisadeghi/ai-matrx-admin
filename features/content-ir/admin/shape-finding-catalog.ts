@@ -37,7 +37,7 @@ import type {
 /**
  * WHERE a finding of this code actually gets closed. This is the honest answer
  * to "can the admin fix this from the browser", and it drives the card's
- * labelling — never optimism.
+ * labeling — never optimism.
  */
 export type FindingResolutionLane =
   /** Decidable and writable right here, on the finding's resolution surface. */

@@ -1,5 +1,5 @@
 // Deleted boards: the /board Archived filter, Restore through Trash's one door, 
-// board per person after a restore. Each case fails when the behaviour it names breaks.
+// board per person after a restore. Each case fails when the behavior it names breaks.
 
 type Call = [method: string, ...args: unknown[]];
 type Responder = (calls: Call[]) => { data: unknown; error: unknown };

@@ -106,10 +106,10 @@ export const DECISIONS: Decision[] = [
   },
   {
     id: "D5b",
-    title: "Status colour",
-    question: "Keep the colour, lose the raw palette?",
+    title: "Status color",
+    question: "Keep the color, lose the raw palette?",
     status: "combined",
-    round1: "Raw palette (the colour)",
+    round1: "Raw palette (the color)",
     mine: "Token variants",
     wide: true,
     options: [
@@ -175,9 +175,9 @@ export const DECISIONS: Decision[] = [
   {
     id: "D12",
     title: "Empty state",
-    question: "Structure of one, colour of the other",
+    question: "Structure of one, color of the other",
     status: "combined",
-    round1: "EmptyStateCard's colour",
+    round1: "EmptyStateCard's color",
     mine: "Icon + title + action structure",
     wide: true,
     options: [

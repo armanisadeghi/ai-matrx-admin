@@ -47,7 +47,7 @@ import { Provider } from "react-redux";
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 // The toolbar's popover measures itself; jsdom has no ResizeObserver. Layout
-// machinery, not the behaviour under test.
+// machinery, not the behavior under test.
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
   observe() {}
   unobserve() {}
@@ -55,7 +55,7 @@ import { Provider } from "react-redux";
 };
 
 // The context menu asks whether this is a phone. jsdom has no matchMedia; the
-// answer ("no") is layout machinery, not the behaviour under test.
+// answer ("no") is layout machinery, not the behavior under test.
 if (!window.matchMedia) {
   window.matchMedia = ((query: string) => ({
     matches: false,

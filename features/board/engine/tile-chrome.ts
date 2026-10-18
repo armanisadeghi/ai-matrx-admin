@@ -34,7 +34,7 @@ interface ChromeTile {
   title: string;
 }
 
-/** Frame id → its tiles' ids (a tile belongs to the frame holding its centre). */
+/** Frame id → its tiles' ids (a tile belongs to the frame holding its center). */
 export function frameMembers(frames: readonly ChromeFrame[], tiles: readonly ChromeTile[]): Map<string, string[]> {
   const out = new Map<string, string[]>(frames.map((f) => [f.id, []]));
   for (const t of tiles) {
@@ -82,8 +82,8 @@ export function tileChrome(
  */
 /**
  * The moves an auto-height write makes: the tile takes its new height, and the frame holding it grows
- * with it (never shrinks here — page layout re-sizes frames after), so the tile's centre stays inside
- * its own chapter. Growing a tile alone pushed its centre into the next chapter and the page re-flow
+ * with it (never shrinks here — page layout re-sizes frames after), so the tile's center stays inside
+ * its own chapter. Growing a tile alone pushed its center into the next chapter and the page re-flow
  * then filed it there.
  */
 export function autoHeightMoves(

@@ -1,6 +1,6 @@
 /**
  * 🚨 V2 N1 — A CANDIDATE SCREEN KEEPS RE-READING UNTIL THE CANDIDATE IS
- * TERMINAL-FOR-NOW (ready / promoted / discarded / cancelled), NEVER MERELY
+ * TERMINAL-FOR-NOW (ready / promoted / discarded / canceled), NEVER MERELY
  * UNTIL ITS PAIRS ARE IN.
  *
  * V2 shot 09: "2 of 2 in · 2 failed", "Reject — 1 of 1 run failed", status

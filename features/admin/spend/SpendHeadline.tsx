@@ -7,7 +7,7 @@
 // "Spent so far today" is deliberately the largest thing on any surface that
 // shows it (Arman, 2026-09-11: "The key is to scare me by showing me how much
 // money we spent so far today"). Above the `scare_threshold_usd` knob it turns
-// destructive-toned — colour and wording only. Nothing is ever blocked.
+// destructive-toned — color and wording only. Nothing is ever blocked.
 //
 // Doc: features/admin/spend/FEATURE.md
 

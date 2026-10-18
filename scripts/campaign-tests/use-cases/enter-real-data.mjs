@@ -159,7 +159,7 @@ for (const [tableKey, tdef] of tableEntries) {
     else if (ftype === "choice") fieldSpec = { ...fieldSpec, type: "select", options: tdef.choices?.[fname] ?? [] };
     else if (ftype === "boolean") {
       // No boolean/checkbox primitive exists in the 13 parity types + 3 plain
-      // behaviours (custom.parity_field_types()) — logged as a limitation.
+      // behaviors (custom.parity_field_types()) — logged as a limitation.
       fieldSpec = { ...fieldSpec, type: "select", options: ["Yes", "No"] };
       logLimit(
         `declare boolean field "${fname}" on "${tableKey}"`,

@@ -4,7 +4,7 @@
  * features/hr/time/periods/components/PeriodDetailPage.tsx — route 33's client body.
  *
  * The four things this page must make visible, all of which are laws rather than features:
- *   1. Two state machines, labelled distinctly — `PeriodStatePanel`.
+ *   1. Two state machines, labeled distinctly — `PeriodStatePanel`.
  *   2. The boundary weeks, named and explained in words — `BoundaryWeeksPanel`.
  *   3. The payroll export, with the format registry read from the server and the supersede control
  *      unavailable-with-the-reason once acknowledged — L13's `ExportRunPanel` + `ExportRunList`.

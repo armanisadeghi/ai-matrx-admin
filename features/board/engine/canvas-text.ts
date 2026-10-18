@@ -2,7 +2,7 @@
  * Board — words ON the canvas (pure): sticky notes and plain text.
  *
  * Champions: FigJam / Miro stickies, tldraw / Figma text.
- *  - A sticky is a coloured square card with no header: you type straight on
+ *  - A sticky is a colored square card with no header: you type straight on
  *    it, the words shrink to fit, Tab makes the next one beside it (Miro).
  *  - Plain text is words with no box at all: it grows with what you type and
  *    wraps once you give it a width (tldraw).
@@ -21,7 +21,7 @@ export const STICKY_GAP = 24;
 
 const newId = (kind: string) => `${kind}:${Math.random().toString(36).slice(2, 10)}`;
 
-/** A new, empty sticky centred on a world point. */
+/** A new, empty sticky centerd on a world point. */
 export function makeSticky(at: { x: number; y: number }, opts: { style?: Partial<ShapeStyle>; size?: number; text?: string; id?: string } = {}): BoardShape {
   const side = opts.size ?? STICKY_SIZE;
   const x = at.x - side / 2;
@@ -38,7 +38,7 @@ export function makeSticky(at: { x: number; y: number }, opts: { style?: Partial
   };
 }
 
-/** Tab while typing on a sticky: the next one to its right, same size and colour, empty (Miro). */
+/** Tab while typing on a sticky: the next one to its right, same size and color, empty (Miro). */
 export function nextStickyBeside(sticky: BoardShape): BoardShape {
   const box = boundsOfPoints(sticky.points);
   const x = box.x + box.w + STICKY_GAP;
@@ -71,7 +71,7 @@ export function makeText(at: { x: number; y: number }, opts: { text?: string; st
       { x, y },
       { x: x + w, y: y + h },
     ],
-    // Plain text reads left to right unless the person centres it.
+    // Plain text reads left to right unless the person centers it.
     style: { textAlign: "start", ...opts.style },
     ...(opts.text ? { text: opts.text } : {}),
     ...(opts.width !== undefined ? { wrap: true } : {}),

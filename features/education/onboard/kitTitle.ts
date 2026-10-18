@@ -15,7 +15,7 @@
 //
 // Fixing it per generator would mean eight fixes and eight naming agents. The
 // kit has ONE subject, so it gets ONE name here, and every generator keeps its
-// existing `source.title` behaviour untouched.
+// existing `source.title` behavior untouched.
 //
 // Two layers, and the cheap one is never skipped:
 //   • `humanizeSourceTitle` — deterministic, instant, no AI. Un-mangles a
@@ -130,7 +130,7 @@ export function humanizeSourceTitle(raw: string): string {
     .filter((w) => !/^\d{6,}$/.test(w))
     .filter((w) => !/^\d{4}[-/]?\d{2}[-/]?\d{2}$/.test(w));
 
-  // Honour the contract in the name: NEVER empty. A filename that is nothing
+  // Honor the contract in the name: NEVER empty. A filename that is nothing
   // but junk tokens (or nothing but an extension) still yields a usable title,
   // so no caller has to defend against "".
   if (kept.length === 0) {

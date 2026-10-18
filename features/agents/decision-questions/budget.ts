@@ -21,7 +21,7 @@
  *
  * These defaults are a FALLBACK, never a product opinion: they exist so a
  * model row that has not been filled in yet still shows an honest meter with
- * its source labelled ("model catalog" vs "platform default"). When a model
+ * its source labeled ("model catalog" vs "platform default"). When a model
  * needs different numbers, the fix is its catalog row — never an edit here.
  */
 

@@ -235,7 +235,7 @@ export async function censusWithPatience<R = CensusRow>(
             finishedAt: Date.now(),
             by: me,
             rows: null,
-            unmeasured: `${label}: ran past its ${timeout} statement budget and was cancelled (57014)`,
+            unmeasured: `${label}: ran past its ${timeout} statement budget and was canceled (57014)`,
           });
         }
         throw err;

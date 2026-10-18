@@ -9,7 +9,7 @@
  * active scratchpad.
  *
  * The kind id and key live in the chat package (`host/canvas-tabs.ts`) so the
- * package recognises this tab on the canvas by the same identity.
+ * package recognizes this tab on the canvas by the same identity.
  */
 
 import { NotebookPen } from "lucide-react";

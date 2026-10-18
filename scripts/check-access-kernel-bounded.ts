@@ -91,7 +91,7 @@ const C = {
   white: "\x1b[97m",
 };
 
-/** A fixed, recognisable id prefix, so anything that somehow survived would be identifiable. */
+/** A fixed, recognizable id prefix, so anything that somehow survived would be identifiable. */
 const PFX = "c0000000-0000-4dd2-8630-00000000";
 const FOLDER_A = `${PFX}0a01`;
 const FOLDER_B = `${PFX}0a02`;

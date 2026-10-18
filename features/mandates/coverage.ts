@@ -58,7 +58,7 @@ export interface MandateCoverageBucketMeta {
   label: string;
   /** The tooltip: what the bucket MEANS, in one sentence. */
   description: string;
-  /** Tile ring + count colour. */
+  /** Tile ring + count color. */
   toneClassName: string;
   iconClassName: string;
 }

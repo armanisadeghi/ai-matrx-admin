@@ -4,7 +4,7 @@
  * OrgResourceRoleSection
  * ----------------------
  * Renders one content-role bucket (Utilities / Sources / Outputs / Workspaces)
- * as a labelled section with a grid of resource tiles. Tiles show a live count
+ * as a labeled section with a grid of resource tiles. Tiles show a live count
  * and, on click, either open the dedicated org list page or the contribute flow
  * (decided by the parent via `onOpen`).
  */

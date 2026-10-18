@@ -1,7 +1,7 @@
 // Study-guide authoring — SUPER ADMIN only.
 //
 // This route lives in the (core) app shell (not an admin-gated layout), so it
-// gates itself server-side. Defence in depth: the server actions re-check
+// gates itself server-side. Defense in depth: the server actions re-check
 // super-admin and the SECURITY DEFINER RPCs gate again at the DB. Not indexable.
 
 import type { Metadata } from "next";

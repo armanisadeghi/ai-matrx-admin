@@ -29,7 +29,7 @@ const g = page.locator('[data-step-kind="gmail"]').last();
 await g.getByTestId("automation-token-picker").first().click();
 await page.locator('[data-token="{{step1.first.email}}"]').first().click();
 await g.getByLabel("Subject").fill("Thank you for your VIP order");
-await g.getByLabel("Message").fill("We will prioritise it.");
+await g.getByLabel("Message").fill("We will prioritize it.");
 await page.waitForTimeout(600);
 await page.screenshot({ path: "/tmp/airtable-walk/aa3-4-if.png" });
 out("steps now:", JSON.stringify(await page.getByTestId("automation-step").evaluateAll((els) => els.map((e) => e.getAttribute("data-step-n") + ":" + e.getAttribute("data-step-kind")))));

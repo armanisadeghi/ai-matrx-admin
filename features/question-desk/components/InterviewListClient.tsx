@@ -15,7 +15,7 @@
 // requires a `*_list_scoped` / `*_list_scope_counts` RPC pair that only a
 // migration can create — outside this lane. So this surface is the same
 // `MatrxDataTable` the shell renders, driven directly, with the shell's two
-// load-bearing behaviours kept by hand: the archive axis above, and an empty
+// load-bearing behaviors kept by hand: the archive axis above, and an empty
 // state that never says "none" while the archive filter is hiding rows.
 // Ruling QD-L2-1; cost if wrong is one RPC plus a listConfig — the columns and
 // row actions move across unchanged.

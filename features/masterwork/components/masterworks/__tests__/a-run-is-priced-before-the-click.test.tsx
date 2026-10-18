@@ -91,7 +91,7 @@ jest.mock("@ai-matrx/rich-content/rich-document/RichDocument", () => ({
   RichDocument: () => <div />,
 }));
 // The organization's points-per-dollar knob, answered — the knob snapshot is
-// transport, not the behaviour under test.
+// transport, not the behavior under test.
 jest.mock("@/components/cost/pointsRate.client", () => ({
   usePointsRate: () => 20000,
 }));
@@ -196,7 +196,7 @@ describe("the price of one run", () => {
 
   // Cold walk 24, defect F: a new Masterwork read "Last run —", so the first
   // run — the one a first-time Expert makes — was unpriced.
-  it("prices the FIRST run from like Masterworks, labelled an estimate", async () => {
+  it("prices the FIRST run from like Masterworks, labeled an estimate", async () => {
     tables = { run: { data: [], error: null } };
     estimateWire = { estimated_cost_usd: 0.6, priced_runs: 9, basis: "shape" };
     await renderBox();

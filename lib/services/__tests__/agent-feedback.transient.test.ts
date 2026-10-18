@@ -119,7 +119,7 @@ afterEach(() => {
 });
 
 describe("a Cascade Ridge report is not destroyed by a busy database", () => {
-  test("the report lands after the insert is cancelled once", async () => {
+  test("the report lands after the insert is canceled once", async () => {
     silence();
     currentSupabase = makeSupabase([
       // resolveAgentUserId: the dispatcher IS a real Matrx user, so one lookup.
@@ -164,7 +164,7 @@ describe("a Cascade Ridge report is not destroyed by a busy database", () => {
 });
 
 describe("searching the tracker survives the same condition", () => {
-  test("list/search retries a cancelled statement and asks the database again", async () => {
+  test("list/search retries a canceled statement and asks the database again", async () => {
     silence();
     currentSupabase = makeSupabase([
       { data: null, error: STATEMENT_TIMEOUT },

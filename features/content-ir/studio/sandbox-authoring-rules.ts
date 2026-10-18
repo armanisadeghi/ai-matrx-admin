@@ -112,7 +112,7 @@ export const SANDBOX_AUTHORING_RULES: readonly SandboxAuthoringRule[] = [
         forbidden:
             "Expecting one to cover the whole page. Your component owns its own rectangle and an overlay is clipped to it.",
         consequence:
-            "A dialog opens centred in your component's box, not the window. Design overlays that make sense at your component's size, and put anything that genuinely needs the whole screen behind an action instead.",
+            "A dialog opens centerd in your component's box, not the window. Design overlays that make sense at your component's size, and put anything that genuinely needs the whole screen behind an action instead.",
     },
     {
         topic: "actions",

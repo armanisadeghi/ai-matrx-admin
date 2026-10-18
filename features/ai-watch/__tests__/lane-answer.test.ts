@@ -1,7 +1,7 @@
 import { formingRows, isKindJsonText } from "../lane-answer";
 
 describe("Watch AI never shows a kind's JSON as it is written (MKT-122)", () => {
-  it("recognises kind JSON, fenced or bare, whole or cut off mid-key", () => {
+  it("recognizes kind JSON, fenced or bare, whole or cut off mid-key", () => {
     expect(isKindJsonText('{"__kind":"brand_whats_new","facts":{')).toBe(true);
     expect(isKindJsonText('```json\n{"__kind"')).toBe(true);
     expect(isKindJsonText('Here you go: {"__kind": "x"}')).toBe(true);

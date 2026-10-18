@@ -41,7 +41,7 @@ export function classContentLinks(
 
 /**
  * The edge label to offer as a title hint, or null. A label the registry writes
- * for the pair (a Source filed under a scope is labelled "about") names the
+ * for the pair (a Source filed under a scope is labeled "about") names the
  * RELATIONSHIP, never the item — showing it lists every web page as "about".
  */
 export function titleHintFromEdgeLabel(

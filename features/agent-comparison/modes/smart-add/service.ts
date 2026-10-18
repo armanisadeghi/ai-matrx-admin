@@ -344,8 +344,8 @@ export async function saveTruth(
   try {
     const out = await labelConversations([jevConversationId], "stance", truth);
     const skipped = out.skipped[jevConversationId];
-    return { labelError: skipped ? `Jev's answer was not labelled: ${skipped}` : null };
+    return { labelError: skipped ? `Jev's answer was not labeled: ${skipped}` : null };
   } catch (err) {
-    return { labelError: `Jev's answer was not labelled: ${err instanceof Error ? err.message : String(err)}` };
+    return { labelError: `Jev's answer was not labeled: ${err instanceof Error ? err.message : String(err)}` };
   }
 }

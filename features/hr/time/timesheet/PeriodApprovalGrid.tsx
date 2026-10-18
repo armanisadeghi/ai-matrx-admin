@@ -4,7 +4,7 @@
  * features/hr/time/timesheet/PeriodApprovalGrid.tsx — ROUTE 28, `/hr/time/timesheets`
  * (L3-51, L3-52, L3-53, L3-56, L3-58, L3-77).
  *
- * 🚨 TWO STATE MACHINES, LABELLED DISTINCTLY (§14 D8, L3-51). The ROW state is
+ * 🚨 TWO STATE MACHINES, LABELED DISTINCTLY (§14 D8, L3-51). The ROW state is
  * `pay_period_employment.state` — `open · attested · disputed · approved · exported · locked`, and
  * **`submitted` is never a row state.** The HEADER state is `pay_period.state`, a different machine
  * with seven members. They share three member names, so the header carries the word "Pay period"

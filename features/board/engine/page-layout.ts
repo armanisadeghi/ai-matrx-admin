@@ -47,7 +47,7 @@ export interface PageMove {
 
 export interface PagePlan {
   moves: PageMove[];
-  /** The column the page occupies (world px); the camera centres it. */
+  /** The column the page occupies (world px); the camera centers it. */
   column: { x: number; w: number };
   /** Frame ids in page order (the chapters). */
   chapters: string[];
@@ -91,7 +91,7 @@ export function planPageLayout(
     /**
      * The chapter each tile was placed in last time (the previous plan's `members`). A tile stays in it
      * while both exist — a section growing to its content must never fall into the next chapter because
-     * its centre crossed a boundary. New tiles are filed by where they sit.
+     * its center crossed a boundary. New tiles are filed by where they sit.
      */
     members?: ReadonlyMap<string, string>;
   } = {},
@@ -267,7 +267,7 @@ export function layoutModeOf(value: unknown): BoardLayoutMode {
 }
 
 /**
- * Where a NEW thing goes in page layout: into the chapter being read (its centre inside the frame's
+ * Where a NEW thing goes in page layout: into the chapter being read (its center inside the frame's
  * bottom-right corner, so the flow puts it last), or below everything as a new loose section when no
  * chapter is in view. Null when it already sits inside a chapter.
  */

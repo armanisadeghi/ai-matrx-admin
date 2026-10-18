@@ -10,11 +10,11 @@
 //
 //   1. **Boot has not finished.** The selection is still being resolved
 //      (stored choice → stated default → personal org → sole membership).
-//      Correct behaviour: wait. Firing an org-scoped transport here is the
+//      Correct behavior: wait. Firing an org-scoped transport here is the
 //      hydration race every workflow-runtime hook documents — refused on every
 //      cold load and never retried.
 //   2. **Boot finished and there is still nothing.** The person belongs to no
-//      organization, or cleared the selection mid-session. Correct behaviour:
+//      organization, or cleared the selection mid-session. Correct behavior:
 //      say so, with the picker. Waiting here is a spinner that never resolves —
 //      a screen that lies (law 4), which is exactly what `/workflows/waiting`
 //      showed.

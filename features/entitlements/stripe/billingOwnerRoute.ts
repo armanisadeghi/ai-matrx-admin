@@ -12,7 +12,7 @@
 // `organization_required` envelope, with the caller's own memberships attached, so
 // the client opens its picker, the person chooses, and the original action
 // continues. A bespoke 400 with a bespoke sentence would be a second refusal
-// vocabulary the picker cannot recognise.
+// vocabulary the picker cannot recognize.
 
 import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";

@@ -404,7 +404,7 @@ export interface SystemRun {
   calls: number;
   done: number;
   failed: number;
-  /** The Jev cell's conversation per result (for labelling its answer). */
+  /** The Jev cell's conversation per result (for labeling its answer). */
   conversations: Map<string, string>;
 }
 

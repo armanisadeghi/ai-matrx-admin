@@ -6,7 +6,7 @@
  *     account's last active organization through the ONE door
  *     (`users.set_last_active_organization`); it never sets none.
  *   - `appContextPolicy` broadcasts nothing: another open tab never moves.
- *   - a not-a-member refusal from the server is recognised and re-runs the
+ *   - a not-a-member refusal from the server is recognized and re-runs the
  *     ladder once per burst.
  *
  * SUT: the real thunk, slice, policy and refusal recogniser. Doubles: the
@@ -102,7 +102,7 @@ describe("per tab", () => {
 });
 
 describe("a not-a-member refusal", () => {
-  it("is recognised in both envelope shapes, and nothing else is", () => {
+  it("is recognized in both envelope shapes, and nothing else is", () => {
     expect(isNotAMemberRefusal({ code: "organization_forbidden" })).toBe(true);
     expect(isNotAMemberRefusal({ detail: { code: "organization_not_member" } })).toBe(true);
     expect(isNotAMemberRefusal({ code: "organization_required" })).toBe(false);

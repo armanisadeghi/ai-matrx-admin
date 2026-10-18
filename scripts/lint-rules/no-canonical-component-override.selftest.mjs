@@ -29,7 +29,7 @@ tester.run("no-canonical-component-override", rule, {
     { filename: file, code: '<div className="ml-auto flex min-w-0 shrink-0 items-center empty:hidden" />;' },
     // a host's own descendant hook (not a package internal)
     { filename: file, code: '<div className="contents [&_[data-row-id]:focus-visible]:bg-accent" />;' },
-    // a wrapper colouring its links is not geometry
+    // a wrapper coloring its links is not geometry
     { filename: file, code: '<div className="[&_a]:underline [&_button]:text-primary" />;' },
     // a host's own raw table styling its own cells
     { filename: file, code: '<tbody className="[&_td]:py-1.5 [&_tr:last-child]:border-0" />;' },

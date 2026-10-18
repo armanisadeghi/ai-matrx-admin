@@ -1,7 +1,7 @@
 /**
  * The reply composer's guards.
  *
- * Each test fails if the behaviour is removed, not if the markup is restyled:
+ * Each test fails if the behavior is removed, not if the markup is restyled:
  *   * the visible sentence is asserted to be the SERVER's `composer_label` and
  *     nothing else — a different agent name in the mocked report must be the
  *     name on screen, so any client-side sentence, template or fallback fails;
@@ -452,7 +452,7 @@ describe("AiMatrxReplyComposer", () => {
     // why, or it is the dead-looking button this product forbids. (React's
     // own event plugin drops mouse events on an element it rendered as
     // disabled, so the send path cannot be reached from the DOM while the
-    // field is empty; the guard inside `submit` is defence in depth behind
+    // field is empty; the guard inside `submit` is defense in depth behind
     // this state.)
     expect(view.text()).toContain("Write something to send.");
     expect(view.onAnswered).not.toHaveBeenCalled();

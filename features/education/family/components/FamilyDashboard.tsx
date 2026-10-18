@@ -79,7 +79,7 @@ export function FamilyDashboard() {
       return () => clearTimeout(t);
     }
     if (consent === "cancelled") {
-      toast.info("Verification cancelled. You can try again anytime.");
+      toast.info("Verification canceled. You can try again anytime.");
       router.replace("/education/family");
     }
     return undefined;

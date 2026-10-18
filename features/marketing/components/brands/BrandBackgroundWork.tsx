@@ -10,7 +10,7 @@ import { readAllRows } from "@ai-matrx/data/db";
  *
  * Controlled: a site already crawling is never started again; an account's posts come through the
  * canonical social door (`trackAccount` / `refreshProfile`), which reuses the stored profile, dedupes
- * posts and the tracked row, meters the spend, and honours `social.profile_posts_default` / `max`.
+ * posts and the tracked row, meters the spend, and honors `social.profile_posts_default` / `max`.
  * Plan: common-docs smart-add-brand/BRAND-PAGES-PLAN.md (G2, G3).
  *
  * ONE `MatrxDataTable`: a row per site crawl and per account's posts, one column per sortable /

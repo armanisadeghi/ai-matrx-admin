@@ -5,7 +5,7 @@
  * and 1,432 `organization` — read live from Supabase project
  * `brsgrqvjdzwihsvnfqkf` on 2026-09-18, `select party_kind, count(*) … group by
  * 1`. There is no third value and no null. Every one of those 1,892 records was
- * labelled "Person".
+ * labeled "Person".
  *
  * This guard is over the CLASS, not the instance: it asserts the resolver covers
  * every kind the closed vocabulary declares (so adding one to `PARTY_KINDS`

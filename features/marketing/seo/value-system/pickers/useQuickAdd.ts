@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * P23 — the shared "+ Add" behaviour every dimension-value picker uses.
+ * P23 — the shared "+ Add" behavior every dimension-value picker uses.
  *
  * ONE write path (`quickAddDimensionValue` → `seo.gsc_quick_add_value`, the
  * standalone primitive in ../quick-add.ts), ONE toast, and ONE answer to the

@@ -12,7 +12,7 @@
  *    value, so what the employee saw and what was recorded can never disagree.
  * 2. 🚨 **A meal waiver is offered ONLY where `attestation.mealWaiverOffered` is true** — the
  *    resolved rule permits one for that shift length. Where it does not, the option is **absent —
- *    not greyed, not refused after the fact**. Offering a waiver a jurisdiction does not allow and
+ *    not grayed, not refused after the fact**. Offering a waiver a jurisdiction does not allow and
  *    then rejecting it teaches people the form is theatre.
  * 3. 🚨 **A "no" answer NEVER blocks the clock-out.** Submit always writes the punch. *"I did not
  *    get my meal break"* and *"these hours are wrong"* become an exception and, where a rule says
@@ -200,7 +200,7 @@ export function ClockOutAttestationCard({
           )}
 
           {/*
-            Rule 2: ABSENT, not greyed, where the resolved rule permits no waiver for this shift
+            Rule 2: ABSENT, not grayed, where the resolved rule permits no waiver for this shift
             length. `mealWaiverOffered` is the server's answer to that question, not ours.
           */}
           {waiverOffered && (

@@ -7,7 +7,7 @@
  *
  * Present only for people who may watch (`useCanWatchAi`: system admins with debug mode
  * on). The Eye glyph itself is ORANGE while an AI run on this page is still working
- * (`selectLiveWatchableRuns` — keyed by server run, finished runs never count), grey
+ * (`selectLiveWatchableRuns` — keyed by server run, finished runs never count), gray
  * otherwise. Click opens Watch AI on the live run; with several, the window lists them.
  * Orange is deliberately not the Error Inspector's amber dot.
  *

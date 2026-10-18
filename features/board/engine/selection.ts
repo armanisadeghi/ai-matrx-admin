@@ -77,7 +77,7 @@ export function allSelectable(items: ReadonlyMap<string, Rect>): string[] {
 /**
  * What moving `selection` moves, with each item's rect now (a frame's own
  * rect, band excluded): the selected tiles, and each selected frame with
- * every tile whose centre it holds and every frame wholly inside it — a frame
+ * every tile whose center it holds and every frame wholly inside it — a frame
  * carries its contents (Figma). Ids absent from the board are ignored.
  */
 export function groupMoveSet(selection: readonly string[], items: ReadonlyMap<string, Rect>): Map<string, Rect> {

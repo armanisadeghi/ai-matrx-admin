@@ -4,7 +4,7 @@
  * A person's controls on one story (NEWS-ENGINE-SPEC §5.3, R5 — "validation
  * offers, never blocks"): surface a withheld or watched story anyway, dismiss
  * one with a reason, and undo either. Every write is a `guardedUpdate` on
- * `seo.tracker_story` under its RLS; the next run honours it.
+ * `seo.tracker_story` under its RLS; the next run honors it.
  */
 
 import { useState } from "react";

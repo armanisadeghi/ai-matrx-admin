@@ -37,7 +37,7 @@ describe("theme follows the device unless the person chose", () => {
     expect(state.mode).toBe("system");
   });
 
-  it("an unreadable saved value falls back to 'system', never a hardcoded colour", () => {
+  it("an unreadable saved value falls back to 'system', never a hardcoded color", () => {
     expect(themePolicy.config.deserialize?.(undefined)).toEqual({ mode: "system" });
     expect(themePolicy.config.deserialize?.({ mode: "purple" })).toEqual({ mode: "system" });
   });

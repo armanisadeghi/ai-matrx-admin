@@ -3,7 +3,7 @@
  *
  * Agent-review 387cd269 (2026-09-27): the org Notes page showed "Could not find
  * the table 'public.notes'" — notes had moved to `workbench`, and nine other
- * catalogue entries (datasets, workbooks, transcripts, flashcards, quizzes,
+ * catalog entries (datasets, workbooks, transcripts, flashcards, quizzes,
  * canvas, research topics, message templates, workflows) still assumed
  * `public` too. `public` is only a staging queue now, so an entry that omits
  * `schemaName` is almost certainly pointing at a table that is gone. A table
@@ -13,7 +13,7 @@ import { ORG_RESOURCE_CATALOGUE } from "../resource-catalogue";
 
 const STILL_IN_PUBLIC = new Set(["sandbox_instances"]);
 
-describe("org resource catalogue — every table names its schema", () => {
+describe("org resource catalog — every table names its schema", () => {
   it("no table-backed entry silently defaults to public", () => {
     const unnamed = ORG_RESOURCE_CATALOGUE.filter(
       (entry) =>

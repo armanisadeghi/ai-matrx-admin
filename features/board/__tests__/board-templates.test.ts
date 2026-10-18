@@ -56,7 +56,7 @@ describe("board templates", () => {
   it("a failed pack read never hides the built-ins or saved boards, and is reported", async () => {
     listTemplateIds.mockResolvedValue(["b1"]);
     getBoardsByIds.mockResolvedValue([{ id: "b1", title: "Mine", doc: { nodes: [], groups: [], edges: [], shapes: [], camera: { x: 0, y: 0, z: 1 } } }]);
-    listBoardPacks.mockRejectedValueOnce(new Error("catalogue down"));
+    listBoardPacks.mockRejectedValueOnce(new Error("catalog down"));
     const all = await listBoardTemplates();
     expect(all.map((t) => t.key)).toEqual([...BUILTIN_BOARD_TEMPLATES.map((t) => t.key), "b1"]);
     expect(reportUnreadablePack).toHaveBeenCalledWith("The board template packs", expect.any(Error));

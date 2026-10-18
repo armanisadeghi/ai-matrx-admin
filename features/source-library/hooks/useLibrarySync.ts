@@ -3,7 +3,7 @@
 /**
  * The enumeration stream, as a hook.
  *
- * `start()` is BOTH the first catalogue and the manual "bring up to date" — the
+ * `start()` is BOTH the first catalog and the manual "bring up to date" — the
  * contract has one enumeration door and no schedule (§4). Nothing here ever
  * starts itself on a timer.
  */
@@ -79,7 +79,7 @@ export function useLibrarySync(libraryId: string, onSettled?: () => void): UseLi
                 const message =
                     error instanceof MediaApiError
                         ? error.message
-                        : "The connection to the server dropped before the catalogue finished. The server keeps listing on its own — reload to see what it has.";
+                        : "The connection to the server dropped before the catalog finished. The server keeps listing on its own — reload to see what it has.";
                 dispatch(syncTransportLost({ libraryId, message }));
             } finally {
                 if (!controller.signal.aborted) onSettled?.();

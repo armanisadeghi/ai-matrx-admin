@@ -108,7 +108,7 @@ export function parseWaivers(sql: string): Map<string, string> {
 }
 
 /**
- * THE WHOLE JUDGEMENT, as a pure function of (files, contracts) so the self-test can drive
+ * THE WHOLE JUDGMENT, as a pure function of (files, contracts) so the self-test can drive
  * it with bytes it wrote and the real run can drive it with the corpus.
  */
 export function findContractGaps(

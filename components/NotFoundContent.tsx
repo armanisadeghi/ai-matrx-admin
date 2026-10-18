@@ -3,7 +3,7 @@
 /**
  * The screen for "that page does not exist".
  *
- * WHAT THIS IS NOT. It used to be one grey line of text over a grid of ~40
+ * WHAT THIS IS NOT. It used to be one gray line of text over a grid of ~40
  * destination tiles — every place in the product, offered at once, to someone
  * who already knows where they were trying to go. Forty doors is not a way
  * out; it is a maze with an apology on top, and it made a wrong link feel like

@@ -6,7 +6,7 @@
  *  - the preview is free, shows the grid's points, and names the matched
  *    storefront; nothing is spent until "Run grid" is clicked, and the run
  *    carries the center the preview returned;
- *  - the result draws one bubble per point coloured by rank, "not found" read
+ *  - the result draws one bubble per point colored by rank, "not found" read
  *    against the result count, us against the top winners, and "Reused from".
  */
 import React from "react";
@@ -314,7 +314,7 @@ it("previews free, runs only on a click with the confirmed center, then shows th
   expect(run).toHaveLength(1);
   expect(run[0].arguments).toMatchObject({ preview: false, center_confirmed: "33.619,-117.93", grid_size: 3 });
 
-  // One bubble per point, coloured by rank; not-found read three ways; a failure is "x".
+  // One bubble per point, colored by rank; not-found read three ways; a failure is "x".
   const bubbles = markers().map((m) => m.dataset.bubble);
   expect(bubbles).toEqual(["1", "5", "12", "20+", "–", "–", "x", "2", "3"]);
   const labels = markers().map((m) => m.textContent);

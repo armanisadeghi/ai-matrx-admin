@@ -76,7 +76,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/operations/connections",
       label: "Data connections",
       description:
-        "MarketingConnectionsCatalog — the provider catalogue for the agency's data sources.",
+        "MarketingConnectionsCatalog — the provider catalog for the agency's data sources.",
       filePath: "app/(core)/marketing/operations/connections/page.tsx",
       status: "Live",
     },
@@ -464,7 +464,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports",
-      label: "Crawl report catalogue",
+      label: "Crawl report catalog",
       description:
         "CrawlReportsIndex — the bulk technical-SEO report index for one crawl session.",
       filePath:
@@ -917,7 +917,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/pr/outreach",
       label: "Outreach",
       description:
-        "BrandScopedOutreach → OutreachFrontDoor — prospecting scoped to this client's websites and its organization's mailboxes; the CRM doors (campaigns, Chasebox, replies, wins) have no brand link and are labelled as counting across your clients.",
+        "BrandScopedOutreach → OutreachFrontDoor — prospecting scoped to this client's websites and its organization's mailboxes; the CRM doors (campaigns, Chasebox, replies, wins) have no brand link and are labeled as counting across your clients.",
       filePath: "app/(core)/marketing/[brandId]/pr/outreach/page.tsx",
       status: "Live",
     },

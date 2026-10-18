@@ -1,5 +1,5 @@
 /**
- * Where the floating selection toolbar goes (pure). It sits centred above the selection (below when
+ * Where the floating selection toolbar goes (pure). It sits centerd above the selection (below when
  * there is no room) and NEVER over board chrome: the minimap, the zoom HUD, the assists pill and any
  * other floating dock. A candidate that would touch chrome slides sideways past it, else the next
  * candidate is tried (FigJam keeps its toolbar inside the free canvas).

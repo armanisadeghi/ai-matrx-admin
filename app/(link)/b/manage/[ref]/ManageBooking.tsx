@@ -5,14 +5,14 @@
 // TWO THINGS THIS SCREEN REFUSES TO DO, both of them things booking pages
 // commonly do:
 //
-//   · It does not show the person's OWN time greyed out as "taken" beside a
+//   · It does not show the person's OWN time grayed out as "taken" beside a
 //     Reschedule button. The store marks it `mine`, and a screen that says no to
 //     itself is a screen nobody trusts.
-//   · It does not cancel on one tap. Cancelling frees an hour somebody may have
+//   · It does not cancel on one tap. Canceling frees an hour somebody may have
 //     waited for, so the button says what will happen and asks once — and the
 //     confirm step names the actual time, not "this booking".
 //
-// A cancelled appointment is KEPT and marked, never deleted, so the page can
+// A canceled appointment is KEPT and marked, never deleted, so the page can
 // still say honestly what happened rather than 404ing on its own link.
 
 import { useEffect, useMemo, useState } from "react";
@@ -76,7 +76,7 @@ export function ManageBooking({ booking }: { booking: Managed }) {
       setNote("Your appointment has been moved, and whoever you are seeing has been told.");
       return;
     }
-    // taken / not_offered / unchanged / cancelled — the store's own sentence,
+    // taken / not_offered / unchanged / canceled — the store's own sentence,
     // and the appointment is exactly where it was.
     setNote(answer.message ?? "Your appointment was not moved.");
   }
@@ -87,23 +87,23 @@ export function ManageBooking({ booking }: { booking: Managed }) {
       .then((r) => r.json() as Promise<CancelAnswer>)
       .catch<CancelAnswer>(() => ({
         state: "error",
-        message: "That did not reach us, so nothing was cancelled.",
+        message: "That did not reach us, so nothing was canceled.",
       }));
     setBusy(null);
     setConfirmingCancel(false);
     if (answer.state === "cancelled") {
       setState("cancelled");
-      setNote(answer.message ?? "This appointment is cancelled and that time is free again.");
+      setNote(answer.message ?? "This appointment is canceled and that time is free again.");
       return;
     }
-    setNote(answer.message ?? "Nothing was cancelled.");
+    setNote(answer.message ?? "Nothing was canceled.");
   }
 
   if (state === "cancelled") {
     return (
       <section className="mt-6 flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">
-          {note ?? "This appointment was cancelled, so that time is free again."}
+          {note ?? "This appointment was canceled, so that time is free again."}
         </p>
       </section>
     );
@@ -131,7 +131,7 @@ export function ManageBooking({ booking }: { booking: Managed }) {
       {confirmingCancel ? (
         <div className="flex flex-col gap-3 rounded border border-destructive px-3 py-3">
           <p className="text-sm">
-            Cancelling gives up {at ? whenText(at, zone) : "this time"} and puts it back on offer. You would
+            Canceling gives up {at ? whenText(at, zone) : "this time"} and puts it back on offer. You would
             have to book again, and the time may be gone.
           </p>
           <div className="flex gap-2">
@@ -141,7 +141,7 @@ export function ManageBooking({ booking }: { booking: Managed }) {
               disabled={busy !== null}
               onClick={() => void cancel()}
             >
-              {busy === "cancel" ? "Cancelling…" : "Yes, cancel it"}
+              {busy === "cancel" ? "Canceling…" : "Yes, cancel it"}
             </button>
             <button
               type="button"

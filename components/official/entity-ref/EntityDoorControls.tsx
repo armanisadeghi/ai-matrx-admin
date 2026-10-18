@@ -82,7 +82,7 @@ export interface EntityDoorControlsProps {
   /** Display name — used only for the control labels/tooltips. */
   name?: string | null;
   /**
-   * Override the registry route. Honoured exactly: `null` means "this record
+   * Override the registry route. Honored exactly: `null` means "this record
    * has no door" and must not fall through to the registry; omit to defer.
    */
   href?: string | null;

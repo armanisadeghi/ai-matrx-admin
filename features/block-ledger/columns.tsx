@@ -5,7 +5,7 @@
 // THE COLUMN THAT MATTERS IS THE SENTENCE. Every other register on this platform
 // shows a code and hides the words; this one leads with what the site, the file or
 // the provider actually said, because that sentence is the whole finding
-// (HUNTER-RULES.md law 3: "the exact error or behaviour (verbatim)").
+// (HUNTER-RULES.md law 3: "the exact error or behavior (verbatim)").
 //
 // SORTING IS HONEST. The five columns the table can order by are the five the
 // service whitelists; the rest declare `sortable: false` rather than offering a

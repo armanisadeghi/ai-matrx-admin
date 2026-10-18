@@ -58,7 +58,7 @@ export function readPng(file: string): Bitmap {
     const bpp = colorType === 6 ? 4 : colorType === 2 ? 3 : 0;
     if (!bpp) {
         throw new Error(
-            `This PNG has colour type ${colorType}; the parity reader only handles RGB (2) and RGBA (6).`,
+            `This PNG has color type ${colorType}; the parity reader only handles RGB (2) and RGBA (6).`,
         );
     }
     const raw = inflateSync(Buffer.concat(idat));
@@ -112,7 +112,7 @@ export interface DiffResult {
  * Compare two bitmaps over their common rectangle.
  *
  * `tol` is a per-channel tolerance in 0–255. 8 is the S3 noise floor: subpixel
- * antialiasing along a rounded edge lands under it, a different colour does not.
+ * antialiasing along a rounded edge lands under it, a different color does not.
  */
 export function diff(a: Bitmap, b: Bitmap, tol = 8, shiftY = 0): DiffResult {
     const w = Math.min(a.w, b.w);

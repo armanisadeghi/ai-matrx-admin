@@ -953,11 +953,11 @@ export function readable(text: string, names: ReadonlyMap<string, string>): stri
   return out.charAt(0).toUpperCase() + out.slice(1);
 }
 
-// ── The sentence: what happened, in words — never a code, an id or a terminal colour ──
+// ── The sentence: what happened, in words — never a code, an id or a terminal color ──
 
 const ANSI_RE = /\u001b\[[0-9;]*[A-Za-z]/g;
 
-/** Terminal colour codes and ORM banners out; the first meaningful line of an error in. */
+/** Terminal color codes and ORM banners out; the first meaningful line of an error in. */
 export function stripAnsi(text: string): string {
   return text.replace(ANSI_RE, "");
 }

@@ -2,7 +2,7 @@
 
 // features/marketing/seo/topical-map/views/graph/GraphLegend.tsx
 //
-// THE LEGEND A PERSON CAN ACTUALLY READ. A drawing whose colours and sizes mean
+// THE LEGEND A PERSON CAN ACTUALLY READ. A drawing whose colors and sizes mean
 // something undocumented is a drawing that means nothing, so this panel says —
 // in sentences, right now, for the encoding actually in force — what size, fill,
 // ring and hue are doing, and carries the switch between the two modes.
@@ -15,7 +15,7 @@
 //   1. An encoding value this build does not know gets its own line SAYING SO
 //      (`encoding.ts` writes the sentence) — never a missing line, never a
 //      silent "none".
-//   2. In convergence mode the colours are a rollup of page intents, and until
+//   2. In convergence mode the colors are a rollup of page intents, and until
 //      every page is counted the panel says how far it has got. A partial
 //      rollup presented as complete is the confident lie this feature exists
 //      to kill.
@@ -115,14 +115,14 @@ export function GraphLegend({
         <ModeButton
           active={mode === "structure"}
           label="Structure"
-          title="Colour the map by what each topic IS."
+          title="Color the map by what each topic IS."
           icon={Compass}
           onClick={() => onModeChange("structure")}
         />
         <ModeButton
           active={mode === "convergence"}
           label="Convergence"
-          title="Colour the map by where each topic's pages are going."
+          title="Color the map by where each topic's pages are going."
           icon={Route}
           onClick={() => onModeChange("convergence")}
         />
@@ -130,7 +130,7 @@ export function GraphLegend({
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={expanded}
-            title={expanded ? "Hide what the colours mean" : "Show what the colours mean"}
+            title={expanded ? "Hide what the colors mean" : "Show what the colors mean"}
             className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             {expanded ? (
@@ -171,23 +171,23 @@ export function GraphLegend({
                 </ul>
               ) : (
                 <p className="text-muted-foreground">
-                  The colour settings for this map have not loaded, so no swatches are shown.
+                  The color settings for this map have not loaded, so no swatches are shown.
                 </p>
               )}
 
               {/* NEVER A PARTIAL ROLLUP PRESENTED AS COMPLETE. */}
               {progress.complete ? (
                 <p className="mt-2 text-muted-foreground">
-                  Coloured from all{" "}
+                  Colored from all{" "}
                   {formatCount(progress.total ?? progress.loaded)} pages on this map.
                 </p>
               ) : (
                 <p className="mt-2 text-foreground" role="status" aria-live="polite">
-                  Colouring {formatCount(progress.loaded)} of{" "}
+                  Coloring {formatCount(progress.loaded)} of{" "}
                   {formatCount(progress.total, { unknown: "…" })} pages…
                   {progress.loaded === 0
-                    ? " No topic is coloured by intent yet."
-                    : " Topics whose pages are still being counted keep their structural colour."}
+                    ? " No topic is colored by intent yet."
+                    : " Topics whose pages are still being counted keep their structural color."}
                 </p>
               )}
             </div>

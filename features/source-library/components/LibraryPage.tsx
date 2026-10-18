@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * One Library: the metrics that fill in while the catalogue streams, the
+ * One Library: the metrics that fill in while the catalog streams, the
  * Sources list under them, the server's Actions on a selection, and the jobs
  * those Actions started.
  *
@@ -100,7 +100,7 @@ export function LibraryPage({ libraryId }: { libraryId: string }) {
 
     // 🚨 A FAILED READ IS NEVER A SKELETON. Swallowing this error left the
     // header promising numbers that were never coming: on a Library whose
-    // catalogue had failed, every tile and the cadence chart sat in a loading
+    // catalog had failed, every tile and the cadence chart sat in a loading
     // skeleton forever, with no message, no timeout and no retry. So the
     // sentence is kept. Numbers we ALREADY hold are still never blanked — the
     // header only switches to the failure copy while it holds nothing.

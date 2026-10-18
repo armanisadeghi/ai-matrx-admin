@@ -2,7 +2,7 @@
  * `knobStringList` — the JSON-list reader behind org-curated ordered tiers
  * (the reference picker's "types offered first" is the first caller).
  *
- * What these pin is the REFUSAL behaviour. A knob list feeds lookups by token,
+ * What these pin is the REFUSAL behavior. A knob list feeds lookups by token,
  * so a member that is not a string must raise: coerced to text, `null` becomes
  * "null" and simply matches nothing, which is exactly the silent, invisible
  * default the knob system exists to end.
@@ -12,10 +12,10 @@ import { invalidateFeatureKnobs, knobStringList } from "./featureKnobs";
 
 const rows: Array<{ feature: string; key: string; value: unknown }> = [];
 
-// The catalogue is read through `readAllRows`, so the fake speaks the paged
+// The catalog is read through `readAllRows`, so the fake speaks the paged
 // dialect: `{ count: "exact" }`, `.order()`, `.range()`. Paging itself is
 // pinned in `featureKnobs.paging.test.ts`; here the table always fits one page.
-// 🚨 `.is("archived_at", null)` — the catalogue reader stopped serving
+// 🚨 `.is("archived_at", null)` — the catalog reader stopped serving
 // archived knobs (settings3, 2026-09-22) and four bespoke fakes of this one
 // builder did not grow the verb, so all four went red on
 // "…select(...).is is not a function". THE REAL DEBT IS FOUR FAKES OF ONE

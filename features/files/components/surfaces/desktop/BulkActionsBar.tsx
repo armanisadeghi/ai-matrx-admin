@@ -145,7 +145,7 @@ export function BulkActionsBar({ ids }: { ids: readonly string[] }) {
             title: `Move ${count(sel.count)} to folder`,
             description: "Choose a destination folder.",
           });
-          // undefined = cancelled (null = root).
+          // undefined = canceled (null = root).
           if (target === undefined) return;
           const isDescendantOf = (candidate: string, ancestor: string) => {
             let cursor: string | null = candidate;

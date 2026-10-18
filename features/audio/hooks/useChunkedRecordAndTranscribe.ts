@@ -161,7 +161,7 @@ export function useChunkedRecordAndTranscribe({
   const pausedAtRef = useRef(0);
   const pausedDurationRef = useRef(0);
   // The canonical level meter (@ai-matrx/browser-audio/core — shared
-  // AudioContext, analyser graph + rAF + teardown all inside). Cosmetic only;
+  // AudioContext, analyzer graph + rAF + teardown all inside). Cosmetic only;
   // capture runs off the MediaStream directly.
   const meterRef = useRef<StreamLevelMeter | null>(null);
   const safetyIdRef = useRef<string>("");
@@ -232,7 +232,7 @@ export function useChunkedRecordAndTranscribe({
     return Math.max(0, elapsed) / 1000;
   }, []);
 
-  // Tear down the level meter (cancels its rAF + disconnects its analyser
+  // Tear down the level meter (cancels its rAF + disconnects its analyzer
   // graph; the shared AudioContext stays warm for the next recording).
   const stopLevelMeter = useCallback(() => {
     meterRef.current?.stop();
@@ -281,7 +281,7 @@ export function useChunkedRecordAndTranscribe({
   // stop the recorder so `onstop` triggers → transcribeBlob saves the chunk to
   // IndexedDB (see Bug 3 fix above) before the browser tears down the page.
   // We set `isPageHidingRef` so transcribeBlob skips the network call and only
-  // does the save — a fetch starting during page unload would be cancelled anyway.
+  // does the save — a fetch starting during page unload would be canceled anyway.
   useEffect(() => {
     const handleUnload = () => {
       const mr = mediaRecorderRef.current;
@@ -542,7 +542,7 @@ export function useChunkedRecordAndTranscribe({
       // this device disappears before the full-audio upload lands. ADDITIONAL
       // to the IndexedDB save above, never a replacement — fire-and-forget
       // with its own retries; a journal failure never touches recording.
-      // Skipped during page-hide (the fetch would be cancelled mid-unload
+      // Skipped during page-hide (the fetch would be canceled mid-unload
       // and would only produce a false-alarm loud error).
       if (safetyIdRef.current && !isPageHidingRef.current) {
         journalChunk({
@@ -555,7 +555,7 @@ export function useChunkedRecordAndTranscribe({
 
       // Skip transcription for tiny chunks (not enough audio) or when the page is
       // unloading — in that case we just want the save above to complete, not start
-      // a network request that will be cancelled mid-flight.
+      // a network request that will be canceled mid-flight.
       if (blob.size < AUDIO_CONSTANTS.MIN_CHUNK_BYTES || isPageHidingRef.current) {
         maybeFireFinal();
         return;
@@ -735,7 +735,7 @@ export function useChunkedRecordAndTranscribe({
   }, [createRecorder]);
 
   // Start the canonical level meter on `stream` (replacing any previous one).
-  // Same 0-100 scale the inline analyser produced; teardown lives in the core.
+  // Same 0-100 scale the inline analyzer produced; teardown lives in the core.
   const startLevelMeter = useCallback(
     (stream: MediaStream) => {
       stopLevelMeter(); // never stack meters
@@ -988,7 +988,7 @@ export function useChunkedRecordAndTranscribe({
     // Re-acquire the mic out of standby. Within the singleton's keepalive this
     // returns the same warm stream; after it, a fresh `getUserMedia` — both
     // re-prompt-free on a granted origin. A new stream object means we must
-    // rebuild the analyser source (the old one was disconnected on pause).
+    // rebuild the analyzer source (the old one was disconnected on pause).
     if (startingRef.current || micHeldRef.current) {
       console.warn(
         "[useChunkedRecordAndTranscribe] resumeRecording ignored — an acquire " +

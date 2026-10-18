@@ -9,7 +9,7 @@
  * run makes are the same arithmetic.
  *
  * THE RULE THIS COMPONENT EXISTS TO ENFORCE: a budget that silently eats part
- * of a selection is worse than no budget. So the ceiling is labelled (not a
+ * of a selection is worse than no budget. So the ceiling is labeled (not a
  * bare number in a box), it explains where the default came from, and when it
  * bites it names exactly which resources lose how many items — BEFORE the run,
  * not in a post-hoc report nobody reads.

@@ -7,8 +7,8 @@
  *
  * Names are the canonical vocabulary (common-docs platform/vocabulary/FEATURE.md) — never coin or
  * rename one here. Pitches are 3–7 plain words (guarded in __tests__). Each piece links to its real
- * home. Each piece wears its ONE identity (colour + icon) from `@ai-matrx/icons/domain` — the same
- * tile it wears on the welcome grid, the dashboard and in chat; never a local colour. Knowledge's pitch speaks for ALL of a person's or company's information (notes, files, chats, research,
+ * home. Each piece wears its ONE identity (color + icon) from `@ai-matrx/icons/domain` — the same
+ * tile it wears on the welcome grid, the dashboard and in chat; never a local color. Knowledge's pitch speaks for ALL of a person's or company's information (notes, files, chats, research,
  * scrapes, code, tasks — not just files) that every agent can reach and never forgets (Arman, 2026-10-18). The card is the stage's `featured` hero (a picture of what flows in). The stage itself is `@ai-matrx/design-system/intro-stage` (one UI system).
  */
 import type { ReactNode } from "react";

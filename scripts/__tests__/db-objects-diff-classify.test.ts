@@ -151,7 +151,7 @@ describe("classifyDelta — outside the ruling schemas", () => {
   });
 });
 
-describe("summarise — what the exit code is made of", () => {
+describe("summarize — what the exit code is made of", () => {
   const deltas: Delta[] = [
     table("platform", "masterwork_run_kind", "production_only"),
     table("platform", "provision_generate_target", "production_only"),

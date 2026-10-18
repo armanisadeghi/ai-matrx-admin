@@ -188,7 +188,7 @@ describe("every door opens the same Documents tab", () => {
 
     expect(itemIds(store)).toEqual([conversationDocumentsTabId(CONVERSATION_ID)]);
     expect(canvasOf(store).items[conversationDocumentsTabId(CONVERSATION_ID)]?.kind).toBe(CONVERSATION_DOCUMENTS_KIND);
-    // The chat recognises the tab it opened (the rail's Doc pill lights up).
+    // The chat recognizes the tab it opened (the rail's Doc pill lights up).
     expect(probe.sourceIds).toContain(conversationDocumentsTabId(CONVERSATION_ID));
 
     // A second door (a result bar, `?attachDoc=`, the documents menu) focuses it.

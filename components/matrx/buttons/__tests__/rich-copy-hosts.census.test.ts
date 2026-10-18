@@ -538,7 +538,7 @@ const SURFACE_REQUIRES: Record<string, Array<[RegExp, string]>> = {
   "features/spaces/editor/selection-format.tsx": [
     [/selection:comment/, "Comment is a registered toolbar action, not a second bubble"],
     [/selection:format-link/, "Link is a registered format action"],
-    [/selection:format-color/, "Text colour is a registered format action"],
+    [/selection:format-color/, "Text color is a registered format action"],
     [/selection:format-h1/, "the block type is a registered format action"],
   ],
   "features/documents/components/DocumentRecord.tsx": [

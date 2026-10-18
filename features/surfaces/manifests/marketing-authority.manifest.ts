@@ -84,7 +84,7 @@ const values: SurfaceValue[] = [
     name: "authority_guidance",
     label: "Optional priority",
     description:
-      "The free-text priority note currently staged in the run form, steering which pages the next analysis should favour or leave alone. Empty when no note has been written. Nothing is persisted — it is sent only when the user presses the run button.",
+      "The free-text priority note currently staged in the run form, steering which pages the next analysis should favor or leave alone. Empty when no note has been written. Nothing is persisted — it is sent only when the user presses the run button.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 200,
@@ -98,7 +98,7 @@ const values: SurfaceValue[] = [
  * `AuthorityRouterWorkspace`, which owns that state.
  *
  * **Why this one.** `authority_guidance` is the surface's ONLY authored input:
- * free prose steering which pages the next analysis should favour or leave
+ * free prose steering which pages the next analysis should favor or leave
  * alone. It is the classic staged run-input (`marketing-crawls`,
  * `image-generate`, `chat-voice`) — the value is staged, nothing is persisted,
  * and the user presses run. A single-target adoption is deliberate and has
@@ -140,7 +140,7 @@ const writeTargets: SurfaceWriteTarget[] = [
   {
     name: "authority_guidance",
     label: "Optional priority",
-    description: `Replaces the ENTIRE "Optional priority" note in the run form — pass the full text you want, not an addition, and pass "" to clear it. Free-form prose telling the next analysis which pages to favour or leave alone (e.g. "prioritize the California service pages and avoid changing the pricing guide"). Maximum ${AUTHORITY_GUIDANCE_MAX_CHARS} characters. This only stages the note: nothing is persisted and no analysis runs until the user presses the run button themselves. Refused while an analysis is already running.`,
+    description: `Replaces the ENTIRE "Optional priority" note in the run form — pass the full text you want, not an addition, and pass "" to clear it. Free-form prose telling the next analysis which pages to favor or leave alone (e.g. "prioritize the California service pages and avoid changing the pricing guide"). Maximum ${AUTHORITY_GUIDANCE_MAX_CHARS} characters. This only stages the note: nothing is persisted and no analysis runs until the user presses the run button themselves. Refused while an analysis is already running.`,
     valueType: "string",
     updatesValue: "authority_guidance",
     mode: "draft",

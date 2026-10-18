@@ -9,7 +9,7 @@
  *
  * 🚨 `no-timesheet` IS AN EXPLICIT SENTENCE, NOT AN EMPTY GRID (§2.2). A salaried-exempt employee
  * who opens this route must read *why* there is nothing here. `noTimesheetReason` is the server's
- * sentence and it is printed, not summarised — an empty table teaches someone that the product is
+ * sentence and it is printed, not summarized — an empty table teaches someone that the product is
  * broken.
  *
  * 🚨 THIS ROUTE IS SELF-ONLY BY CONSTRUCTION (§2.2). There is no employee selector, no "view as",

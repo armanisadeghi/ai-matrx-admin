@@ -69,7 +69,7 @@ export interface AppFrameProps {
   children: ReactNode;
   // ── the footer ──
   status?: ReactNode;
-  /** The companion's content; the frame shows a labelled stand-in without it. */
+  /** The companion's content; the frame shows a labeled stand-in without it. */
   companion?: ReactNode;
   companionOpen?: boolean;
   onCompanionOpenChange?: (open: boolean) => void;

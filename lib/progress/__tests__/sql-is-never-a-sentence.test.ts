@@ -58,7 +58,7 @@ const MACHINE = [
 const PROSE = [
   "The site refused both our normal request and our server browser. It will answer an ordinary person's browser.",
   "YouTube would not answer what captions this video has — it asked the server to prove it is not a robot.",
-  "This is iMessage (chat.db), which this server recognises but cannot read yet.",
+  "This is iMessage (chat.db), which this server recognizes but cannot read yet.",
   "We reached this page successfully but could not read any text out of it.",
   "It stopped after 3 attempts (see step 2 below).",
 ];

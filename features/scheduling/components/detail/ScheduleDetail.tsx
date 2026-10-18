@@ -112,7 +112,7 @@ export function ScheduleDetail({ taskId, seat = "owner" }: Props) {
   // only two targets it wires persist immediately through the canonical
   // `updateScheduledTask` thunk (invariant 1 — never a direct `.from('sch_*')`
   // write). Both are deliberately fields that cannot change what the schedule
-  // runs or when it fires; anything behavioural stays editor-only so the user
+  // runs or when it fires; anything behavioral stays editor-only so the user
   // reviews the whole schedule before saving. Handlers validate and THROW on a
   // bad shape — the writeback seam converts throws to error envelopes the
   // agent reads. Fresh closures per call (getWriteHandlers contract).

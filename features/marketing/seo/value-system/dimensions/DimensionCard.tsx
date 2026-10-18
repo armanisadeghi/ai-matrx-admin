@@ -400,7 +400,7 @@ export function DimensionCard({
    * need to click matcher — clicking okay should just run it automatically"*).
    * Adding an answer used to end with a toast and a row stamped on zero
    * keywords, and the one thing that would change that — writing a match —
-   * was three clicks away behind a button labelled with a count. The new
+   * was three clicks away behind a button labeled with a count. The new
    * answer's matcher editor now opens on its own, so the flow ends where the
    * work actually is.
    */

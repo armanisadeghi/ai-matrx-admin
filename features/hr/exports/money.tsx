@@ -11,7 +11,7 @@
  *
  *   1. **The key is ABSENT** → the reader has no pay authority. The slot does not render: no label,
  *      no cell, no reserved space. **Absent, not disabled, not masked** (SPEC-UI-IA §4.2, and D19's
- *      pay wall). This is the whole point — an empty box labelled "Total amount" advertises that
+ *      pay wall). This is the whole point — an empty box labeled "Total amount" advertises that
  *      there is a figure here you are not allowed to see, which is a disclosure, not a redaction.
  *
  *   2. **The key is PRESENT and the value is `null`** → the reader may see money, but this figure

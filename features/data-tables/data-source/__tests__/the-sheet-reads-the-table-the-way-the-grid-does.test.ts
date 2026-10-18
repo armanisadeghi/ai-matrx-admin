@@ -1,12 +1,12 @@
 /**
  * THE SHEET READS A CUSTOM TABLE THE WAY THE GRID DOES (lane POST-PUBLISH-FE).
  *
- * THE USE CASE: the Birchwood Avenue Renovation's Rooms table. Its colours are the
- * organization's decorations (colour rows by Status; one rule, "Status is On Hold -> Red"),
+ * THE USE CASE: the Birchwood Avenue Renovation's Rooms table. Its colors are the
+ * organization's decorations (color rows by Status; one rule, "Status is On Hold -> Red"),
  * and its Budget column is confidential: a reader below Editor gets it masked, with the store's
  * reason beside the row (`ReadRow.hidden`).
  *
- * 1. COLOURS. The Sheet used to translate the decorations itself (`olderStyle` in
+ * 1. COLORS. The Sheet used to translate the decorations itself (`olderStyle` in
  *    record-store.ts), a second copy of records-ui's `styleFromDecorations` that had already
  *    drifted: a rule the store kept without an id reached the Sheet with none, while the grid
  *    names it `decoration:<n>`. The Sheet now holds exactly what records-ui's

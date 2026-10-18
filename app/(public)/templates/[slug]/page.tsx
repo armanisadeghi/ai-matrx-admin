@@ -1,6 +1,6 @@
 // app/(public)/templates/[slug]/page.tsx — ONE TEMPLATE'S PAGE, the same for everyone (lane CHAIR-GALLERY,
 // 2026-10-05). Arman: "a nice page with a good url, the nice description it has and then showing the
-// actual 'Stuff' that comes out of it." The address is the template's readable slug; a catalogue id or
+// actual 'Stuff' that comes out of it." The address is the template's readable slug; a catalog id or
 // a version id answers with a permanent redirect to it. The body is the template SHOWN — its tables
 // with their sample rows, its views, forms, booking page and dashboards — rendered on the server from
 // the spec. "Use this template" installs for a signed-in person, and leads a guest through sign-up.
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = publicTemplateHref(card);
   const space = page.pack ? card.space : null;
   // Card names repeat across businesses ("Accounting firm"); the business makes each title unique. A Space
-  // template's title is its own (one per catalogue id).
+  // template's title is its own (one per catalog id).
   const title = space ? space.title : spec.business?.name ? `${card.name}: ${spec.business.name}` : card.name;
   const image = { url: `${path}/social-image`, width: 1200, height: 630, alt: title };
   const meta = createRouteMetadata(path, {

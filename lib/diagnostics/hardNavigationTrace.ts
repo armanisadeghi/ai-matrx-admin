@@ -3,7 +3,7 @@
  *
  * THE QUESTION THIS ANSWERS (2026-10-12, crawl 8beb27cd): the tab running a
  * site crawl started a full document load at 03:30:02.299Z; the old page's
- * HTTP/3 stream was cancelled when the new page committed at ~03:30:08.4Z, and
+ * HTTP/3 stream was canceled when the new page committed at ~03:30:08.4Z, and
  * nothing recorded WHY the page reloaded — a reload button, a typed URL, a
  * link that left the app router, `location.reload()` from our own code, or
  * Next.js falling back to a hard navigation. A full page load kills every
@@ -163,7 +163,7 @@ function writeRecord(phase: "beforeunload" | "pagehide"): void {
     const snapshot = streamSnapshot(now);
     const previous = readRecord();
     // Keep the earliest view of the streams: by pagehide the browser may
-    // already have cancelled them.
+    // already have canceled them.
     const sameLeave =
       phase === "pagehide" &&
       previous !== null &&
@@ -303,7 +303,7 @@ export function installHardNavigationTrace(): void {
     writeRecord("pagehide");
   });
   window.addEventListener("pageshow", () => {
-    // A cancelled leave or a back/forward-cache restore: this page lives on.
+    // A canceled leave or a back/forward-cache restore: this page lives on.
     leaveRecordKey.remove();
     beforeunloadAt = null;
     lastNavigation = null;

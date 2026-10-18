@@ -108,7 +108,7 @@ export default function RunSettingsDemoPage() {
         {/* ── 2. Popover (the real integration) ──────────────────────── */}
         <Section
           title="2. Popover — triggered by the gear button (ships as this)"
-          description="Click the gear to open. Clicking the selected card / pill is a no-op. A blue dot appears on the gear when the current run is customised."
+          description="Click the gear to open. Clicking the selected card / pill is a no-op. A blue dot appears on the gear when the current run is customized."
         >
           <div className="flex items-center gap-4">
             <SimpleRunSettingsButton size="md" onChange={setPopoverValue} />

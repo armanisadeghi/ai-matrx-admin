@@ -91,7 +91,7 @@ interface OutlineProps {
   onClose: () => void;
 }
 
-/** The chapter being read: in page layout the last one whose top passed the upper third; on the canvas the one under the view's centre. */
+/** The chapter being read: in page layout the last one whose top passed the upper third; on the canvas the one under the view's center. */
 function useActiveChapter(
   store: BoardCameraStore | null,
   chapters: readonly BoardFrame[],

@@ -151,7 +151,7 @@ const CERTAINTY_LABEL: Record<OfferingItem["certainty"], string> = {
   possible: "Possible",
 };
 
-/** Light semantic colour per certainty: confirmed green, likely primary, possible amber. */
+/** Light semantic color per certainty: confirmed green, likely primary, possible amber. */
 const CERTAINTY_TONE: Record<OfferingItem["certainty"], string> = {
   confirmed: "bg-success/10 text-success-ink",
   likely: "bg-primary/10 text-primary-ink",

@@ -254,7 +254,7 @@ it("never carries an unsaved edit from one Rulebook into another", async () => {
  * mounted on. It does not stand up in jsdom (it mounts the whole detail surface:
  * agent runtime, durable runs, a dozen dialogs), so its half of the class is
  * held by reading the source. Stated plainly rather than implied: this asserts
- * the keying is THERE, not that it behaves — the behaviour is proven on the lane
+ * the keying is THERE, not that it behaves — the behavior is proven on the lane
  * scaffold, which is the same one-line mechanism.
  */
 it("keys both rulebook-scoped page scaffolds by the record they show", () => {

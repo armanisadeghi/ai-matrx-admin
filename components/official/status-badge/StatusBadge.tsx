@@ -3,7 +3,7 @@
 // THE canonical lifecycle-status badge: one colour-coded, icon-led pill for
 // "what state is this record in" (draft / active / disabled / archived and
 // their cousins on other entities). A status nobody can miss is the point —
-// so the colour is solid enough to read at a glance, the icon carries the
+// so the color is solid enough to read at a glance, the icon carries the
 // meaning for colour-blind readers, and the label is always a word, never a
 // dot alone.
 //

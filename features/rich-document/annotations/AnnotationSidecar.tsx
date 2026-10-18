@@ -371,9 +371,9 @@ function AnnotationPanelBody({
   const done = () => ui.close({ clearSelection: true });
 
   if (panel === ANNOTATION_PANELS.highlight) {
-    // The ONE Highlight button's colour choice (2026-10-07: one button, not five on the strip).
+    // The ONE Highlight button's color choice (2026-10-07: one button, not five on the strip).
     return (
-      <div role="group" aria-label="Highlight colour" className="flex items-center gap-1 p-0.5">
+      <div role="group" aria-label="Highlight color" className="flex items-center gap-1 p-0.5">
         {HIGHLIGHT_COLORS.map((color) => (
           <button
             key={color}

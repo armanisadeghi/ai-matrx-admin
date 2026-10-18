@@ -35,7 +35,7 @@ const WIDTHS = [
   [375, 812],
 ];
 
-/** Lines per row (distinct vertical centres), overlaps between controls, controls past the header. */
+/** Lines per row (distinct vertical centers), overlaps between controls, controls past the header. */
 const measure = (page) =>
   page.evaluate(() => {
     const q = (s) => document.querySelector(s);

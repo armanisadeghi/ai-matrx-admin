@@ -216,7 +216,7 @@ function startInstance(
         }
         widthApplied = true;
         container.style.width = `${width}px`;
-        // Overlays flip, shift and centre inside the column the reader SEES,
+        // Overlays flip, shift and center inside the column the reader SEES,
         // not the reader-wide window (visible-column.ts).
         installVisibleColumn().setWidth(width);
         // `main` carries `max-width: 100vw` unlayered in the app's own sheet;

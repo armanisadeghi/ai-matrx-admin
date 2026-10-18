@@ -16,7 +16,7 @@
  *   • The relevance-bonus / Generic-Link-Value pair (§3.4a/b/c) produced a
  *     SECOND dollar figure that competed with Max Link Value and never had a
  *     stated precedence. Only the §3.5 curve — the one the payouts actually
- *     multiply — is modelled here.
+ *     multiply — is modeled here.
  *   • The authorization table is marked "not real, only a sample" in the sheet.
  *     Its 31–34 / 31–39 overlap is corrected to 31–34 / 35–39 so bands are
  *     disjoint; the numbers remain placeholders.
@@ -216,7 +216,7 @@ export const SHEET_2018_CONFIG: LinkValuationConfig = {
       scale: { min: 0, max: 3, direction: "lower-better", unit: "band" },
       options: ["No Spam", "Low Spam", "Medium Spam", "High Spam"],
       sources: [
-        { kind: "manual", label: "Operator judgement", priority: 1, trust: 1 },
+        { kind: "manual", label: "Operator judgment", priority: 1, trust: 1 },
       ],
       enabled: true,
     },
@@ -229,7 +229,7 @@ export const SHEET_2018_CONFIG: LinkValuationConfig = {
       scale: { min: 0, max: 1, direction: "higher-better", unit: "yes/no" },
       options: ["Yes", "No"],
       sources: [
-        { kind: "manual", label: "Operator judgement", priority: 1, trust: 1 },
+        { kind: "manual", label: "Operator judgment", priority: 1, trust: 1 },
       ],
       enabled: true,
     },
@@ -284,7 +284,7 @@ export const SHEET_2018_CONFIG: LinkValuationConfig = {
         "High Relevance",
       ],
       sources: [
-        { kind: "manual", label: "Operator judgement", priority: 1, trust: 1 },
+        { kind: "manual", label: "Operator judgment", priority: 1, trust: 1 },
       ],
       enabled: true,
     },
@@ -305,7 +305,7 @@ export const SHEET_2018_CONFIG: LinkValuationConfig = {
         "No Relevance",
       ],
       sources: [
-        { kind: "manual", label: "Operator judgement", priority: 1, trust: 1 },
+        { kind: "manual", label: "Operator judgment", priority: 1, trust: 1 },
       ],
       enabled: true,
     },

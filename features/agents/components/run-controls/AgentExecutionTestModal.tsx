@@ -564,7 +564,7 @@ function BackgroundTestMode({
 function AgentUnderTest({ agentId }: { agentId: string }) {
   const agentName = useAgentName(agentId);
   // `createManualInstanceNoAgent` sets `agentId: ""`. An empty id resolves to
-  // `/agents/`, so the door would silently open the agents LIST while labelled
+  // `/agents/`, so the door would silently open the agents LIST while labeled
   // as this agent — a wrong door wearing a right label.
   if (!agentId) {
     return <span className="font-medium text-muted-foreground">No agent</span>;

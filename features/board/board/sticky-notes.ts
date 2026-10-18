@@ -4,7 +4,7 @@
  * Arman (2026-10-09): a sticky is "just very simple text" on the canvas, and
  * "we might store it as a note anyways … a new folder that every user gets by
  * default … sticky notes". So:
- *  - the sticky's colour, size and place live in the BOARD document (a shape);
+ *  - the sticky's color, size and place live in the BOARD document (a shape);
  *  - its words live in a Note in the person's "Sticky notes" folder;
  *  - no Note exists until the first typed character (an empty sticky is never
  *    an empty Note);

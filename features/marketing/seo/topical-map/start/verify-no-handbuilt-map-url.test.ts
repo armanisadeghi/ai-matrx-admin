@@ -4,7 +4,7 @@
 //
 // CONTRACTS.md §2: "All hrefs come from `features/marketing/lib/routes.ts`
 // builders. Never hand-build a map URL." This is a forcing-function test, not
-// a description of current behaviour: it scans Lane E's own files for a raw
+// a description of current behavior: it scans Lane E's own files for a raw
 // `/marketing/topical-maps/...` string literal built by hand (template
 // literal or plain string), the same pattern the brief's attack #1 asked for.
 //

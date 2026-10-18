@@ -324,7 +324,7 @@ export function getRouteFavicon(
  * ```
  *
  * `letter` follows the favicon rules: 1–2 characters, never 3, unique within
- * its colour family (`pnpm check:favicon-letters`).
+ * its color family (`pnpm check:favicon-letters`).
  */
 export function createTabMetadata(
   pathname: string,

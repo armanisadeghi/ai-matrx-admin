@@ -1,5 +1,5 @@
 /**
- * Lane TRASH-2 — the Trash listing lint and the timing judgement, proven RED then GREEN.
+ * Lane TRASH-2 — the Trash listing lint and the timing judgment, proven RED then GREEN.
  *
  * RED: the pre-TRASH-2 bodies of public.trash_list / public.trash_counts (the inverse file carries
  * them byte for byte, captured live 2026-09-25) — a per-row iam.has_access over every archived row
@@ -80,8 +80,8 @@ describe("Trash listing lint (judgeTrashDoorBody)", () => {
   });
 });
 
-describe("Trash timing judgement (judgeTrashTimings)", () => {
-  test("RED on the measured pre-TRASH-2 production timings (file kind cancelled, counts cancelled)", () => {
+describe("Trash timing judgment (judgeTrashTimings)", () => {
+  test("RED on the measured pre-TRASH-2 production timings (file kind canceled, counts canceled)", () => {
     const findings = judgeTrashTimings([
       { label: "trash_list file (admin@admin.com)", class: "kind", ms: null, error: "canceling statement due to statement timeout" },
       { label: "trash_counts (admin@admin.com)", class: "counts", ms: null, error: "canceling statement due to statement timeout" },
@@ -109,9 +109,9 @@ describe("Trash timing judgement (judgeTrashTimings)", () => {
 
 
 /**
- * Lane TRASH-TABLES — the coverage judgement. The live pass (pnpm check:trash-doors) was RED on the
+ * Lane TRASH-TABLES — the coverage judgment. The live pass (pnpm check:trash-doors) was RED on the
  * dev clone under the inverse (store:table, store:record, entity:platform_saved_view not in Trash)
- * and GREEN after the up; these cases pin the judgement itself.
+ * and GREEN after the up; these cases pin the judgment itself.
  */
 describe("a trigger is never a Trash listing door (lane STORE-RESTORE-DOORS)", () => {
   const trigger = "CREATE OR REPLACE FUNCTION docproc.trash_the_whole_source()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $f$ begin update docproc.processed_documents set deleted_at = now(); return null; end $f$";

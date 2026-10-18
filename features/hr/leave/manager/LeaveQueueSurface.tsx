@@ -20,7 +20,7 @@
  * definition forbids bulk refuses the whole batch (`WF_BULK_FORBIDDEN`) — also rendered, also
  * not a toast. Copy selection includes every row; decision targets retain the flow's bulk rule.
  *
- * 🚨 THE BALANCE NUMBER ON A ROW IS THE SERVER'S, AND IT IS LABELLED FOR WHAT IT IS.
+ * 🚨 THE BALANCE NUMBER ON A ROW IS THE SERVER'S, AND IT IS LABELED FOR WHAT IT IS.
  * §4.4 asks for "balance after". `hr.leave_wf_validate` freezes `projected_balance_at_start`
  * onto the request and, when approving would go negative, writes the resulting balance INTO an
  * advisory sentence ("Approving this leaves a balance of −4 hours."). It does not return a
@@ -541,7 +541,7 @@ export function LeaveQueueSurface() {
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-card p-3">
               <p className="text-sm text-foreground">
                 {focusMissed
-                  ? "That time-off request is not waiting on a decision any more. It may already have been decided, cancelled, or handed to somebody else."
+                  ? "That time-off request is not waiting on a decision any more. It may already have been decided, canceled, or handed to somebody else."
                   : "Showing one request you followed a link to."}
               </p>
               <Button

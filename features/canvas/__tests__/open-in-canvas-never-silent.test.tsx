@@ -11,7 +11,7 @@
  *
  * The frontend half of that is the class these guards pin, not the one tool:
  *
- *   1. An open-in-canvas request that cannot be honoured must ANNOUNCE itself
+ *   1. An open-in-canvas request that cannot be honored must ANNOUNCE itself
  *      with a remedy (law 4), never `return` silently. Dispatching into a route
  *      with no canvas surface is the worst case — the item is accepted and
  *      absolutely nothing renders.

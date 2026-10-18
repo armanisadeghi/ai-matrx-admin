@@ -228,7 +228,7 @@ export function useAnnotationSidecar(
   }, [versionKey, sourceKey, source?.contentVersion]);
 
   // Live comments from everyone who can read the source — ONE pair of channels per source, however
-  // many views hold it, open while any does (and a grace after). Own echoes are recognised by the
+  // many views hold it, open while any does (and a grace after). Own echoes are recognized by the
   // exact writes this tab made (echo.ts), never by a time window.
   const manager = useRealtimeManager();
   const sourceId = source?.id ?? null;

@@ -494,7 +494,7 @@ export function CaptureStudio({
   // recording can be finalized AND uploaded after this component is gone.
   // `stopAndSave` is idempotent, so when the navigation guard already started
   // the save this just joins it. The journal stays intact on failure, so the
-  // recovery banner remains the last line of defence — it is no longer the
+  // recovery banner remains the last line of defense — it is no longer the
   // FIRST one.
   const mountedRef = useRef(true);
   useEffect(() => {

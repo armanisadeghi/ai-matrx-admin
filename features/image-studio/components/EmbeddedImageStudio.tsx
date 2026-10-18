@@ -472,7 +472,7 @@ export function EmbeddedImageStudio({
       emitExternalSaved(url, cloudFile.fileName);
       toast.success(`Using ${cloudFile.fileName}`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Pick cancelled";
+      const msg = err instanceof Error ? err.message : "Pick canceled";
       toast.error(msg);
     }
   }, [store, studio, emitExternalSaved]);

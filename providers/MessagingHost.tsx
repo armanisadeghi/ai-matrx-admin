@@ -222,7 +222,7 @@ export function MessagingHost({ children }: MessagingHostProps) {
   // nothing about meetings, and its action registry exists precisely so
   // `@ai-matrx/meet` can add a kind without messaging learning about them.
   //
-  // Both handlers come from the meet package and carry the whole behaviour —
+  // Both handlers come from the meet package and carry the whole behavior —
   // re-resolving the invite through the auth-checked RPC before joining
   // anything, refusing to render chips for an expired invite, settling once
   // across tabs. This file supplies only the two app-shaped answers: which

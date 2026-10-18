@@ -304,7 +304,7 @@ function splitTopLevel(text: string): string[] {
 
 // ─── CSV (Data connectors) ───
 
-/** CSV / TSV / semicolon text → rows, through the platform's one reader (`@ai-matrx/kit/delimited`; it guesses the delimiter, honours quotes and a BOM). Numbers stay text here; `csvCell` types them. */
+/** CSV / TSV / semicolon text → rows, through the platform's one reader (`@ai-matrx/kit/delimited`; it guesses the delimiter, honors quotes and a BOM). Numbers stay text here; `csvCell` types them. */
 export function parseCsv(text: string): string[][] {
   return parseDelimited(text, { skipEmptyLines: "greedy" }).data;
 }

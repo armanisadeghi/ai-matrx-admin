@@ -82,7 +82,7 @@ export interface ClassifiedExposure extends LiveExposure {
  */
 export const PUBLIC_EXPOSURE_ALLOWED: ReadonlyArray<PublicExposure> = [
   // — Deliberately public product surfaces —
-  { relation: "extend.wbx_recipe", policy: "pub_read", cmd: "SELECT", why: "browser-automation recipe catalogue; no credentials — discloses which sites/routes we automate, accepted. DD-173 (B-103): the hand-written `wbx_recipe_read_all` (USING true) was superseded by the generated system-variant lane, which publishes only rows whose `visibility` is `public` — derived from `is_active`, so a retired recipe leaves the open web by the flag that already means that." },
+  { relation: "extend.wbx_recipe", policy: "pub_read", cmd: "SELECT", why: "browser-automation recipe catalog; no credentials — discloses which sites/routes we automate, accepted. DD-173 (B-103): the hand-written `wbx_recipe_read_all` (USING true) was superseded by the generated system-variant lane, which publishes only rows whose `visibility` is `public` — derived from `is_active`, so a retired recipe leaves the open web by the flag that already means that." },
 
   // — Anonymous WRITES: none. All three are closed (DD-181a, 2026-09-13,
   //   migrations/dd181_dd182_recorded_doors_bounded_or_closed.sql). `communication.emails`
@@ -364,7 +364,7 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
   // DD-186 declared the signed-out surface. DD-222 settled what a bound MEANS: the columns the
   // signed-out surface renders. DD-226 applied that to 121 relations and left 46 — the catalogue-
   // shaped schemas `ai`, `billing`, `content_ir`, `extend`, `iam`, `platform`, `tool`, `ui` — open,
-  // because their readers were said to be "server-side shell catalogue reads that a browser capture
+  // because their readers were said to be "server-side shell catalog reads that a browser capture
   // cannot see". DD-230 measured those readers. THIRTY-ONE of the 46 had none and are gone from
   // this list entirely; the other FIFTEEN are bounded to the columns their reader actually names.
   // 65 relations / 997 readable columns → 34 relations / 471.
@@ -452,7 +452,7 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
   // PUBLIC_EXPOSURE_ALLOWED claims were measured FALSE and those rows are deleted above:
   //   iam.industries "the sign-up form, before an account exists" — /sign-up signed out issues ZERO
   //     database requests, and every caller of fetchIndustries() is an admin or org surface;
-  //   tool.executor "public tool catalogue" — the public tool catalogue is tool.definition, served
+  //   tool.executor "public tool catalogue" — the public tool catalog is tool.definition, served
   //     by app/api/tools through utils/supabase/server-tools-service.ts, which names its columns and
   //     never touches executor;
   //   billing.capability / billing.plan_limit "the public pricing comparison table" — /pricing/compare
@@ -719,7 +719,7 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
     why:
 "Anon-readable by the generated `pub_read` lane; every identity, bookkeeping and secret column is "
       + "revoked at the column (DD-186). THERE IS A REAL SIGNED-OUT READER: matrx-extend's "
-      + "`loadRecipes()` (src/lib/data-pattern/recipes.ts) fetches this catalogue with whatever "
+      + "`loadRecipes()` (src/lib/data-pattern/recipes.ts) fetches this catalog with whatever "
       + "session the extension has, including none. DD-173 (B-103) moved the slug off `id` to "
       + "`recipe_key` and granted the new uuid `id` — an opaque surrogate, and the column the "
       + "access-delta probe reads to measure this door at all.",

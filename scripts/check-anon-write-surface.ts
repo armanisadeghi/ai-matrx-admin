@@ -401,7 +401,7 @@ async function main() {
     // schema left where this shape can be created AND seen, and the old plant
     // (`… in schema communication grant select on tables to anon`) now dies with 22023
     // before the census ever runs. Weakening either guard to restore the plant would be
-    // deleting a live defence to make a test green.
+    // deleting a live defense to make a test green.
     //
     // So ARM 6 is proven in the two halves that are actually true today:
     //   1. THE RULE — the classifier still turns a read default into a `birth` finding.

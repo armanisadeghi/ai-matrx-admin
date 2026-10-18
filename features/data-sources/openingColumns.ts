@@ -22,7 +22,7 @@ const norm = (s: string | null | undefined) => (s ?? "").toLowerCase().replace(/
 /**
  * The field keys to start hidden: every field that is not one of the source's first `cap` telling
  * output fields present in the table. Null when there is nothing to do (the table already fits,
- * or too few of its fields are recognised to say which ones tell).
+ * or too few of its fields are recognized to say which ones tell).
  */
 export function openingHiddenFields(
   fields: readonly FieldLike[],

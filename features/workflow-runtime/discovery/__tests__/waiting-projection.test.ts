@@ -102,7 +102,7 @@ describe("parseWaitingRuns", () => {
     expect(rows.map((row) => row.runId)).toEqual(["run-1", "run-2"]);
   });
 
-  it("is empty, not thrown, on a shape it does not recognise", () => {
+  it("is empty, not thrown, on a shape it does not recognize", () => {
     expect(parseWaitingRuns({ runs: "nope" })).toEqual([]);
     expect(parseWaitingRuns(undefined)).toEqual([]);
   });
@@ -132,7 +132,7 @@ describe("waitingSummary — what the row says it wants", () => {
     expect(waitingSummary(parseWaitingRun(PARK)!)).toBe("Needs Topic and audience");
   });
 
-  it("summarises three or more without listing them all", () => {
+  it("summarizes three or more without listing them all", () => {
     const many = parseWaitingRun({
       ...PARK,
       snapshot: {

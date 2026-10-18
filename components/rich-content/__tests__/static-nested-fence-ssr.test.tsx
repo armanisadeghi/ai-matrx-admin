@@ -16,7 +16,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 jest.mock("server-only", () => ({}));
-// Production behaviour of the client front door during SSR: nothing.
+// Production behavior of the client front door during SSR: nothing.
 jest.mock("@ai-matrx/rich-content/markdown-core/MarkdownCore", () => ({
   __esModule: true,
   default: () => null,

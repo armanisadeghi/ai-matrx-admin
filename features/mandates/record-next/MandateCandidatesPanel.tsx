@@ -99,7 +99,7 @@ const STATUS_WORD: Record<LiveCandidate["status"], string> = {
   ready: "All in",
   promoted: "Promoted",
   discarded: "Discarded",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
 };
 
 const STOP_MATCH_WORD: Record<string, string> = {

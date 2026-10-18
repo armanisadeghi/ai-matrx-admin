@@ -93,7 +93,7 @@ export function checkBuildAnswer(
       continue;
     }
     for (const value of fieldsWithNoInput(f)) {
-      problems.push(`${f.name} saves "${value}" but no input ever sets it — every field she asked for needs its own input, labelled for that field alone`);
+      problems.push(`${f.name} saves "${value}" but no input ever sets it — every field she asked for needs its own input, labeled for that field alone`);
     }
     for (const name of browserDialogs(f)) {
       problems.push(`${f.name} calls the browser's ${name}() — ask with confirmAction({ title, description, confirmLabel, variant: "destructive" }) from "@ai-matrx/applets/react"; never window.confirm / alert / prompt`);

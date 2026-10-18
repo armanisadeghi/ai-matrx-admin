@@ -141,7 +141,7 @@ function RuleEditorForm({
    * decision shape are ONE `RuleFieldValues` object, derived from the saved
    * rule by the ONE derivation. They were two parallel sets of state: the
    * decision fields were missing from the draft snapshot, the draft restore and
-   * the open/reset effect, so a cancelled toggle survived a reopen and a later
+   * the open/reset effect, so a canceled toggle survived a reopen and a later
    * Save silently converted or stripped a policy rule (Bugbot, c016fe96).
    */
   const savedValues = useMemo(
@@ -258,7 +258,7 @@ function RuleEditorForm({
   useEffect(() => {
     if (open && !wasOpen.current) {
       // Reopening resets the WHOLE form to the saved rule, then lays the staged
-      // or persisted draft over it — one merge, every field, so a cancelled
+      // or persisted draft over it — one merge, every field, so a canceled
       // decision toggle never survives into the next open.
       const merged = mergeRuleFieldValues(
         savedValues,

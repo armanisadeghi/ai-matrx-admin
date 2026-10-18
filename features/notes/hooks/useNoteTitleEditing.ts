@@ -1,6 +1,6 @@
 "use client";
 
-// useNoteTitleEditing — THE rename behaviour for a note's title, wherever the
+// useNoteTitleEditing — THE rename behavior for a note's title, wherever the
 // title is shown: the /notes tab (NoteTabItem), a single note's tool row and a
 // host's own header (NoteTitleField — a Board tile). One copy of the naming
 // rules, so every place that renames a note renames it the same way:

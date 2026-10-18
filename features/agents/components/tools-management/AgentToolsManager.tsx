@@ -395,7 +395,7 @@ export function AgentToolsManager({ agentId }: AgentToolsManagerProps) {
   const [metadataError, setMetadataError] = useState<unknown>(null);
   const [metadataAttempt, setMetadataAttempt] = useState(0);
   // External services are the action users reach for first, so an agent that
-  // carries nothing still opens on their catalogue. But an agent that ALREADY
+  // carries nothing still opens on their catalog. But an agent that ALREADY
   // carries platform tools opens on those: landing on 134 third-party servers
   // when the thing you came to check is the agent's own `records` tool is how
   // the 2026-09-19 verification pass concluded the picker did not exist.
@@ -601,7 +601,7 @@ function ServerToolsTab({
   metadata: any;
   externalTools?: DatabaseTool[];
   modelSupportsTools?: boolean;
-  /** The tool catalogue read failed (and nothing was read instead). */
+  /** The tool catalog read failed (and nothing was read instead). */
   readError?: unknown;
   onRetryRead?: () => void;
 }) {
@@ -657,7 +657,7 @@ function ServerToolsTab({
     [metadata],
   );
 
-  // Bundle catalogue — drives the Bundles category + its sidebar count.
+  // Bundle catalog — drives the Bundles category + its sidebar count.
   const { bundles: bundleOptions } = useAgentBundleOptions();
 
   // toolId → executor names, for the "runs on" badges. null while loading.
@@ -977,7 +977,7 @@ function ServerToolsTab({
     return (
       <ReadFailure
         error={readError}
-        what="the tool catalogue"
+        what="the tool catalog"
         onRetry={onRetryRead}
       />
     );

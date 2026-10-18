@@ -170,7 +170,7 @@ export function validateNewPrediction(input: {
   dueAt: string;
 }): string | null {
   if (!input.caseLabel.trim()) {
-    return "Name the case first — a file number, a client, whatever you would call it in your own notes. It is how you will recognise it when the answer comes in.";
+    return "Name the case first — a file number, a client, whatever you would call it in your own notes. It is how you will recognize it when the answer comes in.";
   }
   if (!input.prediction.trim()) {
     return "Say what you think is going to happen, in one sentence.";

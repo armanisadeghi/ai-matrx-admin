@@ -46,7 +46,7 @@ export type SpaceMeta = Pick<SpaceDoc, (typeof META_KEYS)[number]>;
 const LOCAL_META = "spaces-local-meta";
 const SEED = "spaces-seed";
 
-/** Notion-like person colours: one per person, the same on every screen. */
+/** Notion-like person colors: one per person, the same on every screen. */
 const PALETTE = ["#2383e2", "#0f7b6c", "#d9730d", "#e03e3e", "#9065b0", "#ad1a72", "#dfab01", "#448361"];
 export function personColor(userId: string): string {
   let h = 2166136261;

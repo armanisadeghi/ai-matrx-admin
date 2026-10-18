@@ -277,7 +277,7 @@ export function StudioFileCard({
                             title={
                                 file.imageMetadata
                                     ? "Re-describe with AI"
-                                    : "Generate filename + alt text + caption + SEO + colours"
+                                    : "Generate filename + alt text + caption + SEO + colors"
                             }
                         >
                             {isDescribing ? (

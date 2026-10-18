@@ -63,7 +63,7 @@ export interface UseFolderPickerOpenOptions {
 }
 
 export interface UseFolderPickerResult {
-  /** Resolves with a folder id (or `null` for root) — or the special sentinel `undefined` if cancelled. */
+  /** Resolves with a folder id (or `null` for root) — or the special sentinel `undefined` if canceled. */
   open: (
     options?: UseFolderPickerOpenOptions,
   ) => Promise<string | null | undefined>;

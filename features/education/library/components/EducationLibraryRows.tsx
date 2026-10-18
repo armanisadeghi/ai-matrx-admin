@@ -9,7 +9,7 @@
 // generic table has no column for.
 //
 // Deliberately NOT a table: no column headers, no fixed grid. The row keeps the
-// coloured format tile and the progress bar, which is what makes the list
+// colored format tile and the progress bar, which is what makes the list
 // scannable by shape rather than by reading every title.
 
 import Link from "next/link";

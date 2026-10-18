@@ -179,7 +179,7 @@ export function renderNodePicture(node: ReactNode, options: OffscreenOptions): P
 
 /**
  * One element (a slide, a card, a whole host) as a PNG, through Alchemy's html-to-image door
- * (`renderElement`: it keeps the browser's own layout and modern colours — html2canvas cannot
+ * (`renderElement`: it keeps the browser's own layout and modern colors — html2canvas cannot
  * parse oklab). Width and height are passed explicitly, and `max-width` is lifted on the root, so
  * a narrow-viewport rule can never clip a wide stage.
  */

@@ -6,7 +6,7 @@
  * THE DOT. A `covers` edge into THIS live topic is coverage of it, so a page
  * here is `in_place` unless an intent this workspace has listed says it is
  * leaving (`pageIntentTone` over the intent in the slice). A page whose intent
- * the workspace has not listed shows no intent colour rather than a guessed
+ * the workspace has not listed shows no intent color rather than a guessed
  * one — the pages screen lists intents; the panel does not re-read them for
  * one topic.
  *

@@ -6,7 +6,7 @@
  * Every panel is the exact /notes wiring (`matrx-user/notes`, full surface
  * scope, the full notes `extraSections` incl. super-admin rows). The ONLY
  * difference between panels is the `menuLayout` / `menuDensity` presentation
- * knobs (the Alchemy package's layouts, `@ai-matrx/alchemy/menu`). Behaviour is identical:
+ * knobs (the Alchemy package's layouts, `@ai-matrx/alchemy/menu`). Behavior is identical:
  * one engine, one model, one renderer.
  *
  *   1. Classic  — classic / comfortable  (the previous platform default)
@@ -93,7 +93,7 @@ export default function MenuLayoutsDemoPage() {
           />
           <NotesDemoPanel
             title="3. Tiered — icon strip, nothing lost"
-            description="Hover the header to see the text. Copy/Cut/Paste/Undo/Redo/Find become the icon strip; every other row keeps its Classic name and place — only History groups Undo/Redo/View History/Compare, and the notes rows fold under Note. Greyed when unavailable, never hidden."
+            description="Hover the header to see the text. Copy/Cut/Paste/Undo/Redo/Find become the icon strip; every other row keeps its Classic name and place — only History groups Undo/Redo/View History/Compare, and the notes rows fold under Note. Grayed when unavailable, never hidden."
             initialContent={SAMPLE}
             minHeightClass="min-h-[240px]"
             menuOverrides={{ menuLayout: "tiered", menuDensity: density }}

@@ -25,7 +25,7 @@
  *
  *   render — a piece is on screen. `detail.ms` = render start → painted frame.
  *   heavy  — must NEVER load or render before the person engages (first trusted pointer press,
- *            touch or key; an autofocus is not engagement). Before → 🔴 RED. After → grey.
+ *            touch or key; an autofocus is not engagement). Before → 🔴 RED. After → gray.
  *   lazy   — wanted work that must never run before the page settles (the idle flush). Before → 🔴
  *            RED (amber when a click came first: the person asked). After → green.
  *   core   — expected for first paint (route shell, composer…). A normal line with its time.

@@ -2,7 +2,7 @@
  * THE GAP: aidream `1a18dd0ad1` added `retire_refused` to
  * `library.sync.completed` — a full sync that would retire ≥50% of what it
  * just persisted refuses and removes nothing, rather than deleting a
- * catalogue out from under a person because of a shape that looks like a
+ * catalog out from under a person because of a shape that looks like a
  * reconciliation bug. A verifier (2026-09-19) confirmed this feature's event
  * narrowing silently dropped the field: `parseSyncEvent`'s `library.sync.
  * completed` case never read `row.retire_refused`, so a person whose sync
@@ -249,7 +249,7 @@ describe("C · the screen a person watches says which one happened", () => {
             />,
         );
         expect(node.textContent).toContain("kept every Source it had");
-        expect(node.textContent).toContain("Run the catalogue again later");
+        expect(node.textContent).toContain("Run the catalog again later");
         expect(node.textContent).not.toContain("0 Sources retired");
     });
 

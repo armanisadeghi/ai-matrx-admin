@@ -31,7 +31,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Document identity",
     sortOrder: 100,
     description:
-      "Which library sample (if any) the buffer came from and how it is labelled.",
+      "Which library sample (if any) the buffer came from and how it is labeled.",
   },
   {
     key: "document_content",

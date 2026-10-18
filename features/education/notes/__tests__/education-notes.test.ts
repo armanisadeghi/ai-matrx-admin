@@ -4,7 +4,7 @@
 // quick notes — was showing up in Education. The Notes app owns all notes;
 // Education owns the Study Notes tag. This file fails when:
 //   1. the one selector returns a plain note (behavioral, over an in-memory table
-//      that honours the filters the query actually applies), or
+//      that honors the filters the query actually applies), or
 //   2. any Education source file lists notes around the one selector, or
 
 

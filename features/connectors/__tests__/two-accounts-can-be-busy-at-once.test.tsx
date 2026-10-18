@@ -88,7 +88,7 @@ jest.mock("@/providers/google-provider/GoogleApiProvider", () => ({
 }));
 
 /**
- * The real runner's behaviour: the first window stays open (a promise that never
+ * The real runner's behavior: the first window stays open (a promise that never
  * settles), and any second press is refused at once by its own guard.
  */
 let openWindows = 0;

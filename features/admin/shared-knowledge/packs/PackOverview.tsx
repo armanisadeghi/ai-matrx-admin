@@ -50,7 +50,7 @@ export function PackOverview({
 }: {
   detail: AdminPackDetail;
   /**
-   * Admin-loaded org names, for labelling organization-audience grants. Absent on the
+   * Admin-loaded org names, for labeling organization-audience grants. Absent on the
    * curator front door (`/knowledge/library-curate`), which has no admin directory — the
    * grant rows carry their own `organizationName`, so this is only a fallback.
    */

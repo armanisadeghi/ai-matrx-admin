@@ -104,7 +104,7 @@ export interface EgressPairingApproveResult {
   display_name: string;
 }
 
-/** One computer as `GET /egress/status` summarises it. */
+/** One computer as `GET /egress/status` summarizes it. */
 export interface EgressStatusComputer {
   id: string;
   display_name: string;

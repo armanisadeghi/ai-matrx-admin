@@ -312,7 +312,7 @@ export const RUN_CONSOLE_VALUES: SurfaceValue[] = [
     name: "effective_cap",
     label: "Cap for this run",
     description:
-      "What the operator actually set in the cap input, clamped between 1 and the ceiling. This is the number a pass will honour. Absent until the knob read resolves.",
+      "What the operator actually set in the cap input, clamped between 1 and the ceiling. This is the number a pass will honor. Absent until the knob read resolves.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 4,

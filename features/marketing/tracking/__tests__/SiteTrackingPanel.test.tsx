@@ -251,7 +251,7 @@ function snapshotRow(findings: Json, takenAt = "2026-09-19T11:00:00Z") {
 }
 
 describe("SiteTrackingPanel", () => {
-  it("a site with no container shows the refusal and the Connect door, never three grey no", () => {
+  it("a site with no container shows the refusal and the Connect door, never three gray no", () => {
     const text = render(<SiteTrackingPanel site={site(false)} now={NOW} />);
     expect(text).toContain("No Tag Manager container is bound to this site");
     expect(text).toContain("Bind a container");

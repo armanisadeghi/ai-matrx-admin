@@ -32,7 +32,7 @@
  *   - GENUINELY ORG-LEVEL — campaigns, the Chasebox queues, the reply inbox
  *     and earned-placement wins are CRM records with NO brand link in the data
  *     model. They are kept (deleting a working door to look tidy is the worse
- *     bug) and LABELLED: inside a brand every one of them says out loud that
+ *     bug) and LABELED: inside a brand every one of them says out loud that
  *     it counts across every client. Never fake a filter we cannot apply.
  */
 

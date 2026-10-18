@@ -57,7 +57,7 @@ export interface OrchestraMemberMeta {
   required?: boolean;
   /**
    * How this member's result comes back to the conductor (D-40). Absent =
-   * "inline". `reference` is the routing-without-holding behaviour the
+   * "inline". `reference` is the routing-without-holding behavior the
    * Orchestra is built on: the answer goes to the conversation value store and
    * the conductor holds only a descriptor. Written to the edge metadata as
    * `result_mode` (wire key); the server strict-parses it.

@@ -20,7 +20,7 @@ export interface SheetPreviewCell {
   v?: string | number | boolean | null;
   /** bold */
   b?: number;
-  /** background / text colour, as stored in the sheet */
+  /** background / text color, as stored in the sheet */
   bg?: string;
   cl?: string;
   /** horizontal alignment (Univer: 1 left, 2 center, 3 right) */

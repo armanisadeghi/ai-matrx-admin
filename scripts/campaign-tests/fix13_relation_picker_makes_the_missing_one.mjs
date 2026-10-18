@@ -101,7 +101,7 @@ else fail(`the cell does not carry the new customer: ${JSON.stringify(cellNow)}`
 // so the only thing this walk leaves behind is the Customers row, which is cleaned up
 // below through the store's own soft-archive door.
 const cancel = page.getByRole("button", { name: "Cancel" }).first();
-if (await cancel.count()) { await cancel.click(); await sleep(1500); ok("cancelled — the job keeps the customer it had"); }
+if (await cancel.count()) { await cancel.click(); await sleep(1500); ok("canceled — the job keeps the customer it had"); }
 
 say.push(`page errors: ${errors.length}${errors.length ? ` — ${errors.slice(0, 3).join(" | ")}` : ""}`);
 console.log(say.join("\n"));

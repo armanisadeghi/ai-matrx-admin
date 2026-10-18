@@ -17,7 +17,7 @@
  * publishes no `order` parameter, and sorting the 50 rows a page happens to
  * hold while claiming to sort a corpus is the lie the column policy forbids.
  * The request for an `order` parameter is filed in the contract's Frontend
- * requests section; the day it lands, this file is where it is honoured.
+ * requests section; the day it lands, this file is where it is honored.
  */
 
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";

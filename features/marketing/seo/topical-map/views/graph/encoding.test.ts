@@ -202,7 +202,7 @@ describe("the hue legend line — a legend a person can READ", () => {
 
   it("states the collisions out loud once the axis is longer than the palette", () => {
     // All Green's `region` facet has 255 values and there are six chart tokens.
-    // Two regions WILL share a bar — a person who trusted the colour alone
+    // Two regions WILL share a bar — a person who trusted the color alone
     // would be wrong, so the sentence says the column is the key.
     const resolved = resolveEncoding(LIVE, "structure", {
       facetLabel: "region",
@@ -210,8 +210,8 @@ describe("the hue legend line — a legend a person can READ", () => {
     });
     const text = hueLine(resolved)?.text ?? "";
     expect(text).toContain("in the column on the left.");
-    expect(text).toContain("6 colours repeat across 30 values");
-    expect(text).toContain("the column, not the colour, is the key");
+    expect(text).toContain("6 colors repeat across 30 values");
+    expect(text).toContain("the column, not the color, is the key");
   });
 
   it("says nothing it cannot back up when the drawing is grouped by nothing", () => {

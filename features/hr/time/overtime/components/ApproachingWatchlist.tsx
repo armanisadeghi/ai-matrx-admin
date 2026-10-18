@@ -17,7 +17,7 @@
  * California an 8-hour day triggers overtime regardless of the weekly total, so a watchlist that
  * shows only the weekly number is silently wrong for the jurisdiction that matters most.
  *
- * 🚨 EVERY FIGURE HERE IS A PROJECTION AND IS LABELLED ONE. E-55 is always `prospective` — it
+ * 🚨 EVERY FIGURE HERE IS A PROJECTION AND IS LABELED ONE. E-55 is always `prospective` — it
  * projects, it never writes hours. The authoritative overtime answer is the closed workweek, and a
  * projection stored as evidence is how a wage claim gets an answer we cannot defend.
  *

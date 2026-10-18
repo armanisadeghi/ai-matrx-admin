@@ -25,7 +25,7 @@ describe("googleDocumentOpenAtSourceLabel", () => {
     expect(googleDocumentOpenAtSourceLabel("other")).toBe("Open in Google Drive");
   });
 
-  it("falls back to Drive for a kind this registration does not recognise", () => {
+  it("falls back to Drive for a kind this registration does not recognize", () => {
     expect(googleDocumentOpenAtSourceLabel("some-future-kind")).toBe("Open in Google Drive");
   });
 });

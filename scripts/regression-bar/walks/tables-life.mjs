@@ -721,7 +721,7 @@ try {
     const opts = page.getByRole("option");
     const names = (await opts.allInnerTexts()).map(clean);
     const target = names.findIndex((n) => /^Green$/i.test(n)) >= 0 ? names.findIndex((n) => /^Green$/i.test(n)) : names.findIndex((n) => n && !/^Plain$/i.test(n));
-    if (target < 0) return { ok: false, detail: `the colour list offers nothing but ${names.join(", ")}` };
+    if (target < 0) return { ok: false, detail: `the color list offers nothing but ${names.join(", ")}` };
     await opts.nth(target).click();
     await sleep(600);
     await d.getByRole("button", { name: "Save", exact: true }).click();

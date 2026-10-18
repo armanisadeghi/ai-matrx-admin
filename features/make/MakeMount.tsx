@@ -134,7 +134,7 @@ export function NewTableDialog({
 }) {
   return (
     // A TABLE MADE HERE IS LISTED AT ONCE (member walk 2026-10-10: the /data list showed it only after a
-    // reload). However the dialog closes — opened, cancelled, or dismissed after an import made the table —
+    // reload). However the dialog closes — opened, canceled, or dismissed after an import made the table —
     // the Data home reads its list again (`readTheHomeAgain`, the same signal an undone archive sends).
     <Dialog open={what !== null} onOpenChange={(next) => (next ? undefined : (readTheHomeAgain(), onClose()))}>
       {/* A real size, fixed (moving between Blank, Import and the column step never resizes it); on a

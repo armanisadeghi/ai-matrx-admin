@@ -15,7 +15,7 @@ import { toast } from "@/lib/toast";
 
 interface ReportWarRoomErrorOptions {
   /**
-   * Toast behaviour:
+   * Toast behavior:
    *   • string    — show this exact message via toast.error
    *   • undefined — show a sensible default derived from `scope`
    *   • false     — show NO toast (still logs loudly)

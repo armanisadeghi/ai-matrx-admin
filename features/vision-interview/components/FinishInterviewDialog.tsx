@@ -26,11 +26,11 @@
 // walks pressed Finish twice, watched the round counter climb and the
 // open-question count go from five to eight, and never received a Vision
 // document, a Requirements document or a cleaned transcript. The room the
-// product is named after could not be finished by the button labelled to
+// product is named after could not be finished by the button labeled to
 // finish it.
 //
 // Both halves now live behind one press (`useInterviewRun.finish`), and the
-// server honours the first `done` (aidream `routing.done_decision`). The
+// server honors the first `done` (aidream `routing.done_decision`). The
 // second-chance consent that used to hide behind the click is now IN FRONT of
 // it: this dialog names what the room still wants — open questions, open
 // holes — before anything is sent, which is where a confirmation a person can

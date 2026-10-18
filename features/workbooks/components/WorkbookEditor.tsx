@@ -1302,7 +1302,7 @@ export default function WorkbookEditor({
     >
       {googleLink.dialog}
       {tableLink.dialog}
-      {/* ui-exception: the native file picker behind File → Import (no accept filter: Drive pickers grey everything out). */}
+      {/* ui-exception: the native file picker behind File → Import (no accept filter: Drive pickers gray everything out). */}
       <input
         ref={importInputRef}
         type="file"

@@ -11,7 +11,7 @@
  *
  * Use this page to verify behavioral deltas at a glance:
  *   1. Correct shortcuts show up given the surface's derived availability
- *   2. Hidden placements really disappear, disabled ones are greyed out
+ *   2. Hidden placements really disappear, disabled ones are grayed out
  *   3. A launched shortcut receives the expected applicationScope
  *      (selection, text_before, text_after, content, context, custom keys)
  *
@@ -39,7 +39,7 @@ export default function ContextMenuScenariosPage() {
 
   // ── Panel 4: Showcase of "disable" mode ─────────────────────────────────
   const [showcaseValue, setShowcaseValue] = useState(
-    `Panel 4 — disable showcase.\nContent Blocks are DISABLED (greyed, unclickable).\nOrganization Tools are also DISABLED.\nAI Actions remain fully enabled.`,
+    `Panel 4 — disable showcase.\nContent Blocks are DISABLED (grayed, unclickable).\nOrganization Tools are also DISABLED.\nAI Actions remain fully enabled.`,
   );
   const showcaseRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -138,7 +138,7 @@ export default function ContextMenuScenariosPage() {
               placements:{" "}
               <code>{`{ content-block: 'disable', organization-tool: 'disable' }`}</code>
               <br />
-              Both submenus render but are greyed out.
+              Both submenus render but are grayed out.
             </p>
           </header>
           <EditableContextMenu
@@ -191,7 +191,7 @@ export default function ContextMenuScenariosPage() {
               </li>
               <li>
                 Disable showcase — Content Blocks and Organization Tools
-                submenus visible but greyed out.
+                submenus visible but grayed out.
               </li>
             </ol>
           </div>

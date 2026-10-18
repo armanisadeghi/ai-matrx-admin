@@ -94,7 +94,7 @@ export function listMarketingLandingAreas(): {
 }[] {
   return MARKETING_PILLARS.filter((p) => p.landingItems?.length).map(
     (pillar) => {
-      // A card labelled "Live" must land somewhere that actually works, so the
+      // A card labeled "Live" must land somewhere that actually works, so the
       // default href prefers a built surface over a reserved one.
       const target =
         pillar.entries.find((e) => e.status !== "coming-soon") ??
@@ -456,7 +456,7 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
         label: "SEO Capabilities",
         href: marketingRoutes.capabilitiesCatalog(),
         description:
-          "The shared measurement catalogue — what's on for each website, with evidence.",
+          "The shared measurement catalog — what's on for each website, with evidence.",
         iconName: "ClipboardCheck",
       },
       {

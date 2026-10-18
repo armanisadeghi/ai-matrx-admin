@@ -10,18 +10,18 @@
  * WHAT IT FLAGS (rule id — one item per JSX element / class call that breaks it):
  *   primitive-visual-class   a shared primitive (Button, Input, Select, Badge, Card, Tabs, Dialog…)
  *                            whose static className carries a VISUAL class (size, spacing, radius,
- *                            shadow, type, border, colour). Placement classes (margin, flex/grid
+ *                            shadow, type, border, color). Placement classes (margin, flex/grid
  *                            placement, position, width-full, truncate…) are allowed.
  *   arbitrary-text-size      `text-[11px]` / `text-[0.8rem]` — an off-scale type size.
  *   faded-text-colour        `text-muted-foreground/60`, `text-foreground/[0.6]`, `text-card-foreground/70` — an
- *                            opacity-mixed text grey (STYLE-GUIDE: three text states only). bg-/border- opacity is out of scope.
+ *                            opacity-mixed text gray (STYLE-GUIDE: three text states only). bg-/border- opacity is out of scope.
  *   faded-opacity            `opacity-50`, `disabled:opacity-50`, `opacity-[0.6]` — a fractional opacity class
  *                            (0/100 show-hide is allowed): opacity on a box fades its text into an in-between
- *                            grey; disabled is `text-disabled-foreground` (the 2026-10-14 gray-disease ruling).
+ *                            gray; disabled is `text-disabled-foreground` (the 2026-10-14 gray-disease ruling).
  *                            Same predicate as @ai-matrx/design-system scripts/text-colour-law.mjs.
  *   secondary-as-accent      `from-/via-/to-/border-/ring-/text-secondary` (not `-foreground`) — secondary is
- *                            the quiet grey surface (shadcn meaning); the brand purple is brand-secondary.
- *   raw-color                a raw Tailwind palette colour (`bg-blue-500`, `text-white`) or a hex
+ *                            the quiet gray surface (shadcn meaning); the brand purple is brand-secondary.
+ *   raw-color                a raw Tailwind palette color (`bg-blue-500`, `text-white`) or a hex
  *                            (`bg-[#0af]`, a `#rrggbb` in a style prop) instead of a semantic token.
  *   spinner-outside-spinner  `animate-spin` outside a spinner/loader component.
  *   styled-raw-button        a raw `<button>` carrying visual classes (a hand-rolled control).
@@ -107,23 +107,23 @@ export const RULES = {
   },
   "arbitrary-text-size": {
     title: "off-scale arbitrary text size",
-    fix: "Use a type-* style (type-title 13/500, type-body 13, type-secondary 12, type-meta 11, type-label 11 grey over type-value 14 black for read-only data), never text-[Npx]. The style guide: common-docs/systems/platform/ui-shell/STYLE-GUIDE.md.",
+    fix: "Use a type-* style (type-title 13/500, type-body 13, type-secondary 12, type-meta 11, type-label 11 gray over type-value 14 black for read-only data), never text-[Npx]. The style guide: common-docs/systems/platform/ui-shell/STYLE-GUIDE.md.",
   },
   "faded-text-colour": {
-    title: "opacity-mixed text grey",
-    fix: "Text has three colours: text-foreground (content, actions), text-muted-foreground (labels, meta, menu group labels, placeholders), text-disabled-foreground (a disabled control). No other grey — if it must be fainter, it is the wrong element. STYLE-GUIDE \"Colour\".",
+    title: "opacity-mixed text gray",
+    fix: "Text has three colors: text-foreground (content, actions), text-muted-foreground (labels, meta, menu group labels, placeholders), text-disabled-foreground (a disabled control). No other gray — if it must be fainter, it is the wrong element. STYLE-GUIDE \"Colour\".",
   },
   "faded-opacity": {
-    title: "opacity fading text into an in-between grey",
+    title: "opacity fading text into an in-between gray",
     fix: "Never fade with opacity-NN (0/100 show-hide is fine). Disabled → the control's disabled prop (it paints text-disabled-foreground); secondary text → text-muted-foreground. STYLE-GUIDE \"Colour\".",
   },
   "secondary-as-accent": {
-    title: "secondary used as an accent colour",
-    fix: "secondary is the quiet grey surface (shadcn meaning). Our purple is brand-secondary: bg-/text-/from-/border-brand-secondary.",
+    title: "secondary used as an accent color",
+    fix: "secondary is the quiet gray surface (shadcn meaning). Our purple is brand-secondary: bg-/text-/from-/border-brand-secondary.",
   },
   "raw-color": {
-    title: "raw palette or hex colour",
-    fix: "Use a semantic token (bg-card, text-muted-foreground, border-border, the status tokens) instead of a raw palette or hex colour.",
+    title: "raw palette or hex color",
+    fix: "Use a semantic token (bg-card, text-muted-foreground, border-border, the status tokens) instead of a raw palette or hex color.",
   },
   "spinner-outside-spinner": {
     title: "animate-spin outside a spinner component",
@@ -229,7 +229,7 @@ export function category(base) {
 }
 const VISUAL = new Set(["spacing", "size", "radius", "shadow", "typography", "border", "color"]);
 // Owner ruling 2026-10-05: sizing-in-layout on Tabs / TabsList / TabsContent (h-full, min-h-0, w-full…)
-// is PLACEMENT — it decides how the tab frame fills its parent, not how it looks. Colour, radius, text,
+// is PLACEMENT — it decides how the tab frame fills its parent, not how it looks. Color, radius, text,
 // spacing and border on them stay visual.
 const TABS_LAYOUT_SIZE = /^(h-full|h-auto|h-fit|min-h-0|min-h-full|max-h-full|size-full|w-full|w-auto|w-fit|min-w-0|min-w-full|max-w-full)$/;
 const TABS_PARTS = new Set(["Tabs", "TabsList", "TabsContent"]);
@@ -389,7 +389,7 @@ export function scanSource(file, text) {
   const lineOf = (n) => sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
   const add = (rule, node, what) => sites.push({ rule, file, line: lineOf(node), what: String(what) });
 
-  /** The class rules every class site shares (raw colour, arbitrary text, animate-spin). */
+  /** The class rules every class site shares (raw color, arbitrary text, animate-spin). */
   function classRules(toks, node, label) {
     const raw = toks.filter((t) => {
       const { base } = stripVariants(t);
@@ -451,7 +451,7 @@ export function scanSource(file, text) {
       const rawButtonSite = tag === "button" && visualToks.length > 0;
       if (rawButtonSite) add("styled-raw-button", open, `<button> ${[...new Set(visualToks)].sort().join(" ")}`);
       // One element, one item: a primitive or raw button already flagged for its visual classes is
-      // not flagged again for the colour or text size among them (its fix replaces them all), but a
+      // not flagged again for the color or text size among them (its fix replaces them all), but a
       // hand-rolled spinner is its own defect.
       if (toks.length) {
         if (primSite || rawButtonSite) {
@@ -808,7 +808,7 @@ const PLANTED_SITES = [
 ];
 
 // ── The text-state contract on the HOST's tokens ──────────────────────────────────────────────
-// app/globals.css re-declares the colour tokens, and the host layer WINS over the package's
+// app/globals.css re-declares the color tokens, and the host layer WINS over the package's
 // defaults, so the package's own contrast test (token-contrast.test.ts) never sees what the app
 // paints. The same thresholds run here (2026-10-14 gray-disease ruling; STYLE-GUIDE "Colour"):
 // muted >= 4.5:1 and disabled >= 3.0:1 on background/card/popover/muted; foreground:muted >= 1.85;

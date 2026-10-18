@@ -9,7 +9,7 @@
 // it is a `continued_access.<key>_enabled` knob, a row in this table, and NOTHING ELSE — the
 // portal page never learns a new shape.
 //
-// 🚨 A FEATURE THE ORGANIZATION HAS NOT SWITCHED ON RENDERS NOTHING. Not disabled, not greyed,
+// 🚨 A FEATURE THE ORGANIZATION HAS NOT SWITCHED ON RENDERS NOTHING. Not disabled, not grayed,
 // not "coming soon" — absent. The `features` array from `continued_access_portal` is the whole
 // contract, and an aspect the org never agreed to offer must leave no trace on the page that a
 // former employee could ask about.

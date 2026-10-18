@@ -4,7 +4,7 @@
  * Reads go direct to Supabase (RLS: org members read their org's overrides;
  * platform defaults are authenticated-readable). The ONE write path is
  * `platform.set_org_change_policy` (SECURITY DEFINER: org owner/admin AND
- * human actor tier; floored keys rejected for everyone). The catalogue in
+ * human actor tier; floored keys rejected for everyone). The catalog in
  * `catalogue.ts` is the row list; the DB mirrors it so SQL can resolve.
  */
 

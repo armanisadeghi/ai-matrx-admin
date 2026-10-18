@@ -197,7 +197,7 @@ export function mergeAncillarySlots<
  * path, and a recovery path that explodes leaves the user exactly where the
  * dead end was. Returns null when the answer is unusable (endpoint not
  * deployed yet, network failure, not our run); callers keep their existing
- * durable-record behaviour in that case.
+ * durable-record behavior in that case.
  */
 export async function reconcileRun(
   runId: string,

@@ -9,7 +9,7 @@
 // rows an operator arrives at knowing a KEY ("orchestration.loop_guard.*") and
 // nothing else. So it adds exactly three register affordances on top of the
 // editor — a search box over the shared matcher, a deep link to one key, and
-// the agent-review banner — and NOTHING that duplicates a row's behaviour. The
+// the agent-review banner — and NOTHING that duplicates a row's behavior. The
 // key and the origin sentence now print on the row itself, inside the shared
 // `KnobOverrideRow`, so every destination inherits them (law 5).
 

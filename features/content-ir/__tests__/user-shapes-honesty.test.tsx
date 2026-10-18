@@ -1,6 +1,6 @@
 /**
  * User /shapes honesty (audit SHAPES-BUGS 3.5, 3.7, 3.8, 4). Each block names the
- * planted break it catches: put the old behaviour back and the assertion fails.
+ * planted break it catches: put the old behavior back and the assertion fails.
  */
 import fs from "node:fs";
 import path from "node:path";

@@ -8,7 +8,7 @@
  * this file where a phase, an allowed punch kind, an eligibility or an hour is worked out.
  *
  * 🚨 **NO CLIENT COMPUTES HOURS** (L3-74). The only moving number is the display-only ticker in
- * `PunchStatusPanel`, anchored to the server's own elapsed minutes and labelled as a live display.
+ * `PunchStatusPanel`, anchored to the server's own elapsed minutes and labeled as a live display.
  *
  * The eight states of §2.1 are the `PunchClockView` union, and this component's whole job is to be
  * exhaustive over it. `loading` and `no-subject` are the two extra arms the union carries so a
@@ -96,7 +96,7 @@ export function PunchWidget({
   /*
    * Resolve the chosen wall time into the instant the punch happened, in the EMPLOYMENT's zone.
    * `undefined` means "now" and lets `mintPunchIntent` stamp it — the default, and the only
-   * behaviour on route 6.
+   * behavior on route 6.
    */
   function punchAt(): Date | undefined {
     if (!allowBackdating || !when.localDate || !when.localTime) return undefined;

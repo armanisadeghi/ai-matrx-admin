@@ -120,7 +120,7 @@ describe("buildOutlineRows — absent is not zero", () => {
 });
 
 describe("buildOutlineRows — expansion, filters, page rows", () => {
-  it("honours the slice's expansion: collapsed roots hide their children until toggled", () => {
+  it("honors the slice's expansion: collapsed roots hide their children until toggled", () => {
     let slice = load(TREE_WITH_COUNTS, ["description", "status", "counts", "facets"]);
     expect(rowsOf(slice).map((row) => row.id)).toEqual([
       "electronics-recycling",

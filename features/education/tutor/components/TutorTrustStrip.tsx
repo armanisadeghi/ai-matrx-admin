@@ -9,7 +9,7 @@
 // tutor is grounded in (real citations from `grounding.ts` — the seed item +
 // the learner's weak cards), an honest confidence floor (`inferred`, never a
 // fabricated `grounded`), and — when nothing supports the question — the
-// general-knowledge label (owner ruling 2026-10-11: answer, labelled).
+// general-knowledge label (owner ruling 2026-10-11: answer, labeled).
 //
 // The envelope is DERIVED from known sources, not invented. Per-answer inline
 // citation + honest refusal are still enforced by the agent prompt; this makes

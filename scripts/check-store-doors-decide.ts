@@ -179,7 +179,7 @@ const ONE_LADDER_RED = `
  * THE FIFTH AND SIXTH CENSUSES — EVERY DECLARED DOOR GOES THROUGH THE LADDER,
  * AND EVERY DECLARED DOOR THAT WRITES ASKS THE SWITCH (2026-09-19, lane REACH).
  *
- * The first four censuses read the CATALOGUE — "this function holds a grant, does
+ * The first four censuses read the CATALOG — "this function holds a grant, does
  * its body decide". That catches a door somebody granted. It does not catch the
  * opposite and now much more common thing: a door somebody DECLARED. Schema
  * `custom` went from 28 client-reachable functions to 67 in one sitting, and every
@@ -778,7 +778,7 @@ async function t10Probe(
  * CENSUS 10 — THE TWO-SEAT PROBE: "VIEWER" MEANS VIEWER, AND REVOKED MEANS REVOKED
  * (2026-09-19, lane LEVEL-FIX).
  *
- * Censuses 1-9 all read the CATALOGUE. Every one of them was green on the day the fifth
+ * Censuses 1-9 all read the CATALOG. Every one of them was green on the day the fifth
  * independent pass shared a record with a colleague at VIEWER through the Share dialog and
  * watched her rewrite it, delete it, create her own in the table, and go on editing after the
  * share was revoked. Nothing about the shape of a door was wrong. The ANSWER was wrong:
@@ -964,7 +964,7 @@ function report(title: string, rows: Row[], qualified = false): boolean {
  *
  * Census 13's default run compares the SET every list-shaped door builds its rows from
  * (`custom.visible_set`) against the per-row ladder `custom.read_record` decides with
- * (`custom.has_visibility`) — one query per (member, Table), and it checks in the catalogue
+ * (`custom.has_visibility`) — one query per (member, Table), and it checks in the catalog
  * that each door still routes through that set before it believes the substitution.
  * `--exhaustive` CALLS the seven doors instead, for every row, with no sampling anywhere:
  * the census exactly as LEAK-T10 wrote it. It is ~5x slower, which is why it is the nightly
@@ -985,7 +985,7 @@ async function refusalOnlyIsInstalled(client: Awaited<ReturnType<typeof openGate
 /**
  * THE STATEMENT BUDGET OF THE TWO SLOW CENSUSES (lane DOORS-GUARD-CONNECTION, 2026-09-27).
  * Nine minutes: under production's 10-minute `transaction_timeout`, which terminates the
- * connection rather than cancelling the statement. A census past this is cancelled (57014) and
+ * connection rather than canceling the statement. A census past this is canceled (57014) and
  * reported unmeasured by name while every other census still prints its verdict.
  */
 const CENSUS_BUDGET_MS = 540_000;
@@ -1196,7 +1196,7 @@ async function main(): Promise<void> {
 
       // CENSUS 11, THE RED HALF. With trigger functions no longer exempt, every SECURITY
       // INVOKER trigger body in this schema that touches the store must be named. An empty
-      // answer would mean the query is not reading the catalogue it claims to.
+      // answer would mean the query is not reading the catalog it claims to.
       const redInvoker = (await client.query<Row>(INVOKER_DOOR_CENSUS(false, true))).rows;
       if (redInvoker.length === 0) {
         fail(
@@ -1450,7 +1450,7 @@ async function main(): Promise<void> {
     // login role's 10-minute `transaction_timeout` (aidream 1171) ENDS THE CONNECTION, and this
     // guard had asked for a 900 s statement clock that could therefore never fire. Now:
     //   - every census has a statement budget UNDER the transaction ceiling (CENSUS_BUDGET), so a
-    //     census that runs long is CANCELLED (57014) with the connection intact and named as
+    //     census that runs long is CANCELED (57014) with the connection intact and named as
     //     unmeasured, instead of taking the process with it;
     //   - a census whose connection dies anyway is named unmeasured, the guard reconnects, and
     //     every census after it still runs and still prints;
@@ -1494,7 +1494,7 @@ async function main(): Promise<void> {
             "it. The nightly catch-up levels the clone (scripts/night/clone-catchup.sh); until then " +
             "this census has no verdict here - not a pass, and not a door defect."
           : code === "57014"
-            ? `${name}: ran past its ${censusBudget()} statement budget and was cancelled (57014). The ` +
+            ? `${name}: ran past its ${censusBudget()} statement budget and was canceled (57014). The ` +
               "connection is intact and every other census still runs. " +
               (checkDb.target === "production"
                 ? "On LIVE every statement is capped at the live ceiling; run without --target " +

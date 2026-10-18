@@ -3,7 +3,7 @@
  * discovered resource row.
  *
  * 🚨 THE DEFECT THIS FIXES (V-27 NEW-6). The bind door rendered one button per
- * `youtube_channel` resource labelled only `Bind ${display_name}`, and on a real
+ * `youtube_channel` resource labeled only `Bind ${display_name}`, and on a real
  * seat that read, verbatim: "Bind AI Matrx OAuth Review · Bind Arman Sadeghi ·
  * Bind Arman Sadeghi · Bind Arman Sadeghi · Bind Arman Sadeghi · Bind Titanium
  * Success, Inc. · Bind Titanium Success, Inc." Four buttons were
@@ -40,7 +40,7 @@ export interface ChannelBindCandidate {
   resourceId: string;
   /** The connected Google account the refresh will spend its call on. */
   connectionId: string;
-  /** That account, in words a person recognises. */
+  /** That account, in words a person recognizes. */
   account: string;
   /** Every OTHER account that discovered this same channel id. */
   alsoDiscoveredThrough: readonly string[];

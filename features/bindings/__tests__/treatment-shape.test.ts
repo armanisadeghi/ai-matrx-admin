@@ -110,7 +110,7 @@ describe("treatment-shape — the client codec for mandate.treatment.config", ()
       showPreExecutionGate: true,
       preExecutionMessage: "Runs in 3s — click to stop it.",
       bypassGateSeconds: 7,
-      defaultUserInput: "Summarise the transcript",
+      defaultUserInput: "Summarize the transcript",
       defaultVariables: { language: "en" },
       contextOverrides: { page: "notes" },
       llmOverrides: { temperature: 0.2 },

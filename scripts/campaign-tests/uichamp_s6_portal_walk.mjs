@@ -58,7 +58,7 @@ async function magicLink() {
 // S6_JOURNEY=1 — the rest of her visit (the Rincon fixture, `_s6_walk_fixture.sql`): open the
 // boiler-room call and read its status line; open "Update a gate code", send it, and see it land.
 const JOURNEY = process.env.S6_JOURNEY === "1";
-/** The accent band's computed colour, or null when the page drew none. */
+/** The accent band's computed color, or null when the page drew none. */
 const accentBand = (page) =>
   page.evaluate(() => {
     const el = document.querySelector("main > div[aria-hidden].fixed");

@@ -85,7 +85,7 @@ const SHELL_KEYS = ["tokens", "header", "footer"] as const;
 
 /** Plain words for each shell piece — the archetype's own labels are jargon. */
 const SHELL_WORDS: Record<string, string> = {
-  tokens: "Colours and fonts",
+  tokens: "Colors and fonts",
   header: "Header",
   footer: "Footer",
 };
@@ -205,9 +205,9 @@ export const contentPlanSetupChecklist = registerChecklist<ContentPlanSetupConte
       dependsOn: ["website"],
       title: "Your website has a look and feel",
       description:
-        "Colours and fonts, a header and a footer — the frame every page sits inside. We can build a first version for you, and you can change any of it afterwards.",
+        "Colors and fonts, a header and a footer — the frame every page sits inside. We can build a first version for you, and you can change any of it afterwards.",
       runLabel: "Build it for me",
-      runningLabel: "Building your colours, header and footer…",
+      runningLabel: "Building your colors, header and footer…",
       check: async (ctx): Promise<CheckResult> => {
         const blocked = unreadable(ctx);
         if (blocked) return blocked;
@@ -273,7 +273,7 @@ export const contentPlanSetupChecklist = registerChecklist<ContentPlanSetupConte
               className="font-medium text-primary hover:underline"
               href={settings}
             >
-              Colours, fonts and menu
+              Colors, fonts and menu
             </Link>{" "}
             ·{" "}
             <Link

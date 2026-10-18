@@ -4,12 +4,12 @@
  * useOrgContributableItems
  * ------------------------
  * The shared "your own items, ready to share with this org" engine behind both
- * the Contribute sheet and the per-resource org page. Given an org + a catalogue
+ * the Contribute sheet and the per-resource org page. Given an org + a catalog
  * entry, it loads the current user's own items of that kind and exposes a
  * one-call `share` that makes the item AVAILABLE to the org via `grantOrgAvailability`
  * (organization configuration, never a share — SHARE-PEOPLE-ONLY, chair ruling 2026-09-25).
  *
- * Keyed entirely on the catalogue entry (canonical table + shareKey + title
+ * Keyed entirely on the catalog entry (canonical table + shareKey + title
  * column) so it works for every contributable kind without per-type code.
  */
 

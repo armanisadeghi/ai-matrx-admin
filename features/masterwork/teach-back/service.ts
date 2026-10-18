@@ -128,7 +128,7 @@ export function parseTeachBackRound(raw: unknown): TeachBackRoundResult | null {
     doneReason: String(data.done_reason ?? ""),
     subject: String(data.subject ?? ""),
     explanation: String(data.explanation ?? ""),
-    // A value we do not recognise is dropped rather than rendered: the screen
+    // A value we do not recognize is dropped rather than rendered: the screen
     // says whose judgment this is, and a word we cannot read is not an answer.
     basis: basis === "rulebook" || basis === "generalist" ? basis : "",
     ruleIdsCited: cited.map((id) => String(id)),

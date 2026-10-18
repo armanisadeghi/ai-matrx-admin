@@ -325,9 +325,9 @@ export function MeetingFormDialog({
       }
     }
 
-    // THE SERIES MOVES → its cancelled and moved dates belonged to the old
+    // THE SERIES MOVES → its canceled and moved dates belonged to the old
     // schedule. Google Calendar and Outlook warn and let the person choose;
-    // silently archiving them is how a cancelled date came back (verifier,
+    // silently archiving them is how a canceled date came back (verifier,
     // 2026-09-29). Asked before anything is written.
     if (movesSeries(meeting, changes)) {
       if (keepExceptions === undefined) {
@@ -902,8 +902,8 @@ export function MeetingFormDialog({
             </DialogTitle>
             <DialogDescription>
               {exceptionsAsk?.count === 1
-                ? "One date in this series was cancelled or moved on its own."
-                : `${exceptionsAsk?.count ?? 0} dates in this series were cancelled or moved on their own.`}{" "}
+                ? "One date in this series was canceled or moved on its own."
+                : `${exceptionsAsk?.count ?? 0} dates in this series were canceled or moved on their own.`}{" "}
               Keep them on the new schedule, or put every date back on the
               series? A kept change that no longer lands on a date of the new
               series is dropped.

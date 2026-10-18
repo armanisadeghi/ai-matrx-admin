@@ -5,7 +5,7 @@
 import type { RoundView } from "./SmartAddRound";
 
 const FAILED_RUN = ["failed", "errored", "refused"];
-/** The run was ended from outside (its worker died and the recovery budget ran out, or it was cancelled). */
+/** The run was ended from outside (its worker died and the recovery budget ran out, or it was canceled). */
 const STOPPED_RUN = ["cancelled", "stopped"];
 
 /** The run stopped before it finished: nothing more will come from it, and the screen says so (MKT-183). */

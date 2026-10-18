@@ -6,9 +6,9 @@
 // never as a lesser status.
 //
 // So: one small neutral chip, the same visual weight for every non-employee
-// class, no colour that reads as warning, no "external" framing, no icon that
+// class, no color that reads as warning, no "external" framing, no icon that
 // implies caution. `employee` renders NOTHING at all, because the default class
-// needs no annotation and labelling it would make the others look marked.
+// needs no annotation and labeling it would make the others look marked.
 //
 // The MARKETPLACE OF RECORD (Upwork, Fiverr, an agency) is deliberately NOT here.
 // SPEC-EMPLOYEES §4.7 puts it inside the Job tab, where an HR admin working on

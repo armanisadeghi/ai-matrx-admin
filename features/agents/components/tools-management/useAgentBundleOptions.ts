@@ -6,7 +6,7 @@ import {
   type AgentBundleOption,
 } from "@/features/tool-registry/bundles/services/bundles.service";
 
-// Module-scoped single-flight cache. The bundle catalogue is small and changes
+// Module-scoped single-flight cache. The bundle catalog is small and changes
 // rarely, and the tools manager mounts the panel + reads the sidebar count from
 // two places — without this they'd each fire the same pair of queries on every
 // open. One in-flight promise, shared; resolved value reused for the session.
@@ -36,7 +36,7 @@ export interface UseAgentBundleOptions {
 }
 
 /**
- * Loads the addable bundle catalogue once and shares it across every consumer
+ * Loads the addable bundle catalog once and shares it across every consumer
  * (the Bundles panel + the sidebar enabled-count). See
  * {@link listAgentBundleOptions} for what counts as "addable".
  */

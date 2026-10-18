@@ -1,5 +1,5 @@
 // "Make me more questions the night before the exam": a top-up must never
-// repeat what the assessment already asks, must honour the types the person
+// repeat what the assessment already asks, must honor the types the person
 // picked, and must stamp every question it adds with the run that made it
 // (so Undo and coverage can find exactly them).
 import { BATCH_KEY, OUTLINE_SECTION_KEY } from "@/features/education/kits/outline/types";

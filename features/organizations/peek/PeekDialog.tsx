@@ -83,7 +83,7 @@ export function PeekDialog({
   // an admin route. Without this, a control could hand its new-tab link the
   // admin URL while this footer sent "Open" to the user one. `undefined` means
   // no caller expressed a destination; `null` means one deliberately withheld
-  // it, and is honoured rather than falling back to the registry.
+  // it, and is honored rather than falling back to the registry.
   const override = usePeekHrefOverride();
   const resolvedHref =
     override !== undefined
@@ -146,7 +146,7 @@ export function PeekDialog({
   );
 }
 
-/** A labelled field row for peek bodies. */
+/** A labeled field row for peek bodies. */
 export function PeekField({
   label,
   children,

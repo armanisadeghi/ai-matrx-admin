@@ -6,7 +6,7 @@
  * (`CanvasHostProvider` + `<CanvasColumn>`), and the same `useToolOpener` +
  * `agentEditHistoryInput` the builder's message editors call. The editors are
  * page-sized, so their wiring is read from source: an opener that goes back to
- * the overlay goes RED, and so does a catalogue that still names it.
+ * the overlay goes RED, and so does a catalog that still names it.
  *
  * Proven failing before passing: against the overlay-era editors the source
  * case is RED; with the kind left out of FEATURE_CANVAS_KINDS the body case is RED.

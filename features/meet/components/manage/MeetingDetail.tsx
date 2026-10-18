@@ -126,7 +126,7 @@ function StatusPill({
   const [label, tone] = meeting.deletedAt
     ? ["Archived", "bg-muted text-muted-foreground"]
     : meeting.cancelledAt
-      ? ["Cancelled", "bg-destructive/10 text-destructive-ink"]
+      ? ["Canceled", "bg-destructive/10 text-destructive-ink"]
       : live
         ? ["Live", "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"]
         : meeting.endedAt !== null && !meeting.recurrenceRule
@@ -776,7 +776,7 @@ function DetailsSection({
     <div className="space-y-5">
       {meeting.cancelledAt ? (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-          This meeting was cancelled
+          This meeting was canceled
           {meeting.cancellationReason
             ? `: “${meeting.cancellationReason}”`
             : "."}{" "}
@@ -933,7 +933,7 @@ function OccurrencesSection({
                     </span>
                   ) : null}
                   {o.state === "cancelled" ? (
-                    <span className="ml-2 text-destructive">Cancelled</span>
+                    <span className="ml-2 text-destructive">Canceled</span>
                   ) : null}
                 </div>
               </button>

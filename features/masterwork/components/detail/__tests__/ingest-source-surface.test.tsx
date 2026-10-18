@@ -79,7 +79,7 @@ jest.mock("@/features/files/handler/hooks/useFileUpload", () => ({
 }));
 
 // `ProTextarea` reaches for the store (its AI post-process assist). The
-// dialog's own behaviour under test needs none of it.
+// dialog's own behavior under test needs none of it.
 jest.mock("@/lib/redux/hooks", () => ({
   useAppStore: () => ({ dispatch: jest.fn(), getState: () => ({}) }),
   useAppDispatch: () => jest.fn(),

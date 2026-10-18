@@ -29,7 +29,7 @@ import { MASTERWORK_RESULT_KIND } from "@/features/content-ir/kinds/masterwork-r
  * reading "Mine 2"). The class fix is the same rule Linear, Stripe and Vercel
  * use for drafts: your OWN work is always on your own shelf, marked "Draft",
  * one click from publishing; release is what lets OTHER people see it. So the
- * `mine` shelf carries drafts (labelled), and `orgs` / `public` stay gated.
+ * `mine` shelf carries drafts (labeled), and `orgs` / `public` stay gated.
  *
  * Understudies are excluded everywhere here: an Understudy is the practice
  * stand-in the Rulebook bakes for itself, not something the Expert built, and

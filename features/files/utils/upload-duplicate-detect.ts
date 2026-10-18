@@ -11,7 +11,7 @@
  *
  *   2. **Same filename, different content** — a file with the same
  *      name exists, but its bytes are different. Default Drive /
- *      Dropbox behaviour offers Overwrite (version-bump) vs Make a
+ *      Dropbox behavior offers Overwrite (version-bump) vs Make a
  *      copy (auto " (1)") vs Skip.
  *
  * Both cases are surfaced to the user via the `DuplicateUploadDialog`.

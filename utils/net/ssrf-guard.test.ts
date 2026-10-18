@@ -40,7 +40,7 @@ describe("isBlockedAddress", () => {
     ["fe80::1", "link-local"],
     ["::ffff:169.254.169.254", "IPv4-mapped metadata — the classic bypass"],
     ["::ffff:127.0.0.1", "IPv4-mapped loopback"],
-    // new URL() normalises the two above into THESE. Caught by live probe.
+    // new URL() normalizes the two above into THESE. Caught by live probe.
     ["::ffff:a9fe:a9fe", "IPv4-mapped metadata, hex form"],
     ["::ffff:7f00:1", "IPv4-mapped loopback, hex form"],
     ["::ffff:c0a8:101", "IPv4-mapped 192.168.1.1, hex form"],

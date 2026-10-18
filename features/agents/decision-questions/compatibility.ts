@@ -2,7 +2,7 @@
  * Compatibility honesty for the `decision_questions` part.
  *
  * THE LAW (`common-docs/systems/agents/typed-messages/FEATURE.md`):
- * "a part the model cannot take stays visible, greyed with the reason."
+ * "a part the model cannot take stays visible, grayed with the reason."
  * Never dropped, never silently converted, never rendered as if it will work.
  *
  * Two refusals exist, and they point at DIFFERENT parts:

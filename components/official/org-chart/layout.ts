@@ -4,7 +4,7 @@
 // draws comes from here, so it is unit-tested on its own.
 //
 // The core subtree-width algorithm (each subtree is as wide as its children
-// laid side by side; a parent is centred over them) is adapted from Paperclip's
+// laid side by side; a parent is centerd over them) is adapted from Paperclip's
 // org chart, ui/src/pages/OrgChart.tsx:
 //   Copyright (c) 2025 Paperclip AI — MIT License
 //   https://github.com/paperclipai/paperclip
@@ -21,7 +21,7 @@
 //     many, hangs them in two columns off a central trunk (the classic printed
 //     org-chart shape) instead of one row thousands of pixels wide;
 //   • typed edges — every edge carries the kind of the link it draws, so the
-//     chart can colour automatic and manual links differently;
+//     chart can color automatic and manual links differently;
 //   • rounded orthogonal connectors.
 
 export interface OrgChartTreeNode<T> {

@@ -76,7 +76,7 @@ export function useKgCytoscape(args: UseKgCytoscapeArgs): KgController {
       selectionType: "additive", // …and Ctrl/Cmd-click adds individual nodes.
       // A plain tap is normalized back to single-select in the tap handler.
       // Either way, dragging any selected node moves the whole selected set
-      // (native group-drag) — the "move a section all at once" behaviour.
+      // (native group-drag) — the "move a section all at once" behavior.
       pixelRatio: "auto",
     });
     cyRef.current = cy;

@@ -167,7 +167,7 @@ export function fieldsForSend(
   return out;
 }
 
-/** Each recipient's colour on the page — the chart palette, in order. */
+/** Each recipient's color on the page — the chart palette, in order. */
 const RECIPIENT_TOKENS = ["--chart-1", "--chart-2", "--chart-4", "--chart-6", "--chart-3", "--chart-5"];
 
 export function recipientColor(index: number, alpha = 1): string {

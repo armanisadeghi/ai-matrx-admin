@@ -378,7 +378,7 @@ export function ToolViewPage({ tool }: Props) {
   };
 
   // Surface write handlers — the open-tool half of the manifest's
-  // `writeTargets` (the catalogue mount registers none; see the manifest's
+  // `writeTargets` (the catalog mount registers none; see the manifest's
   // writeTargets block for why). Three authored-metadata fields only:
   // description, category, tags. Everything capability-shaped — is_active,
   // admin_only, gating, exemptions, published to the web, tier — plus the name, the

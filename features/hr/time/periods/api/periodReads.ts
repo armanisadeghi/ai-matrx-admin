@@ -394,7 +394,7 @@ export async function getPayPeriod(
     hoursNow: typeof r.hoursNow === "number" ? r.hoursNow
       : r.hoursNow != null ? Number(r.hoursNow) : null,
     // Defaults TRUE only because the platform default is true and the knob resolves server-side;
-    // an explicit `false` from the server is always honoured.
+    // an explicit `false` from the server is always honored.
     reopenAllowed: r.reopenAllowed !== false,
     reopenNotice: strOrNull(r.reopenNotice),
     adjustmentsTaggedHere: num(r.adjustmentsTaggedHere, 0),

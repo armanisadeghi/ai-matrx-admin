@@ -7,7 +7,7 @@
 // the panel never names.
 //
 // What each case defends:
-//   · a kind the panel has never heard of renders GROUPED and LABELLED (the
+//   · a kind the panel has never heard of renders GROUPED and LABELED (the
 //     vision's done-check for U3: a new association type appears with no code
 //     change);
 //   · read-only removes EVERY write control — absent, not disabled;
@@ -338,7 +338,7 @@ describe("TopicDetailBody — a writer, on a map the workspace loaded with count
     expect(chip?.querySelector('button[aria-label="Clear offering_kind"]')).not.toBeNull();
   });
 
-  it("groups a kind the panel never special-cases under the function's own string, labelled", () => {
+  it("groups a kind the panel never special-cases under the function's own string, labeled", () => {
     const group = mounted.container.querySelector('[data-association-kind="web_youtube_video"]');
     expect(group).not.toBeNull();
     expect(group?.textContent).toContain("How we shred hard drives");

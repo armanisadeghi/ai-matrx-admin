@@ -23,7 +23,7 @@
  * PER-MOUNT POSTURE: a route passes only the setters it has, and
  * `buildScraperWriteHandlers` returns a handler only for the targets those
  * cover — so `listAgentWritableTargets` offers each route exactly the targets
- * it can honour. `/scraper` and `/scraper/quick` get `scrape_command` (URL
+ * it can honor. `/scraper` and `/scraper/quick` get `scrape_command` (URL
  * only); `/scraper/search` gets `scrape_command` (keyword), the result budget
  * and hit selection; `/scraper/search-and-scrape` gets `scrape_command`
  * (keyword), the page budget and page selection. None of them can switch mode,

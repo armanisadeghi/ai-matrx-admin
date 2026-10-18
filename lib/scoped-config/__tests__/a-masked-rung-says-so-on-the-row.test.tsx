@@ -12,7 +12,7 @@
 //      the control read "Never" back.
 //   2. The value actually in force for that same admin was still "auto",
 //      because a USER-rung override written earlier that day outranks the
-//      organization's. That is correct ladder behaviour.
+//      organization's. That is correct ladder behavior.
 //   3. The pane said NOTHING. No notice, no "your own setting overrides this",
 //      nothing. An administrator reading that screen would believe escalation
 //      was off for the organization while it was on for the very person

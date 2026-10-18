@@ -181,7 +181,7 @@ export function createCatalogService(
                 // BEAT IT STARTED MATTERING. Until aidream `d7093434f6` the
                 // metrics route declared `fresh` and nothing else, so the filter
                 // set this call used to pass was dropped and the chips were
-                // whole-Library counts by accident. Now the server honours it —
+                // whole-Library counts by accident. Now the server honors it —
                 // and passing the ACTIVE query here would count each dimension
                 // inside its own selection: pick `media_kind=video` and every
                 // other media_kind chip drops to zero, is filtered out, and the

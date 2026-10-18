@@ -114,7 +114,7 @@ export async function openFilePicker(
 
 /**
  * Open the shared FolderPicker. Returns the chosen folder id (or `null`
- * for root), or `undefined` if cancelled / host not mounted.
+ * for root), or `undefined` if canceled / host not mounted.
  */
 export async function openFolderPicker(
   options: UseFolderPickerOpenOptions = {},

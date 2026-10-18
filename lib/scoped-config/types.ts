@@ -63,7 +63,7 @@ export type KnobOrigin =
  * switch). Hints steer presentation; they never change what may be written.
  */
 export type KnobUiHints = {
-  /** Section heading the key is grouped under in the centre pane. */
+  /** Section heading the key is grouped under in the center pane. */
   group?: string;
   /** Sort position inside its group. Unset sorts last, then alphabetically. */
   order?: number;

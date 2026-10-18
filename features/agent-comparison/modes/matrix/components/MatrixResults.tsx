@@ -291,7 +291,7 @@ function CellButton({
   expectedRepeats: number;
 }) {
   const avg = avgMetrics(sumMetrics(cells.map(cellMetrics)));
-  // A failed or cancelled run that spent money still shows what it spent.
+  // A failed or canceled run that spent money still shows what it spent.
   const spend = spendOf(cells, false);
   const shown = avg ?? (spend.n > 0 ? spend : null);
   const running = cells.some((c) => c.status === "running" && !c.stalled);

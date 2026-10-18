@@ -6,7 +6,7 @@
  * The pay-period state machine per pay group. SPEC-UI-IA §3.4 row 32 names `MatrxDataTable` as the
  * primary component, so this is the canonical table with columns — not a hand-rolled grid.
  *
- * 🚨 TWO STATE MACHINES, LABELLED DISTINCTLY (SPEC-TIME §14 D8). The **State** column is the
+ * 🚨 TWO STATE MACHINES, LABELED DISTINCTLY (SPEC-TIME §14 D8). The **State** column is the
  * period's; the **Timecards** column is the row machine's progress and is deliberately worded
  * `"N of M approved"` rather than a bare state, so a reader can never take one for the other.
  * Approving one person never moves the period.

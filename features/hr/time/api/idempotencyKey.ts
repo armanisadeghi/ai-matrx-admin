@@ -69,7 +69,7 @@ function localIsoMinute(at: Date, tz: string): string {
   const get = (type: Intl.DateTimeFormatPartTypes): string =>
     parts.find((p) => p.type === type)?.value ?? "";
 
-  // `en-CA` renders midnight as "24" in some runtimes; normalise so the key is stable.
+  // `en-CA` renders midnight as "24" in some runtimes; normalize so the key is stable.
   const hour = get("hour") === "24" ? "00" : get("hour");
   return `${get("year")}-${get("month")}-${get("day")}T${hour}:${get("minute")}`;
 }

@@ -293,7 +293,7 @@ it("puts the goal AND the multi-select answer back after a reload on ?step=2", a
   expect(text).toContain("Best for what you described");
   // The chat-import Approach is in the top row BECAUSE she said her knowledge
   // lives in her AI chats. With the answer dropped back to the "In my head"
-  // default (the old behaviour) chat-import is not relevant at all and never
+  // default (the old behavior) chat-import is not relevant at all and never
   // appears there.
   expect(topRowText()).toContain("Bring in your AI chats");
   expect(text).not.toContain("We could not find");

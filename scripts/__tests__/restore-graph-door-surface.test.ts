@@ -12,7 +12,7 @@
  * Measured 2026-09-17: production 1,014 doors against a copy's 1,000.
  *
  * TO SEE THESE GO RED: make `doorSurfaceVerdict` return `{ ok: true }`
- * unconditionally — the behaviour before this module existed, where the door
+ * unconditionally — the behavior before this module existed, where the door
  * surface was checked by nothing at all. The two failing cases below go red
  * immediately. (Proven that way in a scratch copy before the module landed; the
  * real module is never weakened to demonstrate it.)

@@ -467,7 +467,7 @@ export function LinkGraphView({
     [model, focusPath],
   );
 
-  // Page level is only honoured while the focus really is small.
+  // Page level is only honored while the focus really is small.
   const showPages = pageLevel && Boolean(sectionModel?.pageLevelViable);
 
   // Page-level nodes are scoped to the focused folder, so drilling in and

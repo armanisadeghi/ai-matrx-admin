@@ -10,7 +10,7 @@
  *    preflight as two unreadable pieces (`"Doe` and `John" <john@x.com>`), and the
  *    one send authority fails CLOSED on a field it cannot parse: the message was
  *    refused, in words that blamed the person's own address. `features/crm/gmail/
- *    mailbox.ts` is THE parser (`splitMailboxField` honours quotes and angle
+ *    mailbox.ts` is THE parser (`splitMailboxField` honors quotes and angle
  *    brackets), so the card uses it and the private copy is deleted. A genuinely
  *    unreadable field must STILL refuse — the fix is a correct parse, never a
  *    laxer gate.

@@ -78,7 +78,7 @@ export function NavSidebar({ section, onCollapse }: NavSidebarProps) {
       //      folder so reload + sharing work.
       // Virtual folders (Notes adapter, etc.) don't have a stable folder
       // path that the catch-all route can resolve, so they keep the
-      // existing behaviour: Redux-only update + bare /files for filtered
+      // existing behavior: Redux-only update + bare /files for filtered
       // sections.
       const folder = foldersById[folderId];
       if (folder?.source.kind === "real") {

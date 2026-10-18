@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 export interface AnswerTextPreviewProps {
   text: string | null | undefined;
-  /** Classes for the text paragraph (clamp, size, colour). */
+  /** Classes for the text paragraph (clamp, size, color). */
   className?: string;
   /**
    * True while the answer is still streaming. Required: only the caller knows,

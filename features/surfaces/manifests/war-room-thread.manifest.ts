@@ -503,7 +503,7 @@ const writeTargets: SurfaceWriteTarget[] = [
   {
     name: "thread_task_status",
     label: "Thread task status",
-    description: `Sets the lifecycle status of the task anchored to THIS thread. Exactly one of: ${TASK_STATUSES.join(" | ")}. Lifecycle runs inbox → planned → active → completed, with cancelled and dismissed as terminal side-exits. Only move it where the thread's own evidence supports it — do not mark work completed that the user has not said is done. Saved immediately through the canonical task update path. Refused when the thread is not anchored to a task.`,
+    description: `Sets the lifecycle status of the task anchored to THIS thread. Exactly one of: ${TASK_STATUSES.join(" | ")}. Lifecycle runs inbox → planned → active → completed, with canceled and dismissed as terminal side-exits. Only move it where the thread's own evidence supports it — do not mark work completed that the user has not said is done. Saved immediately through the canonical task update path. Refused when the thread is not anchored to a task.`,
     valueType: "string",
     updatesValue: "task_status",
     mode: "entity",

@@ -40,7 +40,7 @@ export const LINK_LAYOUTS: LinkLayoutMeta[] = [
   {
     id: "concentric",
     label: "By inlinks",
-    description: "Most-linked pages at the centre.",
+    description: "Most-linked pages at the center.",
   },
   {
     id: "grid",

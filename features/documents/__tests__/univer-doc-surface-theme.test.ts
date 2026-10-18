@@ -9,7 +9,7 @@
  * the invariant against Univer's own upstream defaults — which is exactly what
  * this app shipped before this change, since it never called `setFillColors`
  * or touched the canvas element — and asserts they violate it in dark mode.
- * Every test after it asserts the colours this app now states pass.
+ * Every test after it asserts the colors this app now states pass.
  */
 import {
   UNIVER_UPSTREAM_DEFAULT_COLORS,
@@ -72,7 +72,7 @@ describe("Univer document surface theme", () => {
     });
   });
 
-  describe("the colours this app states", () => {
+  describe("the colors this app states", () => {
     it.each(["light", "dark"] as const)("%s is clean", (mode) => {
       const colors = univerDocSurfaceColors(mode, readerFor(mode));
       expect(univerDocSurfaceViolations(mode, colors)).toEqual([]);

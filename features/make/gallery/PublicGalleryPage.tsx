@@ -2,7 +2,7 @@
 //
 // THE GALLERY'S PAGES at /templates, /templates/category/<industry> and /templates/job/<job>: one
 // server-rendered layout (heading, industry and job links, the cards with their live thumbnails).
-// The index groups the catalogue by industry; a category or job page lists every template in it.
+// The index groups the catalog by industry; a category or job page lists every template in it.
 // WORKSPACES (Arman 2026-10-18 "Yes, public gallery"): Space templates (card.space with pages) come first in
 // their own section, filterable by Space category (/templates/workspaces/<category>); the table templates follow.
 
@@ -29,7 +29,7 @@ export function PublicGalleryPage({
 }: {
   title: string;
   cards: readonly GalleryCard[];
-  /** The whole catalogue, for the industry and job links. */
+  /** The whole catalog, for the industry and job links. */
   all: readonly GalleryCard[];
   active?: { industry?: string; job?: string; space?: string };
   grouped?: boolean;

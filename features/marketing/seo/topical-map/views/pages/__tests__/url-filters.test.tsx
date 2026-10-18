@@ -141,7 +141,7 @@ describe("the pages workspace opens on what the link asked for", () => {
     expect(filtersOf(store)).toMatchObject({ topicSlug: null, disposition: null, state: null });
   });
 
-  it("says out loud what it could not honour, and still applies the rest", () => {
+  it("says out loud what it could not honor, and still applies the rest", () => {
     search = "state=accpeted&disposition=move";
     const store = makeStore();
     render(store, "page");

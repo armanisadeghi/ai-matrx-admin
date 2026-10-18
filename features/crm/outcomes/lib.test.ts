@@ -55,7 +55,7 @@ const baseRow = (overrides: Partial<OutcomeEventRow> = {}): OutcomeEventRow =>
   }) as OutcomeEventRow;
 
 describe("parseOutcomeDetail", () => {
-  it("keeps non-fired signals — they are the defence, not noise", () => {
+  it("keeps non-fired signals — they are the defense, not noise", () => {
     const parsed = parseOutcomeDetail(baseRow().match_detail);
     expect(parsed.signals).toHaveLength(2);
     expect(parsed.signals.find((s) => s.name === "author_match")?.fired).toBe(false);

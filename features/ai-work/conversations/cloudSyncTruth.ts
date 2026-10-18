@@ -274,7 +274,7 @@ export function unknownVerdict(
  *
  *  1. `in_sync` — forbidden for the cloud half (contract §4): the server never
  *     read the transcript, the delivery queue, or this Mac's mirror.
- *  2. a code outside the §1 closed set — a verdict this app cannot honour.
+ *  2. a code outside the §1 closed set — a verdict this app cannot honor.
  *  3. a known code with no sentence — nothing to say, so it says that.
  *  4. a sentence that STILL carries a `{` after substitution — an unfinished
  *     sentence is never shown to a person; it becomes `unknown`.

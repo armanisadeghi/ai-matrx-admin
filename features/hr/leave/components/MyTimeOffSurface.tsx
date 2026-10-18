@@ -172,7 +172,7 @@ function TimeOffBody({ employmentId }: { employmentId: string }) {
           {/*
             🚨 ABSENCE, NOT DISABLEMENT. `can_request` is `viewer_rung === 'self'`, and
             `hr.leave_request_submit` refuses anything else with `not_self`. Somebody looking at
-            this page who is not its subject gets NO FORM IN THE DOM, not a greyed one.
+            this page who is not its subject gets NO FORM IN THE DOM, not a grayed one.
           */}
           {data.canRequest ? (
             <>

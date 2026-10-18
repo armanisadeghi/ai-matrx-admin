@@ -6,7 +6,7 @@ import type { Json } from "@/types/database.types";
  * A fact's value is written either as a plain string or as a structured jsonb
  * document: an Address fact carries schema.org PostalAddress fields, possibly
  * wrapped as `{ "address": { "@type": "PostalAddress", … } }`. The Overview
- * used to render every record it did not recognise as raw JSON, so a person saw
+ * used to render every record it did not recognize as raw JSON, so a person saw
  * `{"address":{"@type":"PostalAddress",…}}` on the brand's page. This module
  * turns structured values into the words a person reads and keeps JSON only as
  * the last resort for a shape nothing here can name, so nothing disappears.

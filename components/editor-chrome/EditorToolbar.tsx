@@ -2,7 +2,7 @@
 
 /**
  * Google's second row: the "Menus" search first, then icon groups (undo, redo,
- * print, paint format, zoom, formats, font, size, B/I/S, colours, borders,
+ * print, paint format, zoom, formats, font, size, B/I/S, colors, borders,
  * merge, align, wrap, rotate, link, comment, filter, functions). One row that
  * scrolls sideways on narrow screens — it never wraps, so nothing below moves.
  */

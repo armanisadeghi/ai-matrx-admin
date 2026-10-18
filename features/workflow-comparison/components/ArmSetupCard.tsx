@@ -149,7 +149,7 @@ function WorkflowSelect({
               </div>
             )}
             {Boolean(searchError) && choices.length > 0 && (
-              // Stale-while-error: the earlier results stay, labelled as possibly out of date.
+              // Stale-while-error: the earlier results stay, labeled as possibly out of date.
               <StaleDataNotice
                 hasData
                 what="the workflow search"

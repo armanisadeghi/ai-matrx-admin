@@ -1,14 +1,14 @@
 // features/education/convert/targetPresentation.ts
 //
 // ONE presentation table for the converter's target kinds: the icon, the accent
-// colour, and the honest present-tense verb each kind shows while it is being
+// color, and the honest present-tense verb each kind shows while it is being
 // produced. Every surface that lists study-kit targets (the ingest hero, the
 // convert dialog, a future library filter) reads it here — the icon map used to
 // be re-declared per surface, and the second copy is always the one that goes
 // stale when a kind is added.
 //
-// Colour rule: education surfaces are used by kids and students, so a target
-// board rendered in nothing but grey reads as broken/unfinished. The accents are
+// Color rule: education surfaces are used by kids and students, so a target
+// board rendered in nothing but gray reads as broken/unfinished. The accents are
 // deliberate, paired for light AND dark, and applied only as *accents* on top of
 // the semantic surface tokens (`bg-card`, `border-border`) — never as a second
 // background system.
@@ -48,7 +48,7 @@ export interface TargetPresentation {
   icon: LucideIcon;
   /** THE chip tone for this format (`<Chip tone>`) — the one kind→tone table. */
   tone: ChipTone;
-  /** Icon / emphasis colour. */
+  /** Icon / emphasis color. */
   fg: string;
   /** Soft tinted chip behind the icon. */
   chip: string;

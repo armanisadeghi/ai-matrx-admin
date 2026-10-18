@@ -9,7 +9,7 @@
  * `features/canvas/social/preset-covers.ts`) so users have a one-click
  * way to drop a high-quality OG-ready cover into their selection without
  * spelunking through Unsplash search. The Unsplash search gallery sits
- * below — same component as before, no behaviour change.
+ * below — same component as before, no behavior change.
  *
  * The curated strip is *theme-filterable* via a chip row. We default to
  * "All" so first-time users see the full catalog at a glance.

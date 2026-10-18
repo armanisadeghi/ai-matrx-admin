@@ -107,7 +107,7 @@ export interface DeclaredBlock {
   name: string;
 }
 
-/** Normalises the stored `prompt_blocks` jsonb into names (unknown shapes are dropped, not guessed). */
+/** Normalizes the stored `prompt_blocks` jsonb into names (unknown shapes are dropped, not guessed). */
 export function declaredNames(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   const out: string[] = [];

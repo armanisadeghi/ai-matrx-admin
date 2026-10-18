@@ -42,7 +42,7 @@ export interface ExportAdapter {
   /** Human list of what the file looks like — ".zip from Google Takeout". */
   accepts: string;
   /**
-   * False = we RECOGNISE the format and cannot read it. The screen still lists
+   * False = we RECOGNIZE the format and cannot read it. The screen still lists
    * it, with `block` as the reason, so dropping one is never "unknown file".
    */
   implemented: boolean;
@@ -54,7 +54,7 @@ export interface ExportAdapterCatalog {
   adapters: ExportAdapter[];
   /** How many formats we can actually read. */
   readable: number;
-  /** How many we recognise but cannot read. */
+  /** How many we recognize but cannot read. */
   recognised_not_readable: number;
 }
 

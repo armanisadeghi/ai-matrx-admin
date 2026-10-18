@@ -22,7 +22,7 @@
  * character in order. The only change is that the ids become openable, with the
  * full id still on screen (`name={id}`), never truncated to `8f0bbfc2…`.
  *
- * THE AUTHOR'S OWN MARKS ARE HONOURED, NOT PRINTED. A sentence that says its
+ * THE AUTHOR'S OWN MARKS ARE HONORED, NOT PRINTED. A sentence that says its
  * field names in markdown backticks meant them as code; this is the one place
  * that renders them as `<code>`, so no surface needs — or is allowed to grow —
  * a second inline-markdown renderer of its own. See `doors.ts`

@@ -2,7 +2,7 @@
  * Surface manifest — one study guide (`matrx-user/education-study-guide`).
  *
  * The reader at /education/study-guides/[id]: ONE guide (a Notes note in the
- * "Study Notes" folder) rendered in the centre, the guide picker and outline
+ * "Study Notes" folder) rendered in the center, the guide picker and outline
  * on the left, and the "Notes & comments" / "Key Terms" tabs on the right.
  * The library route /education/study-guides (the same reader with no guide
  * open) stays on `matrx-user/education-study-guides`.

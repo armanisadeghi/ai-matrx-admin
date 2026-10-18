@@ -212,7 +212,7 @@ export function RunsList({ definitionId }: { definitionId?: string }) {
       format: { id: "datetime" },
       width: 130,
       align: "right",
-      // The run's door. A timestamp is what a person recognises a run by —
+      // The run's door. A timestamp is what a person recognizes a run by —
       // never the uuid — so the timestamp is what opens it.
       href: (row) => workflowRunPermalinkHref(row.runId, workflowsBase),
       cell: (row) =>

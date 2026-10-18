@@ -559,7 +559,7 @@ async function withTimeout<T extends { data: unknown; error: unknown }>(
  * Fetch every tool_name the user has ever run successfully (non-null output),
  * deduplicate on the client, and return a Map<toolName, count>.
  * Fetches up to 1 000 rows (tool_name only — tiny payload) so we get a true
- * distinct catalogue rather than just the last N.
+ * distinct catalog rather than just the last N.
  */
 async function fetchToolSummary(
   reduxUserId: string | null,
@@ -581,7 +581,7 @@ async function fetchToolSummary(
     "tool-summary fetch",
   );
 
-  // A failed read is thrown, never returned as an empty catalogue — the panel
+  // A failed read is thrown, never returned as an empty catalog — the panel
   // would otherwise say "no saved runs" over a request that failed.
   if (error) {
     throw new Error(
@@ -1056,8 +1056,8 @@ function ModeToggle({
 
 // ─── Real saved runs panel ───────────────────────────────────────────────────
 // Two-column layout:
-//   Left  — full catalogue of known tools (registry + scripts + user's DB tools),
-//            sorted by run count desc. Tools with no data are greyed out.
+//   Left  — full catalog of known tools (registry + scripts + user's DB tools),
+//            sorted by run count desc. Tools with no data are grayed out.
 //   Right — paginated run list for the selected tool (5 per page).
 
 function RealRunsPanel({
@@ -1177,7 +1177,7 @@ function RealRunsPanel({
         hasCuratedScript: scriptedNames.has(toolName),
       });
     };
-    // Catalogue: every tool the user has run, plus registry + script tools.
+    // Catalog: every tool the user has run, plus registry + script tools.
     [...dbCounts.keys()].forEach(add);
     [...registeredNames].forEach(add);
     [...scriptedNames].forEach(add);
@@ -1207,7 +1207,7 @@ function RealRunsPanel({
     return (
       <div className="flex items-center gap-2 px-1 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Loading tool catalogue…
+        Loading tool catalog…
       </div>
     );
   }
@@ -1226,7 +1226,7 @@ function RealRunsPanel({
 
   return (
     <div className="flex gap-3">
-      {/* Left panel — full tool catalogue */}
+      {/* Left panel — full tool catalog */}
       <div className="flex w-52 shrink-0 flex-col gap-1 rounded-md border border-border bg-card p-1.5">
         <p className="px-1.5 pb-0.5 pt-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
           Tools{toolsWithData > 0 ? ` · ${toolsWithData} with data` : ""}

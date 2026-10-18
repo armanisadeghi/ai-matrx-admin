@@ -6,7 +6,7 @@
  * claim about whether a Masterwork beat the best anyone can buy. Four ways it
  * could lie, each of which this suite fails on:
  *
- *   1. A greyed or silent control when the server says a trial cannot start
+ *   1. A grayed or silent control when the server says a trial cannot start
  *      here. A screen is absent or honest, never dead — so the server's own
  *      reason is rendered verbatim and NOTHING claims it can start a run.
  *   2. Letting a person spend on a run they cannot rejoin without telling them
@@ -38,7 +38,7 @@ import type {
 // the same shim the repo's other dialog suites use.
 // The organization's points-per-dollar knob, answered (1b340562d5 made every
 // cost read the billing.points_per_usd knob; "—" until it loads). The knob
-// snapshot is transport, not the behaviour under test.
+// snapshot is transport, not the behavior under test.
 jest.mock("@/components/cost/pointsRate.client", () => ({
   usePointsRate: () => 20000,
 }));
@@ -375,7 +375,7 @@ describe("the Bench door never lies about what it can do", () => {
   it("cannot run here: says why in the server's own words, and offers no control that claims otherwise", () => {
     render(CANNOT_RUN);
     expect(host.textContent ?? "").toContain(NO_MASTERWORK_REASON);
-    // Not a greyed button, not a button that does nothing — no control at all.
+    // Not a grayed button, not a button that does nothing — no control at all.
     expect(host.querySelectorAll("button").length).toBe(0);
     expect(host.querySelectorAll("a").length).toBe(0);
     expect(host.textContent ?? "").not.toContain("Run the trial");

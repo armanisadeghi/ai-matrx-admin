@@ -45,7 +45,7 @@ export interface ExportFailure {
    * workweek id and explains why an unfinalised week cannot be exported.
    *
    * So the engine's text is parsed out and carried as DATA. It is never rewritten, never
-   * summarised, and never substituted for — the surface shows the server's words.
+   * summarized, and never substituted for — the surface shows the server's words.
    */
   engineMessage: string | null;
   /** The `HINT:` the engine attached, when it attached one. Verbatim. */

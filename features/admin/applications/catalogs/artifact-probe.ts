@@ -54,7 +54,7 @@ export async function probeArtifactUrl(params: {
         return { status: "fail", detail: `server check: ${refusalWords(err)}` };
       }
       if (err instanceof DOMException && err.name === "AbortError") {
-        return { status: "fail", detail: "Check cancelled." };
+        return { status: "fail", detail: "Check canceled." };
       }
       // 404 (route not on this server yet) or unreachable → the browser HEAD probe below.
     }

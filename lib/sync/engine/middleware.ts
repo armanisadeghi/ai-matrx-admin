@@ -458,7 +458,7 @@ export function createSyncMiddleware(ctx: SyncMiddlewareContext): Middleware {
           // warm-cache: debounced write — both IDB and remote.write
           // (if declared) flush after quiescence. Lazy scheduler
           // construction on first use. The scheduler's flush is the ONE
-          // place a warm-cache slice reaches storage, and it honours
+          // place a warm-cache slice reaches storage, and it honors
           // `policy.persistWhen` (a slice whose saved record has not
           // loaded is HELD there, never written).
           ensureRemoteWriteScheduler().schedule(policy.config.sliceName, body);

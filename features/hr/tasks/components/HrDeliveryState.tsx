@@ -41,7 +41,7 @@ const CHANNEL_LABEL: Record<string, string> = {
 
 /**
  * An unrecognised channel is a defect, not a display case, so it SCREAMS rather than
- * printing the key it does not recognise (the loud-patches rule).
+ * printing the key it does not recognize (the loud-patches rule).
  */
 function channelLabel(channel: string): string {
     return CHANNEL_LABEL[channel] ?? "Unrecognised channel";
@@ -76,7 +76,7 @@ function channelLabel(channel: string): string {
  *
  * There used to be a map from error-code names to sentences RIGHT HERE, matched by substring
  * against the message the dispatcher wrote, with a final `not sent — ${reason}` fallthrough that
- * printed whatever it had not recognised. On production, as an ordinary HR manager, that
+ * printed whatever it had not recognized. On production, as an ordinary HR manager, that
  * fallthrough rendered:
  *
  *     not sent — RESEND_API_KEY / EMAIL_FROM are not set on this server.

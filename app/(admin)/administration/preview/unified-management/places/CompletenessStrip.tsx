@@ -4,7 +4,7 @@
  * 4. THE COMPLETENESS STRIP — the surfaces admin's three jewels, in one line.
  *
  *  - the readiness badge (`SurfaceReadinessBadge`'s tone table and its
- *    `readiness_note`-as-tooltip behaviour),
+ *    `readiness_note`-as-tooltip behavior),
  *  - the drift summary chip opening the report — the 15-array report's
  *    severity-toned Section structure kept intact (amber / rose / orange, a
  *    count badge, and a prose consequence per section),

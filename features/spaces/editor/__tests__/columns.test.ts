@@ -71,7 +71,7 @@ describe("column lists are always well formed across the store boundary", () => 
   });
 });
 
-/** The raw engine shape of a stored tree, normalisation skipped — what a live editor can hold. */
+/** The raw engine shape of a stored tree, normalization skipped — what a live editor can hold. */
 function toEngineRaw(blocks: SpaceBlock[]): EngineBlock[] {
   return blocks.map((b) => ({
     id: b.id,

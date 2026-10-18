@@ -57,7 +57,7 @@ const retrieved = {
 describe("tutor grounding mode", () => {
   beforeEach(() => retrieveGroundedPassages.mockReset());
 
-  test("no matching passage → general-knowledge mode, labelled not_in_material", async () => {
+  test("no matching passage → general-knowledge mode, labeled not_in_material", async () => {
     retrieveGroundedPassages.mockResolvedValue(emptyRetrieval);
     const g = await assembleTutorGrounding({ query: "Who won the 1998 World Cup?", userId: "u1" });
     expect(g.grounding_mode).toBe("general_knowledge");
@@ -91,7 +91,7 @@ describe("TutorTurnTrust label", () => {
     return host;
   }
 
-  test("a general-knowledge answer is labelled, never a refusal", () => {
+  test("a general-knowledge answer is labeled, never a refusal", () => {
     const host = render(
       <TutorTurnTrust trust={{ confidence: "not_in_material", citations: [] }} />,
     );

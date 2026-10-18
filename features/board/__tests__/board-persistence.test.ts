@@ -1,6 +1,6 @@
 import { recordKeyOf } from "../board/document";
 // Saved boards — the pure parts of the service and the autosave core.
-// Each case fails when the behaviour it names breaks.
+// Each case fails when the behavior it names breaks.
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: { schema: () => ({ from: () => ({}) }) } }));
 jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: jest.fn() }));

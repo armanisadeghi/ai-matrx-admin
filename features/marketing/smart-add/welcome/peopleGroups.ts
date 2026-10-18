@@ -3,11 +3,11 @@
  * (SIGNUP-WELCOME.md § Grouping into people). Pure; rules only, no AI.
  *
  * Input: the person anchor stage's evidence items (`anchor` set; aidream brand.identify.person_anchor_extract) and the
- * name that was searched. A candidate counts only when its display name IS that name after normalising (a "Rachelle"
+ * name that was searched. A candidate counts only when its display name IS that name after normalizing (a "Rachelle"
  * is not a "Rochelle"), plus the person's own website (its host spells the name). Candidates are one person when they
  * share a handle across platforms (dots, underscores and dashes ignored), state the same city, or one links the other.
  * Strongest first (the sum of the rule scores); at most `max` shown, `more` = how many were not. A person with
- * neither a line nor a place is never a card (nothing to recognise yourself by); they count in `more`.
+ * neither a line nor a place is never a card (nothing to recognize yourself by); they count in `more`.
  */
 
 import { websiteHost, type EvidenceItem } from "../evidence";
@@ -223,7 +223,7 @@ export function peopleGroups(items: readonly EvidenceItem[], searchedName: strin
       };
     })
     .sort((a, b) => b.strength - a.strength);
-  // A person with neither a line nor a place gives nothing to recognise yourself by: not a card, counted in `more`.
+  // A person with neither a line nor a place gives nothing to recognize yourself by: not a card, counted in `more`.
   const shown = people.filter((p) => p.line || p.place).slice(0, max);
   return { people: shown, more: people.length - shown.length };
 }

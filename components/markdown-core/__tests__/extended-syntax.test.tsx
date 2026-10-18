@@ -246,7 +246,7 @@ describe("blocks from the directive grammar", () => {
 });
 
 describe("inline marks", () => {
-  it("renders sub/superscript, highlight, emoji, colour and keys", async () => {
+  it("renders sub/superscript, highlight, emoji, color and keys", async () => {
     const scope = await render(
       full("H~2~O and E = mc^2^ — ==watch the cone== :fire: ~~old~~ :span[hot]{color=danger} :span[raw]{color=#ff0000} press :kbd[Ctrl] or <kbd>Esc</kbd>"),
     );
@@ -398,7 +398,7 @@ describe("footnotes end to end", () => {
 });
 
 describe("math: chemistry and equation numbers", () => {
-  it("renders mhchem and numbers labelled equations with working references", async () => {
+  it("renders mhchem and numbers labeled equations with working references", async () => {
     const scope = await render(full("$$\n\\ce{2H2 + O2 -> 2H2O}\n$$\n\n\\[E = mc^2 \\label{eq:energy}\\]\n\nBy \\eqref{eq:energy} we know."));
     expect(scope.querySelector(".katex-error")).toBeNull();
     expect(scope.querySelectorAll(".katex-display")).toHaveLength(2);

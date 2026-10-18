@@ -1,6 +1,6 @@
 // features/hr/shared/PendingChangesPanel.tsx
 //
-// SEEING AND CANCELLING PENDING CHANGES (SPEC-EMPLOYEES §6.2).
+// SEEING AND CANCELING PENDING CHANGES (SPEC-EMPLOYEES §6.2).
 //
 // Every future-dated row across position, compensation and reporting line for ONE
 // employment, plus everything still in flight — in one place, because a scheduled
@@ -11,7 +11,7 @@
 //     — for anything still in flight — WHERE IT IS NOW.
 //  2. CANCEL IS AVAILABLE UNTIL THE EFFECTIVE DATE ARRIVES. After the date the row
 //     is history, and the only correction path is §6.3's question on a new edit.
-//  3. CANCELLING ERASES NOTHING. It soft-deletes the future row and re-opens the
+//  3. CANCELING ERASES NOTHING. It soft-deletes the future row and re-opens the
 //     prior row's `effective_to` in ONE audited action, and the cancellation is
 //     itself a recorded event. The UI says so, in the dialog, before it happens —
 //     a person who thinks they are deleting history will not press the button.
@@ -159,7 +159,7 @@ export function PendingChangesPanel({
       });
       if (result.ok) {
         toast.success(
-          `Cancelled — ${target.what} will not take effect on ${hrFormatDay(target.effectiveFrom)}.`,
+          `Canceled — ${target.what} will not take effect on ${hrFormatDay(target.effectiveFrom)}.`,
         );
         setTarget(null);
         reload();
@@ -270,7 +270,7 @@ export function PendingChangesPanel({
             })}
           </ul>
           <p className="text-xs text-muted-foreground">
-            Cancelling removes only the future change; history is kept.
+            Canceling removes only the future change; history is kept.
           </p>
         </section>
       ) : null}
@@ -318,10 +318,10 @@ export function PendingChangesPanel({
         title="Cancel this scheduled change?"
         description={
           target
-            ? `${target.what} takes effect ${hrFormatDay(target.effectiveFrom)}. Cancelling restores the current record; history and your reason are kept.`
+            ? `${target.what} takes effect ${hrFormatDay(target.effectiveFrom)}. Canceling restores the current record; history and your reason are kept.`
             : undefined
         }
-        placeholder="Why is this being cancelled?"
+        placeholder="Why is this being canceled?"
         confirmLabel="Cancel the change"
         cancelLabel="Keep it"
         busy={cancelling}

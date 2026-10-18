@@ -5,7 +5,7 @@
  * both read from knobs, never from code.
  *
  * Law 6 (opinions become knobs): "the normal parts… things like chat or project
- * or task or note" (Arman, 2026-09-11) is a judgement about one organization's
+ * or task or note" (Arman, 2026-09-11) is a judgment about one organization's
  * work, so it lives in `platform.reference_picker.common_types`, seeded by
  * `migrations/reference_picker_common_types_knob.sql` and overridable per org.
  * Which machinery a person never needs to link to ("Content-IR Kind",

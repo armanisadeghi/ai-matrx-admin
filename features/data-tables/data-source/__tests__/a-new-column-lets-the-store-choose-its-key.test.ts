@@ -4,7 +4,7 @@
  * Arman's Coding Accounts: the column "Resets" (key `resets`) was renamed "Account Type". On the
  * Sheet, "Add column" → "Resets" was refused *This table already has a field called "Resets"* — the
  * older dialog guesses the key from the name (`resets`) and the seam sent that guess as an ASKED-FOR
- * key, which the store must honour exactly or refuse. The key is the store's to choose:
+ * key, which the store must honor exactly or refuse. The key is the store's to choose:
  * `custom.field_declare` derives it from the name and picks one no column has ever held
  * (`resets_2`), so the seam sends the name and never the guess.
  *

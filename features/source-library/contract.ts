@@ -609,7 +609,7 @@ export function parseNotYetASource(
 }
 
 /**
- * One catalogued Source.
+ * One catalogd Source.
  *
  * `caption_languages` keeps the THREE-STATE reading `types.ts` documents: a
  * list is "we probed and found these", `[]` is "we probed and found none",
@@ -1221,7 +1221,7 @@ export function parseSyncEvent(payload: unknown, standIns: string[]): EventRead<
                         // A server build older than this one sends neither field.
                         // Absent is read as "nothing was discarded" rather than
                         // refused, because a missing account of skips must never
-                        // cost a person the catalogue they just watched arrive.
+                        // cost a person the catalog they just watched arrive.
                         skipped_by_reason: countsByReason(
                             row.skipped_by_reason,
                             `${type}.skipped_by_reason`,

@@ -7,7 +7,7 @@
 //
 // BREAKS THIS CATCHES: a refused spec reaching the install door (a half-build) · a failure said as a dump
 // instead of one line · a sound one-off spec refused for gallery-only keys or empty lists the model left
-// out · the declaration missing the keys the install door needs (catalogue id, plan) · the vocabulary
+// out · the declaration missing the keys the install door needs (catalog id, plan) · the vocabulary
 // drifting from the package's closed lists.
 //
 // Fixtures are real: the first live answer of the mandate (2026-10-05, refused by the store for real
@@ -77,8 +77,8 @@ describe("the describe box installs only what passes the store's check", () => {
   });
 
   it("fixes what the package can fix by itself and shows an error only for what remains", () => {
-    // A choice field written with no colours is not a defect the person should see: the package's
-    // automatic fixes colour it, say so in one line, and the fixed spec is what is checked and installed.
+    // A choice field written with no colors is not a defect the person should see: the package's
+    // automatic fixes color it, say so in one line, and the fixed spec is what is checked and installed.
     const t = JSON.parse(JSON.stringify(goldReduced)) as Record<string, unknown>;
     delete t.dimensions;
     delete t.sharedBlocks;
@@ -121,7 +121,7 @@ describe("the describe box installs only what passes the store's check", () => {
     expect([f(1, "name").sensitivity, f(1, "name").contextPolicy]).toEqual(["confidential", "summarize"]);
   });
 
-  it("declares a checked spec with its own catalogue id and an install plan the door can run", () => {
+  it("declares a checked spec with its own catalog id and an install plan the door can run", () => {
     const spec = describeSpec(goldReduced as unknown as Record<string, unknown>);
     const d = describeDeclaration(spec, "00000000-0000-4000-8000-000000000001", "K3X9");
     expect(d.catalogueId).toBe("DESCRIBE-K3X9");

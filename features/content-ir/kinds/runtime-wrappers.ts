@@ -63,7 +63,7 @@ export { NODE_OUTCOME_KIND, RUN_RESULT_KIND };
 const TIMING_FIELDS: KindSchema["fields"] = {
   status: {
     type: "string",
-    description: "How the work settled — completed, failed, cancelled.",
+    description: "How the work settled — completed, failed, canceled.",
   },
   started_at: { type: "string", nullable: true, description: "ISO start." },
   ended_at: { type: "string", nullable: true, description: "ISO end." },

@@ -16,7 +16,7 @@
  * again. The slashless rule that closes it was added on 2026-09-11 23:54 and
  * deleted three minutes later by a session "keeping the dependency ignore
  * canonical": beside `node_modules/`, a bare `node_modules` reads like a
- * harmless duplicate. So this guard checks BEHAVIOUR, not text — it builds real
+ * harmless duplicate. So this guard checks BEHAVIOR, not text — it builds real
  * symlinks in a throwaway repository and asks git whether the repo's actual
  * `.gitignore` blocks them. Rewording the rule is fine; weakening it fails.
  *

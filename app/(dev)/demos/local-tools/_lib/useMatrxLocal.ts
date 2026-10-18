@@ -741,7 +741,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ action: "cancel_all" }));
     }
-    rejectPendingWsRequests("Cancelled");
+    rejectPendingWsRequests("Canceled");
     setLoading(null);
     addLog("sent", { action: "cancel_all" });
   }, [addLog, rejectPendingWsRequests]);
@@ -755,7 +755,7 @@ export function useMatrxLocal(): UseMatrxLocalReturn {
       const pending = pendingCallbacks.current.get(id);
       if (pending) {
         clearTimeout(pending.timer);
-        pending.reject(new Error("Cancelled"));
+        pending.reject(new Error("Canceled"));
       }
       pendingCallbacks.current.delete(id);
       setActiveRequests((prev) => prev.filter((r) => r.id !== id));

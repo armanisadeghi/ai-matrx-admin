@@ -163,7 +163,7 @@ describe("what the Upcoming list shows", () => {
     ).toEqual([invited]);
   });
 
-  it("searches titles, and leaves whole-meeting cancellations to the Cancelled tab", () => {
+  it("searches titles, and leaves whole-meeting cancellations to the Canceled tab", () => {
     const cancelled = occurrence({ meetingCancelled: true });
     const skipped = occurrence({
       state: "cancelled",

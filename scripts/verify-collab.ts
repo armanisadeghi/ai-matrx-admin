@@ -291,7 +291,7 @@ async function stageB() {
     // real browser tabs. One manager cannot stand in for both: the package's
     // room registry would (correctly) hand both providers the same underlying
     // channel, and echo suppression would then hide A's frames from B — which
-    // is the right behaviour inside one tab and the wrong harness for a
+    // is the right behavior inside one tab and the wrong harness for a
     // two-peer test.
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/"/g, "").trim();
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!.trim();

@@ -7,7 +7,7 @@
  *
  * Used on the Manage page (as a Details card) and alongside the references panel.
  * `CopyValue` is the tiny copy primitive: it swaps the icon to a Check for ~1.5s
- * and fires a success toast. It mirrors the existing copy-button behaviour
+ * and fires a success toast. It mirrors the existing copy-button behavior
  * without dragging in the heavier `agent-copy` payload machinery, which is meant
  * for "copy a whole record for an AI agent", not for copying a single id.
  */

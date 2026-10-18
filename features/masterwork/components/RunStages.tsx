@@ -40,7 +40,7 @@
 //   * the per-resource list with real states, off `run.progress`
 //     (`features/masterwork/durable-run/ingestProgress.ts`).
 //   * the counts the server sent — sources read, parts distilled, rules so far.
-//   * the server's own LABOURING sentence when its heartbeat cannot land
+//   * the server's own LABORING sentence when its heartbeat cannot land
 //     (`masterwork_run_labouring`, aidream 513ad71c3d), in place of the stage
 //     line — because "the server is busy and cannot check in" is a fact, and a
 //     spinner over it is not.
@@ -203,7 +203,7 @@ export function RunStages({
   //      book costs one row. Under the old default this printed "Stopped —
   //      nothing after it will run" over a seventeen-source run that ran all
   //      seventeen and completed (VERIFICATION.md §9.1/§9.6, 2026-09-18);
-  //   2. the server's labouring sentence outranks its stage line, because the
+  //   2. the server's laboring sentence outranks its stage line, because the
   //      stage line is now stale by definition — the server is telling us it
   //      cannot check in;
   //   3. otherwise the server's own latest step, verbatim.

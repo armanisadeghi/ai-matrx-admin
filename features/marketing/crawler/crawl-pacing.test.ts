@@ -94,7 +94,7 @@ describe("pacingSourceLabel", () => {
     expect(pacing && pacingSourceLabel(pacing)).toBe(expected);
   });
 
-  it("names the crawl-delay it is honouring", () => {
+  it("names the crawl-delay it is honoring", () => {
     const pacing = crawlPacingFromEvent(
       pacingEvent({ source: "robots_crawl_delay", crawl_delay_seconds: 10 }),
     );

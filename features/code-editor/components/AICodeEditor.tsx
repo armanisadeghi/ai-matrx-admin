@@ -410,7 +410,7 @@ export function AICodeEditor({
                     {hasKindKeyAnySpelling(rawAIResponse) ? (
                       <AnswerValueView text={rawAIResponse} />
                     ) : (
-                      // The labelled "Raw AI Response" view: deliberate source.
+                      // The labeled "Raw AI Response" view: deliberate source.
                       <pre {...KIND_SOURCE_PROPS} className="text-[10px] whitespace-pre-wrap font-mono">
                         {rawAIResponse}
                       </pre>

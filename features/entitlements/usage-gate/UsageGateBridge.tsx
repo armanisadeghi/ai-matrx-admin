@@ -128,7 +128,7 @@ export function UsageGateBridge() {
     });
     return () => {
       controller.abort();
-      // Cancelled before it ran (a remount): the next mount waits again.
+      // Canceled before it ran (a remount): the next mount waits again.
       if (!settled) bootReadFor.current = null;
     };
   }, [userId, fetchedAt, dispatch, store]);

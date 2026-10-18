@@ -150,7 +150,7 @@ export function useAuthorityRouter(siteId: string) {
         }),
       );
       inFlight.current = false;
-      // Cancelled by teardown or a newer run — settle silently (no error
+      // Canceled by teardown or a newer run — settle silently (no error
       // state, no toast); the run keeps executing server-side.
       if (abortController.signal.aborted) return;
       abortRef.current = null;

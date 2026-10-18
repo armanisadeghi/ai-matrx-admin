@@ -549,7 +549,7 @@ function partStatus(state: RootState, threadId: string, tab: ThreadTab): string 
   return null;
 }
 
-/** World point at the centre of what you are looking at. */
+/** World point at the center of what you are looking at. */
 function viewCentre(store: BoardCameraStore | null): { x: number; y: number } | undefined {
   if (!store) return undefined;
   const { w, h } = store.getSize();

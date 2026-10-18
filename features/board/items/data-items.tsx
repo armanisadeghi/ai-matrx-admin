@@ -202,7 +202,7 @@ function AdoptTableName({ tableId, source, title, onSource }: { tableId: string 
 }
 
 /**
- * The tile remembers its table's LOOK (`meta.look`: the first plug-in look a column wears — a colour pair,
+ * The tile remembers its table's LOOK (`meta.look`: the first plug-in look a column wears — a color pair,
  * a type style, a spacing measure…), so the outline can give the chapter its own icon without reading
  * the table itself. Written only when it changes, outside the undo stack (like the adopted name).
  */

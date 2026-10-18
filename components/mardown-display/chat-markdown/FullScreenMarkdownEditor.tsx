@@ -309,7 +309,7 @@ class TabErrorBoundary extends Component<
 //   IDs: write, matrx_split, markdown, wysiwyg, preview
 //
 //   DATA-DEPENDENT tabs: require pre-processed analysisData fields
-//   (produced by the server-side markdown analyser). If analysisData is
+//   (produced by the server-side markdown analyzer). If analysisData is
 //   absent or the required field is missing/wrong-type, these tabs will
 //   always show "No data available" — that is EXPECTED, not a bug.
 //   IDs: analysis, metadata, config, classified_output, classified_analyzer,
@@ -370,7 +370,7 @@ function buildCrashReport(opts: {
   const lines: string[] = [];
   const isMarkdownOnly = MARKDOWN_ONLY_TABS.has(tabId as TabId);
   const noAnalysisData = !context.analysisData;
-  // no-data on a data-dependent tab with no analysisData is always expected behaviour
+  // no-data on a data-dependent tab with no analysisData is always expected behavior
   const isExpectedNoData = type === "no-data" && noAnalysisData;
 
   lines.push("# AGENT — FullScreenMarkdownEditor Diagnostic Report");
@@ -405,7 +405,7 @@ function buildCrashReport(opts: {
       "even with bad/missing data, the tab should degrade gracefully, not throw.",
     );
   } else if (isExpectedNoData) {
-    lines.push("## Severity: Expected behaviour — no code bug");
+    lines.push("## Severity: Expected behavior — no code bug");
     lines.push(
       `This tab (\`${tabId}\`) is **data-dependent** and no \`analysisData\` prop was passed.`,
     );
@@ -600,7 +600,7 @@ function buildCrashReport(opts: {
       "1. Check the analysisData snapshot above — confirm whether the key exists and its type.",
     );
     lines.push(
-      "2. Trace where analysisData is produced (the server-side markdown analyser) and why",
+      "2. Trace where analysisData is produced (the server-side markdown analyzer) and why",
     );
     lines.push("   the expected field is absent or has the wrong shape.");
     lines.push(

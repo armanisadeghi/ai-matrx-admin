@@ -41,7 +41,7 @@ describe("research cost drill (levels read the page's own totals)", () => {
   const rows = ledger.entries.map(toLedgerRow);
   const config = drillConfigFromColumns(LEDGER_COLUMNS, rows, ledgerDrill((usd) => String(usd)));
 
-  it("declares only levels the Dimensions and Measures can honour", () => {
+  it("declares only levels the Dimensions and Measures can honor", () => {
     expect(drillLevelProblems(config.dimensions, config.measures, { attributeKeys: config.fields?.map((f) => f.key) })).toEqual([]);
   });
 

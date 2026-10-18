@@ -95,7 +95,7 @@ describe("describeRunFormFailure — the server's reason always wins", () => {
   });
 
   it("falls back honestly when the server sent no reason at all", () => {
-    // Not a licence to invent one: the missing reason IS the defect and the
+    // Not a license to invent one: the missing reason IS the defect and the
     // sentence says so.
     const failure = describeRunFormFailure({
       status: 400,

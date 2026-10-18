@@ -324,7 +324,7 @@ export function buildRows({
   // ─── Sort ─────────────────────────────────────────────────────────────
   //
   // Recents filter forces `updated_at desc` regardless of column header
-  // — that's what "recents" means. Every other view honours the user's
+  // — that's what "recents" means. Every other view honors the user's
   // chosen sort key + direction from Redux.
   //
   // Implementation reuses the same `compareNodes` comparator used by the

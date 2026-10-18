@@ -155,7 +155,7 @@ export function AnalysisProviderRef({
   return (
     <UnresolvedRef
       id={providerId}
-      reason={`analyzer not in this catalogue${suffix}`}
+      reason={`analyzer not in this catalog${suffix}`}
       className={className}
     />
   );

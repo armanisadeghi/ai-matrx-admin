@@ -56,14 +56,14 @@
  * executes it directly, and four of the seven instances are only visible that way.
  *
  * LIVE (`--live`, the rehearsal branch or the main database). The same four clauses against the
- * real catalogue: `pg_trigger` joined to `pg_proc` for what is ACTUALLY attached today, and
+ * real catalog: `pg_trigger` joined to `pg_proc` for what is ACTUALLY attached today, and
  * `public._schema_migrations.applied_at` for the ledger's own order, which is the only honest
  * answer to "did a LATER migration adopt this". Read-only: it runs no DDL and opens no
  * transaction that outlives the query.
  *
  *   pnpm check:inverses-leave-the-ground-standing
  *   pnpm check:inverses-leave-the-ground-standing:self-test   # proves it can still go red
- *   pnpm check:inverses-leave-the-ground-standing:live        # against the catalogue + ledger
+ *   pnpm check:inverses-leave-the-ground-standing:live        # against the catalog + ledger
  *
  * THE SELF-TEST IS NOT A MOCK. It re-reads the SEVEN RECORDED INSTANCES' OWN PRE-FIX BYTES out
  * of git (the commit before each was repaired) and requires the guard to name every one of
@@ -230,7 +230,7 @@ export interface FileFacts {
  * which routes to iam.provision_signup_organization…". Read as a dependency, that sentence made
  * W1-ORG's inverse look like it was demolishing something DORG-3's body needs, and clause (d)
  * said so — about a body that does nothing but raise. A retirement sentence that names its
- * successor is the behaviour this whole campaign asks for; a guard must not punish it.
+ * successor is the behavior this whole campaign asks for; a guard must not punish it.
  *
  * So a single-quoted literal is blanked before touches are read — UNLESS it begins with a SQL
  * command word, because that is dynamic SQL (`execute 'drop trigger ... on ' || r`) and there
@@ -505,7 +505,7 @@ export function buildTreeFromFacts(facts: FileFacts[]): Tree {
 
 /**
  * What a trigger body reaches within `depth` hops — calls AND the tables it names — in a world
- * where `calls`/`touches` are the bodies that exist AFTER the inverse under judgement has run.
+ * where `calls`/`touches` are the bodies that exist AFTER the inverse under judgment has run.
  * Judging against the tree's own graph instead would blame a file for reaching through a body
  * it replaces: `writeperf_..._down.sql` restores `platform.knob_resolve`'s PRE-MEMO body, which
  * calls nothing it then drops.
@@ -743,7 +743,7 @@ export function judgeFile(
         what:
           `drops ${adopted.slice(0, 3).join("; ")}${adopted.length > 3 ? ` +${adopted.length - 3} more` : ""} — ` +
           `on the live path, adopted by a body outside this lane. Restoring a defect is not the ` +
-          `same as breaking the platform: leave the object standing and neuter the behaviour.`,
+          `same as breaking the platform: leave the object standing and neuter the behavior.`,
       });
     }
   }
@@ -752,7 +752,7 @@ export function judgeFile(
 }
 
 /**
- * THE SAME JUDGEMENT, FOR ONE FILE, FROM ANOTHER PROCESS'S POINT OF VIEW — this is what
+ * THE SAME JUDGMENT, FOR ONE FILE, FROM ANOTHER PROCESS'S POINT OF VIEW — this is what
  * `pnpm db:apply` calls before it ledgers anything under `migrations/inverse/`.
  *
  * WHY THE RUNNER AND NOT ONLY THE RELEASE GATE (GATES-2, 2026-09-22, on VERIFIER-12's finding).
@@ -767,7 +767,7 @@ export function judgeFile(
  * the writer never meets. Read at APPLY time, the author meets it in the same minute they write
  * the file, and a defective inverse cannot be ledgered at all.
  *
- * The judgement is not re-implemented here and never will be: the full applied tree and the
+ * The judgment is not re-implemented here and never will be: the full applied tree and the
  * full family graph are built exactly as the release arm builds them, and the findings are then
  * narrowed to the named file. `raw` lets a caller judge bytes that are not on disk, which is how
  * the runner's own self-test shows this refusal going RED without writing a file into a shared
@@ -777,7 +777,7 @@ export function judgeFile(
  * THE ONE TREE EVERY ARM JUDGES AGAINST: the applied files PLUS the recorded standing-trigger
  * census. Both the release gate and `pnpm db:apply`'s inverse ground gate call this, so a
  * trigger one of them can see is a trigger the other can see. A census that cannot be read is
- * a refusal — the previous behaviour, "no census, judge anyway", is the blindness itself.
+ * a refusal — the previous behavior, "no census, judge anyway", is the blindness itself.
  */
 export function buildAppliedTree(): { tree: Tree; applied: string[]; census: TriggerCensus } {
   const applied = [...sqlFilesIn(MIGRATIONS), ...sqlFilesIn(CAMPAIGN_DIR)];
@@ -859,13 +859,13 @@ export function judge(
 /* ------------------------------------------------------------------ the live arm */
 
 /**
- * CLAUSES (a) AND (c) AGAINST THE REAL CATALOGUE. The static arm reads what the tree SAYS is
+ * CLAUSES (a) AND (c) AGAINST THE REAL CATALOG. The static arm reads what the tree SAYS is
  * attached; this reads what IS attached — which is the difference that hid `storerel`'s defect
  * for a whole session, because the trigger that broke it was created by a file nobody was
  * reading. Read-only: two SELECTs, no DDL, no transaction that outlives them.
  *
  * Clauses (b) and (d) stay static-only and say so: they are about which LANE a body belongs to,
- * and the catalogue does not record that — `pg_proc` has no filename.
+ * and the catalog does not record that — `pg_proc` has no filename.
  */
 async function liveArm(inverses: string[]): Promise<number> {
   const { loadDbEnv } = await import("./lib/direct-db");
@@ -911,11 +911,11 @@ async function liveArm(inverses: string[]): Promise<number> {
       `select count(*)::text as n from public._schema_migrations`,
     );
     console.log(
-      `[INFO] catalogue: ${trig.rows.length} standing trigger(s), ${defs.rows.length} function ` +
+      `[INFO] catalog: ${trig.rows.length} standing trigger(s), ${defs.rows.length} function ` +
         `body(s), ${ledger.rows[0]?.n ?? "?"} ledgered migration(s).`,
     );
     if (trig.rows.length < 50 || defs.rows.length < 200) {
-      console.error(`[FAIL] the catalogue answered too little to judge anything. Refusing to pass.`);
+      console.error(`[FAIL] the catalog answered too little to judge anything. Refusing to pass.`);
       return 1;
     }
 
@@ -943,7 +943,7 @@ async function liveArm(inverses: string[]): Promise<number> {
     }
     if (red > LIVE_BASELINE) {
       console.error(
-        `[FAIL] ${red} live finding(s) on clauses (a)/(c), baseline ${LIVE_BASELINE}. The catalogue ` +
+        `[FAIL] ${red} live finding(s) on clauses (a)/(c), baseline ${LIVE_BASELINE}. The catalog ` +
           `is the referee: these triggers are attached RIGHT NOW over bodies those inverses remove.`,
       );
       return 1;
@@ -997,7 +997,7 @@ async function recordCensus(allowShrink: boolean): Promise<number> {
     const rows = q.rows.map((r) => r.row).sort();
     if (rows.length < CENSUS_FLOOR) {
       console.error(
-        `[FAIL] the catalogue answered ${rows.length} trigger(s), under the floor of ` +
+        `[FAIL] the catalog answered ${rows.length} trigger(s), under the floor of ` +
           `${CENSUS_FLOOR}. Refusing to write a census that small over a real one.`,
       );
       return 1;
@@ -1060,14 +1060,14 @@ async function recordCensus(allowShrink: boolean): Promise<number> {
 const BASELINE: Record<"a" | "b" | "c" | "d", number> = { a: 0, b: 0, c: 0, d: 0 };
 
 /**
- * The same ratchet for `--live`, which judges clauses (a) and (c) against the REAL catalogue —
+ * The same ratchet for `--live`, which judges clauses (a) and (c) against the REAL catalog —
  * 6,752 standing triggers and 4,166 live bodies on the main database, read-only. 37 on the first
- * live run (2026-09-21), against 34 from the static arm on the same clauses: the catalogue sees
+ * live run (2026-09-21), against 34 from the static arm on the same clauses: the catalog sees
  * triggers no file in the tree creates any more, which is the whole reason this arm exists.
  *
  * ZERO the same day. The last five were one shape — an inverse naming the ROW-level body that a
  * statement-level pair replaced — and each of the five already SAID SO in its own header, for a
- * database still carrying the older shape; they were ruled one at a time against the catalogue
+ * database still carrying the older shape; they were ruled one at a time against the catalog
  * and now carry the acknowledgement that says which body the live trigger runs. Lowered by
  * fixing, never by raising. It may only go down.
  */
@@ -1232,7 +1232,7 @@ function main(): void {
     liveArm(inverses)
       .then((code) => exitAfterDrain(code))
       .catch((e: Error) => {
-        console.error(`[FAIL] the live arm could not read the catalogue: ${e.message}`);
+        console.error(`[FAIL] the live arm could not read the catalog: ${e.message}`);
         exitAfterDrain(1);
       });
     return;
@@ -1255,7 +1255,7 @@ function main(): void {
         `for: ${tally} — clause(s) ${over.join(", ")} are ABOVE their baseline. (a) detach the ` +
         `trigger before you drop the body it runs; (b) restore the callee or say in the file which ` +
         `sibling is meant to run; (c) point the file at the body a live trigger actually calls; ` +
-        `(d) leave the object standing and neuter the behaviour instead. A file that has looked at ` +
+        `(d) leave the object standing and neuter the behavior instead. A file that has looked at ` +
         `a clause and handled it says so in its own bytes: \`-- ground-standing-ok: <clauses>\`.`,
     );
     exitAfterDrain(1);

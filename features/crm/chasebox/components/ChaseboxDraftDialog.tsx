@@ -177,7 +177,7 @@ export function ChaseboxDraftDialog({
           if (cancelled) return;
           if (!found) {
             setLoadError(
-              "This draft no longer exists — it was sent, cancelled, or removed since the queue was loaded.",
+              "This draft no longer exists — it was sent, canceled, or removed since the queue was loaded.",
             );
             return;
           }

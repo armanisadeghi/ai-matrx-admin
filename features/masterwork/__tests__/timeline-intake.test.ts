@@ -7,9 +7,9 @@
  *
  * What it forces:
  *   1. The exact wire shape: `{rulebook_id, text, title, role, source_meta:
- *      {licence, url, published, external_id}}`.
+ *      {license, url, published, external_id}}`.
  *   2. Every refusal names a remedy and nothing is silently dropped — a case
- *      with no licence, no title, or no real narrative never reaches a paid run.
+ *      with no license, no title, or no real narrative never reaches a paid run.
  *   3. A held-out result NEVER carries the resolution into the summary, and a
  *      case the unfolder could not read out says so rather than reporting "0
  *      rules added" as if that were a result.

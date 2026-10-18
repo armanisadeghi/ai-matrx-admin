@@ -6,7 +6,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // poked at raw in a component (the lib/extras.ts convention).
 //
 // The one idea that matters: attribution takes credit on the LOW BAR (a pitched
-// domain + a link inside the 0-90-day window), so the UI's whole defence is the
+// domain + a link inside the 0-90-day window), so the UI's whole defense is the
 // evidence drawer — every signal the matcher checked, INCLUDING the ones that
 // did not fire, so a human can disagree in one click.
 

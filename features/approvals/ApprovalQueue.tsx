@@ -288,7 +288,7 @@ export function ApprovalQueue({
    *
    * 🚨 IT REPORTS THE ID IT IS ANSWERING ABOUT. A verdict with no id attached
    * outlives the question: `?item=` changed, the next read took a moment, and
-   * the banner kept labelling the NEW row with the previous row's verdict
+   * the banner kept labeling the NEW row with the previous row's verdict
    * (Bugbot MEDIUM, frontend PR 228). The host renders a verdict only while its
    * id is still the one it is asking about.
    */

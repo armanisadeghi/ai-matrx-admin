@@ -22,7 +22,7 @@
  *
  * Every caller goes through `useCanvas().open`, which guards availability
  * BEFORE dispatching and announces a dropped request with a remedy
- * (`reportCanvasOpenDrop`). A request this hook cannot honour is never a
+ * (`reportCanvasOpenDrop`). A request this hook cannot honor is never a
  * silent `return` — law 4.
  */
 

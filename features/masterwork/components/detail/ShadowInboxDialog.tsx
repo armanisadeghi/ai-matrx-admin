@@ -234,7 +234,7 @@ export function ShadowInboxDialog({
   // overridable and the organization configuration screen saves that rung —
   // but this dialog opened on a hardcoded `true` and then SENT it on every
   // preview and every run, so the server's `if request.own_replies_only is
-  // None` branch never ran and the saved rung was honoured by nothing. It is
+  // None` branch never ran and the saved rung was honored by nothing. It is
   // sent only once it is touched; the displayed state comes from the preview,
   // which reports what it actually used.
   const [ownRepliesOnly, setOwnRepliesOnly] = useState<boolean | null>(null);
@@ -1028,7 +1028,7 @@ export function ShadowInboxDialog({
 
           {/* 🚨 THE FREE-TEXT "Which address is yours?" IS GONE (cold walk 8,
               2026-09-17). It could not answer the question it asked: a mail
-              client copies your own message labelled "me", with no address on
+              client copies your own message labeled "me", with no address on
               it anywhere, so there was nothing to type that would have
               helped. We read the thread first, and on the one occasion we
               genuinely cannot tell, we show you the voices in it and ask —

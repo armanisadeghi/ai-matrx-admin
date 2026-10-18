@@ -4,7 +4,7 @@
  * THE KEYWORD FRONT DOOR — the map of every screen that gives keywords meaning.
  *
  * WHY IT EXISTS. Eight surfaces across two site sections (Keywords and Keyword
- * value) had grown from the convergence campaign, each labelled with a word
+ * value) had grown from the convergence campaign, each labeled with a word
  * only its builder could read, two of them literally both called "Workbench".
  * Arman, 2026-08-24: *"Right now, there are so many different UIs, and they're
  * not labeled properly. So it's really hard to know what happens where and what

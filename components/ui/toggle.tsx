@@ -10,7 +10,7 @@
  * see each other. One module, one context.
  *
  * `Toggle` is not `Switch` (a Switch states a setting; a Toggle is a pressed
- * button in a toolbar) and not `SegmentedControl` (which is for labelled
+ * button in a toolbar) and not `SegmentedControl` (which is for labeled
  * choices).
  *
  * Import from here or from the package — both are the same component.

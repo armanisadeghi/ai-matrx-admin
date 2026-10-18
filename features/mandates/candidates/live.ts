@@ -133,7 +133,7 @@ function isHidden(): boolean {
 
 // ── What keeps a screen re-reading (V2 N1) ───────────────────────────────────
 // A candidate is terminal-for-now once it is ready, promoted, discarded or
-// cancelled. Until then — even when every pair is in, because the judge's
+// canceled. Until then — even when every pair is in, because the judge's
 // verdict and the server's recompute (status, recommendation, its reason) land
 // after the last pair completes — every screen that shows it keeps re-reading.
 // "All pairs in" is never the stop signal: it left a "2 of 2 in · Collecting"

@@ -53,7 +53,7 @@ describe("library chunks read", () => {
     expect(serverCall).not.toHaveBeenCalled();
   });
 
-  it("fetchDerivativeChunks honours its abort signal (supabase-js .abortSignal)", async () => {
+  it("fetchDerivativeChunks honors its abort signal (supabase-js .abortSignal)", async () => {
     const ctl = new AbortController();
     const result = { data: { total: 0, limit: 50, offset: 0, chunks: [] }, error: null };
     abortSignal.mockResolvedValue(result);

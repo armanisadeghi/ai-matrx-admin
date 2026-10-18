@@ -122,7 +122,7 @@ export function minutesNow(timeZone?: string | null): number {
   return date.getHours() * 60 + date.getMinutes();
 }
 
-/** "Closed · Opens 8 AM Wed" — the leading Open/Closed word in the status colour. */
+/** "Closed · Opens 8 AM Wed" — the leading Open/Closed word in the status color. */
 function ProviderHoursLine({ value }: { value: string }) {
   const m = /^(open(?: now)?|closed(?: now)?|open 24 hours)\b(.*)$/i.exec(value.trim());
   if (!m) return <span className="text-foreground">{value}</span>;

@@ -159,7 +159,7 @@ export interface AttentionSourceState {
    * the "complains constantly" defect.
    */
   loud: boolean;
-  /** One sentence summarising the LIVE (un-muted) items, for the dock title. */
+  /** One sentence summarizing the LIVE (un-muted) items, for the dock title. */
   summarize: (live: readonly AttentionItem[]) => string | null;
   review: { href: string; label: string } | null;
   refetch: () => void;

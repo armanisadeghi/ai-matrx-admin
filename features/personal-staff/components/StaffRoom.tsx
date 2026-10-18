@@ -187,7 +187,7 @@ function StaffThreadRoom({
   embedded: boolean;
 }) {
   // `agent_name` is OPTIONAL on the generated contract, and absent means the
-  // same thing as null: SHOW NO NAME, never a hardcoded one. Normalised here so
+  // same thing as null: SHOW NO NAME, never a hardcoded one. Normalized here so
   // the header's one publisher takes one shape.
   const { agent_id: agentId } = thread;
   const agentName = thread.agent_name ?? null;

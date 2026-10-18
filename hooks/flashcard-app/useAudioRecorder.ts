@@ -206,7 +206,7 @@ export function useAudioRecorder() {
             }
             // Release the singleton hold for this key (NEVER stop tracks).
             releaseKey(key);
-            // Drop the shared analyser only when no other key is active.
+            // Drop the shared analyzer only when no other key is active.
             if (heldKeysRef.current.size === 0 && analyserRef.current) {
               try {
                 analyserRef.current.disconnect();

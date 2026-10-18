@@ -55,7 +55,7 @@ export function isUuidValue(value: unknown): value is string {
 }
 
 /**
- * Entity tokens whose peek is registered under a different catalogue key.
+ * Entity tokens whose peek is registered under a different catalog key.
  * Keep this at zero entries wherever possible — the real fix is aligning the
  * peek registry key with the canonical token.
  */
@@ -85,7 +85,7 @@ export interface EntityDoors {
   href: string | null;
   /** True when a peek is registered for this token. */
   canPeek: boolean;
-  /** Catalogue key to hand `<ResourcePeekHost kind=…>`. */
+  /** Catalog key to hand `<ResourcePeekHost kind=…>`. */
   peekKind: string;
   /** Registry icon for the entity type, when one is registered. */
   Icon: LucideIcon | null;
@@ -98,7 +98,7 @@ export interface EntityDoors {
  *
  * `hrefOverride` wins over the registry route — for records that live in two
  * shells (a system agent under `/administration/…` vs a personal one under
- * `/agents/…`). It is honoured EXACTLY: an explicit `null` means "this
+ * `/agents/…`). It is honored EXACTLY: an explicit `null` means "this
  * particular record has no door" and must not fall through to the registry,
  * which would send the user somewhere the caller deliberately ruled out. Only
  * `undefined` (no opinion) defers.

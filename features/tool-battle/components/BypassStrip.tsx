@@ -3,7 +3,7 @@ import { Badge } from "@ai-matrx/design-system/controls";
 
 /**
  * Every battle call bypasses all caches, replays and test modes (CONTRACT §5a/§7) and is billed to the
- * Tool Battle cost centre (§11). The screen says so, always, in the same place.
+ * Tool Battle cost center (§11). The screen says so, always, in the same place.
  */
 export function BypassStrip() {
   return (

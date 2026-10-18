@@ -56,7 +56,7 @@ const scopeRows = Array.from({ length: SCOPE_COUNT }, (_, i) => ({
 }));
 const LAST_SCOPE = scopeRows[SCOPE_COUNT - 1].id;
 
-/** A PostgREST-shaped builder: honours `.range()` and caps at 1000 like the server. */
+/** A PostgREST-shaped builder: honors `.range()` and caps at 1000 like the server. */
 function table(rows: unknown[]) {
   let range: [number, number] | null = null;
   const q: Record<string, unknown> = {};

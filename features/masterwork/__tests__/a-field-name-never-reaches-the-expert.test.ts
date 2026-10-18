@@ -17,7 +17,7 @@
  * The token is NOT the agent's invention: `violations_not_fixed` is a key out
  * of the Editor's output schema, which we declared and handed the model
  * (`aidream/services/masterworks/build.py`). Quoting what it was given is
- * correct behaviour for an agent, so the reading side owns turning it into
+ * correct behavior for an agent, so the reading side owns turning it into
  * words — exactly as it already owns `not_applicable` (walk 13) and the
  * truncated rule ids (walk 12, D14).
  *

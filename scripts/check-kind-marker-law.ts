@@ -96,7 +96,7 @@ const BLESSED: Record<string, string> = {
     "not a door — DISPLAY ONLY: research details, table headers and table cells omit " +
     "the discriminator only in print HTML; the source kind instances are untouched.",
   "features/content-ir/registry/shape-doctor.ts":
-    "not a door — a SCHEMA-side comparison: stripKindFromJsonSchema normalises two SCHEMA " +
+    "not a door — a SCHEMA-side comparison: stripKindFromJsonSchema normalizes two SCHEMA " +
     "DOCUMENTS before diffing their substance, never an instance. The recomputed gate must " +
     "stay indifferent to where the identity key travels.",
   "features/content-ir/studio/components/ShapeOwnerEditor.tsx":
@@ -261,7 +261,7 @@ function scan(): string[] {
   // adding one and it reported a clean pass; CI then failed on the same file
   // the moment the branch was pushed, because a PR checkout has it committed.
   // A guard whose local answer differs from its CI answer teaches people to
-  // ignore it. .gitignore is still honoured, so build output stays out.
+  // ignore it. .gitignore is still honored, so build output stays out.
   const files = gitFiles(ROOT, ["ls-files", "--cached", "--others", "--exclude-standard", "--", ...SCAN_DIRS])
     .split("\n")
     .filter((f) => /\.(ts|tsx)$/.test(f));

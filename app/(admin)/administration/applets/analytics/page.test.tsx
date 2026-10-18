@@ -83,7 +83,7 @@ describe("Applet analytics canonical table contract", () => {
     ] as AppletAdminView[];
     const config = drillConfigFromColumns(ANALYTICS_COLUMNS, apps, options);
 
-    it("declares only levels its Dimensions and Measures can honour", () => {
+    it("declares only levels its Dimensions and Measures can honor", () => {
       expect(drillLevelProblems(config.dimensions, config.measures, { attributeKeys: [] })).toEqual([]);
     });
 

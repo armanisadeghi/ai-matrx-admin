@@ -20,7 +20,7 @@
 //   segmented → `SegmentedControl` (@ai-matrx/design-system)
 //   slider    → `Slider` (same package, via components/ui/slider)
 //   model     → `ModelListDropdown`, THE canonical model picker
-//   voice     → the catalogue in `lib/cartesia/voices` played through
+//   voice     → the catalog in `lib/cartesia/voices` played through
 //               `useCartesia` — the same TTS path `VoiceSelectionModal` uses
 //   secret    → state only, from `knob.secret`; the value never comes here
 //               and is never asked for here (see the note on the case below).
@@ -431,10 +431,10 @@ function useCatalogDecisionDefaultModel(enabled: boolean): {
 }
 
 /**
- * A model, from the AI catalogue — the maker and the model, the friendly way
+ * A model, from the AI catalog — the maker and the model, the friendly way
  * ("Anthropic Sonnet 5"). `ModelListDropdown` IS the platform's model picker
  * (chat, the lab, every settings tab go through it); a second one here would
- * be a second catalogue to drift.
+ * be a second catalog to drift.
  */
 function ModelField({
   knob,

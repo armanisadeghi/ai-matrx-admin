@@ -270,7 +270,7 @@ const BY_VALUE = new Map(MAPPING_STATES.map((s) => [s.value, s]));
 /**
  * The state to render. An UNKNOWN value is never swallowed: the daemon is
  * allowed to be newer than this browser build, and a screen that silently
- * shows nothing is worse than one that says it does not recognise the word.
+ * shows nothing is worse than one that says it does not recognize the word.
  */
 export function describeMappingState(value: string | null): HonestState {
   if (!value)
@@ -369,7 +369,7 @@ export function describeMappingReport(input: {
     badge: `Last reported · ${state.title}`,
     sentence: `Nothing has been heard from this folder for ${formatDurationMs(age, { style: "long" })}. “${state.title}” is the last thing this device reported, not what is happening now.`,
     // A present-tense "everything is fine" tone over a stale observation is
-    // the same lie in colour, so an otherwise-active row goes amber.
+    // the same lie in color, so an otherwise-active row goes amber.
     tone: state.tone === "active" || state.tone === "neutral" ? "warning" : state.tone,
   };
 }

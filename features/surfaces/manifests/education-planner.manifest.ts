@@ -25,7 +25,7 @@
  *    planner exists to produce.
  *  - Marking a plan BLOCK done/skipped is the learner's own record of what they
  *    actually studied. An agent ticking it off would be a lie about their
- *    behaviour, and it feeds mastery — so the agenda is read-only.
+ *    behavior, and it feeds mastery — so the agenda is read-only.
  *  - Generating, re-planning and archiving a plan are actions, not values, and
  *    generation spends an agent run; the learner presses those buttons.
  *

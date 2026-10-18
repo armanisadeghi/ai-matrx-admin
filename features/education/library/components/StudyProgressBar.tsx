@@ -4,7 +4,7 @@
 //
 // How much of an artifact the learner has actually worked through, and how well
 // it went. Two facts in one bar: FILL = coverage (items attempted ÷ items),
-// COLOUR = accuracy on what they attempted. A learner reads "I'm halfway
+// COLOR = accuracy on what they attempted. A learner reads "I'm halfway
 // through and doing fine" without parsing two numbers.
 //
 // Renders nothing when the artifact has never been studied — an empty 0% bar on
@@ -24,7 +24,7 @@ interface Props {
 
 /**
  * Accuracy bands. Deliberately generous at the bottom: a student who is at 45%
- * on new material is learning, not failing, and colouring that red is how a
+ * on new material is learning, not failing, and coloring that red is how a
  * study app teaches someone to avoid it.
  */
 function accuracyTone(accuracy: number): string {

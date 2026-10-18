@@ -57,7 +57,7 @@ import type {
 export const KEYWORD_MEANING_SURFACE = "matrx-user/keyword-meaning-review";
 
 const KIND_ID = "keyword_meaning";
-/** How many stamped keywords a row names as doors before summarising the rest. */
+/** How many stamped keywords a row names as doors before summarizing the rest. */
 const STAMP_DOORS_SHOWN = 3;
 
 interface MeaningItem extends ApprovalItem {

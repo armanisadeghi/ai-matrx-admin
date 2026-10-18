@@ -119,7 +119,7 @@ export function statusLabel(status: CellView["status"]): string {
     case "empty": return "No result";
     case "failed": return "Failed";
     case "refused": return "Refused";
-    case "cancelled": return "Cancelled";
+    case "cancelled": return "Canceled";
     case "running": return "Running";
     default: return "Waiting";
   }

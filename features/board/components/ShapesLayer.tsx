@@ -17,7 +17,7 @@
  * A lone selected shape shows its handles: eight for a rectangle, oval or pen
  * stroke (a stroke scales with its box), two end handles for a line or arrow —
  * drop an end on a tile or a box shape and it binds and follows it. Double-
- * click (or Enter on) a rectangle or oval types centred text.
+ * click (or Enter on) a rectangle or oval types centerd text.
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";

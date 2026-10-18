@@ -39,7 +39,7 @@ interface AddProps {
   onBringIn: (type: BoardItemType) => void;
   /** The canvas tools the board offers (a preset's toolbar); omitted = all. */
   canvasTools?: readonly BoardTool[];
-  /** Sticky note / Text rows make the object at the view centre (the one creator) instead of arming the tool. */
+  /** Sticky note / Text rows make the object at the view center (the one creator) instead of arming the tool. */
   onCanvasText?: (kind: "sticky" | "text") => void;
 }
 

@@ -13,7 +13,7 @@
  * looking for is usually a MATCHER, and a matcher lives one interaction deep —
  * inside a value's matcher door, inside a dimension card. Narrowing the cards
  * would still leave the answer hidden behind a click, and auto-expanding
- * everything turns the page into a wall. So a query replaces the catalogue with
+ * everything turns the page into a wall. So a query replaces the catalog with
  * the hits themselves, each stating its full address (`Dimension › Answer`) and
  * each a door to the exact editor row — the `?dimension=&value=&matcher=`
  * deep link the value receipts already use (no-dead-ends: the explanation IS
@@ -158,7 +158,7 @@ export function DimensionSearchResults({
   onOpenResult,
 }: {
   query: string;
-  /** The catalogue the screen already loaded — never re-fetched to search it. */
+  /** The catalog the screen already loaded — never re-fetched to search it. */
   dimensions: FacetDimension[];
   brandId: string | null | undefined;
   siteId: string;

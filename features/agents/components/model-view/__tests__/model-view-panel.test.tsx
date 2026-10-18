@@ -90,7 +90,7 @@ describe("ModelViewPanel", () => {
     await mount();
     const titles = Array.from(host.querySelectorAll("section")).map((s) => s.getAttribute("aria-label"));
     expect(titles.slice(0, 4)).toEqual(["System (2)", "Messages (1)", "Tools", "Parameters"]);
-    // The date and the organisation catalogue are part of the system text, where the provider gets them.
+    // The date and the organization catalog are part of the system text, where the provider gets them.
     const system = section("System").textContent ?? "";
     expect(system.indexOf("Current date")).toBeLessThan(system.indexOf("You help Dana Whitfield"));
     expect(system).toContain("<org_catalog");

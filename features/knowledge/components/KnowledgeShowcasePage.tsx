@@ -31,7 +31,7 @@ import { DATA_STORES_PATH } from "@/features/knowledge/modulePaths";
  * An informational (not sales-pitch) showcase of the Matrx Knowledge System.
  * Built around the rebuilt pipeline diagram and grounded entirely in surfaces
  * that exist today. Where the guided "concept walkthrough" references something
- * not yet built, it is labelled honestly. The full vision + truthful built/
+ * not yet built, it is labeled honestly. The full vision + truthful built/
  * missing map lives in `features/rag/FEATURE.md`.
  */
 

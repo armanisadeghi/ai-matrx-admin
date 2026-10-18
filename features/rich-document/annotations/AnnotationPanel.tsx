@@ -702,7 +702,7 @@ function PrivateNote({ item }: { item: ResolvedItem }) {
             <button
               key={c}
               type="button"
-              aria-label={`Colour ${c}`}
+              aria-label={`Color ${c}`}
               aria-pressed={item.color === c}
               onClick={async () => {
                 const err = await api.recolor(item, c);

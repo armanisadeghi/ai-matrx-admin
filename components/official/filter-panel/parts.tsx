@@ -2,7 +2,7 @@
 
 // components/official/filter-panel/parts.tsx
 //
-// The reusable pieces of a filter popover, lifted verbatim in behaviour from
+// The reusable pieces of a filter popover, lifted verbatim in behavior from
 // features/agents/components/shared/DesktopFilterPanel.tsx — which had them as
 // private locals, so every other surface that wanted the same panel had to
 // re-implement chips-with-search, radio groups, and section headers.

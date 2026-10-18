@@ -8,7 +8,7 @@
 // grants timesheet approval and nothing else gets Time and inherits none of the rest.
 //
 // 🚨 ABSENT, NOT DISABLED. An item this person cannot use is not in the array. There
-// is no greyed nav item anywhere in HR, and that includes the whole module: with
+// is no grayed nav item anywhere in HR, and that includes the whole module: with
 // `hr.module.enabled = false` the caller renders no HR nav at all (§6).
 //
 // Pure data + one pure resolver, so nav can be reasoned about without a React tree.

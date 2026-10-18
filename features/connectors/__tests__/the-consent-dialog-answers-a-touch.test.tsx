@@ -298,7 +298,7 @@ describe("D4 + D7 — the account is named, changeable, and can be a new one", (
     expect(container.textContent).toContain("The selected Google account is no longer available");
   });
 
-  it("offers a labelled control for changing which account this connects", () => {
+  it("offers a labeled control for changing which account this connects", () => {
     mount({ accounts: [INFO] });
     const trigger = container.querySelector(
       "#connector-consent-account",

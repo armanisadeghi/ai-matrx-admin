@@ -189,7 +189,7 @@ describe("placeHealth", () => {
   it("is RED for an OPTIONAL input mid-pick too — an empty pick is refused", () => {
     // Map mode's Save says the same thing about the same map ("One input is
     // still waiting for you to pick…"), and the server 422s on an empty
-    // target. Colour and gate must agree.
+    // target. Color and gate must agree.
     const health = placeHealth({
       targets: [TONE],
       offered: [CLEANED],
@@ -618,7 +618,7 @@ describe("H1 — a value the job's caller supplies is not unfed", () => {
  * still writes it. Before this, the mismatch rode `blockers` and refused Apply.
  */
 describe("contract mismatch is red, never a refusal", () => {
-  it("colours the place red, names the mismatch, and leaves Apply open", () => {
+  it("colors the place red, names the mismatch, and leaves Apply open", () => {
     const health = placeHealth({
       targets: [],
       offered: [],

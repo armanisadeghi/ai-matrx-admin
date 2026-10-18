@@ -18,7 +18,7 @@
 //     sits next to "plan gives <N>", so each row carries both and the
 //     difference.
 //   * Pretend a tracking-only capability stops anything. `enforced = false` is
-//     labelled in words wherever the number appears.
+//     labeled in words wherever the number appears.
 
 import { InfoHint } from "@/components/official/InfoHint";
 import { asClause } from "@ai-matrx/kit/text";

@@ -8,7 +8,7 @@
  *   F3  a failed reply / edit keeps the person's text on screen with the reason and Retry;
  *   F4  errors reach the person as plain sentences, never developer text;
  *   F5  Add → Comment puts the caret in the composer;
- *   F6  own echoes are recognised by write identity — the same person's other tab is delivered;
+ *   F6  own echoes are recognized by write identity — the same person's other tab is delivered;
  *       an edit from a stale base is an honest conflict, never a silent overwrite;
  *   F7  (keyboard path into the selection toolbar) — now owned by the ONE selection toolbar's own
  *       test: components/selection-toolbar/__tests__/selection-toolbar.test.tsx.

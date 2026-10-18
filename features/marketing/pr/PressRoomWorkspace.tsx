@@ -11,7 +11,7 @@
  * the pipeline and the coverage it produced underneath as the record of what
  * the first two produced.
  *
- * Modelled on: Linear's issue list (the ranked queue, the dense row, the
+ * Modeled on: Linear's issue list (the ranked queue, the dense row, the
  * in-place expansion), Muck Rack and Prowly (the journalist-request inbox and
  * the pitch board), Prezly (the coverage log).
  *
@@ -497,7 +497,7 @@ export default function PressRoomWorkspace({
                 kind: "press-room-snapshot",
                 location: "AI Matrx — Marketing — Press Room",
                 description: snapshot.isSample
-                  ? "SAMPLE DATA — an illustrative press room. This business has no analysed angles yet; nothing here describes it."
+                  ? "SAMPLE DATA — an illustrative press room. This business has no analyzed angles yet; nothing here describes it."
                   : "Every story angle, journalist request and piece of coverage on this business's press room.",
                 data: { angles, requests, coverage },
                 summary: pressRoomAsText(snapshot, selectedBrand?.name ?? null),
@@ -640,7 +640,7 @@ export default function PressRoomWorkspace({
                   press.forcedScenario === "ready"
                     ? "Sample press room — forced by ?data=ready"
                     : siteId
-                      ? "Sample press room — nothing has been analysed for this site yet"
+                      ? "Sample press room — nothing has been analyzed for this site yet"
                       : hasNoBrands
                         ? "Sample press room — you have no businesses set up yet"
                         : "Sample press room — pick a business and site above to load your own"

@@ -15,7 +15,7 @@
  * `<html>` class does not flip until the next full reload.
  *
  * Pre-paint descriptors are the single source of truth for "how does this
- * slice mirror itself to the DOM?" — this function honours that exactly.
+ * slice mirror itself to the DOM?" — this function honors that exactly.
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

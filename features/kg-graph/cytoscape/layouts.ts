@@ -39,7 +39,7 @@ export const KG_LAYOUTS: KgLayoutMeta[] = [
   {
     id: "concentric",
     label: "By importance",
-    description: "Rings by centrality — the most-connected hubs sit at the centre.",
+    description: "Rings by centrality — the most-connected hubs sit at the center.",
   },
   {
     id: "grid",
@@ -101,7 +101,7 @@ const concentricLayout = (animate: boolean): cytoscape.ConcentricLayoutOptions =
   fit: true,
   padding: 40,
   minNodeSpacing: 24,
-  // Higher = closer to the centre. Importance is 0..1 (set by analysis).
+  // Higher = closer to the center. Importance is 0..1 (set by analysis).
   concentric: (node: cytoscape.NodeSingular) =>
     Math.round((Number(node.data("importance")) || 0) * 100),
   levelWidth: () => 8,

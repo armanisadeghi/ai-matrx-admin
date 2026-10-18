@@ -62,7 +62,7 @@ const SECTIONS = [
   { id: "basics", label: "The twelve basics" },
   { id: "examples", label: "Do and don't" },
   { id: "type", label: "Text styles" },
-  { id: "colour", label: "Colour" },
+  { id: "colour", label: "Color" },
   { id: "spacing", label: "Spacing" },
   { id: "components", label: "Components" },
   { id: "data", label: "Reading data" },
@@ -79,11 +79,11 @@ const BASICS: { title: string; line: string }[] = [
     line: "type-title, body, secondary, meta, label, value",
   },
   {
-    title: "Two text colours",
+    title: "Two text colors",
     line: "Foreground for content, muted for the rest",
   },
   {
-    title: "Colour has meaning",
+    title: "Color has meaning",
     line: "Status tokens and chip tones, never a palette",
   },
   {
@@ -170,7 +170,7 @@ const SWATCHES: { token: string; use: string }[] = [
   { token: "muted-foreground", use: "Everything else" },
   { token: "primary", use: "Main action" },
   { token: "brand-secondary", use: "Our purple" },
-  { token: "secondary", use: "Quiet grey surface" },
+  { token: "secondary", use: "Quiet gray surface" },
   { token: "success", use: "Done, healthy" },
   { token: "warning", use: "Needs a look" },
   { token: "destructive", use: "Failed, delete" },
@@ -375,7 +375,7 @@ function Examples() {
           bad={<BadProvisionRows />}
         />
         <Pair
-          title="Two text colours"
+          title="Two text colors"
           rule="Basic 3"
           good={
             <div className="flex flex-col">
@@ -390,7 +390,7 @@ function Examples() {
           bad={<BadGreys />}
         />
         <Pair
-          title="Colour has meaning"
+          title="Color has meaning"
           rule="Basic 4"
           good={
             <div className="flex flex-wrap gap-1.5">
@@ -494,10 +494,10 @@ function TypeStyles() {
   );
 }
 
-// ── 4. Colour ────────────────────────────────────────────────────────────────────────────
+// ── 4. Color ────────────────────────────────────────────────────────────────────────────
 function Colour() {
   return (
-    <Section id="colour" title="Colour" meta="Tokens only — dark mode is free">
+    <Section id="colour" title="Color" meta="Tokens only — dark mode is free">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {SWATCHES.map((s) => (
           <div key={s.token} className="flex items-center gap-3">
@@ -533,7 +533,7 @@ function Colour() {
             <Gem className="size-4 text-brand-secondary" aria-hidden="true" />
             Accent icon
           </span>
-          <span className="type-meta text-muted-foreground">secondary is the quiet grey — never write it for purple</span>
+          <span className="type-meta text-muted-foreground">secondary is the quiet gray — never write it for purple</span>
         </div>
         <span className="type-label">Names a kind — Chip tones</span>
         <ChipSet>
@@ -799,7 +799,7 @@ function ReadingData() {
 // ── 8. States ────────────────────────────────────────────────────────────────────────────
 function States() {
   return (
-    <Section id="states" title="States" meta="Never blank, never grey italics">
+    <Section id="states" title="States" meta="Never blank, never gray italics">
       <div className="grid gap-3 md:grid-cols-2">
         <Card>
           <div className="px-4 py-1">

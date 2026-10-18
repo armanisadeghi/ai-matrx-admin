@@ -20,7 +20,7 @@
 //   §9's standing verdict of 2026-09-14 — the shipped Audition's "Expert match"
 //   score is not proof, and the bench replaces it.
 //
-// So the score is labelled "Quick check", never "Expert match" and never THE
+// So the score is labeled "Quick check", never "Expert match" and never THE
 // PROOF; beside it sits the Bench verdict when a record exists, and a plain
 // "No bench proof yet" when none does. Honest by construction: no audition, no
 // line. And no dead control — the Bench has no button in the app yet, so the

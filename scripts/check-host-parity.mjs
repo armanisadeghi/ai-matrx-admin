@@ -5,7 +5,7 @@
 // @ai-matrx/design-system's web-theme.css + web-base.css + tokens.css. The app must wear exactly the
 // same, or a playground stops proving anything about the app. So app/globals.css:
 //   1. imports @ai-matrx/design-system/web-base.css (the page base: body text, headings, focus ring,
-//      form text, picker/media colour scheme, RTL sizing, the one default scrollbar);
+//      form text, picker/media color scheme, RTL sizing, the one default scrollbar);
 //   2. never restates a web-base rule (one copy, in the package);
 //   3. never declares a design-system value (a `--token` in tokens.css) with a DIFFERENT value in the
 //      same scope (:root vs .dark). An identical restatement passes, listed, so it can be deleted.

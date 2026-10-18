@@ -18,7 +18,7 @@
  * itself then had to be extracted when a second consumer appeared. Deleted:
  * pass the canonical token and there is nothing to translate.
  *
- * The org resource CATALOGUE keeps its own `key` — that is a URL slug
+ * The org resource CATALOG keeps its own `key` — that is a URL slug
  * (`/organizations/{orgId}/resources/{key}`, read back via `params.kind`), NOT
  * a peek key, and renaming it would break live links. `entry.token` is what
  * you hand to a peek.

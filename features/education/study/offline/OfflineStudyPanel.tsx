@@ -120,7 +120,7 @@ export function OfflineStudyPanel() {
               the way there rather than leaving the learner to find it. With no
               signal the deck list cannot load, so we say that instead of
               offering a link that would land on an error — and never a
-              `disabled` <Button asChild>, which only paints an anchor grey
+              `disabled` <Button asChild>, which only paints an anchor gray
               while it stays fully clickable. */}
           {online ? (
             <Button asChild variant="outline" className="mt-3">

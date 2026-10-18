@@ -75,7 +75,7 @@ export function useOpenFile() {
         // their own previewKind.)
         kind === "office" ||
         // `generic` covers archives, 3D meshes, sqlite, etc. The binary
-        // viewer's runtime byte-sniff handles the "we labelled this
+        // viewer's runtime byte-sniff handles the "we labeled this
         // generic but the bytes are actually text" case.
         kind === "generic";
 

@@ -65,7 +65,7 @@ export const EMPTY_FACET_AXIS: FacetAxis = {
  *
  * This is a REVEAL STEP, not a ceiling: clicking "+N more" adds another step,
  * and there is no point at which the person is refused the rest. It is not a
- * knob because it is not a behavioural choice an organization would make — it
+ * knob because it is not a behavioral choice an organization would make — it
  * is how many pills fit beside a drawing before the column is taller than the
  * map it annotates. If it ever becomes a matter of taste, it becomes a knob.
  */

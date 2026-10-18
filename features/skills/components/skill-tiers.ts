@@ -2,7 +2,7 @@
  * skill-tiers.ts
  *
  * ONE definition of the three per-agent skill assignment tiers — label,
- * hint, icon, and active styling. Consumed by `SkillConfigPicker` (catalogue
+ * hint, icon, and active styling. Consumed by `SkillConfigPicker` (catalog
  * rows + review pane) and `SkillDetailView` (detail pane) so the two can
  * never drift on what "Included" means or how it looks.
  */

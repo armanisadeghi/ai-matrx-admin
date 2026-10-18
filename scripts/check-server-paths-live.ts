@@ -7,7 +7,7 @@
  * /health/version) predated the router — a 404 on every page. The client's contract is the installed
  * `@ai-matrx/agents` package: the `@ai-matrx/api/types` paths plus the literal paths its runtime builds by hand.
  * This diffs both against the deployed `/openapi.json` (paths are served under `/api`, matched with `{param}`
- * normalised) and names every path the client knows that the live server does not answer — a half-deployed
+ * normalized) and names every path the client knows that the live server does not answer — a half-deployed
  * cross-repo feature. Exit 1 under --strict when any is missing; read-only, no credentials.
  */
 import { readFileSync, readdirSync } from "node:fs";
@@ -15,7 +15,7 @@ import { join, resolve } from "node:path";
 
 const SERVER = "https://server.app.matrxserver.com";
 const AGENTS_DIST = resolve(process.cwd(), "node_modules/@ai-matrx/agents/dist");
-// `{param}` and `${x}` normalise to `{}`; a trailing `${query}` glued onto a segment is a query string, not a path.
+// `{param}` and `${x}` normalize to `{}`; a trailing `${query}` glued onto a segment is a query string, not a path.
 const norm = (p: string) => p.replace(/\$\{[^}]+\}|\{[^}]+\}/g, "{}").replace(/([^/])\{\}$/, "$1").replace(/\/+$/, "");
 /** The bare base and dev-only doors are not endpoints a deployed page calls. */
 const IGNORED = (p: string) => p === "/ai" || p === "" || p.startsWith("/dev/");

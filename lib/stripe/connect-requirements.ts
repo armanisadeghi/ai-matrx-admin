@@ -50,7 +50,7 @@ const EXACT: Record<string, Omit<RequirementCopy, "known">> = {
   "verification.document": {
     title: "Send a photo of your ID",
     description:
-      "A passport or driving licence. Stripe has to confirm you are who you say you are before it can pay you — this is the law, not our rule.",
+      "A passport or driving license. Stripe has to confirm you are who you say you are before it can pay you — this is the law, not our rule.",
   },
   "verification.additional_document": {
     title: "Send one more document",

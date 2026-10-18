@@ -40,7 +40,7 @@ import type { DesignArtifactRef, DesignRunView } from "./types";
 
 /**
  * How often an open page re-reads a RUNNING design run. A screen-refresh
- * cadence, not a behaviour an organization chooses (the run's own timing —
+ * cadence, not a behavior an organization chooses (the run's own timing —
  * gate waits, cadence — comes from the server's knobs), so it is a constant.
  * Polling stops the moment the run is waiting for a review, finished or failed.
  */

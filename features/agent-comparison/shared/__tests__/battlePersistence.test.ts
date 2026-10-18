@@ -134,7 +134,7 @@ describe("createBattlePersistence(...).persist", () => {
 });
 
 describe("persistForRun", () => {
-  it("resolves {cancelled:false,error:null} when the run succeeds", async () => {
+  it("resolves {canceled:false,error:null} when the run succeeds", async () => {
     const result = await persistForRun(async () => ({
       id: "set-1",
       name: "n",
@@ -143,7 +143,7 @@ describe("persistForRun", () => {
     expect(result).toEqual({ cancelled: false, error: null });
   });
 
-  it("resolves {cancelled:false,error:<message>} on a normal error", async () => {
+  it("resolves {canceled:false,error:<message>} on a normal error", async () => {
     const result = await persistForRun(async () => {
       throw new Error("Could not reach the database.");
     });

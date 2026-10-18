@@ -56,7 +56,7 @@ const PUNCH_KIND_PRESENTATION: Record<PunchKind, PunchKindPresentation> = {
  * reading `.pastTense` threw the tablet into an error boundary — **after the punch row was already
  * written.** The worker had punched and been shown a crash.
  *
- * Mapping the payload is the real fix. This is the second line of defence, and the fallback is
+ * Mapping the payload is the real fix. This is the second line of defense, and the fallback is
  * deliberately neutral: it names no act, because guessing which one happened on a time record is
  * worse than saying "recorded".
  */
@@ -96,7 +96,7 @@ const CLOCK_PHASE_PRESENTATION: Record<ClockPhase, ClockPhasePresentation> = {
  * reading `.elapsedField` replaced `/hr/me/clock` with an error overlay — *"an employee who clocks
  * in cannot clock out from this surface."*
  *
- * `service.ts` maps the field now, which is the real fix. This is the second line of defence: a
+ * `service.ts` maps the field now, which is the real fix. This is the second line of defense: a
  * server that one day sends a sixth phase, or a mapper that one day misses one, must degrade to a
  * surface that still renders its punch controls — **never to a blank page for someone standing at a
  * clock at 5am.** The fallback is deliberately the safest state: it shows no elapsed ticker rather

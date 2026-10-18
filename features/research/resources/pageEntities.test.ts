@@ -1,5 +1,5 @@
 /**
- * `page.entities` — what each analysed, kept page NAMED, as one derived block.
+ * `page.entities` — what each analyzed, kept page NAMED, as one derived block.
  *
  * The same block is derived server-side by aidream
  * `research/context_bundles.py::derive_page_entities` for the topical map
@@ -79,7 +79,7 @@ function manifest(rows: ManifestPageEntities[], sources: ResourceItem[]): Resour
 const def = CATALOG.find((k) => k.key === "page.entities");
 
 describe("page.entities", () => {
-  it("is a derived kind in the catalogue", () => {
+  it("is a derived kind in the catalog", () => {
     expect(def).toBeDefined();
     expect(typeof def?.derive).toBe("function");
     expect(def?.defaultVariable).toBe("page_entities");
@@ -116,7 +116,7 @@ describe("page.entities", () => {
     expect(text).not.toContain("empty.example");
     expect(text.indexOf("theorg.com")).toBeLessThan(text.indexOf("allgreenrecycling.com"));
     expect(text).toContain("offerings named: Hard Drive Shredding; Data Wiping");
-    expect(text).toContain("organisations named: Department of Defense");
+    expect(text).toContain("organizations named: Department of Defense");
     expect(text).toContain("places named: United States");
     expect(text).toContain("[directory]");
     expect(text).toContain("- Pages: 2");

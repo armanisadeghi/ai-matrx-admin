@@ -148,7 +148,7 @@ export function useKnowledgeAssetRunner(
               : serverRun.status === "failed"
                 ? "Interrupted — resume available"
                 : serverRun.status === "cancelled"
-                  ? "Cancelled — resume available"
+                  ? "Canceled — resume available"
                   : serverRun.status === "completed"
                     ? "Done"
                     : prev[kind].message,
@@ -325,7 +325,7 @@ export function useKnowledgeAssetRunner(
         terminal = "cancelled";
         patchOp(kind, {
           status: "cancelled",
-          message: "Cancelled",
+          message: "Canceled",
           endedAt: Date.now(),
         });
       } else if (streamError || (sawResult && !resultOk)) {
@@ -364,7 +364,7 @@ export function useKnowledgeAssetRunner(
         for (const kind of kinds) {
           if (!mountedRef.current) break;
           const result = await run(kind);
-          // If the user cancelled this op, stop the whole sequence — they
+          // If the user canceled this op, stop the whole sequence — they
           // asked it to stop, not just to skip one step.
           if (result === "cancelled") break;
         }
@@ -402,7 +402,7 @@ export function useKnowledgeAssetRunner(
               [kind]: {
                 ...prev[kind],
                 status: "cancelled",
-                message: "Cancelling…",
+                message: "Canceling…",
                 endedAt: Date.now(),
               },
             }

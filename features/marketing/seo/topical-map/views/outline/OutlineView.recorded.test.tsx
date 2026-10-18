@@ -305,7 +305,7 @@ describe("OutlineView — recorded All Green Recycling bytes (map_tree with coun
     act(() => root.unmount());
   });
 
-  it("(e) recorded page rows: one row per real page id, labelled with the recorded urls", async () => {
+  it("(e) recorded page rows: one row per real page id, labeled with the recorded urls", async () => {
     mapTopicAssociations.mockImplementation(async (_mapId: string, slug: string) => {
       if (slug === ALL_GREEN_ASSOC_TOPIC_SLUG) return ALL_GREEN_PAGE_ASSOCIATIONS;
       return [];

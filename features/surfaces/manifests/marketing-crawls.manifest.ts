@@ -162,7 +162,7 @@ const surfaceSpecific: SurfaceValue[] = [
 /**
  * Write half — the crawl COMMAND, and only on the New Crawl workspace.
  *
- * Why these earn targets: scoping a crawl is the planning judgement an agent
+ * Why these earn targets: scoping a crawl is the planning judgment an agent
  * makes better than a hand-typing human. "Only the blog, skip tag pages, cap
  * it at 200 pages" is one sentence of intent that has to become a page limit,
  * a concurrency, a render mode, and two lists of path regexes — derived from

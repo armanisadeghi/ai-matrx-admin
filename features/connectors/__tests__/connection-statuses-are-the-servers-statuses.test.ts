@@ -3,7 +3,7 @@
  *
  * WHY THIS EXISTS (VERIFY-U-P2-R5, finding V17-1, and chair ruling R22).
  * `users.integration_connections.status` is written by aidream and read by the
- * browser, and the browser used to collapse EVERY word it did not recognise into
+ * browser, and the browser used to collapse EVERY word it did not recognize into
  * `connected` (`features/marketing/google/service.ts::connectionSummary`). So the
  * day the server gained a third terminal word — `unavailable`, for "the provider
  * or our own platform configuration blocks every call and nothing you can click
@@ -18,9 +18,9 @@
  * `admission-codes-are-the-servers-codes.test.ts` do for their vocabularies.
  *
  * THE THREE LEGS:
- *   1. every status the SERVER declares is one this build recognises — a word we
+ *   1. every status the SERVER declares is one this build recognizes — a word we
  *      have no branch for cannot ship;
- *   2. every status this build recognises that the server does NOT declare
+ *   2. every status this build recognizes that the server does NOT declare
  *      carries its reason in `CLIENT_ONLY_CONNECTION_STATUSES` (that is how
  *      `revoked` — Google's own disconnect word — stays lawful without the union
  *      quietly growing);
@@ -162,7 +162,7 @@ describe("the status vocabulary this build declares", () => {
     (serverFile ? "" : " — UNMEASURED: no aidream checkout, nothing was compared"),
   () => {
     (exportedSet ? it : it.skip)(
-      "recognises every status the server's exported set declares" +
+      "recognizes every status the server's exported set declares" +
         (exportedSet
           ? ""
           : " — UNMEASURED-until-present: connection_health.py does not export CONNECTION_STATUSES yet (lane B-23)"),
@@ -182,7 +182,7 @@ describe("the status vocabulary this build declares", () => {
       },
     );
 
-    it("recognises every status word the server file declares as a constant", () => {
+    it("recognizes every status word the server file declares as a constant", () => {
       const declared = statusConstants(serverFile!);
       const unknown = declared.filter(
         (status) => !(CONNECTION_STATUSES as readonly string[]).includes(status),

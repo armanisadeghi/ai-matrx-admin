@@ -2075,7 +2075,7 @@ export function AgentSettingsCore({
     );
   };
 
-  // Every catalogue setting renders, for every model. The model's controls
+  // Every catalog setting renders, for every model. The model's controls
   // only decorate each row (supported vs. caution) — they never decide whether
   // a row appears. See ../aidream/apps/shared/chat/src/agents/redux/agent-settings/settings-catalogue.ts.
   const settingGroups = buildSettingsRows(
@@ -2248,7 +2248,7 @@ export function AgentSettingsCore({
               </button>
             )}
 
-            {/* Every catalogue setting renders for every model. The model's
+            {/* Every catalog setting renders for every model. The model's
                 controls only decorate each row (supported vs. caution). A
                 setting unsupported by the model is NEVER hidden — it shows a
                 caution dot, and when it holds a value it also surfaces in the

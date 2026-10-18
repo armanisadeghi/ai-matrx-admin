@@ -5,8 +5,8 @@
  * THE USE CASE: a plumbing company's September service board on the record store. The dispatcher
  * opens Column settings on Status in the Sheet, tints "Scheduled" blue and "Needs parts" amber,
  * turns off "allow other values", and saves. Before this lane the seam sent only the choice words
- * to `custom.field_update` (with a `type` word, which sends the patch down the door's behaviour arm
- * where an existing list's words are not even read), answered "Saved", and on reload every colour
+ * to `custom.field_update` (with a `type` word, which sends the patch down the door's behavior arm
+ * where an existing list's words are not even read), answered "Saved", and on reload every color
  * was gone and "allow other values" was back on. The same seam wiped a "must differ from Crew
  * lead" rule set in the Grid the next time anyone saved a longest-length in the Sheet, dropped a
  * pattern's "enter it like" hint, could not turn "no two rows the same" OFF, lost an autonumber's
@@ -14,7 +14,7 @@
  *
  * Driven through the real `setFieldFormat` / `updateTableConfig` / `setTableRowLabel` /
  * `getTableMetadata` (record-store.ts) against a fake of the store's field door that keeps what
- * `custom.field_update` keeps (settings arm vs behaviour arm, closed key list, allow_other on
+ * `custom.field_update` keeps (settings arm vs behavior arm, closed key list, allow_other on
  * lists only, display_format verbatim) — so "save → reload → save" is judged on what the store
  * would actually hold.
  */
@@ -98,7 +98,7 @@ function fieldUpdate({ field_id, patch }: { field_id: string; patch: Record<stri
   const next: Doc = { ...old, config: { ...old.config } };
   const word = (patch.type ?? patch.parity_type ?? patch.plain) as string | undefined;
   if (word) {
-    // THE BEHAVIOUR ARM: a fresh document from the old one with the patch over it.
+    // THE BEHAVIOR ARM: a fresh document from the old one with the patch over it.
     if (word === "select" || word === "multi_select") {
       next.type = "list";
       next.multi = word === "multi_select";
@@ -113,7 +113,7 @@ function fieldUpdate({ field_id, patch }: { field_id: string; patch: Record<stri
       next.relation_target = patch.relation_target ?? old.relation_target;
       next.relation_max = patch.relation_max ?? old.relation_max ?? 1;
       next.on_target_delete = patch.on_target_delete ?? old.on_target_delete ?? "set_null";
-      delete next.display; // the behaviour arm's spec builder has no `display`
+      delete next.display; // the behavior arm's spec builder has no `display`
     } else if (word === "autonumber" || word === "created_time" || word === "modified_time") {
       next.type = "formula";
       next.format = word;
@@ -253,7 +253,7 @@ beforeEach(() => {
   client.recordUpdate.mockClear();
 });
 
-describe("September service board · choice colours and allow-other", () => {
+describe("September service board · choice colors and allow-other", () => {
   const STATUS = {
     id: "choice" as const,
     options: {
@@ -267,7 +267,7 @@ describe("September service board · choice colours and allow-other", () => {
     },
   };
 
-  it("keeps every colour and the allow-other switch through save → reload → save", async () => {
+  it("keeps every color and the allow-other switch through save → reload → save", async () => {
     const rs = await load();
     const saved = await rs.setFieldFormat(HOME, { tableId: TABLE, fieldId: F.status, format: STATUS });
     expect(saved.success).toBe(true);
@@ -282,13 +282,13 @@ describe("September service board · choice colours and allow-other", () => {
     expect(JSON.stringify(store.fields.get(F.status))).toBe(before);
   });
 
-  it("an added choice reaches the store's list (the behaviour arm never read an existing list's words)", async () => {
+  it("an added choice reaches the store's list (the behavior arm never read an existing list's words)", async () => {
     const rs = await load();
-    const withCancelled = { ...STATUS, options: { ...STATUS.options, choices: [...STATUS.options.choices, { value: "Cancelled", color: "red" }] } };
+    const withCancelled = { ...STATUS, options: { ...STATUS.options, choices: [...STATUS.options.choices, { value: "Canceled", color: "red" }] } };
     const saved = await rs.setFieldFormat(HOME, { tableId: TABLE, fieldId: F.status, format: withCancelled });
     expect(saved.success).toBe(true);
     expect((await formatOf(rs, F.status) as { options: { choices: Array<{ value: string }> } }).options.choices.map((c) => c.value)).toEqual([
-      "Scheduled", "In progress", "Needs parts", "Done", "Cancelled",
+      "Scheduled", "In progress", "Needs parts", "Done", "Canceled",
     ]);
   });
 
@@ -297,7 +297,7 @@ describe("September service board · choice colours and allow-other", () => {
     expect((await formatOf(rs, F.status) as { options: { allowOther?: boolean } }).options.allowOther).toBe(false);
   });
 
-  it("a text column made a choice column keeps the grid's default (other values allowed) and its colours", async () => {
+  it("a text column made a choice column keeps the grid's default (other values allowed) and its colors", async () => {
     const rs = await load();
     const format = { id: "choice" as const, options: { choices: [{ value: "Morning", color: "teal" }, { value: "Afternoon" }] } };
     const saved = await rs.setFieldFormat(HOME, { tableId: TABLE, fieldId: F.notes, format });
@@ -356,7 +356,7 @@ describe("September service board · choice colours and allow-other", () => {
     expect(after.options.choices.map((c) => c.value)).toEqual(["Lead", "Qualified", "Proposal", "Won"]);
   });
 
-  it("a moved list's colours are read from its options, and saving them again rewrites no word", async () => {
+  it("a moved list's colors are read from its options, and saving them again rewrites no word", async () => {
     const rs = await load();
     const back = (await formatOf(rs, F.movedStage)) as { options: { choices: unknown[] } };
     expect(back.options.choices.map((c) => ({ ...(c as object), id: undefined }))).toEqual([

@@ -5,7 +5,7 @@ export const contentBlocksConfig = {
     // UNFINISHED, NOT DEAD: nothing imports this config yet — it is waiting to be
     // wired to the content-blocks surface (/policies/reality-is-the-referee.md).
     // The two env switches that used to live here are gone: an env var may not
-    // control behaviour (Arman, 2026-09-10). Both become knobs when this is wired.
+    // control behavior (Arman, 2026-09-10). Both become knobs when this is wired.
     useDatabase: true,
     
     // Auto-refresh interval for database content (in milliseconds)

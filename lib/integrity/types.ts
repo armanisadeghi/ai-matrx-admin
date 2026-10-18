@@ -85,7 +85,7 @@ export interface ScriptIntegrityCheck extends IntegrityCheckBase {
   /** pnpm script name (from package.json), run as `pnpm run <script>`. */
   script: string;
   /**
-   * Rough runtime hint surfaced in the UI so slow gates are labelled before
+   * Rough runtime hint surfaced in the UI so slow gates are labeled before
    * anyone presses run. Script checks NEVER run implicitly regardless.
    */
   expectedDurationSec: number;

@@ -59,7 +59,7 @@ export function entityTableSource(token: string, options: { filter?: EntityTileF
   return { kind: "entity", entity: TABLE_ENTITY, id: null, meta };
 }
 
-/** The plug-in looks that name what a section holds, most telling first (a colour table's name column is plain text). */
+/** The plug-in looks that name what a section holds, most telling first (a color table's name column is plain text). */
 const LOOK_ORDER = ["color_pair", "color", "type_style", "measure", "shadow", "opacity", "motion", "html_sample", "attachment"] as const;
 
 /** A column's look id and options, read defensively (the field document carries it as `display_format`). */

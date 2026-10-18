@@ -13,7 +13,7 @@
  *
  * The copy lives in one exported function per line, so the dialog and any future
  * consent surface read the same words and this test can hold them to the server's
- * behaviour.
+ * behavior.
  */
 
 import { readFileSync } from "node:fs";

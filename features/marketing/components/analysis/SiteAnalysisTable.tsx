@@ -137,7 +137,7 @@ export function SiteAnalysisTable() {
       filter: "text",
       cellKind: "text",
       // Readable name leads, raw key underneath (it is what the filter and
-      // the server speak). A key the catalogue has no label for still reads.
+      // the server speak). A key the catalog has no label for still reads.
       cell: (row) => (
         <div className="min-w-56 max-w-md">
           <p className="truncate text-xs font-medium">

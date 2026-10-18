@@ -20,7 +20,7 @@
  *     pack review screen. The catalog never fakes a subscribe for a copy type.
  *
  * Selection lives in ?type=&id= so deep links and refreshes work. `?store_id=`
- * is still honoured — it is a published URL shape people have bookmarked.
+ * is still honored — it is a published URL shape people have bookmarked.
  */
 
 import Link from "next/link";

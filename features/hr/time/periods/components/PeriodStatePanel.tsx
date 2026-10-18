@@ -4,7 +4,7 @@
  * features/hr/time/periods/components/PeriodStatePanel.tsx — ROUTE 33's header
  * (SPEC-UI-IA §3.4 row 33 names `PeriodStatePanel`).
  *
- * 🚨 THE TWO STATE MACHINES ARE LABELLED DISTINCTLY AND SIT IN SEPARATE BLOCKS (SPEC-TIME §14 D8):
+ * 🚨 THE TWO STATE MACHINES ARE LABELED DISTINCTLY AND SIT IN SEPARATE BLOCKS (SPEC-TIME §14 D8):
  *
  *   • **This period** — `hr.pay_period.state`. One badge, seven possible values.
  *   • **Timecards in it** — `hr.pay_period_employment.state`. A progress line reading

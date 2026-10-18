@@ -202,7 +202,7 @@ export async function fetchAiWatchRuns(scope: {
       userRequestId: String(row.id),
       label:
         str(holder?.name) ??
-        // Only a turn that passed a mandate door is labelled with its mandate.
+        // Only a turn that passed a mandate door is labeled with its mandate.
         str(watch?.mandate_key) ??
         // A workflow step's call: the server's own attribution and the step that made it.
         str(metadata.mandate_key) ??
@@ -220,7 +220,7 @@ export async function fetchAiWatchRuns(scope: {
 }
 
 export interface SplitProviderRequest {
-  /** Which request family was recognised; null means show the raw JSON. */
+  /** Which request family was recognized; null means show the raw JSON. */
   shape: "anthropic" | "gemini" | "openai-responses" | "chat-completions" | null;
   system: unknown;
   messages: unknown[];
@@ -259,7 +259,7 @@ const isSystemRole = (m: unknown) => {
  * family we send: Anthropic Messages, Gemini (SDK `config` and REST
  * `systemInstruction`/`generationConfig`), OpenAI Responses, and Chat
  * Completions (OpenAI chat, Groq, Cerebras, xAI chat, …). A shape we do not
- * recognise is never shown as "(none)": `shape` is null and the window shows
+ * recognize is never shown as "(none)": `shape` is null and the window shows
  * the raw JSON.
  */
 export function splitProviderRequest(body: Record<string, unknown> | null): SplitProviderRequest {

@@ -17,7 +17,7 @@
  *
  * The three states, and what the Expert sees for each:
  *
- *   | Declared        | Switch | Behaviour                                    |
+ *   | Declared        | Switch | Behavior                                    |
  *   |-----------------|--------|----------------------------------------------|
  *   | nothing         | on     | all context flows, delivered normally        |
  *   | context policies| on     | those govern their keys; extras still flow   |

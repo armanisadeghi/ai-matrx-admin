@@ -6,7 +6,7 @@
  * Lets a member share *their own* resources with an organization, fast.
  *
  * Pick a resource kind → search your own items → "Share with team". Every
- * shareable kind comes from the org resource catalogue, so this stays in sync
+ * shareable kind comes from the org resource catalog, so this stays in sync
  * with the rest of the org workspace automatically. The actual grant goes
  * through `grantOrgAvailability` → `grant_org_availability`, the organization-
  * availability door (validates ownership + org membership server-side). Contributing is org
@@ -33,7 +33,7 @@ interface ContributeResourceSheetProps {
   onOpenChange: (open: boolean) => void;
   orgId: string;
   orgName: string;
-  /** Pre-select a resource kind by catalogue key when opening. */
+  /** Pre-select a resource kind by catalog key when opening. */
   initialEntryKey?: string | null;
   /** Called after at least one successful share so callers can refresh counts. */
   onContributed?: () => void;

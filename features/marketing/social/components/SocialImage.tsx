@@ -83,8 +83,8 @@ export function imageSettled(img: Pick<HTMLImageElement, "complete" | "naturalWi
 }
 
 /**
- * YouTube answers a missing `maxresdefault` with a 120px grey stub that still "loads" (HTTP 200 for older
- * videos), so an <img> reports success and the card shows grey. A stub, or a failed load, of a maxres
+ * YouTube answers a missing `maxresdefault` with a 120px gray stub that still "loads" (HTTP 200 for older
+ * videos), so an <img> reports success and the card shows gray. A stub, or a failed load, of a maxres
  * thumbnail steps down to `hqdefault`, which every video has. Null = nothing further to try.
  */
 export function youtubeThumbStepDown(src: string | null, naturalWidth: number | null): string | null {

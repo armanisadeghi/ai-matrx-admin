@@ -78,7 +78,7 @@ export const TASK_STATUS_META: Record<TaskStatus, TaskStatusMeta> = {
   },
   cancelled: {
     value: "cancelled",
-    label: "Cancelled",
+    label: "Canceled",
     icon: CircleX,
     chipClass: "bg-muted text-muted-foreground border-border line-through",
     description: "Will not be done",

@@ -71,7 +71,7 @@ describe("fieldStats", () => {
 });
 
 describe("groupByInput", () => {
-  it("groups by the input link, in first-seen order, labelled by the company", () => {
+  it("groups by the input link, in first-seen order, labeled by the company", () => {
     const groups = groupByInput(records);
     expect(groups.map((g) => g.key)).toEqual([A, B]);
     expect(groups.map((g) => g.records.length)).toEqual([3, 2]);

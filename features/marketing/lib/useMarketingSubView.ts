@@ -180,7 +180,7 @@ export function buildMarketingSubNav(
  * marketing sidebar, and the header shows one level down: the current
  * section's sub-views, a set of 2-7 that fits as icon + label.
  *
- * A section with no sub-views contributes nothing, and the header centre is
+ * A section with no sub-views contributes nothing, and the header center is
  * simply empty — the page's own title already says where you are.
  */
 /**
@@ -190,7 +190,7 @@ export function buildMarketingSubNav(
  * marketing sidebar, and the header shows one level down: the current
  * section's sub-views, a set of 2-7 that fits as icon + label.
  *
- * A section with no sub-views contributes nothing, and the header centre is
+ * A section with no sub-views contributes nothing, and the header center is
  * simply empty — the page's own title already says where you are.
  */
 export function useMarketingSiteSubNav(

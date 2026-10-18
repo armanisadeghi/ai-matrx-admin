@@ -609,7 +609,7 @@ export function scanFile(
    * `helperName → schema` for the `utils/supabase/*Db.ts` family, so a read
    * through one of them resolves to a real entity instead of the ambiguous
    * `?.table` (see `schemaHelpers`). Defaults to none, which is the old
-   * behaviour and what the self-test's hand-written fixtures expect.
+   * behavior and what the self-test's hand-written fixtures expect.
    */
   helpers: ReadonlyMap<string, string> = new Map(),
 ): Finding[] {
@@ -785,7 +785,7 @@ export function scanFile(
  * the declaration measurably dropped `agent.definition` out of the precedent
  * set (its in-tree control lives in `lib/entity-list` and the package pickers,
  * not beside a `.from("definition")` chain), which would have silently switched
- * rule 3 off for the whole agent catalogue. Wider precedent + per-query
+ * rule 3 off for the whole agent catalog. Wider precedent + per-query
  * judgment is the combination that keeps rule 3 both true and useful.
  */
 export function lawfulEntitiesIn(
@@ -1293,7 +1293,7 @@ function selfTest(): void {
   if (!derivedEntities.get("definition")?.has("agent")) {
     failures.push(
       "DERIVATION: `agent.definition` carries `is_archived` but was not derived — " +
-        "the schema keying would silently exempt the whole agent catalogue.",
+        "the schema keying would silently exempt the whole agent catalog.",
     );
   }
   const derived = archivableTables(dbTypes);

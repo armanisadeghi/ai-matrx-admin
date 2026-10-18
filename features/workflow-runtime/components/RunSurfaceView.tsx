@@ -6,7 +6,7 @@
  * auto-advance (R2), empty states (R3), and the interrupt card above them.
  *
  * LAYOUT (rebuilt 2026-08-18). The authored `pos {x, y, w, h}` is still the
- * contract the builder writes and this component still honours it — but as a
+ * contract the builder writes and this component still honors it — but as a
  * FLOW, not as an absolutely-positioned dashboard grid. The literal Grafana
  * model produced fixed 30px rows, which forced every readout into a short box
  * with its own scrollbar: streamed writing arrived into a ~240px porthole and
@@ -194,7 +194,7 @@ function ReadoutCell({
   // Header-actions slot: body content (the Preview/JSON toggle) renders its
   // tiny controls on THIS title line instead of spending a body row on them.
   const { target: actionsTarget, targetProps } = useTileActionsTarget();
-  // `h` is the author's intent for how much room this deserves — honoured as a
+  // `h` is the author's intent for how much room this deserves — honored as a
   // floor so a short readout keeps its shape, never as a ceiling that clips
   // live writing.
   const minHeight = Math.min(
@@ -238,7 +238,7 @@ function ReadoutCell({
         style={{ maxHeight: READOUT_MAX_HEIGHT_PX }}
       >
         {mode === "placeholder" ? (
-          // THE RESERVED SLOT. Two grey bars said "something goes here" and
+          // THE RESERVED SLOT. Two gray bars said "something goes here" and
           // nothing more, whatever this readout was about to become. When the
           // authored source names a node whose definition declares an
           // `output_kind`, reserve THAT kind's silhouette instead — the shape

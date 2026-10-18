@@ -302,7 +302,7 @@ export function EntityScopeTabs({
       // "which one is Mine?" to guesswork); a row too wide for the screen
       // scrolls sideways instead of dropping its words.
       className={cn(
-        // The padding (cancelled by the negative margin) holds each tab's
+        // The padding (canceled by the negative margin) holds each tab's
         // touch ring INSIDE this scroll box (.matrx-tap-ring, app/globals.css,
         // which keeps a tablist's rings to the tab's own width): without it the
         // ring overflowed, the strip scrolled and faded its only tab on a phone.

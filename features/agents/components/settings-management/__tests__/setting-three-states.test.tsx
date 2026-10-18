@@ -215,7 +215,7 @@ describe("three setting states — saved JSON says absent / off / value", () => 
     const saved = savedSettings(store);
     expect("reasoning_effort" in saved).toBe(false);
     expect(saved).toEqual({ max_output_tokens: 4096 });
-    // The row now reads as not set (the model default is labelled, never stored).
+    // The row now reads as not set (the model default is labeled, never stored).
     expect(["unset", "default"]).toContain(rowState("reasoning_effort"));
     expect(row("reasoning_effort").textContent).toContain("Not set");
   });

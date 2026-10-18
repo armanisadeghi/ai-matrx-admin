@@ -11,7 +11,7 @@
  * (`features/files/filesDb.ts`); the detail window was the one that did not.
  * The policy is right; the read was wrong.
  *
- * 1. BEHAVIOUR — the file loader, through the REAL registry, asks for the
+ * 1. BEHAVIOR — the file loader, through the REAL registry, asks for the
  *    canonical client column list and gets the row. The supabase stand-in
  *    refuses `*` on `files.files` exactly as the live grant does.
  * 2. CENSUS — every registered type whose detail table carries a server-only

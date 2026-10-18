@@ -110,7 +110,7 @@ const ITEM_STATUS_LABEL: Record<JobItemStatus, string> = {
     succeeded: "Succeeded",
     failed: "Failed",
     skipped: "Skipped",
-    cancelled: "Cancelled",
+    cancelled: "Canceled",
 };
 
 const ITEM_STATUS_VARIANT: Record<
@@ -145,7 +145,7 @@ const JOB_STATUS_LABEL: Record<JobStatus, string> = {
     completed: "Completed",
     completed_with_failures: "Completed with failures",
     failed: "Failed",
-    cancelled: "Cancelled",
+    cancelled: "Canceled",
 };
 
 /**
@@ -169,7 +169,7 @@ function jobSentence(job: JobRow): string {
         case "failed":
             return `This job stopped and could not continue. ${formatCount(t.succeeded)} items had already succeeded and are kept.`;
         case "cancelled":
-            return `Cancelled. Items that had not started were cancelled and never run; ${formatCount(t.succeeded)} items had already finished and are kept.`;
+            return `Canceled. Items that had not started were canceled and never run; ${formatCount(t.succeeded)} items had already finished and are kept.`;
         default:
             return `This job is ${job.status}.`;
     }
@@ -536,7 +536,7 @@ export function JobPanel({
         { key: "skipped", label: "Skipped", count: totals.skipped },
     ];
     if (cancelledLoaded > 0) {
-        doors.push({ key: "cancelled", label: "Cancelled", count: cancelledLoaded });
+        doors.push({ key: "cancelled", label: "Canceled", count: cancelledLoaded });
     }
 
     const progressTone =
@@ -935,7 +935,7 @@ export function JobPanel({
                 variant="destructive"
                 description={
                     <>
-                        {formatCount(totals.queued)} items that have not started will be cancelled
+                        {formatCount(totals.queued)} items that have not started will be canceled
                         and never run. {formatCount(totals.running)} items running right now stop
                         where they are. The {formatCount(totals.succeeded)} items that already
                         finished are kept — their results stay and nothing already produced is
@@ -943,7 +943,7 @@ export function JobPanel({
                         {promisedCost !== null && promisedCost > 0 && (
                             <>
                                 {" "}
-                                Whatever has already been spent on this run is spent: cancelling
+                                Whatever has already been spent on this run is spent: canceling
                                 does not refund it. The whole run was estimated at{" "}
                                 {costText(promisedCost)} when it was
                                 confirmed.

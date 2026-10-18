@@ -593,7 +593,7 @@ interface BlockRowProps {
   onRemove: () => void;
   validVariables?: string[];
   /**
-   * Honest compatibility. A part the model cannot consume STAYS here, greyed,
+   * Honest compatibility. A part the model cannot consume STAYS here, grayed,
    * carrying the reason — it is never dropped and never looks fine.
    */
   compatibility?: PartCompatibility;

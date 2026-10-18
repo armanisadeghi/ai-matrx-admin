@@ -26,7 +26,7 @@
  *
  *   1. no constant estimate — a bigger pile promises a longer wait;
  *   2. a run whose only events are model tokens still MOVES on screen;
- *   3. a late heartbeat shows the server's labouring sentence, not a spinner.
+ *   3. a late heartbeat shows the server's laboring sentence, not a spinner.
  *
  * The first two legs are driven through the REAL primitives the dialogs use
  * (`sizedEstimateMs` + the lane rates; `reduceIngestProgress` fed the real
@@ -228,7 +228,7 @@ describe("leg 3 — a late heartbeat shows the server's sentence, never a spinne
   const LABOURING =
     "Still working, but the server is busy enough that it cannot check in right now. Nothing is lost — what has already been added is saved.";
 
-  it("renders the labouring sentence in place of the stale stage line", async () => {
+  it("renders the laboring sentence in place of the stale stage line", async () => {
     const progress = reduceIngestProgress(
       EMPTY_INGEST_PROGRESS,
       "masterwork_run_labouring",

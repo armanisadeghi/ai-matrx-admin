@@ -109,7 +109,7 @@ describe("bulk confirm asks one reason", () => {
     expect(run).toHaveBeenCalledWith(target, { reason: "spam signups" });
   });
 
-  it("cancelling the reason runs nothing", async () => {
+  it("canceling the reason runs nothing", async () => {
     const run = jest.fn(async () => ({}));
     await mount({
       id: "reopen",

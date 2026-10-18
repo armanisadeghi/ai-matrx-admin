@@ -4,7 +4,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 // THE DATA HOME'S FIVE FILTERS (Arman, 2026-09-27 21:20 PT). He opened /data and "Mine" read
 // 0 of everything: the home showed ONE organization, and he had made his tables in another. The
 // ruling, under his doctrine "access is personal": the home opens on EVERYTHING the person can see
-// across ALL their organizations, each row labelled with its organization, and it offers exactly
+// across ALL their organizations, each row labeled with its organization, and it offers exactly
 //
 //     All · Mine · My Orgs · Shared · Public
 //
@@ -167,7 +167,7 @@ export function emptyInScope(
 // `EntityOrgFilter`, at the right end of the lane row), which starts at All organizations on EVERY
 // visit, lives only in the address (`?org_filter=<id>`), is never remembered and is never set from the
 // active organization. It narrows every lane and every listing — in the doors (`p_organization_id`).
-// Only an organization the person belongs to is honoured; any other id reads as All organizations.
+// Only an organization the person belongs to is honored; any other id reads as All organizations.
 // (`?org=` is the link that SWITCHES the active organization — never this filter.)
 
 export const ALL_ORGANIZATIONS = "all" as const;

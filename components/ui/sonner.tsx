@@ -75,7 +75,7 @@ function useStaleToastHeightHeal() {
  * background tab — an agent browser pane, a second window, anything the person
  * is not looking at — nothing ever expires, so toasts stack. Measured live on
  * production: NINE stacked at once, and `document.elementFromPoint()` at the
- * centre of a sticky footer's Save button returned the sonner `<li>`, not the
+ * center of a sticky footer's Save button returned the sonner `<li>`, not the
  * button. The control was enabled, looked alive, and silently swallowed the
  * click. That is a dead control wearing an honest face, which the platform
  * forbids outright — and it is a strong candidate for the "a second save did

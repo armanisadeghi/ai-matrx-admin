@@ -396,7 +396,7 @@ export async function reattachStudioRun({
     if (finalStatus === "failed" || finalStatus === "cancelled") {
       const message =
         finalStatus === "cancelled"
-          ? "This pass was cancelled on the server."
+          ? "This pass was canceled on the server."
           : "This pass failed on the server.";
       show("failed", message);
       await settle(dispatch, run.id, "failed", message);

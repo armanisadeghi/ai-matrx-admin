@@ -54,7 +54,7 @@ type SuggestionView = Database["public"]["Views"]["v_scope_suggestions"]["Row"];
 type SuggestionStatsView =
   Database["public"]["Views"]["v_scope_suggestion_stats"]["Row"];
 
-// Suppression windows the producer honours before re-proposing the same cell
+// Suppression windows the producer honors before re-proposing the same cell
 // (backend defaults: 30 days reject, 7 days defer).
 const REJECT_SUPPRESS_DAYS = 30;
 const DEFER_SUPPRESS_DAYS = 7;

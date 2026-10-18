@@ -3,7 +3,7 @@
  * check:property-rows — every label shown with its value is `PropertyRow` from
  * `@ai-matrx/design-system/controls` (owner rules, 2026-10-13: label dark medium over value dark
  * regular on one left edge, help in a tooltip, "Not provided" tag, mono only for code, collected
- * data as a one-line summary, grey meta). Agents kept hand-rolling the row — grey mono labels,
+ * data as a one-line summary, gray meta). Agents kept hand-rolling the row — gray mono labels,
  * boxed values, italics for missing — ~30 local copies. This flags a NEW one.
  *
  * What counts as a hand-rolled row: a component DEFINED in a .tsx file whose destructured props

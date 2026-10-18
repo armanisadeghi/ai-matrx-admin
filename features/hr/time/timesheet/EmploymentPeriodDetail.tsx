@@ -177,7 +177,7 @@ function DetailBody({
       <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <h1 className="text-base font-semibold">{timesheet.employeeDisplayName}</h1>
-          {/* The two machines, side by side and labelled apart (§14 D8). */}
+          {/* The two machines, side by side and labeled apart (§14 D8). */}
           <RowStateChip state={timesheet.rowState} />
           <PeriodStateChip state={timesheet.payPeriod.state} />
         </div>

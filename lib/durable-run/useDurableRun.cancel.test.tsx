@@ -305,7 +305,7 @@ describe("Cancel stops the run on the server, and a stop is not a failure", () =
    * the server's own reply landing on the live stream. Every follower must stop
    * saying "working", and none of them may call it a failure.
    */
-  it("treats a live cancelled event as stopped, not as an error", async () => {
+  it("treats a live canceled event as stopped, not as an error", async () => {
     mockDispatch.mockImplementation(async (request: StreamRequest) => {
       if (request.path === LAUNCH_PATH) {
         request.onStreamEvent?.({
@@ -350,7 +350,7 @@ describe("Cancel stops the run on the server, and a stop is not a failure", () =
    * `cancelled` row must come back as a stop. (`cancelled` used to sit in
    * FAILED_STATUSES, which is what would have turned this into a red error.)
    */
-  it("settles a rejoined cancelled row as stopped", async () => {
+  it("settles a rejoined canceled row as stopped", async () => {
     mockDispatch.mockImplementation(async (request: StreamRequest) => {
       if (request.path === LAUNCH_PATH) {
         request.onStreamEvent?.({

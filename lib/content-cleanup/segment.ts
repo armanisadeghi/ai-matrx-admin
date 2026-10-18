@@ -315,7 +315,7 @@ function detectInlineCode(
   _lines: LineInfo[],
   masked: (offset: number) => boolean,
 ): ProtectedRegion[] {
-  // Code spans by THE one code-range rule (left to right, escapes honoured).
+  // Code spans by THE one code-range rule (left to right, escapes honored).
   const regions: ProtectedRegion[] = [];
   for (const range of findCodeRanges(text)) {
     if (range.kind !== "span" || masked(range.start)) continue;

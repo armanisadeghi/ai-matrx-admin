@@ -11,7 +11,7 @@
  * overall deadline, and Cancel ends the flow at once, even mid-call. The flow
  * ends in exactly one of: signed in, awaiting the code (link in hand), failed
  * (the server's own reason), offline (the server could not be reached),
- * timeout (honest), or cancelled.
+ * timeout (honest), or canceled.
  *
  * Pure of React and of the network: every effect is injected, so the state
  * machine is tested without either.

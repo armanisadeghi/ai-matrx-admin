@@ -188,7 +188,7 @@ export default function TerminalPage() {
   const cancelAll = useCallback(() => {
     ctxCancelAll();
     setRunning(false);
-    addLine("info", "Cancelled all running tasks");
+    addLine("info", "Canceled all running tasks");
   }, [ctxCancelAll, addLine]);
 
   // ── Execute command ──────────────────────────────────────────────────

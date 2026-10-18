@@ -194,8 +194,8 @@ export interface ResourceManifest {
    */
   experts: ManifestExpert[];
   /**
-   * What each analysed, curation-kept page NAMED — products/services,
-   * organisations, locations — read beside the manifest (`rs_source.page_analysis`
+   * What each analyzed, curation-kept page NAMED — products/services,
+   * organizations, locations — read beside the manifest (`rs_source.page_analysis`
    * is a body the manifest RPC deliberately does not carry). Feeds the derived
    * `page.entities` kind; the server resolver (`aidream research/context_bundles.py`)
    * derives the same block from the same rows.
@@ -325,7 +325,7 @@ export interface BundleBinding {
    *
    * `"concat"` (default) appends every kind's blocks — the normal case.
    * `"first"` takes only the FIRST kind in this list that produced anything and
-   * ignores the rest. That is a real modelling need, not a special case: "the
+   * ignores the rest. That is a real modeling need, not a special case: "the
    * report" means the assembled document if one exists, otherwise the current
    * topic synthesis — sending both would duplicate the same content in one
    * variable, which is exactly what the pre-bundle code was careful not to do.

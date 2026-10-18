@@ -15,7 +15,7 @@ const rows = LINT_DEBT_REPORT.findings.map((f) => ({ ...f, klass: classOf(f.rule
 const config = drillConfigFromColumns([], rows, LINT_DRILL);
 
 describe("lint debt drill (levels read the page's own totals)", () => {
-  it("declares only levels its Dimensions and Measures honour", () => {
+  it("declares only levels its Dimensions and Measures honor", () => {
     expect(drillLevelProblems(config.dimensions, config.measures, { attributeKeys: ["klass", "rule", "feature", "file", "route"] })).toEqual([]);
   });
 

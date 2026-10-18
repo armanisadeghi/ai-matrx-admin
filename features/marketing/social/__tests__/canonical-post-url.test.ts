@@ -88,7 +88,7 @@ describe("a brand's accounts become profile tiles", () => {
   it("starts a fresh Studio with the own accounts already stored, never one that would need a paid read", () => {
     expect(starterAccountSeeds(rows).map((s) => s.title)).toEqual(["@mel"]);
   });
-  it("adds them below the template in a labelled frame, and adds nothing for a brand with none", () => {
+  it("adds them below the template in a labeled frame, and adds nothing for a brand with none", () => {
     const base = { camera: { x: 0, y: 0, z: 1 }, nodes: [], groups: [], edges: [], shapes: [] };
     expect(withAccountTiles(base, [])).toBe(base);
     const doc = withAccountTiles(base, starterAccountSeeds(rows));

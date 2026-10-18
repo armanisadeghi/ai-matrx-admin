@@ -92,7 +92,7 @@ export type SearchDevice = "desktop" | "mobile";
 
 /**
  * Optional request knobs. Every field omitted = the server's default (today's
- * behaviour). Names are camelCase here; `runKindSearch` writes snake_case.
+ * behavior). Names are camelCase here; `runKindSearch` writes snake_case.
  */
 export interface SearchRequestOptions {
   vertical?: SearchVertical;
@@ -147,7 +147,7 @@ export interface SearchOutcome {
   raw: Record<string, unknown> | null;
   /**
    * Search notes from the server, as plain sentences: options this engine or
-   * result type could not honour, and what it used ("Searched near …").
+   * result type could not honor, and what it used ("Searched near …").
    */
   ignoredOptions: string[];
   /** The provider wire params actually sent (secrets redacted by the server). */

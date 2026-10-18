@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * GUARD: a theme colour variable is never used bare.
+ * GUARD: a theme color variable is never used bare.
  *
  * The theme variables (--background, --popover, --primary, --border, --chart-N ...) hold bare HSL
  * triples ("0 0% 100%"), so `color: var(--popover)` / `stroke="var(--border)"` / `box-shadow: 0 0 0 1px
- * var(--primary)` is NO colour: the browser drops the declaration (the chart tooltip lost its box,
- * 2026-10-17). A colour is always `hsl(var(--x))` (or `hsl(var(--x) / 0.5)`); a fallback is a triple:
+ * var(--primary)` is NO color: the browser drops the declaration (the chart tooltip lost its box,
+ * 2026-10-17). A color is always `hsl(var(--x))` (or `hsl(var(--x) / 0.5)`); a fallback is a triple:
  * `hsl(var(--x, 0 0% 100%))`.
  *
  *   node scripts/check-bare-hsl-colour.mjs [--root <repo dir>]...   scan tracked ts/tsx/js/mjs files
@@ -74,7 +74,7 @@ function selfTest() {
     "hsl(var(--primary) / 0.5)",
     'fill="hsl(var(--background, 0 0% 100%))"',
     "--glow: var(--primary);",
-    "// var(--border) is no colour",
+    "// var(--border) is no color",
     'className="shadow-md bg-elevation-2" style={{ background: "hsl(var(--elevation-1))" }}',
   ];
   for (const p of planted) if (!findBareHslColours(p).length) throw new Error(`self-test: planted bare var not caught: ${p}`);
@@ -91,7 +91,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (!roots.length) roots.push(resolve(dirname(fileURLToPath(import.meta.url)), ".."));
     const bad = roots.flatMap(scan);
     if (bad.length) {
-      console.error(`bare theme variable used as a colour (wrap in hsl(var(--x))):\n${bad.join("\n")}`);
+      console.error(`bare theme variable used as a color (wrap in hsl(var(--x))):\n${bad.join("\n")}`);
       process.exit(1);
     }
     console.log("check-bare-hsl-colour OK");

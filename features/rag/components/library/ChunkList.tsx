@@ -123,7 +123,7 @@ export function ChunkCard({
   plain?: boolean;
   /** The highlighted chunk's badge word ("Cited" for a citation). */
   highlightLabel?: string;
-  /** Go to where this chunk sits (a portion, a timestamp). Renders a labelled button. */
+  /** Go to where this chunk sits (a portion, a timestamp). Renders a labeled button. */
   onSelect?: () => void;
   /** The button's words, e.g. "Play from 01:05" or "Go to Section 3". */
   selectLabel?: string;

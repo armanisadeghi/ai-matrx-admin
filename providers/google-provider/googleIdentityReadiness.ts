@@ -12,7 +12,7 @@
  *
  * These are CAPS constants, not organization knobs. The bound is a TECHNICAL
  * readiness limit on a third-party script — how long a browser can plausibly
- * still be fetching `accounts.google.com/gsi/client` — not a behavioural
+ * still be fetching `accounts.google.com/gsi/client` — not a behavioral
  * opinion an organization would ever want to hold a different view about
  * (`common-docs/policies/limits-are-knobs-agents-set-them.md` governs ceilings
  * a person or an org chooses; this is neither).

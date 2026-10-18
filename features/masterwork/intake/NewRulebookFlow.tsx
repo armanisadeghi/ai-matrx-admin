@@ -1054,7 +1054,7 @@ export function NewRulebookFlow() {
               Already have a YouTube channel in mind?
             </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Catalogue the whole channel first — every video becomes a Source
+              Catalog the whole channel first — every video becomes a Source
               you can hand to this Rulebook once you start it. Your answers are
               saved; come straight back.
             </p>

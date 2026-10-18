@@ -16,7 +16,7 @@
 // drew EIGHT unlabeled glass icons beside a seven-icon section nav — fifteen
 // glyphs nobody could read, and at 800px the nav collapsed into a clipped
 // "Menu" stub that ran into them. Now:
-//   - an action marked `primary` is a LABELLED button (one or two per page);
+//   - an action marked `primary` is a LABELED button (one or two per page);
 //   - every other action is an icon with a tooltip and an accessible name,
 //     ON the header at every width — RouteHeader folds the lowest-priority
 //     ones into its own "…" only when the real row width runs out (a fixed
@@ -46,7 +46,7 @@ export interface EducationToolAction {
   href?: string;
   /** Anything that is not navigation (an export, a download). */
   onPress?: () => void;
-  /** Shown as a labelled button beside the menu. One or two per page. */
+  /** Shown as a labeled button beside the menu. One or two per page. */
   primary?: boolean;
   /** True while the action runs (e.g. "Exporting…"): shown, not pressable. */
   disabled?: boolean;
@@ -56,7 +56,7 @@ function ActionIcon({ name }: { name: string }) {
   return <LucideIcon name={name} size={16} />;
 }
 
-/** A labelled (or, with `iconOnly`, tooltip-named) action button. */
+/** A labeled (or, with `iconOnly`, tooltip-named) action button. */
 function ActionButton({
   action,
   iconOnly = false,
@@ -93,7 +93,7 @@ export function EducationToolHeader({
   backLabel?: string;
   /**
    * The tool's page-level actions. Mark the one or two a person comes here
-   * for `primary`; the rest go into one labelled "More" menu.
+   * for `primary`; the rest go into one labeled "More" menu.
    */
   actions?: EducationToolAction[];
   /** Unused since the phone sheet is the shell's own ⋮ (kept so callers compile). */
@@ -116,7 +116,7 @@ export function EducationToolHeader({
     ...secondary.map((action) => (
       <ActionButton key={action.label} action={action} iconOnly />
     )),
-    // A primary is the bare labelled TapTargetButton (not the ActionButton
+    // A primary is the bare labeled TapTargetButton (not the ActionButton
     // wrapper) so RouteHeader can see its label: on a phone RouteHeader draws
     // it icon-only, and in the server HTML it draws both forms chosen by the
     // phone breakpoint — the first paint already matches (no JS switch here).
@@ -153,7 +153,7 @@ export function EducationToolHeader({
       }
       center={
         // ONE header shape on every tool page (page-pass 2026-09-27): the
-        // section nav is always the labelled "Education" menu here, so the
+        // section nav is always the labeled "Education" menu here, so the
         // list, a deck and Fast Fire do not each draw it differently (full
         // pill on one, icons on another) depending on their title's length.
         <RouteModeNav

@@ -21,7 +21,7 @@ export interface UsageWindow {
  * The ONE name and meaning of "AI requests" per person on every admin user screen: the usage explorer's
  * `requests` (drill ai_usage, runtime._ai_usage_hourly) — chat requests counted once at their first
  * execution. admin.user_overview and users.admin_account_facts both sum that rollup. The runtime spine's
- * row count (runtime.global_request) is agent runs and calls, a different number, never labelled this.
+ * row count (runtime.global_request) is agent runs and calls, a different number, never labeled this.
  */
 export const AI_REQUESTS_LABEL = "AI requests";
 /** The Acquisition table counts runtime.global_request rows (every agent run), a different fact from AI requests. */

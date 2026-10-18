@@ -226,7 +226,7 @@ export const marketingTopicalMapManifest: SurfaceManifest = {
   intro: `<surface_intro>
 You are in a brand's TOPICAL MAP: the tree of subjects this brand should cover, and the plan for getting its website there. The map decides WHICH pages should exist and WHERE they live; the content plan, a separate surface, decides what one page says.
 Topics are addressed by SLUG, never by id. visible_topics is what the person can actually see right now — filters applied, collapsed branches excluded — while map_outline is the whole map. A count that is absent was not loaded; it never means zero.
-On the pages screen, page_intents is the convergence plan: each page is somewhere today (the topics it covers) and going somewhere (its one intent). A page is "leaving" the topic it covers and "arriving" at the topic its intent names — the same page is two different colours depending on which topic's row you are reading.
+On the pages screen, page_intents is the convergence plan: each page is somewhere today (the topics it covers) and going somewhere (its one intent). A page is "leaving" the topic it covers and "arriving" at the topic its intent names — the same page is two different colors depending on which topic's row you are reading.
 Every change goes through the topical_map tool, never by writing rows.
 </surface_intro>`,
   groups,

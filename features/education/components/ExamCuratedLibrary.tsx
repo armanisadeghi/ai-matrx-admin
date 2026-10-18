@@ -58,7 +58,7 @@ export async function ExamCuratedLibrary({
             ) : (
               <>
                 Curated decks and study guides for {examName}, built by AI and
-                organised by AI Matrx. Study a copy free — a human expert
+                organized by AI Matrx. Study a copy free — a human expert
                 hasn&apos;t verified these yet, so check anything that matters.
               </>
             )}

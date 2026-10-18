@@ -15,7 +15,7 @@ const SPINE_TONE: Record<string, ChipTone> = {
 const SPINE_LABEL: Record<string, string> = {
   completed: "Completed",
   failed: "Failed",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
   running: "Running",
   pending: "Queued",
 };

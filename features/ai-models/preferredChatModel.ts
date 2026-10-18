@@ -10,7 +10,7 @@
 // the basic chat door is the catalog's `is_primary` text model
 // (`features/ai-models/redux/platformDefaultModel.ts` names it for display).
 //
-// WHERE IT IS HONOURED: the launch orchestrator seeds the instance's model
+// WHERE IT IS HONORED: the launch orchestrator seeds the instance's model
 // override with this answer for the basic-chat door
 // (`chat.default_new_chat`) when the caller passed no explicit model — so the
 // picker on the chat surface shows it as the current model, and the turn's

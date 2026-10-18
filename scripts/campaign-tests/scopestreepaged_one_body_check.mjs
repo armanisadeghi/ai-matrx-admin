@@ -16,7 +16,7 @@
  *   R4 objects      the type object and the scope object, each answered key for key
  *   R5 order        the order of types and of scopes
  *   R6 wall         the doors decide every organization exactly as custom.context_tree does
- * Normalised before comparing: comments, whitespace, the variable names (v_me / p_me, v_orgs / p_orgs,
+ * Normalized before comparing: comments, whitespace, the variable names (v_me / p_me, v_orgs / p_orgs,
  * v_admin / p_admin), row aliases inside the objects, and the helper's ONE addition (`and (p_type_ids is
  * null or t.id = any (p_type_ids))`, counted: exactly where it belongs). A section that cannot be found
  * in either body is a FAIL (unmeasured), never a pass.

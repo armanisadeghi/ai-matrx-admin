@@ -394,7 +394,7 @@ export function EntityListPage<TRow>({
       pageSize,
     },
   });
-  // THE DIMENSION FILTER shows where the surface's server honours it, on personal-seat lists only (its
+  // THE DIMENSION FILTER shows where the surface's server honors it, on personal-seat lists only (its
   // Values are the viewer's own organizations' Dimensions; an admin page never acts as the viewer). A
   // Value the address carries always shows, so the narrowing is never invisible.
   const dimensionOffered =
@@ -1316,7 +1316,7 @@ export function EntityListPage<TRow>({
             />
             )}
           </div>
-          {/* THE DIMENSION FILTER (./EntityDimensionFilter): only where the surface's server honours it. */}
+          {/* THE DIMENSION FILTER (./EntityDimensionFilter): only where the surface's server honors it. */}
           {dimensionOffered && (
             <div data-entity-list-dimension="" className="ml-auto flex shrink-0 items-center">
               <EntityDimensionFilter

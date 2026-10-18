@@ -17,7 +17,7 @@ describe("roundFailed", () => {
 });
 
 describe("a run ended from outside is told, never shown as working (MKT-183)", () => {
-  it("a cancelled or stopped run is stopped, and counts as not finished", () => {
+  it("a canceled or stopped run is stopped, and counts as not finished", () => {
     expect(roundStopped({ status: "cancelled" })).toBe(true);
     expect(roundStopped({ status: "stopped" })).toBe(true);
     expect(roundFailed({ status: "cancelled", steps: [step({ phase: "stopped" })] })).toBe(true);

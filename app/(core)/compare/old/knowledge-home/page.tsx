@@ -1,5 +1,5 @@
 // record-view: none — an old-version comparison page
-// Old Knowledge home (RagHomePage, served at /rag and labelled "Knowledge home"
+// Old Knowledge home (RagHomePage, served at /rag and labeled "Knowledge home"
 // before H6a, 2026-09-27), review-only. Restored verbatim from 143e461807^.
 import { RagHomePage } from "../_restored/RagHomePage";
 import KnowledgeLanding from "@/features/auth/components/module-landing/landings/KnowledgeLanding";

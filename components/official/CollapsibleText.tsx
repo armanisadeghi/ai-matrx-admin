@@ -30,7 +30,7 @@ interface CollapsibleTextProps {
   collapseLabel?: string;
   /**
    * Show the label as visible text on the toggle ("Show more" / "Show less"),
-   * as comment threads do (Linear, Notion). Default: icon-only, labelled for
+   * as comment threads do (Linear, Notion). Default: icon-only, labeled for
    * assistive tech.
    */
   showLabel?: boolean;

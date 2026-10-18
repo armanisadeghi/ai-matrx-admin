@@ -2,7 +2,7 @@
  * ── ONE PRE-FLIGHT, EVERY WRITER (FIX-11, W10-1) ─────────────────────────────
  *
  * THE DEFECT, as a walker found it on production v0.4.1624: the pre-flight
- * printed its refusal on ALL surfaces, and exactly ONE of them honoured it.
+ * printed its refusal on ALL surfaces, and exactly ONE of them honored it.
  * Batch mode's Apply was genuinely disabled with the sentence beside it; the
  * single-place mandate screen showed the same warning with `disabled:false`
  * and wrote it; and the shortcut editor stored a Prompt-User mapping with a

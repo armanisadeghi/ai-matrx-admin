@@ -534,7 +534,7 @@ export function useBundlesWriteHandlers(): () => SurfaceWriteHandlers {
           // The DB enforces global uniqueness (`tool_bundle_name_key`); this
           // catches the clash the admin can already SEE, so the agent hears it
           // now instead of the form refusing to submit later. The loaded list
-          // honours `bundles_filter`, so on "active" it cannot see an inactive
+          // honors `bundles_filter`, so on "active" it cannot see an inactive
           // bundle holding the name — hence "already in the list", not "free".
           if (store.bundles.some((b) => b.name === nextName))
             throw new Error(

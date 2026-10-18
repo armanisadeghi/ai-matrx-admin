@@ -1,5 +1,5 @@
 /**
- * A BOARD'S DESIGN TOKENS. A board that holds design-token tables (a colour, measure, shadow, opacity,
+ * A BOARD'S DESIGN TOKENS. A board that holds design-token tables (a color, measure, shadow, opacity,
  * motion or type-style section) is its own design system: component samples (`html_sample` frames)
  * anywhere on the board draw with THOSE tokens, not the app's. The host (`home/UserBoard.tsx`) lists
  * the token tables in chapter (reading) order; each Table tile body hands them to records-ui's

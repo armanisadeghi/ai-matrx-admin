@@ -18,7 +18,7 @@
 //   • The body scrolls, the bar does not.
 //
 // 🚨 A TAB WITH `visible: false` IS ABSENT FROM THE BAR. Never rendered disabled,
-// never rendered greyed with a lock. There is no greyed control anywhere in HR
+// never rendered grayed with a lock. There is no grayed control anywhere in HR
 // (SPEC-UI-IA §4.2 — the rule covers tabs and columns, not just fields).
 
 "use client";

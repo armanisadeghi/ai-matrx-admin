@@ -118,7 +118,7 @@ function build(spec: Spec[]) {
 }
 
 describe("local drills adopted across the product", () => {
-  it.each(PAGES.map((p) => [p.name, p] as const))("%s declares only levels its Dimensions and Measures honour", (_n, page) => {
+  it.each(PAGES.map((p) => [p.name, p] as const))("%s declares only levels its Dimensions and Measures honor", (_n, page) => {
     const { columns, rows } = build(page.spec);
     const config = drillConfigFromColumns(columns, rows, page.drill);
     expect(drillLevelProblems(config.dimensions, config.measures)).toEqual([]);

@@ -4,7 +4,7 @@
 
 /** The document is paper in light and dark mode; fields and marks are drawn in these. */
 export const PAPER = { page: "#ffffff", ink: "#0d2673", rule: "#9ca3af", muted: "#6b7280" } as const;
-/** Recipient colours on paper (fills at 18 % alpha, borders solid). Index = recipient.color_index % 6. */
+/** Recipient colors on paper (fills at 18 % alpha, borders solid). Index = recipient.color_index % 6. */
 export const RECIPIENT_PALETTE = ["#2563eb", "#d97706", "#059669", "#db2777", "#7c3aed", "#0891b2"] as const;
 export function recipientColor(colorIndex: number, alpha = 1): string {
   const n = RECIPIENT_PALETTE.length;

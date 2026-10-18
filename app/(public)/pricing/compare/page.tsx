@@ -69,7 +69,7 @@ type Row = {
 
 const TABLE_ROWS: Row[] = [
   {
-    dimension: "Cancelling your plan",
+    dimension: "Canceling your plan",
     incumbent:
       "Retention flows, hidden links, and \"contact us\" hurdles — the pattern the FTC fined Chegg $7.5M over.",
     matrx: "One click in the customer portal. Same place you started.",

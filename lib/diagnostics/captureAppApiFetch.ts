@@ -10,7 +10,7 @@
  * once and captures a non-2xx or network failure on a same-origin `/api/`
  * path — method, path, status, and the route's own error sentence.
  *
- * A request cancelled because the page is leaving is not captured (see
+ * A request canceled because the page is leaving is not captured (see
  * `pageIsLeaving`); a network failure while the page stays is.
  *
  * Tier: orange by rule (`app-api-http`), client-only. Capture never breaks the

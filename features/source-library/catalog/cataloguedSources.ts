@@ -2,7 +2,7 @@
  * features/source-library/catalog/cataloguedSources.ts
  *
  * SOURCE-CONVERGENCE §2.6 — a Library files a Source by a
- * `processed_document → media_source_library` edge labelled
+ * `processed_document → media_source_library` edge labeled
  * `catalogued_source`. Other edges from a document to a Library (none are
  * registered today) must never be listed as "filed here".
  */

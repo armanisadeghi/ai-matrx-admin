@@ -99,7 +99,7 @@ export function PairingCodeDialogBody({
       /*
         🚨 VERBATIM. The source turns a refusal envelope into an Error carrying the server's own
         sentence — "A kiosk belongs to a work location…", "Give the tablet a name an administrator
-        will recognise…". Replacing it with a generic line is what G2 F4 marked as a defect in its
+        will recognize…". Replacing it with a generic line is what G2 F4 marked as a defect in its
         own right, separately from the missing picker.
       */
       setError(
@@ -158,7 +158,7 @@ export function PairingCodeDialogBody({
       <div className="flex flex-col gap-1">
         <h3 className="text-base font-semibold text-foreground">Pair a new tablet</h3>
         <p className="text-sm text-muted-foreground">
-          Name it something a person would recognise from across the room.
+          Name it something a person would recognize from across the room.
         </p>
       </div>
 

@@ -12,10 +12,10 @@
  * (`BoardNavigationContext`), else a new tab. Two doors, one rule (`leavesBoard`):
  *   - `TileNavigationBoundary` — around every tile body: the app router its
  *     content sees (`useRouter`, `<Link>`) opens another page in a new tab;
- *     the board's own address (query, hash) is unchanged behaviour.
+ *     the board's own address (query, hash) is unchanged behavior.
  *   - `useTileNavigationGuard` — on the board: a document navigation (a plain
  *     link, `location.assign`, a form) started by a press inside a tile is
- *     cancelled and opened in a new tab (the Navigation API's `navigate`).
+ *     canceled and opened in a new tab (the Navigation API's `navigate`).
  */
 
 import { type ReactNode, createContext, useContext, useEffect, useRef } from "react";

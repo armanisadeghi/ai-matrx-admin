@@ -79,7 +79,7 @@ describe("never a name twice", () => {
     expect(tileChrome("page", page)).toEqual({ headerless: false, bare: false, autoHeight: false });
   });
 
-  it("page layout gives a labelled chapter label room, and none to a chapter its tile names", () => {
+  it("page layout gives a labeled chapter label room, and none to a chapter its tile names", () => {
     const plan = planPageLayout({
       frames: [
         { ...frame, rect: { x: 0, y: 0, w: 1100, h: 400 } },
@@ -145,7 +145,7 @@ describe("auto height", () => {
     ];
     const first = planPageLayout({ frames, tiles });
     expect(first.members.get("a")).toBe("f1");
-    // "a" grows to 1900: its centre now sits below chapter f2's top.
+    // "a" grows to 1900: its center now sits below chapter f2's top.
     const grown = { frames, tiles: [{ ...tiles[0], rect: { ...tiles[0].rect, h: 1900 } }, tiles[1]] };
     const next = planPageLayout(grown, undefined, { members: first.members });
     expect(next.members.get("a")).toBe("f1");
@@ -164,7 +164,7 @@ describe("auto height", () => {
       { id: "t", x: 8, y: 8, w: 1084, h: 1900 },
       { id: "f1", x: 0, y: 0, w: 1100, h: 8 + 1900 + 8 },
     ]);
-    // The grown tile's centre is still inside its own chapter.
+    // The grown tile's center is still inside its own chapter.
     const centreY = 8 + 1900 / 2;
     expect(centreY).toBeLessThan(moves[1].h!);
   });

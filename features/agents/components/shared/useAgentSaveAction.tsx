@@ -33,7 +33,7 @@ import { useAgentChangeReach } from "@/features/mandates/admin/useAgentChangeRea
 import { openFromNotice, reserveNoticeTab, type ReservedNoticeTab } from "@/lib/notice-open/openFromNotice";
 
 /**
- * Shared save behaviour for an agent record.
+ * Shared save behavior for an agent record.
  *
  * Centralises the desktop save-status pill (`AgentSaveStatus`) and the mobile
  * save tap target (`AgentSaveTapButton`) so the create-vs-update branching,

@@ -80,7 +80,7 @@ export function toggleToolInCanvas(canvas: CanvasController | null, input: ToolT
     reportCanvasOpenDrop({ reason: "canvas-unavailable", requested: input.title, detail: `${input.kind}::${input.key ?? "default"}` });
     return null;
   }
-  // Where a NEW tab opens (Notifications: below) is the kind's `preferredTarget`, honoured by toggleKind.
+  // Where a NEW tab opens (Notifications: below) is the kind's `preferredTarget`, honored by toggleKind.
   return toggleKind(canvas, input);
 }
 

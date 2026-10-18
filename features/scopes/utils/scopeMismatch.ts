@@ -109,7 +109,7 @@ export interface ScopeMismatchDisplayItem {
 /**
  * Resolves scope ids to display items via the loaded scope tree. Ids not
  * found in the tree (deleted scope, other-org scope, tree not yet loaded)
- * fall back to a labelled unknown — the dialog must never hide a scope
+ * fall back to a labeled unknown — the dialog must never hide a scope
  * just because its name can't be resolved.
  */
 export function buildScopeDisplayItems(

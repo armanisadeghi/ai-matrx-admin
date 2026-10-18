@@ -109,7 +109,7 @@ afterEach(() => {
 });
 
 describe("the real kind decides which rows are on this page", () => {
-  it("honours the kind's OWN recogniser, not a re-derived id comparison", async () => {
+  it("honors the kind's OWN recogniser, not a re-derived id comparison", async () => {
     mockQueryAssists.mockResolvedValue({
       rows: [
         row("mine", "sheet_write", "u1"),

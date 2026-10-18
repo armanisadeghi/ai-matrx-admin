@@ -54,7 +54,7 @@ export function EmploymentPicker({
    * it is deliberate (hr_l1_65). So for a rank-and-file viewer every row here
    * arrived with a null spell id and was rendered disabled by the rule below,
    * and an employee opening the incident intake form found every colleague
-   * greyed out: they could describe what happened and could not say who it was
+   * grayed out: they could describe what happened and could not say who it was
    * about.
    *
    * Two different facts were arriving on the wire looking identical — "this
@@ -63,7 +63,7 @@ export function EmploymentPicker({
    * picker hands back the EMPLOYEE and the door resolves the spell
    * (`hr_incident_create` → `hr.subject_employment_as_of`, hr_l1_79). Callers
    * whose door genuinely needs a specific spell — a corrective action, a party
-   * row on a rehire — must NOT pass it and keep the strict behaviour.
+   * row on a rehire — must NOT pass it and keep the strict behavior.
    */
   onChangeSubject?: (
     value: { employmentId: string | null; employeeId: string | null },

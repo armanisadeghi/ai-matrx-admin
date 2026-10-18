@@ -20,7 +20,7 @@ export const metadata = createRouteMetadata("/print", {
     titlePrefix: "Order printed copies",
     title: "Print",
     description:
-        "Price a real book — trim, paper, binding, cover finish, quantity and destination — against a live print-on-demand catalogue, then order printed copies.",
+        "Price a real book — trim, paper, binding, cover finish, quantity and destination — against a live print-on-demand catalog, then order printed copies.",
     letter: "PO",
     canonicalPath: "/print/order",
 });
@@ -32,7 +32,7 @@ export default async function PrintOrderLayout({ children }: { children: React.R
             <ModuleSignInGate
                 title="Order printed copies"
                 route="/print/order"
-                description="Sign in to price a print-on-demand book live — sized, bound, and shipped, calculated against the real print catalogue."
+                description="Sign in to price a print-on-demand book live — sized, bound, and shipped, calculated against the real print catalog."
                 icon={BookText}
             />
         );

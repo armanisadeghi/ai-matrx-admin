@@ -7,7 +7,7 @@
  * documents", the composer rail's Doc pill, a tool's result bar, the editor's "Open in Canvas",
  * `/chat/new?attachDoc=`) opens this tab through the chat windows port's
  * `openWorkingDocumentPanel`. The kind id lives in the chat package
- * (`host/canvas-tabs.ts`) so the package recognises the tab by the same id.
+ * (`host/canvas-tabs.ts`) so the package recognizes the tab by the same id.
  */
 
 import { FileText } from "lucide-react";

@@ -160,7 +160,7 @@ export interface ComparedItem {
   error: string | null;
   needs_choice: boolean;
   candidates: PlaceCandidate[];
-  /** The site the facts came from ("Amazon", "Instagram"); mixed platforms are labelled. */
+  /** The site the facts came from ("Amazon", "Instagram"); mixed platforms are labeled. */
   source_label?: string | null;
   facets?: ItemFacet[];
 }

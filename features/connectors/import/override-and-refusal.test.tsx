@@ -4,7 +4,7 @@
  * aidream lane B-10 (2026-09-17, `/projects/google-native/VERIFY-B1-B2-R2.md` N1
  * and BREAK K) closed two halves of one story on the server:
  *
- * 1. **The apply now honours an explicit "take Google's value here"** — the new
+ * 1. **The apply now honors an explicit "take Google's value here"** — the new
  *    `ContactFieldChoice.override_manual`. Before it, `_explicit_choice` was
  *    `include && value is not None`, so this panel's tick on a `kept_manual` row
  *    was SENT AND SILENTLY DISCARDED while the row said, in words, *"will replace

@@ -1,6 +1,6 @@
 /**
  * How an example row presents itself. The stored label is free text; a row
- * labelled "... canonical example" that is NOT the canonical one must not
+ * labeled "... canonical example" that is NOT the canonical one must not
  * claim to be, and a row written for an older kind version must say so.
  */
 

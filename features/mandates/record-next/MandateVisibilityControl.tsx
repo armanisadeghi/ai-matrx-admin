@@ -12,7 +12,7 @@
 //                they see it under "Shared" and can bind it at their own level
 //   Public tab → published to the web; everyone sees it under "Public"
 // `mandate` is in platform.shareable_resource_registry (mandate_share_without_move.sql),
-// and mandate.definition's RLS honours the grants through iam.has_access('mandate', …).
+// and mandate.definition's RLS honors the grants through iam.has_access('mandate', …).
 // Proof from each viewer's seat: `pnpm check:mandate-sharing-lanes`.
 
 import { useState } from "react";

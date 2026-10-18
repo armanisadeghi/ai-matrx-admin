@@ -35,7 +35,7 @@ describe("codex usage drill", () => {
   const rows = toCodexCells(cells);
   const config = drillConfigFromColumns(CODEX_COLUMNS, rows, CODEX_DRILL);
 
-  it("declares only levels its Dimensions and Measures honour", () => {
+  it("declares only levels its Dimensions and Measures honor", () => {
     expect(drillLevelProblems(config.dimensions, config.measures, { attributeKeys: config.fields?.map((f) => f.key) })).toEqual([]);
   });
 

@@ -8,7 +8,7 @@
  *
  * Representations (`@ai-matrx/chat` renderedArtifactContext.ts):
  *   - `code`       — the content: code / diagram source / markdown, or the
- *                    kind's data as JSON (labelled per type),
+ *                    kind's data as JSON (labeled per type),
  *   - `text`       — a readable plain-text form, only where the content is
  *                    structured data (a code block's text IS its code),
  *   - `screenshot` — captured at ATTACH time: DOM capture for "dom" types,

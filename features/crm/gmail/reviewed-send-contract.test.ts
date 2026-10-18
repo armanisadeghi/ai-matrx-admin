@@ -429,7 +429,7 @@ describe("the 409 refusal", () => {
     },
   };
 
-  it("is recognised by its code and nothing else", () => {
+  it("is recognized by its code and nothing else", () => {
     expect(reviewedSendRefusalOf(error)?.address).toBe("ada@example.com");
     expect(reviewedSendRefusalOf({ code: "internal" })).toBeNull();
     expect(reviewedSendRefusalOf(new Error("network down"))).toBeNull();

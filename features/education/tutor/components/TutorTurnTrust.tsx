@@ -13,7 +13,7 @@
 // never a bespoke citation/confidence UI:
 //   • not_in_material → a general-knowledge label (owner ruling 2026-10-11: the
 //     tutor answers from general knowledge right away when the material is
-//     silent; the answer is shown, labelled, never refused).
+//     silent; the answer is shown, labeled, never refused).
 //   • grounded / inferred → <ConfidenceBadge/> + <SourceCitations/>.
 //
 // Renders nothing when the turn carries no envelope; the caller then falls back
@@ -28,7 +28,7 @@ import { isRefusal, type TrustEnvelope } from "@/features/education/trust/types"
 export function TutorTurnTrust({ trust }: { trust: TrustEnvelope | null }) {
   if (!trust) return null;
 
-  // Not in the learner's material — answered from general knowledge, labelled.
+  // Not in the learner's material — answered from general knowledge, labeled.
   if (isRefusal(trust)) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 pb-2">

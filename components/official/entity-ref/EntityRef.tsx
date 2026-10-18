@@ -136,7 +136,7 @@ export interface EntityRefProps {
    * `openEntity` handler) instead of navigating the tab.
    *
    * Cmd/Ctrl/Shift/Alt/middle clicks are NOT intercepted: they keep the
-   * browser's native new-tab behaviour via the real `href`, so a surface that
+   * browser's native new-tab behavior via the real `href`, so a surface that
    * takes over the click can never cost the user their current state. The
    * explicit new-tab control stays visible regardless.
    *
@@ -209,7 +209,7 @@ export function EntityRef({
   } = useEntityHref(token, id, href);
   // The peek registry is keyed by canonical token, so there is nothing to
   // translate — `peekKeyForToken` existed only to bridge the legacy
-  // catalogue vocabulary and is deleted.
+  // catalog vocabulary and is deleted.
   const canPeek = !disablePeek && hasPeek(canonicalToken);
   const label = name?.trim() || `${displayId(id)}…`;
   // `label` stays the ACCESSIBLE name (title/aria) even when children
@@ -257,7 +257,7 @@ export function EntityRef({
           prefetch={openInNewTab || hrefResolving ? false : undefined}
           onClick={(e) => {
             stop(e);
-            // A modified click keeps the browser's native new-tab behaviour —
+            // A modified click keeps the browser's native new-tab behavior —
             // an interceptor must never cost the user their current state.
             if (!onOpen || allowNativeNewTab(e)) return;
             e.preventDefault();

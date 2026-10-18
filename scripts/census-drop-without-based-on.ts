@@ -6,7 +6,7 @@
  * WHY: until 08af876e8a (matrx-frontend) / 3f8096cec5 (aidream) neither runner judged a DROP
  * the same file recreates, so a campaign file could put an older body back over a peer lane's
  * change with no warning (PROGRESS-S2: lane S3's record_aggregate / agg_sql). Both runners now
- * refuse that shape at apply time — against the LIVE catalogue, so a file whose dropped object
+ * refuse that shape at apply time — against the LIVE catalog, so a file whose dropped object
  * does not exist live needs no line. This census is the STATIC half: it names every file whose
  * bytes carry the shape without a declaration, and whether the ledger has already seen it.
  *

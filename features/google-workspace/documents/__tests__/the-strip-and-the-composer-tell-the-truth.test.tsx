@@ -375,7 +375,7 @@ describe("refresh on open", () => {
     m.unmount();
   });
 
-  it("honours an organization that raised the floor above the record's age", async () => {
+  it("honors an organization that raised the floor above the record's age", async () => {
     refreshFloorSeconds = 86_400;
     currentRow = googleDocumentRow({ synced_at: new Date(Date.now() - 3_600_000).toISOString() });
     const m = await mount();

@@ -34,7 +34,7 @@ const EXAMPLE_VALUES: Array<{ label: string; identity: string; meaning: string }
     label: "Server",
     identity: "server",
     meaning:
-      "A data centre decommission. One of these is worth a year of the other two.",
+      "A data center decommission. One of these is worth a year of the other two.",
   },
 ];
 

@@ -175,7 +175,7 @@ export const STAGES: LoopStage[] = [
     publicInfo: {
       title: "Plan every page",
       plain:
-        "That research becomes the complete list of pages your site should have, organised the way your visitors actually think.",
+        "That research becomes the complete list of pages your site should have, organized the way your visitors actually think.",
       icon: "ListTree",
     },
     repos: ["ai-matrx", "aidream", "db"],
@@ -218,7 +218,7 @@ export const STAGES: LoopStage[] = [
     pipes: {
       code: {
         state: "n/a",
-        note: "Writing a brief is a judgement call — code cannot author it. Code only bulk-DISPATCHES briefs (empty-brief sweep).",
+        note: "Writing a brief is a judgment call — code cannot author it. Code only bulk-DISPATCHES briefs (empty-brief sweep).",
         ref: "ai-matrx/features/marketing/content-plan/hooks/useContentPlanAi.ts#usePlanBulkDeepen",
       },
       human: {
@@ -451,7 +451,7 @@ export const STAGES: LoopStage[] = [
     pipes: {
       code: {
         state: "live",
-        note: "15-check catalogue runs automatically after every full crawl; findings reconciled, not duplicated. FE evaluators are byte-parity locked to the server.",
+        note: "15-check catalog runs automatically after every full crawl; findings reconciled, not duplicated. FE evaluators are byte-parity locked to the server.",
         ref: "ai-matrx/features/marketing/data/analysis-service.ts",
       },
       human: {
@@ -1211,7 +1211,7 @@ export function gapsAt(id: string): LoopGap[] {
   return GAPS.filter((g) => g.at === id && g.status !== "closed");
 }
 
-/** Worst pipe state on an edge — drives edge colouring. */
+/** Worst pipe state on an edge — drives edge coloring. */
 export function edgeHealth(edge: LoopEdge): PipeState {
   const states = PIPES.map((p) => edge.pipes[p].state).filter(
     (s) => s !== "n/a",

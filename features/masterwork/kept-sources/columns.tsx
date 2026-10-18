@@ -2,7 +2,7 @@
 
 // features/masterwork/kept-sources/columns.tsx
 //
-// What a person needs to recognise one piece of kept raw material: which lane
+// What a person needs to recognize one piece of kept raw material: which lane
 // captured it, when, how big it is, how many voices are in it, and what it
 // actually produced.
 //

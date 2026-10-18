@@ -2,7 +2,7 @@
  * Unit contract for the pure link-change helpers: the verdict sentence per
  * change kind (including the multi-anchor case and the unknown-kind fallback),
  * the tone vocabulary, the severity cut points, and the jsonb narrower's
- * behaviour on missing, null, and wrong-typed fields.
+ * behavior on missing, null, and wrong-typed fields.
  */
 import type { Json } from "@/types/database.types";
 import {

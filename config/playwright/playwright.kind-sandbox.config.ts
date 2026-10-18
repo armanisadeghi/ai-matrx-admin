@@ -47,7 +47,7 @@ export default defineConfig({
     // Our agent traffic, said by cookie (scripts/lib/agent-traffic.mjs).
     storageState: agentTrafficStorageState("kind-sandbox-gate", baseURL),
     ...devices["Desktop Chrome"],
-    // The bundled Chromium, so the CSP behaviour under test is the engine's
+    // The bundled Chromium, so the CSP behavior under test is the engine's
     // and not whatever the machine happens to have installed.
     channel: undefined,
   },

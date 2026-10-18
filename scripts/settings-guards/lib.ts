@@ -715,7 +715,7 @@ export function scanKnobReads(
     }
 
     // STRICT CATCH-ALL (manifest generator): a reader call whose argument shape none of the
-    // families above recognised (`useSessionKnob(fullKey)`, `knobInt(kindFeature(k), key)`) was
+    // families above recognized (`useSessionKnob(fullKey)`, `knobInt(kindFeature(k), key)`) was
     // invisible to every family — counted unresolved here instead of silently uncounted.
     if (strict && !isPy) {
       const seenLines = new Set([...sites, ...dynamic].filter((x) => x.file === f.rel).map((x) => `${x.line}|${x.fn.split(" ")[0]}`));

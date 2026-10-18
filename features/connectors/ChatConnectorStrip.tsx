@@ -9,7 +9,7 @@
  *
  * Every eligible integration appears once before the bag resets. At a cycle
  * boundary, the previous visit's three are deferred so consecutive visits do
- * not repeat when the catalogue is large enough.
+ * not repeat when the catalog is large enough.
  */
 
 import { useEffect, useRef, useState } from "react";

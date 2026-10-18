@@ -304,7 +304,7 @@ export function ChangePolicySurface({
             >
                 <SettingsSwitch
                     label="Show all change types"
-                    description={showAll ? "Showing the full catalogue, grouped by tier." : "Showing only rows that diverge from the platform default."}
+                    description={showAll ? "Showing the full catalog, grouped by tier." : "Showing only rows that diverge from the platform default."}
                     checked={showAll}
                     onCheckedChange={setShowAll}
                 />

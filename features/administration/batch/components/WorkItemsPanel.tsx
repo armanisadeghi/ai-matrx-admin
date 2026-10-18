@@ -7,7 +7,7 @@
  * something went wrong — `error` (the provider call) and `handler_error`
  * (the delivery).
  *
- * Row density and the expand-in-place gesture are modelled on Linear's issue
+ * Row density and the expand-in-place gesture are modeled on Linear's issue
  * list; the money column is Stripe's (what it cost, what it would have cost,
  * the discount stated out loud).
  */

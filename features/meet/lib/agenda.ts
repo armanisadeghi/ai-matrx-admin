@@ -129,8 +129,8 @@ export function matchesQuery(title: string, query: string): boolean {
 
 /**
  * The Upcoming list: the reader's own occurrences, not over yet, matching the
- * search, whole-meeting cancellations out (they live on the Cancelled tab), and
- * a cancelled single occurrence KEPT — it shows struck through, as Google
+ * search, whole-meeting cancellations out (they live on the Canceled tab), and
+ * a canceled single occurrence KEPT — it shows struck through, as Google
  * Calendar does, so a person can see the gap and restore it.
  */
 export function upcomingRows(

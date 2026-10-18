@@ -4,7 +4,7 @@
 //
 // THE scope-type card — one per scope type, on the org home (/organizations/<org>) and the
 // org's Scopes page (/organizations/<org>/scopes). It is the design system's table card
-// (`MatrxTableCard`) around the canonical table: icon, colour rail, "4 clients · 14 fields",
+// (`MatrxTableCard`) around the canonical table: icon, color rail, "4 clients · 14 fields",
 // Edit (the scope type's settings sheet) and Open (the type's page), the scopes × fields
 // preview, and "+ Add client" with the inline add flow.
 //

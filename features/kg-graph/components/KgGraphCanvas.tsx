@@ -10,7 +10,7 @@
 //
 // Local component state only (read-mostly: one fetch per view) — matching the
 // "no parallel slices for a single-fetch view" guidance. Lucide for chrome icons;
-// semantic colour classes throughout.
+// semantic color classes throughout.
 
 "use client";
 
@@ -132,8 +132,8 @@ export function KgGraphCanvas({
   // Visualization controls.
   const [detail, setDetail] = useState<KgDetailId>(KG_DEFAULT_DETAIL);
   const [layoutId, setLayoutId] = useState<KgLayoutId>("fcose");
-  // Default to the structural encodings: colour by cluster tier (the tree), size
-  // by importance (PageRank). Entity-kind colouring (concept/date/person…) is
+  // Default to the structural encodings: color by cluster tier (the tree), size
+  // by importance (PageRank). Entity-kind coloring (concept/date/person…) is
   // rarely what matters, so it's an opt-in alternative, not the default.
   const [colorBy, setColorBy] = useState<KgColorBy>("tier");
   const [sizeBy, setSizeBy] = useState<KgSizeBy>("importance");
@@ -480,7 +480,7 @@ export function KgGraphCanvas({
               </SelectContent>
             </Select>
 
-            {/* Colour encoding */}
+            {/* Color encoding */}
             <Select
               value={colorBy}
               onValueChange={(v) => setColorBy(v as KgColorBy)}
@@ -494,13 +494,13 @@ export function KgGraphCanvas({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="tier" className="text-xs">
-                  Colour: hierarchy
+                  Color: hierarchy
                 </SelectItem>
                 <SelectItem value="community" className="text-xs">
-                  Colour: community
+                  Color: community
                 </SelectItem>
                 <SelectItem value="kind" className="text-xs">
-                  Colour: kind
+                  Color: kind
                 </SelectItem>
               </SelectContent>
             </Select>

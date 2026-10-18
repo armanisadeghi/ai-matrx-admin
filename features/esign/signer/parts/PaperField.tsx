@@ -4,7 +4,7 @@
 //
 // The page is paper in light and dark mode, so everything here is drawn in PAPER / the recipient
 // palette (contract/paper.ts), never theme tokens. A field of the signer's own is a compact tag in
-// their colour until filled ("Sign here", "Initial here", DocHub's inline tags); on a desktop the
+// their color until filled ("Sign here", "Initial here", DocHub's inline tags); on a desktop the
 // text kinds are typed straight onto the page. The ACTIVE field carries the callout: its label with
 // a required star, Edit / Clear, and Next field → or Skip →. On a phone the page only points; the
 // bottom drawer holds the input (S13.3).
@@ -75,7 +75,7 @@ export function PaperField(props: PaperFieldProps) {
         style={{
           outline: `1.5px ${field.required || filled ? "solid" : "dashed"} ${border}`,
           background: filled ? recipientColor(colorIndex, 0.06) : recipientColor(colorIndex, missed ? 0.08 : 0.16),
-          // ring colour (Tailwind ring uses --tw-ring-color)
+          // ring color (Tailwind ring uses --tw-ring-color)
           ["--tw-ring-color" as string]: color,
           ["--tw-ring-offset-color" as string]: PAPER.page,
         }}
@@ -327,7 +327,7 @@ function OtherField({
 }: PaperFieldProps & { style: React.CSSProperties }) {
   const signed = other?.signed ?? false;
   // Someone else's open field is a quiet placeholder, never their name, a label or a raw value
-  // (Docusign greys other recipients' fields out); after they sign: their mark, tick or text.
+  // (Docusign grays other recipients' fields out); after they sign: their mark, tick or text.
   const shown = otherFace(field, value, signed, dateFormat);
   let face: React.ReactNode = null;
   if (signed && isMarkKind(field.kind) && other?.markUrl) {

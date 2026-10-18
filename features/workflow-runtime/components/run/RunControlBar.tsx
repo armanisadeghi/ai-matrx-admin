@@ -12,7 +12,7 @@
  * Two rules, both from `run-controls.ts`:
  *
  *  · **Disabled with its reason, never hidden.** A verb the current status
- *    forbids stays on screen, greyed, carrying the plain-language why. A
+ *    forbids stays on screen, grayed, carrying the plain-language why. A
  *    control that vanishes teaches nothing.
  *  · **Stopping is confirmed.** Stop and Cancel now both end the run; a run is
  *    minutes of somebody's work and real money, so both ask first through the

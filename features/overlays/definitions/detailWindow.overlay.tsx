@@ -3,7 +3,7 @@
 /**
  * Opener for the `detailWindow` overlay — the Detail primitive's WINDOW
  * presentation (`lib/detail`). Prefer `useOpenDetail()` from `lib/detail`,
- * which honours the person's presentation setting; this opener is the raw
+ * which honors the person's presentation setting; this opener is the raw
  * window door the host binds behind it.
  *
  * - `useOpenDetailWindow()` — imperative hook; returns a handle with `close()`.

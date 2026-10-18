@@ -3,10 +3,10 @@
 // THE TEMPLATE GALLERY'S PURE HALF: the shape `custom.templates` answers (lane 8's card fields,
 // adopted 2026-10-02: name, persona, footprint, teaches, strengths, industry, job, preview image),
 // the filter the gallery sends it, how its cards split into the platform row and "Your
-// organization's" row, and the words a person reads for each catalogue value.
+// organization's" row, and the words a person reads for each catalog value.
 //
 // ONE SOURCE (guard G3, __tests__/one-gallery-source.test.ts): every card on /make comes from the
-// catalogue door `custom.templates`. Nothing in features/make reads `context.templates`,
+// catalog door `custom.templates`. Nothing in features/make reads `context.templates`,
 // `catalog_entries`, the kits service or the use-case registry. Until lane 8's rows exist, the door's
 // rows are whatever exists — never a second list stitched beside them.
 //
@@ -130,12 +130,12 @@ export function orgRowCards(cards: readonly GalleryCard[], organizationId: strin
   return cards.filter((c) => c.scope === "org" && c.owner_organization_id === organizationId);
 }
 
-/** The main list: the platform's catalogue (organizations' own templates live in their own row). */
+/** The main list: the platform's catalog (organizations' own templates live in their own row). */
 export function platformCards(cards: readonly GalleryCard[]): GalleryCard[] {
   return cards.filter((c) => c.scope === "platform");
 }
 
-/** The values each filter offers: only what the catalogue actually holds, in reading order. */
+/** The values each filter offers: only what the catalog actually holds, in reading order. */
 export function facetValues(cards: readonly GalleryCard[], key: "industry" | "job" | "teaches"): string[] {
   const seen = new Set<string>();
   for (const c of cards) {
@@ -197,7 +197,7 @@ const EXTRA_WORDS: Record<string, [string, string]> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Words: lane 8's catalogue values (INDUSTRY_GROUPS, TEMPLATE_JOBS, TEACHES_FEATURES, STRENGTHS in
+// Words: lane 8's catalog values (INDUSTRY_GROUPS, TEMPLATE_JOBS, TEACHES_FEATURES, STRENGTHS in
 // @ai-matrx/records/templates) as a person reads them. A value with no entry reads as its own words.
 // ─────────────────────────────────────────────────────────────────────────────
 

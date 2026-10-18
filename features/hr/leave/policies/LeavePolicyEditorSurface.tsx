@@ -7,7 +7,7 @@
  *
  * ── WHAT THIS SURFACE PROMISES ──────────────────────────────────────────────
  *  • The two waiting periods can never be confused: `waiting_period_days` delays EARNING,
- *    `usable_after_days` delays SPENDING, they are labelled in those words, they sit in
+ *    `usable_after_days` delays SPENDING, they are labeled in those words, they sit in
  *    different sections, and each carries the sentence that separates them.
  *  • `unlimited` HIDES every cap, carryover, negative-balance and payout control, and the save
  *    payload actively CLEARS those columns rather than leaving stale numbers behind a hidden
@@ -34,7 +34,7 @@
  *  3. **§2.7's `pay_out` and `migrate_to` deactivation dispositions.** `hr_leave_policy_save`
  *     takes no disposition and writes no ledger entries for one. Deactivating here is exactly
  *     the `freeze` disposition — accrual stops, the balance stays spendable — and the copy
- *     says that rather than offering three choices where the door honours one.
+ *     says that rather than offering three choices where the door honors one.
  *  4. **`requires_approval` and `statutory_jurisdiction_id`.** Accepted by the save door,
  *     never returned by the list door — see `manager/api/types.ts`.
  */

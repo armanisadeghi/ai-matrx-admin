@@ -7,7 +7,7 @@
  * semantic Tailwind tokens (`bg-card`, `text-foreground`, etc.) instead of
  * the legacy hard-coded gray scales.
  *
- * Behaviour matrix:
+ * Behavior matrix:
  *   csv / tsv  → Alchemy's delimited parser → tabular view (search + sort + paginate)
  *   xlsx / xls → Alchemy's workbook engine (lazy) → multi-sheet selector + tabular view
  *   json       → array-of-objects → tabular view; otherwise pretty-printed JSON

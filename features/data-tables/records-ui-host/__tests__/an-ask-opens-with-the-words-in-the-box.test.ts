@@ -5,7 +5,7 @@
  * assistant opened with an EMPTY box and three chips reading `records_ta…`, `records_w…`,
  * `records_su…` — the ask the screen had just shown her was nowhere to send, and the chips were
  * internal keys. RED on the prior bytes: no `buildAskRuntime`, bare context values, no userInput;
- * and the slice labelled an unlabelled chip with its raw key.
+ * and the slice labeled an unlabelled chip with its raw key.
  */
 jest.mock("@/features/files/components/pickers/cloudFilesPickerOpeners", () => ({ openFilePicker: jest.fn() }));
 jest.mock("@ai-matrx/chat/agents/hooks/useAgentLauncher", () => ({ useAgentLauncher: () => ({ launchMandate: jest.fn() }) }));
@@ -56,7 +56,7 @@ it("the chips read the labels the ask carried", () => {
   expect(labels).toEqual(["This table", "A column", "The ask"]);
 });
 
-it("a chip nobody labelled reads as words, never its key", () => {
+it("a chip nobody labeled reads as words, never its key", () => {
   expect(keyWords("records_table_id")).toBe("Records Table");
   expect(keyWords("organization_timezone")).toBe("Organization Timezone");
   const state = instanceContextReducer(

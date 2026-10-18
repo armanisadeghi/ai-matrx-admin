@@ -157,7 +157,7 @@ export function entriesFromJson(raw: unknown): TermEntry[] {
 
 // ── paste from CSV ──────────────────────────────────────────────────────────
 
-/** Split one CSV/TSV line, honouring double quotes. */
+/** Split one CSV/TSV line, honoring double quotes. */
 function splitLine(line: string, delimiter: string): string[] {
   const cells: string[] = [];
   let cell = "";

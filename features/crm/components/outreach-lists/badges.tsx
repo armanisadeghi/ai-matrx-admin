@@ -121,7 +121,7 @@ export function InboundLabelBadge({ value }: { value: string | null }) {
   const label = toInboundLabel(value);
   // An unclassified reply says so plainly. "Unclassified" is a real state (the
   // ingester has not run, or had nothing to go on) and pretending it is "other"
-  // would tell the user a model made a judgement it never made.
+  // would tell the user a model made a judgment it never made.
   if (!label) {
     return (
       <span className="inline-flex items-center whitespace-nowrap rounded-full border border-dashed border-border px-2 py-0.5 text-[11px] font-medium leading-none text-muted-foreground">

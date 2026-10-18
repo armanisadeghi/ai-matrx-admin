@@ -78,7 +78,7 @@ export interface BuildProjectsContextDataArgs {
   /** The viewer's role on the project (`owner` | `admin` | `member`), if any. */
   viewerRole?: string | null;
   /**
-   * Per-kind counts of catalogue resources attached to the project (tasks and
+   * Per-kind counts of catalog resources attached to the project (tasks and
    * projects already excluded by the host). Omit while the inventory loads.
    */
   resourceCounts?: Record<string, number>;

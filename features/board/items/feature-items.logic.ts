@@ -83,7 +83,7 @@ export const MEETING_PHASE_LABEL: Record<MeetingPhase, string> = {
   live: "Live now",
   upcoming: "Upcoming",
   ended: "Ended",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
   archived: "Archived",
   unscheduled: "Not scheduled",
 };
@@ -99,7 +99,7 @@ const PHASE_RANK: Record<MeetingPhase, number> = {
 
 /**
  * Picker order: live first, then upcoming soonest-first, then past meetings
- * most-recent-first, cancelled and archived last. Duplicates (a meeting read
+ * most-recent-first, canceled and archived last. Duplicates (a meeting read
  * twice, as host and as invitee) collapse to one row.
  */
 export function orderMeetingsForPicker<T extends MeetingLike>(meetings: readonly T[], now: number = Date.now()): T[] {

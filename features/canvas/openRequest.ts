@@ -11,7 +11,7 @@
  *
  * The class this closes is NOT that one tool. It is the shape every
  * open-in-canvas call site shared: a bare `return` when the request could not
- * be honoured. Missing content, an unknown type, an artifact that never
+ * be honored. Missing content, an unknown type, an artifact that never
  * persisted, a route where the canvas is not reachable at all — each one was a
  * different function quietly doing nothing.
  *

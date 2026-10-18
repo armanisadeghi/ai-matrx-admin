@@ -174,7 +174,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(continuationUrl);
     }
     if (completion.status === "cancelled") {
-      return errorRedirect(request, oauthSession.returnUrl, "GitHub connection was cancelled.");
+      return errorRedirect(request, oauthSession.returnUrl, "GitHub connection was canceled.");
     }
     if (completion.status !== "connected") {
       return errorRedirect(

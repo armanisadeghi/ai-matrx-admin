@@ -1,5 +1,5 @@
 /**
- * `strategy: "first"` — the resolver's own behaviour, with bodies mocked.
+ * `strategy: "first"` — the resolver's own behavior, with bodies mocked.
  *
  * "The report" means the assembled document if one exists, ELSE the current
  * topic report — never both. Four live topics have BOTH rows, so a resolver

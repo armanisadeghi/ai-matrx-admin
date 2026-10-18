@@ -230,8 +230,8 @@ export interface PromptWriteBoxProps {
   surfaceName: string;
   placeholder?: string;
   /**
-   * The box's own text colour, as literal `[&_.rich-editor-prose]:…` classes (each prompt box keeps
-   * the colour its text always had). The editor's surface is transparent — the box's background
+   * The box's own text color, as literal `[&_.rich-editor-prose]:…` classes (each prompt box keeps
+   * the color its text always had). The editor's surface is transparent — the box's background
    * shows through, and the box hugs its text (no minimum height, no runway).
    */
   textClassName?: string;
@@ -283,7 +283,7 @@ export function PromptWriteBox({
       // In place (layout "flow"): no panel, no textured surface, no 60dvh floor, no 40dvh runway — the
       // text sits on the box's own background at the size the prompt textarea always had (Arman,
       // 2026-10-11: "the giant blank thing added to the bottom … looks horrible"). Headings take the
-      // text's colour: a prompt is read as text.
+      // text's color: a prompt is read as text.
       className={cn(
         "relative w-full [--rich-editor-heading-color:currentColor] [&_.ProseMirror]:font-sans",
         textClassName,

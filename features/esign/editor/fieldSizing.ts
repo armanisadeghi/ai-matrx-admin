@@ -29,7 +29,7 @@ export function placedBox(field: DraftField): { w: number; h: number } {
   return { w: field.w, h: field.h };
 }
 
-/** `field` re-boxed by `placedBox`, centred on where it was dropped and kept on the page. */
+/** `field` re-boxed by `placedBox`, centerd on where it was dropped and kept on the page. */
 export function withPlacedBox(field: DraftField): DraftField {
   const { w, h } = placedBox(field);
   const cx = field.x + field.w / 2;

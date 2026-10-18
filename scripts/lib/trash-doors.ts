@@ -1,5 +1,5 @@
 /**
- * Lane TRASH-2 — the two judgements behind the Trash guards, kept pure so jest can prove each one
+ * Lane TRASH-2 — the two judgments behind the Trash guards, kept pure so jest can prove each one
  * failing and passing without a database.
  *
  *   judgeTrashDoorBody   — THE LINT. A Trash LISTING door filters by the person (or, behind the
@@ -10,7 +10,7 @@
  *   judgeTrashTimings    — THE STORE-LEVEL TIMING GUARD. Every kind's listing answers in under
  *                          300 ms and the counts call in under 2 s, measured server-side.
  *
- * Callers: scripts/check-trash-doors.ts (live catalogue) and scripts/check-trash-answers-fast.ts
+ * Callers: scripts/check-trash-doors.ts (live catalog) and scripts/check-trash-answers-fast.ts
  * (live timings). Chair ruling 2026-09-25: access is personal; Google Drive / Workspace.
  */
 
@@ -39,7 +39,7 @@ export function isTrashListingDoorName(name: string): boolean {
  * VERIFIER-27 found five `platform` functions judged as personal Trash doors because their names
  * carry `trash`: `comment_trash_title`, `passage_link_trash_title`, `trash_hides`,
  * `trash_is_owner_only` and `trash_annotation_title_census`. A name says what a function is ABOUT;
- * only the registry (`platform.client_callable_door`) and the catalogue say whether a client can
+ * only the registry (`platform.client_callable_door`) and the catalog say whether a client can
  * open it to LIST anything. So, of the functions the name selects:
  *
  *   - DECLARED A CLIENT DOOR in the registry (signed_in_callers or anonymous_callers): a door. Every
@@ -160,7 +160,7 @@ export interface TrashTiming {
   label: string;
   /** "kind" rows are held to 300 ms; "counts" rows to 2 s. */
   class: "kind" | "counts";
-  /** Server-side Execution Time; null when the statement was cancelled or failed. */
+  /** Server-side Execution Time; null when the statement was canceled or failed. */
   ms: number | null;
   error?: string;
 }
@@ -179,15 +179,15 @@ export function judgeTrashTimings(rows: TrashTiming[]): TrashDoorFinding[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
-// THE COVERAGE JUDGEMENT (lane TRASH-TABLES, 2026-09-26)
+// THE COVERAGE JUDGMENT (lane TRASH-TABLES, 2026-09-26)
 //
 // /trash says "Everything you've deleted, in one place". VERIFIER-25 archived a data Table from its
 // own page and it was in neither Trash: the record store keeps every Table and Record in ONE table
 // (custom.record), which no platform.entity_types row can describe, and nothing checked that what
-// the platform archives is findable. This judgement is that check. Its population is REALITY, not a
+// the platform archives is findable. This judgment is that check. Its population is REALITY, not a
 // list: every soft-deletable Entity that has at least one archived row, and every record-store class
 // (custom.record.data_class) that has one. Each must be COVERED — its newest archived row is listed
-// by `public._trash_kind_rows` for the person who owns it (a behavioural probe, not a registry read)
+// by `public._trash_kind_rows` for the person who owns it (a behavioral probe, not a registry read)
 // — or carry a reason below. A new archivable thing that is not in Trash fails; an exemption whose
 // thing is now covered fails too (the list only shrinks).
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -249,7 +249,7 @@ export const TRASH_COVERAGE_EXEMPT: Readonly<Record<string, string>> = {
     "The search index of a library document, never shown as an item: archived and restored only with its " +
     "document (rag.fn_delete_library_document / fn_restore_library_document, or its file's cascade).",
   "entity:workflow_run":
-    "A run is history the engine writes; no screen or door archives a run (no archiver in the catalogue, " +
+    "A run is history the engine writes; no screen or door archives a run (no archiver in the catalog, " +
     "no client delete). The workflow itself is the Trash kind.",
   "entity:cx_user_request":
     "One request inside a conversation, never shown as an item: archived only with its conversation " +

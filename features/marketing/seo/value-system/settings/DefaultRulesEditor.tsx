@@ -154,7 +154,7 @@ export function DefaultRulesEditor() {
   });
   const catalog = useQuery({
     queryKey: ["marketing", "seo", "facet-catalog", "platform"],
-    // null = the platform catalogue alone. NOT "" — that is not a uuid.
+    // null = the platform catalog alone. NOT "" — that is not a uuid.
     queryFn: ({ signal }) => getFacetDimensionCatalog(null, signal),
   });
 

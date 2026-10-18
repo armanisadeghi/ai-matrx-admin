@@ -515,7 +515,7 @@ export function useInterviewRun(sessionId: string) {
    * 🚨 A FINISH FINISHES — ONE PRESS, ONE REQUEST, AND NEVER A ROUND.
    *
    * FOUR cold walks of this room reported the same thing: the control
-   * labelled Finish did not finish. The walk-3 fix round put both halves of
+   * labeled Finish did not finish. The walk-3 fix round put both halves of
    * the old journey behind one press — arm the intent, START a run, spend the
    * arm when the run hands back — and proved it against a session that was
    * already parked on a human turn, where `finish` sends `done` into the

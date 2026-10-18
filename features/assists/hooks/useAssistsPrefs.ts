@@ -5,7 +5,7 @@
  * where the dock sits, and whether assists are quiet right now.
  *
  * Both live in the canonical synced preferences blob (`preferences.assists`),
- * so a mute set on a laptop is honoured on a phone and every producer asks the
+ * so a mute set on a laptop is honored on a phone and every producer asks the
  * same question. No second localStorage key, no per-surface copy — that is the
  * pattern `useListViewPrefs` exists to have killed.
  */

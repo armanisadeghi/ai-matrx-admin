@@ -191,7 +191,7 @@ function hasInFlowContent(el: JsxEl, children: JsxEl[], sf: ts.SourceFile): bool
 function isWorldTransform(i: ElInfo): boolean {
   if (i.tokens.has("origin-top-left") || i.tokens.has("origin-[0_0]")) return true;
   const t = i.style.get("transform") ?? "";
-  // translate() alone is a positioning offset (a tooltip centred on a point);
+  // translate() alone is a positioning offset (a tooltip centerd on a point);
   // pan/zoom is a scale, or a top-left origin for one.
   return /scale\(/.test(t) || i.style.get("transformOrigin")?.match(/0 0|top left/) != null;
 }

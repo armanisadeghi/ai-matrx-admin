@@ -34,7 +34,7 @@ function stringify(value: unknown): string | null {
     return String(value);
   }
   /*
-    An address is an object. Render the lines a person recognises rather than
+    An address is an object. Render the lines a person recognizes rather than
     JSON — a pending value nobody can read is not a pending value.
 
     🚨 AND IN THE ORDER AN ENVELOPE IS WRITTEN. This used to take

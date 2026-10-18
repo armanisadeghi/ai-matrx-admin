@@ -101,7 +101,7 @@ export function unionRects(rects: readonly Rect[]): Rect | null {
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
-/** The camera that centres `target` in a viewport of `size` with `padding`
+/** The camera that centers `target` in a viewport of `size` with `padding`
  * screen px on every side, never zooming past `maxZ` (fitting one small tile
  * should not blow it up to 400%). */
 export function fitRect(target: Rect, size: Size, padding = 48, maxZ = 1): Camera {
@@ -117,7 +117,7 @@ export function fitRect(target: Rect, size: Size, padding = 48, maxZ = 1): Camer
 
 /** Interpolate cameras for a fly-to. Zoom interpolates in log space so a
  * 0.1 → 1 flight feels even (linear zoom lerp lurches at the far end), and
- * the position is derived from the interpolated view centre so the target
+ * the position is derived from the interpolated view center so the target
  * never drifts sideways mid-flight. */
 export function lerpCamera(a: Camera, b: Camera, t: number, size: Size): Camera {
   const z = Math.exp(Math.log(a.z) + (Math.log(b.z) - Math.log(a.z)) * t);

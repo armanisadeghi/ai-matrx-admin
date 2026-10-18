@@ -73,7 +73,7 @@ describe("peopleGroups on real anchor rounds", () => {
 });
 
 describe("peopleGroups helpers", () => {
-  it("normalises names and handles", () => {
+  it("normalizes names and handles", () => {
     expect(normName("  Röchelle   MOULTON ")).toBe("rochelle moulton");
     expect(normName("Rachelle Moulton")).not.toBe(normName("Rochelle Moulton"));
     expect(handleKey("@Nicole.S_Long-")).toBe("nicoleslong");

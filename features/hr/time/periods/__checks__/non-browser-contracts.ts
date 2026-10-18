@@ -6,7 +6,7 @@
  * -------------------------------------------------------------------
  * D1 and SPEC-TIME §0 law 6: **clients consume, never reimplement**, and a committed native HR
  * mobile app will call this identical contract set. T-14 asks for every contract to be exercised
- * *at least once from a non-browser client*, proving no behaviour depends on the web shell.
+ * *at least once from a non-browser client*, proving no behavior depends on the web shell.
  *
  * So this script runs under plain `tsx` in Node — no DOM, no React, no Next, no rendering — and it
  * drives:
@@ -398,7 +398,7 @@ async function main(): Promise<void> {
   const { failureWords, isNotAttestedTerminal, HEALTH_LABEL } = await import(
     "@/features/hr/time/periods/workflowHealth"
   );
-  ok("a stuck row is not labelled the same as an awaiting one",
+  ok("a stuck row is not labeled the same as an awaiting one",
      HEALTH_LABEL.stuck !== HEALTH_LABEL.awaiting);
   ok("no health label is a raw token",
      Object.values(HEALTH_LABEL).every((l) => !l.includes("_")));
@@ -519,7 +519,7 @@ async function main(): Promise<void> {
   // a payroll admin would reasonably read as "the first approval did not take".
   ok("an untouched approved period offers NO re-approval", offerWith(false) === undefined);
   ok("a recomputed one DOES", offerWith(true) !== undefined);
-  ok("…and it is labelled as a RE-approval, not a first one",
+  ok("…and it is labeled as a RE-approval, not a first one",
      offerWith(true)?.label === "Re-approve period");
   ok("…and it is not blocked", offerWith(true)?.unavailableBecause === null);
   ok("…and it says what re-approving does",
@@ -621,7 +621,7 @@ async function main(): Promise<void> {
   //
   // `hr.pay_period_transition` gates on `payroll.read` for every transition except export. An
   // invented token fails CLOSED and SILENTLY — no error, the string just never matches and the
-  // button greys out — so these assert the roles that hold the real capability can act.
+  // button grays out — so these assert the roles that hold the real capability can act.
   ok(
     "payroll.read resolves to hr_admin (NOT manager)",
     resolvePeriodRole(["payroll.read"]) === "hr_admin",
@@ -682,7 +682,7 @@ async function main(): Promise<void> {
     !offeredTransitions({ period: approved, ...ctx }).some((o) => o.to === "exported"),
   );
 
-  // ── Law: the two state machines are labelled distinctly. ─────────────────────────────────────
+  // ── Law: the two state machines are labeled distinctly. ─────────────────────────────────────
   ok(
     "row progress is worded, not a bare state",
     rowProgressSentence(basePeriod) === "285 of 288 timecards approved",
@@ -712,7 +712,7 @@ async function main(): Promise<void> {
  * `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to be set before the import is
  * evaluated. That is why this script loads `.env.local` by hand above.
  *
- * It works, and the lane is genuinely client-agnostic in behaviour — but a native client would have
+ * It works, and the lane is genuinely client-agnostic in behavior — but a native client would have
  * to satisfy a browser client's env just to import the typed service. The clean fix is a lazy
  * accessor in `utils/supabase/client.ts`, which is a platform-wide change and NOT this lane's call.
  * Recorded here rather than worked around silently.

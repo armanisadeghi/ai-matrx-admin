@@ -1,6 +1,6 @@
 // DRILL-WIRE — the explorer hands the published drill primitives what the usage definitions declare:
 // a relation's record kind (`entity`: the group row's doors and its kind's menu), a choice's chart
-// colour (`colorFor`), a moment Measure (`moment`: never a share or a change); and the table host gives
+// color (`colorFor`), a moment Measure (`moment`: never a share or a change); and the table host gives
 // a person the admin user menu on administration pages only.
 
 import type { DrillDefinition } from "@ai-matrx/records";

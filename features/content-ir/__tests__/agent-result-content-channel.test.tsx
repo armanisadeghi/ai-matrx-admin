@@ -259,7 +259,7 @@ describe("the §6 content channel reaches the reader", () => {
       envelope({ structured_output: structured, content: [] }),
     );
 
-    // The floor document, same as the pre-channel behaviour.
+    // The floor document, same as the pre-channel behavior.
     expect(html).toContain("the bound payload");
     expect(html).toContain("Run detail");
     expect(html).not.toContain("THE VERBATIM PROMPT");

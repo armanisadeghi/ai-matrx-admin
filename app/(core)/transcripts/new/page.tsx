@@ -60,12 +60,12 @@ const OPTIONS: CreationOption[] = [
   },
   {
     // A WHOLE CHANNEL IS NOT FIVE MORE CLICKS OF "Upload". Someone who wants a
-    // creator's entire back catalogue gets a Library (the Knowledge hub's
+    // creator's entire back catalog gets a Library (the Knowledge hub's
     // Libraries group) — this door moved here from the retired list (H6d).
     href: LIBRARIES_PATH,
     title: "Whole channel",
     description:
-      "Catalogue a whole YouTube channel or feed as a Library, then transcribe the episodes you want.",
+      "Catalog a whole YouTube channel or feed as a Library, then transcribe the episodes you want.",
     icon: Library,
   },
 ];

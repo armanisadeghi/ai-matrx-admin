@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
       gating: body.gating ?? [],
       dedupe_exempt: body.dedupe_exempt ?? false,
       validation_exempt: body.validation_exempt ?? false,
-      // Platform tools are published to the web by default (the anonymous catalogue reads them).
+      // Platform tools are published to the web by default (the anonymous catalog reads them).
       published_to_web: body.published_to_web ?? true,
       // Admin-authored platform tools are builtin/shipped content with no
       // individual owner — home them in the global system org (tool.definition

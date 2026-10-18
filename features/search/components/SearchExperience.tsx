@@ -6,7 +6,7 @@
  * keeps its own surface mount around it.
  *
  * Google's shape, borrowed where it helps: before a search, a 48px pill at the
- * calm centre with the tabs under it; after one, the pill at the top, the tabs
+ * calm center with the tabs under it; after one, the pill at the top, the tabs
  * under it, results below. The pill understands what it was given (words, a
  * @handle, a profile/post/page link, an image — `useSearchInputs`), and a
  * quiet camera inside it searches by image.
@@ -609,7 +609,7 @@ export function SearchExperience({ form, inputs, surface }: SearchExperienceProp
   }
 
   if (home) {
-    // The start screen — Google's calm centre. The box sits at a fixed
+    // The start screen — Google's calm center. The box sits at a fixed
     // height, so opening Options grows the page downward and never moves it.
     return (
       <div className="relative flex-1 overflow-auto px-4" {...dragProps}>

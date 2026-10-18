@@ -143,7 +143,7 @@ export const listChangeProposalItemKindSchema: KindSchema = {
       type: "string",
       required: true,
       description:
-        "One line naming what changes, as the person would say it. For remove and update this is the row's CURRENT title, so the person recognises it without opening the list.",
+        "One line naming what changes, as the person would say it. For remove and update this is the row's CURRENT title, so the person recognizes it without opening the list.",
     },
     reason: {
       type: "string",

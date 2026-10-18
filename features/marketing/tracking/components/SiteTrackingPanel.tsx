@@ -18,7 +18,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  *     in full — the caveats are DATA the server declares, never a sentence this panel picks.
  *
  * Honesty rules it enforces (each one costs the reader money when skipped):
- *   · A container we could not read is a REFUSAL with the Connect door, never three grey "no"
+ *   · A container we could not read is a REFUSAL with the Connect door, never three gray "no"
  *     (`trackingHealth`, and the server refuses with a sentence rather than three falses).
  *   · `not_checked` renders as `not_checked` — never as a pass, never as a fail.
  *   · The rollout state is said plainly: Tag Manager is `internal_test` today, so a reader who
@@ -88,7 +88,7 @@ function tagManagerContainerUrl(accountId: string, containerId: string): string 
 const VERDICT_TONE: Record<TrackingVerdict, string> = {
   pass: "border-success/40 bg-success/5",
   fail: "border-destructive/40 bg-destructive/5",
-  // NOT a warning colour that reads as "nearly bad": nothing was measured, and the row says so.
+  // NOT a warning color that reads as "nearly bad": nothing was measured, and the row says so.
   not_checked: "border-border bg-muted/20",
 };
 
@@ -309,7 +309,7 @@ export function SiteTrackingPanel({
       ) : null}
 
       {!containerBound ? (
-        // A REFUSAL WITH ITS DOOR, never three grey "no". Nothing here is graded, and the panel
+        // A REFUSAL WITH ITS DOOR, never three gray "no". Nothing here is graded, and the panel
         // says which single thing would make it gradeable.
         <div className="space-y-2 rounded-md border border-border bg-muted/20 p-2.5">
           <p className="text-xs font-medium text-foreground">
@@ -419,7 +419,7 @@ export function SiteTrackingPanel({
           {/* 🚨 EVERY one of the server's own words about what this read can and cannot see,
               verbatim and in full. Printing one of three is how the caveat that stops a reader
               concluding a correctly instrumented site is untracked never reached a screen
-              (V-27 NEW-3). The panel never edits, summarises, quotes or selects among them —
+              (V-27 NEW-3). The panel never edits, summarizes, quotes or selects among them —
               which is why no caveat's words appear in this file (V-28 NEW-3). */}
           {findings.caveats.length ? (
             <ul className="space-y-1 rounded-md border border-warning/40 bg-warning/5 p-2">

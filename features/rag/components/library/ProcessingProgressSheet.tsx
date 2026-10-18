@@ -404,7 +404,7 @@ function JobStatusBadge({ job }: { job: ProcessingJob }) {
   }
   return (
     <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-      cancelled
+      canceled
     </Badge>
   );
 }
@@ -431,7 +431,7 @@ function statusLabel(status: ProcessingJob["status"]): string {
     case "failed":
       return "Failed";
     case "cancelled":
-      return "Cancelled";
+      return "Canceled";
     case "running":
       return "Running";
   }

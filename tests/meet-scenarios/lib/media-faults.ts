@@ -12,7 +12,7 @@
 export interface MediaFaults {
   denyCamera?: boolean;
   denyMicrophone?: boolean;
-  /** The share picker is cancelled (Chromium reports NotAllowedError for both). */
+  /** The share picker is canceled (Chromium reports NotAllowedError for both). */
   denyScreen?: boolean;
   /** The browser cannot share a screen at all (getDisplayMedia missing). */
   noScreenShare?: boolean;

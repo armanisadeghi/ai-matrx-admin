@@ -158,7 +158,7 @@ export interface AccessDeniedProps {
   suggestions?: AccessDeniedSuggestion[];
   /**
    * Whether asking is a real option here. Defaults to `"requestable"` — the
-   * behaviour every existing caller already has. Pass `"absolute"` when the
+   * behavior every existing caller already has. Pass `"absolute"` when the
    * door is closed by law and the ask itself would leak. See
    * `AccessRequestability`.
    */

@@ -5,7 +5,7 @@
  *    answers "no durable id"; a real row id passes through unchanged.
  * 2. Census: client-temp ids are minted ONLY through `mintClientTempId`. A
  *    hand-built `client-assistant-…` template elsewhere is a second door into
- *    the class (an id `durableRecordId` might not recognise). The census reads
+ *    the class (an id `durableRecordId` might not recognize). The census reads
  *    the source tree and fails on any new member; its self-test proves the
  *    pattern catches the exact template process-stream used before 2026-10-01.
  */

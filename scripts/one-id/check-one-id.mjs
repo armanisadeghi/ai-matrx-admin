@@ -19,7 +19,7 @@
  *                                 *IdCopy, ShortId, IdChip, UuidDisplay) outside record-id.tsx / MatrxUuidCell.tsx.
  *   id-exception|<file>           an `id-exception: <reason>` on the line or within 3 lines above; ratchets too.
  *
- * Not reported: `key=`, hrefs/URLs, data-/aria- attributes, logs, tests, and context-menu ITEMS labelled
+ * Not reported: `key=`, hrefs/URLs, data-/aria- attributes, logs, tests, and context-menu ITEMS labeled
  * "Copy ID" inside a menu config (`label: "Copy ID"`, a MenuItem).
  *
  * Scanned: this repo's .tsx and every `../aidream/apps/shared/<pkg>` source file.

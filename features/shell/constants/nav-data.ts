@@ -1399,11 +1399,11 @@ export const primaryNavItems: ShellNavItem[] = [
         dashboard: true,
       },
       {
-        // Media Source Catalog — paste a channel, get every video catalogued.
+        // Media Source Catalog — paste a channel, get every video catalogd.
         label: "Libraries",
         href: "/libraries",
         iconName: "Video",
-        description: "Catalogue a whole YouTube channel, then transcribe and act on it.",
+        description: "Catalog a whole YouTube channel, then transcribe and act on it.",
         color: "red",
         profileMenu: true,
         dashboard: true,
@@ -2059,7 +2059,7 @@ export function isNavPanelChild(child: ShellNavChild): boolean {
 }
 
 export interface PartitionedNavChildren {
-  /** Navigation destinations, grouped into labelled sections (top of the menu). */
+  /** Navigation destinations, grouped into labeled sections (top of the menu). */
   sections: ShellNavChildSection[];
   /** Window panels (middle section — divider + panel icon, above create actions). */
   panels: ShellNavChild[];

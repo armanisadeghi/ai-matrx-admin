@@ -29,7 +29,7 @@
  *
  * THE CONNECTION. `SUPABASE_BRANCH_DATABASE_URL` — the one variable BRANCH-REF
  * names, the same one `--target branch` reads. `GATE_CORPUS_DATABASE_URL` is still
- * honoured when it is set, and its use is ANNOUNCED; it is checked against
+ * honored when it is set, and its use is ANNOUNCED; it is checked against
  * BRANCH-REF exactly like the other.
  *
  *   npx tsx scripts/gate-corpus/run.ts

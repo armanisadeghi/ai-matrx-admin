@@ -52,7 +52,7 @@ export interface SpokenGradeRubric {
  * stays in `verdict` + `rubric`, and these four assess delivery.
  *
  * HONEST GRANULARITY: our STT yields a transcript, not phoneme scores. These are
- * the grader's HOLISTIC, word/syllable-level judgement of the recording — NOT
+ * the grader's HOLISTIC, word/syllable-level judgment of the recording — NOT
  * phoneme-perfect, IPA-exact, or per-phoneme measurements. The UI must present
  * them that way; do not imply a precision the pipeline can't deliver.
  */

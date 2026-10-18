@@ -5,7 +5,7 @@ import "server-only";
 // A client of a business ("Ada Brook Cafes") follows a link, signs in with a
 // one-time email link, and sees HER jobs and HER invoices and nothing else.
 // This module is the app's whole half of that, and nothing else anywhere in the
-// repo touches these doors. It is modelled line-for-line on
+// repo touches these doors. It is modeled line-for-line on
 // `features/forms/service.ts`, which is the same shape for the same reasons.
 //
 // TWO LANES, AND WHY THEY ARE DIFFERENT ROLES.
@@ -109,13 +109,13 @@ export interface PortalPublic {
   /** Only present with `unavailable`: the store's own sentence. */
   message?: string | null;
   /**
-   * S6 — the portal's look, resolved by the store: its own name, logo and colour over the
+   * S6 — the portal's look, resolved by the store: its own name, logo and color over the
    * organization's brand. Absent only on a database older than lane S6.
    */
   style?: PortalStyle;
 }
 
-/** The design system's colour names — the only accents a portal carries (`custom.portal_accents()`). */
+/** The design system's color names — the only accents a portal carries (`custom.portal_accents()`). */
 export type PortalAccent = "slate" | "green" | "amber" | "red" | "blue" | "violet" | "teal";
 
 /** S6 — what a client is shown of a portal's look (`custom._portal_style`). */
@@ -125,7 +125,7 @@ export interface PortalStyle {
   logo_file_id: string | null;
   /** The logo's PUBLIC address (a public picture of the organization's Files), or null. */
   logo_url: string | null;
-  /** Null means the app's own colour. */
+  /** Null means the app's own color. */
   accent: PortalAccent | null;
   footer_links: Array<{ label: string; url: string }>;
   from_organization: string[];

@@ -142,7 +142,7 @@ function AlchemyExamples() {
   const component = componentList.find((entry) => entry.id === "alchemy");
   if (!component) {
     throw new Error(
-      "The Alchemy catalogue entry is required by its demo route.",
+      "The Alchemy catalog entry is required by its demo route.",
     );
   }
 

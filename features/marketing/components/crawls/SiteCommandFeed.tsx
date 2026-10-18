@@ -115,7 +115,7 @@ function timingEntries(
 
 /**
  * The scraper hands failures through verbatim — which is right, the cause has
- * to reach the user — but a raw upstream crash arrives wearing ANSI colour
+ * to reach the user — but a raw upstream crash arrives wearing ANSI color
  * codes and a ruler of dashes. Strip the terminal decoration, keep every word.
  */
 function elapsedLabel(run: SiteCommandRunState, now: number): string {

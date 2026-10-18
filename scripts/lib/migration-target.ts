@@ -49,7 +49,7 @@
  * `-- target: branch,production` alike.
  *
  * ⚠️ AND IT KEYS ON *AN EXPLICIT HEADER*, DELIBERATELY. A file with NO
- *    `-- target:` line at all is production-only BY DEFINITION and its behaviour
+ *    `-- target:` line at all is production-only BY DEFINITION and its behavior
  *    has NOT moved one inch: no additive requirement, no guard requirement, no
  *    body scan. That is every one of the ~3,567 migrations already in this repo
  *    and in aidream, and making them retroactively refusable would break the
@@ -102,9 +102,9 @@ export const BRANCH_REF_PATH =
  * The clone is a Supabase DATA branch of production (`with_data: true`): a PHYSICAL
  * RESTORE of production's cluster, refreshed nightly. It is the only rehearsal
  * database that holds production's real row counts, real indexes and real lock
- * behaviour, which is why W1-ORG-PREP rehearsed four chair steps on it — and why it
+ * behavior, which is why W1-ORG-PREP rehearsed four chair steps on it — and why it
  * had to do so with `psql --single-transaction`, outside this runner, with no
- * judgement and no ledger row, because `--target` knew only `branch` and
+ * judgment and no ledger row, because `--target` knew only `branch` and
  * `production`.
  *
  * 🚨 THE TRAP, AND THE ONE THING THAT CLOSES IT. A physical restore reports the SAME
@@ -672,7 +672,7 @@ export interface MigrationHeader {
   readonly allowsRevokeSchema: string | null;
   /**
    * `-- chair-step: <why>` — the ONE named escape from the header-less production
-   * judgement below, and it is loud by construction: the runner prints the reason
+   * judgment below, and it is loud by construction: the runner prints the reason
    * AND the file's entire body before a single byte executes. It suppresses
    * nothing else: a file that also NAMES production in a `-- target:` header still
    * meets the additive + guard requirements. null when the file carries no such
@@ -753,7 +753,7 @@ export function readHeader(sql: string): MigrationHeader {
       if (why.length < 12) {
         fail([
           `\`${line.trim()}\` does not say why.`,
-          `  \`-- chair-step:\` is the escape from the header-less production judgement, so it`,
+          `  \`-- chair-step:\` is the escape from the header-less production judgment, so it`,
           `  carries the reason a human will read at 3 a.m. — at least a sentence, not a word.`,
         ], "header-chair-step-no-reason");
       }
@@ -969,7 +969,7 @@ export function nonAdditiveReasonsDenyList(
 
 // ── ATTACK-6 finding 2: "additive" is an ALLOW-LIST, not a blacklist ────────
 //
-// 🚨 The blacklist below `NON_ADDITIVE_RES` used to be the WHOLE judgement, and a
+// 🚨 The blacklist below `NON_ADDITIVE_RES` used to be the WHOLE judgment, and a
 // blacklist only knows what somebody thought of. ATTACK-6 ran the old
 // `nonAdditiveReasons` against eight privilege-widening bodies and every one of
 // them returned `[]` — including `GRANT USAGE ON SCHEMA custom TO authenticated`,
@@ -1561,7 +1561,7 @@ export function windowClassVerdict(
 // VERIFIES, never as a switch a file can assert.
 //
 // A file may declare `-- policy-ddl: one-table` in its header. At `--target production` outside
-// the window the runner honours it ONLY when it can prove BOTH halves itself:
+// the window the runner honors it ONLY when it can prove BOTH halves itself:
 //
 //   (a) every policy statement in the file names the SAME ONE table, and the file is policy-only
 //       (POLICY-LOCK's existing rule: policy, grant, comment, `set local` and an atomic
@@ -2385,7 +2385,7 @@ export function customDataInsertRefusal(
 }
 
 /**
- * The custom-data INSERTs a body carries and this judgement ACCEPTED — the runner
+ * The custom-data INSERTs a body carries and this judgment ACCEPTED — the runner
  * prints them, exactly as it prints the statements `-- allows: revoke` admitted.
  * Nothing passes silently.
  */
@@ -2410,7 +2410,7 @@ export interface AllowListContext {
   /** function names the file declares with `-- based-on:` (lowercased, unqualified-or-qualified as written). */
   readonly basedOnNames?: ReadonlySet<string>;
   /**
-   * WHICH database this judgement is for. One shape is target-dependent and says so
+   * WHICH database this judgment is for. One shape is target-dependent and says so
    * out loud: an `INSERT` into `platform.entity_types` is a rehearsal fixture on the
    * branch and a production token mint on production (ATTACK-7 finding 3).
    */
@@ -2541,7 +2541,7 @@ function additiveVerdictOf(stmt: string, ctx: AllowListContext): string | null {
 }
 
 /**
- * Why this body is not additive — the ALLOW-LIST judgement, one reason per statement
+ * Why this body is not additive — the ALLOW-LIST judgment, one reason per statement
  * that is not one of the enumerated shapes, each naming the statement.
  *
  * `allowRevokeSchema` admits `REVOKE` and nothing else; the caller has already proven,
@@ -2576,7 +2576,7 @@ export function nonAdditiveReasons(
  * Nothing compared the `-- guard:` key to the body, so a `CREATE OR REPLACE FUNCTION`
  * that replaced a live SECURITY DEFINER body — `public._provision_new_user_personal_org()`
  * is the trigger every signup runs — and never read the knob satisfied every mechanical
- * check, and the only defence was the lane's self-reported OFF-path diff. This is a
+ * check, and the only defense was the lane's self-reported OFF-path diff. This is a
  * STATIC check: the feature and the key must both appear in the body that replaces a
  * live definition or creates a policy. It cannot prove the read is on the right branch;
  * it can prove the body never mentions the thing that is supposed to hold it OFF.
@@ -2651,7 +2651,7 @@ export function guardUnreadBy(
  * `CREATE POLICY` decides row access the moment the switch flips, and
  * `migrations/judgment-corpus/a6-13-guard-unread-by-policy.sql` already fixes the verdict
  * for one on a `custom` table at `refuse:guard-unread`; a `CREATE OR REPLACE TRIGGER` binds
- * behaviour rather than replacing a body. Neither is narrowed here, so no existing verdict
+ * behavior rather than replacing a body. Neither is narrowed here, so no existing verdict
  * moves.
  */
 export function replacedObjectSchema(stmt: string): string | null {
@@ -2704,7 +2704,7 @@ function customReplaceIsExempt(stmt: string): boolean {
  * 🚨 `guardUnreadBy` is written for "a `CREATE OR REPLACE` of a live definition, or a
  * `CREATE POLICY`". A **new** function bound to a **live** table by a **new** trigger is
  * neither shape — both statements are on the allow-list, both are literally additive —
- * and it changes production behaviour on EVERY WRITE to that table while every
+ * and it changes production behavior on EVERY WRITE to that table while every
  * mechanical check reports additive, guarded and OFF. ATTACK-7 planted exactly that:
  *
  *     create function custom.zz_hook() returns trigger language plpgsql
@@ -2750,7 +2750,7 @@ export function triggerOnLiveTableUnguardedBy(
     return (
       `it claims \`-- seeds-guards: yes\` and creates a trigger on a live table:\n      ` +
       offenders.join(`\n      `) +
-      `\n  The register file seeds the knobs; it may not also bind behaviour to a live table.`
+      `\n  The register file seeds the knobs; it may not also bind behavior to a live table.`
     );
   if (!guard)
     return (
@@ -2788,7 +2788,7 @@ export interface AgreementInput {
   /**
    * `--reapply --target branch` of a file the BRANCH's ledger already holds byte-identical
    * (the runner proves that after its ledger read, and refuses otherwise). Skips ONLY the two
-   * branch header refusals; every other judgement below still runs. Ignored at every other
+   * branch header refusals; every other judgment below still runs. Ignored at every other
    * target. Lane BRANCH-REFRESH-4, 2026-09-24: a ledger row whose body is not live.
    */
   readonly branchLedgeredReapply?: boolean;
@@ -2841,7 +2841,7 @@ export function assertHeaderAgreesWithFlag(input: AgreementInput): AgreementVerd
       fail([
         `${filename} carries no \`-- target:\` header, so it cannot be applied to the rehearsal branch.`,
         `  A file with no header is production-only — that is every migration written before`,
-        `  --target existed, and their behaviour is unchanged.`,
+        `  --target existed, and their behavior is unchanged.`,
         `  Remedy: add \`-- target: branch\` (or \`-- target: branch,production\`) as the file's`,
         `  first line if this file really is part of the rehearsal — or, if it is a chair`,
         `  step (an inverse, a GRANT, anything non-additive by construction), keep it`,
@@ -2868,7 +2868,7 @@ export function assertHeaderAgreesWithFlag(input: AgreementInput): AgreementVerd
     // them because the branch is not production's data; refusing them HERE would leave
     // the one shape that most needs rehearsing with nowhere to rehearse — which is
     // exactly the hole W1-ORG-PREP fell into, rehearsing four chair steps through
-    // `psql --single-transaction` with no judgement and no ledger row at all.
+    // `psql --single-transaction` with no judgment and no ledger row at all.
     // They are judged below by the same deny-list production judges them by.
     //
     // ADDED: a file headed `-- target: branch` and nothing else names the OTHER
@@ -2992,13 +2992,13 @@ export function assertHeaderAgreesWithFlag(input: AgreementInput): AgreementVerd
   // FILE, `migrations/inverse/custom_entity_types_detail_variant_down.sql`, was
   // ACCEPTED by `pnpm db:apply --target production` and REFUSED by
   // `uv run python db/apply_migrations.py`, and §8.9 step 3a's outcome depended on
-  // which command a tired chair typed at 3 a.m. One judgement, and it is the stricter
+  // which command a tired chair typed at 3 a.m. One judgment, and it is the stricter
   // one: a header that names production is judged by the allow-list, with no waiver.
   //
   // The chair-step route is the HEADER-LESS one, and it is not a downgrade: the same
   // bytes rehearse on the branch (see the branch arm above) and reach production only
   // through a terminal. So a file carrying BOTH is a contradiction, and a contradiction
-  // that silently resolves in favour of the stricter reading is a comment nobody reads
+  // that silently resolves in favor of the stricter reading is a comment nobody reads
   // — it is refused, by name, with the one-line remedy.
   if (namesProduction && chairStep) {
     fail([
@@ -3331,7 +3331,7 @@ export async function assertServerMatchesTarget(
   if (!sysid) {
     fail([
       `The connected server did not answer pg_control_system().`,
-      `  --target cannot be honoured without the server's own identity, and there is no`,
+      `  --target cannot be honored without the server's own identity, and there is no`,
       `  weaker check to fall back to. Nothing was applied.`,
     ]);
   }

@@ -1,5 +1,5 @@
 // app/(public)/templates/workspaces/page.tsx — every Space template (Arman 2026-10-18 "Yes, public gallery"):
-// the platform `custom.template` rows whose card carries `space`, from the one public catalogue read.
+// the platform `custom.template` rows whose card carries `space`, from the one public catalog read.
 
 import type { Metadata } from "next";
 

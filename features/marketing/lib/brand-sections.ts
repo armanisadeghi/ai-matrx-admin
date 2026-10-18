@@ -70,7 +70,7 @@ export const MARKETING_BRAND_SECTIONS = [
   },
   {
     slug: "identity",
-    // Ruling 2026-10-09: the brand's HOME is Overview (the root row, labelled with
+    // Ruling 2026-10-09: the brand's HOME is Overview (the root row, labeled with
     // the brand's name). This room is the brand's Identity — never a second "home".
     name: "Identity",
     titlePrefix: "Brand Identity",

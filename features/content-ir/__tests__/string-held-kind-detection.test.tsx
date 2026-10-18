@@ -5,7 +5,7 @@
  * `{"note":"{\"__kind\":…}"}`), and the key rule — correctly — ignores an
  * escaped `\"__kind\"`, so the value was judged kindless and drawn raw.
  *
- * Two halves: (1) the behaviour at two of the fixed sites, (2) a source guard
+ * Two halves: (1) the behavior at two of the fixed sites, (2) a source guard
  * that fails if the pattern is written again anywhere in the repo.
  */
 import { readFileSync } from "node:fs";

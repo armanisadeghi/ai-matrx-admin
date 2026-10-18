@@ -148,7 +148,7 @@ const CAN_SUPERSEDE: ReadonlySet<string> = new Set(["generated", "failed"]);
  * situations are genuinely different and one generic sentence would be wrong three times out of
  * four. This is rule 2 at the top of the file, made concrete.
  *
- * These sentences REPLACE the control; they do not annotate a greyed one. Rendered as the menu's
+ * These sentences REPLACE the control; they do not annotate a grayed one. Rendered as the menu's
  * header description, which is exactly where the action would otherwise have been offered.
  */
 const SUPERSEDE_BLOCKED_BECAUSE: Record<string, string> = {
@@ -659,7 +659,7 @@ export function ExportRunList({
         // stated in the header above. A disabled control implies the state could still change; on the
         // one rule that prevents paying people twice, the UI must not suggest that it might.
         // An empty `items` array makes `ItemMenu` drop the section entirely, so this is the whole
-        // mechanism: offer the action, or say why there is no action — never a greyed ghost of one.
+        // mechanism: offer the action, or say why there is no action — never a grayed ghost of one.
         {
           id: "replace",
           items: CAN_SUPERSEDE.has(row.delivery_state)

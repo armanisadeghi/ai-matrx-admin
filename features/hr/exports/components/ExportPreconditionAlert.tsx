@@ -50,7 +50,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
  * which names every pending workweek id.
  *
  * THE RULE THIS FOLLOWS is the one already proven at the list door (`fromLiveExports`): **the
- * server's sentence wins, verbatim.** Nothing here is rewritten, summarised, or invented; the
+ * server's sentence wins, verbatim.** Nothing here is rewritten, summarized, or invented; the
  * machine code stays a secondary reference, not the headline. Where the router DID write a real
  * `user_message`, `toExportFailure` reports no separate engine sentence and this renders nothing
  * extra — repeating one sentence under itself is noise that teaches people to stop reading.
@@ -234,7 +234,7 @@ export function ExportPreconditionAlert({
   }
 
   // Not one of the four. Show the server's own sentence and NEVER dress it up as one of them —
-  // sending someone to fix the wrong thing costs more than saying "we don't recognise this".
+  // sending someone to fix the wrong thing costs more than saying "we don't recognize this".
   return (
     <Alert variant="destructive" className={className}>
       <ShieldAlert className="h-4 w-4" aria-hidden />

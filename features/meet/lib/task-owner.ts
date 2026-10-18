@@ -7,7 +7,7 @@
 // defaulted to the person clicking, and that person was listed under the name
 // they used IN the meeting, so a host whose meeting name was "Grace Hopper" saw
 // every unowned item pre-assigned to "Grace Hopper" — which read as a real,
-// different person (verifier, 2026-09-27). The clicker is now labelled
+// different person (verifier, 2026-09-27). The clicker is now labeled
 // "(you)" wherever they appear, and never chosen for them.
 
 export interface TaskOwnerChoice {

@@ -10,7 +10,7 @@
  * THE HEARTBEAT (V1 D3): an open pair or summary window re-reads its record
  * while work is in progress — a pair still queued or running, a candidate
  * still collecting — and stops once the candidate is terminal-for-now (ready,
- * promoted, discarded, cancelled; ../live.ts `candidateStillMoving`).
+ * promoted, discarded, canceled; ../live.ts `candidateStillMoving`).
  */
 
 import { useCallback, useState } from "react";

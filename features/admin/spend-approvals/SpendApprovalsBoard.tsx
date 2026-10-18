@@ -7,7 +7,7 @@
  * own subjects (its admins decide them). Data + rules: ./spendApprovals.ts.
  *
  * Arman 2026-10-10: default columns in his order; every $ to the cent; points hidden by default;
- * colours from knobs (billing.run_approval/color_*); "Temporary" approvals with an expiry; "Reset
+ * colors from knobs (billing.run_approval/color_*); "Temporary" approvals with an expiry; "Reset
  * tracking" restarts the "since" stats.
  *
  * Arman 2026-10-17: every view is a link (search, sort, filters, status and the open record live in

@@ -19,7 +19,7 @@
  * default_transaction_read_only=on / statement_timeout=60s — never as postgres. Its password is
  * SUPABASE_READER_PASSWORD (environment, aidream/.env, .env.local; the nightly clone is a restore of production
  * and carries the same role). A missing key is refused by name: there is no fallback to postgres. The
- * `begin read only` + `set local` limits + rollback stay as defence in depth. Designed doors the role leaves
+ * `begin read only` + `set local` limits + rollback stay as defense in depth. Designed doors the role leaves
  * open (Arman, 2026-10-02): lo_create and SECURITY DEFINER functions granted to PUBLIC, which write as their
  * owner once a session turns its read-only default off.
  *
@@ -184,7 +184,7 @@ export function pgClient(pg, dsn) {
 }
 
 /**
- * node-postgres read unit as the reader role (the door), with begin read only + set local limits as defence in
+ * node-postgres read unit as the reader role (the door), with begin read only + set local limits as defense in
  * depth: fn(client), ROLLBACK in finally.
  */
 export async function withReadOnly(target, fn, { app, statementTimeout = "60s" } = {}) {

@@ -102,7 +102,7 @@ describe("the organization cap arithmetic", () => {
   });
 });
 
-describe("every create-organization door honours the cap", () => {
+describe("every create-organization door honors the cap", () => {
   afterEach(() => {
     CAP = { count: 3, cap: 5, atCap: false, overCap: false, ready: true };
   });

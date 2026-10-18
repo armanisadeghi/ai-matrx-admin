@@ -62,7 +62,7 @@ function returnMessage(status: string): {
     return {
       tone: "warning",
       message:
-        "You cancelled on the provider's sign-in page. Nothing was connected.",
+        "You canceled on the provider's sign-in page. Nothing was connected.",
     };
   }
   if (status === "invalid_callback") {

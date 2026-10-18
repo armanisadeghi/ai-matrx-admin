@@ -12,7 +12,7 @@
  * This test fails against that shape — every assertion below is about a prop
  * the old call site did not pass — and it pins the rule, not one screen:
  *
- *   · system rung → ONLY the system catalogue is reachable;
+ *   · system rung → ONLY the system catalog is reachable;
  *   · org rung    → every lane the organization can open (owner ruling 2026-09-25);
  *   · user rung   → unrestricted, deliberately (D3: "on my own user route, my
  *     own agents are fine"), and therefore carrying no sentence.
@@ -58,7 +58,7 @@ jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hook
 
 jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => ({
   ...jest.requireActual("@ai-matrx/chat/agents/redux/agent-definition/selectors"),
-  // An UNREAD catalogue, deliberately: the violation alert must stay silent
+  // An UNREAD catalog, deliberately: the violation alert must stay silent
   // until the system agents are actually known. An empty list is "not loaded",
   // never "not a system agent".
   selectBuiltinAgents: () => [],
@@ -149,7 +149,7 @@ afterEach(() => {
 });
 
 describe("the holder picker is restricted BY RUNG, at the door", () => {
-  it("a system-homed default can reach the system catalogue and nothing else", () => {
+  it("a system-homed default can reach the system catalog and nothing else", () => {
     const { text, root } = renderAt(
       "system",
       defaultHolderRungOffer({

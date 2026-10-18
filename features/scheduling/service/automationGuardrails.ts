@@ -77,7 +77,7 @@ function num(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Normalise a raw jsonb value into numbers (a non-number limit is "not set"). */
+/** Normalize a raw jsonb value into numbers (a non-number limit is "not set"). */
 export function parseGuardrails(raw: unknown): Guardrails {
   const o = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const out: Guardrails = {};

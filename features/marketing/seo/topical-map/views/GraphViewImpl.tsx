@@ -305,11 +305,11 @@ function GraphCanvas({ mapId, siteId, host, readOnly }: MapViewProps) {
   // thousands of pages, so the rollup walks the offsets. The pages are kept
   // HERE rather than read back out of the slice because the slice holds the
   // workspace's listed pages — which the pages workspace also writes — and a
-  // colour must describe the set this drawing actually counted.
+  // color must describe the set this drawing actually counted.
   const mode: GraphEncodingMode = graph.encodingMode;
   const isConvergence = mode === "convergence";
   // The identity of one rollup. A different map, a different site, or leaving
-  // the mode is a DIFFERENT rollup — never one map coloured by another's pages.
+  // the mode is a DIFFERENT rollup — never one map colored by another's pages.
   const rollupKey = `${mapId}|${siteId ?? ""}|${isConvergence ? "on" : "off"}`;
   const [rollup, setRollup] = useState<ConvergenceRollup>(() => emptyRollup(rollupKey));
   const intents = usePageIntents(
@@ -329,7 +329,7 @@ function GraphCanvas({ mapId, siteId, host, readOnly }: MapViewProps) {
   //
   // `isPlaceholderData` is the guard that makes the reset real: `usePageIntents`
   // keeps the previous map's answer on screen while the new one loads, and
-  // accumulating THAT would colour this map with another's pages.
+  // accumulating THAT would color this map with another's pages.
   const landed =
     isConvergence && !intents.isPlaceholderData && intents.data ? intents.data : null;
   let nextRollup = rollup;

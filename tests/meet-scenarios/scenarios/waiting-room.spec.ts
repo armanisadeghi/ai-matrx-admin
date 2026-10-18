@@ -182,7 +182,7 @@ scenario("wr-cancel-leave", async ({ cast }) => {
   await seeControl(guest, "Rejoin on the left-the-waiting-room screen", guest.page.getByRole("button", { name: /^Rejoin$/ }), 5000);
   await keepsSeeing(guest, "the left screen (not ended, not in the room)", (o) => o.phase === "left", 4000);
   waiting.stop();
-  await seeUntil(host, "the cancelled knock gone", (o) => (o.lobbyCount ?? 0) === 0, TIMEOUTS.noticeMs);
+  await seeUntil(host, "the canceled knock gone", (o) => (o.lobbyCount ?? 0) === 0, TIMEOUTS.noticeMs);
 });
 
 scenario("wr-meeting-ended-while-waiting", async ({ cast }) => {

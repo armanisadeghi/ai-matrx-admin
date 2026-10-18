@@ -1,5 +1,5 @@
 // Helpers for J4 (chat, read-only). Selectors are what a person sees: history rows are links to /chat/<uuid>,
-// messages carry data-message-id, hover actions are labelled buttons ("Copy content", "More actions").
+// messages carry data-message-id, hover actions are labeled buttons ("Copy content", "More actions").
 import { sleep } from "./harness.mjs";
 import { resumeIfParked } from "./j4-session.mjs";
 

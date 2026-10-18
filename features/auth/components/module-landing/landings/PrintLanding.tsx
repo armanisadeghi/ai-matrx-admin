@@ -46,7 +46,7 @@ const CAPABILITIES: ModuleCapability[] = [
         icon: Layers,
         title: "Your brand, without breaking the scan",
         description:
-            "Branded QR codes take your colours and a logo in the middle, and still tell you honestly when a choice has eaten the error-correction budget a scanner needs.",
+            "Branded QR codes take your colors and a logo in the middle, and still tell you honestly when a choice has eaten the error-correction budget a scanner needs.",
     },
     {
         icon: FileText,
@@ -58,7 +58,7 @@ const CAPABILITIES: ModuleCapability[] = [
         icon: BookText,
         title: "Or have it printed and shipped",
         description:
-            "Price a real book — trim, paper, binding, cover finish, quantity, destination — against a live print-on-demand catalogue, then order printed copies without leaving the page.",
+            "Price a real book — trim, paper, binding, cover finish, quantity, destination — against a live print-on-demand catalog, then order printed copies without leaving the page.",
     },
 ];
 

@@ -87,7 +87,7 @@ export default function UploadGuardHostBody() {
   const filesByIdRef = useRef(filesById);
   filesByIdRef.current = filesById;
 
-  // Run an upload directly through the thunk and return a normalised
+  // Run an upload directly through the thunk and return a normalized
   // result. Shared between the no-conflict fast path and the
   // post-dialog "user confirmed" path.
   const runUpload = useCallback(

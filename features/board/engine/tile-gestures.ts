@@ -91,7 +91,7 @@ export function resizeRect(
 
   let x = west ? start.x + start.w - w : start.x;
   let y = north ? start.y + start.h - h : start.y;
-  // An edge drag with Shift scales the other axis about its centre.
+  // An edge drag with Shift scales the other axis about its center.
   if (opts.keepAspect && !(north || south)) y = start.y + (start.h - h) / 2;
   if (opts.keepAspect && !(east || west)) x = start.x + (start.w - w) / 2;
   return { x, y, w, h };

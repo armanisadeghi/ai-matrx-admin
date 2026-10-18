@@ -211,7 +211,7 @@ describe("the Library read, against the envelope the server actually sends", () 
   });
 });
 
-describe("a finished export is recognised as finished", () => {
+describe("a finished export is recognized as finished", () => {
   const METRICS = {
     total_items: 10000,
     counts_by_kind: { message: 10000 },

@@ -81,7 +81,7 @@ function money(value: unknown, currency: string | null): string | null {
   return `${currencyPrefix(currency)}${amount}`;
 }
 
-/** A rate arrives as a decimal string like "0.06" — shown as-is, labelled. */
+/** A rate arrives as a decimal string like "0.06" — shown as-is, labeled. */
 function rate(value: unknown): string | null {
   const raw = text(value);
   return raw === null ? null : `rate ${raw}`;
@@ -622,7 +622,7 @@ export function LuluCoverDimensionsBlock({
 
 /**
  * Print-job lifecycle tones. Delivered/shipped is the good end, rejected and
- * cancelled are the destructive end, and every other state — created, unpaid,
+ * canceled are the destructive end, and every other state — created, unpaid,
  * in production, delayed, unmapped — is simply where the job currently is.
  */
 function jobStatusTone(name: string | null): "good" | "bad" | "neutral" {

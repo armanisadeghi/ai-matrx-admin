@@ -5,7 +5,7 @@
  * stranger who shares none does not. Every lookup in a tick is ONE call to
  * the access-checked door, never a service-role read.
  *
- * The database's answer is modelled from memberships so the test can fail:
+ * The database's answer is modeled from memberships so the test can fail:
  * the stand-in returns only people who share an organization with the viewer.
  */
 const VIEWER_ORGS = ["org-kilnworks", "org-glaze-coop"];

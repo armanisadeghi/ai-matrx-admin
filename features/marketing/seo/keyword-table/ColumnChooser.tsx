@@ -96,7 +96,7 @@ export function ColumnChooser({
   /**
    * P23 — every picker takes new input. A person who cannot find the column
    * they want here needs to invent the dimension, and this is where they are
-   * standing when they realise it. Pass the site's dimensions screen.
+   * standing when they realize it. Pass the site's dimensions screen.
    */
   newDimensionHref?: string;
 }) {

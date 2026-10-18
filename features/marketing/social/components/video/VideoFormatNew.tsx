@@ -66,7 +66,7 @@ function mediaName(id: string): string {
 
 // ── the format played by the engine ─────────────────────────────────────────────────────────────────
 
-/** Muted gradient pairs painted where a picture would be (video content, not interface colour). */
+/** Muted gradient pairs painted where a picture would be (video content, not interface color). */
 const STAND_IN_TONES: ReadonlyArray<readonly [string, string]> = [
   ["#2b3a55", "#52678f"],
   ["#3d2f4f", "#7a5a9e"],

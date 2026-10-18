@@ -12,7 +12,7 @@ jest.mock("@/lib/redux/hooks", () => ({
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
 // The hook reads the selected organization through the chat package's org seam,
 // never the app slice — mocking the slice left this guard green-by-accident-dead
-// (it timed out on every run) while the hook's own behaviour went unchecked.
+// (it timed out on every run) while the hook's own behavior went unchecked.
 jest.mock("@ai-matrx/chat/host/org", () => ({
   selectOrganizationId: () => selectedOrg,
 }));

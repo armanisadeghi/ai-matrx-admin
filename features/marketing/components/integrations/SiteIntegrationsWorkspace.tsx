@@ -895,7 +895,7 @@ function SiteIntegrationsEditor({
   const saveWithGscPropertyGuard = async () => {
     if (visibleIssues.length) {
       // A CLICK THAT WOULD DO NOTHING SAYS SO. The buttons are disabled while
-      // an issue stands, so this is the last line of defence (a keyboard
+      // an issue stands, so this is the last line of defense (a keyboard
       // submit, a stale render) — it answers with the issues, never silence.
       toast.error(
         `Resolve ${visibleIssues.length} configuration issue${visibleIssues.length === 1 ? "" : "s"} first`,

@@ -224,7 +224,7 @@ describe("VaultTrashRestoreDialog", () => {
     );
   });
 
-  test("cancelling the confirmation restores nothing and says so", async () => {
+  test("canceling the confirmation restores nothing and says so", async () => {
     restoreMock.mockRejectedValue(
       new VaultRestoreTransportError("recent_auth_required"),
     );

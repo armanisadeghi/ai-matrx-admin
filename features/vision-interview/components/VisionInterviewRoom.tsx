@@ -5,11 +5,11 @@
 // The v3 room — THREE panels (Arman, 2026-08-18):
 //
 //   LEFT  (~22%)  <QuestionsPanel />   the Scribe's questions, answered in place
-//   CENTRE(~50%)  <RoomChatPane />     stage tabs + THE CANONICAL CHAT
+//   CENTER(~50%)  <RoomChatPane />     stage tabs + THE CANONICAL CHAT
 //   RIGHT (~28%)  <ExpertFeedPanel />  every expert's output, live
 //
 // One stage tab is one expert is one ordinary agent conversation (their
-// `role_bindings` entry on the session row), so the centre is `ChatRoomClient`
+// `role_bindings` entry on the session row), so the center is `ChatRoomClient`
 // — never a bespoke transcript. The v2 transcript/composer/stage-rail body is
 // gone with it.
 //

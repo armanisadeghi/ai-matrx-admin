@@ -6,7 +6,7 @@
  * Old signature:
  *   const [value, set] = usePreferenceValue("prompts", "defaultTemperature");
  *
- * Old behaviour: held a local copy of the value and pushed changes to Redux
+ * Old behavior: held a local copy of the value and pushed changes to Redux
  * only on unmount. The unified sync engine now persists every mutation as it
  * happens, so that round-trip is no longer needed. This shim maps the legacy
  * call onto `useSetting`, giving callers live-updating state with automatic

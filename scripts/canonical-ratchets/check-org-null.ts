@@ -172,7 +172,7 @@ const key = (t: { schema: string; table: string }) => `${t.schema}.${t.table}`;
  * constraint it rests on, and this function checks that constraint against the
  * live catalog (`org_constraints`, from the snapshot RPC) on EVERY run. A
  * missing constraint does not quietly downgrade to "still exempt": it SCREAMS,
- * and in --strict it blocks. Human judgement supplies the reason; the database
+ * and in --strict it blocks. Human judgment supplies the reason; the database
  * supplies the premise; neither is trusted on its own.
  *
  * An entry is removed when the table's design changes, never to quiet a gate.
@@ -314,7 +314,7 @@ function report(snap: OrgNullSnapshot, base: Baseline): boolean {
   } else {
     for (const r of snap.null_org_rows.sort((a, b) => b.null_rows - a.null_rows)) {
       const mark = r.guarded_class ? `${C.yellow}!${C.reset}` : `${C.dim}·${C.reset}`;
-      // Exempt tables stay VISIBLE and labelled with the constraint that
+      // Exempt tables stay VISIBLE and labeled with the constraint that
       // justifies them — an exemption you cannot see is indistinguishable from
       // a gate that forgot to look.
       const live = known.has(key(r))

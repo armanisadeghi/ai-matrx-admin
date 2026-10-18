@@ -140,7 +140,7 @@ export interface ConvertOptions {
    * How the person steered this run (living-kit W2): their instruction, the
    * card / question types wanted, and the outline sections to cover (gaps, or
    * one picked section — a section WITH an id aims the run at that section's
-   * own material). Deck, quiz and practice test honour it; a kit run also never
+   * own material). Deck, quiz and practice test honor it; a kit run also never
    * repeats a card or question any aid of the kit already holds.
    */
   steer?: GenerationSteer;

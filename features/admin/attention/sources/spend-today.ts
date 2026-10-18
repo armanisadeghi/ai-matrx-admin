@@ -1,7 +1,7 @@
 /**
  * "Spend so far today" as an attention item — the PURE half.
  *
- * It used to be its own centred modal on /administration (DailySpendWindow, once a day, Escape did
+ * It used to be its own centerd modal on /administration (DailySpendWindow, once a day, Escape did
  * not close it): a second admin-alert surface. Every admin alert lives on the dock (Arman,
  * 2026-10-10), so the same facts are one row here — today, runs, yesterday, last 7 days, month to
  * date, the biggest spender and the unmeasured cost sources — and nothing else opens on its own.

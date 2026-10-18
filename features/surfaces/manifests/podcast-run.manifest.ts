@@ -182,7 +182,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "liveness",
     label: "Liveness",
     description:
-      "The server's computed liveness for the run: alive | stalled | failed | completed | draft | cancelled — 'stalled' means no heartbeat, not failure. Empty until the durable run detail loads.",
+      "The server's computed liveness for the run: alive | stalled | failed | completed | draft | canceled — 'stalled' means no heartbeat, not failure. Empty until the durable run detail loads.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 10,

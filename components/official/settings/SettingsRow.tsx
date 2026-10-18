@@ -30,7 +30,7 @@ type SettingsRowProps = SettingsCommonProps & {
   controlLayout?: "compact" | "wide";
   /** Stable row anchor used by settings search and deep links. */
   anchorId?: string;
-  /** Override the label target; pass null when the row exposes a labelled group. */
+  /** Override the label target; pass null when the row exposes a labeled group. */
   labelFor?: string | null;
 };
 

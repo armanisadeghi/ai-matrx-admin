@@ -9,7 +9,7 @@
 //                expanded by the database (recurrence + moved/cancelled
 //                exceptions), with the reader's role and RSVP on each row.
 //   meetings     the `meet_meetings` rows the reader HOSTS or is INVITED to —
-//                the Past, Cancelled and Archived tabs, and the live instant
+//                the Past, Canceled and Archived tabs, and the live instant
 //                meetings that have no occurrence.
 //
 // 🚨 RLS IS THE CEILING, NEVER THE VIEW. A platform admin can read every

@@ -9,7 +9,7 @@
  *      place) but skips layout and paint via `content-visibility: hidden`.
  *   3. Semantic zoom: at overview tier the body is replaced by a title card
  *      whose type is COUNTER-SCALED (`--board-z`), so a 300-tile board is
- *      still a readable map instead of grey confetti.
+ *      still a readable map instead of gray confetti.
   4. Gestures: header drag moves it; a flick THROWS it (engine/throw.ts),
  *      with the action named before release.
  *   5. Focus: when focused its live card portals into the focus layer, full
@@ -110,7 +110,7 @@ export interface BoardTileProps {
   /** What the tile is (kind, source, model…), named in its "…" menu when there is no `typeLabel`. */
   subtitle?: string;
   icon?: LucideIcon;
-  /** The item type's colour (its far-zoom card). Default `slate`. */
+  /** The item type's color (its far-zoom card). Default `slate`. */
   accent?: BoardAccent;
   /** The item type's name on the far-zoom card ("Note", "War Room"). */
   typeLabel?: string;

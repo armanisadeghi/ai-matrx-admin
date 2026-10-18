@@ -4,7 +4,7 @@
  * THE FINDING (verifier, 2026-09-27): `/markdown-studio?source=document&id=<id>`
  * opened a document sitting in its owner's Trash with no word about it, fully
  * editable. `content.document_get` still answers the owner (Google Drive
- * behaviour, rcstore_n) and omits `deleted_at`, so the loader could not tell.
+ * behavior, rcstore_n) and omits `deleted_at`, so the loader could not tell.
  * Now `loadDocument` reports `inTrash` and the studio's document source refuses
  * it exactly as a trashed note is refused: a RecordUnavailableError that the
  * studio renders through AccessGate — "This document is in Trash" + Restore.

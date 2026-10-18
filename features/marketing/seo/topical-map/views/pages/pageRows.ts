@@ -3,7 +3,7 @@
 // The pages workspace's CLIENT-SIDE narrowing, kept pure so it can be tested
 // against the bytes `seo.list_page_intents` actually returns.
 //
-// 🚨 THE DIVISION OF LABOUR, AND WHY IT IS STATED OUT LOUD ON THE SCREEN.
+// 🚨 THE DIVISION OF LABOR, AND WHY IT IS STATED OUT LOUD ON THE SCREEN.
 // `seo.list_page_intents` narrows by site, topic slug, disposition and state —
 // those four are SERVER filters and they narrow the whole result set. Nothing
 // else does. Text, traffic and source are narrowed HERE, over the one page of

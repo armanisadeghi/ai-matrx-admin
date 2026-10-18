@@ -165,7 +165,7 @@ describe("the split-this-question lint", () => {
         name: "q",
         type: "noul",
         instructions:
-          "Is this a defect in existing behaviour rather than a request for new behaviour?",
+          "Is this a defect in existing behavior rather than a request for new behavior?",
       }),
     ).toBeNull();
   });
@@ -175,7 +175,7 @@ describe("question names", () => {
   it("slugs an instruction into a field name", () => {
     expect(
       slugifyQuestionName(
-        "Is this a defect in existing behaviour rather than a request for new behaviour?",
+        "Is this a defect in existing behavior rather than a request for new behavior?",
       ),
     ).toBe("defect_existing_behaviour_request");
   });

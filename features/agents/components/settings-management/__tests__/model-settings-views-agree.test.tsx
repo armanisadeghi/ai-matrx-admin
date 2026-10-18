@@ -270,7 +270,7 @@ describe("Model Settings — every view shows the same truth", () => {
     expect(readRawEditable()).toEqual(readRawSettings());
   });
 
-  test("an unset control is labelled as not set / model default, never shown as a value", () => {
+  test("an unset control is labeled as not set / model default, never shown as a value", () => {
     render(shotStudio());
     const rows = Object.fromEntries(readForm().map((r) => [r.key, r]));
     // Count has no catalog default and nothing stored: no phantom "1".

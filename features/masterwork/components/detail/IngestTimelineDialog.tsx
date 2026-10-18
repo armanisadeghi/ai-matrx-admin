@@ -216,7 +216,7 @@ export function buildTimelineRequest(input: {
   if (!licence) {
     return {
       error:
-        "Say what lets you use this case — the licence, or 'my own work'. Sources without one are not safe to teach from.",
+        "Say what lets you use this case — the license, or 'my own work'. Sources without one are not safe to teach from.",
     };
   }
   return {

@@ -7,7 +7,7 @@
  * "…" in the row and portals every SECONDARY action into the host, where it
  * stays mounted — but the PRIMARY (last) action stays in the row (2026-09-27:
  * a page's main action is never reachable only through a menu — "Submit all"
- * on /agents/battle was buried in the ⋮). A labelled primary goes icon-only,
+ * on /agents/battle was buried in the ⋮). A labeled primary goes icon-only,
  * its caption kept as the accessible name. On desktop the row is unchanged.
  *
  * PROVEN FAILING BEFORE PASSING: against the pre-fix RouteHeader the phone case
@@ -84,7 +84,7 @@ describe("RouteHeader on a phone", () => {
     expect(store.getPhonePageActionCountForTest()).toBe(1);
   });
 
-  it("draws a labelled primary icon-only in the row, its caption kept as the accessible name", () => {
+  it("draws a labeled primary icon-only in the row, its caption kept as the accessible name", () => {
     PHONE = true;
     const Tap = ({ label, icon, ariaLabel }: { label?: string; icon: React.ReactNode; ariaLabel?: string }) => (
       <button type="button" aria-label={ariaLabel ?? label}>

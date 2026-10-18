@@ -172,7 +172,7 @@ it("seeded: G1 organizations, G3 preferences and G2 knobs answer with zero reque
   expect(seeded.ladder?.organization_id).toBe(ORG_A); // last active
 });
 
-it("seeded: the ladder still honours this tab's held organization and the link, with zero requests", async () => {
+it("seeded: the ladder still honors this tab's held organization and the link, with zero requests", async () => {
   primeCoreBootSeed(seed());
   const held = await resolveActiveOrgContext(USER, { heldOrganizationId: ORG_B });
   expect(held?.organization_id).toBe(ORG_B);

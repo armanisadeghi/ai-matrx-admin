@@ -40,7 +40,7 @@ export {
 
 /**
  * THE ONE CONTROL (2026-10-05, wave 1B): the trigger is the controls' select capsule — 28px,
- * 13px value, 16px glyphs, geometry + colour locked, NO size (`size=` is gone; a call site's
+ * 13px value, 16px glyphs, geometry + color locked, NO size (`size=` is gone; a call site's
  * className is placement only). Options: `variant="bare"` (the surrounding surface draws the
  * frame), `hideArrow`. Codemod + census: `scripts/ui-rollout/doors-codemod.mjs`.
  */

@@ -5,7 +5,7 @@
 // /maps expressed as an entity-list config — the THIRD consumer of the generic
 // shell (lib/entity-list), after /agents/all and /transcripts. Writing a
 // bespoke grid here would have been a fourth list implementation for rows that
-// sort, filter, page and favourite exactly like every other list.
+// sort, filter, page and favorite exactly like every other list.
 
 import type { EntityListConfig } from "@/lib/entity-list/config";
 import { formatRelativeTime } from "@ai-matrx/kit/format";

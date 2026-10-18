@@ -8,7 +8,7 @@
  * Open in canvas) were painted over by nothing and unclickable; on a 375px
  * phone the header's button row was 435px inside a 341px card. This walks the
  * real chat page on the shared preview and asks the browser itself
- * (`elementFromPoint` at each control's centre) whether a press lands on it.
+ * (`elementFromPoint` at each control's center) whether a press lands on it.
  */
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
@@ -37,7 +37,7 @@ async function openCard(page: Page) {
   return header;
 }
 
-/** Every control in the header, each answered by a hit test at its centre. */
+/** Every control in the header, each answered by a hit test at its center. */
 async function hitTests(page: Page) {
   return page.evaluate(async () => {
     const header = document.querySelector("[data-html-figure] [data-html-preview-header]") as HTMLElement;

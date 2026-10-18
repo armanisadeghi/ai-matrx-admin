@@ -2,7 +2,7 @@
 
 // features/vision-interview/components/RoomChatPane.tsx
 //
-// The CENTRE panel of the v3 room: stage tabs across the top, and beneath
+// The CENTER panel of the v3 room: stage tabs across the top, and beneath
 // them THE CANONICAL CHAT for whichever expert is live.
 //
 // The load-bearing fact (v3 contract): `interview.session.role_bindings`
@@ -330,7 +330,7 @@ function RoleTurnObserver({
  * same mistake: a desktop rail printed at phone width.
  *
  * So on a phone they become what they actually are — two CHOICES, each behind
- * one labelled control and one bottom sheet, in the platform's own sheet
+ * one labeled control and one bottom sheet, in the platform's own sheet
  * primitive: who you are talking to, and which record you are reading. The
  * conversation gets everything else.
  */
@@ -394,7 +394,7 @@ function PhoneRoomBar({
         />
       </button>
 
-      {/* LABELLED, because four unlabelled document glyphs said nothing. */}
+      {/* LABELED, because four unlabelled document glyphs said nothing. */}
       <button
         type="button"
         onClick={() => setSheet("records")}
@@ -776,7 +776,7 @@ export function RoomChatPane({
                      walk 5, finding 7). `conversation_started` is computed live
                      per `/roles` call and never persisted, so before that call
                      answers the persisted binding always reads `false` — which
-                     labelled an already-used conversation a reservation, sent
+                     labeled an already-used conversation a reservation, sent
                      the next turn as turn 1 with `is_new: true`, and put the
                      server's 409 ("Pass is_new=false to continue it", with the
                      raw UUID) inside a live interview thread. The room now

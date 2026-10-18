@@ -60,7 +60,7 @@ export function PersonalWhatsAppComposer({ client, chatId, grantId, generation, 
       if (["cancelled", "failed", "accepted"].includes(receipt.state)) {
         sessionStorage.removeItem(attemptKey); attempt.current = null; setUncertain(false);
       }
-    } catch (cause) { if (mounted.current) { setError(cause instanceof Error ? cause.message : "Attempt could not be cancelled."); if (cause instanceof PersonalWhatsAppFailure && cause.accessLost) onAccessFailure(cause.message); } }
+    } catch (cause) { if (mounted.current) { setError(cause instanceof Error ? cause.message : "Attempt could not be canceled."); if (cause instanceof PersonalWhatsAppFailure && cause.accessLost) onAccessFailure(cause.message); } }
     finally { sending.current = false; if (mounted.current) setBusy(false); }
   }
   async function send() {
@@ -85,7 +85,7 @@ export function PersonalWhatsAppComposer({ client, chatId, grantId, generation, 
   return <div className="border-t p-3">
     {error && <ErrorNotice size="inline" message={error} />}
     {entries.length > 0 && <ul className="mb-2 space-y-1 text-xs text-muted-foreground" aria-label="Saved send attempts">{entries.slice(-5).map((entry) => <li key={entry.client_id}>
-      <span>{entry.network_status === "SUCCESS" ? "Sent" : entry.state === "accepted" ? "Accepted; delivery unconfirmed" : entry.state === "failed" ? "Failed" : entry.state === "cancelled" ? "Cancelled" : "Send unconfirmed"}</span>
+      <span>{entry.network_status === "SUCCESS" ? "Sent" : entry.state === "accepted" ? "Accepted; delivery unconfirmed" : entry.state === "failed" ? "Failed" : entry.state === "cancelled" ? "Canceled" : "Send unconfirmed"}</span>
       {entry.delivered === true && <span> · Delivery reported</span>}{entry.seen === true && <span> · Read reported</span>}
       {["pending", "dispatching", "unknown", "failed"].includes(entry.state) && <p className="truncate">{entry.draft_text}</p>}
     </li>)}</ul>}

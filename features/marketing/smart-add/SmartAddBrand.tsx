@@ -372,7 +372,7 @@ export function SmartAddBrand({
   const [fullName, setFullName] = useState("");
   const [fullNameSkipped, setFullNameSkipped] = useState(false);
   // Person harder (PATHS.md person_harder): the find-you log (Builder › Decisions) and the confirmed page
-  // anchors (an employer bio page or a licence record: firm, but not the person's own website).
+  // anchors (an employer bio page or a license record: firm, but not the person's own website).
   const [findLog, setFindLog] = useState<FindLogEntry[]>([]);
   // Hard / close-to-impossible paths: "Dig deeper" escalates on the screen; person.find_you rides the next round's
   // inputs (the mandate provisions read it); the sweep feed goes to the Builder panel.
@@ -411,8 +411,8 @@ export function SmartAddBrand({
   const [capturing, setCapturing] = useState(false);
   const openProvision = useOpenProvisionWindow();
   const [setupView, setSetupView] = useState<RoundView | null>(null);
-  // A restart parks the run as cancelled and the platform's recovery sweep resumes it; the
-  // stream adapter treats cancelled as final, so the screen lets go and re-reads the run.
+  // A restart parks the run as canceled and the platform's recovery sweep resumes it; the
+  // stream adapter treats canceled as final, so the screen lets go and re-reads the run.
   const [setupAttached, setSetupAttached] = useState(true);
   const [saveNotes, setSaveNotes] = useState<string[]>([]);
   // Admin Builder panel: everything this screen has (no-op for everyone else).
@@ -882,7 +882,7 @@ export function SmartAddBrand({
   }, [affiliations, created]);
 
   /** Find-you "yes": an account or the person's own site lands as a confirmed finding (the next round grounds on
-   *  it); an employer bio page or licence record is a page anchor; any other page only teaches clues. */
+   *  it); an employer bio page or license record is a page anchor; any other page only teaches clues. */
   const confirmFound = (c: HarderCandidate) => {
     if (c.bucket === "social" || c.bucket === "directory" || c.anchor_kind === "personal_site") {
       applyHelperAnswer(candidateItem(c), "me");
@@ -1008,7 +1008,7 @@ export function SmartAddBrand({
     roundViews.some((v) => !!v && !TERMINAL.includes(v.status ?? ""));
   const failedRound =
     rounds.some((r) => Boolean(r.error)) || roundViews.some((v, i) => !rounds[i]?.superseded && roundFailed(v));
-  // A run ended from outside (its worker died, or it was cancelled): the screen says so and offers to run it again.
+  // A run ended from outside (its worker died, or it was canceled): the screen says so and offers to run it again.
   const stoppedRounds = rounds.filter((r, i) => !r.superseded && roundStopped(roundViews[i]));
   const searchAgain = () => {
     const again = stoppedRounds;

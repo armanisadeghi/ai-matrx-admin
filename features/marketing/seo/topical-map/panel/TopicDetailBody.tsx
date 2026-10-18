@@ -322,7 +322,7 @@ function TopicDetailBodyInner({
               />
             ) : (
               <PanelSection title="Pages" count={split.pages.length}>
-                <SuspenseLoader centered={false} message="Loading the intent colours…" />
+                <SuspenseLoader centered={false} message="Loading the intent colors…" />
               </PanelSection>
             )}
             <PlannedPagesSection

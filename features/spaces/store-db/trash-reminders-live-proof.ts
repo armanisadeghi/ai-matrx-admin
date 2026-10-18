@@ -3,7 +3,7 @@
 // Run: pnpm tsx features/spaces/store-db/trash-reminders-live-proof.ts <organization-id>
 // Uses the admin account (AI_ADMIN_USERNAME/PASSWORD) in an organization it belongs to. The admin sets a reminder on a
 // page and on its sub-page (the page's scope `spaces:<id>:`), moves the parent to Trash (the sub-page trashes with it),
-// checks both reminders are cancelled, restores the parent and checks they are pending again. Prints PASS/FAIL per claim.
+// checks both reminders are canceled, restores the parent and checks they are pending again. Prints PASS/FAIL per claim.
 
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
@@ -54,7 +54,7 @@ async function main() {
     const p1 = await statusOf(parent.id);
     const c1 = await statusOf(child.id);
     check("trashing the page cancels its reminder", p1 === "cancelled", p1);
-    check("the sub-page that trashed with it is cancelled too", c1 === "cancelled", c1);
+    check("the sub-page that trashed with it is canceled too", c1 === "cancelled", c1);
     await store.restore(parent.id);
     const p2 = await statusOf(parent.id);
     check("restoring the page makes its reminder pending again", p2 === "pending", p2);

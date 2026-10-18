@@ -417,7 +417,7 @@ export const STATUS_WORD: Record<BackgroundRunPhase, string> = {
   paused: "Paused",
   finished: "Finished",
   stopped: "Stopped",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
 };
 
 /**

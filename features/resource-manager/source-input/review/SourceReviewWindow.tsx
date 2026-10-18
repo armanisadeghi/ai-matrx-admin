@@ -7,7 +7,7 @@
  * itself, so one frame serves every host.
  *
  * Settles the opener's promise exactly once: applied / add_more from the
- * body, cancelled from Cancel, the close control, or any other close.
+ * body, canceled from Cancel, the close control, or any other close.
  *
  * It is a registered window overlay that shows a Dialog instead of a
  * `WindowPanel`, so it acknowledges its own render to the silent-render

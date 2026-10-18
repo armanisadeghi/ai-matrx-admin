@@ -9,14 +9,14 @@
  * `v_units_without_purpose` / `v_purpose_orphaned`) directly from Supabase —
  * never a committed snapshot, because the number's whole job is to be current.
  *
- * THE INVENTORY LAW, honoured: every primitive here already existed —
+ * THE INVENTORY LAW, honored: every primitive here already existed —
  * `getEntityInfo`/`tryGetEntityInfo` for the icon, label, and route;
  * `peekHref` semantics for "no detail route means no Open button, never a
  * button that 404s"; `ResourcePeekHost` for the peek; `MatrxDataTable` is
  * deliberately NOT used (these are two short, unsorted, unfiltered worklists,
  * not a records list). Nothing new was invented for the chrome.
  *
- * THE DOOR LAW, honoured: every unit named here is reachable — Open when the
+ * THE DOOR LAW, honored: every unit named here is reachable — Open when the
  * registry knows a route, Peek always. A count is a door: the missing-purpose
  * number opens the units behind it.
  */

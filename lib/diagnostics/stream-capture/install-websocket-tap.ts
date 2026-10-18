@@ -8,7 +8,7 @@
  *
  * Unlike the fetch tap, this one is inherently non-destructive: WebSocket
  * messages are broadcast to every registered listener, so adding ours consumes
- * nothing. The one intercept that DOES mutate behaviour is `send`, which we
+ * nothing. The one intercept that DOES mutate behavior is `send`, which we
  * wrap to record outbound frames — it must always call through, even if
  * recording throws.
  *

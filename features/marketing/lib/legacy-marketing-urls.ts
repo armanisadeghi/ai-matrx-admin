@@ -77,7 +77,7 @@ const KEYWORD_VIEW_PATHS: Record<string, string> = {
 const BRAND_ASSET_VIEWS = new Set(["research", "sources", "generate"]);
 
 function readView(query: URLSearchParams): string | null {
-  // `?tab=` is the legacy alias every marketing surface has always honoured.
+  // `?tab=` is the legacy alias every marketing surface has always honored.
   return query.get("view") ?? query.get("tab");
 }
 

@@ -172,7 +172,7 @@ function dismissInSonner(toastId?: ToastId): void {
   }
   const realRaf = window.requestAnimationFrame;
   const realCaf = window.cancelAnimationFrame;
-  // Ids handed out for frames we ran on the spot; cancelling one is a no-op.
+  // Ids handed out for frames we ran on the spot; canceling one is a no-op.
   let immediateFrameId = -1;
   window.requestAnimationFrame = (cb: FrameRequestCallback) => {
     cb(performance.now());

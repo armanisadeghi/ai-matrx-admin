@@ -1,5 +1,5 @@
 /**
- * A SHARE-REQUIRED REFUSAL IS NEVER LABELLED "OURS TO REPAIR — WE ARE ON IT".
+ * A SHARE-REQUIRED REFUSAL IS NEVER LABELED "OURS TO REPAIR — WE ARE ON IT".
  *
  * THE DEFECT THIS PINS (Cursor Bugbot round 13, PR 228, commit `8855439f`,
  * review comment id 4041550778). F-19/F-23 added `resource_permission_denied`

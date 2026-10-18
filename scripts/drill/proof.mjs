@@ -2,7 +2,7 @@
  * DRILL — THE PROOF, FROM THE SEAT, HEADLESS.
  *
  * THE USE CASE. Rincon Plumbing Co runs one truck and forty-odd live jobs. The owner opens the
- * Jobs dashboard on Monday, sees the Jobs-by-stage chart say Cancelled 4, and clicks it —
+ * Jobs dashboard on Monday, sees the Jobs-by-stage chart say Canceled 4, and clicks it —
  * because four cancellations is either a bad week or a bad dispatcher, and she wants the four.
  *
  * WHAT THIS SCRIPT PROVES, AND WHY IT IS NOT A SCREENSHOT OF A NUMBER. It signs in as
@@ -117,7 +117,7 @@ async function main() {
   await page.screenshot({ path: resolve(OUT, "drill-2-only-those-rows.png"), fullPage: false });
 
   // ── 5. THE SAME QUESTION, IN THE GRID. The board and the grid each ask the store for
-  //      their own page, so a filter honoured by one and not the other is a layout button
+  //      their own page, so a filter honored by one and not the other is a layout button
   //      that silently changes which records you are looking at. The grid is also where
   //      rows are countable, so this is where the number is checked.
   //

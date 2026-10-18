@@ -16,9 +16,9 @@
  * surface manifest is loaded by the drift checker outside a browser, so
  * anything this module pulls in, that checker pulls in too.
  *
- * The DIVISION OF LABOUR this encodes (see `finding-mutations.ts`): the
+ * The DIVISION OF LABOR this encodes (see `finding-mutations.ts`): the
  * analyzer owns detection — it opens, refreshes, resolves and reopens
- * findings, and never touches suppression. The USER owns judgement, and has
+ * findings, and never touches suppression. The USER owns judgment, and has
  * exactly two verbs: "I've seen this" (acknowledge) and "this is intentional,
  * stop telling me" (suppress, with a reason). Those two verbs — and only
  * those two — are what this module lets a caller write.

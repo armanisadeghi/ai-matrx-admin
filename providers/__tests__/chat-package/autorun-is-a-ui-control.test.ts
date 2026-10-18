@@ -348,7 +348,7 @@ describe("autoRun is a UI control — it never decides whether a run happens", (
  * runs. `showPreExecutionGate`, `showVariablePanel` and `allowChat` are UI
  * controls by the same definition, and can be set the same meaningless way on
  * a mode that paints nothing. The gate is the one that repeats the DEFECT and
- * not just the nonsense: honouring it returns the launch early behind an
+ * not just the nonsense: honoring it returns the launch early behind an
  * overlay nobody can ever press, so the run is deleted rather than deferred.
  */
 describe("interface-only flags are ignored on a mode with no interface", () => {

@@ -1,7 +1,7 @@
 // release-fail-forward.test.mjs — the ship path at its seams.
 //
 // Releasing is never harder than a plain `git push` (Arman, 2026-09-19/20).
-// The behavioural guard is scripts/test-release-ship-path.sh (a dirty
+// The behavioral guard is scripts/test-release-ship-path.sh (a dirty
 // checkout, a diverged branch and a foreign push landing mid-release must
 // still end with the tag on origin). This file guards the wiring the sandbox
 // cannot see: that no check, gate, lease or self-test wall sits before the

@@ -49,7 +49,7 @@ const AUDITED: Record<string, SettingsDisposition> = {
  * A knob resolved by a trigger or an RPC body has no call site to find: the
  * record store's confirmation keys are resolved by `platform._stamp_actor_tier`
  * and `content_ir.edit_kind_instance_value`, and ~50 `hr.*` keys are consumed
- * ONLY that way. Telling a person that a setting their database honours on
+ * ONLY that way. Telling a person that a setting their database honors on
  * every write "is not available yet" is law 4 broken from the other side: the
  * screen is lying, just in the direction that looks cautious.
  *

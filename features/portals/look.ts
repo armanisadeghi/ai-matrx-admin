@@ -1,12 +1,12 @@
 // features/portals/look.ts — WHOSE PORTAL THIS IS, BEFORE SHE TYPES ANYTHING (lane S6, U12).
 //
-// The champion is Softr's branded client portal: the business's logo, its name and its colour on
+// The champion is Softr's branded client portal: the business's logo, its name and its color on
 // the sign-in page a client opens from a text message, and the same on every screen after. The
 // store resolves the look (`custom._portal_style`): the portal's own values over the
 // organization's brand, so a portal with no look of its own shows the organization's name and is
 // never blank. This module only turns that answer into what the page draws; it adds nothing.
 //
-// Colour is a design-system NAME (`STYLE_COLORS`), never a hex: each name ships its own light and
+// Color is a design-system NAME (`STYLE_COLORS`), never a hex: each name ships its own light and
 // dark class, so a portal is legible on both grounds and a retired name degrades to "no colour".
 // Pure, no I/O (`__tests__/look.test.ts`).
 
@@ -23,7 +23,7 @@ export interface PortalLook {
   welcome: string | null;
   /** The logo's public address, or null (the page then shows the name's first letter). */
   logoUrl: string | null;
-  /** The accent band's class, or null for the app's own colour. */
+  /** The accent band's class, or null for the app's own color. */
   bandClass: string | null;
   /** A soft tint for the portal's own call-to-action rows, or null. */
   tintClass: string | null;
@@ -33,8 +33,8 @@ export interface PortalLook {
   /** A cover picture's public address, or null (no cover band). */
   coverUrl: string | null;
   /**
-   * The accent as the app's own primary colour (buttons, progress, focus ring) for a page that
-   * should wear it — a public form (MAKE-HOME W5). Null for the app's own colour.
+   * The accent as the app's own primary color (buttons, progress, focus ring) for a page that
+   * should wear it — a public form (MAKE-HOME W5). Null for the app's own color.
    */
   primaryVars: Record<string, string> | null;
 }
@@ -82,7 +82,7 @@ export function portalLook(style: PortalStyle | null | undefined, fallbackName: 
     primaryVars:
       accent && ACCENT_PRIMARY[accent]
         ? {
-            // The triplets AND the resolved colours: `--color-primary` is computed where it is
+            // The triplets AND the resolved colors: `--color-primary` is computed where it is
             // declared (the root), so overriding only `--primary` below it changes nothing.
             "--primary": ACCENT_PRIMARY[accent],
             "--primary-foreground": "0 0% 100%",

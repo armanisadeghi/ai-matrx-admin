@@ -1,6 +1,6 @@
 /**
  * The /schedules list shows every schedule the person owns — a coding session on a computer
- * (kind device_op) included, labelled by its own work — never only agent rows (the re-walk: a new
+ * (kind device_op) included, labeled by its own work — never only agent rows (the re-walk: a new
  * computer schedule missing from "7 schedules"). The query is recorded at the supabase seam.
  */
 const filters: Array<[string, unknown]> = [];

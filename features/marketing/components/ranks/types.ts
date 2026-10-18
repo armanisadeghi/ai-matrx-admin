@@ -102,7 +102,7 @@ export const TRACKING_MODES: TrackingModeOption[] = [
  * (values that are PARTIAL mid-stream). Widening the signature is what let the
  * kind family consume this rule instead of forking a second copy of it
  * (Rank Kinds Run, Stage B — the Inventory Law). The body only ever compares
- * string values, so nothing about the behaviour changes.
+ * string values, so nothing about the behavior changes.
  */
 export function trackingModeLabelForItem(item: {
   provider?: string | null;

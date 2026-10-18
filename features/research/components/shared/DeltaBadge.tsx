@@ -6,7 +6,7 @@ type DeltaType = 'new' | 'changed' | 'stale';
 
 /** Delta hints get a muted semantic dot + monochrome micro-label — never a
  *  bright pill. `new` is additive (green), `changed` is informational (blue,
- *  not an alarm colour), `stale` is an absence of freshness so it stays fully
+ *  not an alarm color), `stale` is an absence of freshness so it stays fully
  *  neutral. The dot carries the meaning; the label stays muted. */
 const CONFIG: Record<DeltaType, { label: string; dotClass: string }> = {
     new:     { label: 'New',     dotClass: 'bg-emerald-500/70' },

@@ -4,7 +4,7 @@
  * `renderError`, `settings`), rendered with KaTeX directly because the page's
  * version goes through the app's markdown core, which the frame does not carry.
  * A formula KaTeX rejects renders `renderError`, or the TeX source in the error
- * colour — never an empty box.
+ * color — never an empty box.
  *
  * Built ONLY into the on-demand `katex` chunk (frame-lib-chunks.ts), together
  * with KaTeX's stylesheet (fonts inlined as data: URLs, since the frame's

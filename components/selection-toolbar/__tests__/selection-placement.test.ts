@@ -102,6 +102,6 @@ it("editing: Bold, Italic, Link, Ask AI are the buttons; headings, lists and com
   }
 });
 
-it("one Highlight button stands for the five colours", () => {
+it("one Highlight button stands for the five colors", () => {
   expect(Object.keys(SELECTION_ACTION_MODES).filter((id) => id.startsWith("selection:highlight"))).toEqual(["selection:highlight"]);
 });

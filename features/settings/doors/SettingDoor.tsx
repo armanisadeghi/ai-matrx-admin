@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * SettingDoor — the canonical way to point from behaviour to the exact
+ * SettingDoor — the canonical way to point from behavior to the exact
  * control that governs it. User settings open the existing settings shell;
  * organization settings use a real deep link so they remain bookmarkable and
- * preserve native new-tab behaviour.
+ * preserve native new-tab behavior.
  */
 
 import Link from "next/link";

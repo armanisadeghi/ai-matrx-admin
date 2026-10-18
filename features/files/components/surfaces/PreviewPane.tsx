@@ -407,7 +407,7 @@ function PreviewIconButton(props: PreviewIconButtonProps) {
 
   // Render as an anchor when an href is provided so middle-click, cmd-click,
   // and "Copy link" all work the way a real link does — wrapping a <button>
-  // in target="_blank" cannot replicate that behaviour. We mirror the
+  // in target="_blank" cannot replicate that behavior. We mirror the
   // disabled visual with aria-disabled + pointer-events-none on the link
   // since <a> has no native disabled state.
   const trigger =

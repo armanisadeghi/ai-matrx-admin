@@ -144,7 +144,7 @@ export function ImageManager(props: ImageManagerProps) {
     return Array.from(new Set(visibleTabs.map(aliasTabId)));
   }, [visibleTabs]);
 
-  // Set selection mode once on mount — same behaviour as the legacy
+  // Set selection mode once on mount — same behavior as the legacy
   // component to avoid surprising existing callers.
   useEffect(() => {
     setSelectionMode(initialSelectionMode);

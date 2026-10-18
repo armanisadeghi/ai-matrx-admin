@@ -4,7 +4,7 @@
  *
  * What was live: the goal had TWO readers that disagreed. The workspace read
  * the STORED row (`agent.mandate.goal`); the admin goal pane read the CODE
- * CATALOGUE (`GET /mandates`) and nothing else. Two live paths ended in the
+ * CATALOG (`GET /mandates`) and nothing else. Two live paths ended in the
  * false sentence *"No goal declared for <key>."*:
  *
  *   1. A Mandate created in the UI — stored goal present, no code declaration
@@ -16,9 +16,9 @@
  *      kept printing the pre-edit text (or the false sentence) until a reload.
  *
  * The fix is at the class: `features/mandates/goal.ts` holds the ONE
- * precedence (stored first, catalogue as fallback), `MandateGoalBlock` is the
+ * precedence (stored first, catalog as fallback), `MandateGoalBlock` is the
  * ONE block that prints a goal or its absence, and `invalidateMandateCache`
- * clears every cache a goal write can stale — the catalogue included.
+ * clears every cache a goal write can stale — the catalog included.
  *
  * RED/GREEN, run against the SHIPPED files on 2026-09-11:
  *
@@ -56,7 +56,7 @@ jest.mock("@/lib/api/call-api", () => ({
   callApi: (args: unknown) => ({ __callApi: args }),
 }));
 
-/** The catalogue takes its dispatch as an argument; the hook takes redux's. */
+/** The catalog takes its dispatch as an argument; the hook takes redux's. */
 const mockDispatch = ((): unknown => {
   mockCatalogueCalls += 1;
   return { data: { mandates: mockCatalogueEntries }, error: null };
@@ -175,7 +175,7 @@ it("never says 'No goal declared' about a Mandate whose goal is stored", async (
 
   expect(container.textContent).toContain("Draft the weekly parent update");
   expect(container.textContent).not.toContain("No goal declared");
-  // And it does not blame the catalogue for an absence that isn't one.
+  // And it does not blame the catalog for an absence that isn't one.
   expect(container.textContent).not.toContain("Declared in code");
 });
 
@@ -205,7 +205,7 @@ it("says 'No goal declared' only when BOTH readers came back empty", async () =>
   expect(container.textContent).toContain(`No goal declared for ${KEY}.`);
 });
 
-it("resolves the precedence in one place: stored beats the catalogue", () => {
+it("resolves the precedence in one place: stored beats the catalog", () => {
   expect(
     resolveMandateGoal({ stored: "stored", catalogue: "declared" }),
   ).toEqual({ goal: "stored", source: "stored" });
@@ -223,7 +223,7 @@ it("resolves the precedence in one place: stored beats the catalogue", () => {
 // 4. THE CACHE A GOAL WRITE USED TO LEAVE STANDING.
 // ───────────────────────────────────────────────────────────────────────────
 
-it("drops the page-lifetime catalogue when a mandate write invalidates", async () => {
+it("drops the page-lifetime catalog when a mandate write invalidates", async () => {
   mockCatalogueEntries = [{ mandate_key: KEY, goal: "v1" }];
 
   await fetchMandateCatalogue(mockDispatch);

@@ -20,7 +20,7 @@ export interface LoadedDocument {
   typeSlug: string;
   /**
    * The document sits in its owner's Trash. `document_get` still answers its
-   * owner (Google Drive behaviour, rcstore_n), but it omits `deleted_at` — so
+   * owner (Google Drive behavior, rcstore_n), but it omits `deleted_at` — so
    * without this a studio opened a trashed document from its link as if it
    * were live, and let it be edited. Callers refuse it through AccessGate.
    */

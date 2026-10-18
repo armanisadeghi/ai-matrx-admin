@@ -85,7 +85,7 @@ const FAIL = `${C.red}[FAIL]${C.reset}`;
 const INFO = `${C.dim}[INFO]${C.reset}`;
 
 /**
- * THE PLANTED ROWS' IDS, fixed and recognisable on sight.
+ * THE PLANTED ROWS' IDS, fixed and recognizable on sight.
  *
  * `dd000000-…` is this proof's own prefix — `W0-CORPUS` owns `d0000000-%` and
  * `c5000000-%`, so a planted row can never be mistaken for a corpus row, and a

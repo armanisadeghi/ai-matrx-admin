@@ -14,7 +14,7 @@
  *
  * SERVER STATE, LIKE ITS SIBLING. `seo.keyword_place_status` is a ledger read,
  * so the number survives the tab, exactly like the universal-facet strip it is
- * modelled on. The button advances that ledger by ONE bounded pass — the batch
+ * modeled on. The button advances that ledger by ONE bounded pass — the batch
  * size is a `platform.feature_knob` row read here, never a constant, because a
  * pass sized in code is a ceiling nobody can turn.
  *

@@ -332,7 +332,7 @@ export interface BgRemoveParams {
   model?: "u2net" | "u2netp" | "isnet-general-use" | "birefnet-general";
   /** Cleaner alpha mattes (slower). Default false. */
   alpha_matting?: boolean;
-  /** Flatten transparency onto this colour instead of leaving alpha. */
+  /** Flatten transparency onto this color instead of leaving alpha. */
   background_color?: string;
 }
 

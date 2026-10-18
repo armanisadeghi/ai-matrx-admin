@@ -50,7 +50,7 @@ function ensureArmed(): void {
   armed = true;
   void import("@/utils/supabase/client").catch(() => {
     // No client, no signal. Callers treat that as "never ready" and keep their
-    // existing behaviour — this module can only ever ADD a retry.
+    // existing behavior — this module can only ever ADD a retry.
     armed = false;
   });
 }

@@ -16,7 +16,7 @@
 //    is the sentence that makes somebody close the popover and do nothing.
 // 3. `kept_existing` IS A SUCCESS. The map already held that placement from a
 //    person or a higher-ranked source and the pass correctly left it alone. A
-//    result screen that files it under failures punishes the behaviour we want.
+//    result screen that files it under failures punishes the behavior we want.
 
 jest.mock("@ai-matrx/design-system", () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -252,7 +252,7 @@ describe("the wanted-topics panel", () => {
 
     const disclosure = screen.button("Held back");
     expect(disclosure).not.toBeNull();
-    // Held back is a DECISION, so its sentence is shown, not summarised.
+    // Held back is a DECISION, so its sentence is shown, not summarized.
     expect(screen.text()).not.toContain("Crawl it, or find a second page");
     if (disclosure) await screen.click(disclosure);
     expect(screen.text()).toContain(

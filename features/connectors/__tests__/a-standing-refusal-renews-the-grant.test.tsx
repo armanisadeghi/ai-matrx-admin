@@ -52,7 +52,7 @@ const LIVE: ConnectorCapabilityRollout[] = [
 
 /**
  * The column exactly as the recording seam leaves it after Google answered a
- * `gmail.send` call with a 401 on a grant it will not honour any more — the
+ * `gmail.send` call with a 401 on a grant it will not honor any more — the
  * `grant_expired_or_revoked` case, whose disposition is `reconnect`.
  */
 const REFUSED_COLUMN = {
@@ -63,7 +63,7 @@ const REFUSED_COLUMN = {
       action: "gmail.send",
       code: "grant_expired_or_revoked",
       sentence:
-        "Google is no longer honouring this account's permission for Gmail. Reconnect it to send email again.",
+        "Google is no longer honoring this account's permission for Gmail. Reconnect it to send email again.",
       http_status: 401,
     },
   },

@@ -425,7 +425,7 @@ export async function planCoverage({
   // items ("5 cards" over 10 sections) used to give every section at least one
   // and ship 10 cards (verify-1, 2026-09-28). Neighbouring sections are folded
   // together instead, so every part of the material still gets a pass and each
-  // pass earns at least one item. (A source-scaled count has no ask to honour;
+  // pass earns at least one item. (A source-scaled count has no ask to honor;
   // its sections stay as the material split them.)
   const packed = requestedTotal ? foldPacked(natural, targetTotal) : natural;
   const total = Math.max(1, packed.length);

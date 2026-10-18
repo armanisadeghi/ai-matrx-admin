@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The selection toolbar's section for frames (FigJam): Rename, Colour, Fit to contents, Arrange
+ * The selection toolbar's section for frames (FigJam): Rename, Color, Fit to contents, Arrange
  * inside. Delete and layer order come from the shared actions section — a frame has ONE delete.
  */
 
@@ -21,7 +21,7 @@ import {
 /** Room a fitted frame keeps around what it holds. */
 export const FRAME_FIT_PADDING = 48;
 
-/** Ids of the tiles and canvas objects whose centre a frame holds (what it carries and arranges). */
+/** Ids of the tiles and canvas objects whose center a frame holds (what it carries and arranges). */
 export function idsInFrame<T extends BoardTileBase>(board: BoardStore<T>, frame: Rect): string[] {
   const inside = (r: Rect) => {
     const cx = r.x + r.w / 2;
@@ -76,7 +76,7 @@ function FrameControls<T extends BoardTileBase>({
   arrangeInside: (ids: string[]) => void;
 }) {
   const store = useBoardCameraStore();
-  // Re-read when frames change (a colour pick), not per camera frame.
+  // Re-read when frames change (a color pick), not per camera frame.
   const frames = useSyncExternalStore(board.subscribe, () => board.read().frames, () => board.read().frames).filter((f) => ids.includes(f.id));
   if (frames.length === 0) return null;
   const sole = frames.length === 1 ? frames[0] : null;

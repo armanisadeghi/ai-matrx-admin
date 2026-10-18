@@ -13,7 +13,7 @@
  * shape — a result that names a row of a canvas-renderable kind — and each one
  * would have needed its own bespoke wire. So the wire is registered ONCE here,
  * keyed by the tool's name and by the result's kind, and a future tool inherits
- * the whole behaviour (thread card action + canvas offer + auto-open rules) by
+ * the whole behavior (thread card action + canvas offer + auto-open rules) by
  * adding one reader.
  *
  * A reader is PURE: result in, offer out, `null` when this particular result

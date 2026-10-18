@@ -267,7 +267,7 @@ function listItems(lines: string[]): Array<{ title: string; body: string }> {
 
 /**
  * A steps TABLE (`| # | Step | Who does it | Model | … |`): one step per row. The title is the step cell's
- * bold lead (or its first sentence); the body is the whole step cell plus every other column, labelled.
+ * bold lead (or its first sentence); the body is the whole step cell plus every other column, labeled.
  */
 function tableSteps(lines: string[]): Array<{ title: string; body: string }> {
   const cells = (l: string) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());

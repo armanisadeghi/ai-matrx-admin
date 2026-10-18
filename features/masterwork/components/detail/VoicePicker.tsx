@@ -10,11 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
  * Expert's it REFUSED — "you never replied in it" — about a thread whose second
  * half was, visibly, their own answer; the only control it offered was a
  * free-text "Which address is yours?", which cannot help at all when the reply
- * carries no address (a mail client copies your own message labelled "me").
+ * carries no address (a mail client copies your own message labeled "me").
  *
  * The product already owned exactly the right question: the Meeting
  * Scavenger's speaker picker. This is that picker, lifted out unchanged in
- * shape and behaviour so the two lanes ask one question one way. The Meeting
+ * shape and behavior so the two lanes ask one question one way. The Meeting
  * Scavenger's own copy in `MeetingScavengerDialog.tsx` is still inline and
  * should be repointed here by whoever next touches that file — the count noun
  * is a prop precisely so it can be ("turns" there, "messages" here).

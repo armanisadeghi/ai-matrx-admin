@@ -326,7 +326,7 @@ export function ProjectsHub({
           if (row.parent_task_id || !row.project_id) continue; // top-level only
           const s = m.get(row.project_id);
           if (!s) continue;
-          // A dismissed or cancelled task is neither open nor done — the same
+          // A dismissed or canceled task is neither open nor done — the same
           // reading as the tasks list (isOpenStatus), so the card and the
           // tasks drill count the same open tasks.
           if (row.status === "completed") s.done += 1;

@@ -432,7 +432,7 @@ export function SourcingBadge({ input }: { input: ServedInput }) {
  * The loud band. A degraded served surface always says so out loud.
  *
  * `issues` are the server's OWN named reasons, one line each — rendered
- * verbatim rather than summarised. A refusal that knows six things and prints
+ * verbatim rather than summarized. A refusal that knows six things and prints
  * one is a silent failure (Masterwork "Verification Desk", 2026-09-11: the
  * run box showed "Bad request. Please check your input." while the server had
  * sent six node-addressed compile errors). Build them with

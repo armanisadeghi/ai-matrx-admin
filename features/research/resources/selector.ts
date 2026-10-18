@@ -4,7 +4,7 @@
  * A bundle stores rules, not row ids, so "the top 20 pages by authority" keeps
  * meaning that after the next pipeline run instead of freezing yesterday's
  * twenty. This module is the pure evaluator: manifest + selector → items, in
- * order, honouring limits. No I/O, no side effects — so the picker can preview
+ * order, honoring limits. No I/O, no side effects — so the picker can preview
  * exactly what a run will use.
  *
  * Ordering matters as much as filtering: when a limit truncates, the order
@@ -166,7 +166,7 @@ export function applySelector(
 }
 
 /**
- * Characters this item will actually contribute, honouring a per-item cap.
+ * Characters this item will actually contribute, honoring a per-item cap.
  * ONE helper so the budget meter and the resolver cannot disagree about what a
  * capped page costs.
  */
@@ -179,7 +179,7 @@ export function effectiveChars(
   return Math.min(item.chars, cap);
 }
 
-/** Total characters of a selection, honouring a per-item cap. */
+/** Total characters of a selection, honoring a per-item cap. */
 export function charsOf(
   items: ResourceItem[],
   limit?: SelectorLimit,

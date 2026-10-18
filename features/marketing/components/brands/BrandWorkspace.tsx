@@ -379,7 +379,7 @@ const FACT_CHIP_TONE: Record<FactTone, ChipTone> = {
 /** Groups preview this many rows; the rest sit behind Show all. */
 const FACT_GROUP_PREVIEW = 5;
 
-/** Light semantic colour per fact family, for the group's icon chip (real tokens only). */
+/** Light semantic color per fact family, for the group's icon chip (real tokens only). */
 type FactTone = "primary" | "success" | "warning" | "info" | "destructive";
 const FACT_TONE_CLASS: Record<FactTone, string> = {
   primary: "bg-primary/10 text-primary-ink",
@@ -510,7 +510,7 @@ function BusinessFactRow({
   );
 }
 
-/** One kind of fact: the kind's colour chip and name once, then its rows. */
+/** One kind of fact: the kind's color chip and name once, then its rows. */
 function BusinessFactGroup({
   kind,
   facts,

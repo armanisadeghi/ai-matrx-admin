@@ -18,7 +18,7 @@
 // readers, the topic search, the upsert), plus `@ai-matrx/design-system` —
 // Radix's Popover renders its content into a portal only after a real pointer
 // interaction, which jsdom does not have. Mocking the component library keeps
-// the assertions on OUR words and OUR ordering; none of the behaviour under
+// the assertions on OUR words and OUR ordering; none of the behavior under
 // test lives inside Radix.
 
 import * as React from "react";

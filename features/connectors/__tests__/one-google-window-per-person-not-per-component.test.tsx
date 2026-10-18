@@ -135,7 +135,7 @@ describe("one Google authorization window per person, not per component", () => 
 
       // Still inside the FIRST press's organization wait. A refusal has to come
       // back NOW; racing it against a short sentinel is what turns the old
-      // behaviour into a stated failure instead of a five-second timeout — the
+      // behavior into a stated failure instead of a five-second timeout — the
       // second press used to sail past the ref and sit on its own wait, which
       // IS the second window.
       const verdict = await Promise.race([

@@ -6,7 +6,7 @@
  * picker fell back to the seat's rung — "Personal" — about 11 ms after open,
  * and "Start collecting" was clickable on that guess. Required: waiting state
  * while the read runs; no selection + Start unavailable when the read cannot
- * answer; the person's own pick is always honoured.
+ * answer; the person's own pick is always honored.
  */
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -147,7 +147,7 @@ describe("FX-D1 — Applies to never guesses the level", () => {
     expect(start().disabled).toBe(true);
   });
 
-  it("the person's own pick is honoured: Start becomes available", async () => {
+  it("the person's own pick is honored: Start becomes available", async () => {
     activeOrg = null;
     mandateHolder.mockReturnValue({
       holder: null,

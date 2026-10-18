@@ -12,7 +12,7 @@
  *  2. `agendaIsStaleForOpen` — a detached event's frozen `synced_at` never
  *     counts as evidence the agenda window needs a refresh.
  *
- * Every test here was run against the code with the behaviour it names
+ * Every test here was run against the code with the behavior it names
  * removed, and every one of them failed first.
  */
 
@@ -131,7 +131,7 @@ describe("agendaIsStaleForOpen", () => {
     expect(agendaIsStaleForOpen(mixed, MIN_AGE, now)).toBe(false);
   });
 
-  it("treats an empty window as never refreshed (unchanged first-load behaviour)", () => {
+  it("treats an empty window as never refreshed (unchanged first-load behavior)", () => {
     expect(agendaIsStaleForOpen([], MIN_AGE, now)).toBe(true);
   });
 });

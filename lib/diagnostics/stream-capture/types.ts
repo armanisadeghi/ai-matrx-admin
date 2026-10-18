@@ -25,7 +25,7 @@ export interface CapturedStreamEvent {
    */
   eventType: string;
   /**
-   * Which way the event travelled. HTTP stream events are always `in`;
+   * Which way the event traveled. HTTP stream events are always `in`;
    * WebSocket connections interleave both directions on one exchange, and
    * losing that distinction would make the sequence unreadable.
    */

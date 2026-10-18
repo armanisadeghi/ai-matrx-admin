@@ -9,7 +9,7 @@
  *
  * 2. 🚨 **SENSITIVITY FOLLOWS THE TARGET, NOT THE SOURCE.** `hr.corrective_action` is CONF, so
  *    opening the door requires employee-relations authority. For a manager without it the door is
- *    **ABSENT, not disabled** — a greyed "Write up" button tells someone a write-up exists and that
+ *    **ABSENT, not disabled** — a grayed "Write up" button tells someone a write-up exists and that
  *    they are not trusted with it, which is itself a disclosure about the person on screen.
  *
  * 3. **The link is one-way evidence.** The corrective action cites the exception; the exception

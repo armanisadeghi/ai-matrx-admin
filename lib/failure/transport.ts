@@ -29,7 +29,7 @@
  * PostgREST message through untouched, on the reasoning that "a door's own
  * refusal passes through word for word". A DOOR'S REFUSAL AND POSTGRES'S OWN
  * WORDS ARE NOT THE SAME THING: our RPCs raise sentences written for people;
- * the engine raises SQLSTATE prose written for operators. Recognised by
+ * the engine raises SQLSTATE prose written for operators. Recognized by
  * SQLSTATE (and by the engine's verbatim phrasings when the code is lost),
  * those are now rewritten and marked transient, so the screen offers a retry
  * instead of a diagnosis.
@@ -220,7 +220,7 @@ export interface DescribeOptions {
 /**
  * What each database refusal says, and what it honestly knows about the write.
  *
- * A statement the engine CANCELLED is a statement that rolled back — PostgREST
+ * A statement the engine CANCELED is a statement that rolled back — PostgREST
  * runs each request in its own transaction — so "nothing was changed" is a fact
  * here, not a comfort. A connection that DROPPED knows no such thing, so it
  * carries the same uncertainty a transport refusal does.

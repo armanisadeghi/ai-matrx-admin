@@ -15,11 +15,11 @@
 // extracted JSON the runner persists. One parser, display AND persistence.
 //
 // Rules it enforces, both borrowed from the flashcard_set bridge:
-//   • A detail with no text yet is not a detail — an empty labelled box is
+//   • A detail with no text yet is not a detail — an empty labeled box is
 //     noise, and the next flush brings its first characters.
 //   • A detail whose `kind` hasn't arrived keeps `kind` ABSENT rather than
 //     being guessed into a bucket: the component renders a neutral chip and
-//     colours in when the real kind lands. Guessing would show the wrong label
+//     colors in when the real kind lands. Guessing would show the wrong label
 //     to a learner for a few hundred milliseconds.
 
 import type { CanonicalBlockIR } from "@ai-matrx/content-ir";

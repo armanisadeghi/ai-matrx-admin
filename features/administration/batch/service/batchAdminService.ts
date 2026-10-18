@@ -238,7 +238,7 @@ export interface SavingsRollup {
   actualUsd: number;
   savedUsd: number;
   savedPct: number | null;
-  /** The pre-submission estimate for the same items — shown labelled, never a saving basis. */
+  /** The pre-submission estimate for the same items — shown labeled, never a saving basis. */
   preSubmissionEstimateUsd: number;
   /** Completed items with tokens but no price — excluded from every sum. */
   unpricedItems: number;

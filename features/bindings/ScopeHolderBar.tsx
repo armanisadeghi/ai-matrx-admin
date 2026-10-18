@@ -255,7 +255,7 @@ const ORG_RUNG_HOLDER_RULE =
  * system rung opened on **Mine · 40** of the admin's own personal agents and the
  * only protection was `GlobalBindAgentGuard` refusing at save time.
  *
- * The correct behaviour was already in this repo and is reused verbatim —
+ * The correct behavior was already in this repo and is reused verbatim —
  * `ShortcutForm`'s global-scope branch (`initialTab="system"`, the sentence,
  * the destructive alert on a non-system pin). `GlobalBindAgentGuard` stays as
  * the BELT for the API path; this is the door.
@@ -367,8 +367,8 @@ export function ScopeHolderBar({
       )
     : null;
 
-  // The system catalogue is only in the slice after a FULL list fetch, and the
-  // restriction below is what makes it the only catalogue offered at the system
+  // The system catalog is only in the slice after a FULL list fetch, and the
+  // restriction below is what makes it the only catalog offered at the system
   // rung — so fetch it exactly when that rung is standing, the same trigger
   // `ShortcutForm` uses for the same reason.
   const restricted = restriction.sentence !== null;
@@ -381,7 +381,7 @@ export function ScopeHolderBar({
   // new bad choice; it says nothing about a row bound before the restriction
   // existed, or through the API. `ShortcutForm` prints exactly this alert, and
   // a screen that shows a forbidden holder without saying so is the lie the
-  // fourth law forbids. Silent until the catalogue is actually read — an empty
+  // fourth law forbids. Silent until the catalog is actually read — an empty
   // list is "not loaded", never "not a system agent".
   const builtinAgents = useBuiltinAgents();
   const systemHolderViolation = useMemo(() => {

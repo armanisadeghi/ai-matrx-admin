@@ -46,7 +46,7 @@ interface SkillDetailViewProps {
   onMove: (tier: SkillTierKey | null) => void;
   onBack: () => void;
   disabled?: boolean;
-  /** For a skill SET: its members in order (null = not in the loaded catalogue). */
+  /** For a skill SET: its members in order (null = not in the loaded catalog). */
   members?: Array<{ id: string; skill: SkillRow | null }>;
   /** Opens one member in this pane. */
   onOpenMember?: (id: string) => void;

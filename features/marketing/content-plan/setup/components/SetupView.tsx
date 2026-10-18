@@ -398,7 +398,7 @@ export function SetupView() {
   // autosave (debounced) whenever any choice changes. `lastSavedRef` carries
   // the last serialization known to be on the server; `pendingRef` carries an
   // armed-but-unwritten change so unmount and commit FLUSH it instead of
-  // dropping it — a cancelled debounce is exactly the lost-typing bug this
+  // dropping it — a canceled debounce is exactly the lost-typing bug this
   // module exists to kill.
   const [seed, setSeed] = useState<{
     siteId: string;
@@ -795,7 +795,7 @@ export function SetupView() {
     setConceptNamesByArchetype((current) => {
       const forArchetype = { ...(current[selected.key] ?? {}) };
       if (next === null) {
-        // A committed name can only be cancelled by an explicit empty pick —
+        // A committed name can only be canceled by an explicit empty pick —
         // deleting the key would fall back to the committed value.
         if (committedConceptNames[conceptKey]) forArchetype[conceptKey] = "";
         else delete forArchetype[conceptKey];

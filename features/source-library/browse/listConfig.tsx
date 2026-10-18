@@ -46,10 +46,10 @@ export function libraryHref(row: LibraryRow): string {
 }
 
 const SYNC_STATUS_WORDS: Record<LibraryRow["sync_status"], string> = {
-    never_synced: "Not catalogued yet",
-    syncing: "Cataloguing now",
-    idle: "Catalogued",
-    failed: "Last catalogue failed",
+    never_synced: "Not catalogd yet",
+    syncing: "Cataloging now",
+    idle: "Catalogd",
+    failed: "Last catalog failed",
 };
 
 const LIBRARY_COLUMNS: EntityColumnSpec<LibraryRow>[] = [
@@ -238,7 +238,7 @@ export function createLibraryListConfig(
         useRowActions: useLibraryRowActions,
         // `media.source_library` soft-deletes, but the contract publishes no
         // archived axis on the list endpoint — so the affordance is switched
-        // off rather than rendered over a query that cannot honour it.
+        // off rather than rendered over a query that cannot honor it.
         supportsArchived: false,
         // The contract publishes no facet endpoint for Libraries, so there are
         // no chips to render and `fetchFacets` says so by answering `{}`. An
@@ -255,7 +255,7 @@ export function createLibraryListConfig(
             // already accepts a podcast, a blog, or a deck, told a person
             // pasting any of those that they were in the wrong place.
             description:
-                "Paste a YouTube channel, a podcast feed, a blog, or a slide deck link above. The whole catalogue lists in seconds.",
+                "Paste a YouTube channel, a podcast feed, a blog, or a slide deck link above. The whole catalog lists in seconds.",
         },
     };
 }

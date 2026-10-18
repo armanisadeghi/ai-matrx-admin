@@ -833,7 +833,7 @@ const matrxLintPlugin = {
           if (parts.some((part) => OPENING_VERBS.has(part))) return false;
           return parts.some((part) => CLOSING_VERBS.has(part));
         };
-        // Choosing, labelling and debugging are not referencing.
+        // Choosing, labeling and debugging are not referencing.
         const SKIP_TAGS = new Set([
           "SelectItem",
           "CommandItem",
@@ -888,7 +888,7 @@ const matrxLintPlugin = {
         /**
          * `row.agentId ? <EntityRef …/> : <span>{row.agent_id}</span>`
          * — the FALSE arm renders the raw id precisely because there was
-         * no id to open with. Door Law honoured, not broken.
+         * no id to open with. Door Law honored, not broken.
          *
          * Two conditions, both required, exactly as scan.ts's
          * `isIdGuardedFallback`: the expression sits in the **false**
@@ -1078,7 +1078,7 @@ const matrxLintPlugin = {
             // `cond ? <EntityRef …/> : <span>{row.agent_id}</span>`
             // — the fallback arm renders the raw id precisely
             // BECAUSE the door is unavailable there. Door Law
-            // honoured, not broken. The scanner skips these too.
+            // honored, not broken. The scanner skips these too.
             if (isIdGuardedFallback(node, name)) return;
             if (isInNotFoundCopy(node)) return;
             // The subject's OWN id only. A foreign key on the
@@ -1224,7 +1224,7 @@ const ttsHookDirectImportRestriction = {
 // banned the moment `pnpm sync-types` lands it.
 //
 // TABLES: every table in the generated `context` schema block. Exact, no
-// judgement — a table is in the schema or it is not.
+// judgment — a table is in the schema or it is not.
 //
 // RPCS: the context schema's own Functions block, PLUS every `public` function
 // whose name is in the scope/context family grammar (a verb from the list

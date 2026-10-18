@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ONE BOX. Paste anything, press Enter, and the catalogue is on screen.
+ * ONE BOX. Paste anything, press Enter, and the catalog is on screen.
  *
  * Arman, 2026-09-17: *"provide a youtube channel and have the system get a list
  * of all videos in seconds"*. So there is no adapter picker, no "channel or
@@ -38,7 +38,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
  * Blog, 10,563 posts.
  *
  * 🚨 THIS LIST IS NOT A WISH. Nothing is named here that the server cannot
- * actually catalogue — a paste that resolves and then fails at insert is the
+ * actually catalog — a paste that resolves and then fails at insert is the
  * screen promising something it cannot do. If an adapter is ever taken out of
  * service, its words come out of these two strings in the same change.
  */
@@ -60,7 +60,7 @@ const RESOLVED_FROM_WORDS: Record<ResolveResult["resolved_from"], string> = {
     legacy_user: "read as an old-style user page",
     custom_url: "read as a custom channel address",
     playlist_id: "read as a playlist",
-    video_id: "read as a video — we catalogued the channel it belongs to",
+    video_id: "read as a video — we catalogd the channel it belongs to",
 };
 
 export function CatalogPasteBox({ autoFocus = true }: { autoFocus?: boolean }) {
@@ -198,8 +198,8 @@ export function CatalogPasteBox({ autoFocus = true }: { autoFocus?: boolean }) {
                     {stage.kind === "resolving"
                         ? "Finding it"
                         : stage.kind === "creating"
-                          ? "Cataloguing"
-                          : "Catalogue"}
+                          ? "Cataloging"
+                          : "Catalog"}
                 </Button>
             </form>
 

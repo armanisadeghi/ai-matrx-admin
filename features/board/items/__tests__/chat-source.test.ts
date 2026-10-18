@@ -1,6 +1,6 @@
 // A chat tile must never save the id of a conversation the server does not have yet: after a
 // reload the tile reopened it and showed "Couldn't load this conversation" forever. The old
-// behaviour (save every new id at once) fails the first two cases.
+// behavior (save every new id at once) fails the first two cases.
 
 import {
   DEFAULT_CHAT_TITLE,

@@ -92,7 +92,7 @@ export interface SmsOrganizationRegistration {
  * reason: a test that re-implements the rule it is testing proves only that
  * the test author can write the rule twice. Every reintroduction of a
  * person-derived or platform-derived organization has to come through this
- * function, so the test that pins its behaviour is a real guard.
+ * function, so the test that pins its behavior is a real guard.
  *
  * Order, and why:
  *   1. OUR number's registration (`communication.sms_phone_numbers`). The

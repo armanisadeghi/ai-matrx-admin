@@ -752,7 +752,7 @@ const REQUEST_SEEDS: readonly RequestSeed[] = [
     body: "Need an operator who can speak to how often erasure claims fail verification.",
     beat: "Security",
     matchScore: 93,
-    matchReason: "Your sampling programme measures exactly this.",
+    matchReason: "Your sampling program measures exactly this.",
     hoursOut: -30,
     status: "submitted",
     draft:

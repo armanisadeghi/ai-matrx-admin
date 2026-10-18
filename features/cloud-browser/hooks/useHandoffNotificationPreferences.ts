@@ -11,7 +11,7 @@
  * assist "is never optional and never a preference — it is how the app itself
  * shows the pending ask; turning it off would mean the surface lies about its
  * own state." It shipped as an off-by-default switch, which promised the user
- * a choice the server does not honour and (had the server honoured it) would
+ * a choice the server does not honor and (had the server honored it) would
  * have silenced the only channel that actually works.
  */
 

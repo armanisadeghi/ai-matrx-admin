@@ -212,7 +212,7 @@ function PreviewSummary({ preview }: { preview: ExportPreviewResult }) {
   // reading, which collapsed "withheld" into "absent" and so said nothing at all).
   //
   //   key absent            → NO SLOT. The reader has no pay authority (D19 / SPEC-UI-IA §4.2).
-  //                           An empty box labelled "Total amount" is itself a disclosure.
+  //                           An empty box labeled "Total amount" is itself a disclosure.
   //   key present, null     → THE SENTENCE. A contributing rule is still advisory, so the server
   //                           would not compute it. Never a dash, never a zero — the hours are
   //                           correct and payable, and only words can say that.

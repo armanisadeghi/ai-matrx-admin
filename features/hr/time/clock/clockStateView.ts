@@ -26,7 +26,7 @@ import type { ClockState } from "@/features/hr/time/api/types";
  * employee is recorded without being told first.
  *
  * DEBT, reported: `geo_required_web_punch` / `kiosk_require_photo` are not on this envelope. Until
- * they are, the web clock cannot honour §4.9's before-the-punch notice for an org that turns capture
+ * they are, the web clock cannot honor §4.9's before-the-punch notice for an org that turns capture
  * on, and it must not pretend to.
  */
 export const CAPTURE_NOT_ON_THIS_READ = {
@@ -88,7 +88,7 @@ export function restBreaksOwed(state: ClockState): number | null {
 
 /**
  * 🚨 **A WAIVER IS OFFERED ONLY WHERE THE RESOLVED RULE PERMITS ONE** (§3.2, L3-47) — *absent, not
- * greyed*. The server does not currently state waiver eligibility on this read, and **absent means
+ * grayed*. The server does not currently state waiver eligibility on this read, and **absent means
  * not offered**: showing a waiver a jurisdiction forbids, then refusing it afterwards, teaches
  * people the form is theatre. This returns true only on an explicit permission.
  */

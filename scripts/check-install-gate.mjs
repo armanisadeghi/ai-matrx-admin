@@ -291,7 +291,7 @@ if (!process.env.GATE_NESTED_INSTALL) {
     assert.ok(existsSync(result), "the fixture must record the nested pnpm result");
     const nested = JSON.parse(readFileSync(result, "utf8"));
     assert.equal(nested.status, 0, `the child must not wait on its own parent lock; got:\n${nested.output}`);
-    assert.ok(nested.output.includes("RE-ENTERING"), "the child must report that it recognised its parent-held lock");
+    assert.ok(nested.output.includes("RE-ENTERING"), "the child must report that it recognized its parent-held lock");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

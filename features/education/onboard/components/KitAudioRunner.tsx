@@ -166,7 +166,7 @@ function LiveKitAudio({
       {/* Percent alone goes quiet for minutes during the TTS render, and a
           number that has not moved reads as a hang; time in the current step
           is something we always know honestly. The run is durable (it keeps
-          going and resumes on the audio page) — that is behaviour, not copy. */}
+          going and resumes on the audio page) — that is behavior, not copy. */}
       <StepClock key={state.currentLabel} />
     </div>
   );

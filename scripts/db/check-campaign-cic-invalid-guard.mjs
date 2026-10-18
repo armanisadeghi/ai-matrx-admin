@@ -6,7 +6,7 @@
 // 🚨 THE CLASS (lane STORE-READ-PERF-3, 2026-09-25; guard built lane INDEX-GUARD, 2026-09-25).
 // `readperf_the_page_scan_has_its_indexes.sql` and `readperf_the_class_finds_its_row_without_a_scan.sql`
 // each ran `create index concurrently if not exists <name> …` on production. One build errored or
-// was cancelled mid-way and left an INVALID index behind under that exact name — Postgres never
+// was canceled mid-way and left an INVALID index behind under that exact name — Postgres never
 // rolls a CONCURRENTLY build back. `IF NOT EXISTS` only asks "does a relation with this name
 // exist?", and an invalid index answers yes, so the statement is a silent no-op FOREVER: nothing
 // ever re-tries it, nothing tells anyone it never built, and the planner cannot use it (every

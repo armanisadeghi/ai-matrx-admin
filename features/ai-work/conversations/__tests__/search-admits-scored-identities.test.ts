@@ -12,7 +12,7 @@
  * The two lists live in two functions and drifted once; this test reads the
  * LIVE migration file for `cvx_list_scoped` and asserts that every column
  * the scorer is handed appears in the search filter clause, so they cannot
- * drift apart again without this going red. It also pins the two behaviours
+ * drift apart again without this going red. It also pins the two behaviors
  * the fix introduced: every live binding's provider session id is searched
  * (not only the newest one), and an identifier-shaped query is always deep.
  *

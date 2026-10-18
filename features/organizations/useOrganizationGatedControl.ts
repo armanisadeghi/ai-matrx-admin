@@ -73,7 +73,7 @@
 // person, and every refusal must offer them the pick. So `required` keeps the
 // control LIVE and its press opens the picker through the ONE gate
 // (`ensureOrganizationContext`); when they choose, `press`'s wrapped act runs
-// immediately with the organization they just set. Cancelling does nothing at
+// immediately with the organization they just set. Canceling does nothing at
 // all — no toast, no error, exactly where they were. A consumer gets this for
 // free by wrapping its action in `press(...)`, which is why
 // `check:org-three-states` rule 3 refuses a consumer that renders the posture

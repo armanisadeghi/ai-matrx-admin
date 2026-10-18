@@ -200,7 +200,7 @@ export function DimensionForm({
         />
         <p className="text-[11px] leading-4 text-muted-foreground">
           Every agent that sorts your keywords reads this first. It is the
-          difference between a guess and your judgement.
+          difference between a guess and your judgment.
         </p>
       </div>
 

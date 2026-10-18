@@ -2,7 +2,7 @@
 
 // features/workflow-runtime/browse/useWorkflowRowActions.tsx
 //
-// Binds the workflow action registry to real behaviour, and owns the modals
+// Binds the workflow action registry to real behavior, and owns the modals
 // those actions open. One instance per page — the modals are singletons keyed
 // by the workflow currently acted on, never one modal per row (that mistake put
 // 372 mounted ShareModals on /agents/all).

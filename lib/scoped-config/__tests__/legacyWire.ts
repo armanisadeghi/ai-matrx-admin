@@ -2,7 +2,7 @@
 // answer ({ resolved }). The client now asks `knob_snapshot_delta` + `knob_defaults`
 // (KNOB-SNAPSHOT, 2026-10-08), so this turns a double that still answers `knob_snapshot` into the new wire:
 // no defaults, every resolved key delivered as an override, a fresh etag each time (never "unchanged").
-// The delta behaviour itself (defaults once, etag skip) is proven in `snapshot-delta-wire.test.ts`.
+// The delta behavior itself (defaults once, etag skip) is proven in `snapshot-delta-wire.test.ts`.
 type Rpc = (fn: string, args: Record<string, unknown>) => unknown;
 let counter = 0;
 export function legacyWire(rpc: Rpc): Rpc {

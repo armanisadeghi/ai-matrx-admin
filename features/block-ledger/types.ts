@@ -107,7 +107,7 @@ export function isRetryable(row: AcquisitionBlock): boolean {
  * server's rule (`link_handoffs`), mirrored only for the confirm's count.
  *
  * It is deliberately NOT narrowed to the ladder's own escalation classes: a person
- * pressing this button has already made that judgement themselves, which is exactly
+ * pressing this button has already made that judgment themselves, which is exactly
  * what the capture ladder's `asked_by_a_person` class exists for.
  */
 export function canGoToYourBrowser(row: AcquisitionBlock): boolean {

@@ -298,7 +298,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "agent_messages",
     label: "Prompt messages",
     description:
-      "The authored prompt message array (system/user/assistant turns) that defines the open agent's behaviour. The single largest payload on this surface — bindable, not auto-context. Absent when no agent is open.",
+      "The authored prompt message array (system/user/assistant turns) that defines the open agent's behavior. The single largest payload on this surface — bindable, not auto-context. Absent when no agent is open.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 14000,
@@ -479,14 +479,14 @@ const surfaceSpecific: SurfaceValue[] = [
  *
  * DECLARED (4): `agent_description`, `agent_name`, `agent_category`,
  * `agent_tags`. Every one is catalog prose — how a system agent is described,
- * labelled and filed for the humans browsing the roster. An agent that has just
+ * labeled and filed for the humans browsing the roster. An agent that has just
  * READ `agent_messages` can describe what a system agent actually does far more
  * accurately than a person skimming the grid, which is exactly the case that
  * earns a target.
  *
  * DELIBERATELY NOT DECLARED, and each for its own reason:
  *
- *  - CAPABILITY AND BEHAVIOUR WIRING — `agent_messages`,
+ *  - CAPABILITY AND BEHAVIOR WIRING — `agent_messages`,
  *    `agent_variable_definitions`, `agent_context_policies`, `agent_tools`,
  *    `agent_custom_tools`, `agent_mcp_servers`, `agent_output_schema`,
  *    `agent_skill_config`, `agent_model_id`, `agent_model_tiers`,
@@ -613,7 +613,7 @@ The admin here browses the roster of builtin agents and opens one to inspect or 
 
 How to read the values: roster_* describes the LIST the admin is looking at; agent_* describes the ONE agent currently open (all agent_* values are absent on list and hub pages). agent_type tells you whether the open record is genuinely a system agent — anything other than "builtin" means a personal agent was opened here by mistake, and the route says so loudly.
 
-What you may safely do: read, summarise, compare, critique, and PROPOSE changes to any part of the agent's configuration. No secrets, keys, or credentials are present in this scope; do not ask for or infer any.
+What you may safely do: read, summarize, compare, critique, and PROPOSE changes to any part of the agent's configuration. No secrets, keys, or credentials are present in this scope; do not ask for or infer any.
 
 What you may WRITE, on the agent detail page only, is the CATALOG PROSE of the open agent: agent_description, agent_name, agent_category, agent_tags. Describing a system agent well is the case you are genuinely better at — read agent_messages first, then say what the agent actually does. These four save IMMEDIATELY once the admin approves the confirm dialog (each write also snapshots the previous definition as a new version, so nothing is lost). agent_tags replaces the whole set, so read it first and re-send what should stay.
 

@@ -321,7 +321,7 @@ export function buildSiteIntegrationsWithProviderChange(
    * `youtubeChannel` is accepted here and is deliberately NOT in
    * `BuiltInProviderKey`: that union is the set of providers the SITE
    * integrations editor renders a row for, and adding a brand-only binding to it
-   * would put a control on a screen that cannot honour it. The rebase itself is
+   * would put a control on a screen that cannot honor it. The rebase itself is
    * provider-agnostic (google-native U-M3).
    */
   provider: BuiltInProviderKey | "youtubeChannel",

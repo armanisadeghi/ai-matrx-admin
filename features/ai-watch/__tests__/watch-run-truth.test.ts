@@ -5,7 +5,7 @@
  * (fixtures/two-turns-context-analysis.json). Red before green (2026-10-13): the old window
  * took EVERY `context_analysis` on a request's timeline (`selectWireCaptures`), replaced live
  * captures with however many snapshots the record held, and bound the record by a 5-second
- * window over the conversation's reservations — each `it` below fails against that behaviour
+ * window over the conversation's reservations — each `it` below fails against that behavior
  * (proved by planting it back into watch-run-truth.ts; WB progress notes).
  */
 import fixture from "./fixtures/two-turns-context-analysis.json";
@@ -53,7 +53,7 @@ describe("Watch AI shows one run's own data", () => {
     expect(r.repeats).toBe(1);
   });
 
-  it("a resume's second request is the same run: its calls join, labelled per attempt", () => {
+  it("a resume's second request is the same run: its calls join, labeled per attempt", () => {
     const retry = { ...TURN_1, attempt: 2 };
     const r = runCaptures([requestWith([TURN_1]), requestWith([retry], { requestId: "resumed" })], ID_1);
     expect(r.own.map((c) => [c.attempt, c.superseded])).toEqual([

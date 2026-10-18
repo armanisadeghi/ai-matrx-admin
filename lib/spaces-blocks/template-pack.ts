@@ -1,6 +1,6 @@
 // lib/spaces-blocks/template-pack.ts — THE SPACE TEMPLATE PACK: one Notion-grade template as data.
 //
-// A pack is the template's identity (catalogue id, version, title, icon, cover, category, tags, one line,
+// A pack is the template's identity (catalog id, version, title, icon, cover, category, tags, one line,
 // who it is for), its tables as a records `TemplateSpec` (the ONE table format — sample rows live there),
 // and a page tree whose blocks are ordinary stored Space blocks (BLOCK-SCHEMA) except for three TOKENS,
 // resolved to real ids when the pack is used:
@@ -58,7 +58,7 @@ export const SPACE_TEMPLATE_CATEGORIES = [
 ] as const;
 export type SpaceTemplateCategory = (typeof SPACE_TEMPLATE_CATEGORIES)[number]["key"];
 
-/** A pack's catalogue id: "SP0002". */
+/** A pack's catalog id: "SP0002". */
 export const SPACE_PACK_ID = /^SP\d{4}$/;
 /** Ids outside the SP pattern a pack file may still carry: none (the last one was retired 2026-10-18). */
 export const LEGACY_PACK_IDS: readonly string[] = [];
@@ -120,7 +120,7 @@ export interface DesignProfile {
   typeClass: (typeof DESIGN_TYPE_CLASSES)[number];
   fonts: Array<{ family: string; role: string; source: "system" | "google" | "embedded" }>;
   primary: { light: string; dark: string };
-  /** False when the brand colour is a neutral (near-black, graphite). */
+  /** False when the brand color is a neutral (near-black, graphite). */
   chromatic: boolean;
   a11y: { level: "AA" | "AAA-leaning"; minTarget: number; minBody: number };
   /** Token names an agent changes first when adapting to a brand. */
@@ -151,7 +151,7 @@ export interface SpaceTemplatePack extends PackIdentity {
   board?: PackBoard;
   /**
    * Records-check findings the pack keeps on purpose, each with its reason (e.g. a column whose
-   * choices share one colour on purpose). A waiver that no longer matches a finding is itself a finding.
+   * choices share one color on purpose). A waiver that no longer matches a finding is itself a finding.
    */
   waivers?: Array<{ at: string; because: string }>;
 }

@@ -63,7 +63,7 @@ export function parseCategoryDraftPatch(value: unknown): CategoryDraftPatch {
   );
   if (unsupported.length > 0)
     throw new Error(
-      `category_draft got unsupported key(s): ${unsupported.join(", ")}. Accepted keys: ${CATEGORY_DRAFT_KEYS.join(" | ")}. The slug (derived from the name on save), the badge colour, sort order, and deleting a category are NOT writable on this surface.`,
+      `category_draft got unsupported key(s): ${unsupported.join(", ")}. Accepted keys: ${CATEGORY_DRAFT_KEYS.join(" | ")}. The slug (derived from the name on save), the badge color, sort order, and deleting a category are NOT writable on this surface.`,
     );
 
   if (Object.keys(patch).length === 0)

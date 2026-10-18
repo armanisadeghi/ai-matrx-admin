@@ -11,7 +11,7 @@
  *  - a capture repeated by a rejoin (same request · iteration · attempt) counts once;
  *  - a retried attempt is marked superseded, never shown as the call that answered;
  *  - the live capture is kept; the recorded snapshot is shown only when no capture
- *    exists, labelled as a recorded copy (files as markers), and a record holding
+ *    exists, labeled as a recorded copy (files as markers), and a record holding
  *    FEWER calls than were captured is an error, never a silent replacement;
  *  - the mandate identity is the run's own `mandate_run` frame (live, or the copy
  *    stored on its own row) — a turn with neither is NOT a mandate run.

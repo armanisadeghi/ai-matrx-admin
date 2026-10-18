@@ -6,7 +6,7 @@
  * person can aim it at any step from the route, and one obvious action
  * ("Follow the work") returns it to following.
  *
- * This is also how the streaming budget is honoured: only the focused step is
+ * This is also how the streaming budget is honored: only the focused step is
  * promoted to a live lane (`ensureLane`, seeded with the tracked tail).
  * Everything else stays in the tracked tier and renders through the same
  * canonical `InvocationBody` when focus lands on it.

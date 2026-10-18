@@ -13,7 +13,7 @@ describe("sandbox console drawing", () => {
     expect(sandboxPrompt("/srv", true)).toBe("\x1b[32magent@sandbox\x1b[0m:\x1b[33;4m/srv\x1b[0m$ ");
   });
 
-  it("output keeps the program's own colour; errors red; notes dim", () => {
+  it("output keeps the program's own color; errors red; notes dim", () => {
     expect(formatConsoleEntry({ type: "stdout", text: "\x1b[1;32mPASS\x1b[0m" })).toBe("\x1b[1;32mPASS\x1b[0m\n");
     expect(formatConsoleEntry({ type: "stdout", text: "a\n" })).toBe("a\n");
     expect(formatConsoleEntry({ type: "stderr", text: "boom" })).toBe("\x1b[31mboom\n\x1b[0m");

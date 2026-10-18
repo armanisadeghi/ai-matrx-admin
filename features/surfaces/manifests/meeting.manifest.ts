@@ -83,7 +83,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "meeting_status",
     label: "Meeting status",
     description:
-      "Where the meeting stands: scheduled | live | ended | cancelled | archived | unscheduled. Always present.",
+      "Where the meeting stands: scheduled | live | ended | canceled | archived | unscheduled. Always present.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 10,
@@ -186,7 +186,7 @@ const surfaceSpecific: SurfaceValue[] = [
   {
     name: "cancellation_reason",
     label: "Cancellation reason",
-    description: "Why the meeting was cancelled, when it was and a reason was given.",
+    description: "Why the meeting was canceled, when it was and a reason was given.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 120,
@@ -366,7 +366,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "meeting_title",
     label: "Meeting title",
     description:
-      "Renames the meeting immediately through its canonical update, and tells invitees as the page's own Edit does. Value: a non-empty plain-text title. Refused unless can_manage is true and the meeting is not ended, cancelled or archived.",
+      "Renames the meeting immediately through its canonical update, and tells invitees as the page's own Edit does. Value: a non-empty plain-text title. Refused unless can_manage is true and the meeting is not ended, canceled or archived.",
     valueType: "string",
     updatesValue: "meeting_title",
     mode: "entity",
@@ -378,7 +378,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "meeting_agenda",
     label: "Meeting agenda",
     description:
-      "Replaces the meeting's whole agenda (markdown) immediately through its canonical update, and tells invitees as the page's own Edit does. Value: the full agenda text; an empty string clears it. Read agenda first and include what should stay. Refused unless can_manage is true and the meeting is not ended, cancelled or archived.",
+      "Replaces the meeting's whole agenda (markdown) immediately through its canonical update, and tells invitees as the page's own Edit does. Value: the full agenda text; an empty string clears it. Read agenda first and include what should stay. Refused unless can_manage is true and the meeting is not ended, canceled or archived.",
     valueType: "string",
     updatesValue: "agenda",
     approvalComparison: "text-replacement",
@@ -391,7 +391,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "ai_note_taker",
     label: "AI note-taker",
     description:
-      "Turns the meeting's AI note-taker on (true) or off (false), saved immediately — the same switch as the page's Settings. Refused unless can_manage is true and the meeting is not cancelled or archived.",
+      "Turns the meeting's AI note-taker on (true) or off (false), saved immediately — the same switch as the page's Settings. Refused unless can_manage is true and the meeting is not canceled or archived.",
     valueType: "boolean",
     updatesValue: "meeting_settings",
     mode: "entity",

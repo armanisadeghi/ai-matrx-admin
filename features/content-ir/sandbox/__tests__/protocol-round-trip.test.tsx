@@ -620,7 +620,7 @@ describe("size messages", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe("theme messages", () => {
-    it("init carries the host's resolved tokens and colour scheme", async () => {
+    it("init carries the host's resolved tokens and color scheme", async () => {
         document.documentElement.classList.add("dark");
         const h = await stand();
         expect(h.posted[0].data.colorScheme).toBe("dark");
@@ -828,7 +828,7 @@ describe("the error relay: a frame failure files on the author's own queue", () 
         expect(incident.message).toContain("did not compile");
     });
 
-    it("maps an error type it does not recognise onto render_throw, never onto the invented one", async () => {
+    it("maps an error type it does not recognize onto render_throw, never onto the invented one", async () => {
         const h = await stand();
         await act(async () => {
             h.port.postMessage({

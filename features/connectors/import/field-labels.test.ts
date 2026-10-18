@@ -278,7 +278,7 @@ describe("THE GUARD: the panels adopt the contract honestly", () => {
 
   it("never says New Person for a contact the apply would merge", () => {
     const source = readFileSync(join(REPO_ROOT, PANELS[1]), "utf8");
-    // The merge case names the Person and how it was recognised.
+    // The merge case names the Person and how it was recognized.
     expect(source).toMatch(/Will update/);
     expect(source).toMatch(/matched_by/);
     // And the ambiguous case refuses, names both People, and gives the remedy.

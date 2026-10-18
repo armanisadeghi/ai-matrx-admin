@@ -193,7 +193,7 @@ describe("one source is counted once, whichever door named it (N4)", () => {
     expect(count).toBe(6);
   });
 
-  it("normalises a URL the way the server does, and no further", () => {
+  it("normalizes a URL the way the server does, and no further", () => {
     expect(urlIdentity("https://EXAMPLE.com/a/")).toBe("url:https://example.com/a");
     // A query string is a different page of a book, never a cosmetic variant.
     expect(urlIdentity("https://example.com/a?page=2")).not.toBe(

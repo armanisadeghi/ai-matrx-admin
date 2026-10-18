@@ -21,7 +21,7 @@
  * editor chrome unrelated to the sitting mechanism — reduced to a plain
  * controlled `<textarea>`/`<input>` that still carries `value`/`onChange`),
  * Supabase-backed history reads, and `WindowPanel`'s drag/resize machinery.
- * Everything that owns the behaviour under test — the dialog's own
+ * Everything that owns the behavior under test — the dialog's own
  * `useState`, its `useDialogSitting` snapshot/apply/clearScreen wiring, and
  * the real `createSittingStore` reading/writing real `localStorage` — is
  * real.

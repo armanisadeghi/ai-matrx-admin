@@ -507,7 +507,7 @@ function syntheticWeek(days: TimesheetDay[]): WorkweekRow {
  * The one entry point. Throws {@link HrRpcError} on a refusal so every caller's existing error path
  * — which renders `userMessage` verbatim — keeps working unchanged.
  *
- * 🚨 THE REFUSAL SHAPE IS `{granted:false, reason, detail}` AND `callHrTimeRpc` DOES NOT RECOGNISE
+ * 🚨 THE REFUSAL SHAPE IS `{granted:false, reason, detail}` AND `callHrTimeRpc` DOES NOT RECOGNIZE
  * IT. Its envelope check looks for an `ok` key, which this function never sends, so a refusal
  * arrives here dressed as a successful payload. Detecting it is this adapter's job, and getting it
  * wrong is how "you do not have access to this timesheet" renders as an empty grid.

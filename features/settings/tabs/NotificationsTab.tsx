@@ -460,7 +460,7 @@ export default function NotificationsTab() {
                           <div
                             key={event.eventKey}
                             // Phone: the notice on top, its channels in a row under it
-                            // (labelled). Wider: one grid row under the column header.
+                            // (labeled). Wider: one grid row under the column header.
                             className="border-b border-border/50 px-3 py-2 last:border-b-0 sm:grid sm:grid-cols-[minmax(0,1fr)_repeat(4,4.5rem)_calc(var(--matrx-tap-pill-size)+var(--matrx-tap-gap))] sm:items-center sm:py-1.5"
                           >
                             <div className="min-w-0 py-1">

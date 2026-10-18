@@ -20,7 +20,7 @@
  * WHAT A ROW IS: one (site, keyword) pair from `keyword_value_map(site, NULL)`,
  * the whole corpus of every site that has any live worth row. Compared on
  * score, level, source, computed score, computed level, and the reason chain.
- * The base step is normalised so the rename it is SUPPOSED to undergo
+ * The base step is normalized so the rename it is SUPPOSED to undergo
  * (`kind: 'topic'` becomes `kind: 'offering'`, `topic_id` becomes
  * `offering_id`) is not reported as a difference; its name, points, negative
  * guard and root still are.
@@ -105,7 +105,7 @@ async function connect(): Promise<Client> {
 }
 
 /**
- * One row per (site, keyword): the resolver's answer, normalised. `h` is the
+ * One row per (site, keyword): the resolver's answer, normalized. `h` is the
  * hash every comparison runs on; the rest is the readable summary a
  * difference is explained with.
  */

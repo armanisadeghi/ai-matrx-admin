@@ -8,7 +8,7 @@
  *
  * 🚨 ABSENCE, NOT DISABLEMENT (SPEC-UI-IA §4.2). The type select carries ONLY the policies
  * `hr_my_time_off` returned — which are, by the SQL's own `where`, the enrolled and active
- * ones. A policy the person is not on is not a greyed row; it is not in the DOM. Likewise the
+ * ones. A policy the person is not on is not a grayed row; it is not in the DOM. Likewise the
  * whole form is absent when `can_request` is false.
  *
  * 🚨 A REFUSAL IS THE SERVER'S SENTENCE, NEVER A TOAST AND NEVER A CODE. When the workflow
@@ -204,7 +204,7 @@ export function LeaveRequestForm({
 
   // ── the reason select ─────────────────────────────────────────────────────
   /**
-   * §4.1: the policy's `mandated_uses` are listed FIRST and labelled *"protected — no
+   * §4.1: the policy's `mandated_uses` are listed FIRST and labeled *"protected — no
    * explanation needed"*. Mandated-ness is a property of the CATEGORY ON THIS POLICY, which
    * is why it is resolved here and not baked into the category rows.
    */

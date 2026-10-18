@@ -6,7 +6,7 @@
  * what the agent received). ONE tab per conversation, keyed by its id; the
  * composer's value chip toggles it through the chat canvas port's `useTab`.
  * The kind id lives in the chat package (`host/canvas-tabs.ts`) so the package
- * recognises the tab by the same id. `selected` is the value the tab shows.
+ * recognizes the tab by the same id. `selected` is the value the tab shows.
  */
 
 import { Eye } from "lucide-react";

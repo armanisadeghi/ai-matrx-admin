@@ -44,7 +44,7 @@ export function AdminPoints({ usd, bare }: { usd: number | null | undefined; bar
   return <>{bare ? text.replace(/\s*points?$/i, "") : text}</>;
 }
 
-/** "$0.0204" — the USD half of an admin cost, for a labelled figure or tile. */
+/** "$0.0204" — the USD half of an admin cost, for a labeled figure or tile. */
 export function AdminUsd({ usd }: { usd: number | null | undefined }) {
   const sees = useSeesDollars();
   return sees ? <>{formatAdminUsd(usd)}</> : null;
@@ -56,7 +56,7 @@ export function UsdOnly({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * A toolbar line of labelled money figures, dollars and points apart (owner, 2026-10-08:
+ * A toolbar line of labeled money figures, dollars and points apart (owner, 2026-10-08:
  * never "$x · y points" in one value). Each item becomes "<label> $" and "<pointsLabel>".
  */
 export function CostFigures({ items }: { items: { usdLabel: string; pointsLabel: string; usd: number | null | undefined }[] }) {

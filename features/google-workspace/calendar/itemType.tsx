@@ -80,7 +80,7 @@ export function refineCalendarEventDetail(base: DetailRecordType): DetailRecordT
     },
     fields: (row) => {
       const typed = asCalendarEventRow(row);
-      // A row this registration cannot recognise gets NO invented fields; the
+      // A row this registration cannot recognize gets NO invented fields; the
       // primitive's own absent state is honest about having nothing to show.
       return typed ? calendarEventFields(typed, new Date(), viewerTimeZone()) : [];
     },

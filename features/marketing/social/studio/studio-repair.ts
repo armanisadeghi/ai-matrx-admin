@@ -15,7 +15,7 @@ import type { AccountTileSeed } from "../board-accounts";
 
 /**
  * The words each starter note tile begins with, by tile name - and by the name the tile took from the OLD seed's
- * first line (a tile used to be renamed after "Hook (first 3 seconds):"), so a board made then is still recognised.
+ * first line (a tile used to be renamed after "Hook (first 3 seconds):"), so a board made then is still recognized.
  */
 export type StarterNote = { title: string; seed: string };
 

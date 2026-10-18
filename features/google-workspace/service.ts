@@ -100,7 +100,7 @@ export async function responseRecord(
  * verification, common-docs
  * `/projects/google-native/VERIFY-U-P4-U-M1-R2.md` § A-vii).
  *
- * THE SERVER NOW OWNS THAT JUDGEMENT (aidream lane B-8): when the effective mode
+ * THE SERVER NOW OWNS THAT JUDGMENT (aidream lane B-8): when the effective mode
  * is 4 or 5 these endpoints write NOTHING and answer
  *
  *     HTTP 202  { "proposed": true, "assist_id": "<uuid>", "mode": "mode_4" }

@@ -37,7 +37,7 @@ export function ClassAccessPanel({
       void access.refresh();
       toast.success("Payment received — welcome to the class.");
     } else if (enrolled === "cancelled") {
-      toast.info("Checkout cancelled — you can enrol anytime.");
+      toast.info("Checkout canceled — you can enrol anytime.");
     }
   }, [enrolled]);
 

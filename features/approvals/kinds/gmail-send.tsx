@@ -678,7 +678,7 @@ function useSource(scope: ApprovalScope): ApprovalSource {
           acceptEffect: "Nothing — this proposal cannot be read.",
           blocked: {
             reason:
-              "This draft was written in a shape this queue does not recognise, so it cannot be reviewed or sent.",
+              "This draft was written in a shape this queue does not recognize, so it cannot be reviewed or sent.",
             whoCan:
               "Reject it and ask for it again; the agent that wrote it needs fixing.",
           },
@@ -800,7 +800,7 @@ function useSource(scope: ApprovalScope): ApprovalSource {
               <p className="break-words text-[11px] text-warning">
                 This address is not a contact point we hold, so the unsubscribe
                 and blocklist checks had nothing to check. You are sending it on
-                your own judgement.
+                your own judgment.
               </p>
             )}
             {/* What the authority raised and the path sets aside, and whether a

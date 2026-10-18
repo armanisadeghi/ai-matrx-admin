@@ -51,7 +51,7 @@ export interface TutorGroundingSeed {
  *   material          — supporting material was found; answer from it, cite it.
  *   general_knowledge — nothing in the learner's material supports the
  *                       question; answer from general knowledge right away,
- *                       labelled, with confidence `not_in_material`.
+ *                       labeled, with confidence `not_in_material`.
  * Sent to the agent as the named context entry `grounding_mode`.
  */
 export type TutorGroundingMode = "material" | "general_knowledge";
@@ -69,7 +69,7 @@ export interface TutorLaunchGrounding {
    * corpus; a launch envelope can't promise per-claim `grounded`), and drops to
    * `not_in_material` when there's no corpus at all so the surface can show the
    * honest "answers are general knowledge" notice. The agent prompt still does
-   * per-answer inline citation + a labelled general-knowledge answer when the material is silent; this is the visible, structured
+   * per-answer inline citation + a labeled general-knowledge answer when the material is silent; this is the visible, structured
    * companion (citations + confidence + refusal) the P0 mandate requires on the
    * tutor surface. Null only if trust derivation itself is impossible.
    */
@@ -93,7 +93,7 @@ export interface AssembleTutorGroundingOptions {
   responseLanguage?: string;
   /**
    * The exact Sources to search (resolved from `seed.studyContext`). Empty or
-   * absent = the learner's whole library (today's behaviour).
+   * absent = the learner's whole library (today's behavior).
    */
   sources?: readonly GroundingSource[];
 }

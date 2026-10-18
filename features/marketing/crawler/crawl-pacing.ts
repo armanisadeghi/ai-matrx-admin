@@ -3,7 +3,7 @@ import type { CrawlLiveEvent } from "@/features/marketing/crawler/direct-client"
 /**
  * How fast the crawler is going against a host right now, and WHY.
  *
- * Arman ruled on 2026-08-20 that a crawl must detect the host's platform, honour
+ * Arman ruled on 2026-08-20 that a crawl must detect the host's platform, honor
  * its `robots.txt`, and otherwise start LOW and climb until the host pushes back
  * — never open at a flat rate and get rate-limited first. That makes the active
  * rate a moving number the user cannot infer from the setting they typed, and

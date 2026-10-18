@@ -2,7 +2,7 @@
  * A task's "resources of one kind" list opens IN THE CANVAS — one tab per
  * container that follows the kind picked — never a docked side sheet.
  * Real pieces: the root reducer, the ONE canvas binding and the org resource
- * catalogue; the database read is a stand-in that answers one row.
+ * catalog; the database read is a stand-in that answers one row.
  *
  * Proven failing before passing: against the docked sheet no canvas tab is
  * ever opened, so the first expectation is RED.

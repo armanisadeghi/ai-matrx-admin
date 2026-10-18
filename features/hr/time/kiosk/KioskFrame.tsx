@@ -7,7 +7,7 @@
  * in HR is a break-room tablet anyone can browse. `no-dead-ends` names the kiosk as its one
  * deliberate exception; do not "fix" it.
  *
- * 🚨 **TABLET, LANDSCAPE AND PORTRAIT** (L3-67, UI-IA §7). Not a phone surface. The frame centres a
+ * 🚨 **TABLET, LANDSCAPE AND PORTRAIT** (L3-67, UI-IA §7). Not a phone surface. The frame centers a
  * bounded column and lets it grow — a wall tablet rotated on its mount must not reflow into
  * something a person has to lean in to read.
  *

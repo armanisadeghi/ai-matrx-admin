@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * LIVE CALLBACKS FOR CANVAS CONTENT — data stays JSON, behaviour stays in memory.
+ * LIVE CALLBACKS FOR CANVAS CONTENT — data stays JSON, behavior stays in memory.
  *
  * The canvas stores every tab as plain JSON (it persists, it is inspectable,
  * and it refuses anything else, loudly). Some content is a live editor

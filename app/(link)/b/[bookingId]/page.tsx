@@ -103,8 +103,8 @@ export default async function PublicBookingPage({
   }
 
   return (
-    // NOTHING ON THIS PAGE BUT THE BOOKING. Centred the way Calendly and Cal.com
-    // centre theirs, with the page's own name said once, here.
+    // NOTHING ON THIS PAGE BUT THE BOOKING. Centerd the way Calendly and Cal.com
+    // center theirs, with the page's own name said once, here.
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col justify-center px-5 pb-safe pt-8 matrx-touch-targets">
       <h1 className="text-xl font-medium">{page.title}</h1>
       {payment ? (

@@ -22,7 +22,7 @@
  * this side, the dialog made the person perform the server's TWO journeys
  * themselves: in any phase but `waiting_human` the confirm button called
  * `onStart` -- starting a run whose first act is a live interview round --
- * and only in `waiting_human` did it call `onFinish`. So the control labelled
+ * and only in `waiting_human` did it call `onFinish`. So the control labeled
  * Finish did something other than finish, and changed its own name between
  * presses to hide it.
  *

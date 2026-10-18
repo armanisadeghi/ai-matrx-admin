@@ -61,7 +61,7 @@ describe("parseNdjsonStream cancellation", () => {
   // to a finished answer. It now becomes a typed BackendApiError that is
   // recorded once (Error Inspector) and re-thrown; `callApi` relies on that
   // same object reaching its catch so one dropped socket is one red row.
-  it("surfaces Load failed as a typed transport error when the stream was not cancelled", async () => {
+  it("surfaces Load failed as a typed transport error when the stream was not canceled", async () => {
     const reader = {
       read: jest.fn().mockRejectedValue(new TypeError("Load failed")),
       releaseLock: jest.fn(),

@@ -2,7 +2,7 @@
 // with no database. Run it with `pnpm spaces:templates:check <file|dir>` (features/spaces/templates/check.ts).
 //
 // What it proves, in order:
-//   1. the pack's own shape (identity, catalogue id, version, category, tags, page tree);
+//   1. the pack's own shape (identity, catalog id, version, category, tags, page tree);
 //   2. every page, with its tokens resolved to stand-in ids, is a valid stored Space snapshot — both
 //      the TypeScript validator (validateSnapshot: unique ids, block rules) and the generated JSON
 //      schema the database enforces (content.space_snapshot_schema(), buildSpaceSnapshotSchema);
@@ -250,9 +250,9 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
 
 /** The design looks a seed value must be readable by (a value its look cannot read draws as raw JSON). */
 const LOOK_READERS: Record<string, { reads: (v: unknown) => boolean; shape: string }> = {
-  color_pair: { reads: (v) => readColorPair(v) !== null, shape: '{"light":"#ffffff","dark":"#0b0d12"} (hex colours)' },
+  color_pair: { reads: (v) => readColorPair(v) !== null, shape: '{"light":"#ffffff","dark":"#0b0d12"} (hex colors)' },
   type_style: { reads: (v) => readTypeStyle(v) !== null, shape: '{"font":"system-ui","weight":400,"size":15,"lineHeight":24,"letterSpacing":0} (letterSpacing in em)' },
-  shadow: { reads: (v) => readShadowPair(v) !== null, shape: '{"x":0,"y":4,"blur":8,"spread":0,"color":"#0f172a1a"}, {"layers":[…]} or {"light":…,"dark":…} (hex colours with alpha, never rgba())' },
+  shadow: { reads: (v) => readShadowPair(v) !== null, shape: '{"x":0,"y":4,"blur":8,"spread":0,"color":"#0f172a1a"}, {"layers":[…]} or {"light":…,"dark":…} (hex colors with alpha, never rgba())' },
   opacity: { reads: (v) => readOpacity(v) !== null, shape: "a number from 0 to 1 (0.5) or a percent string (\"50%\")" },
   motion: { reads: (v) => readMotion(v) !== null, shape: '{"duration":200,"easing":"ease-out"} (ms; a CSS easing keyword or cubic-bezier(…))' },
   measure: { reads: (v) => typeof v === "number" && Number.isFinite(v), shape: "a number (the unit is the column's)" },
@@ -283,7 +283,7 @@ function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, sa
     const on = (look.options?.contrastWith as { readsOnField?: unknown } | undefined)?.readsOnField;
     if (on === undefined) continue;
     if (typeof on !== "string" || !fields.some((x) => x.key === on)) {
-      say(`${at}.options.contrastWith.readsOnField`, `"${String(on)}" is not a field of "${t.token}"; name the text column that says which row each colour is read on.`);
+      say(`${at}.options.contrastWith.readsOnField`, `"${String(on)}" is not a field of "${t.token}"; name the text column that says which row each color is read on.`);
       continue;
     }
     if (!nameKey) {
@@ -298,27 +298,27 @@ function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, sa
       if (!ground) return;
       const where = `spec.tables (${t.token}).rows[${i}].values.${on}`;
       if (ground === nameOf(r)) say(where, `"${ground}" is read on itself; name the row it sits on, or leave it empty.`);
-      else if (!counts.has(ground)) say(where, `No row is named "${ground}"; a colour is read on another row of this table, by its name.`);
+      else if (!counts.has(ground)) say(where, `No row is named "${ground}"; a color is read on another row of this table, by its name.`);
       else if (look.id === "color_pair") {
-        // A seeded colour that names its ground is text on it: it reads at 4.5:1 or more in both themes.
+        // A seeded color that names its ground is text on it: it reads at 4.5:1 or more in both themes.
         const ink = readColorPair((r.values as Record<string, unknown>)?.[f.key]);
         const base = (t.rows ?? []).find((x) => nameOf(x) === ground);
         const under = base ? readColorPair((base.values as Record<string, unknown>)?.[f.key]) : null;
         if (!ink || !under) return;
-        // Lines (control edges, field outlines, focus) need 3:1 (WCAG 1.4.11); every other colour is text, 4.5:1.
+        // Lines (control edges, field outlines, focus) need 3:1 (WCAG 1.4.11); every other color is text, 4.5:1.
         const isLine = (r.values as Record<string, unknown>)?.group === "Lines";
         const need = isLine ? 3 : 4.5;
         for (const theme of ["light", "dark"] as const) {
           const ratio = contrastRatio(ink[theme] ?? ink.light, under[theme] ?? under.light);
           if (ratio !== null && ratio < need)
-            say(where, `"${nameOf(r)}" on "${ground}" reads at ${ratio}:1 in ${theme}; ${isLine ? "a Lines colour reaches 3:1" : "seeded text colours reach 4.5:1"} on what it is read on.`);
+            say(where, `"${nameOf(r)}" on "${ground}" reads at ${ratio}:1 in ${theme}; ${isLine ? "a Lines color reaches 3:1" : "seeded text colors reach 4.5:1"} on what it is read on.`);
         }
       }
     });
   }
 }
 
-/** A design pack's typed profile: every field present, enums and ranges real, colours hex. */
+/** A design pack's typed profile: every field present, enums and ranges real, colors hex. */
 function checkDesignProfile(p: unknown, say: (at: string, says: string) => void) {
   const at = "designProfile";
   if (!isObj(p)) return say(at, "A design profile is an object (see DesignProfile in template-pack.ts).");

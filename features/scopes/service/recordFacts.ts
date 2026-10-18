@@ -12,7 +12,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  *
  * The organization column comes from the registry (`EntityInfo.orgColumn`), so
  * every type gets it. The second fact is declared per type below — a small,
- * explicit list of columns a person recognises; a type with no entry gets the
+ * explicit list of columns a person recognizes; a type with no entry gets the
  * organization only. Lists show every organization: nothing here reads or
  * filters by the active organization.
  *

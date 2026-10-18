@@ -991,7 +991,7 @@ export function McpToolsManager() {
     });
   };
 
-  // Surface emitter — catalogue half of `matrx-admin/tool-registry`. Built at
+  // Surface emitter — catalog half of `matrx-admin/tool-registry`. Built at
   // trigger time from live state. SECURITY: tool definition metadata only; no
   // MCP endpoint URLs, auth strategies, OAuth ids, or vault credentials are
   // read or emitted here.

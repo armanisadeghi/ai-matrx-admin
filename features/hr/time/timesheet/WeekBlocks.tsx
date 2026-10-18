@@ -314,7 +314,7 @@ function RateBreakdown({ workweek }: { workweek: WorkweekRow }) {
   );
 }
 
-/** Totals at the WORKWEEK grain, labelled as such. OT and DT are doors. */
+/** Totals at the WORKWEEK grain, labeled as such. OT and DT are doors. */
 function WeekTotalsRow({ workweek }: { workweek: WorkweekRow }) {
   return (
     <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-xs">
@@ -420,7 +420,7 @@ function DayRow({
   /*
    * Scroll it into view ONCE, after paint. The short timeout is the same pattern the leave policy
    * editor uses to focus a violation's field: the row above it may still be laying out (week
-   * headers carry conditional notices), and centring before that settles lands in the wrong place.
+   * headers carry conditional notices), and centering before that settles lands in the wrong place.
    */
   useEffect(() => {
     if (!focused) return;
@@ -441,7 +441,7 @@ function DayRow({
         open && "bg-muted/20",
         /*
          * The accent that says "this is the day you were sent to". Design tokens only — a
-         * hardcoded colour here would be invisible or garish in one of the two themes.
+         * hardcoded color here would be invisible or garish in one of the two themes.
          */
         focused && "bg-primary/5 ring-2 ring-inset ring-primary/60",
       )}
@@ -689,7 +689,7 @@ function IntervalRows({
 }
 
 /**
- * The third grain, labelled as the third grain (§5.1).
+ * The third grain, labeled as the third grain (§5.1).
  *
  * 🚨 It is a **display sum the server produced** and it carries the boundary note where a boundary
  * week's OT is attributed to a different period. Neither figure is added up here.

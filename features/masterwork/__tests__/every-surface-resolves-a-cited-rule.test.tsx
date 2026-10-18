@@ -200,7 +200,7 @@ describe("the surfaces that show a deliverable publish the rules", () => {
   });
 });
 
-// ── The provider's own behaviour. ────────────────────────────────────────
+// ── The provider's own behavior. ────────────────────────────────────────
 const getRulebook = jest.fn();
 const rulebookIdForMasterwork = jest.fn();
 const rulebookIdForRun = jest.fn();

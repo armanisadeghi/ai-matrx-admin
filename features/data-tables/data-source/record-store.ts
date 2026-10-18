@@ -25,7 +25,7 @@
 //                               transaction. A refused change refuses the batch and
 //                               nothing is saved; the store's sentence names it.
 //
-// WHAT IS CACHED: the table's METADATA (declaration, fields, level, colours, row
+// WHAT IS CACHED: the table's METADATA (declaration, fields, level, colors, row
 // actions, hand-set order) — until a write that changes it, or the realtime port
 // says the shape moved. Rows are never cached here: the grid holds its page, a
 // cell write patches it from the write's own answer, and nothing is re-read.
@@ -486,7 +486,7 @@ async function readSnapshot(home: RecordStoreHome, tableId: string): Promise<Ser
     client.rowActions({ table_id: tableId }),
   ]);
   const metadata: Record<string, unknown> = {};
-  // THE TABLE'S COLOURS, TRANSLATED BY THE ONE RESOLVER the grid, the kanban, the calendar and the
+  // THE TABLE'S COLORS, TRANSLATED BY THE ONE RESOLVER the grid, the kanban, the calendar and the
   // gallery read (records-ui `resolveTableStyle`); the Sheet has no view style of its own.
   if (decorations.ok) metadata.style = resolveTableStyle(decorations.data, fields, undefined);
   if (actions.ok) metadata.row_actions = gridRowActions(actions.data.actions, fields);

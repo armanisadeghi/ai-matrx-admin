@@ -243,7 +243,7 @@ async function findLandedComment(input: AddCommentInput): Promise<string | null>
  * Edit my comment as a compare-and-swap. With the RC-B11 door, the database refuses a moved
  * version (PT409, HTTP 409) and hands back the current text; until then the thread is re-read and the
  * base compared, so an edit never silently overwrites somebody else's. Returns the new version
- * when the door reports it (the realtime echo of exactly this write is then recognised by it).
+ * when the door reports it (the realtime echo of exactly this write is then recognized by it).
  */
 export async function editComment(
   source: AnnotationSource,
@@ -395,7 +395,7 @@ export async function createHighlight(input: CreateHighlightInput): Promise<{ do
 }
 
 /**
- * Rewrite the `annotates` edge: new colour and/or new passages. Passages are
+ * Rewrite the `annotates` edge: new color and/or new passages. Passages are
  * sent as an explicit text_anchor_set — the database MERGES a lone
  * text_anchor into what the edge holds, so a reattach or a recolour must say
  * the whole set (content-ir text_anchor_set contract).

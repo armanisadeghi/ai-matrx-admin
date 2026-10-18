@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Clipped-content guard — the runtime half of the broken-scroll-chain defence.
+ * Clipped-content guard — the runtime half of the broken-scroll-chain defense.
  *
  * THE DEFECT CLASS (live bug, 2026-08-09, the backlinks Insights lens): a
  * scrollable surface bounds itself with `h-full` / `min-h-0 flex-1`, which only

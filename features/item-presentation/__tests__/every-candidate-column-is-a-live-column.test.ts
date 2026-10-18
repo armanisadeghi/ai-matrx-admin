@@ -33,7 +33,7 @@
  * IT READS THE GENERATED FILE ITSELF, not a fixture, so it fails on the real
  * `pnpm db-types` output.
  *
- * 🚨 THE REVERSE HALF RECOGNISES THE ACCOUNT ROLE BY STRUCTURE, NOT SPELLING
+ * 🚨 THE REVERSE HALF RECOGNIZES THE ACCOUNT ROLE BY STRUCTURE, NOT SPELLING
  * (lane F-81, hostile verifier V-21). It used to ask its question through a
  * per-role regex listing remembered names, so it could only find a column
  * somebody had already thought of. `web.youtube_video` is a mirror
@@ -321,7 +321,7 @@ function readSeedFkChildren(seed: string): Set<string> {
   return children;
 }
 
-describe("the ACCOUNT role is recognised by structure, not by spelling (F-81)", () => {
+describe("the ACCOUNT role is recognized by structure, not by spelling (F-81)", () => {
   const SHAPE = ROLE_COLUMN_SHAPE.ACCOUNT_COLUMNS;
 
   it("the seed relation and its one declared child both exist in the generated types", () => {

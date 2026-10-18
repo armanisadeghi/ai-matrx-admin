@@ -4,7 +4,7 @@
  * TileFace — how a tile reads when its content cannot be read.
  *
  * `OverviewCard`: the far-zoom face (overview tier). A designed card per item
- * type — the type's colour, its icon and name, the title in a weight that
+ * type — the type's color, its icon and name, the title in a weight that
  * reads at any zoom, and the item's status — instead of a shrunken copy. Sizes
  * live in `board-accents.css` (screen-sized, capped by the card's own box).
  *

@@ -19,7 +19,7 @@
  *     `cloud-file-preview` kind, which renders the canonical
  *     `<FilePreview>` (image/video/pdf/markdown/code) inside the
  *     editor area — same UX as opening sandbox files. This matches the
- *     sandbox FileTree's single-click-to-open behaviour so users don't
+ *     sandbox FileTree's single-click-to-open behavior so users don't
  *     have to learn two different interaction models.
  *
  * Cloud-files realtime is mounted globally in `app/Providers.tsx`, so this

@@ -24,7 +24,7 @@
 import type { LibraryRow, MediaAdapter } from "./types";
 
 export interface SourceVocabulary {
-    /** What ONE catalogued thing is, in this Library. */
+    /** What ONE catalogd thing is, in this Library. */
     item: { one: string; many: string };
     /**
      * The long / short / live split, when it is a real distinction for this

@@ -5,7 +5,7 @@
  * perform what we can on the user's behalf, and persist what only a human can
  * answer.
  *
- * Behaviours that are the whole point of the primitive and must not be
+ * Behaviors that are the whole point of the primitive and must not be
  * re-implemented by a consumer:
  *
  *  - **Re-verifies on return.** Checks run on mount and again whenever the tab

@@ -50,7 +50,7 @@ const STATE_WORDS: Record<LeaveRequestState, string> = {
   submitted: "Waiting for a decision",
   approved: "Approved",
   denied: "Denied",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
   taken: "Taken",
   partially_taken: "Partly taken",
 };
@@ -101,7 +101,7 @@ function requestAction(state: LeaveRequestState | null): RequestAction | null {
       door: "cancel",
       label: "Ask to cancel",
       title: "Ask to cancel this approved time off?",
-      body: "These hours are already held against your balance, so cancelling has to be approved like the original request was. Your approver will see the request.",
+      body: "These hours are already held against your balance, so canceling has to be approved like the original request was. Your approver will see the request.",
       done: "Sent. Your approver will decide on the cancellation.",
     };
   }

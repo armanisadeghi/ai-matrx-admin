@@ -455,7 +455,7 @@ export function EmploymentCard(props: Props) {
             rows.length > 0 && "mb-2 border-b border-border pb-2",
           )}
         >
-          {/* Labelled fields, like the address form: every field names
+          {/* Labeled fields, like the address form: every field names
               itself above its box (a bare date box read "mm/dd/yyyy" with no
               name). On a phone Title and Start date share a row at half width
               each, so the date's calendar icon is never clipped. */}

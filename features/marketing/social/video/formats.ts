@@ -56,7 +56,7 @@ export interface FormatInputs {
 export interface FormatPreviewAnswer {
   format: FormatInfo;
   sample: { brief: JsonDoc; inputs: FormatInputs };
-  /** A ready-to-play composition: stand-in timing, labelled picture plates, no audio. Never stored. */
+  /** A ready-to-play composition: stand-in timing, labeled picture plates, no audio. Never stored. */
   composition: JsonDoc;
 }
 

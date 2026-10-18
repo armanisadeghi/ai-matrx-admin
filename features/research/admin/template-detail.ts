@@ -19,7 +19,7 @@
  * WHAT THIS DOES. A CLOSED, ordered, human-labelled field list: short scalars
  * as themselves, list-shaped settings (keyword templates, default tags) joined
  * into one line of English instead of a `[`-fenced array, `default_search_params`
- * and `metadata` unpacked into one labelled field per key instead of a JSON
+ * and `metadata` unpacked into one labeled field per key instead of a JSON
  * block, and every configured agent role in `agent_config` rendered as a real
  * door to that agent record — the exact meaning `AGENT_CONFIG_META` already
  * carries for the template editor's own agent-wiring panel
@@ -64,7 +64,7 @@ function stringListOf(value: Json | unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
-/** A flat jsonb object's own keys, each becoming one labelled field. */
+/** A flat jsonb object's own keys, each becoming one labeled field. */
 function plainObjectEntries(value: unknown): Array<[string, Json]> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return [];
   return Object.entries(value as Record<string, Json>);
@@ -80,7 +80,7 @@ function shortValueText(value: Json): string | null {
     return strings.length ? strings.join(", ") : null;
   }
   // A nested object under a settings key is rare on this table; when it
-  // happens the whole point still holds — one labelled field, not a second
+  // happens the whole point still holds — one labeled field, not a second
   // JSON block — so it is stringified compactly rather than pretty-printed.
   try {
     const compact = JSON.stringify(value);
@@ -90,7 +90,7 @@ function shortValueText(value: Json): string | null {
   }
 }
 
-/** Every key of a flat jsonb settings object as its own labelled field. */
+/** Every key of a flat jsonb settings object as its own labeled field. */
 function fieldsFromPlainObject(
   keyPrefix: string,
   value: unknown,

@@ -33,7 +33,7 @@
  * PARTIALLY-APPLIED class below because on the db:apply path that state cannot
  * exist, and on the hand path it is not detectable from here — the ledger records
  * nothing about WHO wrote the row (an `applied_by` column would change that; see
- * the DD-113 report). The defence is that the hand path is closed.
+ * the DD-113 report). The defense is that the hand path is closed.
  *
  *   pnpm check:migrations            # loud, non-blocking (exit 0) — for hooks
  *   pnpm check:migrations --strict   # exit 1 when anything is unapplied — for CI
@@ -485,7 +485,7 @@ function loadDriftOkSet(): Set<string> {
  *
  * `pnpm db:apply` refuses these at the door. This is the cheap pre-apply
  * companion — the half that can see a file still sitting on someone's disk, the
- * same division of labour as the slot-collision arm above.
+ * same division of labor as the slot-collision arm above.
  *
  * THE CUT. This law shipped 2026-09-14. A migration file that was authored
  * BEFORE that date was written under no such rule, and a repo check that turned
@@ -792,7 +792,7 @@ async function main(): Promise<number> {
   {
     const { gaps, skipped } = await basedOnArm(pending).catch((err: unknown) => {
       console.log(
-        `${TAG.warn}MIGRATION BASED-ON UNMEASURED — could not read the live function catalogue: ` +
+        `${TAG.warn}MIGRATION BASED-ON UNMEASURED — could not read the live function catalog: ` +
           `${err instanceof Error ? err.message : String(err)}`,
       );
       return { gaps: [] as BasedOnGap[], skipped: null };
@@ -817,7 +817,7 @@ async function main(): Promise<number> {
       }
       console.log(
         `  ${C.white}Fix: pnpm db:based-on migrations/<file>.sql${C.reset} ` +
-          `${C.dim}— it prints the header line(s) that file is missing, read from the live catalogue. ` +
+          `${C.dim}— it prints the header line(s) that file is missing, read from the live catalog. ` +
           `pnpm db:apply refuses every one of these at the door regardless of the cut.${C.reset}`,
       );
     }

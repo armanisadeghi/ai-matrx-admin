@@ -3,7 +3,7 @@
  *
  * Three authorships now share one conversation, and the ONLY thing that tells
  * them apart is what this normalizer reads off the row. Every test here fails
- * if the behaviour is removed: the column test fails if `agent_id`/`metadata`
+ * if the behavior is removed: the column test fails if `agent_id`/`metadata`
  * leave the projection (they cannot be read if they are not selected), the
  * origin tests fail if the metadata read is dropped, and the unreadable-row
  * test fails with a thrown error if the try/catch honesty is deleted.

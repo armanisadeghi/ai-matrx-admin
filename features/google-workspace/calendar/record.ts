@@ -54,7 +54,7 @@ export function syncStatusOf(row: CalendarEventRow): CalendarEventSyncStatus | "
 /**
  * PLAN §4.6 / §7 — `google.calendar.agenda_days`, default 7, max 31. The max is
  * the PROVIDER bound: the server refuses a window outside 1..31 days
- * (`CalendarRefreshRequest.days`), so a larger number could never be honoured.
+ * (`CalendarRefreshRequest.days`), so a larger number could never be honored.
  */
 export const DEFAULT_AGENDA_DAYS = 7;
 export const MAX_AGENDA_DAYS = 31;
@@ -192,7 +192,7 @@ export function rsvpDotClass(rsvp: CalendarRsvp | "unknown"): string {
  * UTC, so an 8pm event in New York lands on tomorrow and nothing catches it. So
  * every day here is derived through `Intl` in an EXPLICIT IANA zone, and the
  * viewer's own zone is resolved once at the surface and passed down. It is also
- * the only shape that can honour a person choosing a display timezone later.
+ * the only shape that can honor a person choosing a display timezone later.
  */
 export function viewerTimeZone(): string {
   try {
@@ -265,7 +265,7 @@ export function agendaGroupLabel(day: string, todayKey: string, tomorrowKey: str
   let formatter = WEEKDAY_CACHE.get("weekday");
   if (!formatter) {
     // Formatted in UTC against a UTC-built date, so the label can never name a
-    // different day than the key it is labelling.
+    // different day than the key it is labeling.
     formatter = new Intl.DateTimeFormat(undefined, {
       timeZone: "UTC",
       weekday: "long",
@@ -487,7 +487,7 @@ export function googleCalendarHref(
  * A detached or unavailable event rendered in the agenda exactly like a live one
  * while the header said "Refreshed less than a minute ago from Google", so the
  * list a person actually looks at was the one surface that hid it. The Detail's
- * notice says it; this is the SAME judgement and the SAME words, computed once
+ * notice says it; this is the SAME judgment and the SAME words, computed once
  * here so a list row and a record can never disagree about a row's state.
  *
  * `null` for an `available` row — nothing to say, so nothing is said (law 4:
@@ -531,7 +531,7 @@ export function frozenEventNotice(event: CalendarEventRow): FrozenEventNotice | 
     label: "State we cannot read",
     sentence:
       reason ??
-      `Google Calendar stored a state for this event that this app does not recognise ("${String(
+      `Google Calendar stored a state for this event that this app does not recognize ("${String(
         event.sync_status,
       )}"), so it may not be refreshing. Refresh it, or keep it as AI Matrx data.`,
     status: "unknown",

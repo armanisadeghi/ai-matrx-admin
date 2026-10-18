@@ -54,7 +54,7 @@ interface OrgShareReviewCardProps {
   onChanged?: () => void;
 }
 
-// canonical table (= permissions.resource_type) → catalogue entry.
+// canonical table (= permissions.resource_type) → catalog entry.
 const ENTRY_BY_TABLE = new Map<string, OrgResourceEntry>();
 for (const entry of ORG_RESOURCE_CATALOGUE) {
   if (entry.shareKey) ENTRY_BY_TABLE.set(entry.shareKey, entry);

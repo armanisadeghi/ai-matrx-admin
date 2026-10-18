@@ -18,7 +18,7 @@
  * competing sentence over one the server sent.
  *
  * § A-N4 is the third case here: a recorded fact inside the code that now
- * teaches the opposite of the server's behaviour.
+ * teaches the opposite of the server's behavior.
  */
 
 import { readFileSync } from "node:fs";

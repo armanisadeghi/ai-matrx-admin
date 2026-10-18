@@ -137,7 +137,7 @@ export function ExportDropZone({ className }: { className?: string }) {
         });
         fileId = uploaded.fileId;
       } catch (error: unknown) {
-        // A cancelled workspace prompt and a real failure both land here, and
+        // A canceled workspace prompt and a real failure both land here, and
         // both deserve the reason in words rather than a silent reset.
         setStage({ phase: "failed", file, message: extractErrorMessage(error) });
         refreshResumes();

@@ -326,7 +326,7 @@ const ACCRUAL_FIELDS: Record<LeaveAccrualMethod, LeavePolicyField[]> = {
  * The balance-shaped fields. §2.3: `unlimited` HIDES every one of them — *"forces
  * annual_accrual_cap, balance_cap, carryover_allowed, carryover_cap,
  * negative_balance_allowed, and payout_on_termination to be absent from the form"*. Absent, not
- * disabled: an unlimited policy has no balance, so a greyed cap control would be describing a
+ * disabled: an unlimited policy has no balance, so a grayed cap control would be describing a
  * number that does not exist.
  */
 const BALANCE_FIELDS: LeavePolicyField[] = [
@@ -418,7 +418,7 @@ export function checkConstraintProblems(form: LeavePolicyForm): LeaveFieldProble
   const increment = form.incrementMinutes.trim() === "" ? null : Number(form.incrementMinutes);
 
   if (form.name.trim() === "") {
-    problems.push({ field: "name", message: "Give this policy a name people will recognise." });
+    problems.push({ field: "name", message: "Give this policy a name people will recognize." });
   }
 
   if (method !== "unlimited" && method !== "none" && (rate === null || !Number.isFinite(rate))) {

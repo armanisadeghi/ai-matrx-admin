@@ -335,7 +335,7 @@ function buildBaseColumns(
  * behind.
  *
  * ABSENT, NEVER DEAD. A Source no Action has touched shows a dash — not "None",
- * not a grey "Ready", and not an empty badge. And a badge NEVER renders without
+ * not a gray "Ready", and not an empty badge. And a badge NEVER renders without
  * its sentence: the sentence is the point, the badge is the index into it.
  */
 export function lastActionColumn(

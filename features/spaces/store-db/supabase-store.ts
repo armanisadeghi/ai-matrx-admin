@@ -2,7 +2,7 @@
 //
 // A Space is a `content.document` (type `space`, format `spaces`). Its blocks and page settings live in
 // `content.space_payload`: one full snapshot per content version = page history. Sub-pages are
-// `document → document` associations labelled `sub_page` (the child is the source, the parent the
+// `document → document` associations labeled `sub_page` (the child is the source, the parent the
 // target); their order is the edge `position`. Ruled design: common-docs/systems/content/spaces/STATE.md
 // § Storage design.
 //

@@ -2,7 +2,7 @@
 //
 // `?kind=` tells the surface which of the two audited doors to open. Without
 // it the case is found by probing both, and the losing probe writes a denial
-// into `hr.access_audit` — correct behaviour, but a link should not cause it.
+// into `hr.access_audit` — correct behavior, but a link should not cause it.
 
 import { hrHref, hrRelationsHref } from "@/features/hr/routes";
 import { Suspense } from "react";

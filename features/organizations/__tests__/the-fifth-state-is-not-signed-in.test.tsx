@@ -18,7 +18,7 @@
  * The link was not the defect and is asserted here so nobody "fixes" it twice:
  * `platform.link_carries_its_organization` stamps `?org=<uuid>` onto every
  * in-app notice link (the live `communication.notification` rows carry it), and
- * `resolveActiveOrgContext`'s rung −1 honours it above the remembered choice.
+ * `resolveActiveOrgContext`'s rung −1 honors it above the remembered choice.
  * None of that can run for somebody with no identity, which is precisely why
  * the gate needed a state of its own rather than a better sentence.
  *

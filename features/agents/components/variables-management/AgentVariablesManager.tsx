@@ -89,7 +89,7 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
 
   const definedNamesSet = new Set(variables.map((v) => v.name));
   // Bound to a table but placed in no message: the server still delivers it as
-  // a labelled context block; the chip offers to place it (never blocks a save).
+  // a labeled context block; the chip offers to place it (never blocks a save).
   const unplacedBound = new Set(
     unplacedBoundVariableNames(variables, messages),
   );

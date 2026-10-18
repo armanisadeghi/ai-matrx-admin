@@ -253,7 +253,7 @@ describe.each(DIALOGS.map((d) => [d.name, d] as const))(
       await render(dialog, false);
       expect(opened).toEqual([true]);
 
-      // The page honours it: the dialog is on screen for the run it rejoined,
+      // The page honors it: the dialog is on screen for the run it rejoined,
       // and the latch must not re-fire while that same run is open.
       await render(dialog, true);
       expect(opened).toEqual([true]);

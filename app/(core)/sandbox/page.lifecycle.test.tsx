@@ -55,7 +55,7 @@ describe("SandboxListPage deletion ownership", () => {
   beforeEach(() => { container = document.createElement("div"); document.body.append(container); root = createRoot(container); deleteInstance.mockReturnValue(new Promise(() => {})); });
   afterEach(async () => { await act(async () => root.unmount()); container.remove(); jest.clearAllMocks(); });
 
-  it("lets a second sandbox confirmation be cancelled while the first delete remains unresolved", async () => {
+  it("lets a second sandbox confirmation be canceled while the first delete remains unresolved", async () => {
     await act(async () => root.render(<SandboxListPage />));
     await act(async () => [...container.querySelectorAll("button")].find((button) => button.textContent === "Delete Sandbox A")?.click());
     const firstConfirm = [...document.querySelectorAll("button")].find((button) => button.textContent === "Delete Sandbox");

@@ -68,7 +68,7 @@ function isBlockedIPv6(address: string): boolean {
   const mapped = addr.match(/^::(?:ffff:)?(\d+\.\d+\.\d+\.\d+)$/);
   if (mapped) return isBlockedIPv4(mapped[1]);
 
-  // 🚨 The SAME address in HEX form. `new URL()` normalises
+  // 🚨 The SAME address in HEX form. `new URL()` normalizes
   // `[::ffff:169.254.169.254]` to `[::ffff:a9fe:a9fe]`, so the dotted regex
   // above never sees it. A live probe against the real route caught this
   // returning 502 (connection attempted) instead of 403 (refused).

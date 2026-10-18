@@ -16,7 +16,7 @@
 //
 // THE HONESTY RULE that shapes the whole page: the headline is `runtime.global_execution` and
 // NOTHING else. Other
-// ledgers are shown beside it, each labelled with the role it plays (primary /
+// ledgers are shown beside it, each labeled with the role it plays (primary /
 // overlap / additive / gap / unmeasured), and a "not measured" cell is never
 // drawn as $0.00.
 //
@@ -324,7 +324,7 @@ export function SpendDashboard() {
       {knobsState.error ? (
         <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive-ink">
           Alarm threshold unreadable ({knobsState.error.message}); headline
-          colour won&apos;t change. Seed
+          color won&apos;t change. Seed
           <span className="font-mono">
             {" "}
             platform.spend_popover.scare_threshold_usd

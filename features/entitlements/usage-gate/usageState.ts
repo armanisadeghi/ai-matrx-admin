@@ -1,7 +1,7 @@
 // features/entitlements/usage-gate/usageState.ts
 //
 // THE CLIENT SHAPE of a person's usage state — what `billing.user_usage_state`
-// returns, normalised once. The function is the ONE answer (USAGE-GATE.md "The
+// returns, normalized once. The function is the ONE answer (USAGE-GATE.md "The
 // one answer"): this module only READS its fields. It never derives a state, a
 // remaining balance or a percentage — `state`, `remaining` and `near_ratio`
 // all come from the server as written.

@@ -3,7 +3,7 @@
 // NoteTitleField — a note's title, click to rename. For a host that shows ONE
 // note and names it in its own header (a Board tile) or at the start of the
 // note's tool row (NoteWorkspace `title="inline"`). The /notes tab renders the
-// same behaviour inside its tab (both use useNoteTitleEditing).
+// same behavior inside its tab (both use useNoteTitleEditing).
 //
 // The field sizes to its text, so the rest of a host header stays a drag
 // handle. A hidden mirror of the name (same font, same padding) gives the

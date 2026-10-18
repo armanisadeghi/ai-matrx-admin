@@ -3,7 +3,7 @@
  *
  * 🚨 N6 (VERIFY-U-P1-R5). `crm.party` holds 1,892 rows: 460 `person` and
  * 1,432 `organization` (read live 2026-09-18) — and every one of them was
- * labelled "Person", twice on screen, because the Detail primitive's
+ * labeled "Person", twice on screen, because the Detail primitive's
  * registration carries ONE label for the whole type. Meanwhile the same
  * `party_kind === "person" ? "Person" : "Company"` ternary was written out
  * eight times across the CRM (the list badge, the row-action menu target, the
@@ -72,7 +72,7 @@ export function partyKindWordPlural(kind: unknown): string {
   return partyWords(kind).plural;
 }
 
-/** True only for a kind this module recognises — never for `null`/unknown. */
+/** True only for a kind this module recognizes — never for `null`/unknown. */
 export function isKnownPartyKind(kind: unknown): kind is PartyKind {
   return isPartyKind(kind);
 }

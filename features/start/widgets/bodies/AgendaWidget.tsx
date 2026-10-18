@@ -15,7 +15,7 @@ interface OccurrenceLike {
   state: string;
 }
 
-/** Occurrences that start today (local), not cancelled, earliest first. */
+/** Occurrences that start today (local), not canceled, earliest first. */
 export function pickTodaysOccurrences<T extends OccurrenceLike>(occurrences: readonly T[], now = new Date()): T[] {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const end = start + 24 * 60 * 60 * 1000;

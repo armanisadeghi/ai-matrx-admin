@@ -114,7 +114,7 @@ function text(): string {
 
 function byLabel(label: string): HTMLElement {
   const el = container.querySelector(`[aria-label="${label}"]`);
-  if (!el) throw new Error(`no element labelled ${label}`);
+  if (!el) throw new Error(`no element labeled ${label}`);
   return el as HTMLElement;
 }
 

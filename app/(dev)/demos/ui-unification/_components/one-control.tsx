@@ -342,7 +342,7 @@ function MoreGlyph() {
   );
 }
 
-/* Inner padding options at 28px — the row without a labelled tap pill, so
+/* Inner padding options at 28px — the row without a labeled tap pill, so
    every control's inset is judged against the round tap buttons (6px). */
 function PadToolbar() {
   const [scope, setScope] = useState("all");

@@ -6,7 +6,7 @@
  * `useBoardAgentTools`, through the board's ONE change path (`useBoard`, or a
  * host's adapter over its own layout model), so an agent's change is animated,
  * undoable where the board has undo, and saved exactly like a person's. A tool
- * a board cannot honour answers `{ok:false, error}` naming what to do instead.
+ * a board cannot honor answers `{ok:false, error}` naming what to do instead.
  *
  * World coordinates: x grows right, y grows down, in board pixels (a tile is
  * typically 360–720 wide). `board_read` returns every rect, so an agent never
@@ -276,7 +276,7 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
     name: "board_shape",
     label: "Draw shapes",
     description:
-      "Draws, changes or erases shapes on the Board so you can sketch a diagram: rectangles and ovals (with centred text), lines and arrows, pen strokes, sticky notes and plain text. One call is ONE undoable step. action \"create\": each entry has `kind` (rect | oval | line | arrow | pen | sticky | text); a rect/oval takes `x`,`y`,`w`,`h` (board px; default 240x160 at the view centre) and optional `text`; a line/arrow joins `from_id` → `to_id` (tile ids, shape ids, or the `ref` of a shape created earlier in the same call — its ends then FOLLOW those objects when they move) or goes between points `from` {x,y} → `to` {x,y}; a pen stroke takes `points` [{x,y}…]; a `sticky` (sticky note: a coloured square card with words, saved as a Note in the person's Sticky notes folder) takes `text`, optional `x`,`y`,`w`,`h` (default 220x220 at the view centre) and `color` (yellow, orange, pink, violet, blue, green); plain `text` (words on the canvas, no box) takes `text`, optional `x`,`y` and `w` (a width makes it wrap), `text_size`, `text_weight` (normal|bold), `stroke` (its colour) and `text_align`. An arrow between two TILES is a connection (the same as board_connect: it hands a chat tile the other tile's content). Style on any entry: `stroke` and `fill` (ink, slate, blue, violet, rose, orange, amber, emerald, teal; fill also none), `size` (s|m|l|xl), `dash` (solid|dashed|dotted), `opacity` (0.1–1), `text_size` (s|m|l|xl), `text_align` (start|center|end). action \"update\": entries carry `id` plus any of the fields above (`x`,`y`,`w`,`h` move or resize it; `from_id`/`to_id` rebind an end). action \"delete\": `ids`. Returns the shape ids in order. board_read lists every shape with its id, kind, rect, style and text (a sticky also its note_id).",
+      "Draws, changes or erases shapes on the Board so you can sketch a diagram: rectangles and ovals (with centerd text), lines and arrows, pen strokes, sticky notes and plain text. One call is ONE undoable step. action \"create\": each entry has `kind` (rect | oval | line | arrow | pen | sticky | text); a rect/oval takes `x`,`y`,`w`,`h` (board px; default 240x160 at the view center) and optional `text`; a line/arrow joins `from_id` → `to_id` (tile ids, shape ids, or the `ref` of a shape created earlier in the same call — its ends then FOLLOW those objects when they move) or goes between points `from` {x,y} → `to` {x,y}; a pen stroke takes `points` [{x,y}…]; a `sticky` (sticky note: a colored square card with words, saved as a Note in the person's Sticky notes folder) takes `text`, optional `x`,`y`,`w`,`h` (default 220x220 at the view center) and `color` (yellow, orange, pink, violet, blue, green); plain `text` (words on the canvas, no box) takes `text`, optional `x`,`y` and `w` (a width makes it wrap), `text_size`, `text_weight` (normal|bold), `stroke` (its color) and `text_align`. An arrow between two TILES is a connection (the same as board_connect: it hands a chat tile the other tile's content). Style on any entry: `stroke` and `fill` (ink, slate, blue, violet, rose, orange, amber, emerald, teal; fill also none), `size` (s|m|l|xl), `dash` (solid|dashed|dotted), `opacity` (0.1–1), `text_size` (s|m|l|xl), `text_align` (start|center|end). action \"update\": entries carry `id` plus any of the fields above (`x`,`y`,`w`,`h` move or resize it; `from_id`/`to_id` rebind an end). action \"delete\": `ids`. Returns the shape ids in order. board_read lists every shape with its id, kind, rect, style and text (a sticky also its note_id).",
     inputSchema: {
       type: "object",
       properties: {
@@ -290,7 +290,7 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
               id: { type: "string", description: "update: the shape to change." },
               ref: { type: "string", description: "create: a name later entries in this call can bind to." },
               kind: { type: "string", enum: ["rect", "rounded", "oval", "triangle", "diamond", "star", "line", "arrow", "pen", "sticky", "text"] },
-              color: { type: "string", enum: ["yellow", "orange", "pink", "violet", "blue", "green"], description: "A sticky note's colour." },
+              color: { type: "string", enum: ["yellow", "orange", "pink", "violet", "blue", "green"], description: "A sticky note's color." },
               text_weight: { type: "string", enum: ["normal", "bold"], description: "Plain text's weight." },
               x: { type: "number" },
               y: { type: "number" },

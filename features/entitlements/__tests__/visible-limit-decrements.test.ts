@@ -44,7 +44,7 @@ const sentHeaders: Record<string, string> = {};
 const KNOB_ROWS = [
   { feature: "organizations.workspace", key: "action_wait_ms", value: 4000 },
 ];
-// 🚨 `.is("archived_at", null)` — the catalogue reader stopped serving
+// 🚨 `.is("archived_at", null)` — the catalog reader stopped serving
 // archived knobs (settings3, 2026-09-22) and four bespoke fakes of this one
 // builder did not grow the verb, so all four went red on
 // "…select(...).is is not a function". THE REAL DEBT IS FOUR FAKES OF ONE

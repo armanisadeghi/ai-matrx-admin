@@ -7,7 +7,7 @@
  * to make meta titles or try agent creation, and that intent is what earned the
  * signup. Funnelling them elsewhere throws it away.
  *
- * This is enforced structurally rather than behaviourally: the redirect lives in
+ * This is enforced structurally rather than behaviorally: the redirect lives in
  * exactly one route (`app/(core)/dashboard/layout.tsx`), so it can only ever
  * intercept `/dashboard`. A second call site — in the root layout, the
  * middleware, or an auth action — WOULD see users who have a real destination

@@ -128,7 +128,7 @@ export function useTasks() {
     );
   }, []);
 
-  /** Upsert one row, honouring this list's scope. */
+  /** Upsert one row, honoring this list's scope. */
   const applyTaskRow = useCallback(
     (row: DatabaseTask) => {
       observe(row);

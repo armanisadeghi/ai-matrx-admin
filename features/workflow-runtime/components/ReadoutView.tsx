@@ -245,7 +245,7 @@ function NodeReadout({
     // (2026-08-18). A finished run says so.
     const waiting = phase === "idle" || phase === "waiting";
     // A step that has not started yet RESERVES the shape it will produce,
-    // when its definition declares one. A single line of grey text reserved
+    // when its definition declares one. A single line of gray text reserved
     // nothing, so the surface lurched the moment any step settled — the
     // reader's page jumping by whatever height a flashcard set or a deck
     // happened to need. Still and quiet: nothing has started.

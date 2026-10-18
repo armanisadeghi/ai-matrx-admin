@@ -626,7 +626,7 @@ function DefaultResourceRow({
     <div className={cn("flex items-start gap-2", busy && "opacity-50")}>
       <div className="min-w-0 flex-1">
         {/* The token group header already carries the entity icon, so the row
-            shows the name only. `openInNewTab` keeps this rail's behaviour —
+            shows the name only. `openInNewTab` keeps this rail's behavior —
             never replacing the war room the user is working in — as a real
             `target="_blank"` anchor rather than the `window.open` this
             replaced, so middle-click and cmd-click work and no popup blocker

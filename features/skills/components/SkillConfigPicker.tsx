@@ -143,7 +143,7 @@ export function SkillConfigPicker({
   const assignmentDisabled = disabled || value.disabled;
 
   // The detail pane is driven by id, not by the row object, so it survives a
-  // catalogue refetch (skills reload on every sandbox auto-discovery event).
+  // catalog refetch (skills reload on every sandbox auto-discovery event).
   const detailSkill = detailSkillId ? skillById.get(detailSkillId) : undefined;
   const detailPane = detailSkill ? (
     <SkillDetailView
@@ -636,7 +636,7 @@ function SelectedTier({
                 className="group flex items-center gap-2 rounded-md border border-border/70 bg-background px-2.5 py-1.5"
                 title={catalogProseText(skill?.description) || id}
               >
-                {/* THE DOOR LAW. When the catalogue has no row for this id the
+                {/* THE DOOR LAW. When the catalog has no row for this id the
                     old control printed "Unknown skill 1a2b3c4d" and DISABLED
                     itself — an id the user is assigned to, can see, and cannot
                     reach. `SkillPeek` queries `skill.definition` by id on its
@@ -646,10 +646,10 @@ function SelectedTier({
                     primary click for the normal case.
 
                     `onOpen` is gated on `skill` deliberately (the pane is
-                    driven off the catalogue map and would open empty), so an
+                    driven off the catalog map and would open empty), so an
                     unknown skill gets the peek and no link-styled no-op. The
                     label text is preserved verbatim — "unknown" is a true
-                    statement about the catalogue you are browsing, and the peek
+                    statement about the catalog you are browsing, and the peek
                     is what resolves the real name. `skill` has no `hrefFor`, so
                     there is no route to lose here. */}
                 <EntityRef

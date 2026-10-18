@@ -254,7 +254,7 @@ describe("the shipped policy registry", () => {
  * reducer is driven here.
  */
 describe("createSlimRootReducer (the shipped root reducer)", () => {
-    it("honours the identity reset", async () => {
+    it("honors the identity reset", async () => {
         const { createSlimRootReducer } = await import("@/lib/redux/rootReducer");
         const reducer = createSlimRootReducer();
 

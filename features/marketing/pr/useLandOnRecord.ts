@@ -31,7 +31,7 @@ export function useLandOnRecord(focusKey: string | null, findAnchor: () => Eleme
     const anchor = findAnchor();
     if (!anchor) return; // not rendered yet; a later render tries again (within the budget)
     state.tries += 1;
-    // Instant, never smooth: a smooth scroll is cancelled by the layout shifts around it.
+    // Instant, never smooth: a smooth scroll is canceled by the layout shifts around it.
     anchor.scrollIntoView({ block: "nearest" });
     const box = anchor.getBoundingClientRect();
     if (box.top < window.innerHeight && box.bottom > 0 && box.height > 0) state.done = true;

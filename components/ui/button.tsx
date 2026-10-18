@@ -27,7 +27,7 @@
  * names it. Guard: `pnpm check:client-door-reexports`.
  *
  * Written as a re-export so `Button` stays registered in
- * `scripts/package-twins.json`. Need a new tone or behaviour? Add it to the
+ * `scripts/package-twins.json`. Need a new tone or behavior? Add it to the
  * PACKAGE as a named option and release.
  */
 

@@ -352,7 +352,7 @@ export function ValueRuleEditor({
           <DialogDescription className="text-xs">
             A rule says what a word or a detected fact is worth to <em>this</em>{" "}
             business. “Free” might be worthless to you and everything to
-            somebody else — that judgement is yours, and it is why nothing here
+            somebody else — that judgment is yours, and it is why nothing here
             is a platform default.
           </DialogDescription>
         </DialogHeader>

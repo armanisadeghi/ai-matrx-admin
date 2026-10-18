@@ -10,7 +10,7 @@
 //     SSR / first paint of /chat/new and the (core) shell.
 //   · MatrxFloatingFrame — the shell chat dock's floating mode.
 //   · KindValueFrontDoor, StructuredValueView, TextWithDoors, CitationChip — kind-value doors
-//     drawn synchronously inside kind trees (static markup / SSR); modelled saving ~0.
+//     drawn synchronously inside kind trees (static markup / SSR); modeled saving ~0.
 //   · JsonInspector — ResultJson draws it inside kind results rendered as static markup; kept
 //     static though lazy would save ~0.86 MB (ambiguous SSR use — the owner decides).
 //   · BlockHoverPreview, KindDataGate, MatrxDynamicPanelHost — wrappers: a loading state would
@@ -29,7 +29,7 @@ import {
   SlotLoadingPanel,
 } from "@/providers/chatSlotLazy";
 // Kind-value doors: they render inside kind trees that are drawn synchronously (SSR / static
-// markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modelled 0.01 MB).
+// markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";

@@ -70,7 +70,7 @@ export interface BookingSlot {
   member_user_id: string | null;
 }
 
-/** The hours an organization offers, as `custom._booking_availability` normalised them. */
+/** The hours an organization offers, as `custom._booking_availability` normalized them. */
 export interface BookingAvailability {
   timezone: string;
   slot_minutes: number;
@@ -347,7 +347,7 @@ export async function cancelBooking(args: {
       record_id: null,
       slot_key: null,
       state: "held",
-      message: "Nothing was cancelled and the store did not say why.",
+      message: "Nothing was canceled and the store did not say why.",
     }
   );
 }

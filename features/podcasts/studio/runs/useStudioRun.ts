@@ -513,7 +513,7 @@ export function useStudioRun(runId: string): UseStudioRun {
               return;
             }
             // Reconcile unavailable (not deployed yet, or unreachable) — fall
-            // back to the previous behaviour rather than hiding the run.
+            // back to the previous behavior rather than hiding the run.
             setBackgroundWorking(false);
             setCanReconnect(d.recovery.resumable);
             return;

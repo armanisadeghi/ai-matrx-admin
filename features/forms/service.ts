@@ -105,7 +105,7 @@ export interface PublicForm {
     questions?: PublicFormQuestion[];
     /**
      * MAKE-HOME W5: the look a stranger sees, RESOLVED by the store (`custom._form_look` →
-     * `custom._portal_style`): the organization's look under the form's own colour, logo and
+     * `custom._portal_style`): the organization's look under the form's own color, logo and
      * cover — public addresses, never file ids.
      */
     look?: PortalStyle | null;

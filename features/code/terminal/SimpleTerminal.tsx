@@ -11,7 +11,7 @@
  * Why buffered instead of streaming:
  *   The streaming `/exec/stream` endpoint was tried first but silently
  *   produced no output when the SSE connection completed with zero events
- *   (HTTP 200, empty body) — a realistic orchestrator behaviour that the
+ *   (HTTP 200, empty body) — a realistic orchestrator behavior that the
  *   former SSE fallback didn't catch. The buffered endpoint is battle-tested
  *   on the `/sandbox/[id]` detail page and always returns a full JSON
  *   response with stdout/stderr/exit_code/cwd.
@@ -147,7 +147,7 @@ export const SimpleTerminal: React.FC<SimpleTerminalProps> = ({
     // Use buffered exec — same approach as the working `/sandbox/[id]` page.
     // Streaming was tried first previously but silently produced no output
     // when the SSE stream connected (HTTP 200) but sent zero events before
-    // closing, which is a realistic orchestrator behaviour. Buffered exec is
+    // closing, which is a realistic orchestrator behavior. Buffered exec is
     // synchronous, always returns a JSON response, and is battle-tested.
     try {
       await execBuffered(sandboxId, cmd, appendLine, setCwd, ac.signal);

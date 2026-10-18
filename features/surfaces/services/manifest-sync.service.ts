@@ -526,7 +526,7 @@ export async function computeDriftReport(sb: Sb): Promise<SurfaceDriftReport> {
     ),
   ]);
 
-  // readAllRows throws (labelled) on a query error or a provably-incomplete
+  // readAllRows throws (labeled) on a query error or a provably-incomplete
   // read, so there is no error branch and no `?? []` to swallow one.
   const dbRows = allDbRows;
   const dbRoleRows = allDbRoleRows;
@@ -1686,7 +1686,7 @@ export async function applyManifestSync(
       { label: "ui.ui_surface_value" },
     );
 
-    // Stale = the package plan's own judgement, by the table's FULL key
+    // Stale = the package plan's own judgment, by the table's FULL key
     // (surface_name, item_type, name): a screen value and an item value that
     // share a name are different rows (ALC-14).
     const staleRows = findStaleRows(sweepPlan, "ui.ui_surface_value", allDb);

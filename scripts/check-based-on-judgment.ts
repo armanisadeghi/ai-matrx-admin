@@ -16,7 +16,7 @@
  * every fixture in `migrations/based-on-corpus/` states
  *
  *     -- expect-scan: <what needs a based-on line>   (or `none`)
- *     -- expect-live: accept | refuse                 (the verdict against a live catalogue)
+ *     -- expect-live: accept | refuse                 (the verdict against a live catalog)
  *     -- setup: <sql>                                 (the live state the verdict is about)
  *
  * and it FAILS when either runner disagrees with the fixture or with the other runner.
@@ -27,7 +27,7 @@
  *   2. THE LIVE VERDICT — `--clone`: each fixture's `-- setup:` is created in its own
  *      `zz_bo_NN` schema on the nightly dev clone (proven quarantined on the open
  *      connection first), `{{hash:<object>}}` placeholders are filled from the clone's live
- *      catalogue, and BOTH runners' based-on checks judge the same bytes (SELECTs only; the
+ *      catalog, and BOTH runners' based-on checks judge the same bytes (SELECTs only; the
  *      Python half inside a read-only transaction that is rolled back). The scratch schemas are dropped in a finally. Never production: there
  *      is no flag that reaches it.
  *
@@ -185,7 +185,7 @@ async function main(): Promise<number> {
     const pyLive = pyJudge(judged.map((j) => j.path), true);
     for (const { f, sql } of judged) {
       // Autocommit, exactly as `db:apply` calls it (its transaction opens AFTER the check):
-      // every catalogue probe is its own statement, so a candidate that raises cannot
+      // every catalog probe is its own statement, so a candidate that raises cannot
       // poison the next one. The check itself only SELECTs.
       const r = await basedOnCheck(q, sql);
       const tsVerdict: "accept" | "refuse" = r.findings.length === 0 ? "accept" : "refuse";

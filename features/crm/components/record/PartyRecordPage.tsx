@@ -447,7 +447,7 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
               </>
             ) : (
               // DESKTOP KEEPS EVERY ACTION VISIBLE (owner ruling, 2026-09-27:
-              // only the phone folds). Labelled from lg; icon-only below lg
+              // only the phone folds). Labeled from lg; icon-only below lg
               // (name kept as aria-label + tooltip) so the title keeps its
               // room. The destructive action sits last, after a divider.
               <>

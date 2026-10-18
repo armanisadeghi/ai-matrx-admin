@@ -32,7 +32,7 @@ export function TranscriptsListPage() {
 
   // A WHOLE CHANNEL IS NOT FOUR MORE CLICKS OF "New". The four capture
   // surfaces all take one recording at a time; someone who already has
-  // transcripts and wants a creator's entire back catalogue has no door here
+  // transcripts and wants a creator's entire back catalog has no door here
   // at all. Libraries is that door.
   //
   // It sits in `headerActions`, NOT in TranscriptsSurfaceGuide: the guide
@@ -44,7 +44,7 @@ export function TranscriptsListPage() {
     <ControlButton variant="outline" asChild>
       <Link
         href={LIBRARIES_PATH}
-        aria-label="Catalogue a whole YouTube channel in Libraries"
+        aria-label="Catalog a whole YouTube channel in Libraries"
       >
         <Library className="h-4 w-4" />
         <span className="max-sm:sr-only">Whole channel</span>

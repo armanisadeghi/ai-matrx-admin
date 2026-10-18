@@ -4,7 +4,7 @@
  *
  * The door is fixed — `POST /brand-assists/{brandId}/run` — so a ledger row
  * can only name a brand and an assist id, never an address. The server runs
- * the job through the capability that already owns the data (colours and
+ * the job through the capability that already owns the data (colors and
  * fonts → brand assets as unconfirmed suggestions; search volume → keyword
  * market; who ranks → the site's brand search), so the result lives on after
  * the chip is gone. The returned result is the row's receipt (`result`), and

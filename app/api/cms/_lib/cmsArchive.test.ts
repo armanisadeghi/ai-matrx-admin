@@ -2,7 +2,7 @@
 
 /**
  * The CMS 0041 archive gate: correct before AND after the column exists.
- * Route-level delete behaviour is in `app/api/cms/cmsDeletesArchive.test.ts`.
+ * Route-level delete behavior is in `app/api/cms/cmsDeletesArchive.test.ts`.
  */
 
 import {

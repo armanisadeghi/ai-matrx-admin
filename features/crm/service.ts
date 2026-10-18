@@ -1288,9 +1288,9 @@ export async function addContactPoint(args: {
  * but ONLY when the party has no primary on that channel yet.
  *
  * The resolver creates contact points and deliberately never marks one primary
- * (RULE 2 — that flip is the RPC's job, and picking a primary is a judgement
+ * (RULE 2 — that flip is the RPC's job, and picking a primary is a judgment
  * about which address a human actually uses). So a create flow that wants the
- * behaviour the old `addContactPoint({ makePrimary: true })` had asks for it
+ * behavior the old `addContactPoint({ makePrimary: true })` had asks for it
  * here, right after resolving.
  *
  * The "only when absent" guard is what makes this safe on a MATCHED party: a

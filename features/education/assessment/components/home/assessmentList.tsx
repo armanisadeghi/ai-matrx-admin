@@ -138,10 +138,10 @@ function TakeCell({ row, config }: { row: AssessmentListItem; config: KindConfig
   if (row.archived) return <Muted>Archived</Muted>;
   if (row.question_count === 0) return <Muted>No questions</Muted>;
   return (
-    // The row itself opens the assessment; Take is its own labelled door —
+    // The row itself opens the assessment; Take is its own labeled door —
     // one tap on the phone card, where it is the card's primary action.
     <span className="flex items-center" onClick={(e) => e.stopPropagation()}>
-      {/* Take is the row's main action: always labelled. The column reserves
+      {/* Take is the row's main action: always labeled. The column reserves
           the button's width (min-w on the column), so the word never wraps. */}
       <Button asChild variant="outline" className="shrink-0">
         <Link href={assessmentTakeHref(config, row)} aria-label={`Take ${row.title}`}>
@@ -155,7 +155,7 @@ function TakeCell({ row, config }: { row: AssessmentListItem; config: KindConfig
 
 /**
  * The phone card: name + row menu, then one line of facts beside a one-tap
- * Take. The generic card labelled every field ("TAKE" beside a Take button)
+ * Take. The generic card labeled every field ("TAKE" beside a Take button)
  * and folded the rest behind "1 more field", so only two quizzes fit a phone.
  */
 function AssessmentPhoneCard({
@@ -228,7 +228,7 @@ export function buildAssessmentColumns(
       column: {
         id: "take",
         header: "Take",
-        // Fits the labelled button; the room comes from Topic's truncation.
+        // Fits the labeled button; the room comes from Topic's truncation.
         // Beside the title, so the row's main action is on screen at every
         // desktop width (at 1024 the columns after My attempts scroll off).
         width: 96,

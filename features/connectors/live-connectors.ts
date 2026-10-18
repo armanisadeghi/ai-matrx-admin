@@ -127,7 +127,7 @@ export function connectorDefinitionFromMcp(entry: McpCatalogEntry): ConnectorDef
   };
 }
 
-/** One catalogue for both the three-chip rotation and the full window. */
+/** One catalog for both the three-chip rotation and the full window. */
 export function buildLiveConnectorDefinitions(
   catalog: McpCatalogEntry[],
 ): ConnectorDefinition[] {

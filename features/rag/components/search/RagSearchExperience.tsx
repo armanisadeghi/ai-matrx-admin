@@ -2831,7 +2831,7 @@ export function RagSearchExperience() {
     <>
       <RagHubHeader />
       <div className="flex h-full flex-col overflow-hidden bg-background md:flex-row">
-        {/* Desktop persistent sidebar — collapses out on mobile in favour of the Drawer */}
+        {/* Desktop persistent sidebar — collapses out on mobile in favor of the Drawer */}
         {!isMobile && !reviewMode && <ScopeSidebar scope={scope} />}
 
         <Tabs

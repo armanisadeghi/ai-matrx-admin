@@ -69,7 +69,7 @@ async function main(): Promise<void> {
     await host.page.waitForTimeout(5000);
     console.log("RUN ENDED", slug);
   } finally {
-    // Cast.dispose only; the series row is NOT cancelled and no ensureEnded sweep (the series is not "live").
+    // Cast.dispose only; the series row is NOT canceled and no ensureEnded sweep (the series is not "live").
     await cast.dispose().catch(() => undefined);
     await browser.close();
   }

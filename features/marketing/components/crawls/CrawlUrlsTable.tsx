@@ -39,7 +39,7 @@ const OUTCOME_OPTIONS = [
   { value: "excluded", label: "Excluded" },
   { value: "failed", label: "Failed" },
   { value: "duplicate", label: "Duplicate" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "cancelled", label: "Canceled" },
 ];
 
 const CLASSIFICATION_OPTIONS = [

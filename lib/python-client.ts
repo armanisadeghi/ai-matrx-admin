@@ -398,7 +398,7 @@ export interface RequestOptions {
    * HTTP failures this call site handles as expected domain outcomes. They
    * still reject (or return when `allowHttpError` is set), but do not enter
    * the global Error Inspector. Mirrors `callApi.expectedErrorStatuses`.
-   * Honoured by `requestRaw` and `postJson`.
+   * Honored by `requestRaw` and `postJson`.
    */
   expectedErrorStatuses?: readonly number[];
 }
@@ -428,7 +428,7 @@ export interface ResponseMeta {
  * (`requireOrganizationContext`) that validates/normalizes it for `callApi`.
  * A caller with neither a selected org nor an override gets
  * `OrganizationContextError("organization_context_required")` — the request
- * never reaches the network, exactly the fail-closed behaviour the server's
+ * never reaches the network, exactly the fail-closed behavior the server's
  * `organization_required` 400 gate now also enforces (aidream commit
  * 8e5ee0b93). No fallback organization is ever chosen here.
  *
@@ -573,7 +573,7 @@ function meta(response: Response, requestId: string): ResponseMeta {
 
 /**
  * Capture then rethrow — single failure chokepoint for the Error Inspector.
- * A request the caller cancelled itself (its `signal` aborted, not by a
+ * A request the caller canceled itself (its `signal` aborted, not by a
  * timeout) is rethrown without a capture: the caller's own control flow, never
  * an incident — the rule callApi and the Supabase capture apply too.
  */
@@ -1179,7 +1179,7 @@ export async function downloadBlobWithProgress(
         new BackendApiError({
           code: "invalid_request",
           detail: "Download aborted",
-          userMessage: "Download cancelled.",
+          userMessage: "Download canceled.",
           requestId,
         }),
       );

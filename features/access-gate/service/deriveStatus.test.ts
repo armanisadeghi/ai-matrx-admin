@@ -73,7 +73,7 @@ describe("deriveStatus", () => {
 
       `access_denied_context` promotes every platform admin to `level: 'admin'`
       (the `platform_admin_all` RLS policy normally lets them read the row), and
-      the gate resolved the disagreement in favour of that claim — inventing
+      the gate resolved the disagreement in favor of that claim — inventing
       both a fault on our side and a retry that could never succeed.
 
       A read that came back EMPTY is itself an access answer. It outranks the

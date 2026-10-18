@@ -114,7 +114,7 @@ const FAILURE_WORDS: Record<string, string> = {
 };
 
 /**
- * 🚨 An unrecognised class is RENDERED, as itself, labelled as unrecognised. Swallowing it would
+ * 🚨 An unrecognised class is RENDERED, as itself, labeled as unrecognised. Swallowing it would
  * recreate the exact blindness this whole panel exists to remove — a failure nobody can see is the
  * same as a failure nobody recorded.
  */
@@ -195,7 +195,7 @@ export function attestationOutcomeSentence(
   if (!row.attestationOutcome) return null;
 
   if (row.attestationOutcome !== "not_attested") {
-    // A recognised, unremarkable outcome (e.g. `attested`). Nothing to warn about.
+    // A recognized, unremarkable outcome (e.g. `attested`). Nothing to warn about.
     return row.attestationNote;
   }
 

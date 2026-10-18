@@ -265,7 +265,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "delete_game_rooms",
     label: "Cancel waiting room",
     description:
-      'Cancels the host\'s currently open WAITING room, saved immediately. Value is a JSON ARRAY with exactly its one id from owned_game_rooms, for example ["…"]. The person must approve. This ends the lobby, soft-deletes its room record, and invalidates the join code so no new player can join. It refuses guests, an unknown id, a room that is already active or ended, and requests with any number of ids other than one. A live round cannot be deleted here because cancelling it would interrupt players and their study sessions.',
+      'Cancels the host\'s currently open WAITING room, saved immediately. Value is a JSON ARRAY with exactly its one id from owned_game_rooms, for example ["…"]. The person must approve. This ends the lobby, soft-deletes its room record, and invalidates the join code so no new player can join. It refuses guests, an unknown id, a room that is already active or ended, and requests with any number of ids other than one. A live round cannot be deleted here because canceling it would interrupt players and their study sessions.',
     valueType: "array",
     updatesValue: "owned_game_rooms",
     mode: "entity",

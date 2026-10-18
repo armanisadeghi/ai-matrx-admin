@@ -2,7 +2,7 @@
  * The "Add a reference" dialog holds its size while its content loads.
  *
  * THE DEFECT (G6B review, 2026-10-02, nightly clone): the dialog sized itself
- * to its content and is centred, so when the Task list finished loading it
+ * to its content and is centerd, so when the Task list finished loading it
  * grew and re-centred under the pointer; a click meant for "Change…" landed on
  * a list row and inserted an unwanted link.
  *

@@ -8,7 +8,7 @@
 //   • an in-app link (the header Back, the sidebar, any <a>) → our confirm
 //     dialog, then the navigation continues if they choose to discard;
 //   • browser Back / Forward    → the same confirm, through the Navigation API
-//     (where the browser supports cancelling a traversal).
+//     (where the browser supports canceling a traversal).
 // Links that stay on this page (a `?mode=` / `?tab=` switch), new-tab and
 // modified clicks, downloads and other origins are never intercepted.
 //

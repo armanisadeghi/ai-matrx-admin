@@ -9,7 +9,7 @@
 // (useStageDisplay) remain the guaranteed floor that always shows motion no
 // matter what the stream does; this panel is extra truth layered on top. It
 // renders NOTHING when the backend sends no tool events, so a silent backend
-// degrades to exactly the previous behaviour rather than an empty shell.
+// degrades to exactly the previous behavior rather than an empty shell.
 //
 // Ordering is deliberately "as it arrives" — the backend emits these in bursts
 // (all "Browsing {url}" lines fire up front at task creation, then a quiet gap

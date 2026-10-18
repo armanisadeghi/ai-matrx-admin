@@ -34,7 +34,7 @@ import {
 
 let ROWS: { feature: string; key: string; value: unknown }[] = [];
 
-// 🚨 `.is("archived_at", null)` — the catalogue reader stopped serving
+// 🚨 `.is("archived_at", null)` — the catalog reader stopped serving
 // archived knobs (settings3, 2026-09-22) and four bespoke fakes of this one
 // builder did not grow the verb, so all four went red on
 // "…select(...).is is not a function". THE REAL DEBT IS FOUR FAKES OF ONE
@@ -44,7 +44,7 @@ jest.mock("@/utils/supabase/client", () => ({
   createClient: () => ({
     schema: () => ({
       from: () => {
-        // `featureKnobs.loadAll()` pages the catalogue through `readAllRows`
+        // `featureKnobs.loadAll()` pages the catalog through `readAllRows`
         // (`{ count: "exact" }` + `.order().range()`, so the 1001st knob is not
         // silently dropped); `readJsonObjectKnobs()` narrows with
         // `.eq(...).in(...)` first. One thenable builder answers both without
@@ -265,7 +265,7 @@ describe("a malformed json legend RAISES rather than half-drawing", () => {
   });
 });
 
-describe("bulk_action_confirm honours every value of its own row", () => {
+describe("bulk_action_confirm honors every value of its own row", () => {
   const base = { bulk_action_confirm_threshold: 20 } as TopicalMapKnobs;
 
   it("always — every batch stops, even one item", () => {

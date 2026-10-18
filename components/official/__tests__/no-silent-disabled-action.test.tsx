@@ -13,7 +13,7 @@
  *
  *   GUARD 1 — `Field` with `required` and a blank `value` RENDERS the emptiness:
  *             the control carries `data-required-empty` and the field says the
- *             grey text is an example, not an answer.
+ *             gray text is an example, not an answer.
  *   GUARD 2 — `GatedActionButton` with a `reason` is disabled AND renders that
  *             sentence, wired to the button by `aria-describedby`. With no
  *             reason it renders no chrome and stays clickable.
@@ -67,7 +67,7 @@ describe("GUARD 1 — an empty required field looks empty", () => {
     expect(notice?.textContent ?? "").toMatch(/example, not your answer/i);
 
     // The lie the wall was made of: a value-shaped placeholder rendered in the
-    // same weight and colour as a typed value. It must now be visibly faded
+    // same weight and color as a typed value. It must now be visibly faded
     // and italic, on whatever input the Field happens to wrap.
     expect(control?.className ?? "").toMatch(/placeholder:italic/);
     expect(control?.className ?? "").toMatch(/border-dashed/);

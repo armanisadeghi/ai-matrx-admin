@@ -351,11 +351,11 @@ export function useSavedBoard(target: SavedBoardTarget): SavedBoardState {
     // The page is hidden (tab switch, minimise — and the first step of closing
     // a tab) or closing: send what is pending NOW, as a keepalive request.
     // `visibilitychange` comes before `pagehide` and with time to spare; an
-    // ordinary request still in flight at unload is cancelled by the browser.
+    // ordinary request still in flight at unload is canceled by the browser.
     const sendNow = () => {
       void instance.flush({ urgent: true });
     };
-    // Truly leaving: a write still in flight would be cancelled, so the newest
+    // Truly leaving: a write still in flight would be canceled, so the newest
     // value goes out beside it (autosave `leaving`).
     const leaveNow = () => {
       void instance.flush({ urgent: true, leaving: true });

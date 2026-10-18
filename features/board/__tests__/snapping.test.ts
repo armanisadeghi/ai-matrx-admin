@@ -11,9 +11,9 @@ describe("smart guides — moving", () => {
     expect(out.overlay?.lines.some((l) => l.axis === "x" && l.at === 500)).toBe(true);
   });
 
-  it("snaps right edge to left edge, and centre to centre", () => {
+  it("snaps right edge to left edge, and center to center", () => {
     expect(snapMove(R(296, 300), [R(500, 0)], base).rect.x).toBe(300); // right 496 -> 500
-    expect(snapMove(R(548, 300, 100, 120), [R(500, 0, 200, 120)], base).rect.x).toBe(550); // centre 598 -> 600
+    expect(snapMove(R(548, 300, 100, 120), [R(500, 0, 200, 120)], base).rect.x).toBe(550); // center 598 -> 600
   });
 
   it("snaps vertically: top, middle, bottom", () => {

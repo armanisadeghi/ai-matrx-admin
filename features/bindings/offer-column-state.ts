@@ -10,7 +10,7 @@
  *   · the column's `status` prop knew two — `offerPending ? "loading" :
  *     "ready"`.
  *
- * So a failed read reached `<OfferedInventoryColumn>` labelled **"ready" with
+ * So a failed read reached `<OfferedInventoryColumn>` labeled **"ready" with
  * zero values**, and the column printed its empty-state copy — *"This job
  * offers nothing yet. Describe its inputs in the INPUT section above"* —
  * directly beneath a header saying the inputs could not be read. Two

@@ -245,7 +245,7 @@ export function ExportPanel({
           </p>
         </div>
 
-        {/* Background colour */}
+        {/* Background color */}
         <div className="space-y-2">
           <label className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1.5">
             <Paintbrush className="h-3 w-3" />
@@ -270,7 +270,7 @@ export function ExportPanel({
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
             JPEG/AVIF don't support alpha. Transparent pixels are filled with
-            this colour when converting.
+            this color when converting.
           </p>
         </div>
 

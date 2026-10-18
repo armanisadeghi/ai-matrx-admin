@@ -70,7 +70,7 @@ function makeBuilder(table: string) {
     if (table !== "definition") return [];
     for (const [key, rows] of Object.entries(definitionRows)) {
       if (!entry.filters.includes(key)) continue;
-      // The fake HONOURS the release predicate, because the predicate is the
+      // The fake HONORS the release predicate, because the predicate is the
       // defect: a stub that handed back the same rows whichever filters were
       // asked for would pass against the broken code and prove nothing.
       if (entry.filters.includes("not:metadata->>released_at:is:null")) {

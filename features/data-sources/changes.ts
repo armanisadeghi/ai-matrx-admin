@@ -1,6 +1,6 @@
 /**
  * "What changed" after a refresh — pure: the wire shapes (aidream `GET /data-sources/jobs/{id}/changes`),
- * their parsers, and the decisions the panel shows (the bar's counts, a numeric delta and its colour,
+ * their parsers, and the decisions the panel shows (the bar's counts, a numeric delta and its color,
  * a before → after pair). Nothing here fetches; `./server.ts` and `./hooks.ts` do.
  */
 

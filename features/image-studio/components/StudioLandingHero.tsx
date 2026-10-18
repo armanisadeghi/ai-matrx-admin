@@ -46,7 +46,7 @@ export function StudioLandingHero() {
           <FeatureCard
             icon={<Gauge className="h-5 w-5" />}
             title="Format + quality control"
-            body="Global WebP / AVIF / JPEG / PNG, quality slider from 30–100%, transparent-fill colour for JPEG/AVIF. PNG stays lossless."
+            body="Global WebP / AVIF / JPEG / PNG, quality slider from 30–100%, transparent-fill color for JPEG/AVIF. PNG stays lossless."
           />
           <FeatureCard
             icon={<Palette className="h-5 w-5" />}
@@ -56,7 +56,7 @@ export function StudioLandingHero() {
           <FeatureCard
             icon={<Download className="h-5 w-5" />}
             title="Download any way you want"
-            body="One file at a time, a ZIP of the selected tiles, or the full ZIP bundle organised by source filename."
+            body="One file at a time, a ZIP of the selected tiles, or the full ZIP bundle organized by source filename."
           />
           <FeatureCard
             icon={<CloudUpload className="h-5 w-5" />}

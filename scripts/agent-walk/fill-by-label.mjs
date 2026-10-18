@@ -1,7 +1,7 @@
 // scripts/agent-walk/fill-by-label.mjs — THE ONE BY-LABEL FILLER EVERY WALK USES.
 //
 // 🚨 WHY IT EXISTS. On 2026-09-21 the booking walk booked a real appointment on
-// Ironclad Mobile Mechanic's public page and the row it wrote held the LICENCE
+// Ironclad Mobile Mechanic's public page and the row it wrote held the LICENSE
 // PLATE in `customer_name`, with phone, email and vehicle absent. The screen was
 // fine; the WALK was broken. `stranger-books.mjs` fell back to
 //

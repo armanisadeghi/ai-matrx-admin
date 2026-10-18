@@ -7,7 +7,7 @@
  *     wrong declaration worse than no declaration).
  *  2. `reserved` holds the shape and stays STILL; `arriving` works visibly.
  *     Both render the SAME silhouette so the switch moves nothing.
- *  3. A slot's footprint floor is honoured in every phase, settled included —
+ *  3. A slot's footprint floor is honored in every phase, settled included —
  *     a short result must not shrink the slot and pull the page upward.
  */
 

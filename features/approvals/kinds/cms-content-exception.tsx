@@ -243,7 +243,7 @@ function useSource(scope: ApprovalScope): ApprovalSource {
             "Records it as rejected so it stops waiting on you. The content stays blocked.",
           blocked: {
             reason:
-              "This exception request was written in a shape this queue does not recognise, so it cannot be shown or approved.",
+              "This exception request was written in a shape this queue does not recognize, so it cannot be shown or approved.",
             whoCan:
               "Reject it and ask for the exception again; whatever filed it needs fixing.",
           },

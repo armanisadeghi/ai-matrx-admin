@@ -349,9 +349,9 @@ export function priorityRangeForUrgency(urgency: AssistUrgency): {
 }
 
 /**
- * How each band looks and reads. Colour is never the only signal — every
+ * How each band looks and reads. Color is never the only signal — every
  * non-normal band also carries a word and a distinct icon (see
- * `components/urgency-icon.ts`), so the state survives greyscale, colour
+ * `components/urgency-icon.ts`), so the state survives grayscale, color
  * blindness, and a screen reader. Both themes are declared explicitly
  * (light/dark integrity): amber and red both wash out if only one is.
  */
@@ -364,7 +364,7 @@ export const ASSIST_URGENCY_META: Record<
     note: string;
     /** Chip container tint. */
     chipClass: string;
-    /** Leading icon colour, chip and card. */
+    /** Leading icon color, chip and card. */
     iconClass: string;
     /** The card's badge; empty for `normal`. */
     badgeClass: string;

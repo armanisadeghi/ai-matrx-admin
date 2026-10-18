@@ -366,7 +366,7 @@ export function OrderFlow({
           description:
             `The server created a LIVE Stripe checkout. Paying it charges the card ` +
             `you enter and Lulu prints and ships "${form.title.trim()}" for real. ` +
-            `Cancelling the order later refunds it, but the print may already have started.`,
+            `Canceling the order later refunds it, but the print may already have started.`,
           confirmLabel: "Open the live checkout",
           cancelLabel: "Not now",
           variant: "destructive",

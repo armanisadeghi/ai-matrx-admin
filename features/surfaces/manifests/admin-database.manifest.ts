@@ -8,12 +8,12 @@
  * `/administration/database/sql-queries`, which runs arbitrary read
  * queries against the live Supabase project through the
  * `execute_admin_query` RPC. The sibling `/administration/database/database-admin`
- * dashboard emits its loaded function catalogue, selected overload signature,
+ * dashboard emits its loaded function catalog, selected overload signature,
  * and read state through this same surface identity. Its permissions and SQL
  * editor do not emit here because this mount does not own their state.
  *
  * What an agent bound here may safely do: read the admin's SQL text, the
- * shape of the result it got back, its recent query history, and the catalogue
+ * shape of the result it got back, its recent query history, and the catalog
  * of database tools available on the hub — and from that, WRITE and EXPLAIN
  * SQL, diagnose an error message, or propose a next query. It may STAGE that
  * SQL into the editor through the `sql_query` write target. It must NOT assume
@@ -31,9 +31,9 @@
  * them deliberately.
  *
  * Emitters (real, wired):
- *   - Hub catalogue → `features/administration/database-hub/DatabaseHubLanding.tsx`
+ *   - Hub catalog → `features/administration/database-hub/DatabaseHubLanding.tsx`
  *   - Query state   → `app/(admin)/administration/database/components/enhanced-sql-editor.tsx`
- *   - Function catalogue → `features/administration/database-admin/DatabaseAdminDashboard.tsx`
+ *   - Function catalog → `features/administration/database-admin/DatabaseAdminDashboard.tsx`
  *
  * Deliberately NOT declared (nothing emits them): a schema/table/column
  * browser with a selected table and row sample does not exist as page state on
@@ -84,7 +84,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Database functions",
     sortOrder: 400,
     description:
-      "The current function catalogue snapshot, its selected overload, and its read status.",
+      "The current function catalog snapshot, its selected overload, and its read status.",
   },
 ];
 
@@ -116,7 +116,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "database_tool_pages",
     label: "Database tools",
     description:
-      "Catalogue of the database admin tool pages the hub links to — one entry per tool with its title, href, and section. Absent in the SQL workbench, which does not load the hub catalogue.",
+      "Catalog of the database admin tool pages the hub links to — one entry per tool with its title, href, and section. Absent in the SQL workbench, which does not load the hub catalog.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 2200,
@@ -128,7 +128,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "database_tool_count",
     label: "Database tool count",
     description:
-      "Number of tool pages in the hub catalogue. Absent in the SQL workbench.",
+      "Number of tool pages in the hub catalog. Absent in the SQL workbench.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 2,
@@ -264,12 +264,12 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "query_result",
   },
 
-  // ── Function catalogue ───────────────────────────────────────────────
+  // ── Function catalog ───────────────────────────────────────────────
   {
     name: "database_functions",
     label: "Database functions",
     description:
-      "The function rows loaded by the database-admin dashboard, with each overload's schema, name, arguments, security mode, and return type. This is a client snapshot only: the source total is unknown, so this list must never be treated as the complete function catalogue.",
+      "The function rows loaded by the database-admin dashboard, with each overload's schema, name, arguments, security mode, and return type. This is a client snapshot only: the source total is unknown, so this list must never be treated as the complete function catalog.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 24000,
@@ -292,7 +292,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "database_functions_loading",
     label: "Functions loading",
     description:
-      "True while the dashboard is reading the function catalogue. Existing rows remain visible during a refresh.",
+      "True while the dashboard is reading the function catalog. Existing rows remain visible during a refresh.",
     valueType: "boolean",
     alwaysAvailable: false,
     typicalCharCount: 5,
@@ -348,7 +348,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *  - **Execute.** The hard line. An agent must never run SQL it wrote without
  *    a human pressing the button — no target, no handler, not negotiable.
  *    (Also no Cancel: stopping a run is the admin's call on their own query.)
- *  - **`use_cache` and Clear Cache.** Cache behaviour decides whether the next
+ *  - **`use_cache` and Clear Cache.** Cache behavior decides whether the next
  *    run touches the live database at all; an agent flipping it changes what
  *    executing MEANS without changing anything the admin can see in the SQL.
  *    Not authored content, and the one toggle where being wrong is invisible.
@@ -409,9 +409,9 @@ This is an ADMIN surface: the super-admin database console at /administration/da
 
 /administration/database itself is a hub — a grid of links to database tools (schema visualizer, SQL functions, enums, relationships, canonicalization, data integrity, workbench). The data-bearing pages are the SQL workbench, where a super-admin writes read-only SQL and runs it against the live Supabase project, and the database-admin dashboard's Functions tab.
 
-How to read the values: console_section tells you which one you are on — "hub", "sql_workbench", or "database_admin". On the hub, database_tool_pages is the catalogue and the query_* values are absent. In the workbench, sql_query is what the admin has written, and the query_* result values describe the LAST execution (they are all absent before the first run, and query_error replaces them when a run fails). In the database-admin dashboard, database_functions is the loaded client snapshot, not a complete source catalogue; database_function_count is only the number loaded, and database_functions_error records a failed read.
+How to read the values: console_section tells you which one you are on — "hub", "sql_workbench", or "database_admin". On the hub, database_tool_pages is the catalog and the query_* values are absent. In the workbench, sql_query is what the admin has written, and the query_* result values describe the LAST execution (they are all absent before the first run, and query_error replaces them when a run fails). In the database-admin dashboard, database_functions is the loaded client snapshot, not a complete source catalog; database_function_count is only the number loaded, and database_functions_error records a failed read.
 
-What you may safely do: read the SQL and the result shape, then write, correct, explain, or optimise SQL and diagnose errors. Put the SQL you wrote straight into the editor with the sql_query write target instead of making the admin copy it out of chat — it REPLACES the whole editor buffer, so read sql_query first if you mean to extend rather than replace. Staging is not running: you never execute anything, and there is no write path to Execute, Cancel, or the cache. Running a query is the admin pressing Execute. When the SQL you stage would change data or schema, say so plainly in your message — the admin's review is the only gate. Treat result rows as live production data: summarise them, do not republish them.
+What you may safely do: read the SQL and the result shape, then write, correct, explain, or optimize SQL and diagnose errors. Put the SQL you wrote straight into the editor with the sql_query write target instead of making the admin copy it out of chat — it REPLACES the whole editor buffer, so read sql_query first if you mean to extend rather than replace. Staging is not running: you never execute anything, and there is no write path to Execute, Cancel, or the cache. Running a query is the admin pressing Execute. When the SQL you stage would change data or schema, say so plainly in your message — the admin's review is the only gate. Treat result rows as live production data: summarize them, do not republish them.
 
 There are no credentials in this scope. No connection string, database password, service key, or API token is emitted here, and you should never ask for one.
 </surface_intro>`,
@@ -423,7 +423,7 @@ There are no credentials in this scope. No connection string, database password,
   writeTargets,
 };
 
-/** One entry in the hub's database-tool catalogue. */
+/** One entry in the hub's database-tool catalog. */
 export interface AdminDatabaseToolEntry {
   title: string;
   href: string;

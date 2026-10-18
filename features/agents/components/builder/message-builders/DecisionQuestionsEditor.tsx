@@ -749,7 +749,7 @@ export interface DecisionQuestionsEditorProps {
   stateText: string;
   model: AIModelRecord | null | undefined;
   validVariables?: string[];
-  /** Verdict for the part as a whole; a refusal greys the whole editor. */
+  /** Verdict for the part as a whole; a refusal grays the whole editor. */
   compatibility?: PartCompatibility;
   /** Remove the whole part from the message. */
   onRemovePart?: () => void;

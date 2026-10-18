@@ -36,7 +36,7 @@ export interface PublishedViewOpen {
   truncated: boolean;
   /** Record id → its words (related records, people, files). */
   refs: Record<string, string>;
-  /** Field key → normalised choice → the choice's words. */
+  /** Field key → normalized choice → the choice's words. */
   labels: Record<string, Record<string, string>>;
   /** Field key → the choices' words in the order they were made (a board's column order). */
   choice_order?: Record<string, string[]>;

@@ -626,7 +626,7 @@ async function main(): Promise<void> {
       // the register does not name; and what it withheld is PRINTED with the reason.
       // 🚨 THE DECLARATION COMES FIRST, AND THAT IS WHAT MAKES THIS REVERSIBLE.
       // `platform.schema_client_exposure` is what the provisioner reads before it issues any
-      // client grant. Granting here without writing the row would leave the catalogue open and
+      // client grant. Granting here without writing the row would leave the catalog open and
       // the declaration saying closed — which `platform.provision` now REFUSES outright, so an
       // --expose that did not declare would break the next provision into the schema. Exposure,
       // grants and PostgREST membership move together in one verb or they drift apart again.

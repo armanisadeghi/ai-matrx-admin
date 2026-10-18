@@ -42,7 +42,7 @@ const noLint = args.includes("--no-lint");
 const fastMode = args.includes("--fast");
 const keepGoing = args.includes("--keep-going");
 
-// ANSI colours — auto-disabled when piped.
+// ANSI colors — auto-disabled when piped.
 const TTY = process.stdout.isTTY;
 const C = {
   reset: TTY ? "\x1b[0m" : "",

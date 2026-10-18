@@ -245,7 +245,7 @@ export function cellFromValue(field: LinkedField, value: unknown, words?: Readon
 /**
  * The list's own word for a stored choice. The store keeps a select's value as a lowercase key
  * ("proposal") while the list reads "Proposal"; the sheet shows the list's word so the dropdown
- * recognises it.
+ * recognizes it.
  */
 function choiceWord(field: LinkedField, value: string): string {
   const lower = value.trim().toLowerCase();

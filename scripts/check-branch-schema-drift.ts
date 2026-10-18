@@ -64,7 +64,7 @@
  *   · the grants clause below, unchanged.
  * Every other schema's production-only object is still measured and printed — an
  * INFORMATIONAL section, counts by schema plus the first ten objects — but it never moves
- * the exit code. `--strict` restores the old fail-on-anything behaviour (every schema is
+ * the exit code. `--strict` restores the old fail-on-anything behavior (every schema is
  * in the failing set) for whoever wants the exhaustive answer.
  *
  * `--self-test` proves both halves without touching either database's contents or the
@@ -252,7 +252,7 @@ const FAILING_SCHEMAS = new Set(["platform", "iam", "history"]);
 /**
  * THE FAILING SET: drift here fails the exit code. Everything else is measured and
  * printed but is INFORMATIONAL only — see the header comment for why. `strict` makes
- * every schema failing, matching the pre-2026-09-17 exhaustive behaviour.
+ * every schema failing, matching the pre-2026-09-17 exhaustive behavior.
  */
 function isFailingScope(o: Obj, strict: boolean): boolean {
   if (strict) return true;

@@ -13,8 +13,8 @@
 // policy is written at a SCOPE — user, organization, taxonomy node, global —
 // and only the `entity` scope names one entity, so its label is usually a
 // sentence about the whole scope. Verified live 2026-08-22: a user-scoped
-// policy labelled "Flashcard decks you deleted" is the winning policy for
-// EVERY one of that user's entities, so trusting it first labelled that
+// policy labeled "Flashcard decks you deleted" is the winning policy for
+// EVERY one of that user's entities, so trusting it first labeled that
 // person's rulebooks as flashcard decks. The registry label is per-entity by
 // construction and cannot be wrong that way; the policy label is the fallback
 // for a token the registry does not carry.

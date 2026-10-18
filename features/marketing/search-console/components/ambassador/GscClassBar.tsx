@@ -12,7 +12,7 @@
  * class) on the full dashboard.
  *
  * Rung 1 (table stakes) is non-negotiable here and is why this component owns
- * the labelling rather than its hosts:
+ * the labeling rather than its hosts:
  *   • the window is printed AT the data ("Jul 9 – Aug 5"), never three scrolls
  *     away, because every host would otherwise forget it;
  *   • deltas carry units and a compare basis ("vs prev 28 days");

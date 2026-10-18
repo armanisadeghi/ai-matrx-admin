@@ -14,7 +14,7 @@
  *
  * The fix is structural rather than a convention: the raw door is now
  * module-internal, so the ledger cannot be bypassed from outside this module
- * at all. This guard pins the BEHAVIOUR that fix exists for, so it survives
+ * at all. This guard pins the BEHAVIOR that fix exists for, so it survives
  * any future refactor of who calls what.
  */
 const dispatched: Array<{
@@ -50,7 +50,7 @@ beforeEach(() => {
  * 🚨 THE CARD'S OWN CHOICE OF DOOR, asserted statically.
  *
  * The test below proves the LEDGER behaves — but the ledger was never the
- * broken part. The defect was the card reaching past it, so the behavioural
+ * broken part. The defect was the card reaching past it, so the behavioral
  * test alone would have passed on the broken code. This is the case that
  * actually fails on the original: the self-heal must name the tracked door.
  */

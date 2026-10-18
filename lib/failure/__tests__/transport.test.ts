@@ -9,7 +9,7 @@ import {
   isTransportFailure,
 } from "@/lib/failure/transport";
 
-describe("the browser's words are recognised, the server's are not", () => {
+describe("the browser's words are recognized, the server's are not", () => {
   it.each([
     new TypeError("Failed to fetch"),
     new TypeError("Load failed"),

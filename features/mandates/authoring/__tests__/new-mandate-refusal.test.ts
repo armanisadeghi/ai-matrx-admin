@@ -4,7 +4,7 @@
  * The defect, walked on production 2026-08-31: press "Create mandate" on the
  * empty form and a red line appears under the key field — "Not yet — this
  * mandate still needs a name (the top field), the key, the goal." Fill in all
- * three and THE SENTENCE IS STILL THERE, unchanged, while the grey line beside
+ * three and THE SENTENCE IS STILL THERE, unchanged, while the gray line beside
  * the button updates correctly. One form, two sentences about it, one false.
  *
  * Cause: the refusal was WRITTEN into `serverError` — the state that holds the

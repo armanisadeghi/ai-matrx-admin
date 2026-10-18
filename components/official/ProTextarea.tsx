@@ -72,7 +72,7 @@
  * - **Floating label** — pass `floatingLabel="…"` for a dense-form label that
  *   animates inside the border. See "Labelling" below.
  *
- * ## Labelling
+ * ## Labeling
  *
  * - **Above-label** (default for spacious forms) — wrap with `<Field>`:
  *   ```tsx
@@ -426,7 +426,7 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
   /** Accessible/tooltip label for the submit button. Default: "Send". */
   submitLabel?: string;
   /**
-   * The submit button's VISIBLE word ("Build agent"), drawn as a labelled solid pill instead of
+   * The submit button's VISIBLE word ("Build agent"), drawn as a labeled solid pill instead of
    * the bare send glyph — for a box whose submit is not "send a message" (it starts a build, a
    * run). Pair with `submitIcon`. Absent: the round send button.
    */

@@ -10,7 +10,7 @@
  * re-read-and-remerge on a lost race), so two proposal sets — or two people —
  * writing different keys of the same message never lose each other's work.
  *
- * THE DIVISION OF LABOUR, which is the whole reason this file is small:
+ * THE DIVISION OF LABOR, which is the whole reason this file is small:
  *   - What the STORE says is read from the store (`readListTarget` +
  *     `proposalStanding`). An accepted `add` shows as settled because the row
  *     is there, for every viewer, on every device, forever. That is the
@@ -99,7 +99,7 @@ export type RecordDecisionResult =
 
 /**
  * Remember one decision. Never throws: a decision that the store already
- * honoured must not be undone on screen because the note about it failed.
+ * honored must not be undone on screen because the note about it failed.
  */
 export async function recordProposalDecision(
   messageId: string,

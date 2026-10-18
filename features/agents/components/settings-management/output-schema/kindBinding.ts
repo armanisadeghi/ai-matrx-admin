@@ -65,7 +65,7 @@ export function isKindBindable(entry: KindCatalogEntry): boolean {
     return false;
   }
   // A machine-minted snapshot of ONE agent's output contract is addressable
-  // data, never a catalogue item a human picks — 665 of 838 active kinds were
+  // data, never a catalog item a human picks — 665 of 838 active kinds were
   // these. They were kept out ONLY as a side effect of the old fields check;
   // reading `emitted_json_schema` makes them buildable, so the exclusion has
   // to be stated rather than inherited (68 `agent_io_<uuid>_output` rows would

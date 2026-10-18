@@ -96,7 +96,7 @@ function statusBadge(status: ExecStatus) {
     running: { label: "Running", variant: "default" },
     complete: { label: "Complete", variant: "secondary" },
     error: { label: "Error", variant: "destructive" },
-    cancelled: { label: "Cancelled", variant: "outline" },
+    cancelled: { label: "Canceled", variant: "outline" },
   };
   const { label, variant } = map[status];
   return (
@@ -424,7 +424,7 @@ export default function AgentDemoClient() {
     } catch (err) {
       if (controller.signal.aborted) {
         setExecStatus("cancelled");
-        toast.info("Cancelled");
+        toast.info("Canceled");
       } else {
         const msg = getUserMessage(err) || "Execution failed";
         setErrorMessage(msg);

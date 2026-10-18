@@ -42,7 +42,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
   const awaitedSearchParams = await searchParams;
 
   // The destination, read through the ONE reader — so a `?next=` or
-  // `?returnUrl=` link (25 of them shipped across the app) is honoured
+  // `?returnUrl=` link (25 of them shipped across the app) is honored
   // instead of silently dumping the user on /dashboard, which is exactly
   // what this page used to do by defaulting the moment `redirectTo` was
   // absent.

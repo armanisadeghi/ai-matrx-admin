@@ -159,7 +159,7 @@ export const IMAGE_POSITION_ANCHORS: readonly ImagePositionAnchor[] = [
 // ── Background fill ───────────────────────────────────────────────────────
 
 /**
- * The colour input is `<input type="color">`, which always emits a 6-digit
+ * The color input is `<input type="color">`, which always emits a 6-digit
  * lowercase hex. The paired text field lets the user type, so writes are
  * validated against this shape rather than trusted.
  */

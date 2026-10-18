@@ -31,7 +31,7 @@ import {
 const KIND_ID = "document_create";
 const PAYLOAD_KIND = "document_create_dry_run";
 
-/** Enough to recognise the document, not so much that nobody reads it. */
+/** Enough to recognize the document, not so much that nobody reads it. */
 const PREVIEW_LINES = 12;
 
 function titleOf(payload: GoogleProposalPayload): string | null {

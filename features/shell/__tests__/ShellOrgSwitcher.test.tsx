@@ -4,7 +4,7 @@
  * Owner, 2026-09-30: the sidebar's organization slot is "the ONLY CANONICAL
  * org selector for the sidebar and header … any problems related to org needs
  * to show with this one". It replaced the header chip and the avatar menu's
- * Organization group, whose behavioural tests went with them; this file
+ * Organization group, whose behavioral tests went with them; this file
  * carries their states forward onto the control that owns them now:
  *
  *   1. NEVER a prompt (STATE rule 12: the ladder always picks one, nothing

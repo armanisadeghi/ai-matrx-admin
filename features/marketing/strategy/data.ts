@@ -17,7 +17,7 @@
  * Storage is `seo.landscape_brief` (one table, `scope` = brand|site), the same
  * staged-confidence machine the competitor classifier already trusted: facts,
  * a plain-language brief the owner corrects in one sentence, a 1-5 confidence
- * the system honours, a 24-hour review window that never blocks, and the
+ * the system honors, a 24-hour review window that never blocks, and the
  * owner's own words carried forward through every regeneration. Regenerating
  * SUPERSEDES — it never overwrites — so history is real.
  *

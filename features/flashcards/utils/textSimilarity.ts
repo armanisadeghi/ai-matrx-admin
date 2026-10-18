@@ -31,7 +31,7 @@ export function normalizeAnswer(s: string): string {
     .trim();
 }
 
-/** True when a typed answer IS the expected answer after normalisation —
+/** True when a typed answer IS the expected answer after normalization —
  *  correct with no fuzzy match and no AI call. */
 export function answersMatch(typed: string, expected: string): boolean {
   const x = normalizeAnswer(typed);

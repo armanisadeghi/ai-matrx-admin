@@ -115,7 +115,7 @@ export function TopicTreeRow({
         "group relative flex w-full cursor-default select-none items-center gap-1.5 pr-2 type-body",
         // Selection: a primary wash plus a left rail, the same treatment the
         // plan tree and the file tree use — unmistakable in both themes without
-        // inventing a colour.
+        // inventing a color.
         row.selected ? "bg-primary/10" : "hover:bg-accent",
         focused && "ring-1 ring-inset ring-primary/40",
         drop.isOver && draggable && "bg-primary/15",

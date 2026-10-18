@@ -97,7 +97,7 @@ export function InterviewClient({
   const [interview, setInterview] = useState<DecisionInterviewRow | null>(null);
   const [interviewError, setInterviewError] = useState<string | null>(null);
   /**
-   * WHO THIS INTERVIEW IS ADDRESSED TO, in words a person recognises. Shown
+   * WHO THIS INTERVIEW IS ADDRESSED TO, in words a person recognizes. Shown
    * beside who is signed in whenever the two differ, BEFORE any answer is
    * given — 2026-09-13: answers given from the wrong account were refused by
    * the database and nobody on screen said so.

@@ -10,7 +10,7 @@
  *
  * The runner applies the query the way the service promises to (types, Source
  * kinds, origin, containers, entities, captured by, state, date, sort, text,
- * per-section cursors), so the UI is exercised against real behaviour, not a
+ * per-section cursors), so the UI is exercised against real behavior, not a
  * static list.
  */
 

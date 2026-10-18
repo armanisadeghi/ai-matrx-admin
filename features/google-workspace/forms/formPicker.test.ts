@@ -49,7 +49,7 @@ it("uses only the chosen connection's canonical Picker token and returns its ID"
   expect(pickGoogleForm).toHaveBeenCalledWith("chosen-token");
 });
 
-it("does not register anything when selection is cancelled", async () => {
+it("does not register anything when selection is canceled", async () => {
   jest.mocked(getGoogleDrivePickerToken).mockResolvedValue("chosen-token");
   jest.mocked(pickGoogleForm).mockResolvedValue(null);
 

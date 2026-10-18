@@ -2,7 +2,7 @@
 //
 // The Stripe customer portal / parcel-tracker line: every declared stage in order, the passed
 // ones checked with the moment each was reached, the current one marked in the business's own
-// colour, the rest ahead. Vertical on every width — a phone reads it top to bottom and a desktop
+// color, the rest ahead. Vertical on every width — a phone reads it top to bottom and a desktop
 // has the room. Built from `buildTimeline` (timeline.ts); this file only draws.
 
 import { Check } from "lucide-react";

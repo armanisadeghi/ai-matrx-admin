@@ -1,15 +1,15 @@
 // features/marketing/seo/topical-map/views/graph/encoding.ts
 //
 // WHAT SIZE, FILL, RING AND HUE MEAN — read off the `graph_encoding` knob, and
-// the convergence colouring that overrides fill in the second mode.
+// the convergence coloring that overrides fill in the second mode.
 //
 // 🚨 AN UNRECOGNISED ENCODING VALUE IS NEVER A BLANK LEGEND. `graph_encoding`
 // is a row in `platform.feature_knob`; an admin can put anything in it and a
 // migration can add a value this build has never heard of. A silent `??` there
-// draws a legend line the person cannot act on and a drawing whose colours mean
+// draws a legend line the person cannot act on and a drawing whose colors mean
 // nothing. So an unknown value renders a legend line that SAYS it is unknown,
 // captures for the Error Inspector, and the channel it names draws nothing —
-// exactly the grammar `ui/intentColorClasses.ts` already uses for a colour name.
+// exactly the grammar `ui/intentColorClasses.ts` already uses for a color name.
 //
 // Pure: no React, no xy-flow, no store. Tested directly.
 
@@ -94,7 +94,7 @@ const HUE_TEXT: Record<GraphHueChannel, string> = {
   // legend the person cannot use. This entry is the honest fallback for a
   // drawing that is grouped by nothing this build can name.
   grouped_facet: "Hue — which value of the grouped facet the topic belongs to.",
-  none: "Hue — no colour is applied.",
+  none: "Hue — no color is applied.",
 };
 
 /** What the drawing knows about the axis when the legend is written. */
@@ -107,20 +107,20 @@ export interface GraphHueContext {
 
 /**
  * THE HUE SENTENCE A PERSON CAN ACT ON. Not "which value of the grouped facet
- * the topic belongs to" — which names a colour system and no way to read it —
+ * the topic belongs to" — which names a color system and no way to read it —
  * but where to LOOK: the same bar is on the value's pill in the column on the
  * left.
  *
  * And when the axis is longer than the palette, the collisions are stated
- * rather than left to be discovered: six colours across 255 regions means two
- * regions share a bar, and a person who trusted the colour alone would be
- * wrong. The column is the key; the colour is the shortcut.
+ * rather than left to be discovered: six colors across 255 regions means two
+ * regions share a bar, and a person who trusted the color alone would be
+ * wrong. The column is the key; the color is the shortcut.
  */
 export function hueLineText(context: GraphHueContext | undefined): string {
   if (!context?.facetLabel) return HUE_TEXT.grouped_facet;
   const base = `Hue — the bar on a topic matches the bar on its ${context.facetLabel} value in the column on the left.`;
   if (context.valueCount > GRAPH_HUE_BAR_COUNT) {
-    return `${base} ${GRAPH_HUE_BAR_COUNT} colours repeat across ${context.valueCount} values; the column, not the colour, is the key.`;
+    return `${base} ${GRAPH_HUE_BAR_COUNT} colors repeat across ${context.valueCount} values; the column, not the color, is the key.`;
   }
   return base;
 }
@@ -154,7 +154,7 @@ function resolveChannel<T extends string>(
 /**
  * Resolve `graph_encoding` into the four channels plus the legend the person
  * reads. `mode` only changes the FILL line: in convergence, fill is taken over
- * by the page-intent colours and the legend must say so instead of describing a
+ * by the page-intent colors and the legend must say so instead of describing a
  * status tint that is no longer on the screen.
  *
  * `hueContext` is what the drawing knows about the axis right now — the facet's
@@ -173,7 +173,7 @@ export function resolveEncoding(
   const hue = resolveChannel<GraphHueChannel>("hue", encoding?.hue, HUE_VALUES, HUE_TEXT);
 
   // The hue line is rewritten — never re-classified. An UNKNOWN hue value keeps
-  // its own refusal sentence and its `known: false`; only the recognised
+  // its own refusal sentence and its `known: false`; only the recognized
   // `grouped_facet` line gains the place to look.
   const hueLine: GraphLegendLine =
     hue.line.known && hue.value === "grouped_facet"
@@ -269,7 +269,7 @@ function emptyTones(): Record<ConvergenceTone, number> {
  * Every topic's tone counts, in ONE pass over the pages.
  *
  * Per topic × per page would be 200 × 5,552 string comparisons on All Green,
- * every render, for a colour. A page names at most a handful of topics, so the
+ * every render, for a color. A page names at most a handful of topics, so the
  * work is proportional to the pages, and the drawing looks them up by slug.
  */
 export function tallyTones(rows: readonly ConvergenceRow[]): ConvergenceTally {

@@ -16,7 +16,7 @@
  * declared as text, resolves the `mandateKey` each one names (a literal, a
  * `const` in the file, an imported `const`, or `OBJ.prop` on an exported
  * object), reads each key's declared `output_kind` from the LIVE mandate
- * catalogue (`mandate.definition`), and reports every text run on a job that
+ * catalog (`mandate.definition`), and reports every text run on a job that
  * declares a shape — file:line, the kind, and THE remedy sentence the runtime
  * uses (same words, one source).
  *
@@ -34,7 +34,7 @@
  *     signal covers those when they fire)
  *   - test files and `node_modules`
  *
- * 🚨 CREDENTIAL GATE (same rule as `check:kind-types`): the catalogue is the
+ * 🚨 CREDENTIAL GATE (same rule as `check:kind-types`): the catalog is the
  * DATABASE. When the script cannot reach it (no `NEXT_PUBLIC_SUPABASE_URL` /
  * `SUPABASE_SECRET_KEY`, or the read fails) it FAILS AS UNMEASURED — exit 2 —
  * never a warning that reads as a pass.
@@ -308,11 +308,11 @@ function resolveSiteMandateKey(site: TextRunSite): Resolved | null {
   return { ok: false, reason: "no mandateKey (or agentId) in the run options" };
 }
 
-// ── catalogue read ──────────────────────────────────────────────────────────
+// ── catalog read ──────────────────────────────────────────────────────────
 
 function unmeasured(reason: string): never {
   console.error(
-    `\n  ✗ UNMEASURED — check:flattened-shapes could not read the mandate catalogue.\n    ${reason}\n    This is NOT a pass. Fix the credential/read and rerun.\n`,
+    `\n  ✗ UNMEASURED — check:flattened-shapes could not read the mandate catalog.\n    ${reason}\n    This is NOT a pass. Fix the credential/read and rerun.\n`,
   );
   exitAfterDrain(2);
 }
@@ -345,7 +345,7 @@ async function fetchCatalogue(): Promise<Map<string, string | null>> {
     }
     if ((data?.length ?? 0) < 1000) break;
   }
-  if (out.size === 0) unmeasured("the live catalogue returned zero mandates.");
+  if (out.size === 0) unmeasured("the live catalog returned zero mandates.");
   return out;
 }
 
@@ -402,7 +402,7 @@ async function main(): Promise<void> {
       continue;
     }
     if (!catalogue.has(resolved.key)) {
-      unknown.push(`${rel}  ${site.how}  mandateKey "${resolved.key}" is NOT in the live catalogue`);
+      unknown.push(`${rel}  ${site.how}  mandateKey "${resolved.key}" is NOT in the live catalog`);
       continue;
     }
     const outputKind = catalogue.get(resolved.key) ?? null;
@@ -439,7 +439,7 @@ async function main(): Promise<void> {
     console.log("");
   }
   if (unknown.length) {
-    console.log("  ⚠ mandateKey NOT in the live catalogue (the run cannot resolve — a different defect, fix it too):");
+    console.log("  ⚠ mandateKey NOT in the live catalog (the run cannot resolve — a different defect, fix it too):");
     for (const p of unknown) console.log(`    ⚠ ${p}`);
     console.log("");
   }

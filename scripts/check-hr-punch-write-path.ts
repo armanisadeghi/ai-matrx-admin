@@ -111,7 +111,7 @@ const SELF_TEST = process.argv.includes("--self-test");
  * and passed, the corpus arm could not be measured at all, and the run went
  * red for a reason NO code change could fix. That is the permanently-red job
  * `secrets-preflight` exists to abolish: a gate that cannot reach its
- * dependency reports SKIPPED, grey, with the missing secret named — never red,
+ * dependency reports SKIPPED, gray, with the missing secret named — never red,
  * and never green.
  *
  * `--arm live` / `--arm corpus` let each arm be its OWN job with its OWN

@@ -102,7 +102,7 @@ export function AppletHeader({
     },
   });
   // Publication on the audience model (Draft → In use → on the web): taking it off the web leaves it in
-  // use for her organization; only "Stop using" returns it to a draft. Each press is labelled and names
+  // use for her organization; only "Stop using" returns it to a draft. Each press is labeled and names
   // its consequence before it acts (audit M1; `appletHeaderTransitions`).
   for (const transition of appletHeaderTransitions(state, { name: appName, slug: app?.slug })) {
     actions.push({

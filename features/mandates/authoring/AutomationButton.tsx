@@ -13,7 +13,7 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 // with the explanation in a TOOLTIP and a toast fired on click. The button was
 // indistinguishable from a working one until he pressed it, and what came back
 // was "…which does not exist". `constants.ts` had described the intended
-// behaviour correctly the whole time ("renders honestly disabled naming the
+// behavior correctly the whole time ("renders honestly disabled naming the
 // missing key"); the component did something else.
 //
 // So: ABSENT OR HONEST. When the key does not resolve the control is visibly

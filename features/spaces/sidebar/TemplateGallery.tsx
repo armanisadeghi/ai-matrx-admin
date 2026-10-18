@@ -6,7 +6,7 @@
 // label). Right: the cards of the picked category, or — once a card is picked — the template's real pages
 // drawn read-only by the editor over its tables in memory (`templatePreview`, nothing written), with its
 // page list to walk them, and "Use template" (SpacesProvider.packs.use: tables into the active
-// organization, the pages made there, the root opened). The library is the ONE template catalogue
+// organization, the pages made there, the root opened). The library is the ONE template catalog
 // (custom.space_templates over custom.template; features/spaces/templates/use-pack.ts).
 
 import {
@@ -93,7 +93,7 @@ export function TemplateGallery({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, activeOrg]);
 
-  // The person's own labelled pages, each read once (title, icon, blocks).
+  // The person's own labeled pages, each read once (title, icon, blocks).
   const ids = templates.ids ?? [];
   useEffect(() => {
     let live = true;
@@ -576,7 +576,7 @@ function PackPreview({
   );
 }
 
-/** One of the person's own labelled pages: its text outline, and Use template = copy it. */
+/** One of the person's own labeled pages: its text outline, and Use template = copy it. */
 function OwnPreview({
   doc,
   onBack,

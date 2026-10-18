@@ -6,7 +6,7 @@
  * Since `@ai-matrx/design-system` made every desktop `Dialog` a non-blocking
  * WINDOW (no overlay; an outside click never closes it; Escape closes it only
  * while focus is inside it), every peek built on `Dialog` inherited window
- * behaviour: it stayed open when the person clicked back into the page and
+ * behavior: it stayed open when the person clicked back into the page and
  * ignored Escape unless they had clicked into it first — a quick look that had
  * to be closed with its X (Arman, 2026-09-26).
  *
@@ -48,7 +48,7 @@ export function useTransientPeek(open: boolean, onClose: () => void): void {
     };
     // WINDOW + CAPTURE: runs before Radix's own document-level Escape
     // listener, whose window mode `preventDefault`s the event when focus is
-    // outside the dialog — a bubble listener would only ever see it cancelled.
+    // outside the dialog — a bubble listener would only ever see it canceled.
     window.addEventListener("keydown", onKeyDown, true);
     return () => {
       window.removeEventListener("keydown", onKeyDown, true);

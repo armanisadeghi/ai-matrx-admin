@@ -78,7 +78,7 @@ const BEATS: Beat[] = [
   {
     n: 5,
     title: "So we make it exist.",
-    body: "We sit with your expert. We ask the questions that surface what they did not know they knew. We watch them work. We interview their boss and the junior they keep correcting. We mine their documents, their sheets, their tickets, their email. We analyse their finished work against a baseline of their peers, and we extract the difference.",
+    body: "We sit with your expert. We ask the questions that surface what they did not know they knew. We watch them work. We interview their boss and the junior they keep correcting. We mine their documents, their sheets, their tickets, their email. We analyze their finished work against a baseline of their peers, and we extract the difference.",
   },
   {
     n: 6,

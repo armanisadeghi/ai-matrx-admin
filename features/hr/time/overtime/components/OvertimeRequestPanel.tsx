@@ -21,7 +21,7 @@
  *
  * 🚨 NO ACTION BY THE DEADLINE ESCALATES. It never auto-approves and it never auto-denies.
  *
- * NO CLIENT COMPUTES HOURS: every figure is the server's, and the E-55 projection is labelled one.
+ * NO CLIENT COMPUTES HOURS: every figure is the server's, and the E-55 projection is labeled one.
  */
 
 import { useState } from "react";
@@ -53,7 +53,7 @@ export type OvertimeViewer = "employee" | "manager";
 export interface OvertimeRequestPanelProps {
   request: OvertimeRequestRow;
   viewer: OvertimeViewer;
-  /** The live projection for this person's week. Always prospective, always labelled. */
+  /** The live projection for this person's week. Always prospective, always labeled. */
   evaluation: OvertimeEvaluation | null;
   /** The open workflow step this viewer may answer, when there is one. */
   decidableStepId: string | null;

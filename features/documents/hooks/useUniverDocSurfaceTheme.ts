@@ -11,7 +11,7 @@
  * argument, and the decision about what the page should look like in dark
  * mode, live in `../univer-doc-surface-theme.ts`.
  *
- * So the host states the colours. Every Matrx surface that mounts a Univer
+ * So the host states the colors. Every Matrx surface that mounts a Univer
  * document goes through `DocumentEditor`, and `DocumentEditor` goes through
  * this hook — the `/documents/[id]` route and the canvas pane's
  * `DocumentCanvasBody` therefore inherit it without knowing it exists.
@@ -40,7 +40,7 @@ interface FillColorSetter {
     marginStrokeColor?: string,
   ): void;
   /**
-   * Present on the wrapper this module installs. Holds the colours the host
+   * Present on the wrapper this module installs. Holds the colors the host
    * currently wants, so a theme flip updates the wrapper instead of stacking a
    * second one on top of it.
    */
@@ -69,7 +69,7 @@ const DOCUMENT_FLAVOR_MODERN = 2;
 /**
  * A PAGELESS (modern-flavour) document has no sheet: Univer paints the whole
  * workspace with the "background" fill and draws the text straight onto it.
- * So for that flavour the workspace IS the paper — give it the page colour,
+ * So for that flavour the workspace IS the paper — give it the page color,
  * or the black ink lands on the dark desk and the document is unreadable in
  * dark mode (2026-10-03, measured on a modern document in the clone).
  */
@@ -90,7 +90,7 @@ function flavorOf(background: FillColorTarget): number | undefined {
   return styleOf(background)?.documentFlavor;
 }
 
-/** A page colour the person chose in Page setup (a light hex), else undefined. */
+/** A page color the person chose in Page setup (a light hex), else undefined. */
 function pageColorOf(background: FillColorTarget): string | undefined {
   const c = styleOf(background)?.[PAGE_COLOR_KEY];
   return typeof c === "string" && /^#[0-9a-f]{6}$/i.test(c) ? c : undefined;
@@ -198,10 +198,10 @@ export interface UniverDocRenderLike {
  * `setFillColors(undefined, undefined, undefined, undefined)`, which resets all
  * four fills to Univer's own light constants. It runs on EVERY
  * `RichTextEditingMutation` — that is, on every keystroke — and again whenever
- * the skeleton is rebuilt. A host that states its colours once watches the page
+ * the skeleton is rebuilt. A host that states its colors once watches the page
  * turn white the moment the Expert starts typing.
  *
- * So the host's colours become the DEFAULTS: the setter is wrapped once, and
+ * So the host's colors become the DEFAULTS: the setter is wrapped once, and
  * every slot Univer passes as `undefined` is filled from the host's palette
  * instead of from Univer's light constants. The wrapper re-asserts the canvas
  * element's background at the same time, because the same method resets it.
@@ -299,7 +299,7 @@ export interface RenderManagerLike {
   /**
    * Univer 1.0's name (0.x called it `getRenderById`; after the 1.0 upgrade the
    * old optional call returned nothing, every document warned "could not
-   * reach: render", and no host colour was ever applied — 2026-10-03).
+   * reach: render", and no host color was ever applied — 2026-10-03).
    */
   getRenderUnitById?: (id: string) => UniverDocRenderLike | null | undefined;
   /** Emits every render the instance creates, for as long as it lives. */

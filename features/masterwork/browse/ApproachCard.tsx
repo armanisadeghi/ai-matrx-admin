@@ -228,7 +228,7 @@ export function ApproachCard({
 
   const body = (
     <>
-      {/* `items-center` centred the icon against the TITLE BLOCK, so a card
+      {/* `items-center` centerd the icon against the TITLE BLOCK, so a card
           whose title wrapped to two lines pushed its icon ~10px lower than its
           neighbours and the row of icons came out ragged
           (jobs-bar-2026-09-16, item 5). Icons align to the top; the title gets
@@ -275,7 +275,7 @@ export function ApproachCard({
         </p>
       ) : null}
       {/* A CARD THAT REFUSES TO BE PICKED SAYS SO, AND SAYS WHERE TO GO.
-          On the guided start the Vision Interview rendered dashed, greyed and
+          On the guided start the Vision Interview rendered dashed, grayed and
           unclickable with NOT ONE WORD about why — while the very same card
           IS clickable on the catalog one route away (jobs-bar-2026-09-16,
           item 7). A first-timer clicks it twice and concludes the product is

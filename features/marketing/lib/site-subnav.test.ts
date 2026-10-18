@@ -65,7 +65,7 @@ describe("what the site header renders", () => {
   });
 
   it("shows nothing for a section that has no sub-views", () => {
-    // Single-surface sections correctly leave the header centre empty.
+    // Single-surface sections correctly leave the header center empty.
     // correct — the page's own title says where you are.
     expect(seoNavFor(`${S}/audit`).modes).toEqual([]);
     expect(navFor(SITE).modes).toEqual([]);

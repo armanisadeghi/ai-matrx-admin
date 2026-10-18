@@ -7,7 +7,7 @@
  * the screen renders a blank string where the level should be. That is a law-4
  * violation (nothing fails silently) and it is invisible to every other test.
  *
- * So this suite does not test behaviour for the levels it happens to think of.
+ * So this suite does not test behavior for the levels it happens to think of.
  * It enumerates the canonical ladder from ONE place — `PERMISSION_LEVELS` —
  * and asserts every derived structure covers it, including the ladder sites in
  * other files, found by reading their source. Delete a level from
@@ -193,7 +193,7 @@ describe("an unknown level is announced, never swallowed", () => {
     expect(errors).toHaveLength(1);
   });
 
-  it("recognises every ladder level and nothing else", () => {
+  it("recognizes every ladder level and nothing else", () => {
     for (const level of PERMISSION_LEVELS) {
       expect(isPermissionLevel(level)).toBe(true);
     }

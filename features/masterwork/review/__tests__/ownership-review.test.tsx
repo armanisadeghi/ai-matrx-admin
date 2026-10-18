@@ -124,7 +124,7 @@ function buttonLabelled(text: string): HTMLButtonElement {
   ).find((b) => (b.textContent ?? "").trim() === text);
   if (!match) {
     throw new Error(
-      `no button labelled "${text}" — found: ${Array.from(
+      `no button labeled "${text}" — found: ${Array.from(
         container.querySelectorAll("button"),
       )
         .map((b) => JSON.stringify((b.textContent ?? "").trim()))

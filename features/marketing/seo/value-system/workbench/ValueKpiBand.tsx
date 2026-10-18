@@ -309,7 +309,7 @@ export function ValueKpiBand({
 
       <Tile
         label="Your rulings"
-        hint="Keywords you personally ruled. An expert ruling beats every computed signal, and it is the training material the AI learns your judgement from — this is the one number arithmetic can never move for you."
+        hint="Keywords you personally ruled. An expert ruling beats every computed signal, and it is the training material the AI learns your judgment from — this is the one number arithmetic can never move for you."
         value={formatCount(rulings?.total ?? 0)}
         valueTone={
           (rulings?.total ?? 0) > 0 ? "text-primary" : "text-muted-foreground"

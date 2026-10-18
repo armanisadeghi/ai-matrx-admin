@@ -1,6 +1,6 @@
 /**
  * Shared display tokens for the Hindsight surface. Dark-mode pairs only —
- * every colour here is declared for both themes.
+ * every color here is declared for both themes.
  */
 import { Globe, Network, StepForward, Webhook, Workflow, Wrench } from "lucide-react";
 import { formatDurationSeconds, type CostUnit } from "@ai-matrx/kit/format";

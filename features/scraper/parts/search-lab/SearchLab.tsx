@@ -4,7 +4,7 @@
  * The Search Lab — `/scraper/search` as a search testing workbench.
  *
  * Google's shape, borrowed where it helps: before a search, a 48px pill at
- * the calm centre with the result-type tabs and the engine switch under it;
+ * the calm center with the result-type tabs and the engine switch under it;
  * after one, the pill at the top, left-aligned with the results, the engine
  * switch and Options beside it and the result types under it. One result
  * column per engine, each with an engine line (hits, elapsed time, the
@@ -351,8 +351,8 @@ export function SearchLabBody({
   );
 
   if (home) {
-    // The start screen — Google's calm centre: the box, and the quiet
-    // controls under it. The box sits at a fixed height (not centred), so
+    // The start screen — Google's calm center: the box, and the quiet
+    // controls under it. The box sits at a fixed height (not centerd), so
     // opening Options grows the page downward and never moves the box.
     return (
       <div className="flex-1 overflow-auto px-4">

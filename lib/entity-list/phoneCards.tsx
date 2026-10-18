@@ -40,7 +40,7 @@ import { cellIsEmpty } from "./columnWidths";
  * Where a column belongs on the phone card.
  *
  * - `title` — the identifying line. Exactly one column wins; a second
- *   declaration is ignored in favour of the first, in declaration order.
+ *   declaration is ignored in favor of the first, in declaration order.
  * - `primary` — the one or two fields that decide what this row IS (status,
  *   owner, stage). Rendered as label/value pairs directly under the title.
  * - `meta` — a quiet trailing line (when it changed, how many of something).
@@ -75,7 +75,7 @@ const DEFAULT_PRIMARY_COUNT = 2;
 
 /**
  * A date column's filter options are the shared relative buckets, so the shell
- * can recognise "when" columns without a surface declaring anything. Compared
+ * can recognize "when" columns without a surface declaring anything. Compared
  * by VALUE, not by reference: a surface that spreads `[...DATE_FILTER_OPTIONS]`
  * or appends its own bucket is still a date column, and a referential check
  * would quietly demote it to a primary field and push the status column off the
@@ -104,7 +104,7 @@ function isDateColumn<TRow>(spec: EntityColumnSpec<TRow>): boolean {
  *   primary  the next two visible columns after the title
  *   rest     everything else, behind one tap
  *
- * `hiddenColumns` is honoured because a column the user turned OFF must not
+ * `hiddenColumns` is honored because a column the user turned OFF must not
  * reappear on a phone: the column picker is one preference across both widths.
  */
 export function resolvePhoneCardLayout<TRow>(
@@ -192,7 +192,7 @@ const FIELD_GRID = "grid grid-cols-[minmax(5.5rem,auto)_minmax(0,1fr)] items-bas
  * ONE phone card. Rendered by MatrxDataTable below `sm` in place of the row.
  *
  * Every value goes through `controls.renderCell`, so a cell keeps the exact
- * link, formatting and inline-edit behaviour it has in the grid — the card is a
+ * link, formatting and inline-edit behavior it has in the grid — the card is a
  * layout, never a second renderer (the shape law's rule, applied to a row).
  * `controls.actions` carries the table's own copy controls plus the surface's
  * kebab, so the card forks neither.
@@ -248,7 +248,7 @@ export function EntityPhoneCard<TRow>({
           into bulk actions. `controls.selectable` is false for every surface
           that passed no `selection` to the table, and false for a row the
           surface refuses to act on in bulk, so an unselectable row renders NO
-          control rather than a greyed one.
+          control rather than a grayed one.
 
           It carries `.matrx-tap-area` ON THE LABEL, which is the one documented
           way to give a control whose SIZE IS THE CONTROL a 44px hit area (see
@@ -369,7 +369,7 @@ export function EntityPhoneCard<TRow>({
 /**
  * THE TWO-LINE PHONE CARD (`phoneCardDensity: "line"`; DATA-HOME-3F, 2026-10-01).
  *
- * The labelled card is right for a record whose fields decide what it is; it is
+ * The labeled card is right for a record whose fields decide what it is; it is
  * wrong for a list a person scans for a NAME (the data home measured ~215 px a
  * card, three per screen, with an empty line and "2 more fields" on each).
  * Linear's mobile list is the champion: line one is the title with the star

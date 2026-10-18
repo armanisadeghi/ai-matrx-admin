@@ -7,7 +7,7 @@
  * tool with tabs for overview, registry standing, parameters (the input JSON
  * schema), output schema, annotations, and test samples.
  *
- * What an agent bound here may safely do: read the tool catalogue and the open
+ * What an agent bound here may safely do: read the tool catalog and the open
  * tool's definition, critique descriptions and parameter schemas, find
  * undocumented or duplicated tools, and audit tiering and gating. It may also
  * APPLY three authored-metadata edits to the open tool — description,
@@ -29,7 +29,7 @@
  * `has_oauth_client_id`), never a value.
  *
  * Emitters (real, wired):
- *   - Catalogue → `features/tool-call-visualization/admin/McpToolsManager.tsx`
+ *   - Catalog → `features/tool-call-visualization/admin/McpToolsManager.tsx`
  *   - Open tool → `features/tool-call-visualization/admin/mcp-tools/ToolViewPage.tsx`
  *
  * Deliberately NOT declared (nothing emits them): executor bindings
@@ -63,7 +63,7 @@ export const ADMIN_TOOL_REGISTRY_SURFACE_NAME = "matrx-admin/tool-registry";
 const groups: SurfaceValueGroup[] = [
   {
     key: "catalogue",
-    label: "Tool catalogue",
+    label: "Tool catalog",
     sortOrder: 100,
     description:
       "The set of registered tool definitions the admin is browsing, and the counts attached to them.",
@@ -73,7 +73,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Browse state",
     sortOrder: 200,
     description:
-      "The admin's current cut of the catalogue: search, category / source / status / tag filters, and sort.",
+      "The admin's current cut of the catalog: search, category / source / status / tag filters, and sort.",
   },
   {
     key: "open_tool",
@@ -99,7 +99,7 @@ const groups: SurfaceValueGroup[] = [
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
-  // ── Catalogue ─────────────────────────────────────────────────────────
+  // ── Catalog ─────────────────────────────────────────────────────────
   {
     name: "registry_section",
     label: "Registry section",
@@ -115,7 +115,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_ids",
     label: "Tool IDs",
     description:
-      "UUIDs of every active `tool.definition` row loaded into the catalogue. Absent on the tool-detail route, which loads only one tool.",
+      "UUIDs of every active `tool.definition` row loaded into the catalog. Absent on the tool-detail route, which loads only one tool.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 8000,
@@ -126,7 +126,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_count",
     label: "Tool count",
     description:
-      "Number of tools loaded into the catalogue before filters. Absent on the tool-detail route.",
+      "Number of tools loaded into the catalog before filters. Absent on the tool-detail route.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 4,
@@ -135,7 +135,7 @@ const surfaceSpecific: SurfaceValue[] = [
   },
   {
     name: "tools_summary",
-    label: "Catalogue summary",
+    label: "Catalog summary",
     description:
       "One compact record per loaded tool: id, name, description, category, tool_group, tier, source_kind, version, is_active, admin_only, tag list, and parameter count. Large — bindable, not auto-context. Absent on the tool-detail route.",
     valueType: "array",
@@ -160,7 +160,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_categories",
     label: "Tool categories",
     description:
-      "Distinct category values present across the loaded catalogue — the vocabulary an agent should stay inside when proposing a category. Absent on the tool-detail route.",
+      "Distinct category values present across the loaded catalog — the vocabulary an agent should stay inside when proposing a category. Absent on the tool-detail route.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 300,
@@ -173,7 +173,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "search_query",
     label: "Search",
     description:
-      "The admin's free-text search over the catalogue. Empty when untouched; absent on the tool-detail route.",
+      "The admin's free-text search over the catalog. Empty when untouched; absent on the tool-detail route.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 20,
@@ -184,7 +184,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "category_filter",
     label: "Category filter",
     description:
-      "The category the catalogue is filtered to. Absent when no category filter is applied or on the tool-detail route.",
+      "The category the catalog is filtered to. Absent when no category filter is applied or on the tool-detail route.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 20,
@@ -195,7 +195,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "source_kind_filter",
     label: "Source filter",
     description:
-      "The `source_kind` the catalogue is filtered to (how the tool entered the registry). Absent when unfiltered or on the tool-detail route.",
+      "The `source_kind` the catalog is filtered to (how the tool entered the registry). Absent when unfiltered or on the tool-detail route.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 16,
@@ -206,7 +206,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "status_filter",
     label: "Status filter",
     description:
-      '"all", "active", or "inactive" — the activation cut of the catalogue. Absent on the tool-detail route.',
+      '"all", "active", or "inactive" — the activation cut of the catalog. Absent on the tool-detail route.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 8,
@@ -217,7 +217,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tag_filter",
     label: "Tag filter",
     description:
-      "The single tag the catalogue is filtered to. Absent when unfiltered or on the tool-detail route.",
+      "The single tag the catalog is filtered to. Absent when unfiltered or on the tool-detail route.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 16,
@@ -228,7 +228,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "sort_state",
     label: "Sort",
     description:
-      "Catalogue sort key and direction. Absent on the tool-detail route.",
+      "Catalog sort key and direction. Absent on the tool-detail route.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 40,
@@ -241,7 +241,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_id",
     label: "Open tool ID",
     description:
-      "UUID of the `tool.definition` row the admin has open. Absent on the catalogue list.",
+      "UUID of the `tool.definition` row the admin has open. Absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,
@@ -252,7 +252,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_name",
     label: "Tool name",
     description:
-      "The canonical tool name — the key agents call it by. `tool.definition` has no slug column; the name IS the identifier. Absent on the catalogue list.",
+      "The canonical tool name — the key agents call it by. `tool.definition` has no slug column; the name IS the identifier. Absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 30,
@@ -263,7 +263,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_description",
     label: "Tool description",
     description:
-      "The description an LLM reads when deciding whether to call this tool — the highest-leverage editable field on the surface. Empty when unset; absent on the catalogue list.",
+      "The description an LLM reads when deciding whether to call this tool — the highest-leverage editable field on the surface. Empty when unset; absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 400,
@@ -274,7 +274,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_category",
     label: "Category",
     description:
-      "Category the open tool is filed under. Empty when uncategorised; absent on the catalogue list.",
+      "Category the open tool is filed under. Empty when uncategorised; absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 20,
@@ -285,7 +285,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_group",
     label: "Tool group",
     description:
-      "The group the open tool belongs to (a coarser bundle than category). Empty when unset; absent on the catalogue list.",
+      "The group the open tool belongs to (a coarser bundle than category). Empty when unset; absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 20,
@@ -296,7 +296,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_tags",
     label: "Tags",
     description:
-      "Tag strings on the open tool. Absent on the catalogue list or when the tool has no tags.",
+      "Tag strings on the open tool. Absent on the catalog list or when the tool has no tags.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 60,
@@ -307,7 +307,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_summary",
     label: "Tool summary",
     description:
-      "Composite of the open tool's identity and standing (id, name, description, category, group, tier, source_kind, version, semver, is_active, admin_only, tags) as one object. Absent on the catalogue list.",
+      "Composite of the open tool's identity and standing (id, name, description, category, group, tier, source_kind, version, semver, is_active, admin_only, tags) as one object. Absent on the catalog list.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 800,
@@ -320,7 +320,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_parameters_schema",
     label: "Parameters schema",
     description:
-      "The open tool's input JSON schema (`tool.definition.parameters`) — the contract callers must satisfy. Verbose: bindable, not auto-context. Absent on the catalogue list.",
+      "The open tool's input JSON schema (`tool.definition.parameters`) — the contract callers must satisfy. Verbose: bindable, not auto-context. Absent on the catalog list.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 3000,
@@ -332,7 +332,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_parameter_names",
     label: "Parameter names",
     description:
-      "Top-level property names of the open tool's input schema — the cheap way to reason about its signature without pulling the whole schema. Absent on the catalogue list or when the schema has no properties.",
+      "Top-level property names of the open tool's input schema — the cheap way to reason about its signature without pulling the whole schema. Absent on the catalog list or when the schema has no properties.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 150,
@@ -343,7 +343,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_output_schema",
     label: "Output schema",
     description:
-      "The open tool's declared output JSON schema, when it has one. Bindable, not auto-context. Absent on the catalogue list or when the tool declares no output schema.",
+      "The open tool's declared output JSON schema, when it has one. Bindable, not auto-context. Absent on the catalog list or when the tool declares no output schema.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 2000,
@@ -355,7 +355,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_has_output_schema",
     label: "Has output schema",
     description:
-      "Whether the open tool declares an output schema at all — an audit signal that costs nothing to carry. Absent on the catalogue list.",
+      "Whether the open tool declares an output schema at all — an audit signal that costs nothing to carry. Absent on the catalog list.",
     valueType: "boolean",
     alwaysAvailable: false,
     typicalCharCount: 5,
@@ -366,7 +366,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_annotations",
     label: "Annotations",
     description:
-      "MCP-style annotations on the open tool (read-only / destructive / idempotent hints). Bindable, not auto-context. Absent on the catalogue list or when none are set.",
+      "MCP-style annotations on the open tool (read-only / destructive / idempotent hints). Bindable, not auto-context. Absent on the catalog list or when none are set.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 600,
@@ -380,7 +380,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_source_kind",
     label: "Source kind",
     description:
-      "How the open tool entered the registry (server-native, MCP-discovered, client-side, …). Absent on the catalogue list.",
+      "How the open tool entered the registry (server-native, MCP-discovered, client-side, …). Absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 16,
@@ -391,7 +391,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_managed_by_server_id",
     label: "Owning MCP server ID",
     description:
-      "UUID of the `tool.mcp_server` row that owns the open tool, when it is MCP-managed. Identifier only — no endpoint URL, auth strategy, or OAuth material is emitted. Absent on the catalogue list or for non-MCP tools.",
+      "UUID of the `tool.mcp_server` row that owns the open tool, when it is MCP-managed. Identifier only — no endpoint URL, auth strategy, or OAuth material is emitted. Absent on the catalog list or for non-MCP tools.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,
@@ -402,7 +402,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_tier",
     label: "Tier",
     description:
-      "Registry tier of the open tool (its exposure/trust band). Absent on the catalogue list or when unset.",
+      "Registry tier of the open tool (its exposure/trust band). Absent on the catalog list or when unset.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 12,
@@ -413,7 +413,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_version",
     label: "Version",
     description:
-      "Integer version counter of the open tool's definition. Absent on the catalogue list.",
+      "Integer version counter of the open tool's definition. Absent on the catalog list.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 3,
@@ -424,7 +424,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_semver",
     label: "Semver",
     description:
-      "Semantic version string of the open tool, when it carries one. Absent on the catalogue list or when unset.",
+      "Semantic version string of the open tool, when it carries one. Absent on the catalog list or when unset.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 10,
@@ -435,7 +435,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_is_active",
     label: "Is active",
     description:
-      "Whether the open tool is active. An inactive tool stays in the registry but is not dispatchable. Absent on the catalogue list.",
+      "Whether the open tool is active. An inactive tool stays in the registry but is not dispatchable. Absent on the catalog list.",
     valueType: "boolean",
     alwaysAvailable: false,
     typicalCharCount: 5,
@@ -446,7 +446,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_admin_only",
     label: "Admin only",
     description:
-      "Whether the open tool is restricted to admins. Absent on the catalogue list.",
+      "Whether the open tool is restricted to admins. Absent on the catalog list.",
     valueType: "boolean",
     alwaysAvailable: false,
     typicalCharCount: 5,
@@ -457,7 +457,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_gating",
     label: "Gating",
     description:
-      "The open tool's gating configuration — the conditions under which it is offered to an agent. Absent on the catalogue list or when ungated.",
+      "The open tool's gating configuration — the conditions under which it is offered to an agent. Absent on the catalog list or when ungated.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 300,
@@ -468,7 +468,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_exemptions",
     label: "Exemptions & limits",
     description:
-      "Operational escape hatches on the open tool as one object: dedupe_exempt, validation_exempt, and max_client_wait_seconds. Absent on the catalogue list.",
+      "Operational escape hatches on the open tool as one object: dedupe_exempt, validation_exempt, and max_client_wait_seconds. Absent on the catalog list.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 90,
@@ -479,7 +479,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_visibility",
     label: "Published to the web",
     description:
-      '"published_to_web" or "not_published" — the open tool row\'s web state. Absent on the catalogue list.',
+      '"published_to_web" or "not_published" — the open tool row\'s web state. Absent on the catalog list.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 10,
@@ -490,7 +490,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "tool_updated_at",
     label: "Last updated",
     description:
-      "ISO timestamp of the last write to the open tool's definition row. Absent on the catalogue list.",
+      "ISO timestamp of the last write to the open tool's definition row. Absent on the catalog list.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 25,
@@ -508,7 +508,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * (description, category, tags) and nothing else.
  *
  * PER-MOUNT: only `ToolViewPage` (the single open tool) registers handlers.
- * `McpToolsManager` mounts this same surface for the catalogue and registers
+ * `McpToolsManager` mounts this same surface for the catalog and registers
  * NONE, so `listAgentWritableTargets()` offers nothing on the list route. That
  * is a decision, not an oversight:
  *   • The catalogue's only local state is BROWSE state — search, category /
@@ -521,7 +521,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *     rows — neither is something a single in-place confirm can make legible.
  *   • The detail page is where the authored metadata is actually read and
  *     reviewed, and it already owns the canonical write door, so wiring the
- *     catalogue would be a parallel write path around it.
+ *     catalog would be a parallel write path around it.
  *
  * MODE: every target is `mode: "entity"` + `applyPolicy: "ask"`. `draft` is the
  * preferred mode elsewhere and is genuinely unavailable here — the detail page
@@ -558,7 +558,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *     different MCP server is a capability change wearing a metadata costume.
  *   • `tool_group` — a filing label like `category` and otherwise a fair
  *     candidate, but NO human editor exposes it (it is absent from both
- *     `ToolCreatePage` and `ToolEditPage`; the catalogue only renders it as a
+ *     `ToolCreatePage` and `ToolEditPage`; the catalog only renders it as a
  *     column). An entity write to a field the admin cannot then correct in the
  *     UI is a one-way door. If the editor ever gains the field, adding the
  *     target here is a few lines.
@@ -583,7 +583,7 @@ const writeTargets: SurfaceWriteTarget[] = [
   {
     name: "tool_category",
     label: "Category",
-    description: `Replaces the category the open tool is filed under — the short label the catalogue groups and filters by (e.g. "web", "data", "core"). A single-line free-text string, max ${TOOL_CATEGORY_MAX_CHARS} characters, no newlines or tabs; the empty string clears the category back to none. There is no fixed vocabulary, so reuse a category the registry already uses instead of inventing a near-duplicate — the catalogue view of this same surface publishes the live list as \`tool_categories\`. PERSISTS IMMEDIATELY on apply, through the same admin tool API the human editor saves to.`,
+    description: `Replaces the category the open tool is filed under — the short label the catalog groups and filters by (e.g. "web", "data", "core"). A single-line free-text string, max ${TOOL_CATEGORY_MAX_CHARS} characters, no newlines or tabs; the empty string clears the category back to none. There is no fixed vocabulary, so reuse a category the registry already uses instead of inventing a near-duplicate — the catalog view of this same surface publishes the live list as \`tool_categories\`. PERSISTS IMMEDIATELY on apply, through the same admin tool API the human editor saves to.`,
     valueType: "string",
     updatesValue: "tool_category",
     mode: "entity",
@@ -613,7 +613,7 @@ export const adminToolRegistryManifest: SurfaceManifest = {
     "Tool, bundle, and surface admin pages",
   readiness: "partial",
   readinessNote:
-    "Catalogue and open-tool emitters are wired and real. Executor bindings (tool.executor + tool.binding) and per-surface tool defaults (tool.surface_defaults) are loaded inside the detail page's Registry tab and never reach the emitter, so they are deliberately undeclared; lifting that state to the emitter is the remaining work. The mcp-servers / bundles / executor-surfaces sibling routes have no emitter.",
+    "Catalog and open-tool emitters are wired and real. Executor bindings (tool.executor + tool.binding) and per-surface tool defaults (tool.surface_defaults) are loaded inside the detail page's Registry tab and never reach the emitter, so they are deliberately undeclared; lifting that state to the emitter is the remaining work. The mcp-servers / bundles / executor-surfaces sibling routes have no emitter.",
   label: "Tool Registry",
   urlPattern: "/administration/agents/mcp-tools",
   intro: `<surface_intro>
@@ -621,9 +621,9 @@ This is an ADMIN surface: the super-admin console for the platform tool registry
 
 The admin browses every registered tool definition (schema tool, table definition) and opens one to inspect its description, input parameter schema, output schema, annotations, registry standing, and test samples.
 
-How to read the values: registry_section tells you where you are — "catalogue" (the list) or "tool_detail" (one tool open). On the catalogue, tools_summary and the filter values apply and every tool_* detail value is absent; on the detail route the reverse. The tool's NAME is its identifier — there is no slug column. tool_is_active is the dispatchability signal; an inactive tool still exists in the registry.
+How to read the values: registry_section tells you where you are — "catalogue" (the list) or "tool_detail" (one tool open). On the catalog, tools_summary and the filter values apply and every tool_* detail value is absent; on the detail route the reverse. The tool's NAME is its identifier — there is no slug column. tool_is_active is the dispatchability signal; an inactive tool still exists in the registry.
 
-What you may safely do: read the catalogue and the open tool's definition, sharpen tool descriptions and parameter schemas (the description is what an LLM reads when choosing a tool), audit gating and tiering, and find undocumented or duplicated entries. You never invoke a tool from here.
+What you may safely do: read the catalog and the open tool's definition, sharpen tool descriptions and parameter schemas (the description is what an LLM reads when choosing a tool), audit gating and tiering, and find undocumented or duplicated entries. You never invoke a tool from here.
 
 You can also WRITE, but only on the tool-detail route and only to the authored metadata: tool_description, tool_category, and tool_tags. Those three persist to the registry the moment the admin confirms, so read the current value first — description and tags are FULL replacements, not merges. Everything that decides what a tool may REACH or who may reach it — is_active, admin_only, gating, exemptions, web publishing, tier — plus the tool's name, its parameter and output schemas, its annotations, its version, and its MCP provenance are human-only. Propose those in your answer; do not try to apply them.
 
@@ -637,7 +637,7 @@ No credentials are present in this scope. MCP server endpoints, auth strategies,
   writeTargets,
 };
 
-/** Compact catalogue row emitted by the admin tool list. */
+/** Compact catalog row emitted by the admin tool list. */
 export interface AdminToolSummaryEntry {
   id: string;
   name: string;

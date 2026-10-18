@@ -43,7 +43,7 @@ export function NextStepButton({ step, started, onPick }: { step: NextStep; star
   );
 }
 
-/** The next steps of an answer. A step already pressed stays in place, greyed, so the page reads as a trail. */
+/** The next steps of an answer. A step already pressed stays in place, grayed, so the page reads as a trail. */
 export function NextSteps({ steps, started, onPick }: { steps: NextStep[]; started: ReadonlySet<string>; onPick: (step: NextStep) => void }) {
   if (steps.length === 0) return null;
   return (

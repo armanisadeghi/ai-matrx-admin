@@ -195,8 +195,8 @@ const surfaceSpecific: SurfaceValue[] = [
  * to this target arrives with the dialog closed. A handler that refused when
  * the dialog was shut would refuse always.
  *
- * The rule it has to honour instead is the `education-grade-work` one — never
- * report "applied" for a value nobody can see. The two ways to honour it are
+ * The rule it has to honor instead is the `education-grade-work` one — never
+ * report "applied" for a value nobody can see. The two ways to honor it are
  * refuse or make it visible; refusing is off the table above, and here the
  * state is always mounted (only the dialog's RENDERING is gated), so showing
  * the user the form they just consented to fill is the completion of the

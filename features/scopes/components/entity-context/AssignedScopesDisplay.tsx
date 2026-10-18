@@ -12,7 +12,7 @@
  * dimension). We resolve assignments → scope → type in one query and group.
  *
  * Variants:
- *   - "block"  → labelled rows (Organization / <Type>: <scopes>) for detail pages
+ *   - "block"  → labeled rows (Organization / <Type>: <scopes>) for detail pages
  *   - "inline" → compact chips (`<Type>: <Scope>`) for dense headers
  *
  * THE DOOR LAW: every scope and the organization named here is a real record we

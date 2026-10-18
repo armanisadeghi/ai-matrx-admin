@@ -28,7 +28,7 @@ export const REVIEW_360_PANEL_KEY = "hr.review_360";
 
 const repository = createMeetRepository({ client: supabase });
 
-/** The live (not cancelled, not archived) meeting that carries this review's panel, if any. */
+/** The live (not canceled, not archived) meeting that carries this review's panel, if any. */
 async function findReviewMeeting(reviewId: string): Promise<MeetingRecord | null> {
   const { data, error } = await supabase
     .schema("communication")

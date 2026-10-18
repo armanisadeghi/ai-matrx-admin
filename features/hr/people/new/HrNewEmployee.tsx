@@ -364,7 +364,7 @@ export function HrNewEmployee({
 
     // 🚨 THE SCAN RUNS FIRST, ALWAYS, AND ITS RESULT GATES THE WRITE.
     //
-    // Three outcomes, three behaviours:
+    // Three outcomes, three behaviors:
     //   • it could not run  → STOP. A scan that failed is not a clean scan, and
     //                         creating anyway is how a duplicate person is born.
     //   • matches found     → STOP and show them. The user has to open them and

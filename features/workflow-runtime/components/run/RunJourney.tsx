@@ -4,7 +4,7 @@
  * RunJourney — every step of the workflow, from the first frame.
  *
  * The old rail could only list nodes the RUN had already reported, so a
- * four-minute run showed three grey rows and a spinner. This one is driven by
+ * four-minute run showed three gray rows and a spinner. This one is driven by
  * the DEFINITION: all N steps are on screen immediately, each with its author's
  * label, its own icon, and what it will produce — then the live phases land on
  * top of them. The wait becomes a map, not a void.

@@ -5,7 +5,7 @@
  * on a page of its own — so a caller holding only a team id cannot build its
  * address without first resolving the team's organization. These tests pin
  * the two halves of that resolver: the address SHAPES
- * (`teamOrgSettingsHref` / `teamIdResolverHref`) and the CACHE/MISS behaviour
+ * (`teamOrgSettingsHref` / `teamIdResolverHref`) and the CACHE/MISS behavior
  * of `resolveTeamOrganizationId`, mirroring
  * `features/agents/addressing/__tests__/agentAddress.test.ts`.
  */

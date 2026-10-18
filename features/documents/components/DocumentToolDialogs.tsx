@@ -166,8 +166,8 @@ function Borders({ exec, onClose }: { exec: Props["exec"]; onClose: () => void }
         <Select<string> aria-label="Thickness" value={String(c.width)} onValueChange={(v) => setC({ ...c, width: Number(v) })} options={[1, 2, 3, 4, 6].map((w) => ({ value: String(w), label: `${w} px` }))} />
       </label>
       <label className="flex items-center justify-between gap-3 text-sm">
-        <span>Colour</span>
-        <input type="color" aria-label="Colour" value={c.color} onChange={(e) => setC({ ...c, color: e.target.value })} className="h-7 w-12 cursor-pointer rounded border border-border bg-transparent" />
+        <span>Color</span>
+        <input type="color" aria-label="Color" value={c.color} onChange={(e) => setC({ ...c, color: e.target.value })} className="h-7 w-12 cursor-pointer rounded border border-border bg-transparent" />
       </label>
       <div className="flex justify-between gap-2 pt-1">
         <Button onClick={() => apply({ ...c, side: "none" })}>Remove borders</Button>

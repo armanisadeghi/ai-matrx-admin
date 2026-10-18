@@ -60,7 +60,7 @@ export function block(
  *   * **Authority / rank / importance** already decided WHAT the model is
  *     looking at — they order and cap the selection. Restating them inside each
  *     block asks the model to weight the same signal a second time, which
- *     skews it toward whatever the pipeline already favoured instead of letting
+ *     skews it toward whatever the pipeline already favored instead of letting
  *     it judge relevance to the actual task.
  *
  * Those axes are still available deliberately, as the `source.authority` and

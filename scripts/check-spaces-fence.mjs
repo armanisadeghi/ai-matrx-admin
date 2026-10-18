@@ -38,9 +38,9 @@ const SUBJECT = /^spaces[:(]/;
 // A table brought in from a connected Notion shows its sync chip on the table page (lane NOTION-SYNC):
 // `features/spaces/io/NotionSyncBar` — a props-light component that needs no Spaces store, rendered by
 // features/unified-data/table-page/UnifiedDataTablePage. Named here by lane ROW-PAGE-READ (2026-10-14).
-// templates/use-pack: the template-pack catalogue + installer — the Board installs the same packs (board-packs.ts).
+// templates/use-pack: the template-pack catalog + installer — the Board installs the same packs (board-packs.ts).
 // A Space template's public page (/templates/<slug>, Arman 2026-10-18 "Yes, public gallery"): `public/TemplatePackPreview`
-// draws the pack's real pages read-only over its sample rows from the one public catalogue read; `public/SpaceTemplateIcon` is the cards' icon.
+// draws the pack's real pages read-only over its sample rows from the one public catalog read; `public/SpaceTemplateIcon` is the cards' icon.
 const ENTRY_POINTS = [/features\/spaces\/embed\/RecordBodySpace["'/]/, /features\/spaces\/embed\/useSpaceBuild["'/]/, /features\/spaces\/state\/templates["'/]/, /features\/spaces\/sidebar\/TemplateGalleryShell["'/]/, /features\/spaces\/public\/(?:PublicSpace|public-view|TemplatePackPreview|SpaceTemplateIcon)["'/]/, /features\/spaces\/spaces\.css["']/, /features\/spaces\/io\/NotionImportDoor["'/]/, /features\/spaces\/data\/AutomationsDoor["'/]/, /features\/spaces\/templates\/use-pack["'/]/, /features\/spaces\/io\/NotionSyncBar["'/]/];
 // Commits pushed under a `spaces:` subject that already touched shared files outside the fence, named by
 // full sha with the reason. History cannot be rewritten, so each is judged once, here, and only by its exact

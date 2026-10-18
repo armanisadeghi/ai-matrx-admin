@@ -1,7 +1,7 @@
 // features/rich-document/annotations/annotation-actions.tsx
 //
 // The annotation sidecar's passage actions — highlight (ONE button that opens
-// the five colours, 2026-10-07), comment, suggest an edit, link a record — as actions of the ONE Alchemy
+// the five colors, 2026-10-07), comment, suggest an edit, link a record — as actions of the ONE Alchemy
 // registry, shown by the ONE selection toolbar (components/selection-toolbar).
 // `AnnotatedContent` registers its text as a selection zone carrying the
 // `annotation` half of the click target; the actions capture the selection

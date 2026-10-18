@@ -37,11 +37,11 @@ const groupCopy: Record<
   snapshot: {
     title: "Snapshot audit",
     description:
-      "Checks stored directly on each captured page. These appear as soon as pages are crawled; they are not the catalogue findings system.",
+      "Checks stored directly on each captured page. These appear as soon as pages are crawled; they are not the catalog findings system.",
     icon: Gauge,
   },
   catalogue: {
-    title: "Catalogue analysis",
+    title: "Catalog analysis",
     description:
       "Checks executed over stored evidence. Their results feed site scores, the priority queue, and the findings register.",
     icon: SearchCheck,
@@ -78,7 +78,7 @@ export function SeoCapabilitiesWorkspace() {
           <Globe2 className="mx-auto h-8 w-8 text-muted-foreground" />
           <h1 className="mt-3 text-base font-semibold">Add a site first</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            The catalogue is shared, but its evidence doors open a managed
+            The catalog is shared, but its evidence doors open a managed
             website workspace.
           </p>
           <Link

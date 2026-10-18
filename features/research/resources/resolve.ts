@@ -79,7 +79,7 @@ function variableFor(bundle: ContextBundle, kind: ResourceKey): string {
  * How a kind travels: `"context"` only when the binding asks for it AND the
  * kind is a real row the server can load (`resourceType`). A derived kind, or
  * one with no entity token, silently falls back to direct — the text still
- * reaches the agent, which beats honouring the letter of the binding by
+ * reaches the agent, which beats honoring the letter of the binding by
  * sending nothing.
  */
 export function deliveryFor(
@@ -472,7 +472,7 @@ export async function resolveBundle(
     for (const [reason, count] of Object.entries(entry.dropped)) {
       if (!count) continue;
       // Only INVOLUNTARY losses are surfaced. A filter or a Top-N cap doing its
-      // job is the user's own instruction being honoured; reporting it as a loss
+      // job is the user's own instruction being honored; reporting it as a loss
       // would cry wolf on every run and train the user to ignore the notice that
       // actually matters. The picker row already shows "10 of 19".
       if (VOLUNTARY_DROPS.has(reason as DropReason)) continue;

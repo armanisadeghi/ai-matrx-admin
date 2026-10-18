@@ -1,6 +1,6 @@
 /**
  * ONE RECORD TYPE, ONE NAME (G6A follow-up, 2026-10-02): an action card named
- * its type from the server catalogue ("Update Conversation") while the
+ * its type from the server catalog ("Update Conversation") while the
  * reference picker called the same type "Chat". The card's noun catalog
  * (`matrxDirectiveNouns`, the package's `nouns` seam) now answers the picker's
  * display name, so every card, confirm and tally reads the word the picker

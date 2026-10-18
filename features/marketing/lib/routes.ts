@@ -173,7 +173,7 @@ export const marketingRoutes = {
   ranksRollup: () => "/marketing/reports/ranks",
   /** Cross-client Search Console landing (site picker inside). */
   searchConsoleRollup: () => "/marketing/reports/search-console",
-  /** Cross-client SEO capabilities catalogue (website selector inside). */
+  /** Cross-client SEO capabilities catalog (website selector inside). */
   capabilitiesCatalog: () => "/marketing/operations/capabilities",
   connections: () => "/marketing/operations/connections",
   connectionsGoogle: () => "/marketing/operations/connections/google",
@@ -467,7 +467,7 @@ export const marketingRoutes = {
     siteId
       ? `/marketing/search-console?site=${siteId}`
       : "/marketing/search-console",
-  /** Shared catalogue of Marketing's SEO measurement capabilities. */
+  /** Shared catalog of Marketing's SEO measurement capabilities. */
   capabilities: (siteId?: string) =>
     siteId
       ? `/marketing/capabilities?site=${encodeURIComponent(siteId)}`

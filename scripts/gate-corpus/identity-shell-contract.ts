@@ -142,10 +142,10 @@ export const NOT_A_SECRET: Readonly<Record<string, string>> = {
  * violation.** Adding a column to one of these tables fails the guard until
  * somebody writes down which it is.
  *
- * THE CENSUS BELOW IS NOT THE GUARD'S ONLY DEFENCE AGAINST ITSELF. A declared
+ * THE CENSUS BELOW IS NOT THE GUARD'S ONLY DEFENSE AGAINST ITSELF. A declared
  * column list rots the moment production grows a column, and a stale list here
  * would read green while copying a person's new value. So `restore-graph.ts`
- * asserts at RUN TIME, against production's own catalogue, that each of these
+ * asserts at RUN TIME, against production's own catalog, that each of these
  * tables has exactly these columns and refuses the whole copy when it does not
  * (`PERSONAL_DATA_TABLES` is imported there for exactly that). The list is the
  * text half of a claim whose other half is measured.

@@ -1,7 +1,7 @@
 /**
  * Every call site of the retired bespoke pickers renders the canonical one
  * (lane HIERARCHY-CASCADE, 2026-09-25). The adapters' write paths are proven
- * behaviourally in engagementHosts / useActiveEngagementSelection /
+ * behaviorally in engagementHosts / useActiveEngagementSelection /
  * BindingTargetPicker; this census proves each site is wired to them and that
  * the bespoke files cannot come back under their old paths.
  */

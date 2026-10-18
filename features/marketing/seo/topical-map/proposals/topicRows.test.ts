@@ -73,7 +73,7 @@ describe("flattenTreeNodes", () => {
     expect(rows).toHaveLength(52);
   });
 
-  it("omits counts when the read did not include them, and honours children_count", () => {
+  it("omits counts when the read did not include them, and honors children_count", () => {
     const flat = flattenTreeNodes([{ slug: "a", name: "A", children_count: 3 }]);
     expect(flat[0].counts).toBeUndefined();
     expect(flat[0].hasChildren).toBe(true);

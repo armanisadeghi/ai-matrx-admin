@@ -33,7 +33,7 @@ export interface ManualSidebarChoice {
 /**
  * Which nav the sidebar shows. Pure, so the rule is testable and stated once.
  *
- *   • a loaded route menu shows itself (that IS the Large Route behaviour),
+ *   • a loaded route menu shows itself (that IS the Large Route behavior),
  *     unless its family opens on the main menu (`defaultView: "main"`)
  *   • a manual choice wins over it — and SURVIVES navigation, which it did not
  *     before: the view was one-shot state, so "Main Menu" was silently undone

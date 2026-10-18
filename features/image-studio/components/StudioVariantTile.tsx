@@ -98,7 +98,7 @@ export function StudioVariantTile({
   const handleDownload = async () => {
     // Same-origin blob download. `variant.dataUrl` is a data: or blob: URL
     // (never a raw S3 URL — useImageStudio.generate materializes signed
-    // URLs at the boundary), so `a.download` is honoured and nothing
+    // URLs at the boundary), so `a.download` is honored and nothing
     // navigates the tab.
     try {
       await downloadSingleVariant(variant.dataUrl, variant.filename);
@@ -230,7 +230,7 @@ export function StudioVariantTile({
                 variant.fit === "cover"
                   ? `Cover — anchored to ${variant.position ?? "center"}`
                   : variant.fit === "contain"
-                    ? "Contain — padded with background colour"
+                    ? "Contain — padded with background color"
                     : "Inside — shrunk to fit without crop or padding"
               }
             >

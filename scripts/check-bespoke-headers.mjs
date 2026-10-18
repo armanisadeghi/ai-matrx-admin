@@ -108,7 +108,7 @@ function resolveImport(file, source, name) {
 }
 
 /**
- * A header component honours the contract when it composes the shared header or
+ * A header component honors the contract when it composes the shared header or
  * wraps its actions in HeaderActionsSlot — itself, or through a header
  * component it imports (AgentHeader → AgentHeaderMobile), one level further.
  */

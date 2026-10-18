@@ -290,5 +290,5 @@ export async function labelJevAnswer(item: RoundItem, truth: RoundTruth, jevConv
       problems.push(err instanceof Error ? err.message : String(err));
     }
   }
-  return problems.length ? `Jev's answer was not labelled: ${problems.join(" · ")}` : null;
+  return problems.length ? `Jev's answer was not labeled: ${problems.join(" · ")}` : null;
 }

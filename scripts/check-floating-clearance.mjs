@@ -44,7 +44,7 @@ const EXEMPT_PREFIXES = [
 const SCROLLS = /(^|\s)overflow-(y-)?auto(\s|$)/;
 const HAND_CLEARANCE = /(^|\s)((?:[a-z]+:)*pb-(?:safe|\[[^\]\s]*safe-area[^\]\s]*\]|(?:1[6-9]|[2-9]\d|\d{3,})))(?=\s|$)/;
 
-/** The opening tag starting at `start` (index of '<'), honouring braces and quotes. */
+/** The opening tag starting at `start` (index of '<'), honoring braces and quotes. */
 function openingTag(source, start) {
   let depth = 0;
   let quote = null;

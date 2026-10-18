@@ -8,7 +8,7 @@
 //   1. the provision — the sentence, the organization's facts, its tables with their fields (drafted by
 //      the store's own custom.template_from_tables), the closed vocabularies read from @ai-matrx/records
 //      at call time, and today;
-//   2. the keys a one-off spec carries for the install door and nobody else (catalogue id, version, the
+//   2. the keys a one-off spec carries for the install door and nobody else (catalog id, version, the
 //      template agent slot), filled in, never invented by the model;
 //   3. the check — the package's describeCheck (automatic fixes, then validateTemplate "describe") — whose first problem is said in one line;
 //   4. the declaration (custom.template_declare 'org') whose id the gallery's runTemplateDoor installs.
@@ -279,7 +279,7 @@ export function bindReuses(spec: TemplateSpec, reuses: DescribeAnswer["reuses"],
 
 /**
  * The declaration custom.template_declare('org') takes: the checked spec, plus the keys the install door
- * needs and a one-off spec does not own — a catalogue id unique to this run, and the template agent slot
+ * needs and a one-off spec does not own — a catalog id unique to this run, and the template agent slot
  * (the platform's default reader, no variables; the describe box runs no host agent step). It is declared
  * `ephemeral`: on no template shelf until the person presses "Save as my template".
  */

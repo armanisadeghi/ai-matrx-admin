@@ -3,7 +3,7 @@
 // A headless, read-only walk as admin@admin.com on the shared preview (live database): the usage
 // explorer wired to the published drill primitives — "Usage by person" searches a person by email,
 // a person row's right-click and ⋯ menu carry the admin user menu (looked at, never pressed), Last
-// active hour + Total tokens columns, origin colours on the chart and share bars, "Most expensive
+// active hour + Total tokens columns, origin colors on the chart and share bars, "Most expensive
 // requests" with Tool calls and a request's records with finish reason, then a 390 px phone in dark.
 // Nothing is saved, pressed or written.
 //
@@ -84,7 +84,7 @@ try {
   await page.keyboard.press("Escape");
   await sleep(500);
 
-  // 3. Origin colours: chart series and share bars keep the declared chart tokens
+  // 3. Origin colors: chart series and share bars keep the declared chart tokens
   await page.goto(`${ORIGIN}/administration/usage?by=origin&share=1&w=30d`, { waitUntil: "domcontentloaded", timeout: 240000 });
   check("usage by origin answers", (await answered()) === "answered", page.url().replace(ORIGIN, ""));
   await until("chart legend", async () => ((await page.locator("[data-matrx-drill-chart-series]").count()) > 0 ? "ok" : null), 120000).catch(() => null);
@@ -96,9 +96,9 @@ try {
   const declared = { human: "--matrx-chart-1", client_auto: "--matrx-chart-9", api: "--matrx-chart-7", child_agent: "--matrx-chart-3", workflow: "--matrx-chart-4", scheduled: "--matrx-chart-5", system: "--matrx-chart-6" };
   const keyOf = (s) => String(s.key ?? "").replace(/^v:/, "");
   const judged = legend.filter((s) => declared[keyOf(s)]);
-  check("chart series keep the origin colours", judged.length > 0 && judged.every((s) => s.color.includes(`${declared[keyOf(s)]})`)), legend.map((s) => `${s.key}:${(s.color.match(/--matrx-chart-[\w]+/) ?? [""])[0]}`).join(" | "));
+  check("chart series keep the origin colors", judged.length > 0 && judged.every((s) => s.color.includes(`${declared[keyOf(s)]})`)), legend.map((s) => `${s.key}:${(s.color.match(/--matrx-chart-[\w]+/) ?? [""])[0]}`).join(" | "));
   const bars = await page.locator("[data-matrx-drill-share-bar]").evaluateAll((els) => els.map((e) => e.getAttribute("style") ?? ""));
-  check("share bars draw in the origin colours", bars.some((s) => /--matrx-chart-\d/.test(s)), bars.slice(0, 6).join(" | "));
+  check("share bars draw in the origin colors", bars.some((s) => /--matrx-chart-\d/.test(s)), bars.slice(0, 6).join(" | "));
   await page.screenshot({ path: `${SHOTS}/origin_colours.png` });
 
   // 4. Most expensive requests: Tool calls + Last active; a request's records: finish reason

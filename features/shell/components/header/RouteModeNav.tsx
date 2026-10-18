@@ -20,7 +20,7 @@
 //                                       slot: it leaves the true center and
 //                                       takes RouteHeader's whole center cell,
 //                                       beside the title — `data-route-nav-inflow`)
-//           · icon only               (not even the labelled trigger fits: the
+//           · icon only               (not even the labeled trigger fits: the
 //                                       current mode's icon + chevron, the name
 //                                       kept for assistive tech)
 //   none  → nothing drawn             (not even the icon trigger fits beside

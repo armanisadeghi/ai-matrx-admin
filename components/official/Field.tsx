@@ -28,7 +28,7 @@
  *
  * ## Usage
  *
- * Simple labelled input:
+ * Simple labeled input:
  *
  * ```tsx
  * <Field label="Title" htmlFor="title" required>
@@ -104,7 +104,7 @@ export interface FieldProps {
   /** Marks the field as required. Renders a red asterisk. Wins over `optional`. */
   required?: boolean;
   /**
-   * Marks the field as optional. Renders a small grey "(optional)" tag.
+   * Marks the field as optional. Renders a small gray "(optional)" tag.
    * Use sparingly — it's only worth showing when most fields nearby are required.
    */
   optional?: boolean;
@@ -283,7 +283,7 @@ export function Field({
               className="hidden type-secondary text-muted-foreground items-center gap-1 [[data-field-root]:has(:placeholder-shown)_&]:flex"
             >
               <AlertCircle className="h-3 w-3 flex-shrink-0" />
-              <span>Empty — the grey text is an example, not your answer.</span>
+              <span>Empty — the gray text is an example, not your answer.</span>
             </p>
           ) : (
             <span />

@@ -254,7 +254,7 @@ function KindTile({ hit, content }: { hit: KnowledgeHit; content?: RowContent })
       />
     );
   return (
-    // The kind's own colour (hubPresentation.hitTone): a wash of the hue behind a full-strength glyph.
+    // The kind's own color (hubPresentation.hitTone): a wash of the hue behind a full-strength glyph.
     <div className={cn("flex h-9 w-9 items-center justify-center rounded-md", tone.tile)}>
       <Icon className={cn("h-[18px] w-[18px]", tone.icon)} />
     </div>

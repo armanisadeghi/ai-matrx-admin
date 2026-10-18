@@ -3,7 +3,7 @@
 // Checks Space template packs with no database: the pack's shape, every page against the stored-page
 // rules and the database's JSON schema, every token, and the tables through the records validator
 // (lib/spaces-blocks/template-pack-check.ts). Exit 0 = every pack passes; 1 = findings; 2 = could not read.
-// Also refuses two packs with one catalogue id or one title — measured against EVERY pack in the packs
+// Also refuses two packs with one catalog id or one title — measured against EVERY pack in the packs
 // folder, not only the files named, so a lane checking its one file still sees the other lanes' packs
 // (2026-10-17: two lanes wrote content-calendar.pack.json; the second overwrote the first).
 

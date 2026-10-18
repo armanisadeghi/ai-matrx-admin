@@ -436,7 +436,7 @@ export function NoteEditorCore({
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
                 // The same reading column and type size as Write and Read
                 // (48rem, 14px — the app's rendered-text size): the padding
-                // centres the text while the scrollbar stays at the edge.
+                // centers the text while the scrollbar stays at the edge.
                 "text-sm leading-relaxed bg-transparent py-6 px-[max(1.5rem,calc((100%-48rem)/2))]",
                 bottomPad,
                 largeScrollbar && "scrollbar-contrast-lg",
@@ -456,7 +456,7 @@ export function NoteEditorCore({
                 "focus-visible:ring-0 focus-visible:ring-offset-0",
                 // The same reading column and type size as Write and Read
                 // (48rem, 14px — the app's rendered-text size): the padding
-                // centres the text while the scrollbar stays at the edge.
+                // centers the text while the scrollbar stays at the edge.
                 "text-sm leading-relaxed bg-transparent py-6 px-[max(1.5rem,calc((100%-48rem)/2))]",
                 bottomPad,
                 // Notes get long — opt into the larger, persistent,
@@ -590,7 +590,7 @@ export function NoteEditorCore({
         // sans) — `!` because the editor's own prose-base is also a utility.
         // rich-editor.css neutralises Toast UI's global 13px Open Sans rule.
         // One column in every view: the editor's own side padding is dropped
-        // (its 48rem container already centres it where Plain and Read start),
+        // (its 48rem container already centers it where Plain and Read start),
         // and lists indent 24px as Read's do.
         <div
           className={cn(
@@ -599,7 +599,7 @@ export function NoteEditorCore({
             // side padding of its own (ProseMirror's is dropped above), so in a
             // host narrower than 48rem — a Board tile, the /notes column — the
             // text touched the left edge. Same formula as Plain's textarea:
-            // 1.5rem minimum, centred 48rem column when wider.
+            // 1.5rem minimum, centerd 48rem column when wider.
             // Styled through the editor's named column hook, never a child combinator on its scroller:
             // that also matched the block grip's box, which grew 48px wide and 85dvh tall,
             // sat ON the first letters and swallowed every press at the start of a line.

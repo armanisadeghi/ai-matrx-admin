@@ -1,7 +1,7 @@
 /**
  * A typed address that belongs to an ACCOUNT is that account (verifier,
  * 2026-09-29): test@test.com was not one of the host's connections, so the
- * picker labelled it "Joins by link as a guest" and Find a time left it out.
+ * picker labeled it "Joins by link as a guest" and Find a time left it out.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";

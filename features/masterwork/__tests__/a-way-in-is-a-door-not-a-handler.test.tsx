@@ -13,11 +13,11 @@
  * `Button` inside a `TooltipTrigger asChild` fires its `onClick` in a real DOM
  * (proven separately). Which is exactly the problem: the control's ENTIRE
  * promise rested on one handler, so there was no evidence to find and nothing
- * left over when it did not fire. A control whose only behaviour is JavaScript
+ * left over when it did not fire. A control whose only behavior is JavaScript
  * can fail silently; an anchor cannot.
  *
  * THE LAW THIS GUARDS: a control that promises a door is a door. The primary
- * behaviour stays the in-place picker (it launches an Approach's lane into THIS
+ * behavior stays the in-place picker (it launches an Approach's lane into THIS
  * Rulebook), and the href is the floor underneath it.
  *
  * RED PROOF (run either and this file fails):

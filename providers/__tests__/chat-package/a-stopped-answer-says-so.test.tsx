@@ -164,7 +164,7 @@ describe("a stopped answer says so", () => {
     expect(text).toContain("Stopped here");
   });
 
-  it("live, from the cancelled request", async () => {
+  it("live, from the canceled request", async () => {
     const text = await render(
       {},
       { requestId: "req_whitcombe", status: "cancelled" },

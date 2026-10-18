@@ -20,7 +20,7 @@ export function formatSandboxTimestamp(value: string | null): string {
  *
  * Two defects lived in what this replaced (owner, seen live 2026-09-13):
  *
- *  1. The SAME box was labelled `Unnamed · 7942bd` in one place and
+ *  1. The SAME box was labeled `Unnamed · 7942bd` in one place and
  *     `Sandbox · 2c23df07` in another, because the two formatters sliced two
  *     DIFFERENT identifiers — the orchestrator id (`sandbox_id`, last 6) and
  *     the Postgres row uuid (`id`, first 8). Nothing on screen told the user

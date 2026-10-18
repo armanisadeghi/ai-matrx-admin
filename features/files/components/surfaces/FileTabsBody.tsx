@@ -254,7 +254,7 @@ export function FileTabsBody({
   }
   const isMounted = (tab: FileTab) => mountedTabs.has(tab);
 
-  // Honour `?tab=` on remount (file id change or first paint with deep link).
+  // Honor `?tab=` on remount (file id change or first paint with deep link).
   // Controlled mode skips this — the parent owns the URL contract.
   const initialKey = `${fileId}:${initialTab ?? ""}:${deepLink.tab ?? ""}`;
   const [lastInitialKey, setLastInitialKey] = useState(initialKey);

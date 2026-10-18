@@ -222,7 +222,7 @@ const BUDGET_WORD =
 //
 // LIVE BY DEFAULT since the owner ruling of 2026-10-03; the self-test's planted doors (DDL) run on
 // the clone. History (2026-09-28, when it defaulted to the clone): Measured on live that day: ~23,800 statements, still
-// running at 20 minutes, 3 statements cancelled at its own 6 s probe ceiling. A door-by-door sweep of
+// running at 20 minutes, 3 statements canceled at its own 6 s probe ceiling. A door-by-door sweep of
 // ~460 doors is a census, and the property it proves (a door returns only what its caller may read)
 // is a property of the function bodies and policies, which the clone carries from last night's
 // restore. So it runs through `scripts/lib/check-target.ts`: the clone unless the command says
@@ -850,7 +850,7 @@ async function resolveRecipeRow(
         // there by construction.
         //
         // The victim's own organizations still come FIRST, so a recipe written
-        // against the old behaviour keeps the row it had; the system organization
+        // against the old behavior keeps the row it had; the system organization
         // is excluded because it is shared content, not a tenant (see
         // Catalog.systemOrgIds).
         where = `${qi(orgCol)} is not null and ${qi(orgCol)} <> all($1::uuid[])`;
@@ -930,12 +930,12 @@ function qi(ident: string): string {
  * `permission_level`. An exact join silently DROPS those rows — and 14 of them
  * are functions a client really can execute, so an exact join means 14 declared
  * doors this gate never measures and nobody is told about. Both sides are
- * normalised instead, and what still fails to resolve is reported by name.
+ * normalized instead, and what still fails to resolve is reported by name.
  */
 const NORM = (expr: string): string =>
   `lower(btrim(regexp_replace(regexp_replace(${expr}, '(^|[ ,(])[a-z_][a-z0-9_]*\\.', '\\1', 'g'), '\\s+', ' ', 'g')))`;
 
-/** The same normalisation, in this process, so the match can be made here. */
+/** The same normalization, in this process, so the match can be made here. */
 const normJs = (s: string): string =>
   s
     .replace(/(^|[ ,(])[a-z_][a-z0-9_]*\./g, "$1")
@@ -1463,7 +1463,7 @@ function fillArgs(
         continue;
       }
       if (bare === "purpose" && /^(text|character varying|citext)$/.test(type)) {
-        // A purpose the door recognises reaches its DEEPEST refusal (the admin
+        // A purpose the door recognizes reaches its DEEPEST refusal (the admin
         // check). An unregistered one is refused earlier — and wrote a row there
         // too, before DD-213c — so either value measures the door; this one
         // measures more of it.
@@ -2018,7 +2018,7 @@ async function measureDoor(
     // is now called with whatever benign values derivation produced, and its
     // answer is row-diffed exactly like any other: the oracle is "did it hand
     // back a row this caller cannot SELECT", which needs no crossing argument at
-    // all. The probe is labelled so nobody mistakes it for a cross-boundary one.
+    // all. The probe is labeled so nobody mistakes it for a cross-boundary one.
     const benign = door.argTypes.length > 0 && !filled.crossed;
 
     const probe = await runProbe(db, q, caller, door, filled, catalog, cast, benign);

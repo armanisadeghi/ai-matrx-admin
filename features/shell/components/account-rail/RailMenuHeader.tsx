@@ -4,7 +4,7 @@ import AppLink from "@/components/navigation/AppLink";
 /**
  * The header row every account-rail menu opens with — Settings, Organization
  * and You are ONE family (owner, 2026-10-01: "make all 3 identical"): the same
- * panel (`USER_MENU_PANEL_CLASS`), this same header (a 28px coloured mark, a
+ * panel (`USER_MENU_PANEL_CLASS`), this same header (a 28px colored mark, a
  * title, an optional one-line subtitle), and the same rows (`MENU_ITEM_CLASS`).
  * With `href` the header is a door to its own page.
  */

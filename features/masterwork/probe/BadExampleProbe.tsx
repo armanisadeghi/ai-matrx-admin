@@ -18,7 +18,7 @@
 //    (`probe_label`) so the NEXT round can avoid covered ground. It is session
 //    state, carried back on the wire, and it is never rendered — a probe whose
 //    answer is on the screen is not a probe.
-// 2. **Never let the example read as the Expert's.** Every example is labelled
+// 2. **Never let the example read as the Expert's.** Every example is labeled
 //    as ours, in plain words, above the work itself. The one thing worse than a
 //    bad example is a bad example somebody mistakes for their own file.
 // 3. **Never invent the count.** "Round 3 of 5" comes from the server's own
@@ -479,7 +479,7 @@ export function BadExampleProbe({
               <AlertTriangle className="size-3.5" />
               We wrote this. It is meant to look right and be wrong.
             </p>
-            {/* NEVER "Untitled". A grey placeholder word in the heading slot
+            {/* NEVER "Untitled". A gray placeholder word in the heading slot
                 reads as a half-built screen; the case the Expert typed is the
                 true name of what we wrote for them. */}
             <h2 className="mb-2 text-base font-semibold text-foreground">
@@ -547,7 +547,7 @@ export function BadExampleProbe({
             />
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               {/* Was a bare `disabled` with nothing beside it: the payoff button
-                  of the whole round sat grey and said nothing
+                  of the whole round sat gray and said nothing
                   (jobs-bar-2026-09-16 lanes-b, item 12). */}
               <GatedActionButton
                 onClick={() => void send(false)}

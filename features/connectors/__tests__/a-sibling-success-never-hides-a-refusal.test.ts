@@ -17,7 +17,7 @@
  * THE CLASS FIX PINNED BELOW: the fold decides, per capability, whether that
  * capability's refusal has been overtaken by that capability's OWN success, and
  * states the answer on the activity it hands over (`refusalStands`). The health
- * row honours it instead of re-deriving a product-level comparison it does not
+ * row honors it instead of re-deriving a product-level comparison it does not
  * have the facts for. This holds for any provider whose product spans several
  * capabilities, not only for these two rows.
  */
