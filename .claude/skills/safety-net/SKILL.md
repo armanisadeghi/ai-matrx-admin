@@ -168,6 +168,12 @@ One file per playbook, two halves under one id, template beside this skill: `pla
   second half is what catches a swap, a leak, or content delivered through the wrong door.
 - Which weakness ids each marker covers.
 
+**Ambient platform values are part of every request.** The date, the organization and the person's
+identity flow into every run by default (Arman's ruling). A question worded against time ("today", "this
+delivery", "now") makes a dated fixture read as stale, and the model then rightly refuses it: PB-05 lost two
+facts that had arrived intact, 2026-10-18. Name each fact by its own anchor ("the crew on the receiving
+whiteboard"), never by time.
+
 **When the subject is an AI agent or mandate**, every playbook carries an **identity row**: the grader
 reads the run ledger and checks that each mandate ran on the holder agent and version its binding
 names, read from the mandate binding before the run. A playbook that cannot say which agent answered
