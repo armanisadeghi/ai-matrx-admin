@@ -33,10 +33,6 @@ Its files stay as they are.
 ## Held files
 <<<<<<< HEAD
 =======
-- _conflicts/2026-10-17-225804/features/marketing/smart-add/__tests__/enrichWebDecisions.test.ts.held — LOCAL latest unknown; GITHUB latest 2026-10-17 22:26; LOCAL lacks 1 of GITHUB's 14 new lines; GITHUB lacks 9 of LOCAL's 22 new lines; recover: git show 4473496607:'features/marketing/smart-add/__tests__/enrichWebDecisions.test.ts' / 1a411941dd:'features/marketing/smart-add/__tests__/enrichWebDecisions.test.ts'
-- _conflicts/2026-10-17-225804/features/marketing/smart-add/enrich/ChangesReview.tsx.held — LOCAL latest unknown; GITHUB latest 2026-10-17 22:26; LOCAL lacks 1 of GITHUB's 11 new lines; GITHUB lacks 4 of LOCAL's 14 new lines; recover: git show 4473496607:'features/marketing/smart-add/enrich/ChangesReview.tsx' / 1a411941dd:'features/marketing/smart-add/enrich/ChangesReview.tsx'
-- _conflicts/2026-10-17-225804/features/marketing/smart-add/webDecisions.ts.held — LOCAL latest unknown; GITHUB latest 2026-10-17 22:26; LOCAL lacks 2 of GITHUB's 22 new lines; GITHUB lacks 4 of LOCAL's 24 new lines; recover: git show 4473496607:'features/marketing/smart-add/webDecisions.ts' / 1a411941dd:'features/marketing/smart-add/webDecisions.ts'
-- _conflicts/2026-10-17-225804/scripts/check-payment-settle-rules.ts.held — LOCAL latest 2026-10-17 22:56; GITHUB latest 2026-10-17 22:54; LOCAL lacks 3 of GITHUB's 69 new lines; GITHUB lacks 16 of LOCAL's 84 new lines; recover: git show 4473496607:'scripts/check-payment-settle-rules.ts' / 1a411941dd:'scripts/check-payment-settle-rules.ts'
 >>>>>>> origin/main
 
 ## Resolution log
