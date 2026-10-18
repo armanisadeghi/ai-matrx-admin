@@ -46,6 +46,8 @@ interface RecordedQuery {
 
 function annotationNote(overrides: Partial<Note> = {}): Note {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: "annotation-1",
     created_by: "learner-1",
     organization_id: "org-1",

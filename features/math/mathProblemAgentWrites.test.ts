@@ -6,6 +6,8 @@ import {
 } from "./mathProblemAgentWrites";
 
 const row = {
+  test_expires_at: null,
+  test_run_id: null,
   id: "11111111-1111-4111-8111-111111111111",
   title: "Existing equation",
   course_name: "Mathematics",

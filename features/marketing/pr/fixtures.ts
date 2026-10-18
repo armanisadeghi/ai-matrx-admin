@@ -592,6 +592,8 @@ function buildAngles(now: number): StoryAngle[] {
       ? iso(now - (index + 1) * 2 * HOUR)
       : null;
     return {
+      test_expires_at: null,
+      test_run_id: null,
       id: sampleId(100 + index),
       organization_id: ORG,
       created_by: null,
@@ -795,6 +797,8 @@ const REQUEST_SEEDS: readonly RequestSeed[] = [
 
 function buildRequests(now: number, angles: readonly StoryAngle[]): SourceRequest[] {
   return REQUEST_SEEDS.map((seed, index) => ({
+    test_expires_at: null,
+    test_run_id: null,
     id: sampleId(200 + index),
     organization_id: ORG,
     created_by: null,

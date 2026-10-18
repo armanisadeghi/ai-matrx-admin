@@ -29,6 +29,8 @@ import type { AiProvider, AiSetting } from "../types";
   .IS_REACT_ACT_ENVIRONMENT = true;
 
 const provider = {
+  test_expires_at: null,
+  test_run_id: null,
   id: "provider-anthropic",
   name: "Anthropic",
   slug: "anthropic",
@@ -58,6 +60,8 @@ const provider = {
 } satisfies AiProvider;
 
 const setting = {
+  test_expires_at: null,
+  test_run_id: null,
   id: "setting-temperature",
   key: "temperature",
   value_type: "number",

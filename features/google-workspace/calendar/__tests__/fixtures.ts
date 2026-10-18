@@ -40,6 +40,8 @@ export function calendarEventRow(
   overrides: Partial<CalendarEventRow> = {},
 ): CalendarEventRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: EVENT_ID,
     provider: "google",
     external_id: "google-event-1",

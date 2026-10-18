@@ -21,6 +21,8 @@ const NOW = "2026-07-22T10:00:00.000Z";
 
 function makeBrand(overrides: Partial<MarketingBrand> = {}): MarketingBrand {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: "brand-1",
     organization_id: "org-1",
     created_at: NOW,
@@ -58,6 +60,8 @@ function makeBrand(overrides: Partial<MarketingBrand> = {}): MarketingBrand {
 
 function makeSite(overrides: Partial<MarketingSite> = {}): MarketingSite {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: "site-1",
     brand_id: "brand-1",
     organization_id: "org-1",

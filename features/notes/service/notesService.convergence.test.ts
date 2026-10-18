@@ -26,6 +26,8 @@ const TASK_ID = "55555555-5555-4555-8555-555555555555";
 
 function noteRow(overrides: Partial<Note> = {}): Note {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: NOTE_ID,
     content: "before",
     content_preview: "before",

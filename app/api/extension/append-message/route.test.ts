@@ -60,6 +60,8 @@ let FORGED_TOKEN: string;
 const AGENT_ID = "66666666-6666-4666-8666-666666666666";
 
 const conversationRow = {
+  test_expires_at: null,
+  test_run_id: null,
   app_instance_id: null,
   cache_state: {},
   config: {},

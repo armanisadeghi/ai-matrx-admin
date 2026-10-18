@@ -79,6 +79,8 @@ const HOME_ID = "33333333-3333-4333-8333-333333333333";
 
 function note(overrides: Partial<Note> = {}): Note {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: NOTE_ID,
     content: "before",
     content_hash: null,

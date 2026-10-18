@@ -42,6 +42,8 @@ export function googleDocumentRow(
   overrides: Partial<GoogleDocumentRow> = {},
 ): GoogleDocumentRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: DOC_ID,
     resource_id: RESOURCE_ID,
     external_id: FILE_ID,

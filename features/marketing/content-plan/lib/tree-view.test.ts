@@ -12,6 +12,8 @@ function planNode(
   parentId: string | null,
 ): PlanNodeRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     attributes: {},
     brief: [],
     cluster_label: null,

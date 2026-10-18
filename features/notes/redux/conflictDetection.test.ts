@@ -140,6 +140,8 @@ import type { Note } from "../types";
 
 function fullRow(overrides: Partial<Note> = {}): Note {
   const row: Note = {
+    test_expires_at: null,
+    test_run_id: null,
     id: NOTE_ID, organization_id: ORG_ID, version: 1, content: "the recipe",
     label: "The Best Chicken Alfredo", home_scope_id: "home-1", tags: [],
     metadata: {}, published_to_web: false, position: 0, project_id: null, task_id: null,

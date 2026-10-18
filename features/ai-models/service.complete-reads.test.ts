@@ -108,6 +108,8 @@ import { aiModelService } from "./service";
 
 function endpointRow(index: number): EndpointRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     auth_ref: { secret_kind: "environment" },
     base_url: `https://endpoint-${index}.example.test`,
     byok_secret_key: null,
@@ -139,6 +141,8 @@ function endpointRow(index: number): EndpointRow {
 
 function apiRow(index: number): ApiRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     created_at: "2026-09-12T00:00:00.000Z",
     created_by: null,
     deleted_at: null,
@@ -167,6 +171,8 @@ function apiRow(index: number): ApiRow {
 
 function offeringRow(index: number): OfferingRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     api_id: `api-${index}`,
     capabilities_override: {},
     created_at: "2026-09-12T00:00:00.000Z",

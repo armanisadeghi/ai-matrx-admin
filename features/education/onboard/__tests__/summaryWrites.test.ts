@@ -2,6 +2,8 @@ import type { StudyMediaRow } from "@/features/education/media/types";
 import { parseCreateSummaries, parseUpdateSummaries } from "../summaryWrites";
 
 const row = (): StudyMediaRow => ({
+  test_expires_at: null,
+  test_run_id: null,
   audio_file_id: null, audio_format: null, config: {}, created_at: "2026-09-27T00:00:00Z",
   created_by: "user-1", custom_fields: {}, deleted_at: null, description: null,
   diagram_kind: null, duration_seconds: null, episode_id: null, id: "summary-1",

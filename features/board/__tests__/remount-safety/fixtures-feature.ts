@@ -29,6 +29,8 @@ export const TASK_ID = "6d1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6";
 export const PROJECT_ID = "2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f";
 
 export const taskRow = {
+  test_expires_at: null,
+  test_run_id: null,
   assignee_id: PERSON.id,
   completed_at: null,
   ...STAMP,
@@ -68,6 +70,8 @@ export const taskRow = {
 } satisfies Row<"projects", "tasks">;
 
 export const projectRow = {
+  test_expires_at: null,
+  test_run_id: null,
   ...STAMP,
   created_by: PERSON.id,
   custom_fields: {},
@@ -163,6 +167,8 @@ export function seedProject(): void {
 export const TOPIC_ID = "8f9a0b1c-2d3e-4f5a-8b6c-7d8e9f0a1b2c";
 
 export const topicRow = {
+  test_expires_at: null,
+  test_run_id: null,
   agent_config: {},
   analyses_per_keyword: 3,
   autonomy_level: "assisted",
@@ -251,6 +257,8 @@ export function seedResearch(): void {
 export const WAR_ROOM_ID = "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d";
 
 export const warRoomRow = {
+  test_expires_at: null,
+  test_run_id: null,
   active_thread_id: null,
   anchor_id: null,
   anchor_type: "none",
@@ -283,6 +291,8 @@ export const RUN_ID = "3e4f5a6b-7c8d-4e9f-a0b1-c2d3e4f5a6b7";
 export const WORKFLOW_ID = "4f5a6b7c-8d9e-4f0a-b1c2-d3e4f5a6b7c8";
 
 export const runRow = {
+  test_expires_at: null,
+  test_run_id: null,
   agent_id: null,
   agent_version_id: null,
   completed_at: "2026-09-30T18:12:40.000Z",
@@ -322,6 +332,8 @@ export const runRow = {
 } satisfies Row<"workflow", "run">;
 
 const definitionRow = {
+  test_expires_at: null,
+  test_run_id: null,
   card_visibility: "internal",
   category: "operations",
   channels: {},
@@ -407,6 +419,8 @@ export function seedWorkflowRun(): void {
 export const MEETING_ID = "5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d";
 
 export const meetingRow = {
+  test_expires_at: null,
+  test_run_id: null,
   agenda: "Unit 4B turnover budget and the December rent.",
   ai_enabled: true,
   behavior_profile: null,
@@ -456,6 +470,8 @@ export function seedMeeting(): void {
 export const DOCUMENT_ID = "7b8c9d0e-1f2a-4b3c-8d4e-5f6a7b8c9d0e";
 
 export const documentRow = {
+  test_expires_at: null,
+  test_run_id: null,
   ...STAMP,
   created_by: PERSON.id,
   custom_fields: {},

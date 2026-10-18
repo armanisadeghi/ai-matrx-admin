@@ -9,6 +9,8 @@ import type { MessageTemplateDB } from "../types/message-templates-db";
 import type { MessageTemplateDraftScope } from "@/features/surfaces/manifests/message-template.manifest";
 
 const template: MessageTemplateDB = {
+  test_expires_at: null,
+  test_run_id: null,
   id: "t1",
   label: "Outreach reply",
   content: "Hi {{contact.first_name}},\n{{reply.body}}\n",

@@ -9,6 +9,8 @@ jest.mock("../service", () => ({ studyMediaService: { updateVersioned: jest.fn()
 jest.mock("@ai-matrx/chat/surfaces/runtime/surface-writeback", () => ({ refuseSurfaceWrite: jest.fn() }));
 
 const row: StudyMediaRow = {
+  test_expires_at: null,
+  test_run_id: null,
   audio_file_id: "file-1", audio_format: "overview", config: {}, created_at: "2026-09-27T00:00:00Z",
   created_by: "user-1", custom_fields: {}, deleted_at: null, description: "Original description",
   diagram_kind: null, duration_seconds: 12, episode_id: "episode-1", id: "audio-1", ir_envelope: null,

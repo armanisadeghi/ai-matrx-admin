@@ -100,6 +100,8 @@ const ACTOR = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const STORED = "Harbor Dental — new-patient intake: confirm insurance, then x-rays.";
 
 const storedNote = (): Note => ({
+  test_expires_at: null,
+  test_run_id: null,
   id: NOTE_ID, organization_id: ORG, version: 3, content: STORED, label: "New-patient intake",tags: [], metadata: {}, published_to_web: false, position: 0,
   project_id: null, task_id: null, created_at: "", created_by: ACTOR, updated_at: "", updated_by: ACTOR,
   deleted_at: null, content_hash: null, file_path: null, last_device_id: null, custom_fields: {},

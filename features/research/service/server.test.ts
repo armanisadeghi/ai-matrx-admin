@@ -13,6 +13,8 @@ jest.mock("@/utils/permissions/requireAccess", () => ({
 
 const TOPIC_ID = "0d59c395-8c19-43df-90df-8ca384f3edc3";
 const TOPIC_ROW: Database["research"]["Tables"]["rs_topic"]["Row"] = {
+  test_expires_at: null,
+  test_run_id: null,
   agent_config: {},
   analyses_per_keyword: 3,
   autonomy_level: "semi",

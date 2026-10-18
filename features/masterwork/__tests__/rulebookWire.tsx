@@ -312,6 +312,8 @@ export const knobWire = {
 
 export function rulebookRow(id: string, name: string): RulebookRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     assurance_level: null,
     client_token: null,
     created_at: "2026-09-16T20:00:00.000Z",

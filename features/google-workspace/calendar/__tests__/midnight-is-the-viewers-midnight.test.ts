@@ -32,6 +32,8 @@ const TOKYO = "Asia/Tokyo";
 
 function event(overrides: Partial<CalendarEventRow> & { id: string }): CalendarEventRow {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     all_day: false,
     attendees: { __kind: CALENDAR_EVENT_ATTENDEES_KIND, attendees: [] },
     calendar_id: "primary",

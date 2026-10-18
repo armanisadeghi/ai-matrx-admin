@@ -43,6 +43,8 @@ const TASK_ID = "55555555-5555-4555-8555-555555555555";
 
 function note(overrides: Partial<Note> = {}): Note {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: NOTE_ID, content: "before", content_hash: null,
     created_at: "2026-09-12T00:00:00.000Z", created_by: "user-1", deleted_at: null,
     file_path: null, home_scope_id: "home-1", label: "Original", last_device_id: null,

@@ -46,6 +46,8 @@ function Probe() {
 
 function note(overrides: Partial<Note> = {}): Note {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: "note-1",
     content: "body",
     content_hash: null,

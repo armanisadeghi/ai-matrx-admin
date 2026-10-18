@@ -71,6 +71,8 @@ function changeInput(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }
 const setting = (key: string, version: number): AiSetting => ({
+  test_expires_at: null,
+  test_run_id: null,
   id: "setting-1",
   key,
   family: null,

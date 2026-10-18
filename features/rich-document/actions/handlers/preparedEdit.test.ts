@@ -8,6 +8,8 @@ import type { Note } from "@/features/notes/types";
 import { acknowledgedPreparedSource, savePreparedContentEdit } from "./preparedEdit";
 
 const note = (overrides: Partial<Note> = {}): Note => ({
+  test_expires_at: null,
+  test_run_id: null,
   id: "33333333-3333-4333-8333-333333333333", organization_id: "11111111-1111-4111-8111-111111111111",
   version: 0, content: "base", label: "Note", tags: [], metadata: {}, custom_fields: {},
   position: 0, project_id: null, task_id: null, created_at: "2026-09-12T00:00:00Z",

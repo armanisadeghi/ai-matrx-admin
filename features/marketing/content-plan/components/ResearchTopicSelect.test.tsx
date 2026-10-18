@@ -78,6 +78,8 @@ const STAMP = "2026-09-10T09:00:00.000Z";
 
 function topic(id: string, name: string): ResearchTopic {
   return rowToResearchTopic({
+    test_expires_at: null,
+    test_run_id: null,
     agent_config: {},
     analyses_per_keyword: 3,
     autonomy_level: "semi",

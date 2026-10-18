@@ -11,6 +11,8 @@ export const NOTE_ID = "3f9a1c2e-8b4d-4e6f-a1b2-c3d4e5f60718";
 export const NOTE_TEXT = "Paint touch-ups in the hallway and both bedrooms.";
 
 const note = {
+  test_expires_at: null,
+  test_run_id: null,
   id: NOTE_ID,
   label: "Unit 4B turnover checklist",
   content: NOTE_TEXT,
@@ -58,6 +60,8 @@ const CHAT_AGENT_ID = "4a7c2e19-0b3d-4f6a-9e85-1d2c3b4a5f60";
 const SERVER = "https://server.app.matrxserver.com";
 
 const conversation = {
+  test_expires_at: null,
+  test_run_id: null,
   app_instance_id: null,
   cache_state: {},
   config: {},
@@ -136,6 +140,8 @@ function message(position: number, role: "user" | "assistant", text: string) {
 
 /** The job the composer runs for a new chat — `chat.default_new_chat`, held by the chat agent. */
 const defaultChatMandate = {
+  test_expires_at: null,
+  test_run_id: null,
   accepts_user_input: true,
   auto_context_disabled: false,
   code_path: null,
@@ -309,6 +315,8 @@ export const FILE_TEXT = "# Pet addendum — Unit 4B\n\nOne cat permitted. Pet d
 const FILE_PATH = `${PERSON.id}/leases/unit-4b-pet-addendum.md`;
 
 export const fileRow = {
+  test_expires_at: null,
+  test_run_id: null,
   artifact_kind: null,
   canonical_processed_document_id: null,
   checksum: "sha256:9b1f0c3e7a2d4c5b8e6f1a0d3c2b4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d",

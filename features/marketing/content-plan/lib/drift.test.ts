@@ -3,6 +3,8 @@ import type { PlanNodeRow } from "../types";
 import { computePlanDrift } from "./drift";
 
 const node = (overrides: Partial<PlanNodeRow> = {}): PlanNodeRow => ({
+  test_expires_at: null,
+  test_run_id: null,
   attributes: {},
   brief: [],
   cluster_label: null,

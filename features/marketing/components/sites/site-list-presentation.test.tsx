@@ -23,6 +23,8 @@ function renderToStaticMarkup(node: ReactNode): string {
 }
 
 const row: SiteListRow = {
+  test_expires_at: null,
+  test_run_id: null,
   brand_id: "brand-1",
   created_at: "2026-08-01T00:00:00Z",
   created_by: "user-1",

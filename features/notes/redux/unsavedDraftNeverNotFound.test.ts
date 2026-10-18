@@ -68,6 +68,8 @@ const SAVED_NOTE_ID = "3b9d2a41-7e55-4c08-8f2a-6d1e0c5b7a22";
 
 function savedStaffRota(): Note {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     id: SAVED_NOTE_ID,
     content: "Front desk: Maria (Mon–Wed), Dev (Thu–Fri)",
     content_hash: null,

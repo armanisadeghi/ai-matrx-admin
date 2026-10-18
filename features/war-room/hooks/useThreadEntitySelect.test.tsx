@@ -79,6 +79,8 @@ function freshId(): string {
 
 function noteRow(id: string, label: string) {
   return {
+    test_expires_at: null,
+    test_run_id: null,
     content: "Agenda for the incident review",
     content_hash: null,
     created_at: STAMP,

@@ -15,6 +15,8 @@ jest.mock("@/lib/toast", () => ({
 const flushCopy = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 const site: SiteListRow = {
+  test_expires_at: null,
+  test_run_id: null,
   brand_id: "brand-1",
   created_at: "2026-08-01T00:00:00.000Z",
   created_by: "user-1",

@@ -108,6 +108,8 @@ function changeInput(input: HTMLInputElement, value: string) {
 }
 
 const provider = (name: string, version: number): AiProvider => ({
+  test_expires_at: null,
+  test_run_id: null,
   id: "provider-1",
   name,
   version,

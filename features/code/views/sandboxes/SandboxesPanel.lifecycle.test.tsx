@@ -86,6 +86,8 @@ const { SandboxesPanel }: typeof import("./SandboxesPanel") = require("./Sandbox
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const instance = {
+  test_expires_at: null,
+  test_run_id: null,
   id: "11111111-1111-4111-8111-111111111111",
   sandbox_id: "sandbox-test",
   name: "Test sandbox",
