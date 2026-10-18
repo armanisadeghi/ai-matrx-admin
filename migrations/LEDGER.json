@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-18T01:14:51.272Z",
+  "generated_at": "2026-10-18T01:40:46.677Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -9631,6 +9631,12 @@
       "filename": "template_upgrade_e_new_inline_columns_carry_every_setting.sql",
       "checksum": "cf64f7f037c770aadfd85e97cf1c4236720aa5252d3d1a93cd878e8b44a60210",
       "applied_at": "2026-10-18 01:14:48.889629+00"
+    },
+    "migrations/campaign/template_upgrade_f_removed_tables_stay_removed.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_upgrade_f_removed_tables_stay_removed.sql",
+      "checksum": "3344d7dd3c1f0e550005bfd866427425c31609d4f4d04286767ffe991040e196",
+      "applied_at": "2026-10-18 01:40:44.518192+00"
     },
     "migrations/campaign/templates7_a_anyone_can_browse_the_platform_templates.sql": {
       "source": "matrx-frontend",
