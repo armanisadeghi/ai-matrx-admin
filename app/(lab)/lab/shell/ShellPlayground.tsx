@@ -77,7 +77,7 @@ export function ShellPlayground() {
   let statusText: string;
 
   if (productId === "crm") {
-    activeMenuItemId = "contacts";
+    activeMenuItemId = "people";
     const rows = CONTACTS.filter((c) =>
       view === "all" ? true : view === "customers" ? c.stage === "Customer" : c.stage !== "Customer",
     );
@@ -86,7 +86,7 @@ export function ShellPlayground() {
     if (showRecord) {
       crumbs = [
         { id: "crm", label: "CRM", onSelect: () => setContactId(null) },
-        { id: "contacts", label: "Contacts", onSelect: () => { setContactId(null); setVariant("list"); } },
+        { id: "people", label: "People & Companies", onSelect: () => { setContactId(null); setVariant("list"); } },
         { id: record.id, label: record.name },
       ];
       body = <ContactRecord contact={record} />;
@@ -97,7 +97,7 @@ export function ShellPlayground() {
     } else {
       crumbs = [
         { id: "crm", label: "CRM" },
-        { id: "contacts", label: "Contacts" },
+        { id: "people", label: "People & Companies" },
       ];
       tabs = {
         label: "Contact views",

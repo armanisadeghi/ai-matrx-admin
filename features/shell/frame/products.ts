@@ -1,47 +1,92 @@
-// THE PRODUCT LIST for the new app frame — one row per product the app grid
-// shows. DRAFT (owner, 2026-10-17): names, families, colours and menus are not
-// final; change them HERE only. Host-agnostic data (lucide icons + design-system
-// chip hues), so the file moves into @ai-matrx/shell as a copy.
+// THE PRODUCT LIST for the new app frame — one row per tile the app grid
+// shows. DRAFT (owner lineup, 2026-10-17): names, families, colours and menus
+// are not final; change them HERE only. Rulings: Data is never "Sheets";
+// Intelligence is ONE system (Mandates + their agents and workflows +
+// Hindsight + Replay); Applets are separate from the industry samples, which
+// are Solutions; Slides live in Docs; PDF & scan shows wherever documents live;
+// Meet leads communications. NOT tiles: Settings/Account (organizations,
+// billing, vault, devices, approvals, trash) from the account menu; search,
+// notifications and the companion live in the frame. Host-agnostic data
+// (lucide icons + design-system chip hues), so it moves into @ai-matrx/shell
+// as a copy.
 import {
   AppWindow,
   AudioLines,
+  AudioWaveform,
   BarChart3,
   BookOpen,
   BrainCircuit,
   Briefcase,
-  Building2,
-  CalendarDays,
+  CalendarClock,
+  Camera,
+  ClipboardList,
   Code2,
+  Container,
   Contact,
+  Crop,
   Database,
   Eye,
-  Factory,
+  FileInput,
   FileSignature,
   FileText,
+  Files,
   Folder,
-  FolderTree,
+  FolderInput,
+  Gavel,
+  Globe,
+  GraduationCap,
+  Handshake,
   HardDrive,
   History,
-  House,
   IdCard,
   Image,
+  Images,
+  Import,
   Inbox,
-  Layers,
+  Kanban,
+  LayoutDashboard,
+  LayoutGrid,
   Library,
   ListChecks,
+  ListTree,
+  Mail,
+  Map,
   Megaphone,
   MessageSquare,
   MessagesSquare,
   Mic,
+  Network,
+  Newspaper,
   NotebookPen,
+  Orbit,
+  Phone,
   Plug,
+  PlugZap,
+  Podcast,
   Presentation,
+  Printer,
+  QrCode,
+  Repeat,
+  Rewind,
   ScanLine,
+  ScrollText,
   Search,
-  Settings,
+  Send,
+  Shapes,
+  Share2,
+  ShoppingBag,
+  Smartphone,
+  Speech,
+  SquarePen,
   Star,
+  Stethoscope,
+  Swords,
   Table2,
+  Tags,
   Target,
+  Telescope,
+  Trash2,
+  UserRound,
   Users,
   Video,
   Webhook,
@@ -55,7 +100,13 @@ export const PRODUCT_FAMILIES: readonly { id: ProductFamily; label: string }[] =
   { id: "know-make", label: "Know & Make" },
   { id: "business", label: "Run the business" },
   { id: "yours", label: "Yours" },
+  { id: "solutions", label: "Solutions" },
 ];
+
+/** A product whose whole menu is one unlabelled section. */
+function oneSection(items: FrameProduct["menu"][number]["items"]): FrameProduct["menu"] {
+  return [{ id: "main", items }];
+}
 
 export const PRODUCTS: readonly FrameProduct[] = [
   // ── Build ────────────────────────────────────────────────────────────
@@ -73,11 +124,36 @@ export const PRODUCTS: readonly FrameProduct[] = [
           { id: "mandates", label: "Mandates", icon: ListChecks },
           { id: "agents", label: "Agents", icon: Webhook },
           { id: "workflows", label: "Workflows", icon: Workflow },
-          { id: "hindsight", label: "Hindsight review", icon: Eye },
-          { id: "replay", label: "Replay", icon: History },
+          { id: "hindsight", label: "Hindsight", icon: Eye },
+          { id: "replay", label: "Replay", icon: Rewind },
+          { id: "schedules", label: "Schedules", icon: CalendarClock },
+          { id: "shapes", label: "Shapes", icon: Shapes },
+        ],
+      },
+      {
+        id: "studios",
+        label: "Studios",
+        items: [
+          { id: "agent-studio", label: "Agent Studio", icon: SquarePen },
+          { id: "orchestra-studio", label: "Orchestra Studio", icon: Network },
+          { id: "workflow-studio", label: "Workflow Studio", icon: Workflow, external: true },
         ],
       },
     ],
+  },
+  {
+    id: "masterwork",
+    name: "Masterwork",
+    family: "build",
+    icon: Telescope,
+    color: "indigo",
+    homeHref: "/masterwork",
+    menu: oneSection([
+      { id: "vision-interviews", label: "Vision Interviews", icon: Speech },
+      { id: "rulebooks", label: "Rulebooks", icon: ScrollText },
+      { id: "encore", label: "Encore", icon: Repeat },
+      { id: "import-chats", label: "Import your AI chats", icon: Import },
+    ]),
   },
   {
     id: "applets",
@@ -86,7 +162,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: AppWindow,
     color: "fuchsia",
     homeHref: "/applets",
-    menu: [{ id: "main", items: [{ id: "all", label: "All applets", icon: AppWindow }] }],
+    menu: oneSection([{ id: "all", label: "All applets", icon: AppWindow }]),
   },
   {
     id: "code",
@@ -95,33 +171,25 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Code2,
     color: "slate",
     homeHref: "/code",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "projects", label: "Projects", icon: Folder },
-          { id: "files", label: "Files", icon: FolderTree },
-          { id: "sessions", label: "Sessions", icon: History },
-        ],
-      },
-    ],
+    menu: oneSection([
+      { id: "workspace", label: "Code Workspace", icon: Code2 },
+      { id: "sandboxes", label: "Sandboxes", icon: Container },
+      { id: "connections", label: "Coding Connections", icon: PlugZap },
+    ]),
   },
   {
-    id: "tools",
-    name: "Tools & Connectors",
+    id: "connectors",
+    name: "Connectors",
     family: "build",
     icon: Plug,
     color: "teal",
-    homeHref: "/tools",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "connectors", label: "Connectors", icon: Plug },
-          { id: "tools", label: "Tools", icon: Wrench },
-        ],
-      },
-    ],
+    homeHref: "/connectors",
+    menu: oneSection([
+      { id: "catalog", label: "Connectors catalog", icon: LayoutGrid },
+      { id: "agent-connections", label: "Agent Connections", icon: Webhook },
+      { id: "sources", label: "Connected Sources", icon: FolderInput },
+      { id: "connect-ai", label: "Connect your AI", icon: PlugZap },
+    ]),
   },
   // ── Know & Make ──────────────────────────────────────────────────────
   {
@@ -131,16 +199,16 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Library,
     color: "indigo",
     homeHref: "/knowledge",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "collections", label: "Collections", icon: Layers },
-          { id: "sources", label: "Sources", icon: BookOpen },
-          { id: "search", label: "Search", icon: Search },
-        ],
-      },
-    ],
+    menu: oneSection([
+      { id: "library", label: "Library", icon: Library },
+      { id: "sources", label: "Sources", icon: BookOpen },
+      { id: "research", label: "Research", icon: Telescope },
+      { id: "news", label: "News", icon: Newspaper },
+      { id: "scraper", label: "Web Scraper", icon: Globe },
+      { id: "graph", label: "Knowledge Graph", icon: Orbit },
+      { id: "extractions", label: "Extractions", icon: FileInput },
+      { id: "search-lab", label: "Search Lab", icon: Search },
+    ]),
   },
   {
     id: "docs",
@@ -153,19 +221,12 @@ export const PRODUCTS: readonly FrameProduct[] = [
       {
         id: "main",
         items: [
-          { id: "home", label: "Home", icon: House },
-          { id: "recent", label: "Recent", icon: History },
-          { id: "starred", label: "Starred", icon: Star },
-        ],
-      },
-      {
-        id: "kinds",
-        label: "Kinds",
-        items: [
-          { id: "documents", label: "Documents", icon: FileText, count: 42 },
           { id: "notes", label: "Notes", icon: NotebookPen, count: 118 },
+          { id: "documents", label: "Documents", icon: FileText, count: 42 },
           { id: "slides", label: "Slides", icon: Presentation, count: 7 },
-          { id: "pdf", label: "PDF & scan", icon: ScanLine },
+          { id: "visual-maps", label: "Visual Maps", icon: Map },
+          { id: "markdown-studio", label: "Markdown Studio", icon: SquarePen },
+          { id: "pdf", label: "PDF & Scan", icon: ScanLine },
         ],
       },
       {
@@ -186,15 +247,31 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Database,
     color: "emerald",
     homeHref: "/data",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "tables", label: "Tables", icon: Table2 },
-          { id: "views", label: "Views", icon: Layers },
-        ],
-      },
-    ],
+    menu: oneSection([
+      { id: "bases", label: "Bases", icon: Table2 },
+      { id: "workbooks", label: "Workbooks", icon: Files },
+      { id: "pick-lists", label: "Pick Lists", icon: ListTree },
+      { id: "forms", label: "Forms", icon: ClipboardList },
+      { id: "templates", label: "Templates", icon: LayoutDashboard },
+    ]),
+  },
+  {
+    id: "drive",
+    name: "Drive",
+    family: "know-make",
+    icon: HardDrive,
+    color: "cyan",
+    homeHref: "/drive",
+    menu: oneSection([
+      { id: "all", label: "All files", icon: Folder },
+      { id: "recents", label: "Recents", icon: History },
+      { id: "starred", label: "Starred", icon: Star },
+      { id: "shared", label: "Shared", icon: Share2 },
+      { id: "photos", label: "Photos", icon: Images },
+      { id: "google-drive", label: "Google Drive", icon: HardDrive },
+      { id: "requests", label: "File Requests", icon: Inbox },
+      { id: "trash", label: "Trash", icon: Trash2 },
+    ]),
   },
   {
     id: "media",
@@ -203,7 +280,12 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Image,
     color: "fuchsia",
     homeHref: "/media",
-    menu: [{ id: "main", items: [{ id: "library", label: "Library", icon: Image }] }],
+    menu: oneSection([
+      { id: "images", label: "Images", icon: Image },
+      { id: "camera", label: "Camera", icon: Camera },
+      { id: "video", label: "Video", icon: Video },
+      { id: "crop", label: "Crop", icon: Crop },
+    ]),
   },
   {
     id: "audio",
@@ -212,16 +294,13 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: AudioLines,
     color: "rose",
     homeHref: "/audio",
-    menu: [{ id: "main", items: [{ id: "recordings", label: "Recordings", icon: Mic }] }],
-  },
-  {
-    id: "storage",
-    name: "Storage",
-    family: "know-make",
-    icon: HardDrive,
-    color: "cyan",
-    homeHref: "/storage",
-    menu: [{ id: "main", items: [{ id: "files", label: "All files", icon: Folder }] }],
+    menu: oneSection([
+      { id: "transcripts", label: "Transcripts", icon: FileText },
+      { id: "scribe", label: "Scribe", icon: Mic },
+      { id: "transcript-studio", label: "Transcript Studio", icon: SquarePen },
+      { id: "voice-playground", label: "Voice Playground", icon: AudioWaveform },
+      { id: "voices", label: "Voices", icon: Speech },
+    ]),
   },
   // ── Run the business ─────────────────────────────────────────────────
   {
@@ -231,30 +310,13 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Contact,
     color: "orange",
     homeHref: "/crm",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "inbox", label: "Inbox", icon: Inbox, count: 3 },
-          { id: "contacts", label: "Contacts", icon: Contact, count: 1284 },
-          { id: "companies", label: "Companies", icon: Building2, count: 312 },
-          { id: "deals", label: "Deals", icon: Target, count: 27 },
-        ],
-      },
-      {
-        id: "insights",
-        label: "Insights",
-        items: [
-          { id: "reports", label: "Reports", icon: BarChart3 },
-          { id: "activity", label: "Activity", icon: History },
-        ],
-      },
-      {
-        id: "setup",
-        label: "Setup",
-        items: [{ id: "settings", label: "Settings", icon: Settings }],
-      },
-    ],
+    menu: oneSection([
+      { id: "people", label: "People & Companies", icon: Users, count: 1284 },
+      { id: "deals", label: "Deals", icon: Target, count: 27 },
+      { id: "outreach", label: "Outreach", icon: Send },
+      { id: "chasebox", label: "Chasebox", icon: Inbox, count: 3 },
+      { id: "import", label: "Import", icon: Import },
+    ]),
   },
   {
     id: "hr",
@@ -263,7 +325,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: IdCard,
     color: "amber",
     homeHref: "/hr",
-    menu: [{ id: "main", items: [{ id: "people", label: "People", icon: Users }] }],
+    menu: oneSection([{ id: "people", label: "People", icon: Users }]),
   },
   {
     id: "marketing",
@@ -272,25 +334,43 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Megaphone,
     color: "lime",
     homeHref: "/marketing",
-    menu: [{ id: "main", items: [{ id: "campaigns", label: "Campaigns", icon: Megaphone }] }],
+    menu: oneSection([
+      { id: "brands", label: "Brands", icon: Tags },
+      { id: "seo", label: "SEO", icon: Search },
+      { id: "social", label: "Social", icon: Share2 },
+      { id: "cms", label: "CMS", icon: LayoutDashboard },
+      { id: "podcasts", label: "Podcasts", icon: Podcast },
+      { id: "reports", label: "Reports", icon: BarChart3 },
+      { id: "automations", label: "Automations", icon: Workflow },
+    ]),
   },
   {
-    id: "meetings",
-    name: "Meetings & Communication",
+    id: "meet",
+    name: "Meet",
     family: "business",
     icon: Video,
     color: "sky",
-    homeHref: "/meetings",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "meet", label: "Meet", icon: Video },
-          { id: "calendar", label: "Calendar", icon: CalendarDays },
-          { id: "messages", label: "Messages", icon: MessagesSquare },
-        ],
-      },
-    ],
+    homeHref: "/meet",
+    menu: oneSection([
+      { id: "meetings", label: "Meetings", icon: Video },
+      { id: "calls", label: "Calls", icon: Phone },
+      { id: "booking", label: "Booking", icon: CalendarClock },
+    ]),
+  },
+  {
+    id: "messages",
+    name: "Messages",
+    family: "business",
+    icon: MessagesSquare,
+    color: "blue",
+    homeHref: "/messages",
+    menu: oneSection([
+      { id: "messenger", label: "Messenger", icon: MessagesSquare },
+      { id: "email", label: "Email", icon: Mail },
+      { id: "sms", label: "SMS", icon: Smartphone },
+      { id: "templates", label: "Templates", icon: LayoutDashboard },
+      { id: "staff", label: "Your Staff", icon: UserRound },
+    ]),
   },
   {
     id: "business-tools",
@@ -299,25 +379,31 @@ export const PRODUCTS: readonly FrameProduct[] = [
     icon: Briefcase,
     color: "slate",
     homeHref: "/business-tools",
-    menu: [
-      {
-        id: "main",
-        items: [
-          { id: "esign", label: "E-sign", icon: FileSignature },
-          { id: "scan", label: "PDF & scan", icon: ScanLine },
-        ],
-      },
-    ],
+    menu: oneSection([
+      { id: "esign", label: "E-Signatures", icon: FileSignature },
+      { id: "pdf", label: "PDF & Scan", icon: ScanLine },
+      { id: "print", label: "Print & Labels", icon: Printer },
+      { id: "qr", label: "QR & Barcodes", icon: QrCode },
+      { id: "utilities", label: "Utilities", icon: Wrench },
+    ]),
   },
   // ── Yours ────────────────────────────────────────────────────────────
   {
-    id: "main",
-    name: "Main",
+    id: "workspace",
+    name: "Workspace",
     family: "yours",
-    icon: House,
+    icon: LayoutGrid,
     color: "blue",
-    homeHref: "/dashboard",
-    menu: [{ id: "main", items: [{ id: "home", label: "Your workspace", icon: House }] }],
+    homeHref: "/workspace",
+    menu: oneSection([
+      { id: "start", label: "Start", icon: LayoutGrid },
+      { id: "board", label: "Board", icon: Kanban },
+      { id: "war-room", label: "War Room", icon: Swords },
+      { id: "spaces", label: "Spaces", icon: Folder },
+      { id: "pages", label: "Pages & Dashboards", icon: LayoutDashboard },
+      { id: "make", label: "Make", icon: Shapes },
+      { id: "projects", label: "Projects & Tasks", icon: ListChecks },
+    ]),
   },
   {
     id: "chat",
@@ -330,8 +416,9 @@ export const PRODUCTS: readonly FrameProduct[] = [
       {
         id: "main",
         items: [
-          { id: "new", label: "New chat", icon: MessageSquare },
-          { id: "search", label: "Search chats", icon: Search },
+          { id: "chat", label: "Chat", icon: MessageSquare },
+          { id: "voice", label: "Voice", icon: Mic },
+          { id: "talk", label: "Talk", icon: Speech },
         ],
       },
       {
@@ -345,14 +432,42 @@ export const PRODUCTS: readonly FrameProduct[] = [
       },
     ],
   },
+  // ── Solutions ────────────────────────────────────────────────────────
   {
-    id: "solutions",
-    name: "Solutions",
-    family: "yours",
-    icon: Factory,
-    color: "teal",
-    homeHref: "/solutions",
-    menu: [{ id: "main", items: [{ id: "all", label: "All solutions", icon: Factory }] }],
+    id: "education",
+    name: "Education",
+    family: "solutions",
+    icon: GraduationCap,
+    color: "amber",
+    homeHref: "/solutions/education",
+    menu: oneSection([{ id: "home", label: "Education", icon: GraduationCap }]),
+  },
+  {
+    id: "legal",
+    name: "Legal",
+    family: "solutions",
+    icon: Gavel,
+    color: "slate",
+    homeHref: "/solutions/legal",
+    menu: oneSection([{ id: "home", label: "Legal", icon: Gavel }]),
+  },
+  {
+    id: "commerce",
+    name: "Commerce",
+    family: "solutions",
+    icon: ShoppingBag,
+    color: "emerald",
+    homeHref: "/solutions/commerce",
+    menu: oneSection([{ id: "home", label: "Commerce", icon: Handshake }]),
+  },
+  {
+    id: "medical",
+    name: "Medical",
+    family: "solutions",
+    icon: Stethoscope,
+    color: "rose",
+    homeHref: "/solutions/medical",
+    menu: oneSection([{ id: "home", label: "Medical", icon: Stethoscope }]),
   },
 ];
 

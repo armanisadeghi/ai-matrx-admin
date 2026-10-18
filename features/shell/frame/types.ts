@@ -2,7 +2,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ChipHue } from "@ai-matrx/design-system/controls";
 
-export type ProductFamily = "build" | "know-make" | "business" | "yours";
+export type ProductFamily = "build" | "know-make" | "business" | "yours" | "solutions";
 
 export interface FrameMenuItem {
   id: string;
@@ -10,6 +10,8 @@ export interface FrameMenuItem {
   icon: LucideIcon;
   /** A count shown at the row's end (meta). */
   count?: number;
+  /** Opens in a new tab (a studio that runs outside the product). */
+  external?: boolean;
 }
 
 export interface FrameMenuSection {

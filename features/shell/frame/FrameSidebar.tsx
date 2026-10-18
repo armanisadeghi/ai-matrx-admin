@@ -4,7 +4,7 @@
 // name on top, then only this product's menu. It sits on the app background
 // with no border. The top row is the header's height and offset, so the
 // product name lines up with the sheet's breadcrumbs.
-import { PanelLeftClose } from "lucide-react";
+import { ExternalLink, PanelLeftClose } from "lucide-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
 import type { AppGridProps } from "./AppGrid";
@@ -69,7 +69,9 @@ export function FrameSidebar({
                       selected={item.id === activeItemId}
                       aria-current={item.id === activeItemId ? "page" : undefined}
                       end={
-                        item.count != null ? (
+                        item.external ? (
+                          <ExternalLink className="size-3.5 text-muted-foreground" aria-label="Opens in a new tab" />
+                        ) : item.count != null ? (
                           <span className="type-meta text-muted-foreground">
                             {item.count.toLocaleString()}
                           </span>
