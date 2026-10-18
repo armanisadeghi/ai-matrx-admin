@@ -8,9 +8,18 @@
 // div. Add future non-NotesView /notes/[id]/<segment> pages to
 // STANDALONE_SUFFIXES and static /notes/<segment> pages to STANDALONE_SEGMENTS.
 
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { NotesView } from "./NotesView";
 import type { NotesShellLayouts } from "./notesShellLayout";
+
+// Split at the route condition (code-splitting Method A): the workspace's code
+// loads only where it renders. Under a standalone page (/notes/speed-test,
+// /notes/[id]/diff) the layout used to ship the whole workspace bundle anyway
+// (~10 MB of dev JS on the empty page, 2026-10-18 census). SSR stays on, so
+// /notes and /notes/[id] still paint from the server HTML.
+const NotesView = dynamic(() => import("./NotesView").then((m) => m.NotesView), {
+  loading: () => null,
+});
 
 const STANDALONE_SUFFIXES = ["/diff"];
 /** Static siblings of `[id]` that are their own page: the workspace (and every
