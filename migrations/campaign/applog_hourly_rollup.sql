@@ -210,3 +210,101 @@ insert into platform.entity_types (
 alter function ops.app_log_hourly_refresh(timestamptz, timestamptz) set work_mem = '256MB';
 -- and the raw covering index now carries request_id (built CONCURRENTLY as _v2 over the session pooler, old one dropped CONCURRENTLY, renamed):
 --   create index concurrently idx_app_log_created_at_drill_v2 on ops.app_log (created_at) include (level, feature, route, logger_name, exc_type, host_role, classified, user_id, request_id);
+
+-- 2026-10-18 (lane APPLOG-ROLLUP, coordinator ruling): Requests counted per hour. Phase 1 then phase 2, each one transaction:
+-- alter table ops._app_log_hourly add column if not exists requests bigint;
+-- comment on column ops._app_log_hourly.requests is 'Distinct requests among this row''s lines (counted per hour and group).';
+-- create or replace view ops._app_log_lines with (security_invoker = true) as
+--   select l.id, l.created_at, l.level, l.feature, l.route, l.logger_name, l.message, l.exc_type, l.request_id, l.user_id,
+--          l.host_role, l.classified, 1::bigint as lines, null::bigint as requests
+--     from ops.app_log l;
+-- select 'phase1 ok';
+-- -- lane APPLOG-ROLLUP 2026-10-18: Requests counted per hour (coordinator ruling): the summary keeps a per-row distinct
+-- -- request count instead of request ids, so 7 d / 30 d questions read ~20x fewer rows.
+-- select pg_advisory_xact_lock(hashtextextended('ops._app_log_hourly', 0));
+-- truncate ops._app_log_hourly;
+-- drop index ops._app_log_hourly_group_uidx;
+-- alter table ops._app_log_hourly drop column request_id;
+-- alter table ops._app_log_hourly alter column requests set not null, alter column requests set default 0;
+-- create unique index _app_log_hourly_group_uidx on ops._app_log_hourly
+--   (created_at, level, feature, route, logger_name, exc_type, host_role, classified, user_id)
+--   include (lines, requests) nulls not distinct;
+-- comment on table ops._app_log_hourly is
+--   'APPLOG-ROLLUP: ops.app_log counted per UTC hour by level, feature, route, logger, exception kind, host role, classified and person, with lines and the distinct requests among them — the fact of the declared drill definition structured_logs for hour grain and coarser (the raw lines stay the records). Requests are counted per hour and group. Server-only: rebuilt by ops.app_log_hourly_refresh (pg_cron ops-app-log-hourly-recent and ops-app-log-hourly-nightly); read only through platform.drill_ask.';
+-- create or replace function ops.app_log_hourly_refresh(p_from timestamptz, p_to timestamptz)
+-- returns bigint
+-- language plpgsql
+-- security definer
+-- set search_path to 'pg_catalog'
+-- set work_mem to '256MB'
+-- as $function$
+-- declare
+--   v_from  timestamptz := date_trunc('hour', p_from, 'UTC');
+--   v_to    timestamptz := date_trunc('hour', p_to, 'UTC') + case when p_to = date_trunc('hour', p_to, 'UTC') then interval '0' else interval '1 hour' end;
+--   v_reach boolean;
+--   v_cut   timestamptz;
+--   v_prev  record;
+--   v_n     bigint;
+-- begin
+--   if p_from is null or p_to is null or p_to <= p_from then
+--     raise exception 'app_log_hourly_refresh: the window must be a non-empty [from, to) range' using errcode = '22023';
+--   end if;
+--   -- ONE REBUILD AT A TIME: the recent job queues behind the nightly 35-day rebuild instead of double counting.
+--   perform pg_advisory_xact_lock(hashtextextended('ops._app_log_hourly', 0));
+-- 
+--   -- A rebuild that reaches now makes the summary exact up to this instant and says so; it first reaches back to
+--   -- where the summary last counted through, so counted hours stay unbroken. One that does not reach now never
+--   -- counts past covered_to, so no hour holds a line the answer's as_of does not cover.
+--   select covered_from, covered_to into v_prev from ops._app_log_hourly_watermark where singleton;
+--   v_cut := clock_timestamp();
+--   v_reach := v_to > v_cut;
+--   if v_reach then
+--     if v_prev.covered_to is not null and v_prev.covered_to < v_from then
+--       v_from := date_trunc('hour', v_prev.covered_to, 'UTC');
+--     end if;
+--   else
+--     v_cut := least(v_to, coalesce(v_prev.covered_to, v_to));
+--   end if;
+-- 
+--   delete from ops._app_log_hourly where created_at >= v_from and created_at < v_to;
+--   -- requests: the distinct requests among this hour-and-group's lines (a request spanning hours or groups counts in each)
+--   insert into ops._app_log_hourly (
+--     created_at, level, feature, route, logger_name, exc_type, host_role, classified, user_id, lines, requests, refreshed_at)
+--   select date_trunc('hour', l.created_at, 'UTC'), l.level, l.feature, l.route, l.logger_name, l.exc_type, l.host_role,
+--          l.classified, l.user_id, count(*), count(distinct l.request_id), now()
+--     from ops.app_log l
+--    where l.created_at >= v_from and l.created_at < v_cut
+--    group by 1, 2, 3, 4, 5, 6, 7, 8, 9;
+--   get diagnostics v_n = row_count;
+-- 
+--   if v_reach then
+--     insert into ops._app_log_hourly_watermark as w (singleton, covered_from, covered_to, refreshed_at)
+--     values (true, v_from, v_cut, clock_timestamp())
+--     on conflict (singleton) do update
+--        set covered_from = case when w.covered_to >= excluded.covered_from then least(w.covered_from, excluded.covered_from)
+--                                else excluded.covered_from end,
+--            covered_to   = excluded.covered_to,
+--            refreshed_at = excluded.refreshed_at;
+--   end if;
+--   return v_n;
+-- end
+-- $function$;
+-- create or replace function platform.drill_def__structured_logs()
+-- returns jsonb
+-- language sql
+-- immutable
+-- set search_path to 'pg_catalog'
+-- as $function$
+--   select $drill${"key":"structured_logs","label":"Structured logs","grain":"one row per hour for each level, feature, route, logger, exception kind, host role, classified and person","fact":"app_log_hourly","mode":"definer","lanes":["platform","mine"],"lane_rules":{"platform":{"rule":"super_admin"},"mine":{"column":"user_id"}},"dimensions":[{"key":"level","label":"Level","from":"level","kind":"choice","cardinality":"low","choices":[{"value":"DEBUG","label":"Debug"},{"value":"INFO","label":"Info"},{"value":"WARNING","label":"Warning"},{"value":"ERROR","label":"Error"},{"value":"CRITICAL","label":"Critical"}],"level":{"breakouts":["feature","route","logger_name","exc_type","created_at:hour"],"show":["count","requests","people"]}},{"key":"feature","label":"Feature","from":"feature","kind":"text","cardinality":"medium","empty_label":"No feature stamped","level":{"breakouts":["level","route","exc_type","logger_name","created_at:hour"],"show":["count","requests","people"]}},{"key":"route","label":"Route","from":"route","kind":"text","cardinality":"medium","empty_label":"No route","level":{"breakouts":["level","feature","exc_type","created_at:hour"],"show":["count","requests","people"]}},{"key":"logger_name","label":"Logger","from":"logger_name","kind":"text","cardinality":"medium","level":{"breakouts":["level","feature","route","created_at:hour"],"show":["count","requests","people"]}},{"key":"exc_type","label":"Exception kind","from":"exc_type","kind":"text","cardinality":"medium","empty_label":"No exception","level":{"breakouts":["feature","route","level","created_at:hour"],"show":["count","requests","people"]}},{"key":"host_role","label":"Host role","from":"host_role","kind":"text","cardinality":"low","empty_label":"Not stamped"},{"key":"classified","label":"Classified","from":"classified","kind":"boolean"},{"key":"created_at","label":"When","from":"created_at","kind":"time","grains":["year","quarter","month","week","day","hour"]}],"measures":[{"key":"count","label":"Log lines","op":"sum","of":"lines","unit":"count","additive":true},{"key":"requests","label":"Requests","op":"sum","of":"requests","unit":"count","additive":true,"description":"Counted per hour: a request that spans hours or groups counts in each"},{"key":"people","label":"People","op":"count_distinct","of":"user_id","unit":"count","additive":false}],"paths":[{"key":"when","label":"When","levels":["created_at:day","created_at:hour"]}],"records":{"fact":"app_log_lines","columns":["created_at","level","feature","route","logger_name","message","exc_type","request_id","user_id","host_role","classified","id"],"labels":{"created_at":"When","logger_name":"Logger","exc_type":"Exception kind","request_id":"Request","user_id":"Person","host_role":"Host role","id":"Log line"}},"stale_after_knob":"drill.app_log.stale_after_minutes","default":{"by":["level"],"show":["count","requests"],"sort":{"key":"count","direction":"desc"}}}$drill$::jsonb;
+-- $function$;
+-- 
+-- comment on function platform.drill_def__structured_logs() is
+--   'DRILL-STANDARD-DOOR: the declared drill definition "Structured logs" (structured_logs), compiled from its *.drill.ts file by aidream apps/shared/records/scripts/drill-sync.ts. Code, not data: never edited by hand.';
+-- do $$
+-- declare p jsonb;
+-- begin
+--   p := platform.drill_definition_problems(platform.drill_declared('structured_logs'));
+--   if p is not null and p <> '[]'::jsonb and p <> '{}'::jsonb then raise exception 'structured_logs is not sound: %', p; end if;
+-- end $$;
+-- select ops.app_log_hourly_refresh(now() - interval '35 days', now()) as refilled;
+-- select count(*) rows_now, pg_size_pretty(pg_total_relation_size('ops._app_log_hourly')) size from ops._app_log_hourly;
