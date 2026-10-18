@@ -21,10 +21,6 @@ import {
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 
-// The section heading is "Links"; hide the list's own fixed "Resources" label
-// (it would repeat it) and keep the Add / refresh controls right-aligned.
-const HIDE_LIST_HEADING =
-  "[&>div:first-child]:justify-end [&>div:first-child>h3]:hidden";
 
 const TOPIC_LINK_TOKENS = [
   "web_brand",
@@ -60,7 +56,7 @@ export function ResearchTopicLinks({
         adapter={adapter}
         tokens={[...TOPIC_LINK_TOKENS]}
         variant="compact"
-        className={HIDE_LIST_HEADING}
+        title={null}
       />
     </section>
   );
