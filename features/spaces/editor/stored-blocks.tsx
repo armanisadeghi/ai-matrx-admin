@@ -13,7 +13,7 @@ import type { Node as PmNode } from "@tiptap/pm/model";
 import { DATABASE_EVENT_CLAIMS, DatabaseHost, activeLayout, paintedSizesOf, pickPainted } from "./database-host";
 import DisplayMath from "@/features/math/components/DisplayMath";
 import InlineMathText from "@/features/math/components/InlineMathText";
-import { AlignCenter, AlignLeft, AlignRight, Captions, FileText, Globe, Paperclip, Replace, TriangleAlert } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, Captions, FileText, Paperclip, Replace, TriangleAlert } from "lucide-react";
 import { useLinkPreview } from "@/lib/link-preview";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
@@ -31,6 +31,7 @@ import { embedTarget } from "./embed-providers";
 import { SpaceEmbedFrame } from "./SpaceEmbedFrame";
 import { openMediaPicker, type MediaKind } from "./media-insert";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 const DatabaseBlockView = dynamic(() => import("../data/DatabaseBlock").then((m) => m.DatabaseBlock), {
   ssr: false,
@@ -352,12 +353,7 @@ function BookmarkBlock({ p }: { p: Record<string, unknown> }) {
           <span className="spaces-bookmark-title">{card?.title || hostOf(url)}</span>
           {card?.description ? <span className="spaces-bookmark-desc">{card.description}</span> : null}
           <span className="spaces-bookmark-url">
-            {card?.favicon_url ? (
-              // eslint-disable-next-line @next/next/no-img-element -- a site's favicon, any host
-              <img src={card.favicon_url} alt="" width={16} height={16} className="spaces-bookmark-favicon" />
-            ) : (
-              <Globe size={12} strokeWidth={1.8} />
-            )}
+            <SiteIcon site={url} iconUrl={card?.favicon_url} size={16} />
             <span className="truncate">{url}</span>
           </span>
         </span>

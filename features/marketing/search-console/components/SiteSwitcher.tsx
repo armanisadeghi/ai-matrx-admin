@@ -8,7 +8,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Globe } from "lucide-react";
+import { Check } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -21,6 +21,7 @@ import { listSiteOptions } from "@/features/marketing/data/service";
 import { parseSiteIntegrations } from "@/features/marketing/data/integrations-schema";
 import type { MarketingSite } from "@/features/marketing/types";
 import { cn } from "@/lib/utils";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 export function useSiteOptions() {
   return useQuery({
@@ -71,7 +72,7 @@ export function SiteSwitcher({
           aria-label="Select site"
         >
           <span className="flex min-w-0 items-center gap-1.5">
-            <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <SiteIcon site={selected?.domain} size={14} />
             <span className="truncate">
               {selected ? (selected.name ?? selected.domain) : "Select a site"}
             </span>

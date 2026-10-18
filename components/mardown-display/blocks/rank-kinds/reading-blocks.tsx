@@ -105,7 +105,7 @@ export function SeoRankReadingBlock({
             >
               <SearchFavicon
                 url={url}
-                className="h-4 w-4 flex-shrink-0 rounded-sm"
+                size={16}
               />
               <span className="truncate">{url}</span>
               <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-60" />

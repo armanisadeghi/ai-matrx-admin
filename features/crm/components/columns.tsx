@@ -10,7 +10,6 @@ import {
   BadgeCheck,
   Building2,
   ChevronRight,
-  Globe,
   PenLine,
   PhoneOff,
   ShieldCheck,
@@ -32,6 +31,7 @@ import {
   WRITTEN_BY_FILTER_LABEL,
 } from "../types";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 const DATE_BUCKET_OPTIONS = DATE_BUCKETS.map((b) => ({
   value: b.value,
@@ -205,7 +205,7 @@ export const PARTY_COLUMNS: MatrxColumnDef<PartyListRow>[] = [
     cell: (row) =>
       row.primary_domain ? (
         <span className="type-body inline-flex min-w-0 items-center gap-1.5 text-muted-foreground">
-          <Globe className="h-3 w-3 shrink-0" />
+          <SiteIcon site={row.primary_domain} size={14} />
           <span className="truncate">{row.primary_domain}</span>
         </span>
       ) : (

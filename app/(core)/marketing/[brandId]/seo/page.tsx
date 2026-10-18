@@ -12,7 +12,7 @@
  */
 
 import Link from "next/link";
-import { ArrowRight, Globe, Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { NoWebsiteState } from "@/features/marketing/components/shared/NoWebsiteState";
@@ -25,6 +25,7 @@ import { KeywordIntelligenceHub } from "@/features/marketing/seo/hub/KeywordInte
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 export default function MarketingBrandSeoPage() {
   const brand = useMarketingBrand();
@@ -77,7 +78,7 @@ export default function MarketingBrandSeoPage() {
                   )}
                   className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-accent/50"
                 >
-                  <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <SiteIcon site={site.domain} size={16} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-foreground">
                       {site.name ?? site.domain}

@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
 import { cn } from "@/utils/cn";
-import { Globe, FileText, Camera, MonitorPlay, BellRing } from "lucide-react";
+import { FileText, Camera, MonitorPlay, BellRing } from "lucide-react";
 
 import { CLOUD_BROWSER_ASSIST_SURFACE } from "../constants";
 import { useCloudBrowser } from "../hooks/useCloudBrowser";
@@ -67,6 +67,7 @@ import { AuthenticatorPanel } from "./AuthenticatorPanel";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useArtifactBodyOutput } from "@/features/canvas/output/bodyOutput";
 import { printCapturedImage } from "@/features/canvas/output/printCapture";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 /** A screenshot frame's bytes (a data URL or a signed image URL). */
 async function screenshotBlob(url: string): Promise<Blob> {
@@ -346,7 +347,7 @@ export function CloudBrowserBody({
         />
         {cb.run?.currentUrl ? (
           <div className="flex items-center gap-1.5 truncate rounded-md border border-border bg-muted px-2 py-1 text-xs text-muted-foreground">
-            <Globe className="h-3.5 w-3.5 shrink-0" />
+            <SiteIcon site={cb.run.currentUrl} size={14} />
             <span className="truncate">
               {cb.run.currentTitle ?? cb.run.currentUrl}
             </span>

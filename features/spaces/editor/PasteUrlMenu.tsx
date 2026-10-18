@@ -87,16 +87,14 @@ async function toAppletBlock(editor: SpacesEditor, p: PastedUrl, slug: string) {
 /** B12 — a web address as Notion's link mention: favicon + the page's name (its host and path until a title is known). */
 function linkMentionSpan(url: string) {
   let title = url;
-  let icon: string | undefined;
   try {
     const u = new URL(url);
     const path = u.pathname.replace(/\/$/, "");
     title = `${u.host.replace(/^www\./, "")}${path}`;
-    icon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(u.host)}&sz=64`;
   } catch {
     /* keep the raw address */
   }
-  return { text: title, mention: { kind: "link", url, title, ...(icon ? { icon } : {}) } };
+  return { text: title, mention: { kind: "link", url, title } };
 }
 
 type InlineItem = { type: string; href?: string; content?: unknown; props?: Record<string, unknown> };

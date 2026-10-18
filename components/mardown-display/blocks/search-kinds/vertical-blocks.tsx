@@ -171,7 +171,7 @@ export function ProductResultBlock({ serverData, className }: BlockProps) {
         </span>
         {merchant && (
           <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-            <SearchFavicon iconUrl={merchantLogo} url={url} className="h-3.5 w-3.5" />
+            <SearchFavicon iconUrl={merchantLogo} url={url} size={14} />
             <span className="truncate">{merchant}</span>
           </span>
         )}

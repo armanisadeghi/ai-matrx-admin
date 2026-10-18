@@ -19,7 +19,7 @@
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useMotionValue, useTransform, type PanInfo, type Transition } from "motion/react";
-import { Check, ChevronUp, ExternalLink, Globe, Info, LayoutDashboard, Pencil, RotateCcw, Users, X } from "lucide-react";
+import { Check, ChevronUp, ExternalLink, Info, LayoutDashboard, Pencil, RotateCcw, Users, X } from "lucide-react";
 import { PANEL_MOTION_CLASS, Peek, PeekHoverCard, Skeleton, type PeekBlock } from "@ai-matrx/design-system";
 import { Badge, Button, DecisionControl, Field, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -38,6 +38,7 @@ import { WeThinkHint } from "../WeThinkHint";
 import { useLogoGroups } from "../logoGroups";
 import { ANSWER_LABEL, isGapKey, optionsFor, type Answer, type FocusItem } from "./queue";
 import { SECTION_LABEL, sectionOf } from "./fold";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 export interface AnsweredEntry {
   /** Unique per answer (an item answered, undone and answered again has two). */
@@ -769,7 +770,7 @@ export function ValidateStage({
                         <ul className="flex w-full max-w-xs flex-col gap-3 text-left text-base">
                           {site ? (
                             <li className="flex items-center gap-3">
-                              <Globe className="size-4 shrink-0 text-primary" aria-hidden />
+                              <SiteIcon site={site} size={16} />
                               <span className="truncate">Reading {websiteHost(site)}</span>
                             </li>
                           ) : null}

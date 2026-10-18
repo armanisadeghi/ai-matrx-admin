@@ -12,7 +12,7 @@
  */
 
 import React, { useMemo } from "react";
-import { CalendarPlus, Clock, ExternalLink, Globe, MapPin, UserPlus } from "lucide-react";
+import { CalendarPlus, Clock, ExternalLink, MapPin, UserPlus } from "lucide-react";
 import { EmailValue, PhoneValue } from "@ai-matrx/design-system";
 
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -24,6 +24,7 @@ import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { readSearchKindValue, text } from "../search-kinds/search-kind-data";
 import { eventText, eventToCalendar } from "./event-calendar";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 interface AnswerKindBlockProps {
   serverData?: unknown;
@@ -122,7 +123,7 @@ export function ContactBlock({ serverData, className }: AnswerKindBlockProps) {
         ) : null}
         {website ? (
           <li className="flex items-start gap-1.5">
-            <Globe className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <SiteIcon site={website} size={14} className="mt-0.5" />
             <OutboundLink className={LINK} href={webHref(website)}>{website}</OutboundLink>
           </li>
         ) : null}

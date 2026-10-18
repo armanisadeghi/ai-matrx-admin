@@ -58,7 +58,7 @@ export function PageLinkBlock({ serverData, className }: BlockProps) {
 
   return (
     <div className={cn("flex items-start gap-2 py-1", className)}>
-      <SiteFavicon url={url} className="mt-0.5 h-4 w-4 shrink-0" />
+      <SiteFavicon url={url} className="mt-0.5" />
       <div className="min-w-0 flex-1">
         <OutboundLink
           href={url}

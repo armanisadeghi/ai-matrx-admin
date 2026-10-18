@@ -6,7 +6,7 @@
 import { REMIND_CHOICES, dateTimeWords, joinDayTime } from "./date-mention";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 import { createReactInlineContentSpec } from "@blocknote/react";
-import { ArrowUpRight, Bell, FileText, Globe } from "lucide-react";
+import { ArrowUpRight, Bell, FileText } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Field, Select } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
@@ -21,6 +21,7 @@ import { useSeededLink } from "../page/space-links";
 import { useSpaces } from "../state/SpacesProvider";
 import { InlineMath } from "./stored-blocks";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 function readSpan(raw: unknown): RichSpan {
   try {
@@ -74,9 +75,6 @@ function LinkMention({ url, title: storedTitle, icon: storedIcon }: { url: strin
       return url;
     }
   })();
-  // A favicon that fails to load (blocked, 404) leaves no gap: the globe stands in, as in Notion.
-  const [failedIcon, setFailedIcon] = useState<string | null>(null);
-  const isImage = !!icon && /^(https?:|data:|\/)/.test(icon) && failedIcon !== icon;
   return (
     <span className="spaces-mention-linkwrap">
       <OutboundLink
@@ -85,12 +83,7 @@ function LinkMention({ url, title: storedTitle, icon: storedIcon }: { url: strin
         onMouseDown={(e) => e.stopPropagation()}
       >
         <span className="spaces-mention-icon">
-          {isImage ? (
-            // eslint-disable-next-line @next/next/no-img-element -- a site's favicon, any host
-            <img src={icon} alt="" width={14} height={14} style={{ width: 14, height: 14, borderRadius: 3 }} onError={() => setFailedIcon(icon ?? null)} />
-          ) : (
-            <Globe size={14} strokeWidth={1.6} />
-          )}
+          <SiteIcon site={url} iconUrl={icon} size={14} />
         </span>
         <span className="spaces-mention-title">{title || host}</span>
       </OutboundLink>

@@ -230,7 +230,7 @@ export default function ScrapedPageBlock({ serverData, className }: Props) {
     <div className={cn("my-2 space-y-3", className)}>
       {/* ------------------------------------------------------- header */}
       <div className="flex items-start gap-3">
-        <SiteFavicon url={responseUrl} className="mt-0.5 h-9 w-9 shrink-0 p-1.5" />
+        <SiteFavicon url={responseUrl} size={32} className="mt-0.5" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <OutboundLink

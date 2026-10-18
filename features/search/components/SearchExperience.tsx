@@ -30,7 +30,6 @@ import {
   Camera,
   ExternalLink,
   FileText,
-  Globe,
   ImageIcon,
   Info,
   Link2,
@@ -115,6 +114,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 // ── Vocabulary ──────────────────────────────────────────────────────────────
 
@@ -1249,7 +1249,7 @@ function PageRead({
             {special.platform ? (
               <PlatformMark platform={special.platform} size={14} />
             ) : (
-              <Globe className="h-3.5 w-3.5 shrink-0" />
+              <SiteIcon site={site} size={14} />
             )}
             <span className="truncate">{site}</span>
           </div>

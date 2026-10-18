@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
-  Globe,
   Link2Off,
   Radio,
   ShieldCheck,
@@ -49,6 +48,7 @@ import {
   type ExternalDomainRollup,
 } from "./model";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 function StatChip({
   value,
@@ -119,7 +119,7 @@ function DomainRow({
         className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-accent/40"
       >
         <Chevron className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <SiteIcon site={domain.domain} size={14} />
         <span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">
           {domain.domain}
         </span>

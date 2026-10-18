@@ -5,73 +5,36 @@
  * the platform's best search renderers (Inventory Law survey, 2026-08-20):
  * URL/domain/favicon/site-name/breadcrumb/date logic comes from the canonical
  * `parseSearch.ts` (tool-call-visualization search renderer — never
- * re-implemented), and the favicon fallback uses the 3-stage pattern from
- * `features/research/components/results/SourceFavicon.tsx` (source-supplied
- * icon → Google favicon service → Globe).
+ * re-implemented), and the favicon fallback uses the canonical `SiteIcon`.
  *
  * Provider thumbnails/favicons are EXTERNAL media (not ours): a plain <img>
  * with an onError fallback is the correct treatment (media-durability law
  * applies to OUR files only).
  */
 
-import React, { useState } from "react";
-import { Globe, Star, StarHalf } from "lucide-react";
+import React from "react";
+import { Star, StarHalf } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 import {
-  getFaviconUrl,
   getBreadcrumbParts,
 } from "@ai-matrx/chat/tool-call-visualization/renderers/search/parseSearch";
 
 /**
- * 3-stage favicon: explicit provider-supplied icon URL → Google favicon
- * service (derived from the result URL) → Globe. Never a broken image.
+ * A result's site icon: the provider's own icon URL when it sent one, else the
+ * site's real icon from its URL, the Globe only as a last resort. The canonical
+ * `SiteIcon` owns the fallback chain and the reserved, shimmering box.
  */
 export const SearchFavicon: React.FC<{
   /** Provider-supplied icon URL (favicon / source_logo), when it sent one. */
   iconUrl?: string | null;
-  /** The result URL — feeds the favicon-service fallback. */
+  /** The result URL (or hostname) the site icon is derived from. */
   url?: string | null;
+  size?: number;
   className?: string;
-}> = ({ iconUrl, url, className }) => {
-  const serviceUrl = url ? getFaviconUrl(url, 64) : "";
-  // Providers stream: the URLs can arrive/change after first mount, so the
-  // failure record is keyed to the inputs and reset during render when they
-  // change (the sanctioned adjust-state-on-prop-change pattern — no effect).
-  const key = `${iconUrl ?? ""}|${serviceUrl}`;
-  const [failed, setFailed] = useState({ key, icon: false, service: false });
-  if (failed.key !== key) {
-    setFailed({ key, icon: false, service: false });
-  }
-
-  const stage: 0 | 1 | 2 =
-    iconUrl && !failed.icon ? 0 : serviceUrl && !failed.service ? 1 : 2;
-  const src = stage === 0 ? iconUrl : stage === 1 ? serviceUrl : null;
-  if (!src) {
-    return (
-      <span
-        className={cn(
-          "flex items-center justify-center text-muted-foreground",
-          className,
-        )}
-      >
-        <Globe className="h-full w-full" />
-      </span>
-    );
-  }
-  return (
-    <img
-      src={src}
-      alt=""
-      loading="lazy"
-      className={cn("object-contain", className)}
-      onError={() =>
-        setFailed((f) =>
-          stage === 0 ? { ...f, icon: true } : { ...f, service: true },
-        )
-      }
-    />
-  );
-};
+}> = ({ iconUrl, url, size = 16, className }) => (
+  <SiteIcon site={url} iconUrl={iconUrl} size={size} className={className} />
+);
 
 /** Google-style `origin › segment › segment` line. */
 export const BreadcrumbLine: React.FC<{

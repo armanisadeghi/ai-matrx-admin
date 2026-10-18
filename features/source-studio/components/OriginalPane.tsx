@@ -25,6 +25,7 @@ import {
   type SeekRequest,
 } from "@/features/source-studio/sourceStudioModel";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 
 export interface OriginalPaneProps {
   view: OriginalView;
@@ -222,7 +223,7 @@ function WebSnapshot({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-1.5 text-xs text-muted-foreground">
-        <Globe className="h-3.5 w-3.5 shrink-0" />
+        <SiteIcon site={url} size={14} />
         <span className="shrink-0">As captured</span>
         {url && (
           <OutboundLink

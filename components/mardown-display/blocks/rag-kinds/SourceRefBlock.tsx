@@ -161,7 +161,8 @@ export function SourceRefBlock({
         <SearchFavicon
           iconUrl={text(value.favicon)}
           url={url}
-          className="mt-0.5 h-4 w-4 shrink-0 rounded-sm"
+          size={16}
+          className="mt-0.5"
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">

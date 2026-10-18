@@ -177,7 +177,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
               <SearchFavicon
                 iconUrl={text(value.favicon)}
                 url={url}
-                className="h-5 w-5 rounded-sm"
+                size={20}
               />
             </span>
             <div className="min-w-0 flex-1">
@@ -345,7 +345,7 @@ export function NewsResultBlock({ serverData, className }: SearchKindBlockProps)
           <SearchFavicon
             iconUrl={text(value.source_logo)}
             url={url}
-            className="h-4 w-4 flex-shrink-0"
+            size={16}
           />
           <span className="truncate">{text(value.site_name) ?? ""}</span>
           {value.is_breaking === true && (
@@ -502,7 +502,7 @@ export function FaqItemBlock({ serverData, className }: SearchKindBlockProps) {
             <SearchFavicon
               iconUrl={text(value.favicon)}
               url={sourceUrl}
-              className="h-3.5 w-3.5 flex-shrink-0"
+              size={14}
             />
             <span className="truncate">{sourceTitle ?? sourceUrl}</span>
           </OutboundLink>
@@ -549,7 +549,7 @@ export function DiscussionResultBlock({
         <SearchFavicon
           iconUrl={text(value.favicon)}
           url={url}
-          className="h-4 w-4 flex-shrink-0"
+          size={16}
         />
         <span className="truncate text-foreground">{text(value.forum_name) ?? ""}</span>
         {date && <span className="shrink-0">· {date}</span>}

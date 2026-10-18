@@ -508,7 +508,7 @@ export function EntityCardBlock({
                 <SearchFavicon
                   iconUrl={profile.favicon}
                   url={profile.url}
-                  className="h-4 w-4 flex-shrink-0"
+                  size={16}
                 />
                 {profile.name}
               </OutboundLink>
@@ -729,7 +729,7 @@ export function AiAnswerKindBlock({
               title={ref.url}
             >
               <span className="tabular-nums text-muted-foreground">{i + 1}</span>
-              <SearchFavicon url={ref.url} className="h-3.5 w-3.5 flex-shrink-0" />
+              <SearchFavicon url={ref.url} size={14} />
               <span className="truncate">{ref.label}</span>
             </OutboundLink>
           ))}

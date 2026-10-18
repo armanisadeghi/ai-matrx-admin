@@ -14,45 +14,23 @@
  */
 
 import React, { useState } from "react";
-import { Globe, ImageOff } from "lucide-react";
+import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SiteIcon } from "@/components/official/site-icon/SiteIcon";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import {
-  getFaviconUrl,
   getBreadcrumbParts,
 } from "@ai-matrx/chat/tool-call-visualization/renderers/search/parseSearch";
 
 import { DisclosureHeader } from "@ai-matrx/design-system/controls";
-/** Favicon for a page: favicon service derived from the URL → Globe. */
+/** A page's site icon, from its URL; the Globe only when the site has none. */
 export const SiteFavicon: React.FC<{
   url?: string | null;
+  size?: number;
   className?: string;
-}> = ({ url, className }) => {
-  const serviceUrl = url ? getFaviconUrl(url, 64) : "";
-  const [failedFor, setFailedFor] = useState<string | null>(null);
-  if (!serviceUrl || failedFor === serviceUrl) {
-    return (
-      <span
-        className={cn(
-          "flex items-center justify-center rounded bg-muted text-muted-foreground",
-          className,
-        )}
-      >
-        <Globe className="h-1/2 w-1/2" />
-      </span>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={serviceUrl}
-      alt=""
-      loading="lazy"
-      className={cn("rounded object-contain", className)}
-      onError={() => setFailedFor(serviceUrl)}
-    />
-  );
-};
+}> = ({ url, size = 16, className }) => (
+  <SiteIcon site={url} size={size} className={className} />
+);
 
 /** External image with a graceful placeholder — never a broken-image icon. */
 export const ExternalImage: React.FC<{
