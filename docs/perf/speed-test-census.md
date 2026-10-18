@@ -23,12 +23,12 @@ identity. Dev-server timings are inflated, so on localhost count the requests; t
 
 Full per-route tables: `docs/perf/speed-test-census-live-2026-10-18.md`.
 
-- **The empty `(core)` page, signed out, makes 0 DB calls** on 72 of 78 routes. It still ships
+- **The empty `(core)` page, signed out, makes 0 DB calls** on 76 of 78 routes. It still ships
   **249 JS files / 13.5 MB decoded (4.3 MB on the wire)** for one heading. That is the shell, not the page.
 - **TTFB 0.3–4.6 s** on the same empty page (`/voice` 4.2 s, `/education` 4.6 s, `/presentations` 3.9 s,
   `/reports` 3.9 s, `/messages` 3.5 s), while `/chat` was 0.36 s. That spread is the cold-route Lambda, not
   work. The 103 Early Hints response comes about 400 ms before the real first byte (e.g. `/speed-test` 103 at 253 ms, real 641 ms).
-- 11 module layouts redirect a signed-out visitor to `/login`. On those routes only 90 files / 4.9 MB load:
+- 9 module layouts redirect a signed-out visitor to `/login`. On those routes only 90 files / 4.9 MB load:
   administration, dashboard, detail, hr, launchpad, masterwork, projects, scraper, tasks.
 - **Module layouts that fetch on an empty page (signed out):**
   - `/spaces`: rpc `space_sidebar` (+ CORS preflight) → **401**, then the client navigates to `/login`.
