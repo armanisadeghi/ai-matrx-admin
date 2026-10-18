@@ -307,7 +307,7 @@ function DebriefTab({
         variant={parsed ? "outline" : "primary"}
         onClick={() => setDebrief(key, { status: "choosing" })}
       >
-        {debrief ? "Debrief again" : "Debrief the latest answer"}
+        {debrief && debrief.status !== "choosing" ? "Debrief again" : "Debrief the latest answer"}
       </Button>
       {!debrief ? <p className="text-xs text-muted-foreground">Opens under the answer in the center</p> : null}
       {debrief?.status === "running" ? <p className="text-xs text-muted-foreground">Reading the run…</p> : null}
