@@ -17,6 +17,13 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { AgentCategoryPicker } from "@/features/agents/components/settings/AgentCategoryPicker";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   Undo,
@@ -420,6 +427,31 @@ export function AgentSettingsForm({
                 }}
                 placeholder="0"
               />
+            </div>
+
+            {/* Knowledge awareness — what the agent is told about the knowledge
+                it can search, in its system prompt on the first turn. */}
+            <div
+              className="space-y-2 flex flex-col"
+              data-surface-value="agent_rag_awareness_mode"
+            >
+              <Label className="text-sm font-semibold flex items-center gap-1.5">
+                Knowledge awareness
+                <InfoHint text="Off: the agent is told nothing. Count only: it is told how many knowledge stores it can search. Store list: it is told each store's name and description (up to 5)." />
+              </Label>
+              <Select
+                value={draft.ragAwarenessMode ?? agent.ragAwarenessMode ?? "none"}
+                onValueChange={(next) => handleUpdate("ragAwarenessMode", next)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Off</SelectItem>
+                  <SelectItem value="hint">Count only</SelectItem>
+                  <SelectItem value="inline_small">Store list</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
