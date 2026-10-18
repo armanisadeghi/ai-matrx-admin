@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { cn } from "@/lib/utils";
-import { useAdminUserLabel } from "@/features/admin/users/useAdminUserLabel";
+import { useAdminUserLabel, usableLabel } from "@/features/admin/users/useAdminUserLabel";
 import { userDoors, userRecordHref } from "../record/userSurfaces";
 import { AdminUserPeek } from "./AdminUserPeek";
 
@@ -120,8 +120,10 @@ export function AdminUserRef({
 }: AdminUserRefProps) {
   // Given only an id, look the person up (batched, cached) — an admin never reads a bare id
   // where a person is meant. A caller that passed a name or email costs nothing.
-  const looked = useAdminUserLabel(userId, Boolean(name?.trim() || email?.trim()));
-  const shownName = name?.trim() || looked.label?.trim() || null;
+  // A placeholder name ("User", the front of the email) is never a name: the email stands in.
+  const passed = usableLabel(name ?? null, email ?? null);
+  const looked = useAdminUserLabel(userId, Boolean(passed));
+  const shownName = passed || looked.label?.trim() || null;
   const shownEmail = email?.trim() || looked.email?.trim() || null;
   const primary = shownName || shownEmail || null;
   const secondary = !hideEmail && primary !== shownEmail ? shownEmail : null;
