@@ -29,7 +29,10 @@ AGENTS_0_57 = ("export interface WarmupController { warmSession(orgId: string): 
 AGENTS_0_58 = ("export interface WarmupController { warmSession(orgId: string): void; "
                "currentScope(): { organizationId: string | null }; }\n"
                "export declare function createWarmup(): WarmupController;\n")
-WARMUP_HOST = ("import { createWarmup } from '@ai-matrx/api';\n"
+# The fake package below is @ai-matrx/agents exporting "./matrx"; this specifier must name it. A
+# repo-wide import codemod (c7905fdf895) once rewrote it to '@ai-matrx/api', which the fixture
+# never installs, so the hold fired on TS2307 instead of the missing currentScope() member.
+WARMUP_HOST = ("import { createWarmup } from '@ai-matrx/agents/matrx';\n"
                "const warmup = createWarmup();\n"
                "export function lastScope() { return warmup.currentScope(); }\n")
 CLINIC_HOURS = "export const CLINIC_HOURS = { open: '08:00', close: '17:30' };\n"

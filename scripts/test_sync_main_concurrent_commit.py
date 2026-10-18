@@ -37,9 +37,15 @@ class ConcurrentCommitIsNotAFailure(unittest.TestCase):
         self.cwd = os.getcwd()
         os.chdir(self.repo)
         self.orig = sm.sweep_message_body
+        # This suite is about the commit race, not the sweep check (test_sync_main_sweep_hold.py
+        # owns that). This throwaway repo has no scripts/check-sweep-resolves.mjs, and sync-main
+        # pauses without it, so hold nothing here.
+        self.orig_holds = sm.sweep_holds
+        sm.sweep_holds = lambda: []
 
     def tearDown(self):
         sm.sweep_message_body = self.orig
+        sm.sweep_holds = self.orig_holds
         os.chdir(self.cwd)
 
     def test_other_session_commits_the_staged_files(self):
