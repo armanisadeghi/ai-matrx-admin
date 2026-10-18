@@ -22,6 +22,7 @@
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 
+import { packFindWords } from "./template-search";
 import type { PageProperty, RichSpan, SpaceBlock, SpaceColor, SpaceMedia, SpacePageSettings } from "./types";
 
 export const SPACE_PACK_VERSION = 1 as const;
@@ -40,6 +41,9 @@ export const SPACE_TEMPLATE_CATEGORIES = [
   { key: "finance", label: "Finance" },
   { key: "education", label: "School & learning" },
   { key: "personal", label: "Personal" },
+  { key: "healthcare", label: "Healthcare" },
+  { key: "legal", label: "Legal" },
+  { key: "realestate", label: "Real estate" },
 ] as const;
 export type SpaceTemplateCategory = (typeof SPACE_TEMPLATE_CATEGORIES)[number]["key"];
 
@@ -112,6 +116,8 @@ export interface SpaceTemplatePack extends PackIdentity {
 /** What the card carries under `space` (custom.template.card.space). */
 export interface SpaceTemplateCardFace extends PackIdentity {
   pages: number;
+  /** What is inside, as search words (table names, view names and layouts, page titles): template-search.ts packFindWords. */
+  find?: string[];
   /** Set when the pack makes a board: what the Board gallery lists (the Spaces gallery lists only packs with pages). */
   board?: { title: string; chapters: number; pages: number };
 }
@@ -184,6 +190,7 @@ export function packCardFace(pack: SpaceTemplatePack): SpaceTemplateCardFace {
     category: pack.category,
     tags: [...pack.tags],
     pages: pack.pages.length,
+    find: packFindWords(pack),
     ...(pack.board
       ? { board: { title: pack.board.title, chapters: pack.board.chapters.length, pages: pack.board.pages?.length ?? 0 } }
       : {}),

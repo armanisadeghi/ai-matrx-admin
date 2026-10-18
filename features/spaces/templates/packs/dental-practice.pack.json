@@ -1,0 +1,4022 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0400",
+  "version": 1,
+  "title": "Dental Practice",
+  "description": "Patients, appointments, treatment plans, claims and supplies for a small dental office.",
+  "forWho": "Dental offices and solo dentists",
+  "icon": {
+    "emoji": "🦷"
+  },
+  "cover": {
+    "url": "gallery:photo-ocean-horizon",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "dental",
+    "patients",
+    "appointments",
+    "claims"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-dental-practice",
+    "catalogueId": "SP0400",
+    "useCase": "Rosalind Achterberg runs the front desk at a small dental office and uses this to see today's schedule, who is due for a recall, which treatment plans are waiting on a decision and which claims need a follow-up call.",
+    "industry": "healthcare",
+    "vertical": "Dental practice",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Larkspur Family Dental",
+      "describes": "A two-dentist family practice with one hygienist and a small front office.",
+      "address": {
+        "line1": "218 Meridian Court",
+        "city": "Boise",
+        "region": "ID",
+        "postalCode": "83702",
+        "country": "US"
+      },
+      "phone": "(208) 555-0160",
+      "website": "larkspurdental.net",
+      "email": "hello@larkspurdental.net",
+      "timezone": "America/Boise"
+    },
+    "cleanupTag": "use-case:spaces-dental-practice",
+    "tables": [
+      {
+        "token": "appointment",
+        "name": "Appointments",
+        "labelSingular": "Appointment",
+        "labelPlural": "Appointments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "appt_title",
+        "describes": "Every booked visit with its patient, provider, type and status.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "appt_title",
+            "label": "Appointment",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "patient",
+            "label": "Patient",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "patient",
+            "relationMax": 1
+          },
+          {
+            "key": "provider",
+            "label": "Provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "visit_type",
+            "label": "Visit type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hygiene visit",
+              "New patient exam",
+              "Filling",
+              "Crown",
+              "Root canal",
+              "Emergency",
+              "Consult"
+            ],
+            "choiceColors": {
+              "Hygiene visit": "blue",
+              "New patient exam": "green",
+              "Filling": "amber",
+              "Crown": "violet",
+              "Root canal": "teal",
+              "Emergency": "red",
+              "Consult": "orange"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Confirmed",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "Confirmed": "green",
+              "Checked in": "amber",
+              "Completed": "violet",
+              "No-show": "teal",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Confirmed": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Scheduled"
+          },
+          {
+            "key": "coordinator",
+            "label": "Front desk owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checkin_btn",
+            "label": "Check in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "appointment_checkin"
+            }
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "appointment_complete"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "a01",
+            "values": {
+              "appt_title": "Hygiene visit - Fairweather",
+              "patient": "p02",
+              "provider": "tm-priya",
+              "when_at": "@today 09:00",
+              "visit_type": "Hygiene visit",
+              "status": "Checked in",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "a02",
+            "values": {
+              "appt_title": "Filling - Hargreave",
+              "patient": "p04",
+              "provider": "tm-marcus",
+              "when_at": "@today 10:30",
+              "visit_type": "Filling",
+              "status": "Confirmed",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "a03",
+            "values": {
+              "appt_title": "New patient exam - Okonkwo-Reyes",
+              "patient": "p05",
+              "provider": "tm-ines",
+              "when_at": "@today 14:00",
+              "visit_type": "New patient exam",
+              "status": "Scheduled",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "a04",
+            "values": {
+              "appt_title": "Crown prep - Mbeki",
+              "patient": "p08",
+              "provider": "tm-marcus",
+              "when_at": "@mon+3d 11:00",
+              "visit_type": "Crown",
+              "status": "Confirmed"
+            }
+          },
+          {
+            "key": "a05",
+            "values": {
+              "appt_title": "Hygiene visit - Eklund",
+              "patient": "p07",
+              "provider": "tm-priya",
+              "when_at": "@mon+4d 08:30",
+              "visit_type": "Hygiene visit",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "a06",
+            "values": {
+              "appt_title": "Consult - Solheim",
+              "patient": "p12",
+              "provider": "tm-marcus",
+              "when_at": "@mon+2d 15:30",
+              "visit_type": "Consult",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "a07",
+            "values": {
+              "appt_title": "Root canal - Pruitt",
+              "patient": "p09",
+              "provider": "tm-ines",
+              "when_at": "@today+3d 09:30",
+              "visit_type": "Root canal",
+              "status": "Confirmed"
+            }
+          },
+          {
+            "key": "a08",
+            "values": {
+              "appt_title": "Hygiene visit - Akers",
+              "patient": "p01",
+              "provider": "tm-priya",
+              "when_at": "@today+5d 13:00",
+              "visit_type": "Hygiene visit",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "a09",
+            "values": {
+              "appt_title": "Emergency - Delacroix",
+              "patient": "p10",
+              "provider": "tm-marcus",
+              "when_at": "@today-2d 16:15",
+              "visit_type": "Emergency",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a10",
+            "values": {
+              "appt_title": "Hygiene visit - Hargreave",
+              "patient": "p04",
+              "provider": "tm-priya",
+              "when_at": "@today-14d 10:00",
+              "visit_type": "Hygiene visit",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a11",
+            "values": {
+              "appt_title": "Filling - Quintero",
+              "patient": "p03",
+              "provider": "tm-ines",
+              "when_at": "@today-9d 08:00",
+              "visit_type": "Filling",
+              "status": "No-show"
+            }
+          },
+          {
+            "key": "a12",
+            "values": {
+              "appt_title": "Crown - Nakagawa-Frost",
+              "patient": "p11",
+              "provider": "tm-marcus",
+              "when_at": "@today-45d 11:30",
+              "visit_type": "Crown",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a13",
+            "values": {
+              "appt_title": "Hygiene visit - Pruitt",
+              "patient": "p09",
+              "provider": "tm-priya",
+              "when_at": "@today-100d 09:30",
+              "visit_type": "Hygiene visit",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a14",
+            "values": {
+              "appt_title": "Consult - Brandvold",
+              "patient": "p06",
+              "provider": "tm-ines",
+              "when_at": "@today-30d 14:30",
+              "visit_type": "Consult",
+              "status": "Cancelled"
+            }
+          },
+          {
+            "key": "a15",
+            "values": {
+              "appt_title": "Hygiene visit - Eklund (last)",
+              "patient": "p07",
+              "provider": "tm-priya",
+              "when_at": "@today-70d 09:00",
+              "visit_type": "Hygiene visit",
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "a16",
+            "values": {
+              "appt_title": "Exam - Mbeki",
+              "patient": "p08",
+              "provider": "tm-marcus",
+              "when_at": "@today-5d 13:30",
+              "visit_type": "New patient exam",
+              "status": "Completed"
+            }
+          }
+        ],
+        "independentOf": {
+          "patient": "The two sides move on their own schedule and status; neither forces the other.",
+          "provider": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Checked in"
+            ],
+            "filled": [
+              "provider"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "provider"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Visit note",
+            "values": {
+              "status": "Scheduled",
+              "appt_title": "New appointment"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reason for visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Procedure recorded in the chart"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next step explained to the patient"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Front desk follow-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Claim started if insurance applies"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder set for the recall date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "patient",
+        "name": "Patients",
+        "labelSingular": "Patient",
+        "labelPlural": "Patients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "patient_name",
+        "describes": "Everyone the practice cares for, their recall date, insurance and balance.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "patient_name",
+            "label": "Patient",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Active",
+              "Recall due",
+              "Inactive"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Active": "green",
+              "Recall due": "amber",
+              "Inactive": "violet"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "insurance",
+            "label": "Insurance",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Summit Dental PPO",
+              "Harbor Mutual",
+              "Cascade HMO",
+              "Self-pay"
+            ],
+            "choiceColors": {
+              "Summit Dental PPO": "blue",
+              "Harbor Mutual": "green",
+              "Cascade HMO": "amber",
+              "Self-pay": "violet"
+            }
+          },
+          {
+            "key": "last_visit",
+            "label": "Last visit",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_recall",
+            "label": "Next recall",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hygienist",
+            "label": "Preferred provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "visits",
+            "label": "Visits completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "appointments",
+            "pick": "appt_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "claims",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "paid",
+            "label": "Paid to date",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "claims",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "balance",
+            "label": "Outstanding balance",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Billed to date} - {Paid to date}"
+          },
+          {
+            "key": "book_btn",
+            "label": "Book visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "appointment",
+              "template": "Visit note",
+              "prefill": {
+                "patient": "@row"
+              }
+            }
+          },
+          {
+            "key": "plan_btn",
+            "label": "Add treatment plan",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "treatment",
+              "template": "Plan presentation",
+              "prefill": {
+                "patient": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "p01",
+            "values": {
+              "patient_name": "Gwendolyn Akers",
+              "status": "Active",
+              "phone": "(208) 555-0170",
+              "email": "gwen.akers@mailbox-demo.net",
+              "insurance": "Summit Dental PPO",
+              "last_visit": "@today-160d",
+              "next_recall": "@today+20d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p02",
+            "values": {
+              "patient_name": "Odell Fairweather",
+              "status": "Active",
+              "phone": "(208) 555-0171",
+              "email": "odell.f@mailbox-demo.net",
+              "insurance": "Harbor Mutual",
+              "last_visit": "@today-30d",
+              "next_recall": "@today+150d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p03",
+            "values": {
+              "patient_name": "Marisol Quintero",
+              "status": "Recall due",
+              "phone": "(208) 555-0172",
+              "email": "marisol.q@mailbox-demo.net",
+              "insurance": "Cascade HMO",
+              "last_visit": "@today-210d",
+              "next_recall": "@today-12d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p04",
+            "values": {
+              "patient_name": "Tobin Hargreave",
+              "status": "Active",
+              "phone": "(208) 555-0173",
+              "email": "tobin.h@mailbox-demo.net",
+              "insurance": "Summit Dental PPO",
+              "last_visit": "@today-14d",
+              "next_recall": "@today+165d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p05",
+            "values": {
+              "patient_name": "Amara Okonkwo-Reyes",
+              "status": "New",
+              "phone": "(208) 555-0174",
+              "email": "amara.or@mailbox-demo.net",
+              "insurance": "Self-pay",
+              "hygienist": "tm-ines"
+            }
+          },
+          {
+            "key": "p06",
+            "values": {
+              "patient_name": "Leopold Brandvold",
+              "status": "Recall due",
+              "phone": "(208) 555-0175",
+              "email": "leo.b@mailbox-demo.net",
+              "insurance": "Harbor Mutual",
+              "last_visit": "@today-240d",
+              "next_recall": "@today-45d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p07",
+            "values": {
+              "patient_name": "Sunniva Eklund",
+              "status": "Active",
+              "phone": "(208) 555-0176",
+              "email": "sunniva.e@mailbox-demo.net",
+              "insurance": "Summit Dental PPO",
+              "last_visit": "@today-70d",
+              "next_recall": "@today+110d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p08",
+            "values": {
+              "patient_name": "Dashiell Mbeki",
+              "status": "Active",
+              "phone": "(208) 555-0177",
+              "email": "dash.m@mailbox-demo.net",
+              "insurance": "Cascade HMO",
+              "last_visit": "@today-5d",
+              "next_recall": "@today+175d",
+              "hygienist": "tm-marcus"
+            }
+          },
+          {
+            "key": "p09",
+            "values": {
+              "patient_name": "Wilhelmina Pruitt",
+              "status": "Active",
+              "phone": "(208) 555-0178",
+              "email": "willa.p@mailbox-demo.net",
+              "insurance": "Self-pay",
+              "last_visit": "@today-100d",
+              "next_recall": "@today+80d",
+              "hygienist": "tm-marcus"
+            }
+          },
+          {
+            "key": "p10",
+            "values": {
+              "patient_name": "Cormac Delacroix",
+              "status": "Inactive",
+              "phone": "(208) 555-0179",
+              "email": "cormac.d@mailbox-demo.net",
+              "insurance": "Harbor Mutual",
+              "last_visit": "@today-700d",
+              "next_recall": "@today-520d",
+              "hygienist": "tm-marcus"
+            }
+          },
+          {
+            "key": "p11",
+            "values": {
+              "patient_name": "Yuki Nakagawa-Frost",
+              "status": "Active",
+              "phone": "(208) 555-0180",
+              "email": "yuki.nf@mailbox-demo.net",
+              "insurance": "Summit Dental PPO",
+              "last_visit": "@today-45d",
+              "next_recall": "@today+135d",
+              "hygienist": "tm-priya"
+            }
+          },
+          {
+            "key": "p12",
+            "values": {
+              "patient_name": "Benedetta Solheim",
+              "status": "New",
+              "phone": "(208) 555-0181",
+              "email": "bene.s@mailbox-demo.net",
+              "insurance": "Cascade HMO",
+              "hygienist": "tm-marcus"
+            }
+          }
+        ],
+        "independentOf": {
+          "hygienist": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "last_visit",
+            "next_recall"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New patient",
+            "values": {
+              "status": "New",
+              "patient_name": "New patient"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Fill this in with the patient at the first visit. Operational notes only; clinical charting stays in your clinical system."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Registration form received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Insurance card photographed and eligibility checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Prior records request sent, if any"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "At the visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo ID verified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Privacy notice acknowledged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Recall interval agreed and next visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes for the front desk"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "treatment",
+        "name": "Treatment plans",
+        "labelSingular": "Treatment plan",
+        "labelPlural": "Treatment plans",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "plan_title",
+        "describes": "Proposed work, what it costs and where it stands.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "plan_title",
+            "label": "Treatment plan",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "patient",
+            "label": "Patient",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "patient",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Proposed",
+              "Accepted",
+              "Scheduled",
+              "In progress",
+              "Completed",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Proposed": "blue",
+              "Accepted": "green",
+              "Scheduled": "amber",
+              "In progress": "violet",
+              "Completed": "teal",
+              "Declined": "red"
+            },
+            "statusGroups": {
+              "Proposed": "todo",
+              "Accepted": "todo",
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "Completed": "done",
+              "Declined": "done"
+            },
+            "required": true,
+            "default": "Proposed"
+          },
+          {
+            "key": "fee",
+            "label": "Fee",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "ins_claimed",
+            "label": "Insurance claimed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "claims",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "patient_part",
+            "label": "Fee after insurance",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Fee} - {Insurance claimed}"
+          },
+          {
+            "key": "presented_on",
+            "label": "Presented",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "urgency",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Routine",
+              "Soon",
+              "Urgent"
+            ],
+            "choiceColors": {
+              "Routine": "blue",
+              "Soon": "green",
+              "Urgent": "amber"
+            },
+            "default": "Routine"
+          },
+          {
+            "key": "claim_btn",
+            "label": "Start claim",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "claim",
+              "template": "Claim file",
+              "prefill": {
+                "plan": "@row"
+              }
+            }
+          },
+          {
+            "key": "accept_btn",
+            "label": "Mark accepted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "treatment_accept"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "treatment_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "plan_title": "Crown, lower right molar - Mbeki",
+              "patient": "p08",
+              "status": "In progress",
+              "fee": 1450,
+              "presented_on": "@today-20d",
+              "urgency": "Soon"
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "plan_title": "Two fillings - Hargreave",
+              "patient": "p04",
+              "status": "Scheduled",
+              "fee": 620,
+              "presented_on": "@today-9d",
+              "urgency": "Routine"
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "plan_title": "Root canal and crown - Pruitt",
+              "patient": "p09",
+              "status": "Scheduled",
+              "fee": 2380,
+              "presented_on": "@today-12d",
+              "urgency": "Urgent"
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "plan_title": "Night guard - Eklund",
+              "patient": "p07",
+              "status": "Proposed",
+              "fee": 540,
+              "presented_on": "@today-6d",
+              "urgency": "Routine"
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "plan_title": "Whitening - Akers",
+              "patient": "p01",
+              "status": "Proposed",
+              "fee": 380,
+              "presented_on": "@today-4d",
+              "urgency": "Routine"
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "plan_title": "Deep cleaning, upper arch - Quintero",
+              "patient": "p03",
+              "status": "Proposed",
+              "fee": 780,
+              "presented_on": "@today-18d",
+              "urgency": "Soon"
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "plan_title": "Bridge, upper left - Brandvold",
+              "patient": "p06",
+              "status": "Declined",
+              "fee": 3100,
+              "presented_on": "@today-60d",
+              "urgency": "Routine"
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "plan_title": "Crown, upper right - Nakagawa-Frost",
+              "patient": "p11",
+              "status": "Completed",
+              "fee": 1380,
+              "presented_on": "@today-45d",
+              "urgency": "Routine"
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "plan_title": "Extraction and implant consult - Delacroix",
+              "patient": "p10",
+              "status": "Accepted",
+              "fee": 2900,
+              "presented_on": "@today-2d",
+              "urgency": "Urgent"
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "plan_title": "Sealants - Fairweather",
+              "patient": "p02",
+              "status": "Completed",
+              "fee": 240,
+              "presented_on": "@today-30d",
+              "urgency": "Routine"
+            }
+          }
+        ],
+        "independentOf": {
+          "patient": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Accepted"
+            ],
+            "filled": [
+              "plan_title"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "plan_title"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Plan presentation",
+            "values": {
+              "status": "Proposed",
+              "plan_title": "New treatment plan"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is proposed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Options discussed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Cost conversation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fee and insurance estimate shown"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payment options offered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decision"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Patient decision recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up call set if undecided"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "claim",
+        "name": "Claims",
+        "labelSingular": "Claim",
+        "labelPlural": "Claims",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "claim_ref",
+        "describes": "Insurance claims and patient statements, from draft to paid.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "claim_ref",
+            "label": "Claim",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "claim_no",
+            "label": "Claim number",
+            "parityType": "autonumber",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "patient",
+            "label": "Patient",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "patient",
+            "relationMax": 1
+          },
+          {
+            "key": "plan",
+            "label": "Treatment plan",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "treatment",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Submitted",
+              "Paid",
+              "Denied"
+            ],
+            "choiceColors": {
+              "Draft": "blue",
+              "Submitted": "green",
+              "Paid": "amber",
+              "Denied": "violet"
+            },
+            "statusGroups": {
+              "Draft": "todo",
+              "Submitted": "in_progress",
+              "Paid": "done",
+              "Denied": "in_progress"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "submitted_on",
+            "label": "Submitted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Follow up by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "payer",
+            "label": "Payer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "claim_paid"
+            }
+          },
+          {
+            "key": "submit_btn",
+            "label": "Mark submitted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "claim_submit"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "claim_ref": "Crown claim - Mbeki",
+              "patient": "p08",
+              "plan": "t01",
+              "amount": 845,
+              "status": "Submitted",
+              "submitted_on": "@today-12d",
+              "follow_up_on": "@today+2d",
+              "payer": "Summit Dental PPO"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "claim_ref": "Crown claim - Nakagawa-Frost",
+              "patient": "p11",
+              "plan": "t08",
+              "amount": 815,
+              "status": "Paid",
+              "submitted_on": "@today-40d",
+              "follow_up_on": "@today-12d",
+              "payer": "Summit Dental PPO"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "claim_ref": "Emergency visit claim - Delacroix",
+              "patient": "p10",
+              "amount": 310,
+              "status": "Denied",
+              "submitted_on": "@today-25d",
+              "follow_up_on": "@today-3d",
+              "payer": "Harbor Mutual"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "claim_ref": "Sealant claim - Fairweather",
+              "patient": "p02",
+              "plan": "t10",
+              "amount": 235,
+              "status": "Paid",
+              "submitted_on": "@today-28d",
+              "follow_up_on": "@today-5d",
+              "payer": "Harbor Mutual"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "claim_ref": "Filling claim - Hargreave",
+              "patient": "p04",
+              "plan": "t02",
+              "amount": 410,
+              "status": "Submitted",
+              "submitted_on": "@today-8d",
+              "follow_up_on": "@today-1d",
+              "payer": "Summit Dental PPO"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "claim_ref": "Root canal statement - Pruitt",
+              "patient": "p09",
+              "plan": "t03",
+              "amount": 1380,
+              "status": "Draft",
+              "payer": "Self-pay"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "claim_ref": "Hygiene claim - Eklund",
+              "patient": "p07",
+              "amount": 190,
+              "status": "Submitted",
+              "submitted_on": "@today-10d",
+              "follow_up_on": "@mon+4d",
+              "payer": "Summit Dental PPO"
+            }
+          },
+          {
+            "key": "c08",
+            "values": {
+              "claim_ref": "Hygiene claim - Quintero",
+              "patient": "p03",
+              "amount": 520,
+              "status": "Submitted",
+              "submitted_on": "@today-16d",
+              "follow_up_on": "@today-4d",
+              "payer": "Cascade HMO"
+            }
+          },
+          {
+            "key": "c09",
+            "values": {
+              "claim_ref": "Exam claim - Akers",
+              "patient": "p01",
+              "amount": 140,
+              "status": "Paid",
+              "submitted_on": "@today-150d",
+              "follow_up_on": "@today-120d",
+              "payer": "Summit Dental PPO"
+            }
+          },
+          {
+            "key": "c10",
+            "values": {
+              "claim_ref": "Crown follow-up claim - Mbeki",
+              "patient": "p08",
+              "amount": 160,
+              "status": "Paid",
+              "submitted_on": "@today-5d",
+              "follow_up_on": "@today+9d",
+              "payer": "Summit Dental PPO"
+            }
+          }
+        ],
+        "independentOf": {
+          "patient": "The two sides move on their own schedule and status; neither forces the other.",
+          "plan": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "submitted_on",
+            "follow_up_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "amount"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Submitted"
+            ],
+            "filled": [
+              "amount"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Claim file",
+            "values": {
+              "status": "Draft",
+              "claim_ref": "New claim"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Claim checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Procedure codes match the visit note"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Eligibility confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Attachments added if required"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Follow-up log"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "supply",
+        "name": "Supplies",
+        "labelSingular": "Supply",
+        "labelPlural": "Supplies",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "item",
+        "describes": "What is on the shelf and what needs reordering.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item",
+            "label": "Supply",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Disposables",
+              "Restorative",
+              "Hygiene",
+              "Imaging",
+              "Office"
+            ],
+            "choiceColors": {
+              "Disposables": "blue",
+              "Restorative": "green",
+              "Hygiene": "amber",
+              "Imaging": "violet",
+              "Office": "teal"
+            }
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Unit cost",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "stock_check",
+            "label": "Stock check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          }
+        ],
+        "rows": [
+          {
+            "key": "s01",
+            "values": {
+              "item": "Nitrile gloves, medium (box)",
+              "category": "Disposables",
+              "on_hand": 14,
+              "reorder_at": 10,
+              "supplier": "Pinecrest Dental Supply",
+              "unit_cost": 9
+            }
+          },
+          {
+            "key": "s02",
+            "values": {
+              "item": "Composite resin, shade A2",
+              "category": "Restorative",
+              "on_hand": 6,
+              "reorder_at": 5,
+              "supplier": "Pinecrest Dental Supply",
+              "unit_cost": 42
+            }
+          },
+          {
+            "key": "s03",
+            "values": {
+              "item": "Prophy paste cups",
+              "category": "Hygiene",
+              "on_hand": 3,
+              "reorder_at": 8,
+              "supplier": "Corvane Wholesale",
+              "unit_cost": 18
+            }
+          },
+          {
+            "key": "s04",
+            "values": {
+              "item": "Bite-wing sensors, sleeves",
+              "category": "Imaging",
+              "on_hand": 40,
+              "reorder_at": 50,
+              "supplier": "Corvane Wholesale",
+              "unit_cost": 1
+            }
+          },
+          {
+            "key": "s05",
+            "values": {
+              "item": "Local anesthetic cartridges (box)",
+              "category": "Restorative",
+              "on_hand": 9,
+              "reorder_at": 6,
+              "supplier": "Pinecrest Dental Supply",
+              "unit_cost": 34
+            }
+          },
+          {
+            "key": "s06",
+            "values": {
+              "item": "Patient bibs (case)",
+              "category": "Disposables",
+              "on_hand": 4,
+              "reorder_at": 3,
+              "supplier": "Corvane Wholesale",
+              "unit_cost": 27
+            }
+          },
+          {
+            "key": "s07",
+            "values": {
+              "item": "Fluoride varnish",
+              "category": "Hygiene",
+              "on_hand": 12,
+              "reorder_at": 6,
+              "supplier": "Pinecrest Dental Supply",
+              "unit_cost": 3
+            }
+          },
+          {
+            "key": "s08",
+            "values": {
+              "item": "Sterilization pouches (box)",
+              "category": "Disposables",
+              "on_hand": 2,
+              "reorder_at": 4,
+              "supplier": "Corvane Wholesale",
+              "unit_cost": 16
+            }
+          },
+          {
+            "key": "s09",
+            "values": {
+              "item": "Appointment cards",
+              "category": "Office",
+              "on_hand": 300,
+              "reorder_at": 150,
+              "supplier": "Lakeside Print",
+              "unit_cost": 0
+            }
+          },
+          {
+            "key": "s10",
+            "values": {
+              "item": "Impression material",
+              "category": "Restorative",
+              "on_hand": 7,
+              "reorder_at": 4,
+              "supplier": "Pinecrest Dental Supply",
+              "unit_cost": 31
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each appointment links to one patient.",
+        "fromTable": "appointment",
+        "fromField": "patient",
+        "toTable": "patient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "appointments"
+      },
+      {
+        "describes": "Each appointment links to one team member.",
+        "fromTable": "appointment",
+        "fromField": "provider",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "provider_appointments"
+      },
+      {
+        "describes": "Each patient links to one team member.",
+        "fromTable": "patient",
+        "fromField": "hygienist",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "preferred_patients"
+      },
+      {
+        "describes": "Each treatment plan links to one patient.",
+        "fromTable": "treatment",
+        "fromField": "patient",
+        "toTable": "patient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "treatments"
+      },
+      {
+        "describes": "Each claim links to one patient.",
+        "fromTable": "claim",
+        "fromField": "patient",
+        "toTable": "patient",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "claims"
+      },
+      {
+        "describes": "Each claim links to one treatment plan.",
+        "fromTable": "claim",
+        "fromField": "plan",
+        "toTable": "treatment",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "claims"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-ines",
+            "values": {
+              "full_name": "Dr. Ines Valderrama",
+              "role": "Dentist",
+              "work_email": "ines@larkspurdental.net",
+              "mobile": "(208) 555-0161",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-marcus",
+            "values": {
+              "full_name": "Dr. Marcus Oyelaran",
+              "role": "Dentist",
+              "work_email": "marcus@larkspurdental.net",
+              "mobile": "(208) 555-0162",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-priya",
+            "values": {
+              "full_name": "Priya Raman",
+              "role": "Hygienist",
+              "work_email": "priya@larkspurdental.net",
+              "mobile": "(208) 555-0163",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-tobias",
+            "values": {
+              "full_name": "Tobias Lindqvist",
+              "role": "Dental assistant",
+              "work_email": "tobias@larkspurdental.net",
+              "mobile": "(208) 555-0164",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-rosalind",
+            "values": {
+              "full_name": "Rosalind Achterberg",
+              "role": "Office manager",
+              "work_email": "rosalind@larkspurdental.net",
+              "mobile": "(208) 555-0165",
+              "start_date": "@today-7y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "new_patient_request",
+        "name": "New patient request",
+        "describes": "How someone asks to become a patient.",
+        "audience": "staff",
+        "table": "patient",
+        "fields": [
+          {
+            "fieldKey": "patient_name",
+            "ask": "What is your full name?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "What is the best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "What is your email?"
+          },
+          {
+            "fieldKey": "insurance",
+            "ask": "Which insurance do you have?"
+          }
+        ],
+        "submitLabel": "Request a first visit",
+        "confirmation": "Thank you. The front desk will call to book your first visit."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "appointment_checkin",
+        "table": "appointment",
+        "name": "Check in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "appointment_complete",
+        "table": "appointment",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "treatment_accept",
+        "table": "treatment",
+        "name": "Mark accepted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Accepted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "treatment_done",
+        "table": "treatment",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "claim_paid",
+        "table": "claim",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "claim_submit",
+        "table": "claim",
+        "name": "Mark submitted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Submitted"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_appointment",
+        "name": "All appointments",
+        "table": "appointment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "appointment_board",
+        "name": "By status",
+        "table": "appointment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "appointment_cal",
+        "name": "Calendar",
+        "table": "appointment",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "appointment_today",
+        "name": "Today",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "appointment_week",
+        "name": "This week",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "appointment_next7",
+        "name": "Next 7 days",
+        "table": "appointment",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "appointment_mine",
+        "name": "My appointments",
+        "table": "appointment",
+        "kind": "grid",
+        "me": [
+          "coordinator"
+        ]
+      },
+      {
+        "token": "all_patient",
+        "name": "All patients",
+        "table": "patient",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "patient_cal",
+        "name": "Calendar",
+        "table": "patient",
+        "kind": "calendar",
+        "dateField": "next_recall",
+        "allDay": true
+      },
+      {
+        "token": "patient_week",
+        "name": "This week",
+        "table": "patient",
+        "kind": "grid",
+        "within": {
+          "next_recall": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "patient_next7",
+        "name": "Next 7 days",
+        "table": "patient",
+        "kind": "grid",
+        "within": {
+          "next_recall": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
+      },
+      {
+        "token": "patient_over",
+        "name": "Overdue",
+        "table": "patient",
+        "kind": "grid",
+        "within": {
+          "next_recall": {
+            "relative": "before_today"
+          }
+        }
+      },
+      {
+        "token": "all_treatment",
+        "name": "All treatment plans",
+        "table": "treatment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "treatment_board",
+        "name": "By status",
+        "table": "treatment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "treatment_cal",
+        "name": "Calendar",
+        "table": "treatment",
+        "kind": "calendar",
+        "dateField": "presented_on",
+        "allDay": true
+      },
+      {
+        "token": "all_claim",
+        "name": "All claims",
+        "table": "claim",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "claim_board",
+        "name": "By status",
+        "table": "claim",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "claim_cal",
+        "name": "Calendar",
+        "table": "claim",
+        "kind": "calendar",
+        "dateField": "follow_up_on",
+        "allDay": true
+      },
+      {
+        "token": "claim_week",
+        "name": "This week",
+        "table": "claim",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Submitted",
+            "Denied"
+          ]
+        }
+      },
+      {
+        "token": "claim_over",
+        "name": "Overdue",
+        "table": "claim",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Submitted",
+            "Denied"
+          ]
+        }
+      },
+      {
+        "token": "all_supply",
+        "name": "All supplies",
+        "table": "supply",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Practice assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "treatment",
+          "describes": "Every treatment plan with its patient, fee and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "patient",
+          "describes": "The patients behind each plan."
+        }
+      ],
+      "question": {
+        "ask": "How many treatment plans are waiting on a patient decision?",
+        "whyItMatters": "The office manager calls these patients every Thursday.",
+        "expect": {
+          "table": "treatment",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Proposed"
+          },
+          "answer": 3,
+          "unit": "plans"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open appointments.",
+        "action": {
+          "kind": "open",
+          "surface": "appointment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "appointment_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open patients.",
+        "action": {
+          "kind": "open",
+          "surface": "all_patient"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_patient",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open treatment plans.",
+        "action": {
+          "kind": "open",
+          "surface": "treatment_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "treatment_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "larkspurdental.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Meridian Court"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "dental-practice",
+      "parent": null,
+      "title": "Dental Practice",
+      "icon": {
+        "emoji": "🦷"
+      },
+      "cover": {
+        "url": "gallery:photo-ocean-horizon",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your dental office in one place. Start with Appointments for today's schedule, then check recalls under Patients, plans waiting for a decision, and claims that need a follow-up call. Operational tracking only; clinical charting lives in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-new-patient"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-recall"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-treatment"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-claims"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-daily"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Visits by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "visit_type",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "treatment",
+                      "view": "all_treatment"
+                    },
+                    "inline": true,
+                    "title": "Plan value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Plan value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Appointments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "appointment",
+              "view": "appointment_board"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All appointments",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "coordinator"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Patients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "patient",
+              "view": "all_patient"
+            },
+            "inline": true,
+            "title": "Patients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_recall": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_recall": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_recall": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_recall"
+              },
+              {
+                "id": "vall",
+                "name": "All patients",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "next_recall",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Treatment plans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "treatment",
+              "view": "treatment_board"
+            },
+            "inline": true,
+            "title": "Treatment plans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "presented_on"
+              },
+              {
+                "id": "vall",
+                "name": "All treatment plans",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "presented_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "claim_board"
+            },
+            "inline": true,
+            "title": "Claims",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Submitted",
+                    "Denied"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Submitted",
+                    "Denied"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "follow_up_on"
+              },
+              {
+                "id": "vall",
+                "name": "All claims",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "follow_up_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supply",
+              "view": "all_supply"
+            },
+            "inline": true,
+            "title": "Supplies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vall",
+                "name": "All supplies",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "vall"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "dental-practice",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Visits by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "visit_type",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "appointment",
+                      "view": "all_appointment"
+                    },
+                    "inline": true,
+                    "title": "Visits by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "treatment",
+                      "view": "all_treatment"
+                    },
+                    "inline": true,
+                    "title": "Plan value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Plan value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "claim",
+                      "view": "all_claim"
+                    },
+                    "inline": true,
+                    "title": "Claim value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Claim value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "patient",
+                      "view": "all_patient"
+                    },
+                    "inline": true,
+                    "title": "Patients by insurance",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Patients by insurance",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "insurance",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "supply",
+                      "view": "all_supply"
+                    },
+                    "inline": true,
+                    "title": "Supplies by category",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Supplies by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "category",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Claims needing a follow-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "all_claim"
+            },
+            "inline": true,
+            "title": "Claims needing a follow-up",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open claims",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Submitted",
+                    "Denied"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plans waiting on a decision"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "treatment",
+              "view": "all_treatment"
+            },
+            "inline": true,
+            "title": "Plans waiting on a decision",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Proposed",
+                "layout": "list",
+                "filters": {
+                  "status": "Proposed"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-new-patient",
+      "parent": "dental-practice",
+      "title": "New patient intake",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "What happens between a first call and a new patient's first chair time."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the request from the form or phone and add the person under Patients with status New."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check insurance eligibility and note the plan on the patient row."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send registration paperwork at least two days before the visit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book a New patient exam under Appointments and confirm it the day before."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Verify photo ID and insurance card."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect signed privacy acknowledgement."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree the recall interval and book it before the person leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the patient to Active and set Next recall."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-recall",
+      "parent": "dental-practice",
+      "title": "Recall and reactivation",
+      "icon": {
+        "emoji": "🔔"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Recalls keep the schedule full. Review the Patients table every Monday."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Patients, view Overdue under recall and call each person."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer two appointment times and book while on the phone."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the outcome in the patient notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When nobody answers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Try a text, then email, then a second call a week later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After three attempts over six weeks, set status to Inactive."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reactivation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Once a quarter, call Inactive patients whose last visit was under two years ago."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-treatment",
+      "parent": "dental-practice",
+      "title": "Presenting a treatment plan",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A plan that is clear and priced on the day gets accepted more often."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the room"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Show what is proposed and why in plain words."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give the insurance estimate and what is left for the patient side by side."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer payment options before the patient asks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the decision on the plan row."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If undecided, set a call for three days later."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When accepted, book the visits and use Start claim on the plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every month, look at Declined plans and note the most common reason."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-claims",
+      "parent": "dental-practice",
+      "title": "Claims and follow-up",
+      "icon": {
+        "emoji": "💳"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most delays are small errors. Catch them at submission."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Submitting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the claim from the treatment plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm procedure codes match the visit note."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the Follow up by date ten business days out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Submitted past the follow-up date means call the payer that day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Denied means read the reason, fix and resubmit within a week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Paid means mark paid and update the patient balance."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month end"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Total Submitted and Denied claims and review them with the office manager."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-daily",
+      "parent": "dental-practice",
+      "title": "Open and close checklist",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A short checklist done the same way every day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Opening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review today's Appointments and confirm the first three patients"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check Supplies marked Reorder"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print the schedule for each operatory"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark every visit Completed, No-show or Cancelled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Enter next visits before patients leave"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Start claims for any completed insurance visit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update Supplies counts for anything used heavily"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

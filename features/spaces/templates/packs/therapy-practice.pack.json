@@ -1,0 +1,3219 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0405",
+  "version": 1,
+  "title": "Mental Health Practice",
+  "description": "Inquiries, clients, sessions with note status, and statements for a counseling practice.",
+  "forWho": "Therapy and counseling practices",
+  "icon": {
+    "emoji": "🌿"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "therapy",
+    "sessions",
+    "intake",
+    "billing"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-therapy-practice",
+    "catalogueId": "SP0405",
+    "useCase": "Lowell Prescott administers a small counseling practice and uses this to answer inquiries within a day, run each clinician's session schedule, make sure notes get finished and chase unpaid statements.",
+    "industry": "healthcare",
+    "vertical": "Mental health practice",
+    "job": "intake",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Willowmere Counseling Collective",
+      "describes": "A group practice of four clinicians offering individual, couples and family counseling.",
+      "address": {
+        "line1": "1240 Fremont Avenue",
+        "city": "Minneapolis",
+        "region": "MN",
+        "postalCode": "55403",
+        "country": "US"
+      },
+      "phone": "(612) 555-0120",
+      "website": "willowmerecounseling.net",
+      "email": "hello@willowmerecounseling.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-therapy-practice",
+    "tables": [
+      {
+        "token": "inquiry",
+        "name": "Inquiries",
+        "labelSingular": "Inquiry",
+        "labelPlural": "Inquiries",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "inbox",
+        "titleField": "inq_title",
+        "describes": "Everyone who has asked for an appointment, from first message to intake booked or waitlist.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inq_title",
+            "label": "Inquiry",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website form",
+              "Provider directory",
+              "Referral from clinician",
+              "Phone call"
+            ],
+            "choiceColors": {
+              "Website form": "blue",
+              "Provider directory": "green",
+              "Referral from clinician": "amber",
+              "Phone call": "violet"
+            }
+          },
+          {
+            "key": "seeking",
+            "label": "Looking for",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Individual",
+              "Couples",
+              "Family",
+              "Teen",
+              "Assessment"
+            ],
+            "choiceColors": {
+              "Individual": "blue",
+              "Couples": "green",
+              "Family": "amber",
+              "Teen": "violet",
+              "Assessment": "teal"
+            }
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Contacted",
+              "Intake booked",
+              "Waitlist",
+              "Not a fit"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Contacted": "green",
+              "Intake booked": "amber",
+              "Waitlist": "violet",
+              "Not a fit": "teal"
+            },
+            "statusGroups": {
+              "New": "todo",
+              "Contacted": "in_progress",
+              "Intake booked": "in_progress",
+              "Waitlist": "in_progress",
+              "Not a fit": "done"
+            },
+            "required": true,
+            "default": "New"
+          },
+          {
+            "key": "reply_by",
+            "label": "Reply by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contacted_btn",
+            "label": "Mark contacted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_contacted"
+            }
+          },
+          {
+            "key": "booked_btn",
+            "label": "Intake booked",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inquiry_booked"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "q01",
+            "values": {
+              "inq_title": "Individual inquiry - Calloway",
+              "source": "Website form",
+              "seeking": "Individual",
+              "received_on": "@today-1d",
+              "status": "New",
+              "reply_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "q02",
+            "values": {
+              "inq_title": "Couples inquiry - Ibarra and Nwosu",
+              "source": "Provider directory",
+              "seeking": "Couples",
+              "received_on": "@today",
+              "status": "New",
+              "reply_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "q03",
+            "values": {
+              "inq_title": "Teen inquiry - parent of Okada",
+              "source": "Referral from clinician",
+              "seeking": "Teen",
+              "received_on": "@today-3d",
+              "status": "Contacted",
+              "reply_by": "@mon+2d"
+            }
+          },
+          {
+            "key": "q04",
+            "values": {
+              "inq_title": "Individual inquiry - Brightwater",
+              "source": "Phone call",
+              "seeking": "Individual",
+              "received_on": "@today-6d",
+              "status": "Contacted",
+              "reply_by": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "q05",
+            "values": {
+              "inq_title": "Assessment inquiry - Vasquez-Lund",
+              "source": "Website form",
+              "seeking": "Assessment",
+              "received_on": "@today-9d",
+              "status": "Intake booked",
+              "reply_by": "@today-7d"
+            }
+          },
+          {
+            "key": "q06",
+            "values": {
+              "inq_title": "Family inquiry - Teller",
+              "source": "Provider directory",
+              "seeking": "Family",
+              "received_on": "@today-11d",
+              "status": "Waitlist",
+              "reply_by": "@today-9d"
+            }
+          },
+          {
+            "key": "q07",
+            "values": {
+              "inq_title": "Individual inquiry - Marchetti",
+              "source": "Website form",
+              "seeking": "Individual",
+              "received_on": "@today-16d",
+              "status": "Not a fit",
+              "reply_by": "@today-14d"
+            }
+          },
+          {
+            "key": "q08",
+            "values": {
+              "inq_title": "Individual inquiry - Osei-Bonsu",
+              "source": "Phone call",
+              "seeking": "Individual",
+              "received_on": "@today-2d",
+              "status": "New",
+              "reply_by": "@mon+4d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "received_on",
+            "reply_by"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Contacted"
+            ],
+            "filled": [
+              "source"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Intake booked"
+            ],
+            "filled": [
+              "source"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Inquiry",
+            "values": {
+              "status": "New",
+              "inq_title": "New inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Reply within one business day. Share only what your own policies allow in writing."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Reply log"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fit discussed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intake offered or waitlist explained"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fees and cancellation policy sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "session",
+        "name": "Sessions",
+        "labelSingular": "Session",
+        "labelPlural": "Sessions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "session_title",
+        "describes": "Every scheduled and completed session, with whether the note is finished.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "session_title",
+            "label": "Session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "clinician",
+            "label": "Clinician",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Intake",
+              "Individual",
+              "Couples",
+              "Group",
+              "Assessment"
+            ],
+            "choiceColors": {
+              "Intake": "blue",
+              "Individual": "green",
+              "Couples": "amber",
+              "Group": "violet",
+              "Assessment": "teal"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Fee",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Completed",
+              "Late cancel",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "Completed": "green",
+              "Late cancel": "amber",
+              "No-show": "violet",
+              "Cancelled": "teal"
+            },
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Completed": "done",
+              "Late cancel": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Scheduled"
+          },
+          {
+            "key": "note",
+            "label": "Note status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Drafted",
+              "Signed"
+            ],
+            "choiceColors": {
+              "Not started": "blue",
+              "Drafted": "green",
+              "Signed": "amber"
+            },
+            "default": "Not started"
+          },
+          {
+            "key": "admin",
+            "label": "Front office",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "session_complete"
+            }
+          },
+          {
+            "key": "noshow_btn",
+            "label": "Mark no-show",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "session_noshow"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "s01",
+            "values": {
+              "session_title": "Individual - Calloway",
+              "client": "c01",
+              "clinician": "tm-rhea",
+              "when_at": "@today 09:00",
+              "kind": "Individual",
+              "fee": 140,
+              "status": "Scheduled",
+              "note": "Not started",
+              "admin": "@installer"
+            }
+          },
+          {
+            "key": "s02",
+            "values": {
+              "session_title": "Couples - Ibarra",
+              "client": "c02",
+              "clinician": "tm-emeka",
+              "when_at": "@today 11:00",
+              "kind": "Couples",
+              "fee": 170,
+              "status": "Scheduled",
+              "note": "Not started",
+              "admin": "@installer"
+            }
+          },
+          {
+            "key": "s03",
+            "values": {
+              "session_title": "Intake - Lindqvist-Ode",
+              "client": "c04",
+              "clinician": "tm-emeka",
+              "when_at": "@today 14:00",
+              "kind": "Intake",
+              "fee": 190,
+              "status": "Scheduled",
+              "note": "Not started",
+              "admin": "@installer"
+            }
+          },
+          {
+            "key": "s04",
+            "values": {
+              "session_title": "Individual - Venkataraman",
+              "client": "c03",
+              "clinician": "tm-rhea",
+              "when_at": "@mon+2d 10:00",
+              "kind": "Individual",
+              "fee": 90,
+              "status": "Scheduled",
+              "note": "Not started"
+            }
+          },
+          {
+            "key": "s05",
+            "values": {
+              "session_title": "Assessment - Tavita",
+              "client": "c08",
+              "clinician": "tm-saskia",
+              "when_at": "@mon+4d 13:00",
+              "kind": "Assessment",
+              "fee": 300,
+              "status": "Scheduled",
+              "note": "Not started"
+            }
+          },
+          {
+            "key": "s06",
+            "values": {
+              "session_title": "Individual - Brightwater",
+              "client": "c05",
+              "clinician": "tm-saskia",
+              "when_at": "@today+4d 16:00",
+              "kind": "Individual",
+              "fee": 160,
+              "status": "Scheduled",
+              "note": "Not started"
+            }
+          },
+          {
+            "key": "s07",
+            "values": {
+              "session_title": "Individual - Calloway (last)",
+              "client": "c01",
+              "clinician": "tm-rhea",
+              "when_at": "@today-7d 09:00",
+              "kind": "Individual",
+              "fee": 140,
+              "status": "Completed",
+              "note": "Drafted"
+            }
+          },
+          {
+            "key": "s08",
+            "values": {
+              "session_title": "Couples - Ibarra (last)",
+              "client": "c02",
+              "clinician": "tm-emeka",
+              "when_at": "@today-7d 11:00",
+              "kind": "Couples",
+              "fee": 170,
+              "status": "Completed",
+              "note": "Signed"
+            }
+          },
+          {
+            "key": "s09",
+            "values": {
+              "session_title": "Individual - Venkataraman (last)",
+              "client": "c03",
+              "clinician": "tm-rhea",
+              "when_at": "@today-5d 10:00",
+              "kind": "Individual",
+              "fee": 90,
+              "status": "Completed",
+              "note": "Not started"
+            }
+          },
+          {
+            "key": "s10",
+            "values": {
+              "session_title": "Individual - Brightwater (last)",
+              "client": "c05",
+              "clinician": "tm-saskia",
+              "when_at": "@today-6d 16:00",
+              "kind": "Individual",
+              "fee": 160,
+              "status": "Completed",
+              "note": "Drafted"
+            }
+          },
+          {
+            "key": "s11",
+            "values": {
+              "session_title": "Individual - Marchand",
+              "client": "c06",
+              "clinician": "tm-rhea",
+              "when_at": "@today-14d 15:00",
+              "kind": "Individual",
+              "fee": 140,
+              "status": "Late cancel",
+              "note": "Signed"
+            }
+          },
+          {
+            "key": "s12",
+            "values": {
+              "session_title": "Individual - Solberg",
+              "client": "c07",
+              "clinician": "tm-emeka",
+              "when_at": "@today-30d 12:00",
+              "kind": "Individual",
+              "fee": 140,
+              "status": "Completed",
+              "note": "Signed"
+            }
+          },
+          {
+            "key": "s13",
+            "values": {
+              "session_title": "Assessment - Tavita (feedback)",
+              "client": "c08",
+              "clinician": "tm-saskia",
+              "when_at": "@today-12d 13:00",
+              "kind": "Assessment",
+              "fee": 300,
+              "status": "Completed",
+              "note": "Signed"
+            }
+          },
+          {
+            "key": "s14",
+            "values": {
+              "session_title": "Individual - Calloway (earlier)",
+              "client": "c01",
+              "clinician": "tm-rhea",
+              "when_at": "@today-14d 09:00",
+              "kind": "Individual",
+              "fee": 140,
+              "status": "No-show",
+              "note": "Signed"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "clinician": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "fee"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "No-show"
+            ],
+            "filled": [
+              "fee"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Session",
+            "values": {
+              "status": "Scheduled",
+              "session_title": "New session"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Operational record only. Clinical notes are kept in your clinical record system."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Consent and fee agreement on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Session marked Completed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Note status updated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next session booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Everyone in care: how they pay, who sees them and how many sessions are done.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Intake",
+              "Active",
+              "On break",
+              "Discharged"
+            ],
+            "choiceColors": {
+              "Intake": "blue",
+              "Active": "green",
+              "On break": "amber",
+              "Discharged": "violet"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "payment",
+            "label": "Payment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Private pay",
+              "Insurance",
+              "Sliding scale"
+            ],
+            "choiceColors": {
+              "Private pay": "blue",
+              "Insurance": "green",
+              "Sliding scale": "amber"
+            }
+          },
+          {
+            "key": "clinician",
+            "label": "Clinician",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "sessions_done",
+            "label": "Sessions completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sessions",
+            "pick": "session_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "statements",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "paid",
+            "label": "Paid",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "statements",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "balance",
+            "label": "Balance",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Billed} - {Paid}"
+          },
+          {
+            "key": "book_btn",
+            "label": "Book session",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "session",
+              "template": "Session",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "stmt_btn",
+            "label": "Create statement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "statement",
+              "template": "Statement",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Winnifred Calloway",
+              "status": "Active",
+              "phone": "(612) 555-0131",
+              "email": "winnie.c@mailbox-demo.net",
+              "payment": "Private pay",
+              "clinician": "tm-rhea"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Marcelo Ibarra",
+              "status": "Active",
+              "phone": "(612) 555-0132",
+              "email": "marcelo.i@mailbox-demo.net",
+              "payment": "Insurance",
+              "clinician": "tm-emeka"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Priyanka Venkataraman",
+              "status": "Active",
+              "phone": "(612) 555-0133",
+              "email": "priya.v@mailbox-demo.net",
+              "payment": "Sliding scale",
+              "clinician": "tm-rhea"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Jasper Lindqvist-Ode",
+              "status": "Intake",
+              "phone": "(612) 555-0134",
+              "email": "jasper.lo@mailbox-demo.net",
+              "payment": "Insurance",
+              "clinician": "tm-emeka"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Odalys Brightwater",
+              "status": "Active",
+              "phone": "(612) 555-0135",
+              "email": "odalys.b@mailbox-demo.net",
+              "payment": "Private pay",
+              "clinician": "tm-saskia"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Ezekiel Marchand",
+              "status": "On break",
+              "phone": "(612) 555-0136",
+              "email": "zeke.m@mailbox-demo.net",
+              "payment": "Insurance",
+              "clinician": "tm-rhea"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Annika Solberg",
+              "status": "Discharged",
+              "phone": "(612) 555-0137",
+              "email": "annika.s@mailbox-demo.net",
+              "payment": "Private pay",
+              "clinician": "tm-emeka"
+            }
+          },
+          {
+            "key": "c08",
+            "values": {
+              "client_name": "Tavita Faleolo",
+              "status": "Active",
+              "phone": "(612) 555-0138",
+              "email": "tavita.f@mailbox-demo.net",
+              "payment": "Sliding scale",
+              "clinician": "tm-saskia"
+            }
+          }
+        ],
+        "independentOf": {
+          "clinician": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Intake",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Paperwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Informed consent signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fee agreement and cancellation policy acknowledged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Insurance verified if applicable"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scheduling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Recurring slot agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder method agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "statement",
+        "name": "Statements",
+        "labelSingular": "Statement",
+        "labelPlural": "Statements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "stmt_title",
+        "describes": "What each client has been billed and what is still unpaid.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "stmt_title",
+            "label": "Statement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Paid",
+              "Overdue"
+            ],
+            "choiceColors": {
+              "Draft": "blue",
+              "Sent": "green",
+              "Paid": "amber",
+              "Overdue": "violet"
+            },
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Paid": "done",
+              "Overdue": "in_progress"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "statement_paid"
+            }
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "statement_sent"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "stmt_title": "Statement - Calloway, month 1",
+              "client": "c01",
+              "amount": 560,
+              "issued_on": "@today-45d",
+              "due_on": "@today-15d",
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "stmt_title": "Statement - Ibarra, month 1",
+              "client": "c02",
+              "amount": 340,
+              "issued_on": "@today-40d",
+              "due_on": "@today-10d",
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "stmt_title": "Statement - Venkataraman, month 1",
+              "client": "c03",
+              "amount": 180,
+              "issued_on": "@today-20d",
+              "due_on": "@today-5d",
+              "status": "Overdue"
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "stmt_title": "Statement - Brightwater, month 1",
+              "client": "c05",
+              "amount": 480,
+              "issued_on": "@today-18d",
+              "due_on": "@mon+1d",
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "stmt_title": "Statement - Tavita, assessment",
+              "client": "c08",
+              "amount": 600,
+              "issued_on": "@today-12d",
+              "due_on": "@mon+3d",
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "stmt_title": "Statement - Calloway, month 2",
+              "client": "c01",
+              "amount": 420,
+              "issued_on": "@today-3d",
+              "due_on": "@today+27d",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "stmt_title": "Statement - Marchand, month 1",
+              "client": "c06",
+              "amount": 280,
+              "issued_on": "@today-30d",
+              "due_on": "@today-8d",
+              "status": "Overdue"
+            }
+          },
+          {
+            "key": "m08",
+            "values": {
+              "stmt_title": "Statement - Solberg, final",
+              "client": "c07",
+              "amount": 140,
+              "issued_on": "@today-35d",
+              "due_on": "@today-20d",
+              "status": "Paid"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "amount"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "amount"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Statement",
+            "values": {
+              "status": "Draft",
+              "stmt_title": "New statement"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Statement checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sessions included match the Sessions table"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sliding-scale fee applied if agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sent in the client's agreed way"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each session links to one client.",
+        "fromTable": "session",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "sessions"
+      },
+      {
+        "describes": "Each session links to one team member.",
+        "fromTable": "session",
+        "fromField": "clinician",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "sessions_held"
+      },
+      {
+        "describes": "Each client links to one team member.",
+        "fromTable": "client",
+        "fromField": "clinician",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "caseload"
+      },
+      {
+        "describes": "Each statement links to one client.",
+        "fromTable": "statement",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "statements"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-rhea",
+            "values": {
+              "full_name": "Rhea Winterbourne, LCSW",
+              "role": "Therapist",
+              "work_email": "rhea@willowmerecounseling.net",
+              "mobile": "(612) 555-0121",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-emeka",
+            "values": {
+              "full_name": "Emeka Balogun, LMFT",
+              "role": "Therapist",
+              "work_email": "emeka@willowmerecounseling.net",
+              "mobile": "(612) 555-0122",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-saskia",
+            "values": {
+              "full_name": "Saskia Vandermeer, PsyD",
+              "role": "Psychologist",
+              "work_email": "saskia@willowmerecounseling.net",
+              "mobile": "(612) 555-0123",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-lowell",
+            "values": {
+              "full_name": "Lowell Prescott",
+              "role": "Practice administrator",
+              "work_email": "lowell@willowmerecounseling.net",
+              "mobile": "(612) 555-0124",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "request_appointment",
+        "name": "Request an appointment",
+        "describes": "How someone asks for a first appointment.",
+        "audience": "staff",
+        "table": "inquiry",
+        "fields": [
+          {
+            "fieldKey": "inq_title",
+            "ask": "Your name and what you are looking for?",
+            "required": true
+          },
+          {
+            "fieldKey": "seeking",
+            "ask": "What kind of support?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did you find the practice?"
+          }
+        ],
+        "submitLabel": "Send request",
+        "confirmation": "Thank you. The practice will reply within one business day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "inquiry_contacted",
+        "table": "inquiry",
+        "name": "Mark contacted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Contacted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inquiry_booked",
+        "table": "inquiry",
+        "name": "Intake booked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Intake booked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "session_complete",
+        "table": "session",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "session_noshow",
+        "table": "session",
+        "name": "Mark no-show",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "No-show"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "statement_paid",
+        "table": "statement",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "statement_sent",
+        "table": "statement",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_inquiry",
+        "name": "All inquiries",
+        "table": "inquiry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "inquiry_board",
+        "name": "By status",
+        "table": "inquiry",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "inquiry_cal",
+        "name": "Calendar",
+        "table": "inquiry",
+        "kind": "calendar",
+        "dateField": "reply_by",
+        "allDay": true
+      },
+      {
+        "token": "inquiry_today",
+        "name": "Today",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Intake booked",
+            "Waitlist"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_week",
+        "name": "This week",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Intake booked",
+            "Waitlist"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_over",
+        "name": "Overdue",
+        "table": "inquiry",
+        "kind": "grid",
+        "within": {
+          "reply_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Intake booked",
+            "Waitlist"
+          ]
+        }
+      },
+      {
+        "token": "inquiry_mine",
+        "name": "My inquiries",
+        "table": "inquiry",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_session",
+        "name": "All sessions",
+        "table": "session",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "session_board",
+        "name": "By status",
+        "table": "session",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "session_cal",
+        "name": "Calendar",
+        "table": "session",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "session_today",
+        "name": "Today",
+        "table": "session",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "session_week",
+        "name": "This week",
+        "table": "session",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "session_next7",
+        "name": "Next 7 days",
+        "table": "session",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        }
+      },
+      {
+        "token": "session_mine",
+        "name": "My sessions",
+        "table": "session",
+        "kind": "grid",
+        "me": [
+          "admin"
+        ]
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_statement",
+        "name": "All statements",
+        "table": "statement",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "statement_board",
+        "name": "By status",
+        "table": "statement",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "statement_cal",
+        "name": "Calendar",
+        "table": "statement",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "statement_week",
+        "name": "This week",
+        "table": "statement",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "statement_over",
+        "name": "Overdue",
+        "table": "statement",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Overdue"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Practice assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "inquiry",
+          "describes": "Every inquiry with source, type and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The clients inquiries turn into."
+        }
+      ],
+      "question": {
+        "ask": "How many inquiries are still New?",
+        "whyItMatters": "The administrator replies to each one within a business day.",
+        "expect": {
+          "table": "inquiry",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "New"
+          },
+          "answer": 3,
+          "unit": "inquiries"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open inquiries.",
+        "action": {
+          "kind": "open",
+          "surface": "inquiry_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "inquiry_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open sessions.",
+        "action": {
+          "kind": "open",
+          "surface": "session_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "session_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "all_client"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_client",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "mailbox-demo.net",
+        "willowmerecounseling.net"
+      ],
+      "fictionalStreets": [
+        "Fremont Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "therapy-practice",
+      "parent": null,
+      "title": "Mental Health Practice",
+      "icon": {
+        "emoji": "🌿"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your practice in one place. Start with Inquiries to reply to today, then Sessions for the day's schedule and unfinished notes, and Statements for payments. Operational tracking only; clinical notes and records stay in your clinical record system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-inquiry"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-intake"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-notes"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-billing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Inquiries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Inquiries by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "session",
+                      "view": "all_session"
+                    },
+                    "inline": true,
+                    "title": "Sessions by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Sessions by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inquiries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "inquiry",
+              "view": "inquiry_board"
+            },
+            "inline": true,
+            "title": "Inquiries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "reply_by": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Intake booked",
+                    "Waitlist"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "reply_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Intake booked",
+                    "Waitlist"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "reply_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Intake booked",
+                    "Waitlist"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "reply_by"
+              },
+              {
+                "id": "vall",
+                "name": "All inquiries",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "reply_by",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "session",
+              "view": "session_board"
+            },
+            "inline": true,
+            "title": "Sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All sessions",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "admin"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "statement",
+              "view": "statement_board"
+            },
+            "inline": true,
+            "title": "Statements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All statements",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "therapy-practice",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Inquiries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "inquiry",
+                      "view": "all_inquiry"
+                    },
+                    "inline": true,
+                    "title": "Inquiries by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Inquiries by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "session",
+                      "view": "all_session"
+                    },
+                    "inline": true,
+                    "title": "Sessions by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Sessions by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "session",
+                      "view": "all_session"
+                    },
+                    "inline": true,
+                    "title": "Note status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Note status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "note",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "statement",
+                      "view": "all_statement"
+                    },
+                    "inline": true,
+                    "title": "Statements by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Statements by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by payment",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Clients by payment",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "payment",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notes still to finish"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "session",
+              "view": "all_session"
+            },
+            "inline": true,
+            "title": "Notes still to finish",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Not signed",
+                "layout": "list",
+                "anyOf": {
+                  "note": [
+                    "Not started",
+                    "Drafted"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statements to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "statement",
+              "view": "all_statement"
+            },
+            "inline": true,
+            "title": "Statements to chase",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Sent or overdue",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-inquiry",
+      "parent": "therapy-practice",
+      "title": "Answering an inquiry",
+      "icon": {
+        "emoji": "💬"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A prompt, warm reply matters. Keep messages short and follow your own privacy practices."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reply"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the inquiry and set Reply by to the next business day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reply with availability, fees and how intake works."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the practice is full, offer the Waitlist and say how long it usually takes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When it is not a fit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Share two or three referral options and mark the inquiry Not a fit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-intake",
+      "parent": "therapy-practice",
+      "title": "Intake checklist",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the first session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Consent, privacy notice and fee agreement signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance verified, if used"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reminder method chosen"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Late cancellation policy explained"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recurring slot proposed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client status moved to Active"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-notes",
+      "parent": "therapy-practice",
+      "title": "Keeping notes on time",
+      "icon": {
+        "emoji": "🗒️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Unfinished notes pile up fast. Review every Friday."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Sessions and filter Note status Not started and Drafted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each clinician finishes their own and sets Signed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The administrator sends a gentle reminder for anything older than a week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reminder"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Only the status lives here. The note itself stays in your clinical record system."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-billing",
+      "parent": "therapy-practice",
+      "title": "Statements and collections",
+      "icon": {
+        "emoji": "💳"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create one statement per client from the completed sessions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send it the way the client prefers and mark it Sent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark it Paid as payments arrive."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After the due date, mark it Overdue and send a short, kind reminder."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After two reminders, the clinician decides on next steps."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
