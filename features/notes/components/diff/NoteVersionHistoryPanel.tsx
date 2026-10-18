@@ -33,11 +33,9 @@ import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { analyzeDiff } from "@/features/notes/utils/diffAnalysis";
 import { NoteDiffViewer } from "./NoteDiffViewer";
 import {
-  MOBILE_TABLE,
-  MOBILE_TABLE_CELL,
-  MOBILE_TABLE_FROZEN_CELL,
-  MOBILE_TABLE_FROZEN_HEAD,
-} from "@/components/official/mobile-table/mobileTable";
+  MatrxVersionTimeline,
+  type VersionTimelineEntry,
+} from "@ai-matrx/design-system/data-table";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 export interface NoteVersionHistoryPanelProps {
@@ -158,25 +156,30 @@ export function NoteVersionHistoryPanel({
   // new version, so this is undoable by restoring back). The confirmation is
   // the canonical `confirm()`: this panel used to hand-build an AlertDialog
   // for it, one of four bespoke confirm bodies the notes feature carried.
-  const handleRestore = async () => {
-    if (!leftVersion) return;
-    const ok = await confirm({
-      title: `Restore v${leftVersion}?`,
-      description: `The note's current text is replaced by v${leftVersion} — anything typed since then disappears from the editor. It is not lost: the current text is saved to the history as a new version first, so you can restore back to it.`,
-      confirmLabel: `Restore v${leftVersion}`,
-    });
-    if (!ok) return;
+  const restoreWords = (version: number) => ({
+    title: `Restore v${version}?`,
+    description: `The note's current text is replaced by v${version} — anything typed since then disappears from the editor. It is not lost: the current text is saved to the history as a new version first, so you can restore back to it.`,
+    confirmLabel: `Restore v${version}`,
+  });
 
+  const doRestore = async (version: number) => {
     setRestoring(true);
     try {
-      await restoreVersion(noteId, leftVersion);
-      toast.success(`Restored to v${leftVersion}`);
-      onVersionRestored?.(leftVersion);
+      await restoreVersion(noteId, version);
+      toast.success(`Restored to v${version}`);
+      onVersionRestored?.(version);
     } catch {
       toast.error("Failed to restore version");
     } finally {
       setRestoring(false);
     }
+  };
+
+  const handleRestore = async () => {
+    if (!leftVersion) return;
+    const ok = await confirm(restoreWords(leftVersion));
+    if (!ok) return;
+    await doRestore(leftVersion);
   };
 
   const leftVersionOptions: Option[] = versions.map((v) => ({
@@ -421,6 +424,9 @@ export function NoteVersionHistoryPanel({
             <h3 className="text-sm font-semibold">History</h3>
           </div>
           <NoteHistoryTimeline
+            noteId={noteId}
+            onRestore={doRestore}
+            restoreWords={restoreWords}
             versions={versions}
             currentVersion={currentNote?.version ?? null}
             compact
@@ -497,6 +503,9 @@ export function NoteVersionHistoryPanel({
           )}
         >
           <NoteHistoryTimeline
+            noteId={noteId}
+            onRestore={doRestore}
+            restoreWords={restoreWords}
             versions={versions}
             currentVersion={currentNote?.version ?? null}
             compact={isEmbedded}
@@ -509,233 +518,59 @@ export function NoteVersionHistoryPanel({
   );
 }
 
+/** The note's versions on THE shared version timeline: line/char counts against the previous
+ * version, the change source and type, compare with previous / current, Restore behind the
+ * same confirm the Compare tab uses. */
 function NoteHistoryTimeline({
+  noteId,
   versions,
   currentVersion,
   compact = false,
   onCompare,
+  onRestore,
+  restoreWords,
 }: {
+  noteId: string;
   versions: NoteVersion[];
   currentVersion: number | null;
   compact?: boolean;
   onCompare: (version: number, compareTo: number | "current") => void;
+  onRestore: (version: number) => Promise<void>;
+  restoreWords: (version: number) => { title: string; description: string; confirmLabel: string };
 }) {
   const sorted = [...versions].sort(
     (a, b) => b.version_number - a.version_number,
   );
-
-  const enriched = useMemo(() => {
-    return sorted.map((v, i) => {
-      const prev = sorted[i + 1];
-      const diff = prev ? analyzeDiff(prev.content, v.content) : null;
-      return { ...v, diff };
-    });
-  }, [sorted]);
-
-  if (compact) {
-    return (
-      <div className="space-y-2 p-3">
-        {enriched.map((version, index) => {
-          const isLatest = version.version_number === currentVersion;
-          const date = new Date(version.created_at);
-          const prevVersion =
-            index < enriched.length - 1 ? enriched[index + 1] : null;
-
-          return (
-            <div
-              key={version.version_number}
-              className={cn(
-                "rounded-lg border border-border/60 bg-muted/20 p-2.5",
-                isLatest && "border-primary/30 bg-primary/5",
-              )}
-            >
-              <div className="flex min-w-0 items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "font-mono text-xs font-medium tabular-nums",
-                        isLatest && "text-primary",
-                      )}
-                    >
-                      v{version.version_number}
-                    </span>
-                    <span className="rounded bg-muted px-1.5 py-0.5 text-[0.5625rem] text-muted-foreground">
-                      {version.change_source}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[0.6875rem] text-muted-foreground">
-                    {date.toLocaleDateString()}{" "}
-                    {date.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                  {version.diff ? (
-                    <p className="mt-1 text-[0.6875rem] text-muted-foreground">
-                      {version.diff.linesChanged} line
-                      {version.diff.linesChanged !== 1 ? "s" : ""}
-                      {version.diff.charsChanged > 0 &&
-                        ` · ${version.diff.charsChanged} chars`}
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-[0.6875rem] text-muted-foreground/50">
-                      Initial version
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  {prevVersion ? (
-                    <Button
-                      icon={<ArrowRight />}
-                      variant="quiet"
-                      onClick={() =>
-                        onCompare(
-                          prevVersion.version_number,
-                          version.version_number,
-                        )
-                      }
-                    >v
-                      {prevVersion.version_number}
-                    </Button>
-                  ) : null}
-                  {!isLatest && currentVersion != null ? (
-                    <Button
-                      icon={<GitCompareArrows />}
-                      variant="quiet"
-                      onClick={() =>
-                        onCompare(version.version_number, "current")
-                      }
-                    >
-                      Current
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
+  const entries: VersionTimelineEntry[] = sorted.map((v, i) => {
+    const prev = sorted[i + 1];
+    const diff = prev ? analyzeDiff(prev.content, v.content) : null;
+    return {
+      number: v.version_number,
+      at: v.created_at,
+      source: v.change_source,
+      note: v.change_type ?? null,
+      changesText: diff
+        ? `${diff.linesChanged} line${diff.linesChanged !== 1 ? "s" : ""}${
+            diff.charsChanged > 0 ? ` · ${diff.charsChanged} chars` : ""
+          }${!diff.hasChangesExcludingWhitespace ? " (whitespace only)" : ""}`
+        : null,
+    };
+  });
 
   return (
-    <div className="px-4 py-3">
-      <table className={cn("text-xs", MOBILE_TABLE)}>
-        <thead>
-          <tr className="border-b border-border text-muted-foreground">
-            <th className={cn("w-[70px] py-2 pr-3 text-left font-medium", MOBILE_TABLE_FROZEN_HEAD, "max-sm:min-w-[64px]")}>
-              Version
-            </th>
-            <th className={cn("w-[140px] py-2 pr-3 text-left font-medium", MOBILE_TABLE_CELL)}>Date</th>
-            <th className={cn("w-[80px] py-2 pr-3 text-left font-medium", MOBILE_TABLE_CELL)}>Source</th>
-            <th className={cn("py-2 pr-3 text-left font-medium", MOBILE_TABLE_CELL)}>Changes</th>
-            <th className={cn("w-[140px] py-2 text-right font-medium", MOBILE_TABLE_CELL)}>Compare</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/50">
-          {enriched.map((version, index) => {
-            const isLatest = version.version_number === currentVersion;
-            const date = new Date(version.created_at);
-            const prevVersion =
-              index < enriched.length - 1 ? enriched[index + 1] : null;
-
-            return (
-              <tr
-                key={version.version_number}
-                className={cn(
-                  "group transition-colors hover:bg-muted/20",
-                  isLatest && "bg-primary/5",
-                )}
-              >
-                <td className={cn("py-2.5 pr-3", MOBILE_TABLE_FROZEN_CELL, "max-sm:min-w-[64px]")}>
-                  <span
-                    className={cn(
-                      "font-mono font-medium tabular-nums",
-                      isLatest && "text-primary",
-                    )}
-                  >
-                    v{version.version_number}
-                  </span>
-                </td>
-                <td className={cn("py-2.5 pr-3 text-muted-foreground", MOBILE_TABLE_CELL)}>
-                  {date.toLocaleDateString()}{" "}
-                  {date.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td className={cn("py-2.5 pr-3", MOBILE_TABLE_CELL)}>
-                  <span
-                    className={cn(
-                      "inline-block rounded px-1.5 py-0.5 text-[0.5625rem]",
-                      version.change_source === "ai"
-                        ? "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400"
-                        : version.change_source === "system"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400"
-                          : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {version.change_source}
-                  </span>
-                </td>
-                <td className={cn("py-2.5 pr-3", MOBILE_TABLE_CELL)}>
-                  {version.change_type ? (
-                    <div className="mb-0.5 text-muted-foreground">
-                      {version.change_type}
-                    </div>
-                  ) : null}
-                  {version.diff ? (
-                    <span className="text-muted-foreground">
-                      {version.diff.linesChanged} line
-                      {version.diff.linesChanged !== 1 ? "s" : ""}
-                      {version.diff.charsChanged > 0 &&
-                        ` · ${version.diff.charsChanged} chars`}
-                      {!version.diff.hasChangesExcludingWhitespace &&
-                        " (whitespace only)"}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground/50">
-                      Initial version
-                    </span>
-                  )}
-                </td>
-                <td className={cn("py-2.5 text-right", MOBILE_TABLE_CELL)}>
-                  <div className="flex items-center justify-end gap-1 transition-opacity max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                    {prevVersion ? (
-                      <Button
-                        icon={<ArrowRight />}
-                        variant="quiet"
-                        onClick={() =>
-                          onCompare(
-                            prevVersion.version_number,
-                            version.version_number,
-                          )
-                        }
-                      >v
-                        {prevVersion.version_number}
-                      </Button>
-                    ) : null}
-                    {!isLatest && currentVersion != null ? (
-                      <Button
-                        icon={<GitCompareArrows />}
-                        variant="quiet"
-                        onClick={() =>
-                          onCompare(version.version_number, "current")
-                        }
-                      >
-                        Current
-                      </Button>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <div className="h-[50dvh]" />
+    <div className={compact ? "p-3" : "px-4 py-3"}>
+      <MatrxVersionTimeline
+        tableId={`note.${noteId}.versions`}
+        versions={entries}
+        currentNumber={currentVersion}
+        layout={compact ? "cards" : "table"}
+        onCompare={onCompare}
+        restore={{
+          onRestore: (v) => onRestore(v.number),
+          confirm: (v) => restoreWords(v.number),
+        }}
+      />
+      {compact ? null : <div className="h-[50dvh]" />}
     </div>
   );
 }

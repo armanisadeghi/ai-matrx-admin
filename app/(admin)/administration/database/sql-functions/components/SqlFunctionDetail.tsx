@@ -5,6 +5,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState } from "react";
 import { SqlFunction } from "@/types/sql-functions";
 import { parseArguments } from "../utils/parseArguments";
+import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -215,67 +216,29 @@ export default function SqlFunctionDetail({
               )}
             </div>
             {parsedArgs.length > 0 ? (
-              <div className="rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                      <th className="text-left px-2 py-1 font-medium text-slate-500 dark:text-slate-400 w-6">
-                        #
-                      </th>
-                      <th className="text-left px-2 py-1 font-medium text-slate-500 dark:text-slate-400">
-                        Name
-                      </th>
-                      <th className="text-left px-2 py-1 font-medium text-slate-500 dark:text-slate-400">
-                        Type
-                      </th>
-                      <th className="text-left px-2 py-1 font-medium text-slate-500 dark:text-slate-400">
-                        Default
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {parsedArgs.map((arg, i) => (
-                      <tr
-                        key={i}
-                        className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                      >
-                        <td className="px-2 py-1 text-slate-400 dark:text-slate-500 tabular-nums">
-                          {i + 1}
-                        </td>
-                        <td className="px-2 py-1 font-mono" data-identifier>
-                          {arg.name ? (
-                            <span className="text-slate-800 dark:text-slate-200">
-                              {arg.name}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 dark:text-slate-500 italic">
-                              unnamed
-                            </span>
-                          )}
-                          {arg.mode !== "IN" && (
-                            <Badge
-                              variant="outline"
-                              className="ml-1.5 text-[9px] py-0 px-1 font-sans border-slate-300 dark:border-slate-600"
-                            >
-                              {arg.mode}
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="px-2 py-1 font-mono text-blue-600 dark:text-blue-400">
-                          {arg.type}
-                        </td>
-                        <td className="px-2 py-1 font-mono text-slate-500 dark:text-slate-400">
-                          {arg.defaultValue ?? (
-                            <span className="text-slate-300 dark:text-slate-600">
-                              &mdash;
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <MatrxDetailGrid
+                labelHeader="Name"
+                columns={[
+                  { key: "type", label: "Type", mono: true },
+                  ...(parsedArgs.some((arg) => arg.mode !== "IN")
+                    ? [{ key: "mode", label: "Mode", mono: true }]
+                    : []),
+                  { key: "default", label: "Default", mono: true, emptyLabel: "—" },
+                ]}
+                rows={parsedArgs.map((arg, i) => ({
+                  key: String(i),
+                  label: `${i + 1}. ${arg.name || "unnamed"}`,
+                  mono: true,
+                  values: {
+                    type: arg.type,
+                    mode: arg.mode,
+                    default: arg.defaultValue ?? null,
+                  },
+                }))}
+                recordLabel={func.name}
+                recordKind="sql-function-argument"
+                location="Database · SQL functions"
+              />
             ) : (
               <p className="text-xs text-slate-400 dark:text-slate-500 italic px-1">
                 No arguments

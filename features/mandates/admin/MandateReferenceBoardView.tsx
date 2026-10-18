@@ -27,7 +27,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, CircleCheck, CircleDot, Loader2, RefreshCw } from "lucide-react";
 
-import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
+import { MatrxDataTable, MatrxDetailGrid, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InfoHint } from "@/components/official/InfoHint";
@@ -459,65 +459,38 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-md border border-border">
-        <table className="w-full type-secondary">
-          <tbody className="divide-y divide-border">
-            <tr>
-              <th scope="row" className="px-3 py-1.5 text-left font-medium">
-                Next due
-              </th>
-              <td className="px-3 py-1.5">
-                {patrol.next_due_at
-                  ? new Date(patrol.next_due_at).toLocaleString()
-                  : "not scheduled"}
-              </td>
-              <th scope="row" className="px-3 py-1.5 text-left font-medium">
-                Last run
-              </th>
-              <td className="px-3 py-1.5">
-                {patrol.last_run_at
-                  ? new Date(patrol.last_run_at).toLocaleString()
-                  : "never"}
-              </td>
-              <th scope="row" className="px-3 py-1.5 text-left font-medium">
-                Enabled
-              </th>
-              <td className="px-3 py-1.5">
-                {patrol.enabled_at
-                  ? new Date(patrol.enabled_at).toLocaleString()
-                  : "—"}
-              </td>
-            </tr>
-            <tr>
-              <th scope="row" className="px-3 py-1.5 text-left font-medium">
-                Total runtime
-              </th>
-              <td className="px-3 py-1.5">
-                {formatSeconds(patrol.cumulative_wall_seconds)}
-              </td>
-              <th scope="row" className="px-3 py-1.5 text-left font-medium">
-                Total compute
-              </th>
-              <td className="px-3 py-1.5">
-                {costCell(patrol.cumulative_compute_cost_usd, costRate, unit)}
-                <span className="ml-1 text-muted-foreground">
-                  ({patrol.cumulative_vcpu_seconds} vCPU-s)
-                </span>
-              </td>
-              <th scope="row" className="px-3 py-1.5 text-left font-medium">
-                Total model spend
-              </th>
-              <td className="px-3 py-1.5">
-                {formatCostDisplay(patrol.cumulative_model_spend_usd)}
-                <span className="ml-1 text-muted-foreground">
-                  over {patrol.runs_counted} run
-                  {patrol.runs_counted === 1 ? "" : "s"}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <MatrxDetailGrid
+        rows={[
+          { key: "next_due", label: "Next due", values: { value: patrol.next_due_at ? new Date(patrol.next_due_at).toLocaleString() : "not scheduled" } },
+          { key: "last_run", label: "Last run", values: { value: patrol.last_run_at ? new Date(patrol.last_run_at).toLocaleString() : "never" } },
+          { key: "enabled", label: "Enabled", values: { value: patrol.enabled_at ? new Date(patrol.enabled_at).toLocaleString() : null } },
+          { key: "runtime", label: "Total runtime", values: { value: formatSeconds(patrol.cumulative_wall_seconds) } },
+          {
+            key: "compute",
+            label: "Total compute",
+            values: { value: `${patrol.cumulative_compute_cost_usd ?? ""} (${patrol.cumulative_vcpu_seconds} vCPU-s)` },
+            render: {
+              value: (
+                <>
+                  {costCell(patrol.cumulative_compute_cost_usd, costRate, unit)}
+                  <span className="ml-1 text-muted-foreground">
+                    ({patrol.cumulative_vcpu_seconds} vCPU-s)
+                  </span>
+                </>
+              ),
+            },
+          },
+          {
+            key: "model_spend",
+            label: "Total model spend",
+            values: { value: `${formatCostDisplay(patrol.cumulative_model_spend_usd)} over ${patrol.runs_counted} run${patrol.runs_counted === 1 ? "" : "s"}` },
+          },
+        ]}
+        columns={[{ key: "value", label: "Value", emptyLabel: "—" }]}
+        recordLabel="Mandate patrol"
+        recordKind="mandate-patrol"
+        location="Mandate Reference Board, patrol"
+      />
 
       {/* The one sentence on this table, and it is load-bearing: it is what
           stops "no rate set" being read as "broken" or as "$0.00". */}

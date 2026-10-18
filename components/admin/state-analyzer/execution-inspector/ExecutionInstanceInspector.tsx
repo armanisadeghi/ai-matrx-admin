@@ -1,5 +1,6 @@
 "use client";
 
+import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useEffect } from "react";
@@ -687,36 +688,21 @@ function VariablesTab({
     <div className="space-y-4">
       {data.definitions && data.definitions.length > 0 && (
         <Section title="Definitions">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left">
-                <th className="pb-1 pr-4 text-xs font-semibold text-muted-foreground">
-                  Name
-                </th>
-                <th className="pb-1 pr-4 text-xs font-semibold text-muted-foreground">
-                  Default
-                </th>
-                <th className="pb-1 text-xs font-semibold text-muted-foreground">
-                  Help
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.definitions.map((d) => (
-                <tr key={d.name} className="border-b border-border/50">
-                  <td className="py-1.5 pr-4 font-mono text-primary font-medium">
-                    {d.name}
-                  </td>
-                  <td className="py-1.5 pr-4 text-foreground">
-                    <JsonTreeViewer showSource data={d.defaultValue} />
-                  </td>
-                  <td className="py-1.5 text-muted-foreground">
-                    {d.helpText || "—"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <MatrxDetailGrid
+            labelHeader="Name"
+            columns={[
+              { key: "default", label: "Default" },
+              { key: "help", label: "Help", emptyLabel: "—" },
+            ]}
+            rows={data.definitions.map((d) => ({
+              key: d.name,
+              label: d.name,
+              values: { default: d.defaultValue, help: d.helpText || null },
+              render: { default: <JsonTreeViewer showSource data={d.defaultValue} /> },
+            }))}
+            recordKind="variable-definition"
+            location="State analyzer · execution inspector"
+          />
         </Section>
       )}
       {data.userValues && Object.keys(data.userValues).length > 0 && (

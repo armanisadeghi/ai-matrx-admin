@@ -12,15 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { cn } from "@/styles/themes/utils";
+import {
+  AgentDefSlotsGrid,
+  AgentDefToolsGrid,
+  AgentDefVariablesGrid,
+} from "./agent-definition-detail-grids";
 import {
   safeFormat,
   setToSortedArray,
@@ -263,42 +260,7 @@ export default function AgentDefinitionSliceViewerShadcn({
               ) : varRowData.length === 0 ? (
                 <div className="text-[11px] text-muted-foreground">—</div>
               ) : (
-                <Table className="text-xs">
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className={tableHeadClass}>name</TableHead>
-                      <TableHead className={tableHeadClass}>default</TableHead>
-                      <TableHead className={tableHeadClass}>req</TableHead>
-                      <TableHead className={tableHeadClass}>help</TableHead>
-                      <TableHead className={tableHeadClass}>
-                        customComponent
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {varRowData.map((v) => (
-                      <TableRow key={v.name} className="hover:bg-muted/30">
-                        <TableCell className={tableCellClass}>
-                          <span className="font-mono" data-identifier>{v.name}</span>
-                        </TableCell>
-                        <TableCell className={tableCellClass}>
-                          <CompactPre>{v.defaultFormatted}</CompactPre>
-                        </TableCell>
-                        <TableCell className={tableCellClass}>
-                          {v.required}
-                        </TableCell>
-                        <TableCell className={tableCellClass}>
-                          {v.helpText}
-                        </TableCell>
-                        <TableCell className={tableCellClass}>
-                          <CompactPre>
-                            {v.customComponentFormatted ?? "—"}
-                          </CompactPre>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <AgentDefVariablesGrid rows={varRowData} />
               )}
 
               <Separator className="my-1" />
@@ -310,33 +272,7 @@ export default function AgentDefinitionSliceViewerShadcn({
               {slotRows.length === 0 ? (
                 <div className="text-[11px] text-muted-foreground">—</div>
               ) : (
-                <Table className="text-xs">
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className={tableHeadClass}>key</TableHead>
-                      <TableHead className={tableHeadClass}>type</TableHead>
-                      <TableHead className={tableHeadClass}>label</TableHead>
-                      <TableHead className={tableHeadClass}>desc</TableHead>
-                      <TableHead className={tableHeadClass}>
-                        max_inline
-                      </TableHead>
-                      <TableHead className={tableHeadClass}>
-                        summary_agent
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {slotRows.map((cells, ri) => (
-                      <TableRow key={ri} className="hover:bg-muted/30">
-                        {cells.map((c, ci) => (
-                          <TableCell key={ci} className={tableCellClass}>
-                            {c}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <AgentDefSlotsGrid rows={slotRows} />
               )}
 
               <Separator className="my-1" />
@@ -364,36 +300,7 @@ export default function AgentDefinitionSliceViewerShadcn({
               {toolRowData.length === 0 ? (
                 <div className="text-[11px] text-muted-foreground">—</div>
               ) : (
-                <Table className="text-xs">
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className={tableHeadClass}>name</TableHead>
-                      <TableHead className={tableHeadClass}>
-                        description
-                      </TableHead>
-                      <TableHead className={tableHeadClass}>
-                        input_schema
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {toolRowData.map((t) => (
-                      <TableRow key={t.name} className="hover:bg-muted/30">
-                        <TableCell className={tableCellClass}>
-                          {t.name}
-                        </TableCell>
-                        <TableCell className={tableCellClass}>
-                          {t.description}
-                        </TableCell>
-                        <TableCell className={tableCellClass}>
-                          <CompactPre>
-                            {t.inputSchemaFormatted ?? "—"}
-                          </CompactPre>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <AgentDefToolsGrid rows={toolRowData} />
               )}
 
               <Separator className="my-1" />

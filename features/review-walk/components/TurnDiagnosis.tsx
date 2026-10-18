@@ -19,6 +19,7 @@
  *    optional note), never a single stray click.
  */
 
+import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
 import { InfoHint } from "@/components/official/InfoHint";
 import { useMemo, useState } from "react";
 import {
@@ -154,42 +155,18 @@ function Md({ content }: { content: string }) {
   );
 }
 
-/** Compact human-readable key → value rows for a known small record. */
+/** Compact key → value rows for a known small record — THE shared detail grid (raw keys kept:
+ * this is a diagnostic surface; objects open into the JSON viewer, long values clamp). */
 function KeyValueTable({ record }: { record: Record<string, unknown> }) {
   const entries = Object.entries(record).filter(([, v]) => v !== undefined);
-  if (entries.length === 0) {
-    return <div className="text-xs text-muted-foreground">Empty.</div>;
-  }
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
-        <tbody>
-          {entries.map(([k, v]) => {
-            const inline =
-              v === null
-                ? "—"
-                : typeof v === "object"
-                  ? JSON.stringify(v)
-                  : String(v);
-            return (
-              <tr key={k} className="border-b border-border/40 last:border-0">
-                <td className="w-40 min-w-32 py-1 pr-3 align-top font-medium text-muted-foreground">
-                  {k}
-                </td>
-                <td className="py-1 align-top">
-                  <span
-                    className="block max-w-full break-words font-mono text-[11px] text-foreground"
-                    title={inline.length > 200 ? undefined : inline}
-                  >
-                    {inline.length > 400 ? `${inline.slice(0, 400)}…` : inline}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <MatrxDetailGrid
+      rows={entries.map(([k, v]) => ({ key: k, label: k, mono: true, values: { value: v } }))}
+      columns={[{ key: "value", label: "Value", emptyLabel: "—" }]}
+      empty="Empty."
+      recordKind="turn-diagnosis"
+      location="Review walk · turn diagnosis"
+    />
   );
 }
 

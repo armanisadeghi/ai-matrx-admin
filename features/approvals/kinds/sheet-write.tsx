@@ -32,6 +32,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { MatrxDetailGrid, type DetailGridColumn } from "@ai-matrx/design-system/data-table";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import type { Json } from "@/types/database.types";
@@ -129,64 +130,34 @@ function changedCells(payload: SheetWritePayload): number {
   return changed;
 }
 
-/** Before beside after, bounded — the whole point of a dry run is seeing it. */
+/** Before beside after — THE shared before/after grid: the first 12 rows, "Show all" for the
+ * rest, changed cells marked and counted, each value copyable. */
 function CellDiff({ payload }: { payload: SheetWritePayload }) {
   const rows = Math.max(payload.values.length, payload.before.length);
-  const shown = Math.min(rows, 12);
   return (
-    <div className="space-y-1">
-      <div className="overflow-x-auto rounded-md border border-border">
-        <table className="w-full text-[11px]">
-          <thead>
-            <tr className="border-b border-border bg-muted/40 text-left">
-              <th className="px-2 py-1 font-medium text-muted-foreground">
-                Row
-              </th>
-              <th className="px-2 py-1 font-medium text-muted-foreground">
-                Now in Google
-              </th>
-              <th className="px-2 py-1 font-medium text-muted-foreground">
-                After this change
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: shown }, (_, row) => {
-              const previous = (payload.before[row] ?? []).join(" | ");
-              const next = (payload.values[row] ?? []).join(" | ");
-              const same = previous === next;
-              return (
-                <tr key={row} className="border-b border-border last:border-0">
-                  <td className="px-2 py-1 align-top text-muted-foreground">
-                    {row + 1}
-                  </td>
-                  <td className="max-w-[18rem] break-words px-2 py-1 align-top text-muted-foreground">
-                    {previous || <span className="italic">empty</span>}
-                  </td>
-                  <td
-                    className={
-                      same
-                        ? "max-w-[18rem] break-words px-2 py-1 align-top text-muted-foreground"
-                        : "max-w-[18rem] break-words px-2 py-1 align-top font-medium text-foreground"
-                    }
-                  >
-                    {next || <span className="italic">cleared</span>}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {rows > shown ? (
-        <p className="text-[11px] text-muted-foreground">
-          Showing the first {shown} of {rows} rows in this range. Approving
-          writes every row in it.
-        </p>
-      ) : null}
-    </div>
+    <MatrxDetailGrid
+      labelHeader="Row"
+      columns={SHEET_DIFF_COLUMNS}
+      rows={Array.from({ length: rows }, (_, row) => ({
+        key: String(row),
+        label: String(row + 1),
+        values: {
+          before: (payload.before[row] ?? []).join(" | "),
+          after: (payload.values[row] ?? []).join(" | "),
+        },
+      }))}
+      initialRows={12}
+      recordLabel={payload.fileLabel ? `${payload.fileLabel} · ${payload.rangeA1}` : payload.rangeA1}
+      recordKind="sheet-write"
+      location="Approvals · spreadsheet change"
+    />
   );
 }
+
+const SHEET_DIFF_COLUMNS = [
+  { key: "before", label: "Now in Google", role: "before", emptyLabel: "empty" },
+  { key: "after", label: "After this change", role: "after", emptyLabel: "cleared" },
+] as const satisfies readonly DetailGridColumn[];
 
 interface SheetItem extends ApprovalItem {
   proposal: ApprovalProposal;

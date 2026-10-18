@@ -8,30 +8,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ai-matrx/design-system";
-import { cn } from "@ai-matrx/design-system";
+import {
+  MatrxVersionTimeline,
+  type VersionTimelineEntry,
+} from "@ai-matrx/design-system/data-table";
 import { toast } from "@ai-matrx/chat/host/notify";
 import { supabase } from "@ai-matrx/chat/host/db";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
-import {
-  Copy,
-  GitCompareArrows,
-  ArrowRight,
-  ChevronDown,
-  Atom,
-  ShieldAlert,
-  AlertTriangle,
-} from "lucide-react";
+import { Copy, Atom, ShieldAlert, AlertTriangle } from "lucide-react";
 import type { AgentVersionHistoryItem } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { useSmartVersionFetch } from "@/features/agents/hooks/useSmartVersionFetch";
 import type { EnrichedVersion } from "@/features/agents/hooks/useSmartVersionFetch";
-import { formatChangeType } from "@ai-matrx/diff/structural";
 import { VersionIdBadge } from "@/features/agents/components/diff/VersionIdBadge";
-import {
-  MOBILE_TABLE,
-  MOBILE_TABLE_CELL,
-  MOBILE_TABLE_FROZEN_CELL,
-  MOBILE_TABLE_FROZEN_HEAD,
-} from "@/components/official/mobile-table/mobileTable";
 import { ErrorAlchemyMenu } from "@ai-matrx/chat/host/ui-slots";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
@@ -43,6 +31,12 @@ interface VersionHistoryTimelineProps {
   onCompare: (version: number, compareToVersion: number | "current") => void;
 }
 
+/**
+ * The agent's versions on THE shared version timeline (`MatrxVersionTimeline`): compare with the
+ * previous / current version, duplicate any version as a new agent, Load for snapshots not read
+ * yet, and — per version — the contract-break badge, the declare-a-break menu and the changed
+ * fields as chips.
+ */
 export function VersionHistoryTimeline({
   agentId,
   versions,
@@ -62,10 +56,54 @@ export function VersionHistoryTimeline({
   // Any row copies into a NEW agent through the one Duplicate dialog, with
   // that version preselected (the current one copies the agent as it is now).
   const duplicateFlow = useAgentDuplicateFlow();
-  const onDuplicate = (version: { version_id: string }) =>
-    void duplicateFlow.openDuplicate({ agentId, versionId: version.version_id });
+  const onDuplicate = (versionId: string) =>
+    void duplicateFlow.openDuplicate({ agentId, versionId });
 
   const hasEnrichedData = enrichedVersions.some((v) => v.diffSummary);
+  const byNumber = new Map(enrichedVersions.map((v) => [v.version_number, v]));
+
+  const entries = (enriched: boolean): VersionTimelineEntry[] =>
+    enrichedVersions.map((version) => {
+      const changedFields =
+        version.diffSummary?.root.filter((n) => n.changeType !== "unchanged") ?? [];
+      return {
+        number: version.version_number,
+        versionId: version.version_id,
+        idCell: <VersionIdBadge versionId={version.version_id} showLabel={false} />,
+        at: version.changed_at,
+        note: version.change_note ?? null,
+        loaded: enriched ? version.snapshotLoaded : false,
+        changes: enriched ? (
+          <VersionChanges agentId={agentId} version={version} />
+        ) : (
+          <ContractBreak agentId={agentId} version={version} />
+        ),
+        changesText: changedFields.map((n) => humanizeIdentifier(n.key) || n.key).join(", ") || null,
+      };
+    });
+
+  const timeline = (enriched: boolean) => (
+    <MatrxVersionTimeline
+      tableId={`agent.${agentId}.versions`}
+      versions={entries(enriched)}
+      currentNumber={currentVersion}
+      onCompare={onCompare}
+      {...(enriched ? { onLoad: fetchGap } : {})}
+      rowActions={(entry) => [
+        {
+          id: "duplicate",
+          icon: Copy,
+          label: `Duplicate v${entry.number} as a new agent`,
+          disabled: duplicateFlow.isDuplicating,
+          onClick: () => {
+            const version = byNumber.get(entry.number);
+            if (version) onDuplicate(version.version_id);
+          },
+        },
+      ]}
+      emptyState={{ title: "No version history" }}
+    />
+  );
 
   if (versions.length === 0) {
     return (
@@ -111,15 +149,9 @@ export function VersionHistoryTimeline({
           Load Full History
         </Button>
 
-        {/* Still show basic timeline below as a preview */}
+        {/* Still show the timeline below as a preview */}
         <div className="w-full mt-4 border-t border-border pt-4 px-4">
-          <BasicTimeline
-            versions={enrichedVersions}
-            currentVersion={currentVersion}
-            onCompare={onCompare}
-            onDuplicate={onDuplicate}
-            duplicating={duplicateFlow.isDuplicating}
-          />
+          {timeline(false)}
         </div>
         {duplicateFlow.dialog}
       </div>
@@ -165,58 +197,7 @@ export function VersionHistoryTimeline({
         </div>
       </div>
 
-      {/* Enriched timeline as a table */}
-      <table className={cn("type-secondary", MOBILE_TABLE)}>
-        <thead>
-          <tr className="border-b border-border text-muted-foreground">
-            <th className={cn("text-left py-2 pr-3 font-medium w-[70px]", MOBILE_TABLE_FROZEN_HEAD, "max-sm:min-w-[64px]")}>
-              Version
-            </th>
-            <th className={cn("text-left py-2 pr-3 font-medium w-[110px]", MOBILE_TABLE_CELL)}>ID</th>
-            <th className={cn("text-left py-2 pr-3 font-medium w-[140px]", MOBILE_TABLE_CELL)}>Date</th>
-            <th className={cn("text-left py-2 pr-3 font-medium", MOBILE_TABLE_CELL)}>
-              Changes from Previous
-            </th>
-            <th className={cn("text-right py-2 font-medium w-[170px]", MOBILE_TABLE_CELL)}>Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/50">
-          {enrichedVersions.map((version, index) => {
-            const prevVersion =
-              index < enrichedVersions.length - 1
-                ? enrichedVersions[index + 1]
-                : null;
-            const isLatest = version.version_number === currentVersion;
-            const date = new Date(version.changed_at);
-
-            // Check for gap
-            const hasGap =
-              prevVersion &&
-              !prevVersion.snapshotLoaded &&
-              version.snapshotLoaded;
-            const gapVersions = hasGap
-              ? getGapVersionNumbers(enrichedVersions, index)
-              : [];
-
-            return (
-              <VersionRow
-                key={version.version_number}
-                agentId={agentId}
-                version={version}
-                prevVersion={prevVersion ?? undefined}
-                isLatest={isLatest}
-                currentVersion={currentVersion}
-                date={date}
-                gapVersions={gapVersions}
-                onCompare={onCompare}
-                onFetchGap={fetchGap}
-                onDuplicate={onDuplicate}
-                duplicating={duplicateFlow.isDuplicating}
-              />
-            );
-          })}
-        </tbody>
-      </table>
+      {timeline(true)}
 
       <div className="h-[50dvh]" />
       {duplicateFlow.dialog}
@@ -224,34 +205,42 @@ export function VersionHistoryTimeline({
   );
 }
 
-function VersionRow({
-  agentId,
-  version,
-  prevVersion,
-  isLatest,
-  currentVersion,
-  date,
-  gapVersions,
-  onCompare,
-  onFetchGap,
-  onDuplicate,
-  duplicating,
-}: {
-  agentId: string;
-  version: EnrichedVersion;
-  prevVersion?: EnrichedVersion;
-  isLatest: boolean;
-  currentVersion: number | null;
-  date: Date;
-  gapVersions: number[];
-  onCompare: (version: number, compareToVersion: number | "current") => void;
-  onFetchGap: (versions: number[]) => void;
-  onDuplicate: (version: EnrichedVersion) => void;
-  duplicating: boolean;
-}) {
+/** What changed at this version: the contract-break badge + menu, then the changed fields. */
+function VersionChanges({ agentId, version }: { agentId: string; version: EnrichedVersion }) {
   const diff = version.diffSummary;
-  const changedFields =
-    diff?.root.filter((n) => n.changeType !== "unchanged") ?? [];
+  const changedFields = diff?.root.filter((n) => n.changeType !== "unchanged") ?? [];
+  return (
+    <div className="space-y-1">
+      <ContractBreak agentId={agentId} version={version} />
+      {diff && changedFields.length > 0 ? (
+        <ChipSet>
+          {changedFields.map((n) => (
+            <Chip
+              key={n.key}
+              tone={
+                n.changeType === "added"
+                  ? "success"
+                  : n.changeType === "removed"
+                    ? "destructive"
+                    : "warning"
+              }
+              label={`${humanizeIdentifier(n.key) || n.key}${
+                n.changeType === "added" ? " +" : n.changeType === "removed" ? " −" : ""
+              }`}
+            />
+          ))}
+        </ChipSet>
+      ) : diff && changedFields.length === 0 ? (
+        <span className="text-muted-foreground">No changes</span>
+      ) : !version.snapshotLoaded ? null : (
+        <span className="text-muted-foreground">First version</span>
+      )}
+    </div>
+  );
+}
+
+/** The contract-break badge (auto or declared) and the menu that declares one. */
+function ContractBreak({ agentId, version }: { agentId: string; version: EnrichedVersion }) {
   // Optimistic mirror of the manual declaration — the RPC is the authority.
   const [declared, setDeclared] = useState<string | null>(
     version.contract_break_declared ?? null,
@@ -281,265 +270,45 @@ function VersionRow({
   const effectiveChange = declared ?? autoChange;
 
   return (
-    <>
-      <tr
-        className={cn(
-          "group hover:bg-muted/20 transition-colors",
-          isLatest && "bg-primary/5",
-        )}
-      >
-        {/* Version */}
-        <td className={cn("py-2.5 pr-3", MOBILE_TABLE_FROZEN_CELL, "max-sm:min-w-[64px]")}>
-          <div className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                "w-2 h-2 rounded-full shrink-0",
-                isLatest
-                  ? "bg-primary"
-                  : version.snapshotLoaded
-                    ? "bg-primary/40"
-                    : "bg-muted-foreground/30",
-              )}
-            />
-            <span
-              className={cn(
-                "font-mono font-medium tabular-nums",
-                isLatest && "text-primary",
-              )}
-            >
-              v{version.version_number}
-            </span>
-          </div>
-        </td>
-
-        {/* Version ID */}
-        <td className={cn("py-2.5 pr-3", MOBILE_TABLE_CELL)}>
-          <VersionIdBadge versionId={version.version_id} showLabel={false} />
-        </td>
-
-        {/* Date */}
-        <td className={cn("py-2.5 pr-3 text-muted-foreground", MOBILE_TABLE_CELL)}>
-          {date.toLocaleDateString()}{" "}
-          {date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </td>
-
-        {/* Changes */}
-        <td className="py-2.5 pr-3 max-sm:min-w-[12rem]">
-          <div className="mb-1 flex flex-wrap items-center gap-1">
-            {effectiveChange && (
-              <Badge
-                tone="warning"
-                title={
-                  declared
-                    ? "Manually declared: the way this agent is used could break at this version."
-                    : "The declared input/output structure changed at this version — pinned callers and saved sample inputs may no longer fit."
-                }
-              >
-                {`Contract: ${effectiveChange}${declared ? " (declared)" : ""}`}
-              </Badge>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  icon={<ShieldAlert />} aria-label="Mark this version as a contract break the hashes cannot see (e.g. a prompt-level output change)"
-                  variant="quiet"
-                  className="opacity-0 transition-opacity group-hover:opacity-100 max-sm:opacity-100"
-                  title="Mark this version as a contract break the hashes cannot see (e.g. a prompt-level output change)"
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => void declareBreak("input")}>
-                  Declare input break
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void declareBreak("output")}>
-                  Declare output break
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void declareBreak("both")}>
-                  Declare input + output break
-                </DropdownMenuItem>
-                {declared && (
-                  <DropdownMenuItem onClick={() => void declareBreak(null)}>
-                    Clear declaration
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          {version.change_note && (
-            <div className="text-muted-foreground mb-1">
-              {version.change_note}
-            </div>
-          )}
-          {diff && changedFields.length > 0 ? (
-            <ChipSet>
-              {changedFields.map((n) => (
-                <Chip
-                  key={n.key}
-                  tone={
-                    n.changeType === "added"
-                      ? "success"
-                      : n.changeType === "removed"
-                        ? "destructive"
-                        : "warning"
-                  }
-                  label={`${humanizeIdentifier(n.key) || n.key}${
-                    n.changeType === "added" ? " +" : n.changeType === "removed" ? " −" : ""
-                  }`}
-                />
-              ))}
-            </ChipSet>
-          ) : diff && changedFields.length === 0 ? (
-            <span className="text-muted-foreground/50">No changes</span>
-          ) : !version.snapshotLoaded ? (
-            <span className="text-muted-foreground/40">—</span>
-          ) : (
-            <span className="text-muted-foreground/50">First version</span>
-          )}
-        </td>
-
-        {/* Compare buttons */}
-        <td className={cn("py-2.5 text-right", MOBILE_TABLE_CELL)}>
-          <div className="flex items-center justify-end gap-1 transition-opacity max-sm:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-            {prevVersion && (
-              <Button
-                icon={<ArrowRight />}
-                variant="quiet"
-                onClick={() =>
-                  onCompare(prevVersion.version_number, version.version_number)
-                }
-              >v
-                {prevVersion.version_number}
-              </Button>
-            )}
-            {!isLatest && currentVersion != null && (
-              <Button
-                icon={<GitCompareArrows />}
-                variant="quiet"
-                onClick={() => onCompare(version.version_number, "current")}
-              >
-                Current
-              </Button>
-            )}
-            <Button
-              icon={<Copy />}
-              variant="quiet"
-              disabled={duplicating}
-              aria-label={`Duplicate v${version.version_number} as a new agent`}
-              title={`Duplicate v${version.version_number} as a new agent`}
-              onClick={() => onDuplicate(version)}
-            />
-          </div>
-        </td>
-      </tr>
-
-      {/* Gap row */}
-      {gapVersions.length > 0 && (
-        <tr>
-          <td colSpan={5} className="py-1">
-            <Button
-              icon={<ChevronDown />}
-              variant="quiet"
-              className="w-full justify-center"
-              onClick={() => onFetchGap(gapVersions)}
-            >
-              Load {gapVersions.length} more version
-              {gapVersions.length !== 1 ? "s" : ""}
-            </Button>
-          </td>
-        </tr>
+    <div className="flex flex-wrap items-center gap-1">
+      {effectiveChange && (
+        <Badge
+          tone="warning"
+          title={
+            declared
+              ? "Manually declared: the way this agent is used could break at this version."
+              : "The declared input/output structure changed at this version — pinned callers and saved sample inputs may no longer fit."
+          }
+        >
+          {`Contract: ${effectiveChange}${declared ? " (declared)" : ""}`}
+        </Badge>
       )}
-    </>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            icon={<ShieldAlert />}
+            aria-label="Mark this version as a contract break the hashes cannot see (e.g. a prompt-level output change)"
+            variant="quiet"
+            title="Mark this version as a contract break the hashes cannot see (e.g. a prompt-level output change)"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem onClick={() => void declareBreak("input")}>
+            Declare input break
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void declareBreak("output")}>
+            Declare output break
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => void declareBreak("both")}>
+            Declare input + output break
+          </DropdownMenuItem>
+          {declared && (
+            <DropdownMenuItem onClick={() => void declareBreak(null)}>
+              Clear declaration
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
-}
-
-/** Basic timeline shown before enrichment — just version numbers and dates */
-function BasicTimeline({
-  versions,
-  currentVersion,
-  onCompare,
-  onDuplicate,
-  duplicating,
-}: {
-  versions: EnrichedVersion[];
-  currentVersion: number | null;
-  onCompare: (version: number, compareToVersion: number | "current") => void;
-  onDuplicate: (version: EnrichedVersion) => void;
-  duplicating: boolean;
-}) {
-  return (
-    <table className={cn("type-secondary", MOBILE_TABLE)}>
-      <thead>
-        <tr className="border-b border-border text-muted-foreground">
-          <th className={cn("text-left py-1.5 pr-3 font-medium w-[70px]", MOBILE_TABLE_FROZEN_HEAD, "max-sm:min-w-[64px]")}>
-            Version
-          </th>
-          <th className={cn("text-left py-1.5 pr-3 font-medium w-[110px]", MOBILE_TABLE_CELL)}>ID</th>
-          <th className={cn("text-left py-1.5 pr-3 font-medium", MOBILE_TABLE_CELL)}>Date</th>
-          <th className={cn("text-left py-1.5 font-medium", MOBILE_TABLE_CELL)}>Note</th>
-          <th className={cn("text-right py-1.5 font-medium w-[48px]", MOBILE_TABLE_CELL)}>
-            <span className="sr-only">Actions</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-border/50">
-        {versions.map((v) => {
-          const date = new Date(v.changed_at);
-          const isLatest = v.version_number === currentVersion;
-          return (
-            <tr
-              key={v.version_number}
-              className="group hover:bg-muted/20 cursor-pointer"
-              onClick={() => onCompare(v.version_number, "current")}
-            >
-              <td className={cn("py-1.5 pr-3", MOBILE_TABLE_FROZEN_CELL, "max-sm:min-w-[64px]")}>
-                <span
-                  className={cn(
-                    "font-mono tabular-nums",
-                    isLatest && "text-primary font-medium",
-                  )}
-                >
-                  v{v.version_number}
-                </span>
-              </td>
-              <td className={cn("py-1.5 pr-3", MOBILE_TABLE_CELL)} onClick={(e) => e.stopPropagation()}>
-                <VersionIdBadge versionId={v.version_id} showLabel={false} />
-              </td>
-              <td className={cn("py-1.5 pr-3 text-muted-foreground", MOBILE_TABLE_CELL)}>
-                {date.toLocaleDateString()}{" "}
-                {date.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </td>
-              <td className={cn("py-1.5 text-muted-foreground", MOBILE_TABLE_CELL)}>
-                {v.change_note ?? "—"}
-              </td>
-              <td className={cn("py-1.5 text-right", MOBILE_TABLE_CELL)} onClick={(e) => e.stopPropagation()}>
-                <Button
-                  icon={<Copy />}
-                  variant="quiet"
-                  disabled={duplicating}
-                  aria-label={`Duplicate v${v.version_number} as a new agent`}
-                  title={`Duplicate v${v.version_number} as a new agent`}
-                  onClick={() => onDuplicate(v)}
-                />
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  );
-}
-
-function getGapVersionNumbers(
-  versions: EnrichedVersion[],
-  currentIndex: number,
-): number[] {
-  const gap: number[] = [];
-  for (let i = currentIndex + 1; i < versions.length; i++) {
-    if (versions[i].snapshotLoaded) break;
-    gap.push(versions[i].version_number);
-  }
-  return gap;
 }

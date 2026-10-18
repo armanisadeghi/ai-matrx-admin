@@ -50,6 +50,7 @@
  * invents a second door to paper over.
  */
 
+import { MatrxDetailGrid } from "@ai-matrx/design-system/data-table";
 import type { Json } from "@/types/database.types";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { importMatchKeyWords } from "@/features/connectors/import/field-labels";
@@ -262,31 +263,27 @@ function ContactFieldMap({ payload }: { payload: GoogleProposalPayload }) {
   return (
     <div className="space-y-2">
       {rows.length > 0 ? (
-        <div className="overflow-hidden rounded-md border border-border">
-          <table className="w-full text-[11px]">
-            <thead>
-              <tr className="border-b border-border bg-muted/40 text-left">
-                <th className="px-2 py-1 font-medium text-muted-foreground">Person field</th>
-                <th className="px-2 py-1 font-medium text-muted-foreground">What happens</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.key} className="border-b border-border last:border-0">
-                  <td className="w-32 px-2 py-1 align-top text-muted-foreground">{row.label}</td>
-                  <td className="break-words px-2 py-1 align-top font-medium text-foreground">
-                    {row.explanation ??
-                      (row.values.length > 0
-                        ? `Value from Google Contacts: ${row.values.join(", ")}`
-                        : row.currentValues.length > 0
-                          ? `Already here: ${row.currentValues.join(", ")}`
-                          : "Nothing to write.")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <MatrxDetailGrid
+          labelHeader="Person field"
+          columns={[{ key: "what", label: "What happens" }]}
+          header
+          rows={rows.map((row) => ({
+            key: row.key,
+            label: row.label,
+            values: {
+              what:
+                row.explanation ??
+                (row.values.length > 0
+                  ? `Value from Google Contacts: ${row.values.join(", ")}`
+                  : row.currentValues.length > 0
+                    ? `Already here: ${row.currentValues.join(", ")}`
+                    : "Nothing to write."),
+            },
+          }))}
+          recordLabel="Contact import"
+          recordKind="contact-import"
+          location="Approvals · contact import"
+        />
       ) : (
         <p className="text-xs text-muted-foreground">
           Everything Google has about this contact is already here, or is kept as it is —

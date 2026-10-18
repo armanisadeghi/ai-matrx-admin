@@ -13,6 +13,11 @@ import {
 } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { Select } from "@ai-matrx/design-system/controls";
+import {
+  AgentDefSlotsGrid,
+  AgentDefToolsGrid,
+  AgentDefVariablesGrid,
+} from "./agent-definition-detail-grids";
 function CompactPre({ children }: { children: string }) {
   return (
     <pre className="m-0 max-h-56 overflow-auto whitespace-pre-wrap break-all border-l border-border pl-1 text-[11px] leading-snug text-foreground">
@@ -33,45 +38,6 @@ function KvRow({
       <div className="shrink-0 text-[11px] text-muted-foreground">{label}</div>
       <div className="min-w-0 text-[11px] text-foreground">{children}</div>
     </div>
-  );
-}
-
-function MiniTable({
-  headers,
-  rows,
-}: {
-  headers: string[];
-  rows: React.ReactNode[][];
-}) {
-  if (rows.length === 0) {
-    return <div className="text-[11px] text-muted-foreground">—</div>;
-  }
-  return (
-    <table className="w-full border-collapse text-[11px]">
-      <thead>
-        <tr>
-          {headers.map((h) => (
-            <th
-              key={h}
-              className="border border-border px-1 py-0 text-left font-normal text-muted-foreground"
-            >
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((cells, ri) => (
-          <tr key={ri}>
-            {cells.map((c, ci) => (
-              <td key={ci} className="border border-border px-1 py-0 align-top">
-                {c}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }
 
@@ -98,24 +64,6 @@ export default function AgentDefinitionSliceViewer({
     slotRows,
     toolRowData,
   } = useAgentDefinitionSliceViewModel(state);
-
-  const varRows = varRowData.map((v) => [
-    v.name,
-    <CompactPre key={`d-${v.name}`}>{v.defaultFormatted}</CompactPre>,
-    v.required,
-    v.helpText,
-    <CompactPre key={`c-${v.name}`}>
-      {v.customComponentFormatted ?? "—"}
-    </CompactPre>,
-  ]);
-
-  const toolRows = toolRowData.map((t) => [
-    t.name,
-    t.description,
-    <CompactPre key={`sch-${t.name}`}>
-      {t.inputSchemaFormatted ?? "—"}
-    </CompactPre>,
-  ]);
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-xs">
@@ -280,16 +228,7 @@ export default function AgentDefinitionSliceViewer({
               {variableDefs === null ? (
                 <KvRow label="value">null</KvRow>
               ) : (
-                <MiniTable
-                  headers={[
-                    "name",
-                    "default",
-                    "req",
-                    "help",
-                    "customComponent",
-                  ]}
-                  rows={varRows}
-                />
+                <AgentDefVariablesGrid rows={varRowData} />
               )}
             </section>
 
@@ -304,17 +243,7 @@ export default function AgentDefinitionSliceViewer({
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
                 contextPolicies
               </div>
-              <MiniTable
-                headers={[
-                  "key",
-                  "type",
-                  "label",
-                  "desc",
-                  "max_inline",
-                  "summary_agent",
-                ]}
-                rows={slotRows}
-              />
+              <AgentDefSlotsGrid rows={slotRows} />
             </section>
 
             <section className="space-y-px">
@@ -347,10 +276,7 @@ export default function AgentDefinitionSliceViewer({
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
                 customTools
               </div>
-              <MiniTable
-                headers={["name", "description", "input_schema"]}
-                rows={toolRows}
-              />
+              <AgentDefToolsGrid rows={toolRowData} />
             </section>
 
             <section className="space-y-px">
