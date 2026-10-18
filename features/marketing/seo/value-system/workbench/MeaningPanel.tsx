@@ -20,7 +20,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { RecordList, readOf } from "@ai-matrx/design-system/record-list";
 import { useQuery } from "@tanstack/react-query";
-import { readOf } from "@ai-matrx/design-system";
 import {
   UntrustedCount,
   countReadState,
