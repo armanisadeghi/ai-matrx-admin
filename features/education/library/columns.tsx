@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -256,8 +255,7 @@ export const EDUCATION_LIBRARY_COLUMNS: EntityColumnSpec<EducationLibraryRow>[] 
         id: "updated",
         accessorKey: "updated_at",
         header: "Updated",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         cell: (row) => timeCell(row.updated_at),
       },
     },
@@ -269,8 +267,7 @@ export const EDUCATION_LIBRARY_COLUMNS: EntityColumnSpec<EducationLibraryRow>[] 
         id: "created",
         accessorKey: "created_at",
         header: "Created",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         cell: (row) => timeCell(row.created_at),
       },
     },

@@ -27,7 +27,6 @@ import { Chip, type ChipHue } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { RichContentPreview } from "@ai-matrx/rich-content/levels/RichContentPreview";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -315,8 +314,7 @@ export const BROWSE_COLUMNS: EntityColumnSpec<AgentBrowseRow>[] = [
       id: "updated",
       accessorKey: "updated_at",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 120,
       align: "right",
       cell: (row) => timeCell(row.updated_at),
@@ -331,8 +329,7 @@ export const BROWSE_COLUMNS: EntityColumnSpec<AgentBrowseRow>[] = [
       id: "created",
       accessorKey: "created_at",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 120,
       align: "right",
       cell: (row) => timeCell(row.created_at),

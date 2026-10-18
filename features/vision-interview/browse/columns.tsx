@@ -9,7 +9,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -156,8 +155,7 @@ export const SESSION_COLUMNS: EntityColumnSpec<SessionListRow>[] = [
       id: "updated",
       accessorKey: "updated_at",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 110,
       cell: (row) => timeCell(row.updated_at),
     },
@@ -170,8 +168,7 @@ export const SESSION_COLUMNS: EntityColumnSpec<SessionListRow>[] = [
       id: "created",
       accessorKey: "created_at",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 110,
       cell: (row) => timeCell(row.created_at),
     },

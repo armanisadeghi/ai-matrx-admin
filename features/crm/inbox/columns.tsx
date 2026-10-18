@@ -17,7 +17,6 @@ import { Building2, CircleCheck, CircleDot, Mail } from "lucide-react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -139,8 +138,7 @@ export const INBOX_COLUMNS: EntityColumnSpec<InboxRow>[] = [
       id: "occurred",
       accessorKey: "occurred_at",
       header: "Replied",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 110,
       align: "right",
       cell: (row) => timeCell(row.occurred_at),
@@ -404,8 +402,7 @@ export const INBOX_COLUMNS: EntityColumnSpec<InboxRow>[] = [
       id: "created",
       accessorKey: "created_at",
       header: "Ingested",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       width: 110,
       align: "right",
       cell: (row) => timeCell(row.created_at),
