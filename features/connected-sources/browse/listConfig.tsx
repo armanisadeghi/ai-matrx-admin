@@ -152,7 +152,7 @@ function sourceColumns(adapter: string): EntityColumnSpec<ConnectedSourceRow>[] 
       width: 140,
       header: "When",
       sortable: false,
-      filter: false,
+      filter: "date",
       cell: (row) => timeCell(row.modified_at ?? row.created_at),
     },
   },
