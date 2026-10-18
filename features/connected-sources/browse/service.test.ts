@@ -22,6 +22,7 @@ const dispatch = jest.fn() as unknown as Parameters<
 const query = {
   page: 1,
   search: "",
+  filters: {},
   scope: { kind: "mine" },
 } as unknown as Parameters<
   ReturnType<typeof createConnectedSourceListService>["fetchPage"]
