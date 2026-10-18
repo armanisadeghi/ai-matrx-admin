@@ -20,6 +20,7 @@ import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectDebugData } from "@/lib/redux/preferences/adminDebugSlice";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { PAGE_RUNS_SURFACE } from "@/features/ai-watch/followed-work-builder";
 import { feedEntries, feedSnapshot, feedsForRoute, refsOf, selectBuilderFeedList } from "@/features/builder-panel/selectors";
 import { fetchProposals, type MandateProposal } from "@/features/builder-panel/data";
 import type { BuilderEntry } from "@/features/builder-panel/types";
@@ -95,7 +96,10 @@ function BuilderPanelInner({
   const [snapshotFocus, setSnapshotFocus] = useState<string | null>(null);
 
   // This page's surfaces first; any other surface still in memory stays reachable.
-  const here = feedsForRoute(feeds, pathname);
+  // The page's own surface leads; the app-wide followed-work feed rides along on every route, so it goes last.
+  const here = [...feedsForRoute(feeds, pathname)].sort(
+    (a, b) => Number(a.surfaceKey === PAGE_RUNS_SURFACE) - Number(b.surfaceKey === PAGE_RUNS_SURFACE),
+  );
   const feed = feeds.find((f) => f.surfaceKey === surfacePick) ?? here[0] ?? feeds[0] ?? null;
   const surfaceKey = feed?.surfaceKey ?? null;
 
