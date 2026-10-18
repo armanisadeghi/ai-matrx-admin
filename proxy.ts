@@ -30,10 +30,11 @@ import {
 } from "@/lib/seo/record-robots-header";
 import { legacyBrandRedirectUrl } from "@/lib/seo/legacy-brand-host";
 import {
-  apiAllowedOnCustomHost,
+  customHostPathClass,
   hostClass,
   internalPathFor,
   normalizeHost,
+  nonPageAllowedOnCustomHost,
   passthroughOnCustomHost,
 } from "@/lib/custom-domains/host-routing";
 import { lookupDomain } from "@/lib/custom-domains/lookup";
@@ -252,25 +253,37 @@ async function customDomainResponse(
 }
 
 /**
- * /api on a business's own host: only the endpoints its published pages call answer
- * (lib/custom-domains/host-routing.ts `apiAllowedOnCustomHost`); the rest of the API is a 404 there.
- * Our own hosts never reach this (the /api matcher entry is limited to non-platform hosts).
+ * Every NON-PAGE path on a business's own host (lib/custom-domains/host-routing.ts
+ * `customHostPathClass`): /api answers only what its published pages call; page assets load;
+ * the magic-link / OAuth landings serve only when a portal is mapped; every other path the app
+ * answers (/auth/*, /app_redirect, /app_callback, /public/*, sitemap/robots/manifests, file-shaped
+ * route handlers) is a 404 there. Page paths return null and are decided by `customDomainResponse`.
+ * Our own hosts never reach this (their matcher entries are limited to non-platform hosts).
  */
-async function customDomainApiGate(request: NextRequest): Promise<NextResponse | null> {
+async function customHostGate(request: NextRequest, event?: NextFetchEvent): Promise<NextResponse | null> {
   const requestHost = request.headers.get("host");
   const kind = hostClass(requestHost, [MAIN_HOST, ADMIN_HOST, DEMOS_HOST, EDU_HOST]);
   if (kind === "platform" || !requestHost) return null;
+  const pathClass = customHostPathClass(request.nextUrl.pathname);
+  if (pathClass === "page") return null;
+  const notFound = () =>
+    pathClass === "api"
+      ? NextResponse.json({ error: "Not found" }, { status: 404 })
+      : new NextResponse("Not found", { status: 404 });
   let domain;
   try {
     domain = await lookupDomain(normalizeHost(requestHost));
   } catch (error) {
-    console.error(`[custom-domain] api lookup failed for ${requestHost}:`, error);
+    console.error(`[custom-domain] lookup failed for ${requestHost}:`, error);
     if (kind === "dev") return null;
-    return NextResponse.json({ error: "This site is temporarily unavailable." }, { status: 503 });
+    return new NextResponse("This site is temporarily unavailable.", { status: 503 });
   }
-  if (!domain) return kind === "dev" ? null : NextResponse.json({ error: "Not found" }, { status: 404 });
-  if (apiAllowedOnCustomHost(request.nextUrl.pathname)) return null;
-  return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!domain) {
+    if (kind === "dev") return null;
+    event?.waitUntil(recheckWaitingHost(normalizeHost(requestHost)));
+    return notFound();
+  }
+  return nonPageAllowedOnCustomHost(request.nextUrl.pathname, domain) ? NextResponse.next({ request }) : notFound();
 }
 
 async function routeRequest(request: NextRequest, event?: NextFetchEvent) {
@@ -429,6 +442,9 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
     if (response) return response;
   }
   stampAdminLane(request);
+  // A business's custom domain: non-page paths are decided here, before anything else runs.
+  const customHost = await customHostGate(request, event);
+  if (customHost) return customHost;
   // The sandbox shell carries no session or app data. Its opaque frame
   // must load in place even when the parent is on a satellite origin.
   if (request.nextUrl.pathname === "/kind-sandbox") {
@@ -438,8 +454,6 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   // stamp: API routes gate their own auth, capture nothing, and never run the
   // session pass here.
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    const refused = await customDomainApiGate(request);
-    if (refused) return refused;
     return NextResponse.next({ request });
   }
   const capture = prepareAcquisitionCapture(request, event);
@@ -462,11 +476,12 @@ export const config = {
     // stamp (see `stampAdminLane`); `proxy` returns before any session work.
     "/api/admin/:path*",
     "/api/sms/admin/:path*",
-    // Every /api path on a NON-platform host (a business's custom domain, or a *.localhost
-    // preview) — so `customDomainApiGate` can 404 what its published pages do not call.
-    // Our own hosts stay out: the API's cold-start budget is untouched for them.
+    // EVERY path on a NON-platform host (a business's custom domain, or a *.localhost preview)
+    // except Next's own static files — so `customHostGate` decides /api, /auth, /app_*, /public and
+    // file-shaped paths there, which the main entry below excludes. Our own hosts stay out: their
+    // cold-start budget is untouched.
     {
-      source: "/api/:path*",
+      source: "/((?!_next/static|_next/image).*)",
       missing: [
         {
           type: "host",

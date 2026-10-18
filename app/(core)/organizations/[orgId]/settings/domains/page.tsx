@@ -119,7 +119,7 @@ export default function OrgDomainsPage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "check", domain_id: d.id }),
-          }).catch(() => null),
+          }).catch((thrown: unknown) => console.error(`[domains] re-check of ${d.host} failed`, thrown)),
         ),
       );
       await load();
@@ -429,6 +429,12 @@ function RoutesEditor({
     else {
       setTarget("");
       setPath("/");
+      // The host serves the new routes now, not after the edge cache's TTL.
+      await fetch(`/api/organizations/${organizationId}/domains`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "purge", domain_id: domain.id }),
+      }).catch((thrown: unknown) => console.error("[domains] cache purge failed; the host follows within 60 s", thrown));
     }
     await onChanged();
   }

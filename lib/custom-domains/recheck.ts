@@ -8,14 +8,34 @@ import { statusFor, type DomainStatus } from "./dns-records";
 import { forgetDomain } from "./lookup";
 
 export const RECHECK_MS = 120_000;
+/** Bounded like the lookup cache: arbitrary Host headers must never grow memory. */
+export const MAX_TRACKED_HOSTS = 2_000;
 const lastRecheck = new Map<string, number>();
 
 /** True at most once per RECHECK_MS per host; records the attempt. */
 export function claimRecheck(host: string, now: number = Date.now()): boolean {
   const last = lastRecheck.get(host);
   if (last !== undefined && now - last < RECHECK_MS) return false;
+  lastRecheck.delete(host);
   lastRecheck.set(host, now);
+  if (lastRecheck.size > MAX_TRACKED_HOSTS) {
+    // Expired entries go first; past that, the oldest (Map order is insertion order).
+    for (const [key, at] of lastRecheck) {
+      if (lastRecheck.size <= MAX_TRACKED_HOSTS) break;
+      if (now - at >= RECHECK_MS) lastRecheck.delete(key);
+    }
+    while (lastRecheck.size > MAX_TRACKED_HOSTS) {
+      const oldest = lastRecheck.keys().next().value;
+      if (oldest === undefined) break;
+      lastRecheck.delete(oldest);
+    }
+  }
   return true;
+}
+
+/** For tests: how many hosts the throttle remembers. */
+export function trackedHostCount(): number {
+  return lastRecheck.size;
 }
 
 interface WaitingRow {

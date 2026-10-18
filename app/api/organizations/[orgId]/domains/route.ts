@@ -9,6 +9,8 @@
 //
 //   POST   { action: "add", host }        → Vercel add → row (pending/verifying/live) + DNS records
 //   POST   { action: "check", domain_id } → Vercel verify + DNS config → row status
+//   POST   { action: "purge", domain_id } → after a route write (iam.org_domain_route_set, direct from
+//                                           the browser): drops the host from this server's lookup cache
 //   DELETE ?domain_id=…                   → Vercel remove → row removed (its routes go with it)
 
 import { NextRequest, NextResponse } from "next/server";
@@ -95,15 +97,21 @@ function failure(thrown: unknown) {
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
-  if (!isVercelConfigured()) return vercelMissing();
   const { orgId } = await params;
   const body = (await request.json().catch(() => ({}))) as { action?: string; host?: string; domain_id?: string };
-  if (body.action !== "add" && body.action !== "check") {
-    return NextResponse.json({ error: "action is add or check." }, { status: 400 });
+  if (body.action !== "purge" && !isVercelConfigured()) return vercelMissing();
+  if (body.action !== "add" && body.action !== "check" && body.action !== "purge") {
+    return NextResponse.json({ error: "action is add, check or purge." }, { status: 400 });
   }
-  const who = await adminCheck(orgId, body.action, body.host ?? null, body.domain_id ?? null);
+  const who = await adminCheck(orgId, body.action === "purge" ? "check" : body.action, body.host ?? null, body.domain_id ?? null);
   if ("refusal" in who) return who.refusal;
   const host = who.check.host as string;
+  if (body.action === "purge") {
+    // A route write changes what the host serves: this instance stops serving the old routes now;
+    // other instances follow within the lookup cache's hit TTL.
+    forgetDomain(host);
+    return NextResponse.json({ ok: true, host });
+  }
   try {
     if (body.action === "add") {
       const state = await addDomain(host);
