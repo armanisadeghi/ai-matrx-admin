@@ -1,0 +1,3240 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0409",
+  "version": 1,
+  "title": "Immigration Practice",
+  "description": "Cases, agency notices with due dates, and an evidence checklist for immigration.",
+  "forWho": "Immigration attorneys and legal practices",
+  "icon": {
+    "emoji": "🗂️"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "legal",
+  "tags": [
+    "immigration",
+    "cases",
+    "notices",
+    "documents"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-immigration-practice",
+    "catalogueId": "SP0409",
+    "useCase": "Wen Zhao-Albright is a senior paralegal at an immigration practice and uses this to see which agency notices need action this week, which cases are waiting on client documents and where every petition stands. Operational tracking only; it holds no legal advice.",
+    "industry": "legal_professional",
+    "vertical": "Immigration practice",
+    "job": "compliance_quality",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Nazari and Ferreira Immigration Law",
+      "describes": "A small immigration practice helping families and workers with applications and petitions.",
+      "address": {
+        "line1": "640 Alder Way",
+        "city": "Seattle",
+        "region": "WA",
+        "postalCode": "98104",
+        "country": "US"
+      },
+      "phone": "(206) 555-0120",
+      "website": "nazariferreira.net",
+      "email": "hello@nazariferreira.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-immigration-practice",
+    "tables": [
+      {
+        "token": "notice",
+        "name": "Notices",
+        "labelSingular": "Notice",
+        "labelPlural": "Notices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mail",
+        "titleField": "notice_title",
+        "describes": "Letters and notices from the agency, each with an action and a due date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "notice_title",
+            "label": "Notice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "case",
+            "label": "Case",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "case",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Receipt",
+              "Biometrics appointment",
+              "Request for evidence",
+              "Interview",
+              "Approval",
+              "Transfer"
+            ],
+            "choiceColors": {
+              "Receipt": "blue",
+              "Biometrics appointment": "green",
+              "Request for evidence": "amber",
+              "Interview": "violet",
+              "Approval": "teal",
+              "Transfer": "red"
+            }
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "action_due",
+            "label": "Action due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Open": "blue",
+              "In progress": "green",
+              "Done": "amber"
+            },
+            "statusGroups": {
+              "Open": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            },
+            "required": true,
+            "default": "Open"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "progress_btn",
+            "label": "Start work",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "notice_progress"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "notice_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "n01",
+            "values": {
+              "notice_title": "Request for evidence - Tadesse",
+              "case": "k03",
+              "kind": "Request for evidence",
+              "received_on": "@today-20d",
+              "action_due": "@today+18d",
+              "status": "In progress",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "n02",
+            "values": {
+              "notice_title": "Biometrics appointment - Santoro",
+              "case": "k04",
+              "kind": "Biometrics appointment",
+              "received_on": "@today-10d",
+              "action_due": "@today",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "n03",
+            "values": {
+              "notice_title": "Interview notice - Contreras-Wilde",
+              "case": "k01",
+              "kind": "Interview",
+              "received_on": "@today-5d",
+              "action_due": "@mon+4d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "n04",
+            "values": {
+              "notice_title": "Receipt notice - Santoro",
+              "case": "k04",
+              "kind": "Receipt",
+              "received_on": "@today-40d",
+              "action_due": "@today-35d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "n05",
+            "values": {
+              "notice_title": "Receipt notice - Tadesse",
+              "case": "k03",
+              "kind": "Receipt",
+              "received_on": "@today-68d",
+              "action_due": "@today-60d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "n06",
+            "values": {
+              "notice_title": "Transfer notice - Contreras-Wilde",
+              "case": "k01",
+              "kind": "Transfer",
+              "received_on": "@today-60d",
+              "action_due": "@today-55d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "n07",
+            "values": {
+              "notice_title": "Approval notice - Dimaculangan",
+              "case": "k07",
+              "kind": "Approval",
+              "received_on": "@today-390d",
+              "action_due": "@today-385d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "n08",
+            "values": {
+              "notice_title": "Biometrics appointment - Tadesse",
+              "case": "k03",
+              "kind": "Biometrics appointment",
+              "received_on": "@today-8d",
+              "action_due": "@today-2d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "n09",
+            "values": {
+              "notice_title": "Receipt notice - Contreras-Wilde",
+              "case": "k01",
+              "kind": "Receipt",
+              "received_on": "@today-115d",
+              "action_due": "@today-110d",
+              "status": "Done"
+            }
+          }
+        ],
+        "independentOf": {
+          "case": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "received_on",
+            "action_due"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "In progress"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Notice",
+            "values": {
+              "status": "Open",
+              "notice_title": "New notice"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Record the date on the notice itself. The date printed on the notice controls."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the notice says"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Action"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Due date entered in two calendars"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client told"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Response drafted and reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "case",
+        "name": "Cases",
+        "labelSingular": "Case",
+        "labelPlural": "Cases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "case_title",
+        "describes": "Each application or petition, its stage and its filing details.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "case_title",
+            "label": "Case",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Case type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Family petition",
+              "Work visa",
+              "Green card renewal",
+              "Citizenship application",
+              "Asylum",
+              "Student visa"
+            ],
+            "choiceColors": {
+              "Family petition": "blue",
+              "Work visa": "green",
+              "Green card renewal": "amber",
+              "Citizenship application": "violet",
+              "Asylum": "teal",
+              "Student visa": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Intake",
+              "Preparing",
+              "Filed",
+              "Request for evidence",
+              "Approved",
+              "Denied",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Intake": "blue",
+              "Preparing": "green",
+              "Filed": "amber",
+              "Request for evidence": "violet",
+              "Approved": "teal",
+              "Denied": "red",
+              "Closed": "orange"
+            },
+            "statusGroups": {
+              "Intake": "todo",
+              "Preparing": "in_progress",
+              "Filed": "in_progress",
+              "Request for evidence": "in_progress",
+              "Approved": "in_progress",
+              "Denied": "done",
+              "Closed": "done"
+            },
+            "required": true,
+            "default": "Intake"
+          },
+          {
+            "key": "attorney",
+            "label": "Attorney",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "paralegal",
+            "label": "Paralegal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "receipt_no",
+            "label": "Receipt number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "filed_on",
+            "label": "Filed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "response_due",
+            "label": "Response due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "open_notices",
+            "label": "Open notices",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "notices",
+            "pick": "notice_title",
+            "agg": "count",
+            "filter": {
+              "status": "Open"
+            }
+          },
+          {
+            "key": "docs_missing",
+            "label": "Evidence items still needed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "documents",
+            "pick": "doc_title",
+            "agg": "count",
+            "filter": {
+              "status": "Needed"
+            }
+          },
+          {
+            "key": "notice_btn",
+            "label": "Log notice",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "notice",
+              "template": "Notice",
+              "prefill": {
+                "case": "@row"
+              }
+            }
+          },
+          {
+            "key": "doc_btn",
+            "label": "Add evidence item",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "document",
+              "template": "Document",
+              "prefill": {
+                "case": "@row"
+              }
+            }
+          },
+          {
+            "key": "filed_btn",
+            "label": "Mark filed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "case_filed"
+            }
+          },
+          {
+            "key": "approved_btn",
+            "label": "Mark approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "case_approved"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "k01",
+            "values": {
+              "case_title": "Contreras-Wilde family petition",
+              "client": "c01",
+              "kind": "Family petition",
+              "status": "Filed",
+              "attorney": "tm-farah",
+              "paralegal": "tm-wen",
+              "receipt_no": "RCPT-4471-0082",
+              "filed_on": "@today-120d"
+            }
+          },
+          {
+            "key": "k02",
+            "values": {
+              "case_title": "Pham-Abernathy citizenship application",
+              "client": "c02",
+              "kind": "Citizenship application",
+              "status": "Preparing",
+              "attorney": "tm-lucio",
+              "paralegal": "tm-wen",
+              "response_due": "@mon+5d"
+            }
+          },
+          {
+            "key": "k03",
+            "values": {
+              "case_title": "Tadesse work visa",
+              "client": "c03",
+              "kind": "Work visa",
+              "status": "Request for evidence",
+              "attorney": "tm-farah",
+              "paralegal": "tm-wen",
+              "receipt_no": "RCPT-4471-0127",
+              "filed_on": "@today-70d",
+              "response_due": "@today+18d"
+            }
+          },
+          {
+            "key": "k04",
+            "values": {
+              "case_title": "Santoro green card renewal",
+              "client": "c04",
+              "kind": "Green card renewal",
+              "status": "Filed",
+              "attorney": "tm-lucio",
+              "paralegal": "tm-wen",
+              "receipt_no": "RCPT-4471-0163",
+              "filed_on": "@today-45d"
+            }
+          },
+          {
+            "key": "k05",
+            "values": {
+              "case_title": "Weiming student visa",
+              "client": "c05",
+              "kind": "Student visa",
+              "status": "Intake",
+              "attorney": "tm-lucio",
+              "paralegal": "tm-wen",
+              "response_due": "@today+9d"
+            }
+          },
+          {
+            "key": "k06",
+            "values": {
+              "case_title": "Al-Rashid asylum application",
+              "client": "c06",
+              "kind": "Asylum",
+              "status": "Preparing",
+              "attorney": "tm-farah",
+              "paralegal": "tm-wen",
+              "response_due": "@today-2d"
+            }
+          },
+          {
+            "key": "k07",
+            "values": {
+              "case_title": "Dimaculangan family petition",
+              "client": "c07",
+              "kind": "Family petition",
+              "status": "Approved",
+              "attorney": "tm-farah",
+              "paralegal": "tm-wen",
+              "receipt_no": "RCPT-4471-0019",
+              "filed_on": "@today-410d"
+            }
+          },
+          {
+            "key": "k08",
+            "values": {
+              "case_title": "Tadesse spouse petition",
+              "client": "c03",
+              "kind": "Family petition",
+              "status": "Intake",
+              "attorney": "tm-farah",
+              "paralegal": "tm-wen",
+              "response_due": "@today+30d"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "attorney": "Anyone on the team can take this on, whenever they joined.",
+          "paralegal": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "filed_on",
+            "response_due"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Filed"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Approved"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Case",
+            "values": {
+              "status": "Intake",
+              "case_title": "New case"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Operational tracker. Strategy and filings live in the case file."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Intake"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Eligibility interview done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Document list sent to the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fee agreement signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Filing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Forms reviewed by the attorney"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Copy of the complete filing saved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Receipt number recorded here"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After filing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Notices logged as they arrive"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "document",
+        "name": "Evidence items",
+        "labelSingular": "Evidence item",
+        "labelPlural": "Evidence items",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "files",
+        "titleField": "doc_title",
+        "describes": "What each case needs from the client and where each item stands.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "doc_title",
+            "label": "Evidence item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "case",
+            "label": "Case",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "case",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Identity",
+              "Civil record",
+              "Financial",
+              "Employment",
+              "Photo",
+              "Translation"
+            ],
+            "choiceColors": {
+              "Identity": "blue",
+              "Civil record": "green",
+              "Financial": "amber",
+              "Employment": "violet",
+              "Photo": "teal",
+              "Translation": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Needed",
+              "Requested",
+              "Received",
+              "Verified"
+            ],
+            "choiceColors": {
+              "Needed": "blue",
+              "Requested": "green",
+              "Received": "amber",
+              "Verified": "violet"
+            },
+            "statusGroups": {
+              "Needed": "todo",
+              "Requested": "in_progress",
+              "Received": "in_progress",
+              "Verified": "done"
+            },
+            "required": true,
+            "default": "Needed"
+          },
+          {
+            "key": "asked_on",
+            "label": "Asked",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "needed_by",
+            "label": "Needed by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "requested_btn",
+            "label": "Mark requested",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "document_requested"
+            }
+          },
+          {
+            "key": "received_btn",
+            "label": "Mark received",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "document_received"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "d01",
+            "values": {
+              "doc_title": "Birth certificate with translation - Pham-Abernathy",
+              "case": "k02",
+              "kind": "Translation",
+              "status": "Requested",
+              "asked_on": "@today-8d",
+              "needed_by": "@mon+3d"
+            }
+          },
+          {
+            "key": "d02",
+            "values": {
+              "doc_title": "Tax transcripts - Pham-Abernathy",
+              "case": "k02",
+              "kind": "Financial",
+              "status": "Needed",
+              "needed_by": "@today+4d"
+            }
+          },
+          {
+            "key": "d03",
+            "values": {
+              "doc_title": "Employer letter - Tadesse",
+              "case": "k03",
+              "kind": "Employment",
+              "status": "Received",
+              "asked_on": "@today-30d",
+              "needed_by": "@today-10d"
+            }
+          },
+          {
+            "key": "d04",
+            "values": {
+              "doc_title": "Passport copy - Santoro",
+              "case": "k04",
+              "kind": "Identity",
+              "status": "Verified",
+              "asked_on": "@today-60d",
+              "needed_by": "@today-50d"
+            }
+          },
+          {
+            "key": "d05",
+            "values": {
+              "doc_title": "Marriage certificate - Contreras-Wilde",
+              "case": "k01",
+              "kind": "Civil record",
+              "status": "Verified",
+              "asked_on": "@today-130d",
+              "needed_by": "@today-120d"
+            }
+          },
+          {
+            "key": "d06",
+            "values": {
+              "doc_title": "Photos - Santoro",
+              "case": "k04",
+              "kind": "Photo",
+              "status": "Verified",
+              "asked_on": "@today-60d",
+              "needed_by": "@today-50d"
+            }
+          },
+          {
+            "key": "d07",
+            "values": {
+              "doc_title": "Evidence of relationship - Tadesse spouse",
+              "case": "k08",
+              "kind": "Civil record",
+              "status": "Needed",
+              "needed_by": "@today+14d"
+            }
+          },
+          {
+            "key": "d08",
+            "values": {
+              "doc_title": "Admission letter - Weiming",
+              "case": "k05",
+              "kind": "Employment",
+              "status": "Requested",
+              "asked_on": "@today-3d",
+              "needed_by": "@today+6d"
+            }
+          },
+          {
+            "key": "d09",
+            "values": {
+              "doc_title": "Country records - Al-Rashid",
+              "case": "k06",
+              "kind": "Civil record",
+              "status": "Requested",
+              "asked_on": "@today-15d",
+              "needed_by": "@today-1d"
+            }
+          }
+        ],
+        "independentOf": {
+          "case": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "asked_on",
+            "needed_by"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Requested"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Document",
+            "values": {
+              "status": "Needed",
+              "doc_title": "New evidence item"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Request"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client told exactly what is needed and why"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Format and translation requirements explained"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Name, dates and spellings checked against the application"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "People and families the practice represents.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "language",
+            "label": "Preferred language",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "English",
+              "Spanish",
+              "Mandarin",
+              "Arabic",
+              "Tagalog",
+              "Amharic"
+            ],
+            "choiceColors": {
+              "English": "blue",
+              "Spanish": "green",
+              "Mandarin": "amber",
+              "Arabic": "violet",
+              "Tagalog": "teal",
+              "Amharic": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Consultation",
+              "Active",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Consultation": "blue",
+              "Active": "green",
+              "Closed": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "case_count",
+            "label": "Cases",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cases",
+            "pick": "case_title",
+            "agg": "count"
+          },
+          {
+            "key": "case_btn",
+            "label": "Open case",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "case",
+              "template": "Case",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Mateo Contreras-Wilde",
+              "language": "Spanish",
+              "status": "Active",
+              "phone": "(206) 555-0131",
+              "email": "mateo.cw@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Linh Pham-Abernathy",
+              "language": "English",
+              "status": "Active",
+              "phone": "(206) 555-0132",
+              "email": "linh.pa@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Yosef Tadesse",
+              "language": "Amharic",
+              "status": "Active",
+              "phone": "(206) 555-0133",
+              "email": "yosef.t@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Aurelia Santoro",
+              "language": "English",
+              "status": "Active",
+              "phone": "(206) 555-0134",
+              "email": "aurelia.s@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Chen Weiming",
+              "language": "Mandarin",
+              "status": "Consultation",
+              "phone": "(206) 555-0135",
+              "email": "chen.w@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Noor Al-Rashid",
+              "language": "Arabic",
+              "status": "Active",
+              "phone": "(206) 555-0136",
+              "email": "noor.ar@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Jocelyn Dimaculangan",
+              "language": "Tagalog",
+              "status": "Closed",
+              "phone": "(206) 555-0137",
+              "email": "jocelyn.d@mailbox-demo.net"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Consultation",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Consultation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Interpreter booked if needed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement agreement explained in the client's language"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fee agreement signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Basics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Best way and time to reach the client"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Safe mailing address confirmed"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each notice links to one case.",
+        "fromTable": "notice",
+        "fromField": "case",
+        "toTable": "case",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "notices"
+      },
+      {
+        "describes": "Each case links to one client.",
+        "fromTable": "case",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "cases"
+      },
+      {
+        "describes": "Each case links to one team member.",
+        "fromTable": "case",
+        "fromField": "attorney",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "attorney_cases"
+      },
+      {
+        "describes": "Each case links to one team member.",
+        "fromTable": "case",
+        "fromField": "paralegal",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "paralegal_cases"
+      },
+      {
+        "describes": "Each evidence item links to one case.",
+        "fromTable": "document",
+        "fromField": "case",
+        "toTable": "case",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "documents"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-farah",
+            "values": {
+              "full_name": "Farah Nazari",
+              "role": "Immigration attorney",
+              "work_email": "farah@nazariferreira.net",
+              "mobile": "(206) 555-0121",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-lucio",
+            "values": {
+              "full_name": "Lucio Ferreira-Hahn",
+              "role": "Immigration attorney",
+              "work_email": "lucio@nazariferreira.net",
+              "mobile": "(206) 555-0122",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-wen",
+            "values": {
+              "full_name": "Wen Zhao-Albright",
+              "role": "Senior paralegal",
+              "work_email": "wen@nazariferreira.net",
+              "mobile": "(206) 555-0123",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-ibrahim",
+            "values": {
+              "full_name": "Ibrahim Sesay",
+              "role": "Case assistant",
+              "work_email": "ibrahim@nazariferreira.net",
+              "mobile": "(206) 555-0124",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "consult_request",
+        "name": "Request a consultation",
+        "describes": "How a prospective client asks to meet.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "language",
+            "ask": "Which language do you prefer?"
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          }
+        ],
+        "submitLabel": "Request a consultation",
+        "confirmation": "Received. The practice will reply to book a time; this does not create an attorney-client relationship."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "notice_progress",
+        "table": "notice",
+        "name": "Start work",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "notice_done",
+        "table": "notice",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "case_filed",
+        "table": "case",
+        "name": "Mark filed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Filed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "case_approved",
+        "table": "case",
+        "name": "Mark approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "document_requested",
+        "table": "document",
+        "name": "Mark requested",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Requested"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "document_received",
+        "table": "document",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_notice",
+        "name": "All notices",
+        "table": "notice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "notice_board",
+        "name": "By status",
+        "table": "notice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "notice_cal",
+        "name": "Calendar",
+        "table": "notice",
+        "kind": "calendar",
+        "dateField": "action_due",
+        "allDay": true
+      },
+      {
+        "token": "notice_today",
+        "name": "Today",
+        "table": "notice",
+        "kind": "grid",
+        "within": {
+          "action_due": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "notice_week",
+        "name": "This week",
+        "table": "notice",
+        "kind": "grid",
+        "within": {
+          "action_due": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "notice_over",
+        "name": "Overdue",
+        "table": "notice",
+        "kind": "grid",
+        "within": {
+          "action_due": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "notice_mine",
+        "name": "My notices",
+        "table": "notice",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_case",
+        "name": "All cases",
+        "table": "case",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "case_board",
+        "name": "By status",
+        "table": "case",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "case_cal",
+        "name": "Calendar",
+        "table": "case",
+        "kind": "calendar",
+        "dateField": "response_due",
+        "allDay": true
+      },
+      {
+        "token": "case_week",
+        "name": "This week",
+        "table": "case",
+        "kind": "grid",
+        "within": {
+          "response_due": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Intake",
+            "Preparing",
+            "Filed",
+            "Request for evidence",
+            "Approved"
+          ]
+        }
+      },
+      {
+        "token": "case_next30",
+        "name": "Next 30 days",
+        "table": "case",
+        "kind": "grid",
+        "within": {
+          "response_due": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Intake",
+            "Preparing",
+            "Filed",
+            "Request for evidence",
+            "Approved"
+          ]
+        }
+      },
+      {
+        "token": "case_over",
+        "name": "Overdue",
+        "table": "case",
+        "kind": "grid",
+        "within": {
+          "response_due": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Intake",
+            "Preparing",
+            "Filed",
+            "Request for evidence",
+            "Approved"
+          ]
+        }
+      },
+      {
+        "token": "all_document",
+        "name": "All evidence items",
+        "table": "document",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "document_board",
+        "name": "By status",
+        "table": "document",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "document_cal",
+        "name": "Calendar",
+        "table": "document",
+        "kind": "calendar",
+        "dateField": "needed_by",
+        "allDay": true
+      },
+      {
+        "token": "document_week",
+        "name": "This week",
+        "table": "document",
+        "kind": "grid",
+        "within": {
+          "needed_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Needed",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "document_next7",
+        "name": "Next 7 days",
+        "table": "document",
+        "kind": "grid",
+        "within": {
+          "needed_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Needed",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "document_over",
+        "name": "Overdue",
+        "table": "document",
+        "kind": "grid",
+        "within": {
+          "needed_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Needed",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Practice assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "notice",
+          "describes": "Every agency notice with case, kind and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "case",
+          "describes": "The cases notices belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many notices are still open?",
+        "whyItMatters": "The paralegal reviews open notices every morning.",
+        "expect": {
+          "table": "notice",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Open"
+          },
+          "answer": 3,
+          "unit": "notices"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open notices.",
+        "action": {
+          "kind": "open",
+          "surface": "notice_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "notice_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open cases.",
+        "action": {
+          "kind": "open",
+          "surface": "case_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "case_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open evidence items.",
+        "action": {
+          "kind": "open",
+          "surface": "document_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "document_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "mailbox-demo.net",
+        "nazariferreira.net"
+      ],
+      "fictionalStreets": [
+        "Alder Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "immigration-practice",
+      "parent": null,
+      "title": "Immigration Practice",
+      "icon": {
+        "emoji": "🗂️"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your immigration practice in one place. Start with Notices that need action today or this week, check each Case and its response date, and chase evidence items from clients. Operational tracking only; it holds no legal advice, and the date printed on each notice controls."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-notices"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-intake"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-deadlines"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-client-updates"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "notice",
+                      "view": "all_notice"
+                    },
+                    "inline": true,
+                    "title": "Notices by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Notices by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "notice",
+                      "view": "all_notice"
+                    },
+                    "inline": true,
+                    "title": "Notices by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Notices by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "case",
+                      "view": "all_case"
+                    },
+                    "inline": true,
+                    "title": "Cases by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Cases by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "notice",
+              "view": "notice_board"
+            },
+            "inline": true,
+            "title": "Notices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "action_due": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "action_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "action_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "action_due"
+              },
+              {
+                "id": "vall",
+                "name": "All notices",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "action_due",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "case",
+              "view": "case_board"
+            },
+            "inline": true,
+            "title": "Cases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "response_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "Preparing",
+                    "Filed",
+                    "Request for evidence",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "response_due": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "Preparing",
+                    "Filed",
+                    "Request for evidence",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "response_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "Preparing",
+                    "Filed",
+                    "Request for evidence",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "response_due"
+              },
+              {
+                "id": "vall",
+                "name": "All cases",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "response_due",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Evidence items"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "document",
+              "view": "document_board"
+            },
+            "inline": true,
+            "title": "Evidence items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "needed_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Needed",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "needed_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Needed",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "needed_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Needed",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "needed_by"
+              },
+              {
+                "id": "vall",
+                "name": "All evidence items",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "needed_by",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "immigration-practice",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "notice",
+                      "view": "all_notice"
+                    },
+                    "inline": true,
+                    "title": "Notices by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Notices by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "notice",
+                      "view": "all_notice"
+                    },
+                    "inline": true,
+                    "title": "Notices by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Notices by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "case",
+                      "view": "all_case"
+                    },
+                    "inline": true,
+                    "title": "Cases by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Cases by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "case",
+                      "view": "all_case"
+                    },
+                    "inline": true,
+                    "title": "Cases by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Cases by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "document",
+                      "view": "all_document"
+                    },
+                    "inline": true,
+                    "title": "Evidence items by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Evidence items by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by language",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Clients by language",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "language",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Notices needing action"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "notice",
+              "view": "all_notice"
+            },
+            "inline": true,
+            "title": "Notices needing action",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open or in progress",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Evidence items still needed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "document",
+              "view": "all_document"
+            },
+            "inline": true,
+            "title": "Evidence items still needed",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Needed or requested",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Needed",
+                    "Requested"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-notices",
+      "parent": "immigration-practice",
+      "title": "Handling an agency notice",
+      "icon": {
+        "emoji": "📬"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Notices arrive in many forms. Log each one the same day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Same day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Log notice on the case and choose the kind."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Copy the due date exactly as printed on the notice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter it in two places: here and the firm calendar."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign an owner."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the due date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Draft the response a week ahead."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Attorney reviews at least three days before the due date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark Done when the filing receipt is saved."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-intake",
+      "parent": "immigration-practice",
+      "title": "Intake and document list",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book an interpreter if the client prefers another language."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Explain fees and the engagement agreement in plain language."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the case and attach the document checklist."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Document checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use Add evidence item for every item the client must bring."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set Needed by dates a week before the filing target."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark Verified only after a second person has checked names and dates."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-deadlines",
+      "parent": "immigration-practice",
+      "title": "Two-calendar rule",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Many malpractice insurers expect deadlines to be recorded in two places."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review Notices, Overdue view"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review Notices due this week with the attorney"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Compare this table with the firm calendar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check cases without a receipt number after filing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check approved and closed cases for follow-up work"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-client-updates",
+      "parent": "immigration-practice",
+      "title": "Client updates",
+      "icon": {
+        "emoji": "💬"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After every notice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call or message the client in their preferred language."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Explain what the notice means in one or two sentences, and what they must do."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note the update on the notice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send each active client a short status message, even when nothing has changed."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

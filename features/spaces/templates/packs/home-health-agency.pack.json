@@ -1,0 +1,3212 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0406",
+  "version": 1,
+  "title": "Home Health Agency",
+  "description": "Referrals, clients, shifts with hours and caregiver credentials for a home care agency.",
+  "forWho": "Home care and home health agencies",
+  "icon": {
+    "emoji": "🏡"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "home care",
+    "caregivers",
+    "shifts",
+    "credentials"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-home-health-agency",
+    "catalogueId": "SP0406",
+    "useCase": "Delia Arroyo schedules caregivers at a small home care agency and uses this to answer new referrals the same day, see which shifts are staffed and verified, and catch expiring caregiver credentials before they cause a gap.",
+    "industry": "healthcare",
+    "vertical": "Home health agency",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Brightharbor Home Care",
+      "describes": "A small agency providing personal care, companion care and respite in clients' homes.",
+      "address": {
+        "line1": "58 Juniper Hollow",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80203",
+        "country": "US"
+      },
+      "phone": "(720) 555-0120",
+      "website": "brightharborcare.net",
+      "email": "hello@brightharborcare.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-home-health-agency",
+    "tables": [
+      {
+        "token": "referral",
+        "name": "Referrals",
+        "labelSingular": "Referral",
+        "labelPlural": "Referrals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "inbox",
+        "titleField": "ref_title",
+        "describes": "New clients asking for care, from first call to assessment booked.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "ref_title",
+            "label": "Referral",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hospital discharge planner",
+              "Family member",
+              "Physician office",
+              "Self"
+            ],
+            "choiceColors": {
+              "Hospital discharge planner": "blue",
+              "Family member": "green",
+              "Physician office": "amber",
+              "Self": "violet"
+            }
+          },
+          {
+            "key": "need",
+            "label": "Care needed",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Personal care",
+              "Companion care",
+              "Skilled nursing support",
+              "Respite"
+            ],
+            "choiceColors": {
+              "Personal care": "blue",
+              "Companion care": "green",
+              "Skilled nursing support": "amber",
+              "Respite": "violet"
+            }
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Contacted",
+              "Assessment booked",
+              "Started",
+              "Declined"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Contacted": "green",
+              "Assessment booked": "amber",
+              "Started": "violet",
+              "Declined": "teal"
+            },
+            "statusGroups": {
+              "New": "todo",
+              "Contacted": "in_progress",
+              "Assessment booked": "in_progress",
+              "Started": "done",
+              "Declined": "done"
+            },
+            "required": true,
+            "default": "New"
+          },
+          {
+            "key": "assess_by",
+            "label": "Assess by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "contacted_btn",
+            "label": "Mark contacted",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "referral_contacted"
+            }
+          },
+          {
+            "key": "booked_btn",
+            "label": "Assessment booked",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "referral_booked"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "r01",
+            "values": {
+              "ref_title": "Personal care referral - Hawthorne",
+              "source": "Hospital discharge planner",
+              "need": "Personal care",
+              "received_on": "@today-1d",
+              "status": "New",
+              "assess_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "r02",
+            "values": {
+              "ref_title": "Companion care referral - Delacour",
+              "source": "Family member",
+              "need": "Companion care",
+              "received_on": "@today",
+              "status": "New",
+              "assess_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "r03",
+            "values": {
+              "ref_title": "Respite referral - Mbeki-Cole",
+              "source": "Family member",
+              "need": "Respite",
+              "received_on": "@today-3d",
+              "status": "Contacted",
+              "assess_by": "@mon+3d"
+            }
+          },
+          {
+            "key": "r04",
+            "values": {
+              "ref_title": "Skilled support referral - Lindgren",
+              "source": "Physician office",
+              "need": "Skilled nursing support",
+              "received_on": "@today-5d",
+              "status": "Contacted",
+              "assess_by": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "r05",
+            "values": {
+              "ref_title": "Personal care referral - Teague",
+              "source": "Hospital discharge planner",
+              "need": "Personal care",
+              "received_on": "@today-8d",
+              "status": "Assessment booked",
+              "assess_by": "@today-5d"
+            }
+          },
+          {
+            "key": "r06",
+            "values": {
+              "ref_title": "Companion care referral - Obuya",
+              "source": "Self",
+              "need": "Companion care",
+              "received_on": "@today-20d",
+              "status": "Started",
+              "assess_by": "@today-16d"
+            }
+          },
+          {
+            "key": "r07",
+            "values": {
+              "ref_title": "Personal care referral - Ashworth",
+              "source": "Physician office",
+              "need": "Personal care",
+              "received_on": "@today-14d",
+              "status": "Declined",
+              "assess_by": "@today-11d"
+            }
+          },
+          {
+            "key": "r08",
+            "values": {
+              "ref_title": "Respite referral - Quint",
+              "source": "Family member",
+              "need": "Respite",
+              "received_on": "@today-2d",
+              "status": "New",
+              "assess_by": "@mon+4d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "received_on",
+            "assess_by"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Contacted"
+            ],
+            "filled": [
+              "source"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Assessment booked"
+            ],
+            "filled": [
+              "source"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Referral",
+            "values": {
+              "status": "New",
+              "ref_title": "New referral"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Call the family the same day. Gather what they know; the clinical supervisor does the assessment."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Call notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Payer or funding source identified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Assessment visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Intake packet sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "shift",
+        "name": "Shifts",
+        "labelSingular": "Shift",
+        "labelPlural": "Shifts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "shift_title",
+        "describes": "Every scheduled visit with hours and whether it was verified.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "shift_title",
+            "label": "Shift",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "caregiver",
+            "label": "Caregiver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0.5
+              },
+              {
+                "kind": "max",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "In progress",
+              "Completed",
+              "Missed",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "In progress": "green",
+              "Completed": "amber",
+              "Missed": "violet",
+              "Cancelled": "teal"
+            },
+            "statusGroups": {
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "Completed": "done",
+              "Missed": "done",
+              "Cancelled": "done"
+            },
+            "required": true,
+            "default": "Scheduled"
+          },
+          {
+            "key": "verified",
+            "label": "Visit verified",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "scheduler",
+            "label": "Scheduler",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "start_btn",
+            "label": "Start shift",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shift_start"
+            }
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shift_complete"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "h01",
+            "values": {
+              "shift_title": "Morning care - Hawthorne",
+              "client": "c01",
+              "caregiver": "tm-ottis",
+              "starts_at": "@today 08:00",
+              "hours": 4,
+              "status": "In progress",
+              "verified": false,
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "h02",
+            "values": {
+              "shift_title": "Afternoon visit - Teague",
+              "client": "c02",
+              "caregiver": "tm-yvette",
+              "starts_at": "@today 13:00",
+              "hours": 3,
+              "status": "Scheduled",
+              "verified": false,
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "h03",
+            "values": {
+              "shift_title": "Evening care - Mbeki-Cole",
+              "client": "c03",
+              "caregiver": "tm-casper",
+              "starts_at": "@today 17:00",
+              "hours": 4,
+              "status": "Scheduled",
+              "verified": false,
+              "scheduler": "@installer"
+            }
+          },
+          {
+            "key": "h04",
+            "values": {
+              "shift_title": "Morning care - Lindgren",
+              "client": "c05",
+              "caregiver": "tm-casper",
+              "starts_at": "@mon+2d 09:00",
+              "hours": 5,
+              "status": "Scheduled",
+              "verified": false
+            }
+          },
+          {
+            "key": "h05",
+            "values": {
+              "shift_title": "Bathing and breakfast - Hawthorne",
+              "client": "c01",
+              "caregiver": "tm-ottis",
+              "starts_at": "@mon+4d 08:00",
+              "hours": 4,
+              "status": "Scheduled",
+              "verified": false
+            }
+          },
+          {
+            "key": "h06",
+            "values": {
+              "shift_title": "Garden and lunch visit - Teague",
+              "client": "c02",
+              "caregiver": "tm-yvette",
+              "starts_at": "@today+5d 13:00",
+              "hours": 3,
+              "status": "Scheduled",
+              "verified": false
+            }
+          },
+          {
+            "key": "h07",
+            "values": {
+              "shift_title": "Morning care - Hawthorne (completed)",
+              "client": "c01",
+              "caregiver": "tm-ottis",
+              "starts_at": "@today-1d 08:00",
+              "hours": 4,
+              "status": "Completed",
+              "verified": true
+            }
+          },
+          {
+            "key": "h08",
+            "values": {
+              "shift_title": "Evening care - Mbeki-Cole (last)",
+              "client": "c03",
+              "caregiver": "tm-casper",
+              "starts_at": "@today-2d 17:00",
+              "hours": 4,
+              "status": "Completed",
+              "verified": true
+            }
+          },
+          {
+            "key": "h09",
+            "values": {
+              "shift_title": "Morning care - Lindgren (prior)",
+              "client": "c05",
+              "caregiver": "tm-casper",
+              "starts_at": "@today-3d 09:00",
+              "hours": 5,
+              "status": "Completed",
+              "verified": true
+            }
+          },
+          {
+            "key": "h10",
+            "values": {
+              "shift_title": "Missed afternoon - Teague",
+              "client": "c02",
+              "caregiver": "tm-yvette",
+              "starts_at": "@today-4d 13:00",
+              "hours": 3,
+              "status": "Missed",
+              "verified": false
+            }
+          },
+          {
+            "key": "h11",
+            "values": {
+              "shift_title": "Morning routine - Hawthorne (last week)",
+              "client": "c01",
+              "caregiver": "tm-ottis",
+              "starts_at": "@today-6d 08:00",
+              "hours": 4,
+              "status": "Completed",
+              "verified": true
+            }
+          },
+          {
+            "key": "h12",
+            "values": {
+              "shift_title": "Respite visit - Ashworth",
+              "client": "c06",
+              "caregiver": "tm-yvette",
+              "starts_at": "@today-20d 10:00",
+              "hours": 6,
+              "status": "Completed",
+              "verified": true
+            }
+          },
+          {
+            "key": "h13",
+            "values": {
+              "shift_title": "Evening meal and care - Mbeki-Cole",
+              "client": "c03",
+              "caregiver": "tm-casper",
+              "starts_at": "@today-5d 17:00",
+              "hours": 4,
+              "status": "Completed",
+              "verified": false
+            }
+          },
+          {
+            "key": "h14",
+            "values": {
+              "shift_title": "Afternoon visit - Obuya",
+              "client": "c07",
+              "caregiver": "tm-yvette",
+              "starts_at": "@today-40d 14:00",
+              "hours": 3,
+              "status": "Completed",
+              "verified": true
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "caregiver": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "In progress"
+            ],
+            "filled": [
+              "hours"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "hours"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Shift",
+            "values": {
+              "status": "Scheduled",
+              "shift_title": "New shift"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Caregiver confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client told who is coming"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Arrival and departure verified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Care log completed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Anything unusual passed to the supervisor"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "heart-handshake",
+        "titleField": "client_name",
+        "describes": "Everyone receiving care, funding, care level and weekly hours.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Assessment",
+              "Active",
+              "On hold",
+              "Discharged"
+            ],
+            "choiceColors": {
+              "Assessment": "blue",
+              "Active": "green",
+              "On hold": "amber",
+              "Discharged": "violet"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "payer",
+            "label": "Funding",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Private pay",
+              "Long-term care policy",
+              "State waiver program",
+              "Veterans benefit"
+            ],
+            "choiceColors": {
+              "Private pay": "blue",
+              "Long-term care policy": "green",
+              "State waiver program": "amber",
+              "Veterans benefit": "violet"
+            }
+          },
+          {
+            "key": "care_level",
+            "label": "Care level",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Companion",
+              "Personal care",
+              "Skilled support"
+            ],
+            "choiceColors": {
+              "Companion": "blue",
+              "Personal care": "green",
+              "Skilled support": "amber"
+            }
+          },
+          {
+            "key": "hours_week",
+            "label": "Hours per week",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 168
+              }
+            ]
+          },
+          {
+            "key": "supervisor",
+            "label": "Supervisor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "shift_count",
+            "label": "Shifts completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shifts",
+            "pick": "shift_title",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "hours_done",
+            "label": "Hours delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shifts",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "shift_btn",
+            "label": "Schedule shift",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "shift",
+              "template": "Shift",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Eleanor Hawthorne",
+              "status": "Active",
+              "phone": "(720) 555-0131",
+              "payer": "Long-term care policy",
+              "care_level": "Personal care",
+              "hours_week": 20,
+              "supervisor": "tm-marisol"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Bartholomew Teague",
+              "status": "Active",
+              "phone": "(720) 555-0132",
+              "payer": "Private pay",
+              "care_level": "Companion",
+              "hours_week": 12,
+              "supervisor": "tm-marisol"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Odile Mbeki-Cole",
+              "status": "Active",
+              "phone": "(720) 555-0133",
+              "payer": "State waiver program",
+              "care_level": "Personal care",
+              "hours_week": 28,
+              "supervisor": "tm-marisol"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Cornelius Delacour",
+              "status": "Assessment",
+              "phone": "(720) 555-0134",
+              "payer": "Private pay",
+              "care_level": "Companion",
+              "hours_week": 8,
+              "supervisor": "tm-marisol"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Rosalind Lindgren",
+              "status": "Active",
+              "phone": "(720) 555-0135",
+              "payer": "Veterans benefit",
+              "care_level": "Skilled support",
+              "hours_week": 15,
+              "supervisor": "tm-marisol"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Anatoly Ashworth",
+              "status": "On hold",
+              "phone": "(720) 555-0136",
+              "payer": "Long-term care policy",
+              "care_level": "Personal care",
+              "hours_week": 18,
+              "supervisor": "tm-marisol"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Beatrice Obuya",
+              "status": "Discharged",
+              "phone": "(720) 555-0137",
+              "payer": "Private pay",
+              "care_level": "Companion",
+              "hours_week": 10,
+              "supervisor": "tm-marisol"
+            }
+          }
+        ],
+        "independentOf": {
+          "supervisor": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Assessment",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Assessment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Home safety walk-through done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Care preferences recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency contacts on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Service agreement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rates and hours agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Agreement signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "credential",
+        "name": "Credentials",
+        "labelSingular": "Credential",
+        "labelPlural": "Credentials",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "cred_title",
+        "describes": "Licences, tests and training for every caregiver, and when they expire.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "cred_title",
+            "label": "Credential",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "caregiver",
+            "label": "Caregiver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "CPR certification",
+              "TB screening",
+              "Background check",
+              "Nursing licence",
+              "Annual training"
+            ],
+            "choiceColors": {
+              "CPR certification": "blue",
+              "TB screening": "green",
+              "Background check": "amber",
+              "Nursing licence": "violet",
+              "Annual training": "teal"
+            }
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Valid",
+              "Renewal requested",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Valid": "blue",
+              "Renewal requested": "green",
+              "Expired": "amber"
+            },
+            "statusGroups": {
+              "Valid": "done",
+              "Renewal requested": "in_progress",
+              "Expired": "todo"
+            },
+            "required": true,
+            "default": "Valid"
+          },
+          {
+            "key": "owner",
+            "label": "Compliance owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "renew_btn",
+            "label": "Mark renewal requested",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "credential_renew"
+            }
+          },
+          {
+            "key": "valid_btn",
+            "label": "Mark valid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "credential_valid"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "k01",
+            "values": {
+              "cred_title": "CPR certification - Brennan",
+              "caregiver": "tm-ottis",
+              "kind": "CPR certification",
+              "issued_on": "@today-700d",
+              "expires_on": "@today+25d",
+              "status": "Renewal requested",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "k02",
+            "values": {
+              "cred_title": "TB screening - Okonkwo",
+              "caregiver": "tm-yvette",
+              "kind": "TB screening",
+              "issued_on": "@today-300d",
+              "expires_on": "@today+65d",
+              "status": "Valid"
+            }
+          },
+          {
+            "key": "k03",
+            "values": {
+              "cred_title": "Annual training - Lindholm",
+              "caregiver": "tm-casper",
+              "kind": "Annual training",
+              "issued_on": "@today-360d",
+              "expires_on": "@mon+4d",
+              "status": "Renewal requested",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "k04",
+            "values": {
+              "cred_title": "Nursing licence - Whitfield",
+              "caregiver": "tm-marisol",
+              "kind": "Nursing licence",
+              "issued_on": "@today-500d",
+              "expires_on": "@today+230d",
+              "status": "Valid"
+            }
+          },
+          {
+            "key": "k05",
+            "values": {
+              "cred_title": "Background check - Okonkwo",
+              "caregiver": "tm-yvette",
+              "kind": "Background check",
+              "issued_on": "@today-1000d",
+              "expires_on": "@today+700d",
+              "status": "Valid"
+            }
+          },
+          {
+            "key": "k06",
+            "values": {
+              "cred_title": "CPR certification - Lindholm",
+              "caregiver": "tm-casper",
+              "kind": "CPR certification",
+              "issued_on": "@today-740d",
+              "expires_on": "@today-10d",
+              "status": "Expired",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "k07",
+            "values": {
+              "cred_title": "TB screening - Brennan",
+              "caregiver": "tm-ottis",
+              "kind": "TB screening",
+              "issued_on": "@today-330d",
+              "expires_on": "@today+35d",
+              "status": "Valid"
+            }
+          },
+          {
+            "key": "k08",
+            "values": {
+              "cred_title": "Annual training - Okonkwo",
+              "caregiver": "tm-yvette",
+              "kind": "Annual training",
+              "issued_on": "@today-200d",
+              "expires_on": "@today+165d",
+              "status": "Valid"
+            }
+          }
+        ],
+        "independentOf": {
+          "caregiver": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "issued_on",
+            "expires_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Renewal requested"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Valid"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Credential",
+            "values": {
+              "status": "Valid",
+              "cred_title": "New credential"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder sent to the caregiver"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of renewal uploaded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Dates updated here"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each shift links to one client.",
+        "fromTable": "shift",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "shifts"
+      },
+      {
+        "describes": "Each shift links to one team member.",
+        "fromTable": "shift",
+        "fromField": "caregiver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "shifts_worked"
+      },
+      {
+        "describes": "Each client links to one team member.",
+        "fromTable": "client",
+        "fromField": "supervisor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "supervised_clients"
+      },
+      {
+        "describes": "Each credential links to one team member.",
+        "fromTable": "credential",
+        "fromField": "caregiver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "credentials"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-marisol",
+            "values": {
+              "full_name": "Marisol Whitfield, RN",
+              "role": "Clinical supervisor",
+              "work_email": "marisol@brightharborcare.net",
+              "mobile": "(720) 555-0121",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-ottis",
+            "values": {
+              "full_name": "Ottis Brennan",
+              "role": "Home health aide",
+              "work_email": "ottis@brightharborcare.net",
+              "mobile": "(720) 555-0122",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-yvette",
+            "values": {
+              "full_name": "Yvette Okonkwo",
+              "role": "Home health aide",
+              "work_email": "yvette@brightharborcare.net",
+              "mobile": "(720) 555-0123",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-casper",
+            "values": {
+              "full_name": "Casper Lindholm",
+              "role": "Certified nursing assistant",
+              "work_email": "casper@brightharborcare.net",
+              "mobile": "(720) 555-0124",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-delia",
+            "values": {
+              "full_name": "Delia Arroyo",
+              "role": "Scheduler",
+              "work_email": "delia@brightharborcare.net",
+              "mobile": "(720) 555-0125",
+              "start_date": "@today-5y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "care_request",
+        "name": "Request care",
+        "describes": "How a family asks about care.",
+        "audience": "staff",
+        "table": "referral",
+        "fields": [
+          {
+            "fieldKey": "ref_title",
+            "ask": "Who needs care and what is your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "need",
+            "ask": "What kind of care?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "Who suggested the agency?"
+          }
+        ],
+        "submitLabel": "Request a call",
+        "confirmation": "Thank you. A coordinator will call the same day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "referral_contacted",
+        "table": "referral",
+        "name": "Mark contacted",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Contacted"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "referral_booked",
+        "table": "referral",
+        "name": "Assessment booked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Assessment booked"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shift_start",
+        "table": "shift",
+        "name": "Start shift",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In progress"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shift_complete",
+        "table": "shift",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "credential_renew",
+        "table": "credential",
+        "name": "Mark renewal requested",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Renewal requested"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "credential_valid",
+        "table": "credential",
+        "name": "Mark valid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Valid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_referral",
+        "name": "All referrals",
+        "table": "referral",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "referral_board",
+        "name": "By status",
+        "table": "referral",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "referral_cal",
+        "name": "Calendar",
+        "table": "referral",
+        "kind": "calendar",
+        "dateField": "assess_by",
+        "allDay": true
+      },
+      {
+        "token": "referral_today",
+        "name": "Today",
+        "table": "referral",
+        "kind": "grid",
+        "within": {
+          "assess_by": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Assessment booked"
+          ]
+        }
+      },
+      {
+        "token": "referral_week",
+        "name": "This week",
+        "table": "referral",
+        "kind": "grid",
+        "within": {
+          "assess_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Assessment booked"
+          ]
+        }
+      },
+      {
+        "token": "referral_over",
+        "name": "Overdue",
+        "table": "referral",
+        "kind": "grid",
+        "within": {
+          "assess_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Contacted",
+            "Assessment booked"
+          ]
+        }
+      },
+      {
+        "token": "referral_mine",
+        "name": "My referrals",
+        "table": "referral",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_shift",
+        "name": "All shifts",
+        "table": "shift",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shift_board",
+        "name": "By status",
+        "table": "shift",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "shift_cal",
+        "name": "Calendar",
+        "table": "shift",
+        "kind": "calendar",
+        "dateField": "starts_at",
+        "allDay": false
+      },
+      {
+        "token": "shift_today",
+        "name": "Today",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "shift_week",
+        "name": "This week",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "shift_next7",
+        "name": "Next 7 days",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "shift_mine",
+        "name": "My shifts",
+        "table": "shift",
+        "kind": "grid",
+        "me": [
+          "scheduler"
+        ]
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_credential",
+        "name": "All credentials",
+        "table": "credential",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "credential_board",
+        "name": "By status",
+        "table": "credential",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "credential_cal",
+        "name": "Calendar",
+        "table": "credential",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "credential_week",
+        "name": "This week",
+        "table": "credential",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Renewal requested",
+            "Expired"
+          ]
+        }
+      },
+      {
+        "token": "credential_next30",
+        "name": "Next 30 days",
+        "table": "credential",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Renewal requested",
+            "Expired"
+          ]
+        }
+      },
+      {
+        "token": "credential_over",
+        "name": "Overdue",
+        "table": "credential",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Renewal requested",
+            "Expired"
+          ]
+        }
+      },
+      {
+        "token": "credential_mine",
+        "name": "My credentials",
+        "table": "credential",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Agency assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "credential",
+          "describes": "Every credential with caregiver, type and expiry."
+        },
+        {
+          "name": "related_tables",
+          "table": "shift",
+          "describes": "The shifts caregivers are scheduled for."
+        }
+      ],
+      "question": {
+        "ask": "How many credentials have expired?",
+        "whyItMatters": "The scheduler cannot staff a shift for someone with an expired credential.",
+        "expect": {
+          "table": "credential",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Expired"
+          },
+          "answer": 1,
+          "unit": "credentials"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open referrals.",
+        "action": {
+          "kind": "open",
+          "surface": "referral_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "referral_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open shifts.",
+        "action": {
+          "kind": "open",
+          "surface": "shift_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shift_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "all_client"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_client",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "brightharborcare.net"
+      ],
+      "fictionalStreets": [
+        "Juniper Hollow"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "home-health-agency",
+      "parent": null,
+      "title": "Home Health Agency",
+      "icon": {
+        "emoji": "🏡"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your home care agency in one place. Start with Referrals to answer today, then Shifts for the day's visits, and keep Credentials current so every caregiver is always cleared to work. Operational tracking only; care plans and clinical records stay in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-referral"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-scheduling"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-verification"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-credentials"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "referral",
+                      "view": "all_referral"
+                    },
+                    "inline": true,
+                    "title": "Referrals by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Referrals by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "Shifts by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Shifts by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "Hours by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Hours by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Referrals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "referral",
+              "view": "referral_board"
+            },
+            "inline": true,
+            "title": "Referrals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "assess_by": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Assessment booked"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "assess_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Assessment booked"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "assess_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Assessment booked"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "assess_by"
+              },
+              {
+                "id": "vall",
+                "name": "All referrals",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "assess_by",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shifts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "shift_board"
+            },
+            "inline": true,
+            "title": "Shifts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "vall",
+                "name": "All shifts",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "starts_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "scheduler"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Credentials"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "credential",
+              "view": "credential_board"
+            },
+            "inline": true,
+            "title": "Credentials",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Renewal requested",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Renewal requested",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Renewal requested",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "vall",
+                "name": "All credentials",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "expires_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "home-health-agency",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "referral",
+                      "view": "all_referral"
+                    },
+                    "inline": true,
+                    "title": "Referrals by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Referrals by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "Shifts by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Shifts by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "Hours by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Hours by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by funding",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Clients by funding",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "payer",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "credential",
+                      "view": "all_credential"
+                    },
+                    "inline": true,
+                    "title": "Credentials by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Credentials by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Hours per week by care level",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Hours per week by care level",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "care_level",
+                          "op": "sum",
+                          "field": "hours_week"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Credentials to renew"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "credential",
+              "view": "all_credential"
+            },
+            "inline": true,
+            "title": "Credentials to renew",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Renewal or expired",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Renewal requested",
+                    "Expired"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Referrals still open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "referral",
+              "view": "all_referral"
+            },
+            "inline": true,
+            "title": "Referrals still open",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Open",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Contacted",
+                    "Assessment booked"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-referral",
+      "parent": "home-health-agency",
+      "title": "Handling a new referral",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Families usually call several agencies. The first helpful call often wins."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Same day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the referral and set Assess by."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the family, listen first, then explain how an assessment works."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the assessment with the clinical supervisor."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the assessment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the person to Clients and agree hours and funding."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the referral Started."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-scheduling",
+      "parent": "home-health-agency",
+      "title": "Building the weekly schedule",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every Thursday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Clients and check Hours per week for each active client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Schedule shifts for next week using Schedule shift on the client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Match caregivers to clients they already know where possible."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check that each caregiver's credentials are Valid."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Changes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When a caregiver calls out, find cover the same day and tell the client."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark missed shifts Missed and note why."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-verification",
+      "parent": "home-health-agency",
+      "title": "Visit verification",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every visit should be verified before billing."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After each shift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Arrival and departure confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Care log complete"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shift marked Completed and Visit verified ticked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The scheduler lists completed shifts that are not verified and chases them before payroll."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-credentials",
+      "parent": "home-health-agency",
+      "title": "Credential tracking",
+      "icon": {
+        "emoji": "🪪"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Credentials and look at the Next 30 days view."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Message each caregiver with the renewal date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Renewal requested, then Valid when proof arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expired"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Remove the caregiver from upcoming shifts until the credential is valid again."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

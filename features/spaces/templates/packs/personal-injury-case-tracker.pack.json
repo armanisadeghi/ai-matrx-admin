@@ -1,0 +1,3273 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0410",
+  "version": 1,
+  "title": "Personal Injury Intake and Cases",
+  "description": "Intakes, case stages, medical records requests and offers for a personal injury practice.",
+  "forWho": "Personal injury firms",
+  "icon": {
+    "emoji": "🚑"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "legal",
+  "tags": [
+    "personal injury",
+    "intake",
+    "cases",
+    "records"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-personal-injury-case-tracker",
+    "catalogueId": "SP0410",
+    "useCase": "Nadia Petrov is a case manager at a personal injury firm and uses this to return new intakes in a day, chase medical records requests and see which signed cases are ready for a demand. Operational tracking only; it holds no legal advice.",
+    "industry": "legal_professional",
+    "vertical": "Personal injury firm",
+    "job": "intake",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Delgado-Frost Injury Law",
+      "describes": "A small plaintiff-side firm handling auto, premises and workplace injury cases.",
+      "address": {
+        "line1": "2250 Beale Avenue",
+        "city": "Memphis",
+        "region": "TN",
+        "postalCode": "38104",
+        "country": "US"
+      },
+      "phone": "(901) 555-0120",
+      "website": "delgadofrostlaw.net",
+      "email": "hello@delgadofrostlaw.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-personal-injury-case-tracker",
+    "tables": [
+      {
+        "token": "intake",
+        "name": "Intakes",
+        "labelSingular": "Intake",
+        "labelPlural": "Intakes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "phone-incoming",
+        "titleField": "intake_title",
+        "describes": "Everyone who called or filled in the form, until the firm signs or declines.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "intake_title",
+            "label": "Intake",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Website form",
+              "Phone call",
+              "Past client referral",
+              "Attorney referral"
+            ],
+            "choiceColors": {
+              "Website form": "blue",
+              "Phone call": "green",
+              "Past client referral": "amber",
+              "Attorney referral": "violet"
+            }
+          },
+          {
+            "key": "incident",
+            "label": "Incident type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Auto collision",
+              "Slip and fall",
+              "Workplace",
+              "Product",
+              "Other"
+            ],
+            "choiceColors": {
+              "Auto collision": "blue",
+              "Slip and fall": "green",
+              "Workplace": "amber",
+              "Product": "violet",
+              "Other": "teal"
+            }
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New",
+              "Screening",
+              "Signed",
+              "Declined"
+            ],
+            "choiceColors": {
+              "New": "blue",
+              "Screening": "green",
+              "Signed": "amber",
+              "Declined": "violet"
+            },
+            "statusGroups": {
+              "New": "todo",
+              "Screening": "in_progress",
+              "Signed": "done",
+              "Declined": "done"
+            },
+            "required": true,
+            "default": "New"
+          },
+          {
+            "key": "call_by",
+            "label": "Call by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "screening_btn",
+            "label": "Start screening",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "intake_screening"
+            }
+          },
+          {
+            "key": "signed_btn",
+            "label": "Mark signed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "intake_signed"
+            }
+          },
+          {
+            "key": "declined_btn",
+            "label": "Mark declined",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "intake_declined"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "i01",
+            "values": {
+              "intake_title": "Auto collision - Marchetti",
+              "source": "Phone call",
+              "incident": "Auto collision",
+              "received_on": "@today-1d",
+              "status": "New",
+              "call_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i02",
+            "values": {
+              "intake_title": "Slip and fall - Obuya",
+              "source": "Website form",
+              "incident": "Slip and fall",
+              "received_on": "@today",
+              "status": "New",
+              "call_by": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i03",
+            "values": {
+              "intake_title": "Workplace - Castellano",
+              "source": "Attorney referral",
+              "incident": "Workplace",
+              "received_on": "@today-3d",
+              "status": "Screening",
+              "call_by": "@mon+3d"
+            }
+          },
+          {
+            "key": "i04",
+            "values": {
+              "intake_title": "Auto collision - Hargrove",
+              "source": "Website form",
+              "incident": "Auto collision",
+              "received_on": "@today-5d",
+              "status": "Screening",
+              "call_by": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "i05",
+            "values": {
+              "intake_title": "Product - Lindqvist",
+              "source": "Past client referral",
+              "incident": "Product",
+              "received_on": "@today-9d",
+              "status": "Signed",
+              "call_by": "@today-7d"
+            }
+          },
+          {
+            "key": "i06",
+            "values": {
+              "intake_title": "Auto collision - Tamura",
+              "source": "Phone call",
+              "incident": "Auto collision",
+              "received_on": "@today-12d",
+              "status": "Signed",
+              "call_by": "@today-10d"
+            }
+          },
+          {
+            "key": "i07",
+            "values": {
+              "intake_title": "Slip and fall - Abernathy",
+              "source": "Website form",
+              "incident": "Slip and fall",
+              "received_on": "@today-15d",
+              "status": "Declined",
+              "call_by": "@today-13d"
+            }
+          },
+          {
+            "key": "i08",
+            "values": {
+              "intake_title": "Auto collision - Nwachukwu",
+              "source": "Phone call",
+              "incident": "Auto collision",
+              "received_on": "@today-2d",
+              "status": "New",
+              "call_by": "@mon+4d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "received_on",
+            "call_by"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Screening"
+            ],
+            "filled": [
+              "source"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Signed"
+            ],
+            "filled": [
+              "source"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Declined"
+            ],
+            "filled": [
+              "source"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Intake",
+            "values": {
+              "status": "New",
+              "intake_title": "New intake"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Collect facts only. The attorney decides whether the firm can take the case."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Call notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Screening"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Date of the incident and any deadline concerns flagged for the attorney"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Other counsel involved, if any"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Conflict check run"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decision"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Attorney decision recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement agreement sent or decline letter sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "case",
+        "name": "Cases",
+        "labelSingular": "Case",
+        "labelPlural": "Cases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "folder-kanban",
+        "titleField": "case_title",
+        "describes": "Signed cases by stage, with medical bills and highest offer.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "case_title",
+            "label": "Case",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "incident",
+            "label": "Incident type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Auto collision",
+              "Slip and fall",
+              "Workplace",
+              "Product",
+              "Other"
+            ],
+            "choiceColors": {
+              "Auto collision": "blue",
+              "Slip and fall": "green",
+              "Workplace": "amber",
+              "Product": "violet",
+              "Other": "teal"
+            }
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Investigation",
+              "Treatment",
+              "Records and bills",
+              "Demand",
+              "Negotiation",
+              "Litigation",
+              "Resolved"
+            ],
+            "choiceColors": {
+              "Investigation": "blue",
+              "Treatment": "green",
+              "Records and bills": "amber",
+              "Demand": "violet",
+              "Negotiation": "teal",
+              "Litigation": "red",
+              "Resolved": "orange"
+            },
+            "statusGroups": {
+              "Investigation": "in_progress",
+              "Treatment": "in_progress",
+              "Records and bills": "in_progress",
+              "Demand": "in_progress",
+              "Negotiation": "in_progress",
+              "Litigation": "in_progress",
+              "Resolved": "done"
+            },
+            "required": true,
+            "default": "Investigation"
+          },
+          {
+            "key": "attorney",
+            "label": "Attorney",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "manager",
+            "label": "Case manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "opened_on",
+            "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "demand_due",
+            "label": "Demand target",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "bills",
+            "label": "Medical bills",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "records",
+            "pick": "bills",
+            "agg": "sum"
+          },
+          {
+            "key": "records_open",
+            "label": "Records outstanding",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "records",
+            "pick": "request_title",
+            "agg": "count",
+            "filter": {
+              "status": "Requested"
+            }
+          },
+          {
+            "key": "best_offer",
+            "label": "Highest offer",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "offers",
+            "pick": "amount",
+            "agg": "max"
+          },
+          {
+            "key": "record_btn",
+            "label": "Request records",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "record",
+              "template": "Records request",
+              "prefill": {
+                "case": "@row"
+              }
+            }
+          },
+          {
+            "key": "offer_btn",
+            "label": "Log offer",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "offer",
+              "template": "Offer",
+              "prefill": {
+                "case": "@row"
+              }
+            }
+          },
+          {
+            "key": "demand_btn",
+            "label": "Move to demand",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "case_demand"
+            }
+          },
+          {
+            "key": "resolved_btn",
+            "label": "Mark resolved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "case_resolved"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "k01",
+            "values": {
+              "case_title": "Tamura collision",
+              "client_name": "Haruki Tamura",
+              "incident": "Auto collision",
+              "stage": "Treatment",
+              "attorney": "tm-rosario",
+              "manager": "tm-nadia",
+              "opened_on": "@today-9d",
+              "demand_due": "@today+85d"
+            }
+          },
+          {
+            "key": "k02",
+            "values": {
+              "case_title": "Lindqvist product claim",
+              "client_name": "Ingrid Lindqvist",
+              "incident": "Product",
+              "stage": "Investigation",
+              "attorney": "tm-ambrose",
+              "manager": "tm-nadia",
+              "opened_on": "@today-8d",
+              "demand_due": "@today+120d"
+            }
+          },
+          {
+            "key": "k03",
+            "values": {
+              "case_title": "Brennan collision",
+              "client_name": "Caoimhe Brennan",
+              "incident": "Auto collision",
+              "stage": "Records and bills",
+              "attorney": "tm-rosario",
+              "manager": "tm-nadia",
+              "opened_on": "@today-140d",
+              "demand_due": "@mon+4d"
+            }
+          },
+          {
+            "key": "k04",
+            "values": {
+              "case_title": "Okafor workplace injury",
+              "client_name": "Chidi Okafor",
+              "incident": "Workplace",
+              "stage": "Demand",
+              "attorney": "tm-ambrose",
+              "manager": "tm-nadia",
+              "opened_on": "@today-210d",
+              "demand_due": "@today-3d"
+            }
+          },
+          {
+            "key": "k05",
+            "values": {
+              "case_title": "Vasquez slip and fall",
+              "client_name": "Elena Vasquez",
+              "incident": "Slip and fall",
+              "stage": "Negotiation",
+              "attorney": "tm-rosario",
+              "manager": "tm-nadia",
+              "opened_on": "@today-300d",
+              "demand_due": "@today-60d"
+            }
+          },
+          {
+            "key": "k06",
+            "values": {
+              "case_title": "Ashworth collision",
+              "client_name": "Desmond Ashworth",
+              "incident": "Auto collision",
+              "stage": "Litigation",
+              "attorney": "tm-rosario",
+              "manager": "tm-nadia",
+              "opened_on": "@today-480d",
+              "demand_due": "@today-250d"
+            }
+          },
+          {
+            "key": "k07",
+            "values": {
+              "case_title": "Pemberton collision",
+              "client_name": "Rosalind Pemberton",
+              "incident": "Auto collision",
+              "stage": "Resolved",
+              "attorney": "tm-ambrose",
+              "manager": "tm-nadia",
+              "opened_on": "@today-420d",
+              "demand_due": "@today-290d"
+            }
+          },
+          {
+            "key": "k08",
+            "values": {
+              "case_title": "Mbeki slip and fall",
+              "client_name": "Tendai Mbeki",
+              "incident": "Slip and fall",
+              "stage": "Treatment",
+              "attorney": "tm-ambrose",
+              "manager": "tm-nadia",
+              "opened_on": "@today-60d",
+              "demand_due": "@today+30d"
+            }
+          }
+        ],
+        "independentOf": {
+          "attorney": "Anyone on the team can take this on, whenever they joined.",
+          "manager": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "opened_on",
+            "demand_due"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Demand"
+            ],
+            "filled": [
+              "client_name"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Resolved"
+            ],
+            "filled": [
+              "client_name"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Case",
+            "values": {
+              "stage": "Investigation",
+              "case_title": "New case"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Operational tracker only. Strategy and privileged work product stay in the case file."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First 30 days"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Preservation letters sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Records requests sent to every provider"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Insurance carriers identified"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Treatment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Treatment status check every two weeks"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Demand"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Final bills and records received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Demand package reviewed by the attorney"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "record",
+        "name": "Records requests",
+        "labelSingular": "Records request",
+        "labelPlural": "Records requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "request_title",
+        "describes": "Medical records and bills requested from each provider.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "request_title",
+            "label": "Records request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "case",
+            "label": "Case",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "case",
+            "relationMax": 1
+          },
+          {
+            "key": "provider",
+            "label": "Provider",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "requested_on",
+            "label": "Requested",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "bills",
+            "label": "Bills",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To request",
+              "Requested",
+              "Received",
+              "Chased"
+            ],
+            "choiceColors": {
+              "To request": "blue",
+              "Requested": "green",
+              "Received": "amber",
+              "Chased": "violet"
+            },
+            "statusGroups": {
+              "To request": "todo",
+              "Requested": "in_progress",
+              "Received": "in_progress",
+              "Chased": "done"
+            },
+            "required": true,
+            "default": "To request"
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Follow up by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "requested_btn",
+            "label": "Mark requested",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "record_requested"
+            }
+          },
+          {
+            "key": "received_btn",
+            "label": "Mark received",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "record_received"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "r01",
+            "values": {
+              "request_title": "Emergency room records - Tamura",
+              "case": "k01",
+              "provider": "Riverbend Regional Hospital",
+              "requested_on": "@today-6d",
+              "bills": 4200,
+              "status": "Requested",
+              "follow_up_on": "@mon+2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "r02",
+            "values": {
+              "request_title": "Orthopedic records - Tamura",
+              "case": "k01",
+              "provider": "Calder Orthopedic Associates",
+              "requested_on": "@today-5d",
+              "bills": 1850,
+              "status": "Requested",
+              "follow_up_on": "@today-1d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "r03",
+            "values": {
+              "request_title": "Imaging records - Brennan",
+              "case": "k03",
+              "provider": "Ironwood Imaging Center",
+              "requested_on": "@today-30d",
+              "bills": 1100,
+              "status": "Received",
+              "follow_up_on": "@today-16d"
+            }
+          },
+          {
+            "key": "r04",
+            "values": {
+              "request_title": "Physical therapy records - Brennan",
+              "case": "k03",
+              "provider": "Cedarline Physical Therapy",
+              "requested_on": "@today-25d",
+              "bills": 2300,
+              "status": "Chased",
+              "follow_up_on": "@today-2d"
+            }
+          },
+          {
+            "key": "r05",
+            "values": {
+              "request_title": "Primary care records - Okafor",
+              "case": "k04",
+              "provider": "Lakeshore Family Medicine",
+              "requested_on": "@today-120d",
+              "bills": 640,
+              "status": "Received",
+              "follow_up_on": "@today-100d"
+            }
+          },
+          {
+            "key": "r06",
+            "values": {
+              "request_title": "Surgery records - Okafor",
+              "case": "k04",
+              "provider": "Summit Surgical Group",
+              "requested_on": "@today-130d",
+              "bills": 9800,
+              "status": "Received",
+              "follow_up_on": "@today-110d"
+            }
+          },
+          {
+            "key": "r07",
+            "values": {
+              "request_title": "Emergency records - Mbeki",
+              "case": "k08",
+              "provider": "Riverbend Regional Hospital",
+              "requested_on": "@today-20d",
+              "bills": 3100,
+              "status": "Requested",
+              "follow_up_on": "@today+3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "r08",
+            "values": {
+              "request_title": "Chiropractic records - Vasquez",
+              "case": "k05",
+              "provider": "Elmgate Chiropractic and Wellness",
+              "requested_on": "@today-250d",
+              "bills": 1450,
+              "status": "Received",
+              "follow_up_on": "@today-230d"
+            }
+          },
+          {
+            "key": "r09",
+            "values": {
+              "request_title": "Initial records - Lindqvist",
+              "case": "k02",
+              "provider": "Pinecrest Urgent Care",
+              "requested_on": "@today-1d",
+              "bills": 0,
+              "status": "To request",
+              "follow_up_on": "@today"
+            }
+          }
+        ],
+        "independentOf": {
+          "case": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "requested_on",
+            "follow_up_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Requested"
+            ],
+            "filled": [
+              "provider"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "provider"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Records request",
+            "values": {
+              "status": "To request",
+              "request_title": "New records request"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Request"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed authorization attached"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Request sent in the provider's preferred way"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up date set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Received"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pages checked against the request"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Bills entered here"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "offer",
+        "name": "Offers",
+        "labelSingular": "Offer",
+        "labelPlural": "Offers",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "offer_title",
+        "describes": "Offers and counter-offers from insurers, case by case.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "offer_title",
+            "label": "Offer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "case",
+            "label": "Case",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "case",
+            "relationMax": 1
+          },
+          {
+            "key": "carrier",
+            "label": "Insurance carrier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "offered_on",
+            "label": "Offered",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "response",
+            "label": "Response",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending",
+              "Countered",
+              "Rejected",
+              "Accepted"
+            ],
+            "choiceColors": {
+              "Pending": "blue",
+              "Countered": "green",
+              "Rejected": "amber",
+              "Accepted": "violet"
+            },
+            "default": "Pending"
+          }
+        ],
+        "rows": [
+          {
+            "key": "o01",
+            "values": {
+              "offer_title": "First offer - Vasquez",
+              "case": "k05",
+              "carrier": "Northgate Mutual",
+              "amount": 18000,
+              "offered_on": "@today-120d",
+              "response": "Rejected"
+            }
+          },
+          {
+            "key": "o02",
+            "values": {
+              "offer_title": "Second offer - Vasquez",
+              "case": "k05",
+              "carrier": "Northgate Mutual",
+              "amount": 31000,
+              "offered_on": "@today-75d",
+              "response": "Countered"
+            }
+          },
+          {
+            "key": "o03",
+            "values": {
+              "offer_title": "Third offer - Vasquez",
+              "case": "k05",
+              "carrier": "Northgate Mutual",
+              "amount": 42500,
+              "offered_on": "@today-30d",
+              "response": "Pending"
+            }
+          },
+          {
+            "key": "o04",
+            "values": {
+              "offer_title": "Offer - Ashworth",
+              "case": "k06",
+              "carrier": "Cascade Casualty",
+              "amount": 65000,
+              "offered_on": "@today-200d",
+              "response": "Rejected"
+            }
+          },
+          {
+            "key": "o05",
+            "values": {
+              "offer_title": "Offer - Pemberton",
+              "case": "k07",
+              "carrier": "Harbor Mutual",
+              "amount": 54000,
+              "offered_on": "@today-300d",
+              "response": "Accepted"
+            }
+          },
+          {
+            "key": "o06",
+            "values": {
+              "offer_title": "Opening offer - Okafor",
+              "case": "k04",
+              "carrier": "Summit Surety",
+              "amount": 22000,
+              "offered_on": "@today-8d",
+              "response": "Pending"
+            }
+          }
+        ],
+        "independentOf": {
+          "case": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Offer",
+            "values": {
+              "response": "Pending",
+              "offer_title": "New offer"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Offer details"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Client update"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client told the same day"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Attorney response recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each case links to one team member.",
+        "fromTable": "case",
+        "fromField": "attorney",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "attorney_cases"
+      },
+      {
+        "describes": "Each case links to one team member.",
+        "fromTable": "case",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "managed_cases"
+      },
+      {
+        "describes": "Each records request links to one case.",
+        "fromTable": "record",
+        "fromField": "case",
+        "toTable": "case",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "records"
+      },
+      {
+        "describes": "Each offer links to one case.",
+        "fromTable": "offer",
+        "fromField": "case",
+        "toTable": "case",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "offers"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-rosario",
+            "values": {
+              "full_name": "Rosario Delgado-Frost",
+              "role": "Lead attorney",
+              "work_email": "rosario@delgadofrostlaw.net",
+              "mobile": "(901) 555-0121",
+              "start_date": "@today-14y"
+            }
+          },
+          {
+            "key": "tm-ambrose",
+            "values": {
+              "full_name": "Ambrose Quillfeather",
+              "role": "Associate attorney",
+              "work_email": "ambrose@delgadofrostlaw.net",
+              "mobile": "(901) 555-0122",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-nadia",
+            "values": {
+              "full_name": "Nadia Petrov",
+              "role": "Case manager",
+              "work_email": "nadia@delgadofrostlaw.net",
+              "mobile": "(901) 555-0123",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-theo",
+            "values": {
+              "full_name": "Theo Winslow",
+              "role": "Intake specialist",
+              "work_email": "theo@delgadofrostlaw.net",
+              "mobile": "(901) 555-0124",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "free_case_review",
+        "name": "Request a case review",
+        "describes": "How someone asks the firm to look at their situation.",
+        "audience": "staff",
+        "table": "intake",
+        "fields": [
+          {
+            "fieldKey": "intake_title",
+            "ask": "Your name and what happened?",
+            "required": true
+          },
+          {
+            "fieldKey": "incident",
+            "ask": "What kind of incident?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did you find the firm?"
+          }
+        ],
+        "submitLabel": "Request a review",
+        "confirmation": "Received. An intake specialist will call; this form does not create an attorney-client relationship."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "intake_screening",
+        "table": "intake",
+        "name": "Start screening",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Screening"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "intake_signed",
+        "table": "intake",
+        "name": "Mark signed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Signed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "intake_declined",
+        "table": "intake",
+        "name": "Mark declined",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Declined"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "case_demand",
+        "table": "case",
+        "name": "Move to demand",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Demand"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "case_resolved",
+        "table": "case",
+        "name": "Mark resolved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Resolved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "record_requested",
+        "table": "record",
+        "name": "Mark requested",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Requested"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "record_received",
+        "table": "record",
+        "name": "Mark received",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_intake",
+        "name": "All intakes",
+        "table": "intake",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "intake_board",
+        "name": "By status",
+        "table": "intake",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "intake_cal",
+        "name": "Calendar",
+        "table": "intake",
+        "kind": "calendar",
+        "dateField": "call_by",
+        "allDay": true
+      },
+      {
+        "token": "intake_today",
+        "name": "Today",
+        "table": "intake",
+        "kind": "grid",
+        "within": {
+          "call_by": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Screening"
+          ]
+        }
+      },
+      {
+        "token": "intake_week",
+        "name": "This week",
+        "table": "intake",
+        "kind": "grid",
+        "within": {
+          "call_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Screening"
+          ]
+        }
+      },
+      {
+        "token": "intake_over",
+        "name": "Overdue",
+        "table": "intake",
+        "kind": "grid",
+        "within": {
+          "call_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "New",
+            "Screening"
+          ]
+        }
+      },
+      {
+        "token": "intake_mine",
+        "name": "My intakes",
+        "table": "intake",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_case",
+        "name": "All cases",
+        "table": "case",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "case_board",
+        "name": "By status",
+        "table": "case",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "case_cal",
+        "name": "Calendar",
+        "table": "case",
+        "kind": "calendar",
+        "dateField": "demand_due",
+        "allDay": true
+      },
+      {
+        "token": "case_week",
+        "name": "This week",
+        "table": "case",
+        "kind": "grid",
+        "within": {
+          "demand_due": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Investigation",
+            "Treatment",
+            "Records and bills",
+            "Demand",
+            "Negotiation",
+            "Litigation"
+          ]
+        }
+      },
+      {
+        "token": "case_next30",
+        "name": "Next 30 days",
+        "table": "case",
+        "kind": "grid",
+        "within": {
+          "demand_due": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Investigation",
+            "Treatment",
+            "Records and bills",
+            "Demand",
+            "Negotiation",
+            "Litigation"
+          ]
+        }
+      },
+      {
+        "token": "case_over",
+        "name": "Overdue",
+        "table": "case",
+        "kind": "grid",
+        "within": {
+          "demand_due": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Investigation",
+            "Treatment",
+            "Records and bills",
+            "Demand",
+            "Negotiation",
+            "Litigation"
+          ]
+        }
+      },
+      {
+        "token": "all_record",
+        "name": "All records requests",
+        "table": "record",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "record_board",
+        "name": "By status",
+        "table": "record",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "record_cal",
+        "name": "Calendar",
+        "table": "record",
+        "kind": "calendar",
+        "dateField": "follow_up_on",
+        "allDay": true
+      },
+      {
+        "token": "record_today",
+        "name": "Today",
+        "table": "record",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To request",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "record_week",
+        "name": "This week",
+        "table": "record",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To request",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "record_over",
+        "name": "Overdue",
+        "table": "record",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To request",
+            "Requested",
+            "Received"
+          ]
+        }
+      },
+      {
+        "token": "record_mine",
+        "name": "My records requests",
+        "table": "record",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_offer",
+        "name": "All offers",
+        "table": "offer",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Case assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "record",
+          "describes": "Every records request with provider, status and follow-up date."
+        },
+        {
+          "name": "related_tables",
+          "table": "case",
+          "describes": "The cases records requests belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many records requests are waiting on a provider?",
+        "whyItMatters": "The case manager chases providers every Tuesday and Friday.",
+        "expect": {
+          "table": "record",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Requested"
+          },
+          "answer": 3,
+          "unit": "requests"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open intakes.",
+        "action": {
+          "kind": "open",
+          "surface": "intake_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "intake_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open cases.",
+        "action": {
+          "kind": "open",
+          "surface": "case_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "case_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open records requests.",
+        "action": {
+          "kind": "open",
+          "surface": "record_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "record_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "delgadofrostlaw.net"
+      ],
+      "fictionalStreets": [
+        "Beale Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "personal-injury-case-tracker",
+      "parent": null,
+      "title": "Personal Injury Intake and Cases",
+      "icon": {
+        "emoji": "🚑"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your personal injury practice in one place. Start with Intakes to call today, track each signed Case through its stages, and keep Records requests and Offers moving. Operational tracking only; strategy and privileged notes stay in the case file."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-intake"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-stages"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-records"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-negotiation"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "intake",
+                      "view": "all_intake"
+                    },
+                    "inline": true,
+                    "title": "Intakes by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Intakes by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "intake",
+                      "view": "all_intake"
+                    },
+                    "inline": true,
+                    "title": "Intakes by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Intakes by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "case",
+                      "view": "all_case"
+                    },
+                    "inline": true,
+                    "title": "Cases by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Cases by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Intakes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "intake",
+              "view": "intake_board"
+            },
+            "inline": true,
+            "title": "Intakes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "call_by": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Screening"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "call_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Screening"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "call_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New",
+                    "Screening"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "call_by"
+              },
+              {
+                "id": "vall",
+                "name": "All intakes",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "call_by",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "case",
+              "view": "case_board"
+            },
+            "inline": true,
+            "title": "Cases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "demand_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Investigation",
+                    "Treatment",
+                    "Records and bills",
+                    "Demand",
+                    "Negotiation",
+                    "Litigation"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "demand_due": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Investigation",
+                    "Treatment",
+                    "Records and bills",
+                    "Demand",
+                    "Negotiation",
+                    "Litigation"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "demand_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Investigation",
+                    "Treatment",
+                    "Records and bills",
+                    "Demand",
+                    "Negotiation",
+                    "Litigation"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "demand_due"
+              },
+              {
+                "id": "vall",
+                "name": "All cases",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "demand_due",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Records requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "record",
+              "view": "record_board"
+            },
+            "inline": true,
+            "title": "Records requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To request",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To request",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To request",
+                    "Requested",
+                    "Received"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "follow_up_on"
+              },
+              {
+                "id": "vall",
+                "name": "All records requests",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "follow_up_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "personal-injury-case-tracker",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "intake",
+                      "view": "all_intake"
+                    },
+                    "inline": true,
+                    "title": "Intakes by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Intakes by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "intake",
+                      "view": "all_intake"
+                    },
+                    "inline": true,
+                    "title": "Intakes by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Intakes by source",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "source",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "case",
+                      "view": "all_case"
+                    },
+                    "inline": true,
+                    "title": "Cases by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Cases by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "case",
+                      "view": "all_case"
+                    },
+                    "inline": true,
+                    "title": "Cases by incident",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Cases by incident",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "incident",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "record",
+                      "view": "all_record"
+                    },
+                    "inline": true,
+                    "title": "Bills by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Bills by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "bills"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "offer",
+                      "view": "all_offer"
+                    },
+                    "inline": true,
+                    "title": "Offers by response",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Offers by response",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "response",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Records outstanding"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "record",
+              "view": "all_record"
+            },
+            "inline": true,
+            "title": "Records outstanding",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Waiting",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Chased"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cases ready for demand"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "case",
+              "view": "all_case"
+            },
+            "inline": true,
+            "title": "Cases ready for demand",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Records and bills",
+                "layout": "list",
+                "filters": {
+                  "stage": "Records and bills"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-intake",
+      "parent": "personal-injury-case-tracker",
+      "title": "Intake call routine",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Collect facts and be kind. The attorney decides whether the firm can help."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank the caller and let them tell the story first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Capture the date of the incident, who was involved and who has treated them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Flag any date-sensitive item for the attorney right away."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the conflict check."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log the intake and set Call by to the next business day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Attorney decision: send an engagement agreement or a decline letter."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-stages",
+      "parent": "personal-injury-case-tracker",
+      "title": "Case stages",
+      "icon": {
+        "emoji": "🪜"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every signed case moves through the same stages."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Investigation: preservation letters, scene photos, carrier details."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Treatment: check in with the client every two weeks."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Records and bills: requests out to every provider."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Demand: package reviewed by the attorney and sent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Negotiation: log every offer under Offers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Litigation or Resolved."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-records",
+      "parent": "personal-injury-case-tracker",
+      "title": "Chasing records",
+      "icon": {
+        "emoji": "📑"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Requesting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Request records on the case."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Attach the signed authorization."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set a follow-up date one week out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Past the follow-up date, call the provider and mark Chased."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Escalate to the attorney after the third attempt."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enter bills as soon as records arrive."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-negotiation",
+      "parent": "personal-injury-case-tracker",
+      "title": "Logging offers",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every offer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Log the amount, carrier and date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tell the client the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Record the attorney's response"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at Highest offer on the case before each client update."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

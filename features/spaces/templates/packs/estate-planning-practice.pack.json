@@ -1,0 +1,3850 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0411",
+  "version": 1,
+  "title": "Estate Planning Practice",
+  "description": "Estate plans by stage, instruments, signings and trust funding.",
+  "forWho": "Estate planning attorneys and small firms",
+  "icon": {
+    "emoji": "📜"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "legal",
+  "tags": [
+    "estate planning",
+    "trusts",
+    "documents",
+    "signing"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-estate-planning-practice",
+    "catalogueId": "SP0411",
+    "useCase": "Ximena Aldana is the paralegal at an estate planning practice and uses this to see which plans are in drafting, which signings are booked this week and which trust funding steps are still open. Operational tracking only; it holds no legal advice.",
+    "industry": "legal_professional",
+    "vertical": "Estate planning practice",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Whitmore Estate Planning",
+      "describes": "A small practice preparing wills, trusts and powers of attorney for families.",
+      "address": {
+        "line1": "19 Aspen Mews",
+        "city": "Denver",
+        "region": "CO",
+        "postalCode": "80202",
+        "country": "US"
+      },
+      "phone": "(303) 555-0120",
+      "website": "whitmoreestates.net",
+      "email": "hello@whitmoreestates.net",
+      "timezone": "America/Denver"
+    },
+    "cleanupTag": "use-case:spaces-estate-planning-practice",
+    "tables": [
+      {
+        "token": "matter",
+        "name": "Engagements",
+        "labelSingular": "Engagement",
+        "labelPlural": "Engagements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scroll-text",
+        "titleField": "matter_title",
+        "describes": "Each estate plan from first meeting to funding and filing.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "matter_title",
+            "label": "Engagement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "package",
+            "label": "Package",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Will package",
+              "Revocable trust package",
+              "Trust with powers of attorney",
+              "Plan update"
+            ],
+            "choiceColors": {
+              "Will package": "blue",
+              "Revocable trust package": "green",
+              "Trust with powers of attorney": "amber",
+              "Plan update": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Consultation",
+              "Gathering information",
+              "Drafting",
+              "Attorney review",
+              "Signing",
+              "Funding",
+              "Complete"
+            ],
+            "choiceColors": {
+              "Consultation": "blue",
+              "Gathering information": "green",
+              "Drafting": "amber",
+              "Attorney review": "violet",
+              "Signing": "teal",
+              "Funding": "red",
+              "Complete": "orange"
+            },
+            "statusGroups": {
+              "Consultation": "todo",
+              "Gathering information": "in_progress",
+              "Drafting": "in_progress",
+              "Attorney review": "in_progress",
+              "Signing": "in_progress",
+              "Funding": "in_progress",
+              "Complete": "done"
+            },
+            "required": true,
+            "default": "Consultation"
+          },
+          {
+            "key": "attorney",
+            "label": "Attorney",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "fee",
+            "label": "Fee",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "started_on",
+            "label": "Started",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "target_sign",
+            "label": "Target signing",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "docs_ready",
+            "label": "Instruments signed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "documents",
+            "pick": "doc_title",
+            "agg": "count",
+            "filter": {
+              "status": "Signed"
+            }
+          },
+          {
+            "key": "funding_open",
+            "label": "Funding steps open",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "funding",
+            "pick": "asset_title",
+            "agg": "count",
+            "filter": {
+              "status": "To transfer"
+            }
+          },
+          {
+            "key": "doc_btn",
+            "label": "Add instrument",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "document",
+              "template": "Document",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          },
+          {
+            "key": "sign_btn",
+            "label": "Schedule signing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "signing",
+              "template": "Signing",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          },
+          {
+            "key": "signing_btn",
+            "label": "Move to signing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "matter_signing"
+            }
+          },
+          {
+            "key": "complete_btn",
+            "label": "Mark complete",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "matter_complete"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "matter_title": "Revocable trust - Okoye family",
+              "client": "c03",
+              "package": "Revocable trust package",
+              "status": "Drafting",
+              "attorney": "tm-cordelia",
+              "fee": 3800,
+              "started_on": "@today-25d",
+              "target_sign": "@today+18d"
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "matter_title": "Will package - Delacroix-Hunt",
+              "client": "c02",
+              "package": "Will package",
+              "status": "Gathering information",
+              "attorney": "tm-barnaby",
+              "fee": 1200,
+              "started_on": "@today-10d",
+              "target_sign": "@today+30d"
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "matter_title": "Trust update - Penhallow",
+              "client": "c05",
+              "package": "Plan update",
+              "status": "Attorney review",
+              "attorney": "tm-cordelia",
+              "fee": 1500,
+              "started_on": "@today-18d",
+              "target_sign": "@mon+5d"
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "matter_title": "Revocable trust - Ashgrove",
+              "client": "c04",
+              "package": "Revocable trust package",
+              "status": "Funding",
+              "attorney": "tm-cordelia",
+              "fee": 3600,
+              "started_on": "@today-80d",
+              "target_sign": "@today-40d"
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "matter_title": "Trust with powers of attorney - Fairbairn",
+              "client": "c01",
+              "package": "Trust with powers of attorney",
+              "status": "Signing",
+              "attorney": "tm-cordelia",
+              "fee": 4400,
+              "started_on": "@today-45d",
+              "target_sign": "@mon+2d"
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "matter_title": "Will package - Okonkwo-Reyes",
+              "client": "c07",
+              "package": "Will package",
+              "status": "Complete",
+              "attorney": "tm-barnaby",
+              "fee": 1100,
+              "started_on": "@today-210d",
+              "target_sign": "@today-195d"
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "matter_title": "Business succession plan - Voorhees",
+              "client": "c06",
+              "package": "Trust with powers of attorney",
+              "status": "Consultation",
+              "attorney": "tm-cordelia",
+              "fee": 5200,
+              "started_on": "@today-4d",
+              "target_sign": "@today+60d"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "attorney": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "started_on",
+            "target_sign"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Signing"
+            ],
+            "filled": [
+              "package"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Complete"
+            ],
+            "filled": [
+              "package"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Engagement",
+            "values": {
+              "status": "Consultation",
+              "matter_title": "New engagement"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Tracks the work, not legal advice. Plan details stay in the client file."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Engagement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement letter signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fee deposit received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Information"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Asset list received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Family and contact details confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Drafting and review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "First drafts sent to the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client comments incorporated"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Signing and funding"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signing scheduled with witnesses and a notary"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Funding steps assigned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "signing",
+        "name": "Signings",
+        "labelSingular": "Signing",
+        "labelPlural": "Signings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "pen-line",
+        "titleField": "signing_title",
+        "describes": "Signing appointments with witnesses and a notary.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "signing_title",
+            "label": "Signing",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "matter",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "when_at",
+            "label": "When",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "where",
+            "label": "Where",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Office",
+              "Remote",
+              "Client's home"
+            ],
+            "choiceColors": {
+              "Office": "blue",
+              "Remote": "green",
+              "Client's home": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Signed",
+              "Rescheduled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "Signed": "green",
+              "Rescheduled": "amber"
+            },
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Signed": "done",
+              "Rescheduled": "todo"
+            },
+            "required": true,
+            "default": "Scheduled"
+          },
+          {
+            "key": "coordinator",
+            "label": "Coordinator",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "signed_btn",
+            "label": "Mark signed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "signing_signed"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "s01",
+            "values": {
+              "signing_title": "Signing - Fairbairn",
+              "matter": "m05",
+              "when_at": "@mon+2d 10:00",
+              "where": "Office",
+              "status": "Scheduled",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "s02",
+            "values": {
+              "signing_title": "Signing - Penhallow amendment",
+              "matter": "m03",
+              "when_at": "@mon+5d 14:00",
+              "where": "Remote",
+              "status": "Scheduled",
+              "coordinator": "@installer"
+            }
+          },
+          {
+            "key": "s03",
+            "values": {
+              "signing_title": "Signing - Okoye family",
+              "matter": "m01",
+              "when_at": "@today+18d 11:00",
+              "where": "Client's home",
+              "status": "Scheduled"
+            }
+          },
+          {
+            "key": "s04",
+            "values": {
+              "signing_title": "Signing - Ashgrove",
+              "matter": "m04",
+              "when_at": "@today-48d 10:30",
+              "where": "Office",
+              "status": "Signed"
+            }
+          },
+          {
+            "key": "s05",
+            "values": {
+              "signing_title": "Signing - Okonkwo-Reyes",
+              "matter": "m06",
+              "when_at": "@today-198d 15:00",
+              "where": "Office",
+              "status": "Signed"
+            }
+          },
+          {
+            "key": "s06",
+            "values": {
+              "signing_title": "Signing - Fairbairn (first date)",
+              "matter": "m05",
+              "when_at": "@today-5d 10:00",
+              "where": "Office",
+              "status": "Rescheduled"
+            }
+          }
+        ],
+        "independentOf": {
+          "matter": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Signed"
+            ],
+            "filled": [
+              "where"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Signing",
+            "values": {
+              "status": "Scheduled",
+              "signing_title": "New signing"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Witnesses and notary booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Documents printed and tabbed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client told what to bring"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "At the signing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Identification checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signature pages collected"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Originals stored and copies sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "document",
+        "name": "Instruments",
+        "labelSingular": "Instrument",
+        "labelPlural": "Instruments",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "files",
+        "titleField": "doc_title",
+        "describes": "Each document in each plan, from draft to signed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "doc_title",
+            "label": "Instrument",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "matter",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Will",
+              "Revocable trust",
+              "Power of attorney",
+              "Healthcare directive",
+              "Deed",
+              "Beneficiary form"
+            ],
+            "choiceColors": {
+              "Will": "blue",
+              "Revocable trust": "green",
+              "Power of attorney": "amber",
+              "Healthcare directive": "violet",
+              "Deed": "teal",
+              "Beneficiary form": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Drafting",
+              "Client review",
+              "Ready to sign",
+              "Signed",
+              "Filed"
+            ],
+            "choiceColors": {
+              "Not started": "blue",
+              "Drafting": "green",
+              "Client review": "amber",
+              "Ready to sign": "violet",
+              "Signed": "teal",
+              "Filed": "red"
+            },
+            "statusGroups": {
+              "Not started": "todo",
+              "Drafting": "in_progress",
+              "Client review": "in_progress",
+              "Ready to sign": "in_progress",
+              "Signed": "done",
+              "Filed": "done"
+            },
+            "required": true,
+            "default": "Not started"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ready_btn",
+            "label": "Ready to sign",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "document_ready"
+            }
+          },
+          {
+            "key": "signed_btn",
+            "label": "Mark signed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "document_signed"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "d01",
+            "values": {
+              "doc_title": "Revocable trust - Okoye",
+              "matter": "m01",
+              "kind": "Revocable trust",
+              "status": "Drafting",
+              "due_on": "@mon+3d"
+            }
+          },
+          {
+            "key": "d02",
+            "values": {
+              "doc_title": "Pour-over wills - Okoye",
+              "matter": "m01",
+              "kind": "Will",
+              "status": "Not started",
+              "due_on": "@today+10d"
+            }
+          },
+          {
+            "key": "d03",
+            "values": {
+              "doc_title": "Powers of attorney - Okoye",
+              "matter": "m01",
+              "kind": "Power of attorney",
+              "status": "Not started",
+              "due_on": "@today+12d"
+            }
+          },
+          {
+            "key": "d04",
+            "values": {
+              "doc_title": "Will - Delacroix-Hunt",
+              "matter": "m02",
+              "kind": "Will",
+              "status": "Not started",
+              "due_on": "@today+20d"
+            }
+          },
+          {
+            "key": "d05",
+            "values": {
+              "doc_title": "Trust amendment - Penhallow",
+              "matter": "m03",
+              "kind": "Revocable trust",
+              "status": "Client review",
+              "due_on": "@today+2d"
+            }
+          },
+          {
+            "key": "d06",
+            "values": {
+              "doc_title": "Trust - Ashgrove",
+              "matter": "m04",
+              "kind": "Revocable trust",
+              "status": "Signed",
+              "due_on": "@today-45d"
+            }
+          },
+          {
+            "key": "d07",
+            "values": {
+              "doc_title": "Deed to trust - Ashgrove",
+              "matter": "m04",
+              "kind": "Deed",
+              "status": "Signed",
+              "due_on": "@today-40d"
+            }
+          },
+          {
+            "key": "d08",
+            "values": {
+              "doc_title": "Trust - Fairbairn",
+              "matter": "m05",
+              "kind": "Revocable trust",
+              "status": "Ready to sign",
+              "due_on": "@mon+2d"
+            }
+          },
+          {
+            "key": "d09",
+            "values": {
+              "doc_title": "Healthcare directives - Fairbairn",
+              "matter": "m05",
+              "kind": "Healthcare directive",
+              "status": "Ready to sign",
+              "due_on": "@mon+2d"
+            }
+          },
+          {
+            "key": "d10",
+            "values": {
+              "doc_title": "Will - Okonkwo-Reyes",
+              "matter": "m06",
+              "kind": "Will",
+              "status": "Filed",
+              "due_on": "@today-200d"
+            }
+          }
+        ],
+        "independentOf": {
+          "matter": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Ready to sign"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Signed"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Document",
+            "values": {
+              "status": "Not started",
+              "doc_title": "New instrument"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Drafting"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Instructions from the attorney recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Draft saved in the client file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Client comments received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Final reviewed by the attorney"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Signing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Execution requirements checked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed copy saved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "funding",
+        "name": "Funding steps",
+        "labelSingular": "Funding step",
+        "labelPlural": "Funding steps",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "landmark",
+        "titleField": "asset_title",
+        "describes": "Moving assets into the trust and updating beneficiaries.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "asset_title",
+            "label": "Funding step",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "matter",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Asset type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Home",
+              "Bank account",
+              "Brokerage account",
+              "Life insurance",
+              "Business interest"
+            ],
+            "choiceColors": {
+              "Home": "blue",
+              "Bank account": "green",
+              "Brokerage account": "amber",
+              "Life insurance": "violet",
+              "Business interest": "teal"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To transfer",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "To transfer": "blue",
+              "In progress": "green",
+              "Done": "amber"
+            },
+            "statusGroups": {
+              "To transfer": "todo",
+              "In progress": "in_progress",
+              "Done": "done"
+            },
+            "required": true,
+            "default": "To transfer"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "funding_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "f01",
+            "values": {
+              "asset_title": "Record deed to trust - Ashgrove home",
+              "matter": "m04",
+              "kind": "Home",
+              "status": "Done",
+              "due_on": "@today-30d"
+            }
+          },
+          {
+            "key": "f02",
+            "values": {
+              "asset_title": "Retitle checking account - Ashgrove",
+              "matter": "m04",
+              "kind": "Bank account",
+              "status": "In progress",
+              "due_on": "@today-2d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "f03",
+            "values": {
+              "asset_title": "Retitle brokerage account - Ashgrove",
+              "matter": "m04",
+              "kind": "Brokerage account",
+              "status": "To transfer",
+              "due_on": "@mon+3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "f04",
+            "values": {
+              "asset_title": "Update beneficiary form - Ashgrove",
+              "matter": "m04",
+              "kind": "Life insurance",
+              "status": "To transfer",
+              "due_on": "@today+5d"
+            }
+          },
+          {
+            "key": "f05",
+            "values": {
+              "asset_title": "Assign business interest - Voorhees",
+              "matter": "m07",
+              "kind": "Business interest",
+              "status": "To transfer",
+              "due_on": "@today+40d"
+            }
+          },
+          {
+            "key": "f06",
+            "values": {
+              "asset_title": "Retitle home - Fairbairn",
+              "matter": "m05",
+              "kind": "Home",
+              "status": "To transfer",
+              "due_on": "@today+14d",
+              "owner": "@installer"
+            }
+          }
+        ],
+        "independentOf": {
+          "matter": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Funding step",
+            "values": {
+              "status": "To transfer",
+              "asset_title": "New funding step"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Institution contacted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Forms signed by the client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Confirmation received and saved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Individuals, couples and families with an estate plan underway or on file.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "household",
+            "label": "Household",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Individual",
+              "Couple",
+              "Family with children",
+              "Business owner"
+            ],
+            "choiceColors": {
+              "Individual": "blue",
+              "Couple": "green",
+              "Family with children": "amber",
+              "Business owner": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Consultation",
+              "Active",
+              "Plan complete",
+              "Review due"
+            ],
+            "choiceColors": {
+              "Consultation": "blue",
+              "Active": "green",
+              "Plan complete": "amber",
+              "Review due": "violet"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan_signed",
+            "label": "Plan last signed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "review_due",
+            "label": "Review due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "matter_count",
+            "label": "Engagements",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "matters",
+            "pick": "matter_title",
+            "agg": "count"
+          },
+          {
+            "key": "matter_btn",
+            "label": "Start engagement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "matter",
+              "template": "Engagement",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Winston and Odette Fairbairn",
+              "household": "Couple",
+              "status": "Active",
+              "phone": "(303) 555-0131",
+              "email": "fairbairns@mailbox-demo.net",
+              "plan_signed": "@today-1500d",
+              "review_due": "@today-400d"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Marguerite Delacroix-Hunt",
+              "household": "Individual",
+              "status": "Active",
+              "phone": "(303) 555-0132",
+              "email": "marguerite.dh@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Okoye family (Chidinma and Emeka)",
+              "household": "Family with children",
+              "status": "Active",
+              "phone": "(303) 555-0133",
+              "email": "okoyes@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Leopold Ashgrove",
+              "household": "Individual",
+              "status": "Plan complete",
+              "phone": "(303) 555-0134",
+              "email": "leopold.a@mailbox-demo.net",
+              "plan_signed": "@today-90d",
+              "review_due": "@today+640d"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Tamsin and Rhys Penhallow",
+              "household": "Couple",
+              "status": "Review due",
+              "phone": "(303) 555-0135",
+              "email": "penhallows@mailbox-demo.net",
+              "plan_signed": "@today-1800d",
+              "review_due": "@today-30d"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Anneke Voorhees",
+              "household": "Business owner",
+              "status": "Consultation",
+              "phone": "(303) 555-0136",
+              "email": "anneke.v@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Sebastian Okonkwo-Reyes",
+              "household": "Individual",
+              "status": "Plan complete",
+              "phone": "(303) 555-0137",
+              "email": "sebastian.or@mailbox-demo.net",
+              "plan_signed": "@today-200d",
+              "review_due": "@today+530d"
+            }
+          }
+        ],
+        "before": [
+          [
+            "plan_signed",
+            "review_due"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Consultation",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Consultation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Conflict check cleared"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Goals and family situation discussed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fee estimate given in writing"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Information to gather"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Contacts for spouse, children and named helpers"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Where important papers are kept"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each engagement links to one client.",
+        "fromTable": "matter",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "matters"
+      },
+      {
+        "describes": "Each engagement links to one team member.",
+        "fromTable": "matter",
+        "fromField": "attorney",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "attorney_engagements"
+      },
+      {
+        "describes": "Each signing links to one engagement.",
+        "fromTable": "signing",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "signings"
+      },
+      {
+        "describes": "Each instrument links to one engagement.",
+        "fromTable": "document",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "documents"
+      },
+      {
+        "describes": "Each funding step links to one engagement.",
+        "fromTable": "funding",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "funding"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-cordelia",
+            "values": {
+              "full_name": "Cordelia Whitmore",
+              "role": "Estate planning attorney",
+              "work_email": "cordelia@whitmoreestates.net",
+              "mobile": "(303) 555-0121",
+              "start_date": "@today-13y"
+            }
+          },
+          {
+            "key": "tm-barnaby",
+            "values": {
+              "full_name": "Barnaby Oyelowo",
+              "role": "Associate attorney",
+              "work_email": "barnaby@whitmoreestates.net",
+              "mobile": "(303) 555-0122",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-ximena",
+            "values": {
+              "full_name": "Ximena Aldana",
+              "role": "Estate paralegal",
+              "work_email": "ximena@whitmoreestates.net",
+              "mobile": "(303) 555-0123",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-percival",
+            "values": {
+              "full_name": "Percival Dunmore",
+              "role": "Office administrator",
+              "work_email": "percival@whitmoreestates.net",
+              "mobile": "(303) 555-0124",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "plan_inquiry",
+        "name": "Estate planning inquiry",
+        "describes": "How a prospective client asks about planning.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "Your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "household",
+            "ask": "Individual, couple or family?"
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          }
+        ],
+        "submitLabel": "Send inquiry",
+        "confirmation": "Received. The practice will reply to arrange a consultation; this does not create an attorney-client relationship."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "matter_signing",
+        "table": "matter",
+        "name": "Move to signing",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Signing"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "matter_complete",
+        "table": "matter",
+        "name": "Mark complete",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Complete"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "signing_signed",
+        "table": "signing",
+        "name": "Mark signed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Signed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "document_ready",
+        "table": "document",
+        "name": "Ready to sign",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready to sign"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "document_signed",
+        "table": "document",
+        "name": "Mark signed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Signed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "funding_done",
+        "table": "funding",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_matter",
+        "name": "All engagements",
+        "table": "matter",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "matter_board",
+        "name": "By status",
+        "table": "matter",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "matter_cal",
+        "name": "Calendar",
+        "table": "matter",
+        "kind": "calendar",
+        "dateField": "target_sign",
+        "allDay": true
+      },
+      {
+        "token": "matter_week",
+        "name": "This week",
+        "table": "matter",
+        "kind": "grid",
+        "within": {
+          "target_sign": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Consultation",
+            "Gathering information",
+            "Drafting",
+            "Attorney review",
+            "Signing",
+            "Funding"
+          ]
+        }
+      },
+      {
+        "token": "matter_next30",
+        "name": "Next 30 days",
+        "table": "matter",
+        "kind": "grid",
+        "within": {
+          "target_sign": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Consultation",
+            "Gathering information",
+            "Drafting",
+            "Attorney review",
+            "Signing",
+            "Funding"
+          ]
+        }
+      },
+      {
+        "token": "matter_over",
+        "name": "Overdue",
+        "table": "matter",
+        "kind": "grid",
+        "within": {
+          "target_sign": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Consultation",
+            "Gathering information",
+            "Drafting",
+            "Attorney review",
+            "Signing",
+            "Funding"
+          ]
+        }
+      },
+      {
+        "token": "all_signing",
+        "name": "All signings",
+        "table": "signing",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "signing_board",
+        "name": "By status",
+        "table": "signing",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "signing_cal",
+        "name": "Calendar",
+        "table": "signing",
+        "kind": "calendar",
+        "dateField": "when_at",
+        "allDay": false
+      },
+      {
+        "token": "signing_today",
+        "name": "Today",
+        "table": "signing",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Rescheduled"
+          ]
+        }
+      },
+      {
+        "token": "signing_week",
+        "name": "This week",
+        "table": "signing",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Rescheduled"
+          ]
+        }
+      },
+      {
+        "token": "signing_next30",
+        "name": "Next 30 days",
+        "table": "signing",
+        "kind": "grid",
+        "within": {
+          "when_at": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Rescheduled"
+          ]
+        }
+      },
+      {
+        "token": "signing_mine",
+        "name": "My signings",
+        "table": "signing",
+        "kind": "grid",
+        "me": [
+          "coordinator"
+        ]
+      },
+      {
+        "token": "all_document",
+        "name": "All instruments",
+        "table": "document",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "document_board",
+        "name": "By status",
+        "table": "document",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "document_cal",
+        "name": "Calendar",
+        "table": "document",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "document_today",
+        "name": "Today",
+        "table": "document",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting",
+            "Client review",
+            "Ready to sign"
+          ]
+        }
+      },
+      {
+        "token": "document_week",
+        "name": "This week",
+        "table": "document",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting",
+            "Client review",
+            "Ready to sign"
+          ]
+        }
+      },
+      {
+        "token": "document_over",
+        "name": "Overdue",
+        "table": "document",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Drafting",
+            "Client review",
+            "Ready to sign"
+          ]
+        }
+      },
+      {
+        "token": "all_funding",
+        "name": "All funding steps",
+        "table": "funding",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "funding_board",
+        "name": "By status",
+        "table": "funding",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "funding_cal",
+        "name": "Calendar",
+        "table": "funding",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "funding_week",
+        "name": "This week",
+        "table": "funding",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To transfer",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "funding_next30",
+        "name": "Next 30 days",
+        "table": "funding",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To transfer",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "funding_over",
+        "name": "Overdue",
+        "table": "funding",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To transfer",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "funding_mine",
+        "name": "My funding steps",
+        "table": "funding",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_cal",
+        "name": "Calendar",
+        "table": "client",
+        "kind": "calendar",
+        "dateField": "review_due",
+        "allDay": true
+      },
+      {
+        "token": "client_week",
+        "name": "This week",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "review_due": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "client_next30",
+        "name": "Next 30 days",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "review_due": {
+            "relative": "next_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "client_over",
+        "name": "Overdue",
+        "table": "client",
+        "kind": "grid",
+        "within": {
+          "review_due": {
+            "relative": "before_today"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Practice assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "funding",
+          "describes": "Every funding step with asset type, status and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "matter",
+          "describes": "The engagements funding steps belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many funding steps still need a transfer?",
+        "whyItMatters": "An unfunded trust is the most common loose end after signing.",
+        "expect": {
+          "table": "funding",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "To transfer"
+          },
+          "answer": 4,
+          "unit": "steps"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open engagements.",
+        "action": {
+          "kind": "open",
+          "surface": "matter_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "matter_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open signings.",
+        "action": {
+          "kind": "open",
+          "surface": "signing_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "signing_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open instruments.",
+        "action": {
+          "kind": "open",
+          "surface": "document_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "document_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "mailbox-demo.net",
+        "whitmoreestates.net"
+      ],
+      "fictionalStreets": [
+        "Aspen Mews"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "estate-planning-practice",
+      "parent": null,
+      "title": "Estate Planning Practice",
+      "icon": {
+        "emoji": "📜"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your estate planning practice in one place. Follow each Engagement through consultation, drafting, signing and funding, keep Instruments and Signings moving, and use Review due on Clients to bring past clients back. Operational tracking only; it holds no legal advice."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-engagement"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-signing"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-funding"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-reviews"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Engagements by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Engagements by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Engagements by package",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Engagements by package",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "package",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "document",
+                      "view": "all_document"
+                    },
+                    "inline": true,
+                    "title": "Instruments by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Instruments by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Engagements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "matter",
+              "view": "matter_board"
+            },
+            "inline": true,
+            "title": "Engagements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "target_sign": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Consultation",
+                    "Gathering information",
+                    "Drafting",
+                    "Attorney review",
+                    "Signing",
+                    "Funding"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "target_sign": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Consultation",
+                    "Gathering information",
+                    "Drafting",
+                    "Attorney review",
+                    "Signing",
+                    "Funding"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "target_sign": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Consultation",
+                    "Gathering information",
+                    "Drafting",
+                    "Attorney review",
+                    "Signing",
+                    "Funding"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "target_sign"
+              },
+              {
+                "id": "vall",
+                "name": "All engagements",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "target_sign",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Signings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "signing",
+              "view": "signing_board"
+            },
+            "inline": true,
+            "title": "Signings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Rescheduled"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "when_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Rescheduled"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "when_at": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Rescheduled"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "when_at"
+              },
+              {
+                "id": "vall",
+                "name": "All signings",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "when_at",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "coordinator"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Instruments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "document",
+              "view": "document_board"
+            },
+            "inline": true,
+            "title": "Instruments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review",
+                    "Ready to sign"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review",
+                    "Ready to sign"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting",
+                    "Client review",
+                    "Ready to sign"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All instruments",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Funding steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "funding",
+              "view": "funding_board"
+            },
+            "inline": true,
+            "title": "Funding steps",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To transfer",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To transfer",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To transfer",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All funding steps",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "review_due": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "review_due": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "review_due": {
+                    "relative": "before_today"
+                  }
+                }
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "review_due"
+              },
+              {
+                "id": "vall",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "review_due",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "estate-planning-practice",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Engagements by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Engagements by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Engagements by package",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Engagements by package",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "package",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "document",
+                      "view": "all_document"
+                    },
+                    "inline": true,
+                    "title": "Instruments by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Instruments by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "signing",
+                      "view": "all_signing"
+                    },
+                    "inline": true,
+                    "title": "Signings by place",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Signings by place",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "where",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "funding",
+                      "view": "all_funding"
+                    },
+                    "inline": true,
+                    "title": "Funding steps by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Funding steps by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by household",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Clients by household",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "household",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Funding still to do"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "funding",
+              "view": "all_funding"
+            },
+            "inline": true,
+            "title": "Funding still to do",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open steps",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "To transfer",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Instruments ready to sign"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "document",
+              "view": "all_document"
+            },
+            "inline": true,
+            "title": "Instruments ready to sign",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Ready to sign",
+                "layout": "list",
+                "filters": {
+                  "status": "Ready to sign"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-engagement",
+      "parent": "estate-planning-practice",
+      "title": "From consultation to signing",
+      "icon": {
+        "emoji": "🪜"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every plan follows the same stages. Move the engagement as it advances."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Consultation: conflict check, fee estimate, engagement letter."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Gathering information: asset list, family details, goals."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Drafting: attorney instructs, paralegal drafts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Attorney review, then client review."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Signing: witnesses and notary booked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Funding: assets moved into the trust."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Complete: originals stored and review date set."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-signing",
+      "parent": "estate-planning-practice",
+      "title": "Signing day checklist",
+      "icon": {
+        "emoji": "🖊️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm witnesses and notary"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send the client what to bring"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Print and tab the documents"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm the time with the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check identification"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Collect signature pages"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark documents Signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Move the engagement to Funding"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-funding",
+      "parent": "estate-planning-practice",
+      "title": "Funding the trust",
+      "icon": {
+        "emoji": "💼"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A signed trust only works if the right assets are in it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add one Funding step per asset."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Give each an owner and due date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Contact each institution and save confirmations."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Review Funding open steps on the Dashboard until none remain."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-reviews",
+      "parent": "estate-planning-practice",
+      "title": "Plan reviews",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every year"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Clients and look at Review due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a short note offering a plan check-up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start a Plan update engagement for anyone who replies."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Life events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Invite clients to call after a marriage, birth, move or sale of a business."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

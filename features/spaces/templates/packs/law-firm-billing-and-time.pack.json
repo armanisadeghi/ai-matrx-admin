@@ -1,0 +1,2796 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0412",
+  "version": 1,
+  "title": "Law Firm Billing and Time",
+  "description": "Time entries, invoices and outstanding balances for a small law firm's billing desk.",
+  "forWho": "Small law firms and billing administrators",
+  "icon": {
+    "emoji": "🧮"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "legal",
+  "tags": [
+    "legal billing",
+    "time entries",
+    "invoices",
+    "collections"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-law-firm-billing-and-time",
+    "catalogueId": "SP0412",
+    "useCase": "Fitzgerald Nolan runs billing for a small law firm and uses this to see unbilled time, invoices that are due this week or overdue, and what each client still owes. Tracking only; trust accounting stays in your accounting system.",
+    "industry": "legal_professional",
+    "vertical": "Law firm billing",
+    "job": "billing",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Park-Reyes and Achterberg LLP",
+      "describes": "A four-person firm serving small businesses and individuals with flat and hourly billing.",
+      "address": {
+        "line1": "233 Wacker Lane",
+        "city": "Chicago",
+        "region": "IL",
+        "postalCode": "60601",
+        "country": "US"
+      },
+      "phone": "(312) 555-0120",
+      "website": "parkreyesachterberg.net",
+      "email": "hello@parkreyesachterberg.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-law-firm-billing-and-time",
+    "tables": [
+      {
+        "token": "entry",
+        "name": "Time entries",
+        "labelSingular": "Time entry",
+        "labelPlural": "Time entries",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "timer",
+        "titleField": "entry_title",
+        "describes": "Every hour logged, and whether it has been billed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "entry_title",
+            "label": "Time entry",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "matter",
+            "label": "Matter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "timekeeper",
+            "label": "Timekeeper",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "worked_on",
+            "label": "Worked",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0.1
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Rate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "value",
+            "label": "Value",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Hours} * {Rate}"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Unbilled",
+              "On draft invoice",
+              "Billed"
+            ],
+            "choiceColors": {
+              "Unbilled": "blue",
+              "On draft invoice": "green",
+              "Billed": "amber"
+            },
+            "statusGroups": {
+              "Unbilled": "todo",
+              "On draft invoice": "in_progress",
+              "Billed": "done"
+            },
+            "required": true,
+            "default": "Unbilled"
+          },
+          {
+            "key": "owner",
+            "label": "Entered by",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billed_btn",
+            "label": "Mark billed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "entry_billed"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "e01",
+            "values": {
+              "entry_title": "Reviewed lease amendments",
+              "matter": "m01",
+              "timekeeper": "tm-desmond",
+              "worked_on": "@today",
+              "hours": 2.2,
+              "rate": 320,
+              "status": "Unbilled",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "e02",
+            "values": {
+              "entry_title": "Call with client on formation steps",
+              "matter": "m02",
+              "timekeeper": "tm-ottoline",
+              "worked_on": "@today",
+              "hours": 0.6,
+              "rate": 280,
+              "status": "Unbilled",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "e03",
+            "values": {
+              "entry_title": "Draft contractor demand letter",
+              "matter": "m03",
+              "timekeeper": "tm-ottoline",
+              "worked_on": "@mon+1d",
+              "hours": 1.9,
+              "rate": 350,
+              "status": "Unbilled"
+            }
+          },
+          {
+            "key": "e04",
+            "values": {
+              "entry_title": "Supplier contract markup",
+              "matter": "m04",
+              "timekeeper": "tm-desmond",
+              "worked_on": "@mon+2d",
+              "hours": 1.4,
+              "rate": 280,
+              "status": "Unbilled"
+            }
+          },
+          {
+            "key": "e05",
+            "values": {
+              "entry_title": "Tenant agreement template edits",
+              "matter": "m06",
+              "timekeeper": "tm-yara",
+              "worked_on": "@today-4d",
+              "hours": 3.1,
+              "rate": 120,
+              "status": "On draft invoice"
+            }
+          },
+          {
+            "key": "e06",
+            "values": {
+              "entry_title": "Formation filings",
+              "matter": "m02",
+              "timekeeper": "tm-yara",
+              "worked_on": "@today-12d",
+              "hours": 2.5,
+              "rate": 120,
+              "status": "Billed"
+            }
+          },
+          {
+            "key": "e07",
+            "values": {
+              "entry_title": "Lease review meeting",
+              "matter": "m01",
+              "timekeeper": "tm-ottoline",
+              "worked_on": "@today-18d",
+              "hours": 1.2,
+              "rate": 320,
+              "status": "Billed"
+            }
+          },
+          {
+            "key": "e08",
+            "values": {
+              "entry_title": "Contractor dispute research",
+              "matter": "m03",
+              "timekeeper": "tm-desmond",
+              "worked_on": "@today-20d",
+              "hours": 4.3,
+              "rate": 260,
+              "status": "Billed"
+            }
+          },
+          {
+            "key": "e09",
+            "values": {
+              "entry_title": "Consultation prep",
+              "matter": "m05",
+              "timekeeper": "tm-ottoline",
+              "worked_on": "@today-30d",
+              "hours": 0.8,
+              "rate": 240,
+              "status": "Billed"
+            }
+          },
+          {
+            "key": "e10",
+            "values": {
+              "entry_title": "Estate filings wrap-up",
+              "matter": "m07",
+              "timekeeper": "tm-yara",
+              "worked_on": "@today-90d",
+              "hours": 2.0,
+              "rate": 120,
+              "status": "Billed"
+            }
+          },
+          {
+            "key": "e11",
+            "values": {
+              "entry_title": "Tenant meeting",
+              "matter": "m06",
+              "timekeeper": "tm-ottoline",
+              "worked_on": "@today-6d",
+              "hours": 1.0,
+              "rate": 300,
+              "status": "On draft invoice"
+            }
+          },
+          {
+            "key": "e12",
+            "values": {
+              "entry_title": "Dispute settlement call",
+              "matter": "m03",
+              "timekeeper": "tm-ottoline",
+              "worked_on": "@today-8d",
+              "hours": 0.7,
+              "rate": 350,
+              "status": "Unbilled"
+            }
+          }
+        ],
+        "independentOf": {
+          "matter": "The two sides move on their own schedule and status; neither forces the other.",
+          "timekeeper": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Billed"
+            ],
+            "filled": [
+              "hours"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Time entry",
+            "values": {
+              "status": "Unbilled",
+              "entry_title": "New time entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Description a client would understand"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "inv_title",
+        "describes": "What has been billed, what is paid and what is overdue.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "inv_title",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "amount",
+            "label": "Amount",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "paid_amount",
+            "label": "Paid",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "balance",
+            "label": "Balance",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Amount} - {Paid}"
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Part paid",
+              "Paid",
+              "Overdue"
+            ],
+            "choiceColors": {
+              "Draft": "blue",
+              "Sent": "green",
+              "Part paid": "amber",
+              "Paid": "violet",
+              "Overdue": "teal"
+            },
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Part paid": "in_progress",
+              "Paid": "done",
+              "Overdue": "in_progress"
+            },
+            "required": true,
+            "default": "Draft"
+          },
+          {
+            "key": "collector",
+            "label": "Collections owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sent_btn",
+            "label": "Mark sent",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_sent"
+            }
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "invoice_paid"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "v01",
+            "values": {
+              "inv_title": "Invoice - Hargreave Dental, lease review",
+              "client": "c01",
+              "amount": 2880,
+              "paid_amount": 2880,
+              "issued_on": "@today-50d",
+              "due_on": "@today-20d",
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "v02",
+            "values": {
+              "inv_title": "Invoice - Fontaine, formation",
+              "client": "c02",
+              "amount": 1100,
+              "paid_amount": 0,
+              "issued_on": "@today-20d",
+              "due_on": "@today-5d",
+              "status": "Overdue",
+              "collector": "@installer"
+            }
+          },
+          {
+            "key": "v03",
+            "values": {
+              "inv_title": "Invoice - Pinecrest, dispute month 1",
+              "client": "c03",
+              "amount": 4800,
+              "paid_amount": 2000,
+              "issued_on": "@today-45d",
+              "due_on": "@today-15d",
+              "status": "Overdue",
+              "collector": "@installer"
+            }
+          },
+          {
+            "key": "v04",
+            "values": {
+              "inv_title": "Invoice - Bakery, supplier contract",
+              "client": "c04",
+              "amount": 840,
+              "paid_amount": 0,
+              "issued_on": "@today-6d",
+              "due_on": "@mon+3d",
+              "status": "Sent"
+            }
+          },
+          {
+            "key": "v05",
+            "values": {
+              "inv_title": "Invoice - Ravenswood, tenant agreements",
+              "client": "c06",
+              "amount": 1950,
+              "paid_amount": 0,
+              "issued_on": "@today-10d",
+              "due_on": "@today+20d",
+              "status": "Sent",
+              "collector": "@installer"
+            }
+          },
+          {
+            "key": "v06",
+            "values": {
+              "inv_title": "Invoice - Ndulue, consultation",
+              "client": "c05",
+              "amount": 190,
+              "paid_amount": 190,
+              "issued_on": "@today-30d",
+              "due_on": "@today-30d",
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "v07",
+            "values": {
+              "inv_title": "Invoice - Pinecrest, dispute month 2",
+              "client": "c03",
+              "amount": 5200,
+              "paid_amount": 0,
+              "issued_on": "@today-2d",
+              "due_on": "@today+28d",
+              "status": "Draft"
+            }
+          },
+          {
+            "key": "v08",
+            "values": {
+              "inv_title": "Invoice - Solheim-Park, estate",
+              "client": "c07",
+              "amount": 3600,
+              "paid_amount": 3600,
+              "issued_on": "@today-100d",
+              "due_on": "@today-70d",
+              "status": "Paid"
+            }
+          },
+          {
+            "key": "v09",
+            "values": {
+              "inv_title": "Invoice - Fontaine, follow-up",
+              "client": "c02",
+              "amount": 420,
+              "paid_amount": 200,
+              "issued_on": "@today-12d",
+              "due_on": "@mon+1d",
+              "status": "Part paid",
+              "collector": "@installer"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "before": [
+          [
+            "issued_on",
+            "due_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Sent"
+            ],
+            "filled": [
+              "amount"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "amount"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Invoice",
+            "values": {
+              "status": "Draft",
+              "inv_title": "New invoice"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before sending"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Unbilled time reviewed by the responsible attorney"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Write-downs recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Time entries marked On draft invoice"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After sending"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Due date confirmed with client"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up set for the due date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "matter",
+        "name": "Matters",
+        "labelSingular": "Matter",
+        "labelPlural": "Matters",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "matter_title",
+        "describes": "Matters with their rate, budget and unbilled time.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "matter_title",
+            "label": "Matter",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Closing",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Open": "blue",
+              "Closing": "green",
+              "Closed": "amber"
+            },
+            "statusGroups": {
+              "Open": "in_progress",
+              "Closing": "in_progress",
+              "Closed": "done"
+            },
+            "required": true,
+            "default": "Open"
+          },
+          {
+            "key": "rate",
+            "label": "Standard rate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Hours logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "entries",
+            "pick": "hours",
+            "agg": "sum"
+          },
+          {
+            "key": "unbilled_hours",
+            "label": "Unbilled hours",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "entries",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "status": "Unbilled"
+            }
+          },
+          {
+            "key": "budget_used",
+            "label": "Value logged",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Hours logged} * {Standard rate}"
+          },
+          {
+            "key": "entry_btn",
+            "label": "Add time entry",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "entry",
+              "template": "Time entry",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "matter_title": "Dental group lease review",
+              "client": "c01",
+              "status": "Open",
+              "rate": 320,
+              "budget": 9000
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "matter_title": "Fontaine business formation",
+              "client": "c02",
+              "status": "Open",
+              "rate": 280,
+              "budget": 4500
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "matter_title": "Pinecrest contractor dispute",
+              "client": "c03",
+              "status": "Open",
+              "rate": 350,
+              "budget": 22000
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "matter_title": "Bakery supplier contract",
+              "client": "c04",
+              "status": "Open",
+              "rate": 280,
+              "budget": 3000
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "matter_title": "Ndulue immigration consultation",
+              "client": "c05",
+              "status": "Closing",
+              "rate": 240,
+              "budget": 1800
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "matter_title": "Ravenswood tenant agreements",
+              "client": "c06",
+              "status": "Open",
+              "rate": 300,
+              "budget": 12000
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "matter_title": "Solheim-Park estate matter",
+              "client": "c07",
+              "status": "Closed",
+              "rate": 300,
+              "budget": 6000
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "rowTemplates": [
+          {
+            "name": "Matter",
+            "values": {
+              "status": "Open",
+              "matter_title": "New matter"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Billing terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rate and budget agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Retainer recorded"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "Who the firm bills, with total billed, paid and outstanding.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Slow payer",
+              "Former"
+            ],
+            "choiceColors": {
+              "Active": "blue",
+              "Slow payer": "green",
+              "Former": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "billing_email",
+            "label": "Billing email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "terms",
+            "label": "Terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Due on receipt",
+              "Net 15",
+              "Net 30"
+            ],
+            "choiceColors": {
+              "Due on receipt": "blue",
+              "Net 15": "green",
+              "Net 30": "amber"
+            },
+            "default": "Net 30"
+          },
+          {
+            "key": "inv_btn",
+            "label": "Create invoice",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "invoice",
+              "template": "Invoice",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "billed",
+            "label": "Billed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum"
+          },
+          {
+            "key": "payments",
+            "label": "Payments logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "paid_amount",
+            "agg": "sum"
+          },
+          {
+            "key": "outstanding",
+            "label": "Outstanding",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Billed} - {Payments logged}"
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Hargreave Dental Group",
+              "status": "Active",
+              "billing_email": "billing@hargravedental.net",
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Odalys Fontaine",
+              "status": "Active",
+              "billing_email": "odalys.f@mailbox-demo.net",
+              "terms": "Net 15"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Pinecrest Builders",
+              "status": "Slow payer",
+              "billing_email": "ap@pinecrestbuilders.net",
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Thistle and Rowe Bakery",
+              "status": "Active",
+              "billing_email": "owner@thistlerowe.net",
+              "terms": "Net 15"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Emeka Ndulue",
+              "status": "Active",
+              "billing_email": "emeka.n@mailbox-demo.net",
+              "terms": "Due on receipt"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Ravenswood Property Co",
+              "status": "Active",
+              "billing_email": "accounts@ravenswoodprop.net",
+              "terms": "Net 30"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Ingrid Solheim-Park",
+              "status": "Former",
+              "billing_email": "ingrid.sp@mailbox-demo.net",
+              "terms": "Net 30"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New billing client",
+            "values": {
+              "status": "Active",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Billing set-up"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement letter with rates on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Billing contact and email confirmed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Retainer recorded and deposited according to the firm's rules"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each time entry links to one matter.",
+        "fromTable": "entry",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "entries"
+      },
+      {
+        "describes": "Each time entry links to one team member.",
+        "fromTable": "entry",
+        "fromField": "timekeeper",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "logged_entries"
+      },
+      {
+        "describes": "Each invoice links to one client.",
+        "fromTable": "invoice",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each matter links to one client.",
+        "fromTable": "matter",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "matters"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-ottoline",
+            "values": {
+              "full_name": "Ottoline Park-Reyes",
+              "role": "Partner",
+              "work_email": "ottoline@parkreyesachterberg.net",
+              "mobile": "(312) 555-0121",
+              "start_date": "@today-11y"
+            }
+          },
+          {
+            "key": "tm-desmond",
+            "values": {
+              "full_name": "Desmond Achterberg",
+              "role": "Associate attorney",
+              "work_email": "desmond@parkreyesachterberg.net",
+              "mobile": "(312) 555-0122",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-yara",
+            "values": {
+              "full_name": "Yara Haddad",
+              "role": "Paralegal",
+              "work_email": "yara@parkreyesachterberg.net",
+              "mobile": "(312) 555-0123",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-fitz",
+            "values": {
+              "full_name": "Fitzgerald Nolan",
+              "role": "Billing administrator",
+              "work_email": "fitz@parkreyesachterberg.net",
+              "mobile": "(312) 555-0124",
+              "start_date": "@today-6y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "log_time",
+        "name": "Log time",
+        "describes": "Quick time entry from anyone on the team.",
+        "audience": "staff",
+        "table": "entry",
+        "fields": [
+          {
+            "fieldKey": "entry_title",
+            "ask": "What did you work on?",
+            "required": true
+          },
+          {
+            "fieldKey": "matter",
+            "ask": "Which matter?"
+          },
+          {
+            "fieldKey": "worked_on",
+            "ask": "On which day?"
+          },
+          {
+            "fieldKey": "hours",
+            "ask": "How many hours?"
+          }
+        ],
+        "submitLabel": "Save time entry",
+        "confirmation": "Saved. The entry is Unbilled until it goes on an invoice."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "entry_billed",
+        "table": "entry",
+        "name": "Mark billed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Billed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_sent",
+        "table": "invoice",
+        "name": "Mark sent",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sent"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "invoice_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_entry",
+        "name": "All time entries",
+        "table": "entry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "entry_board",
+        "name": "By status",
+        "table": "entry",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "entry_cal",
+        "name": "Calendar",
+        "table": "entry",
+        "kind": "calendar",
+        "dateField": "worked_on",
+        "allDay": true
+      },
+      {
+        "token": "entry_today",
+        "name": "Today",
+        "table": "entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Unbilled",
+            "On draft invoice"
+          ]
+        }
+      },
+      {
+        "token": "entry_week",
+        "name": "This week",
+        "table": "entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Unbilled",
+            "On draft invoice"
+          ]
+        }
+      },
+      {
+        "token": "entry_mine",
+        "name": "My time entries",
+        "table": "entry",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "By status",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_cal",
+        "name": "Calendar",
+        "table": "invoice",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "invoice_week",
+        "name": "This week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Part paid",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent",
+            "Part paid",
+            "Overdue"
+          ]
+        }
+      },
+      {
+        "token": "invoice_mine",
+        "name": "My invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "me": [
+          "collector"
+        ]
+      },
+      {
+        "token": "all_matter",
+        "name": "All matters",
+        "table": "matter",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Billing assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "invoice",
+          "describes": "Every invoice with amount, paid, balance and status."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The clients behind each invoice."
+        }
+      ],
+      "question": {
+        "ask": "How many invoices are overdue?",
+        "whyItMatters": "The billing administrator calls overdue clients every Friday.",
+        "expect": {
+          "table": "invoice",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Overdue"
+          },
+          "answer": 2,
+          "unit": "invoices"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open time entries.",
+        "action": {
+          "kind": "open",
+          "surface": "entry_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "entry_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open invoices.",
+        "action": {
+          "kind": "open",
+          "surface": "invoice_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "invoice_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open matters.",
+        "action": {
+          "kind": "open",
+          "surface": "all_matter"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_matter",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "hargravedental.net",
+        "mailbox-demo.net",
+        "parkreyesachterberg.net",
+        "pinecrestbuilders.net",
+        "ravenswoodprop.net",
+        "thistlerowe.net"
+      ],
+      "fictionalStreets": [
+        "Wacker Lane"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "law-firm-billing-and-time",
+      "parent": null,
+      "title": "Law Firm Billing and Time",
+      "icon": {
+        "emoji": "🧮"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your billing desk in one place. Log hours under Time entries, turn Unbilled time into Invoices, and watch Overdue and Part paid invoices so nothing slips. Tracking only; client trust accounting stays in your accounting system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-time"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-invoicing"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-collections"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-month-end"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "entry",
+                      "view": "all_entry"
+                    },
+                    "inline": true,
+                    "title": "Entries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Entries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "entry",
+                      "view": "all_entry"
+                    },
+                    "inline": true,
+                    "title": "Hours by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Hours by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoice value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Invoice value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time entries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "entry",
+              "view": "entry_board"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "worked_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Unbilled",
+                    "On draft invoice"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Unbilled",
+                    "On draft invoice"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "worked_on"
+              },
+              {
+                "id": "vall",
+                "name": "All time entries",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "worked_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Part paid",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent",
+                    "Part paid",
+                    "Overdue"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "collector"
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vall",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "vall"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "law-firm-billing-and-time",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "entry",
+                      "view": "all_entry"
+                    },
+                    "inline": true,
+                    "title": "Entries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Entries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "entry",
+                      "view": "all_entry"
+                    },
+                    "inline": true,
+                    "title": "Hours by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Hours by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "hours"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoice value by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Invoice value by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "amount"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Budget by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Budget by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "budget"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Clients by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoices to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices to chase",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Sent or overdue",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Part paid",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unbilled time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "entry",
+              "view": "all_entry"
+            },
+            "inline": true,
+            "title": "Unbilled time",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Unbilled",
+                "layout": "list",
+                "filters": {
+                  "status": "Unbilled"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-time",
+      "parent": "law-firm-billing-and-time",
+      "title": "Time entry standards",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Good time entries get paid. Vague ones get written down."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules of thumb"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log time the same day, in tenths of an hour."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start with a verb and say what was done and why."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One task per entry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Everyone reviews their own Unbilled entries on Friday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The billing administrator lists entries older than two weeks and asks owners to confirm them."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-invoicing",
+      "parent": "law-firm-billing-and-time",
+      "title": "Monthly invoicing run",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Last week of the month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Time entries and filter Unbilled."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Group by matter and send each attorney a pre-bill summary."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record any write-downs and agree final amounts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the invoice from the client and mark the entries On draft invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After sending"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the invoice Sent and the entries Billed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set a follow-up date on the due date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-collections",
+      "parent": "law-firm-billing-and-time",
+      "title": "Collections routine",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Polite, regular follow-up collects more than a single loud reminder."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cadence"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The day after the due date: friendly email, mark Overdue."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "One week later: call the billing contact."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Two weeks later: partner calls the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Part payments"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter each payment in Paid and keep the balance visible in the invoice."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-month-end",
+      "parent": "law-firm-billing-and-time",
+      "title": "Month-end review",
+      "icon": {
+        "emoji": "📊"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All time entered for the month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Invoices sent or scheduled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Overdue list reviewed with the partner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clients marked Slow payer reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Matters over budget flagged to the attorney"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

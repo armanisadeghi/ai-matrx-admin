@@ -1,0 +1,2878 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0408",
+  "version": 1,
+  "title": "Law Firm Case Management",
+  "description": "Clients, matters, deadlines and time entries for a small law firm.",
+  "forWho": "Small law firms and solo attorneys",
+  "icon": {
+    "emoji": "⚖️"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "legal",
+  "tags": [
+    "law firm",
+    "matters",
+    "deadlines",
+    "time"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-law-firm-case-management",
+    "catalogueId": "SP0408",
+    "useCase": "Hollis Brandt manages the office of a four-person law firm and uses this to see every open matter, which deadlines fall today or this week, and how many hours have been logged on each file. Operational tracking only; it holds no legal advice.",
+    "industry": "legal_professional",
+    "vertical": "Law firm",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Wrenfield Law Group",
+      "describes": "A small general-practice law firm handling contracts, real property, family and estate matters.",
+      "address": {
+        "line1": "87 Cannery Street",
+        "city": "Nashville",
+        "region": "TN",
+        "postalCode": "37203",
+        "country": "US"
+      },
+      "phone": "(615) 555-0120",
+      "website": "wrenfieldlaw.net",
+      "email": "hello@wrenfieldlaw.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-law-firm-case-management",
+    "tables": [
+      {
+        "token": "matter",
+        "name": "Matters",
+        "labelSingular": "Matter",
+        "labelPlural": "Matters",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "matter_title",
+        "describes": "Every case or engagement with its attorney, status, hours and open deadlines.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "matter_title",
+            "label": "Matter",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "area",
+            "label": "Practice area",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Business",
+              "Family",
+              "Real property",
+              "Employment",
+              "Estate",
+              "Contract"
+            ],
+            "choiceColors": {
+              "Business": "blue",
+              "Family": "green",
+              "Real property": "amber",
+              "Employment": "violet",
+              "Estate": "teal",
+              "Contract": "red"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Intake",
+              "Open",
+              "Pending",
+              "On hold",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Intake": "blue",
+              "Open": "green",
+              "Pending": "amber",
+              "On hold": "violet",
+              "Closed": "teal"
+            },
+            "statusGroups": {
+              "Intake": "todo",
+              "Open": "in_progress",
+              "Pending": "in_progress",
+              "On hold": "in_progress",
+              "Closed": "done"
+            },
+            "required": true,
+            "default": "Intake"
+          },
+          {
+            "key": "attorney",
+            "label": "Attorney",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "paralegal",
+            "label": "Paralegal",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "opened_on",
+            "label": "Opened",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Budget",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Hours logged",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "time_entries",
+            "pick": "hours",
+            "agg": "sum"
+          },
+          {
+            "key": "open_deadlines",
+            "label": "Open deadlines",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deadlines",
+            "pick": "deadline_title",
+            "agg": "count",
+            "filter": {
+              "status": "Open"
+            }
+          },
+          {
+            "key": "deadline_btn",
+            "label": "Add deadline",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deadline",
+              "template": "Deadline",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          },
+          {
+            "key": "time_btn",
+            "label": "Add time entry",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "time_entry",
+              "template": "Time entry",
+              "prefill": {
+                "matter": "@row"
+              }
+            }
+          },
+          {
+            "key": "open_btn",
+            "label": "Mark open",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "matter_open"
+            }
+          },
+          {
+            "key": "close_btn",
+            "label": "Close matter",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "matter_close"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "matter_title": "Rennick lease dispute",
+              "client": "c01",
+              "area": "Real property",
+              "status": "Open",
+              "attorney": "tm-adaeze",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-70d",
+              "budget": 15000
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "matter_title": "Larkspur supplier contract",
+              "client": "c02",
+              "area": "Contract",
+              "status": "Open",
+              "attorney": "tm-julian",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-35d",
+              "budget": 8000
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "matter_title": "Castañeda-Voss custody modification",
+              "client": "c03",
+              "area": "Family",
+              "status": "Pending",
+              "attorney": "tm-adaeze",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-120d",
+              "budget": 12000
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "matter_title": "Greenhollow land easement",
+              "client": "c04",
+              "area": "Real property",
+              "status": "Open",
+              "attorney": "tm-julian",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-50d",
+              "budget": 9000
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "matter_title": "Achebe employment agreement review",
+              "client": "c05",
+              "area": "Employment",
+              "status": "Intake",
+              "attorney": "tm-julian",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-3d",
+              "budget": 2500
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "matter_title": "Marlow vendor non-payment",
+              "client": "c06",
+              "area": "Contract",
+              "status": "Open",
+              "attorney": "tm-adaeze",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-20d",
+              "budget": 6000
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "matter_title": "Dalgaard estate administration",
+              "client": "c07",
+              "area": "Estate",
+              "status": "Closed",
+              "attorney": "tm-adaeze",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-300d",
+              "budget": 7000
+            }
+          },
+          {
+            "key": "m08",
+            "values": {
+              "matter_title": "Larkspur lease renewal",
+              "client": "c02",
+              "area": "Real property",
+              "status": "On hold",
+              "attorney": "tm-julian",
+              "paralegal": "tm-pilar",
+              "opened_on": "@today-90d",
+              "budget": 4000
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "attorney": "Anyone on the team can take this on, whenever they joined.",
+          "paralegal": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Open"
+            ],
+            "filled": [
+              "attorney"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Closed"
+            ],
+            "filled": [
+              "attorney"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Matter",
+            "values": {
+              "status": "Intake",
+              "matter_title": "New matter"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Keep facts and strategy in the case file. This page tracks the work."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Opening checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Conflict check cleared"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement letter signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Retainer received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Calendar entries made for known deadlines"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Parties and contacts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next step"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "deadline",
+        "name": "Deadlines",
+        "labelSingular": "Deadline",
+        "labelPlural": "Deadlines",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "alarm-clock",
+        "titleField": "deadline_title",
+        "describes": "Court dates, filings and client deliverables that must not be missed.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deadline_title",
+            "label": "Deadline",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "matter",
+            "label": "Matter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Court filing",
+              "Hearing",
+              "Discovery",
+              "Client deliverable",
+              "Internal review"
+            ],
+            "choiceColors": {
+              "Court filing": "blue",
+              "Hearing": "green",
+              "Discovery": "amber",
+              "Client deliverable": "violet",
+              "Internal review": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Done",
+              "Missed"
+            ],
+            "choiceColors": {
+              "Open": "blue",
+              "Done": "green",
+              "Missed": "amber"
+            },
+            "statusGroups": {
+              "Open": "todo",
+              "Done": "done",
+              "Missed": "done"
+            },
+            "required": true,
+            "default": "Open"
+          },
+          {
+            "key": "owner",
+            "label": "Responsible",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deadline_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "d01",
+            "values": {
+              "deadline_title": "File response to lease complaint",
+              "matter": "m01",
+              "kind": "Court filing",
+              "due_on": "@today",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "d02",
+            "values": {
+              "deadline_title": "Supplier contract redline to client",
+              "matter": "m02",
+              "kind": "Client deliverable",
+              "due_on": "@mon+2d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "d03",
+            "values": {
+              "deadline_title": "Hearing on custody motion",
+              "matter": "m03",
+              "kind": "Hearing",
+              "due_on": "@mon+4d",
+              "status": "Open"
+            }
+          },
+          {
+            "key": "d04",
+            "values": {
+              "deadline_title": "Easement survey review",
+              "matter": "m04",
+              "kind": "Internal review",
+              "due_on": "@today+6d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "d05",
+            "values": {
+              "deadline_title": "Document requests to opposing counsel",
+              "matter": "m01",
+              "kind": "Discovery",
+              "due_on": "@today-3d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "d06",
+            "values": {
+              "deadline_title": "Demand letter to vendor",
+              "matter": "m06",
+              "kind": "Client deliverable",
+              "due_on": "@today-1d",
+              "status": "Open"
+            }
+          },
+          {
+            "key": "d07",
+            "values": {
+              "deadline_title": "Client signature on engagement letter",
+              "matter": "m05",
+              "kind": "Client deliverable",
+              "due_on": "@today+2d",
+              "status": "Open"
+            }
+          },
+          {
+            "key": "d08",
+            "values": {
+              "deadline_title": "Mediation statement",
+              "matter": "m03",
+              "kind": "Court filing",
+              "due_on": "@today-20d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "d09",
+            "values": {
+              "deadline_title": "Final accounting to heirs",
+              "matter": "m07",
+              "kind": "Client deliverable",
+              "due_on": "@today-280d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "d10",
+            "values": {
+              "deadline_title": "Lease renewal draft",
+              "matter": "m08",
+              "kind": "Client deliverable",
+              "due_on": "@today-60d",
+              "status": "Missed"
+            }
+          },
+          {
+            "key": "d11",
+            "values": {
+              "deadline_title": "Initial disclosures",
+              "matter": "m01",
+              "kind": "Discovery",
+              "due_on": "@today-30d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "d12",
+            "values": {
+              "deadline_title": "Vendor payment history summary",
+              "matter": "m06",
+              "kind": "Internal review",
+              "due_on": "@today+9d",
+              "status": "Open"
+            }
+          }
+        ],
+        "independentOf": {
+          "matter": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Deadline",
+            "values": {
+              "status": "Open",
+              "deadline_title": "New deadline"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Record where the deadline comes from and who confirmed the date."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Source"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preparation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Draft ready"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reviewed by the attorney"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Filed or sent and confirmation saved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "time_entry",
+        "name": "Time entries",
+        "labelSingular": "Time entry",
+        "labelPlural": "Time entries",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "timer",
+        "titleField": "entry_title",
+        "describes": "Time logged to each matter, with rate and value.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "entry_title",
+            "label": "Time entry",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "matter",
+            "label": "Matter",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "matter",
+            "relationMax": 1
+          },
+          {
+            "key": "timekeeper",
+            "label": "Timekeeper",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "worked_on",
+            "label": "Worked",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0.1
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Rate",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "billable",
+            "label": "Value",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Hours} * {Rate}"
+          },
+          {
+            "key": "billed",
+            "label": "Billed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "t01",
+            "values": {
+              "entry_title": "Drafted response to lease complaint",
+              "matter": "m01",
+              "timekeeper": "tm-adaeze",
+              "worked_on": "@today",
+              "hours": 2.5,
+              "rate": 350,
+              "billed": false
+            }
+          },
+          {
+            "key": "t02",
+            "values": {
+              "entry_title": "Reviewed supplier agreement",
+              "matter": "m02",
+              "timekeeper": "tm-julian",
+              "worked_on": "@today-1d",
+              "hours": 1.8,
+              "rate": 260,
+              "billed": false
+            }
+          },
+          {
+            "key": "t03",
+            "values": {
+              "entry_title": "Prepared custody hearing binder",
+              "matter": "m03",
+              "timekeeper": "tm-pilar",
+              "worked_on": "@mon+1d",
+              "hours": 3.2,
+              "rate": 120,
+              "billed": false
+            }
+          },
+          {
+            "key": "t04",
+            "values": {
+              "entry_title": "Client call on easement boundaries",
+              "matter": "m04",
+              "timekeeper": "tm-julian",
+              "worked_on": "@mon+2d",
+              "hours": 0.7,
+              "rate": 260,
+              "billed": false
+            }
+          },
+          {
+            "key": "t05",
+            "values": {
+              "entry_title": "Research on vendor remedies",
+              "matter": "m06",
+              "timekeeper": "tm-julian",
+              "worked_on": "@today-4d",
+              "hours": 2.4,
+              "rate": 260,
+              "billed": false
+            }
+          },
+          {
+            "key": "t06",
+            "values": {
+              "entry_title": "Letter to opposing counsel",
+              "matter": "m01",
+              "timekeeper": "tm-adaeze",
+              "worked_on": "@today-12d",
+              "hours": 0.9,
+              "rate": 350,
+              "billed": true
+            }
+          },
+          {
+            "key": "t07",
+            "values": {
+              "entry_title": "Mediation preparation",
+              "matter": "m03",
+              "timekeeper": "tm-adaeze",
+              "worked_on": "@today-22d",
+              "hours": 4.0,
+              "rate": 350,
+              "billed": true
+            }
+          },
+          {
+            "key": "t08",
+            "values": {
+              "entry_title": "Estate accounting final",
+              "matter": "m07",
+              "timekeeper": "tm-pilar",
+              "worked_on": "@today-285d",
+              "hours": 5.5,
+              "rate": 120,
+              "billed": true
+            }
+          },
+          {
+            "key": "t09",
+            "values": {
+              "entry_title": "Intake consultation",
+              "matter": "m05",
+              "timekeeper": "tm-julian",
+              "worked_on": "@today-3d",
+              "hours": 1.0,
+              "rate": 260,
+              "billed": false
+            }
+          },
+          {
+            "key": "t10",
+            "values": {
+              "entry_title": "Document index",
+              "matter": "m01",
+              "timekeeper": "tm-pilar",
+              "worked_on": "@today-9d",
+              "hours": 2.2,
+              "rate": 120,
+              "billed": true
+            }
+          }
+        ],
+        "independentOf": {
+          "matter": "The two sides move on their own schedule and status; neither forces the other.",
+          "timekeeper": "Anyone on the team can take this on, whenever they joined."
+        },
+        "rowTemplates": [
+          {
+            "name": "Time entry",
+            "values": {
+              "entry_title": "New time entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Description"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "People and businesses the firm represents, and how many matters each has.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Individual",
+              "Business",
+              "Nonprofit"
+            ],
+            "choiceColors": {
+              "Individual": "blue",
+              "Business": "green",
+              "Nonprofit": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Active",
+              "Former"
+            ],
+            "choiceColors": {
+              "Prospect": "blue",
+              "Active": "green",
+              "Former": "amber"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "matter_count",
+            "label": "Matters",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "matters",
+            "pick": "matter_title",
+            "agg": "count"
+          },
+          {
+            "key": "matter_btn",
+            "label": "Open matter",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "matter",
+              "template": "Matter",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "c01",
+            "values": {
+              "client_name": "Thaddeus Rennick",
+              "kind": "Individual",
+              "status": "Active",
+              "phone": "(615) 555-0131",
+              "email": "thaddeus.r@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c02",
+            "values": {
+              "client_name": "Larkspur Bakery Cooperative",
+              "kind": "Business",
+              "status": "Active",
+              "phone": "(615) 555-0132",
+              "email": "office@larkspurbakery.net"
+            }
+          },
+          {
+            "key": "c03",
+            "values": {
+              "client_name": "Imelda Castañeda-Voss",
+              "kind": "Individual",
+              "status": "Active",
+              "phone": "(615) 555-0133",
+              "email": "imelda.cv@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c04",
+            "values": {
+              "client_name": "Greenhollow Neighborhood Trust",
+              "kind": "Nonprofit",
+              "status": "Active",
+              "phone": "(615) 555-0134",
+              "email": "director@greenhollowtrust.net"
+            }
+          },
+          {
+            "key": "c05",
+            "values": {
+              "client_name": "Bartholomew Achebe",
+              "kind": "Individual",
+              "status": "Prospect",
+              "phone": "(615) 555-0135",
+              "email": "bart.a@mailbox-demo.net"
+            }
+          },
+          {
+            "key": "c06",
+            "values": {
+              "client_name": "Marlow Fabrication Works",
+              "kind": "Business",
+              "status": "Active",
+              "phone": "(615) 555-0136",
+              "email": "owner@marlowfab.net"
+            }
+          },
+          {
+            "key": "c07",
+            "values": {
+              "client_name": "Seraphine Dalgaard",
+              "kind": "Individual",
+              "status": "Former",
+              "phone": "(615) 555-0137",
+              "email": "sera.d@mailbox-demo.net"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "status": "Prospect",
+              "client_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Intake"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Conflict check completed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Engagement letter signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Retainer received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contact"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Preferred contact method and times"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Who may be spoken to"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each matter links to one client.",
+        "fromTable": "matter",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "matters"
+      },
+      {
+        "describes": "Each matter links to one team member.",
+        "fromTable": "matter",
+        "fromField": "attorney",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "attorney_matters"
+      },
+      {
+        "describes": "Each matter links to one team member.",
+        "fromTable": "matter",
+        "fromField": "paralegal",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "paralegal_matters"
+      },
+      {
+        "describes": "Each deadline links to one matter.",
+        "fromTable": "deadline",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deadlines"
+      },
+      {
+        "describes": "Each time entry links to one matter.",
+        "fromTable": "time_entry",
+        "fromField": "matter",
+        "toTable": "matter",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "time_entries"
+      },
+      {
+        "describes": "Each time entry links to one team member.",
+        "fromTable": "time_entry",
+        "fromField": "timekeeper",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "timekeeper_entries"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-adaeze",
+            "values": {
+              "full_name": "Adaeze Okonjo",
+              "role": "Partner attorney",
+              "work_email": "adaeze@wrenfieldlaw.net",
+              "mobile": "(615) 555-0121",
+              "start_date": "@today-12y"
+            }
+          },
+          {
+            "key": "tm-julian",
+            "values": {
+              "full_name": "Julian Whitcombe",
+              "role": "Associate attorney",
+              "work_email": "julian@wrenfieldlaw.net",
+              "mobile": "(615) 555-0122",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-pilar",
+            "values": {
+              "full_name": "Pilar Santangelo",
+              "role": "Paralegal",
+              "work_email": "pilar@wrenfieldlaw.net",
+              "mobile": "(615) 555-0123",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-hollis",
+            "values": {
+              "full_name": "Hollis Brandt",
+              "role": "Office manager",
+              "work_email": "hollis@wrenfieldlaw.net",
+              "mobile": "(615) 555-0124",
+              "start_date": "@today-8y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "new_matter_request",
+        "name": "New client inquiry",
+        "describes": "How a prospective client asks about representation.",
+        "audience": "staff",
+        "table": "client",
+        "fields": [
+          {
+            "fieldKey": "client_name",
+            "ask": "What is your name or business name?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "Individual, business or nonprofit?"
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          }
+        ],
+        "submitLabel": "Send inquiry",
+        "confirmation": "Received. The firm will reply soon; sending this does not create an attorney-client relationship."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "matter_open",
+        "table": "matter",
+        "name": "Mark open",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Open"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "matter_close",
+        "table": "matter",
+        "name": "Close matter",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Closed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deadline_done",
+        "table": "deadline",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_matter",
+        "name": "All matters",
+        "table": "matter",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "matter_board",
+        "name": "By status",
+        "table": "matter",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "matter_cal",
+        "name": "Calendar",
+        "table": "matter",
+        "kind": "calendar",
+        "dateField": "opened_on",
+        "allDay": true
+      },
+      {
+        "token": "all_deadline",
+        "name": "All deadlines",
+        "table": "deadline",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deadline_board",
+        "name": "By status",
+        "table": "deadline",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "deadline_cal",
+        "name": "Calendar",
+        "table": "deadline",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "deadline_today",
+        "name": "Today",
+        "table": "deadline",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "deadline_week",
+        "name": "This week",
+        "table": "deadline",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "deadline_over",
+        "name": "Overdue",
+        "table": "deadline",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "deadline_mine",
+        "name": "My deadlines",
+        "table": "deadline",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_time_entry",
+        "name": "All time entries",
+        "table": "time_entry",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "time_entry_cal",
+        "name": "Calendar",
+        "table": "time_entry",
+        "kind": "calendar",
+        "dateField": "worked_on",
+        "allDay": true
+      },
+      {
+        "token": "time_entry_today",
+        "name": "Today",
+        "table": "time_entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "time_entry_week",
+        "name": "This week",
+        "table": "time_entry",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Firm assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "deadline",
+          "describes": "Every deadline with its matter, kind and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "matter",
+          "describes": "The matters behind each deadline."
+        }
+      ],
+      "question": {
+        "ask": "How many deadlines are still open?",
+        "whyItMatters": "The office manager reviews open deadlines with the partners every Monday.",
+        "expect": {
+          "table": "deadline",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Open"
+          },
+          "answer": 8,
+          "unit": "deadlines"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open matters.",
+        "action": {
+          "kind": "open",
+          "surface": "matter_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "matter_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open deadlines.",
+        "action": {
+          "kind": "open",
+          "surface": "deadline_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "deadline_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open time entries.",
+        "action": {
+          "kind": "open",
+          "surface": "all_time_entry"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_time_entry",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "greenhollowtrust.net",
+        "larkspurbakery.net",
+        "mailbox-demo.net",
+        "marlowfab.net",
+        "wrenfieldlaw.net"
+      ],
+      "fictionalStreets": [
+        "Cannery Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "law-firm-case-management",
+      "parent": null,
+      "title": "Law Firm Case Management",
+      "icon": {
+        "emoji": "⚖️"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your firm in one place. Start with Deadlines due today and this week, move through Matters by status, and log hours under Time entries. This is operational tracking only; keep legal work product, advice and privileged notes in your case files."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-intake"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-deadlines"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-time"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-closing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Matters by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Matters by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Matters by practice area",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Matters by practice area",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "area",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deadline",
+                      "view": "all_deadline"
+                    },
+                    "inline": true,
+                    "title": "Deadlines by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Deadlines by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "matter",
+              "view": "matter_board"
+            },
+            "inline": true,
+            "title": "Matters",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "opened_on"
+              },
+              {
+                "id": "vall",
+                "name": "All matters",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "opened_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deadlines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deadline",
+              "view": "deadline_board"
+            },
+            "inline": true,
+            "title": "Deadlines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All deadlines",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time entries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "time_entry",
+              "view": "all_time_entry"
+            },
+            "inline": true,
+            "title": "Time entries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "worked_on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "worked_on"
+              },
+              {
+                "id": "vall",
+                "name": "All time entries",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "worked_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "law-firm-case-management",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Matters by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Matters by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "matter",
+                      "view": "all_matter"
+                    },
+                    "inline": true,
+                    "title": "Matters by practice area",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Matters by practice area",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "area",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deadline",
+                      "view": "all_deadline"
+                    },
+                    "inline": true,
+                    "title": "Deadlines by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Deadlines by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "deadline",
+                      "view": "all_deadline"
+                    },
+                    "inline": true,
+                    "title": "Deadlines by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "Deadlines by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "time_entry",
+                      "view": "all_time_entry"
+                    },
+                    "inline": true,
+                    "title": "Hours by billed",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Hours by billed",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "billed",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "client",
+                      "view": "all_client"
+                    },
+                    "inline": true,
+                    "title": "Clients by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Clients by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open deadlines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deadline",
+              "view": "all_deadline"
+            },
+            "inline": true,
+            "title": "Open deadlines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open",
+                "layout": "list",
+                "filters": {
+                  "status": "Open"
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matters in intake"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "matter",
+              "view": "all_matter"
+            },
+            "inline": true,
+            "title": "Matters in intake",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "Intake",
+                "layout": "list",
+                "filters": {
+                  "status": "Intake"
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-intake",
+      "parent": "law-firm-case-management",
+      "title": "New matter intake",
+      "icon": {
+        "emoji": "📂"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Same steps every time, so nothing is skipped."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the engagement"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the person under Clients as a Prospect."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the conflict check and note the result on the client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the engagement letter and wait for the signature."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Opening the matter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Open matter on the client and assign an attorney and paralegal."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every known deadline using Add deadline."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the matter to Open once the retainer is in."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-deadlines",
+      "parent": "law-firm-case-management",
+      "title": "Deadline discipline",
+      "icon": {
+        "emoji": "⏰"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A missed deadline is the most expensive mistake in a law office. Record each in two places."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every deadline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "State where it comes from, such as a rule, an order or a client promise."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enter it in this table and on the firm calendar."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give it an owner."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Deadlines, Overdue view, every Monday."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review This week with each attorney."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark Done only after the filing confirmation is saved."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-time",
+      "parent": "law-firm-case-management",
+      "title": "Time entry habits",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log time at the end of every task, not the end of the week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write a short description a client would understand."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Use tenths of an hour."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look at Time entries not billed and tell the office manager."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check hours against each matter's budget."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-closing",
+      "parent": "law-firm-case-management",
+      "title": "Closing a matter",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All deadlines Done"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final time entries recorded and billed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client notified in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "File archived and retention date noted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Matter status set to Closed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
