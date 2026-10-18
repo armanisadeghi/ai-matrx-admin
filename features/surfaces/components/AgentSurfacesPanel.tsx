@@ -92,6 +92,7 @@ import {
   upsertAgentSurfaceBindingThunk,
   deleteAgentSurfaceBindingThunk,
 } from "@ai-matrx/chat/surfaces/redux/thunks";
+import { pinnedBindingArgs } from "@/features/surfaces/services/pinned-binding-args";
 import {
   makeSelectBindingsForAgent,
   makeSelectBindingsErrorForAgent,
@@ -905,7 +906,7 @@ function BindingEditorDialog({
     setBusy(true);
     try {
       const saved = await dispatch(
-        upsertAgentSurfaceBindingThunk({
+        upsertAgentSurfaceBindingThunk(pinnedBindingArgs({
           agentId: agent.id,
           surfaceName,
           scope: {
@@ -929,7 +930,12 @@ function BindingEditorDialog({
             existing?.surfaceName === surfaceName
               ? existing?.autoRun
               : undefined,
-        }),
+          // Same round-trip for the binding's version pin.
+          agentVersionId:
+            existing?.surfaceName === surfaceName
+              ? (existing?.agentVersionId ?? null)
+              : null,
+        })),
       ).unwrap();
 
       // Persist custom-scope assignments (M2M). Always write — even an empty

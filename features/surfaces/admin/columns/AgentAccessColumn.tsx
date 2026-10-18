@@ -32,6 +32,7 @@ import {
   loadBindingsForAgent,
   upsertAgentSurfaceBindingThunk,
 } from "@ai-matrx/chat/surfaces/redux/thunks";
+import { pinnedBindingArgs } from "@/features/surfaces/services/pinned-binding-args";
 import { makeSelectBindingsForAgent } from "@ai-matrx/chat/surfaces/redux/selectors";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import type { WritePolicyMap } from "@ai-matrx/chat/surfaces/types";
@@ -141,7 +142,7 @@ function AgentAccessForm({
     setBusy(true);
     try {
       await dispatch(
-        upsertAgentSurfaceBindingThunk({
+        upsertAgentSurfaceBindingThunk(pinnedBindingArgs({
           agentId: agent.id,
           surfaceName,
           // Existing binding: keep its tier + mappings, replace policies.
@@ -158,9 +159,10 @@ function AgentAccessForm({
           valueMappings: existing?.valueMappings ?? {},
           writePolicies: policies,
           // Round-trip: this form replaces policies only; the binding's
-          // auto-run answer must survive it.
+          // auto-run answer must survive it — and so must its version pin.
           autoRun: existing?.autoRun,
-        }),
+          agentVersionId: existing?.agentVersionId ?? null,
+        })),
       ).unwrap();
       toast.success("Agent access saved");
     } catch (e) {

@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select } from "@ai-matrx/design-system/controls";
+import { fetchAgentVersionHistory } from "@/features/agents/redux/builder-versions.thunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import {
@@ -126,6 +128,11 @@ export function SurfaceAgentBindPanel({
   const [mappings, setMappings] = useState<ValueMappingMap>({});
   // THE AUTO-RUN INVERSION (surface_binding payload v3, THE-MODEL law 7).
   const [autoRun, setAutoRun] = useState(false);
+  // THE VERSION PIN (surface_binding payload v5): null = Latest (the live agent).
+  const [agentVersionId, setAgentVersionId] = useState<string | null>(null);
+  const [versions, setVersions] = useState<
+    { version_id: string; version_number: number }[]
+  >([]);
   // Write-policy overrides accepted from the AI proposal. Null = untouched,
   // so a plain manual bind keeps carrying the prior tier's stored policies.
   const [acceptedPolicies, setAcceptedPolicies] =
@@ -223,6 +230,7 @@ export function SurfaceAgentBindPanel({
     if (existing) {
       setMappings({ ...cloneMappings(existing.valueMappings), ...carried });
       setAutoRun(existing.autoRun);
+      setAgentVersionId(existing.agentVersionId ?? null);
       // Editing an existing binding — open on the editor, not the suggester.
       setMapTab("manual");
       setSeededForAgent(agentId);
@@ -235,9 +243,11 @@ export function SurfaceAgentBindPanel({
     if (defaultBinding?.valueMappings) {
       setMappings({ ...cloneMappings(defaultBinding.valueMappings), ...carried });
       setAutoRun(defaultBinding.autoRun);
+      setAgentVersionId(null);
     } else {
       setMappings({ ...carried });
       setAutoRun(false);
+      setAgentVersionId(null);
     }
     if (carried) setMapTab("manual");
     setSeededForAgent(agentId);
@@ -269,6 +279,30 @@ export function SurfaceAgentBindPanel({
   // THE AUTO-RUN INVERSION. Auto-run is only OFFERABLE when the binding is
   // fully mapped — law 7's "nothing to ask" is a fact about the mapping, not a
   // preference, so the control follows the mapping live as the user edits it.
+  // The agent's saved versions, for the pin control (Latest | vN).
+  useEffect(() => {
+    if (!agentId) {
+      setVersions([]);
+      return undefined;
+    }
+    let cancelled = false;
+    dispatch(fetchAgentVersionHistory({ agentId, limit: 100 }))
+      .unwrap()
+      .then((rows) => {
+        if (!cancelled) setVersions(rows);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setVersions([]);
+        toast.error(
+          e instanceof Error ? e.message : "This agent's versions could not be read",
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentId, dispatch]);
+
   const autoRunEligibility = useMemo(
     () => evaluateBindingAutoRun(targets, mappings),
     [targets, mappings],
@@ -365,6 +399,8 @@ export function SurfaceAgentBindPanel({
         // binding cannot promise "nothing to ask", so it must not carry the
         // promise — a stale true would be silently refused at launch.
         autoRun: autoRunEligibility.eligible && autoRun,
+        // The version this binding launches; null = Latest.
+        agentVersionId,
         accessOrgId,
       });
       toast.success(`Bound to ${displaySurface}`);
@@ -593,6 +629,39 @@ export function SurfaceAgentBindPanel({
             onCheckedChange={setAutoRun}
             disabled={busy || !agentReady || !autoRunEligibility.eligible}
             aria-label="Run instantly"
+          />
+        </div>
+
+        <div
+          data-testid="surface-bind-version"
+          className="flex items-center gap-3 rounded-md border border-border px-3 py-2.5"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-foreground">Version</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+              {agentVersionId ? "Runs this saved version" : "Runs the latest version"}
+            </p>
+          </div>
+          <Select
+            value={agentVersionId ?? "latest"}
+            onValueChange={(v: string) =>
+              setAgentVersionId(v === "latest" ? null : v)
+            }
+            disabled={busy || !agentReady}
+            aria-label="Version"
+            className="max-w-[10rem]"
+            options={[
+              { value: "latest", label: "Latest" },
+              ...versions.map((v) => ({
+                value: v.version_id,
+                label: `v${v.version_number}`,
+              })),
+              // A stored pin the list has not loaded yet still shows as chosen.
+              ...(agentVersionId &&
+              !versions.some((v) => v.version_id === agentVersionId)
+                ? [{ value: agentVersionId, label: "Pinned version" }]
+                : []),
+            ]}
           />
         </div>
       </div>

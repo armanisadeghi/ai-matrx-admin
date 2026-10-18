@@ -1908,6 +1908,8 @@ function RolesSection({
         valueMappings: existing?.valueMappings ?? {},
         writePolicies: existing?.writePolicies,
         autoRun: next,
+        // Wholesale payload replace: keep the role binding's version pin.
+        agentVersionId: existing?.agentVersionId ?? null,
       });
       setRoleBindings((prev) => ({ ...prev, [roleName]: saved }));
       toast.success(
