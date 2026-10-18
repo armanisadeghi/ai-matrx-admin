@@ -22,7 +22,7 @@ export default function ExtensionPrivacyPolicyPage() {
             Matrx Extend — Chrome Extension Privacy Policy
           </h1>
           <p className="text-muted-foreground">
-            Last updated: October 15, 2026
+            Last updated: October 18, 2026
           </p>
         </div>
 
@@ -171,6 +171,26 @@ export default function ExtensionPrivacyPolicyPage() {
                 Visiting a post alone does not save it to your Swipe file.
               </li>
               <li>
+                <strong>Live data you choose to fetch.</strong> When you are
+                signed in, the Data tab may offer &ldquo;Get as table&rdquo; for
+                a supported page. The offer matches the page address against
+                available data sources without fetching records. If you click
+                it, the extension sends that page&rsquo;s full URL, the chosen
+                data source, and the number of records requested to the Matrx
+                service in your active organization. The service may send the
+                URL and fetch inputs to an external data provider, charge
+                points for records collected, and save the returned records in
+                a table in that organization. The Data tab shows an
+                approximate points estimate when pricing is available; some
+                sources have no advance estimate. Merely visiting the page
+                does not start a paid fetch. Matrx also keeps a fetch record
+                with the source, full URL and other fetch inputs, requested
+                count, organization and table, status, billing, and result
+                details. The latest record supplies the table&rsquo;s refresh
+                settings. Fetched data may remain in a shared Matrx cache
+                after the table is removed.
+              </li>
+              <li>
                 <strong>Configuration diagnostics.</strong> The extension reads
                 public runtime settings from Supabase and keeps a last-seen copy
                 on your device. For a signed-in account, it registers the
@@ -249,7 +269,8 @@ export default function ExtensionPrivacyPolicyPage() {
                 <strong>Supabase</strong> (operated by AI Matrx) — for
                 authentication and direct, row-level-secured reads/writes of
                 your saved captures, patterns, conversations, Swipe file items,
-                and signed-in configuration diagnostics.
+                live-data tables and fetch records, and signed-in
+                configuration diagnostics.
               </li>
               <li>
                 <strong>Matrx backend</strong> at{" "}
@@ -263,6 +284,12 @@ export default function ExtensionPrivacyPolicyPage() {
                 a supported social post or ad, the Matrx service may send its
                 public URL to an external provider to retrieve the post and
                 available media or transcript.
+              </li>
+              <li>
+                <strong>Live-data providers.</strong> When you choose &ldquo;Get
+                as table&rdquo;, the Matrx service may send the page URL and
+                fetch inputs to an external provider to collect the requested
+                records.
               </li>
               <li>
                 <strong>AI model providers.</strong> To generate a response, the
@@ -453,6 +480,12 @@ export default function ExtensionPrivacyPolicyPage() {
                 collection; this removes the collection association but does not
                 necessarily erase the retrieved post from the shared Matrx
                 cache. Contact us about a deletion request for cached data.
+              </li>
+              <li>
+                <strong>Live-data tables.</strong> You can move a fetched table
+                to Trash in your Matrx account. This does not itself erase the
+                fetch record or any shared cached data. Contact us to request
+                deletion of those records or cached data.
               </li>
               <li>
                 <strong>Saved website logins</strong> can be viewed, changed, or
