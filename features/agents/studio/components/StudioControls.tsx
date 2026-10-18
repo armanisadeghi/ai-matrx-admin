@@ -22,7 +22,7 @@ import { FlaskConical, Lightbulb, Send, Swords } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Badge, Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
-import { ModelListDropdown } from "@ai-matrx/agents/models/react";
+import { ModelListDropdown, useModelCatalog } from "@ai-matrx/agents/models/react";
 import { selectAgentById, selectAgentIsDirty } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectLatestAssistantMessageId } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { selectActiveModels } from "@ai-matrx/agents/models";
@@ -38,6 +38,8 @@ import { saveAgent } from "@/features/agents/redux/builder-write.thunks";
 import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
+import { debriefModelIds } from "../debrief-models";
+import { describeVersionNote } from "../version-notes";
 import { StudioBattle } from "./StudioBattle";
 import { followServerWork } from "@/features/ai-watch/followed-work";
 import { candidateFromProposal, type StudioCandidate } from "../battle";
@@ -310,6 +312,9 @@ interface VersionRow {
 }
 
 function VersionsTab({ agentId }: { agentId: string }) {
+  useModelOptions();
+  const modelRecords = useModelRecords(selectActiveModels);
+  const modelName = (id: string) => modelRecords.find((m) => m.id === id)?.name;
   const [rows, setRows] = useState<VersionRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -342,7 +347,7 @@ function VersionsTab({ agentId }: { agentId: string }) {
           getKey={(r) => String(r.version_number)}
           title={(r) => `Version ${r.version_number}`}
           meta={(r) => formatDistanceToNow(new Date(r.changed_at), { addSuffix: true })}
-          subtitle={(r) => (r.change_note?.trim() ? r.change_note.trim() : undefined)}
+          subtitle={(r) => describeVersionNote(r.change_note, modelName)}
           href={(r) => `/agents/${agentId}/v/${r.version_number}`}
           size="sm"
           sourceFeature="agent"
@@ -378,6 +383,9 @@ function DebriefTab({
   // The model the debrief reads the run with: the strongest non-gated Claude unless the person picks one.
   useModelOptions();
   const records = useModelRecords(selectActiveModels);
+  // Only text/chat models still served, from the live catalog (never mock, speech, image or retired ones).
+  const { models: catalogModels } = useModelCatalog("user");
+  const debriefIds = debriefModelIds(catalogModels);
   const [pickedModel, setPickedModel] = useState<string | null>(null);
   const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records);
   // The debrief runs on its own fork: Watch AI and the Builder follow that conversation too.
@@ -443,6 +451,7 @@ function DebriefTab({
         <div className="min-w-0 flex-1" data-testid="studio-debrief-model">
           <ModelListDropdown
             aria-label="Debrief model"
+            allowedModelIds={debriefIds.length > 0 ? debriefIds : undefined}
             modelOnly
             inputModalities={[]}
             outputModalities={["text"]}

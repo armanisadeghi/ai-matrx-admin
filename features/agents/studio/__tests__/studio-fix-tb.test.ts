@@ -54,6 +54,6 @@ describe("Studio tabs", () => {
   });
   it("shows version age and note", () => {
     expect(controls).toContain("formatDistanceToNow");
-    expect(controls).toContain("r.change_note");
+    expect(controls).toContain("describeVersionNote(r.change_note");
   });
 });

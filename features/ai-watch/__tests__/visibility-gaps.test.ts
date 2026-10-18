@@ -26,7 +26,10 @@ describe("Everything feed", () => {
     expect(rowTitle(everythingRow({ id: "u8", source_feature: "agent-service", created_at: "x", metadata: {} }))).toBe("Agent service");
     // a mandate or holder label is already a name: the agent lookup never overrides it
     const m = everythingRow({ id: "u7", agent_id: "a9", metadata: { mandate_watch: { mandate_key: "patrol.sweep" } }, created_at: "x" });
-    expect(rowTitle(m, { a9: "Other" })).toBe("patrol.sweep");
+    // a mandate wears its registry label; without one it is words, never the raw code key
+    expect(rowTitle(m, { a9: "Other" }, { "patrol.sweep": "Patrol sweep (nightly)" })).toBe("Patrol sweep (nightly)");
+    expect(rowTitle(m, { a9: "Other" })).toBe("Patrol sweep");
+    expect(rowTitle(m, {})).not.toMatch(/\./);
   });
 
   it("a refresh merges over older pages by id, newest first", () => {

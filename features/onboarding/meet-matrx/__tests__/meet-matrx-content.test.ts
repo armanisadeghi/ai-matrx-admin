@@ -39,10 +39,11 @@ describe("Meet Matrx", () => {
     ]);
   });
 
-  it.each(items.map((i) => [i.name, i.pitch] as const))("%s has a 3–7 word pitch", (_name, pitch) => {
+  // Knowledge is the featured hero and carries the owner's full line (Arman, 2026-10-18): up to 14 words.
+  it.each(items.map((i) => [i.name, i.pitch] as const))("%s has a short pitch (3–7 words; Knowledge up to 14)", (name, pitch) => {
     const words = pitch.split(/\s+/).filter((w) => /[A-Za-z]/.test(w));
     expect(words.length).toBeGreaterThanOrEqual(3);
-    expect(words.length).toBeLessThanOrEqual(7);
+    expect(words.length).toBeLessThanOrEqual(name === "Knowledge" ? 14 : 7);
   });
 
   it.each(items.filter((i) => !i.external).map((i) => [i.name, i.href] as const))("%s links to a real page (%s)", (_name, href) => {
