@@ -78,6 +78,14 @@ export function ConnectorPromptHost({
     if (!engaged) setEngaged(true);
   };
 
+  /**
+   * Never offer on a guess (owner ruling 2026-10-17: "if we're not checking Google, then the card
+   * that tells you to connect google doesn't show"). The offer appears only when we KNOW the person
+   * is not connected — from a real read, or from the device's last answer. Unknown = no card.
+   */
+  const knownNotConnected = known ? !connected : hint !== null && !hint.connected;
+  if (!knownNotConnected) return null;
+
   const card = (
     <div
       className="contents"
