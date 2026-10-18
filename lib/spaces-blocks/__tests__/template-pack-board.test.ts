@@ -58,6 +58,30 @@ describe("checkPack: the board key", () => {
     expect(found).toContain("spec.tables (shadow).rows[0].values.value");
     expect(found).toContain("spec.tables (color).rows[1].values.reads_on");
   });
+  it("names a colour read on itself, and two rows of one name when rows are found by name", () => {
+    const p = fresh();
+    const color = p.spec.tables.find((t) => t.token === "color")!;
+    const primaryFg = color.rows.findIndex((r) => r.values.name === "primary-foreground");
+    color.rows[primaryFg].values.reads_on = "primary-foreground";
+    color.rows[0].values.name = "card"; // "background" becomes a second "card"
+    const found = checkPack(p);
+    expect(found.map((f) => f.at)).toContain(`spec.tables (color).rows[${primaryFg}].values.reads_on`);
+    expect(found.find((f) => f.at === "spec.tables (color).rows")?.says).toMatch(/2 rows are named "card"/);
+  });
+  it("finds rows by the name column when there is no title field; says once when there is neither", () => {
+    const p = fresh();
+    const color = p.spec.tables.find((t) => t.token === "color")!;
+    delete (color as { titleField?: string }).titleField;
+    expect(checkPack(p).filter((f) => f.at.startsWith("spec.tables (color).rows["))).toEqual([]);
+    for (const r of color.rows) {
+      r.values.label = r.values.name;
+      delete r.values.name;
+    }
+    (color.fields.find((f) => f.key === "name") as { key: string }).key = "label";
+    const found = checkPack(p);
+    expect(found.filter((f) => f.at.startsWith("spec.tables (color).rows["))).toEqual([]);
+    expect(found.filter((f) => f.at === "spec.tables (color).titleField" && /names rows by their name/.test(f.says))).toHaveLength(1);
+  });
   it("puts the board on the card face; the top board comes first", () => {
     expect(packCardFace(PACK).board).toEqual({ title: "Design system", chapters: 8, pages: 1 });
     expect(packCardFace(PACK).pages).toBe(0);

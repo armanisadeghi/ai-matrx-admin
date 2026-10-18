@@ -16,7 +16,7 @@ import { cloneBoardContent } from "./clone-content";
 import { BUILTIN_BOARD_TEMPLATES, builtinTemplateByKey } from "./builtin";
 import type { BoardDocument } from "../board/document";
 import { materializeStarterNotes } from "./starter-notes";
-import { isPackKey, listBoardPacks, makeBoardFromPack } from "./board-packs";
+import { isPackKey, listBoardPacks, makeBoardFromPack, reportUnreadablePack } from "./board-packs";
 import type { AppDispatch } from "@/lib/redux/store";
 
 export interface BoardTemplateEntry {
@@ -32,7 +32,11 @@ export interface BoardTemplateEntry {
 /** Built-in templates first, then the published board packs, then the person's saved ones (boards labeled `template` that they can read). */
 export async function listBoardTemplates(): Promise<BoardTemplateEntry[]> {
   const builtin: BoardTemplateEntry[] = BUILTIN_BOARD_TEMPLATES.map((t) => ({ key: t.key, title: t.title, builtin: true, doc: t.build() }));
-  const [ids, packs] = await Promise.all([listTemplateIds("board"), listBoardPacks()]);
+  // A failed pack read never hides the built-ins or the saved boards: it is reported and the packs are left out.
+  const [ids, packs] = await Promise.all([
+    listTemplateIds("board"),
+    listBoardPacks().catch((err: unknown) => (reportUnreadablePack("The board template packs", err), [])),
+  ]);
   const packed = packs.map((p) => ({ key: p.key, title: p.title, builtin: true, doc: p.doc }));
   const saved = (await getBoardsByIds(ids)).map((b) => ({ key: b.id, title: b.title, builtin: false, doc: b.doc }));
   return [...builtin, ...packed, ...saved];

@@ -13,10 +13,12 @@ jest.mock("../persistence/boardsService", () => ({
 }));
 
 const listBoardPacks = jest.fn(async () => [] as unknown[]);
+const reportUnreadablePack = jest.fn();
 const makeBoardFromPack = jest.fn(async () => ({ id: "from-pack" }));
 jest.mock("../templates/board-packs", () => ({
   isPackKey: (k: string) => k.startsWith("pack:"),
   listBoardPacks: () => listBoardPacks(),
+  reportUnreadablePack: (...a: unknown[]) => reportUnreadablePack(...a),
   makeBoardFromPack: (...a: unknown[]) => makeBoardFromPack(...(a as [])),
 }));
 
@@ -49,6 +51,15 @@ describe("board templates", () => {
     listBoardPacks.mockResolvedValueOnce([{ key: "pack:t1", title: "Design system", summary: "s", doc }]);
     const all = await listBoardTemplates();
     expect(all.map((t) => t.key)).toEqual([...BUILTIN_BOARD_TEMPLATES.map((t) => t.key), "pack:t1"]);
+  });
+
+  it("a failed pack read never hides the built-ins or saved boards, and is reported", async () => {
+    listTemplateIds.mockResolvedValue(["b1"]);
+    getBoardsByIds.mockResolvedValue([{ id: "b1", title: "Mine", doc: { nodes: [], groups: [], edges: [], shapes: [], camera: { x: 0, y: 0, z: 1 } } }]);
+    listBoardPacks.mockRejectedValueOnce(new Error("catalogue down"));
+    const all = await listBoardTemplates();
+    expect(all.map((t) => t.key)).toEqual([...BUILTIN_BOARD_TEMPLATES.map((t) => t.key), "b1"]);
+    expect(reportUnreadablePack).toHaveBeenCalledWith("The board template packs", expect.any(Error));
   });
 
   it("Use on a board pack installs through the pack door, with the store", async () => {
