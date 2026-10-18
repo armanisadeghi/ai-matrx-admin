@@ -5,8 +5,8 @@
 // `AdminUserRef` wraps a person's name in `PeekHoverCard`; this is the card's record: name, email,
 // plan, status and last active from ONE `admin.user_overview` read for that person, made only when
 // the card opens and kept for the tab (never the whole roster). Doors: Open (the record page, same
-// tab), the page in a new tab, and the two tabs an admin reaches for from a name — Support sessions
-// (the page's header has Start support session and Message) and Billing & usage.
+// tab), the page in a new tab, Start support session and Message (action doors that open the page
+// with `?do=`), and links to the Support sessions and Billing & usage tabs.
 //
 // The registered `user` peek kind (`features/organizations/peek/kinds/UserPeek.tsx`) is the
 // MEMBER seat's card (shared-organization visibility, no admin facts) and stays as it is.
@@ -14,12 +14,20 @@
 import { UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Peek, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
+import { Peek, type PeekBlock, type PeekDoor, type PeekRecord } from "@ai-matrx/design-system";
+
+type PeekActionDoor = Extract<PeekDoor, { kind: "action" }>;
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { formatReadableDate } from "@/utils/datetime";
 import { ADMIN_LEVEL_LABEL } from "../constants";
-import { fetchUserOverview, isClosed, personTitle, type UserOverview } from "../record/userOverview";
-import { userRecordHref } from "../record/userSurfaces";
+import { actionSubjectOf, fetchUserOverview, isClosed, personTitle, type UserOverview } from "../record/userOverview";
+import {
+  userActionDef,
+  userActionDisabled,
+  userActionHref,
+  userRecordHref,
+  type UserActionId,
+} from "../record/userSurfaces";
 
 const overviews = new Map<string, Promise<UserOverview | null>>();
 
@@ -107,6 +115,24 @@ export function AdminUserPeek({ userId, label }: AdminUserPeekProps) {
     body.push({ fact: "No account with this id.", wrap: true });
   }
 
+  // The two verbs an admin reaches for from a name. Each opens the person's page with the action
+  // requested (`?do=`), so the page's own dialog and rules run it; an action this person can't
+  // take (a guest, no email) is left off rather than drawn disabled.
+  const doors: PeekActionDoor[] = overview
+    ? (["support_session", "message"] as const satisfies readonly UserActionId[])
+        .filter((id) => !userActionDisabled(id, actionSubjectOf(overview), { myId: null, closeBlocked: false }))
+        .map((id) => {
+          const def = userActionDef(id);
+          return {
+            kind: "action",
+            id,
+            label: def.label,
+            icon: def.icon,
+            onClick: () => pushAppHref(router, userActionHref(userId, id)),
+          };
+        })
+    : [];
+
   const record: PeekRecord = {
     kind: "Person",
     id: userId,
@@ -125,6 +151,7 @@ export function AdminUserPeek({ userId, label }: AdminUserPeekProps) {
       ? { failure: { what: "this person", error: state.error, onRetry: () => setAttempt((n) => n + 1) } }
       : {}),
     primary: { label: "Open", onSelect: () => pushAppHref(router, href) },
+    ...(doors.length === 2 ? { doors: [doors[0], doors[1]] as const } : doors.length === 1 ? { doors: [doors[0]] as const } : {}),
     href,
   };
 
