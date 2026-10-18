@@ -98,14 +98,8 @@ tree it may only raise the ceiling, capped at the largest kind ceiling.
 
 ## Still open
 
-1. **The preview's loader pool (needs a ruling).** Measured at 23:20: 192 `webpack-loaders` children
-   in the preview group, 5.7 GB real memory (6 environments × 32 cores). Neither cheap fix keeps the
-   protection: Next 16.4.2 has no pool-size knob; `turbopackPluginRuntimeStrategy: 'workerThreads'`
-   falls back to child processes on Node ≥ 24.13.1 (this Mac runs 26.7), and `'forceWorkerThreads'`
-   can abort the whole preview when a worker exits with a native addon live (Tailwind's oxide). Moving
-   the guard to commit time (`check:matrx-imports`, already in the pre-commit hook) would re-open the
-   2026-10-07 outages: the preview serves the working tree, so an unpublished import 500s every route
-   before anything is committed. Options: accept the 5.7 GB; or try `forceWorkerThreads` on the shared
-   preview with a watched restart.
+1. ~~The preview's loader pool~~ — resolved 2026-10-18: the per-file loader rule is gone; one
+   checker process lists only files with an unpublished import and the loader runs on those alone
+   (0 loader workers in the preview with nothing pending). [preview-import-checker.md](./preview-import-checker.md).
 2. `fseventsd` at 50 GB (10-17 event) is a system daemon; the guard never touches it.
 3. The guard lives in this checkout; a session in another repo inherits it only while it runs here.

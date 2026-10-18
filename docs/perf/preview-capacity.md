@@ -106,7 +106,8 @@ item 3 is measured there and needs a ruling.
 3. **The preview's loader pool:** 258 `webpack-loaders` children using 9.1 GB. In dev,
    `next.config.js` `withPendingImportRescue` sends every file that mentions `@ai-matrx/` through a
    webpack loader, which brings back the child-process pool that the native React Compiler switch
-   had removed (2026-10-15).
+   had removed (2026-10-15). **Resolved 2026-10-18:** the loader now runs only on files the one
+   pending-import checker lists — [preview-import-checker.md](./preview-import-checker.md).
 4. **Scratch walk daemons that auto-press Resume** defeat the walk cap. The sweep closes them only
    once they are detached and older than 180 min.
 5. The preview grows from 11 GB to 47 GB in about 25 minutes when eight sessions compile different
