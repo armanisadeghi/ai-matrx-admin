@@ -50,6 +50,15 @@ describe("checkPack", () => {
     p.pages[2].blocks.push({ type: "heading", text: [{ text: "No level" }] });
     expect(checkPack(p).some((f) => f.at.startsWith("pages[2]") && /JSON schema|heading/.test(f.says))).toBe(true);
   });
+  it("judges a row template body by the stored-page rules (a bad body fails at New, not at publish)", () => {
+    const p = fresh();
+    const tables = (p.spec as unknown as { tables: Array<{ rowTemplates?: Array<Record<string, unknown>> }> }).tables;
+    const withBody = tables.find((t) => t.rowTemplates?.some((rt) => rt.body));
+    expect(withBody).toBeTruthy();
+    const rt = withBody!.rowTemplates!.find((r) => r.body)!;
+    (rt.body as { blocks: unknown[] }).blocks.push({ type: "heading", text: [{ text: "No level" }] });
+    expect(checkPack(p).some((f) => /rowTemplates\[\d+\].*\.body$/.test(f.at))).toBe(true);
+  });
   it("runs the records validator on the spec", () => {
     const p = fresh();
     p.spec.job = "nonsense" as never;
@@ -90,7 +99,8 @@ describe("block view filter words", () => {
     tasksDb(p).views.push({ id: "view-x", name: "X", layout: "grid", ...view });
     return p;
   };
-  const vat = "pages[0] (projects-and-tasks).blocks[5].props.views[4]";
+  // The added view lands after the pack's own views, whatever their number (the pack grows with upgrades).
+  const vat = `pages[0] (projects-and-tasks).blocks[5].props.views[${tasksDb(fresh()).views.length}]`;
   it("passes a good Due this week and Overdue view", () => {
     expect(checkPack(withView({ within: { due_on: { relative: "this_week" } } }))).toEqual([]);
     expect(checkPack(withView({ within: { due_on: { relative: "before_today" } }, anyOf: { status: ["To do", "In progress"] } }))).toEqual([]);

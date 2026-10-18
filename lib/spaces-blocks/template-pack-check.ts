@@ -179,6 +179,40 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
     }
   });
 
+  // ── 4b. every row template body: the same stored-page rules ────────────────
+  // A row template's body becomes the new row's page (features/spaces/embed/row-page.ts, fresh block ids),
+  // so a body the database refuses fails at use time — "New" makes the row and then cannot start its page.
+  // Judged here with stand-in ids, exactly as a page is.
+  const withIds = (list: unknown, next: () => string): unknown =>
+    Array.isArray(list) ? list.map((b) => (isObj(b) ? { ...b, id: next(), ...(Array.isArray(b.children) ? { children: withIds(b.children, next) } : {}) } : b)) : list;
+  const specTables = isObj(spec) && Array.isArray((spec as { tables?: unknown }).tables) ? ((spec as { tables: unknown[] }).tables) : [];
+  specTables.forEach((t, ti) => {
+    if (!isObj(t) || !Array.isArray(t.rowTemplates)) return;
+    (t.rowTemplates as unknown[]).forEach((rt, ri) => {
+      if (!isObj(rt) || rt.body === undefined) return;
+      const base = `spec.tables[${ti}].rowTemplates[${ri}]${str(rt.name) ? ` (${rt.name})` : ""}.body`;
+      const body = rt.body;
+      if (!isObj(body) || !Array.isArray(body.blocks)) {
+        say(base, 'A row template body is { "v": 1, "blocks": [...] }.');
+        return;
+      }
+      let n = 0;
+      const snapshot = { v: 1, settings: packPageSettings({} as PackPage), icon: null, cover: null, blocks: withIds(body.blocks, () => `rt${++n}`) };
+      for (const problem of validateSnapshot(snapshot)) say(base, `${problem} (the stored-page rules, BLOCK-SCHEMA.md).`);
+      const schema = snapshotSchema();
+      if (!schema(snapshot)) {
+        const seen = new Set<string>();
+        for (const e of schema.errors ?? []) {
+          if (e.keyword === "if" || e.keyword === "allOf") continue;
+          const line = `${e.instancePath || "/"} ${e.message ?? "is invalid"}`;
+          if (seen.has(line)) continue;
+          seen.add(line);
+          say(base, `JSON schema: ${line} — the new row's page would be refused (content.space_snapshot_schema()).`);
+        }
+      }
+    });
+  });
+
   // ── 5. the records package's own check ─────────────────────────────────────
   const waivers = Array.isArray(pack.waivers) ? pack.waivers : [];
   waivers.forEach((w, i) => (isObj(w) && str(w.at) && str(w.because) ? null : say(`waivers[${i}]`, "A waiver names the finding's exact `at` and says `because`.")));
