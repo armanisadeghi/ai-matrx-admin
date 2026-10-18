@@ -16,7 +16,7 @@ import { Ban, Gift, Plus, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useReasonPrompt } from "../record/useReasonPrompt";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { readOf } from "@ai-matrx/design-system";
@@ -65,6 +65,7 @@ function summary(r: Row): string {
 }
 
 export function CouponsAdminClient() {
+  const { askReason, reasonDialog } = useReasonPrompt();
   const [rows, setRows] = useState<CouponRow[]>([]);
   const [planNames, setPlanNames] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -97,26 +98,23 @@ export function CouponsAdminClient() {
   }, [rows]);
 
   const revoke = useCallback(
-    async (row: Row) => {
-      const ok = await confirm({
+    (row: Row) => {
+      // A coupon bound to a person writes their admin history, which requires a reason (F1).
+      askReason({
         title: "Revoke this coupon?",
         description:
           row.status === "redeemed"
             ? "It is already used. Revoking keeps the free time it gave."
             : "Nobody can redeem it after this. It cannot be restored.",
         confirmLabel: "Revoke",
-        variant: "destructive",
+        run: async (reason) => {
+          await revokeCoupon(row.id, reason);
+          toast.success("Coupon revoked");
+          await load();
+        },
       });
-      if (!ok) return;
-      try {
-        await revokeCoupon(row.id);
-        toast.success("Coupon revoked");
-        await load();
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Revoke failed");
-      }
     },
-    [load],
+    [load, askReason],
   );
 
   const openSend = useCallback(
@@ -284,6 +282,7 @@ export function CouponsAdminClient() {
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
+      {reasonDialog}
       <div className="min-h-0 flex-1">
         <MatrxDataTable
           urlState={{ id: "user-coupons", selectedRow: false }}

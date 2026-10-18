@@ -102,7 +102,7 @@ export function UserSupportTab({ userId, version: pageVersion, reload, actions, 
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
           <h3 className="type-title">Feedback filed</h3>
-          {feedbackTotal > feedback.length ? (
+          {!error && feedbackTotal > feedback.length ? (
             <span className="type-secondary text-muted-foreground">
               Showing {formatCount(feedback.length)} of {formatCount(feedbackTotal)}
             </span>

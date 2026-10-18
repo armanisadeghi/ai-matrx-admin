@@ -12,6 +12,7 @@
  */
 
 import { sendDirectActionMessage } from "@/features/messaging/service/sendDirectActionMessage";
+import { createClient } from "@/utils/supabase/client";
 import type { GuidedTutorialActionPayload } from "@/features/messaging/types";
 import { sendAdminEmail } from "@/features/admin/users/service/coupons";
 import { type GuidedTutorial, tutorialHref } from "../registry";
@@ -31,6 +32,8 @@ export interface SendTutorialInput {
 export interface ChannelOutcome {
   ok: boolean;
   error?: string;
+  /** Sent, but the person's admin history row (admin.record_contact) was not written (S9). */
+  auditError?: string;
 }
 
 export interface SendTutorialResult {
@@ -67,8 +70,17 @@ export async function sendTutorial(input: SendTutorialInput): Promise<SendTutori
         content: tutorialDmText(tutorial, input.note),
         actionData: { kind: "guided_tutorial", version: 1, payload },
       }).then(
-        () => {
-          result.dm = { ok: true };
+        async ({ conversationId }) => {
+          // The person's admin history records that a tutorial was sent (title only, never the body).
+          const { error } = await createClient()
+            .schema("admin")
+            .rpc("record_contact", {
+              p_action: "message_sent",
+              p_user: input.userId,
+              p_title: `Tutorial: ${tutorial.title}`,
+              p_ref: { conversation_id: conversationId, tutorial_id: tutorial.id },
+            });
+          result.dm = error ? { ok: true, auditError: error.message } : { ok: true };
         },
         (error: unknown) => {
           result.dm = { ok: false, error: error instanceof Error ? error.message : String(error) };

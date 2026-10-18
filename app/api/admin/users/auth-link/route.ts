@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     email?: string;
     type?: LinkType;
     send?: boolean;
-    /** Optional: recorded on the admin audit row. */
+    /** Required: recorded on the admin audit row. */
     reason?: string;
   } | null;
 
@@ -69,6 +69,12 @@ export async function POST(request: NextRequest) {
       { error: "type must be 'magiclink' or 'recovery'" },
       { status: 400 },
     );
+  }
+
+  // The audit row needs a reason (the database refuses one without, F1): refuse before a link exists.
+  const reason = typeof body?.reason === "string" ? body.reason.trim() : "";
+  if (!reason) {
+    return NextResponse.json({ error: "A reason is required" }, { status: 400 });
   }
 
   const admin = createAdminClient();
@@ -115,7 +121,7 @@ export async function POST(request: NextRequest) {
       targetUserId,
       actorUserId,
       after: { link_type: type, email_requested: body?.send === true },
-      reason: typeof body?.reason === "string" ? body.reason : null,
+      reason,
       metadata: { via: "api/admin/users/auth-link" },
     });
   } catch (e) {

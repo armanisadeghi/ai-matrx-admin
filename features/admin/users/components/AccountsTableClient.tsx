@@ -871,7 +871,7 @@ function AccountsRoster() {
             if (error) throw new Error(error.message);
             // `reopened: false` = nothing was closed: a skip with its reason, never a "Reopened" (B2).
             if (isJsonObject(data) && data.reopened === false) {
-              throw new Error("Was not closed");
+              throw new Error("Already open");
             }
             personChanged(id);
           },

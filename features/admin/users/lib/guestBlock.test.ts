@@ -7,7 +7,7 @@
  *
  * What it OWNS and this suite forces:
  *   * the exact RPC and argument body PostgREST receives for block and unblock
- *     (an unblock never carries a reason or end time; a block carries both);
+ *     (an unblock carries its reason and never an end time; a block carries both);
  *   * the decode of the RPC's jsonb reply (a malformed reply is a named
  *     failure, never a silent "allowed");
  *   * the mapping of database refusals (42501 / P0002 / 22023) to codes the
@@ -147,7 +147,7 @@ describe("blockGuest / unblockGuest — the wire contract", () => {
     expect(requests[0]?.body).toEqual({ p_guest_id: GUEST_ID, p_blocked: true });
   });
 
-  it("sends an unblock carrying only the guest id and the false flag", async () => {
+  it("sends an unblock carrying the guest id, the false flag and its reason", async () => {
     replies.push({
       status: 200,
       json: {
@@ -160,9 +160,9 @@ describe("blockGuest / unblockGuest — the wire contract", () => {
       },
     });
 
-    const result = await unblockGuest({ guestId: GUEST_ID }, client);
+    const result = await unblockGuest({ guestId: GUEST_ID, reason: "appeal accepted" }, client);
 
-    expect(requests[0]?.body).toEqual({ p_guest_id: GUEST_ID, p_blocked: false });
+    expect(requests[0]?.body).toEqual({ p_guest_id: GUEST_ID, p_blocked: false, p_reason: "appeal accepted" });
     expect(result.is_blocked).toBe(false);
     expect(result.block_active).toBe(false);
   });
@@ -192,7 +192,7 @@ describe("blockGuest / unblockGuest — the wire contract", () => {
   it("refuses to report a state it cannot read instead of assuming the guest is allowed", async () => {
     replies.push({ status: 200, json: { guest_id: GUEST_ID, is_blocked: "yes" } });
 
-    await expect(unblockGuest({ guestId: GUEST_ID }, client)).rejects.toMatchObject({
+    await expect(unblockGuest({ guestId: GUEST_ID, reason: "appeal accepted" }, client)).rejects.toMatchObject({
       code: "failed",
     });
   });

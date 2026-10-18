@@ -85,7 +85,7 @@ export function GuestBlockDialog({
             </Select>
           </label>
           <label className="grid gap-1 text-xs font-medium">
-            Reason (optional, kept in the guest's block history)
+            Reason (kept in the block history)
             <Textarea
               value={reason}
               maxLength={500}
@@ -106,7 +106,7 @@ export function GuestBlockDialog({
           <Button
             icon={<Ban />}
             variant="danger"
-            disabled={pending}
+            disabled={pending || !reason.trim()}
             onClick={() =>
               onConfirm({
                 reason: reason.trim() || null,

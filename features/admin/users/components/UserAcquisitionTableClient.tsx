@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Ban, Cpu, ExternalLink, Route, ShieldCheck, X } from "lucide-react";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { useReasonPrompt } from "../record/useReasonPrompt";
 import { toast } from "@/lib/toast";
 import { GuestBlockDialog } from "./GuestBlockDialog";
 import { blockGuest, unblockGuest } from "../lib/guestBlock";
@@ -98,6 +98,7 @@ function campaign(row: AdminUserAcquisitionRow): string {
 }
 
 export function UserAcquisitionTableClient() {
+  const { askReason, reasonDialog } = useReasonPrompt();
   const fmtCost = useAdminCost();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -157,31 +158,25 @@ export function UserAcquisitionTableClient() {
   );
 
   const requestUnblock = useCallback(
-    async (row: AdminUserAcquisitionRow) => {
+    (row: AdminUserAcquisitionRow) => {
       const access = row.guest_access;
       if (!access) return;
-      const ok = await confirm({
+      askReason({
         title: `Unblock guest access: ${row.display_name}`,
-        description:
-          "Signed-out requests from this browser are accepted again on their next call, and the normal daily guest limit applies. The block and its reason stay in this guest's block history.",
+        description: "Signed-out requests from this browser are accepted again; the daily guest limit applies.",
         confirmLabel: "Unblock",
+        run: async (reason) => {
+          setAccessPending(access.guest_id);
+          try {
+            applyAccess(await unblockGuest({ guestId: access.guest_id, reason }));
+            toast.success(`Guest access restored for ${row.display_name}`);
+          } finally {
+            setAccessPending(null);
+          }
+        },
       });
-      if (!ok) return;
-      setAccessPending(access.guest_id);
-      try {
-        applyAccess(await unblockGuest({ guestId: access.guest_id }));
-        toast.success(`Guest access restored for ${row.display_name}`);
-      } catch (caught) {
-        toast.error(
-          caught instanceof Error
-            ? `Unblock failed: ${caught.message}`
-            : "Unblock failed",
-        );
-      } finally {
-        setAccessPending(null);
-      }
     },
-    [applyAccess],
+    [applyAccess, askReason],
   );
 
   const canvas = useOptionalCanvas();
@@ -550,6 +545,7 @@ export function UserAcquisitionTableClient() {
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
+      {reasonDialog}
       {/* Guest status from Supabase, not name; headline totals exclude bots and localhost/agent tests; gaps labeled separately. */}
       {/* The read's failure is said once, by the table (read=). */}
       {focusUser ? (

@@ -75,9 +75,10 @@ export function blockGuest(
   return setGuestBlock(client, { ...args, blocked: true });
 }
 
+/** Unblock a guest. The reason is required when the guest is an account (its admin history, F1). */
 export function unblockGuest(
-  args: { guestId: string },
+  args: { guestId: string; reason: string },
   client: SupabaseClient<Database> = supabase,
 ): Promise<GuestAccess> {
-  return setGuestBlock(client, { guestId: args.guestId, blocked: false });
+  return setGuestBlock(client, { guestId: args.guestId, reason: args.reason, blocked: false });
 }

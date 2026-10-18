@@ -10,7 +10,7 @@
 // (20261018190000); its category stays there. Read-only beside it, each with its source named:
 // organization member notes (iam.org_member_controls.notes) and the plan note (billing.user_plan.note).
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock, Pin, PinOff, StickyNote } from "lucide-react";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Badge, Button, EmptyState, PropertyRow, RegionSkeleton, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -120,10 +120,13 @@ const SHARE_OPTIONS = [
   { value: "only_me", label: "Only me" },
 ] as const;
 
-export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
+export function UserNotesTab({ userId, overview, version: pageVersion, shareForAi }: UserTabBodyProps) {
   const me = useAppSelector(selectUserId);
   const [version, setVersion] = useState(0);
-  const { data, loading, error } = useRecordLoad(loadPersonNotes, userId, version);
+  const { data, loading, error } = useRecordLoad(loadPersonNotes, userId, pageVersion + version);
+  useEffect(() => {
+    if (data) shareForAi({ notes: data.notes, memberNotes: data.memberNotes, planNote: data.planNote });
+  }, [data, shareForAi]);
   const [draft, setDraft] = useState("");
   const [shownTo, setShownTo] = useState<ShownTo>("my_team");
   const [saving, setSaving] = useState(false);

@@ -81,6 +81,7 @@ export function SendTutorialDialog({
       ].filter((line): line is string => typeof line === "string");
       if (sent.length) toast.success(`Tutorial sent by ${sent.join(" and ")}`);
       for (const line of failed) toast.error(line);
+      if (result.dm?.auditError) toast.warning(`Sent, but not recorded in the admin history: ${result.dm.auditError}`);
       if (!failed.length) onClose();
     } finally {
       setSending(false);

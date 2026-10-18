@@ -112,6 +112,8 @@ export function CreateCouponDialog({
   }, [open]);
 
   const { recipients: pastedRecipients, invalid } = parseRecipients(pasted);
+  // A coupon bound to an account writes that person's admin history, which needs a reason (F1).
+  const namesAccount = kind === "existing_account" && people.length > 0;
   const recipients: CouponRecipient[] = [
     ...(kind === "existing_account" ? people.map((p) => ({ user_id: p.id })) : []),
     ...pastedRecipients,
@@ -318,7 +320,7 @@ export function CreateCouponDialog({
               )}
             </label>
             <label className="block space-y-1 text-xs text-muted-foreground">
-              <span>Note (optional)</span>
+              <span>{namesAccount ? "Reason" : "Note (optional)"}</span>
               <Input value={note} placeholder="Conference giveaway" onChange={(e) => setNote(e.target.value)} />
             </label>
           </div>
@@ -332,7 +334,7 @@ export function CreateCouponDialog({
               icon={saving && <Spinner size="xs" className="text-current" />}
               variant="primary"
               onClick={() => void create()}
-              disabled={saving || !planKey || !knobs || !!monthsError || !!batchError || invalid.length > 0}
+              disabled={saving || !planKey || !knobs || !!monthsError || !!batchError || invalid.length > 0 || (namesAccount && !note.trim())}
             >
               Make {total > 0 && Number.isFinite(total) ? total : ""} coupon{total === 1 ? "" : "s"}
             </Button>

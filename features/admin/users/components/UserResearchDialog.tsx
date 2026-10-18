@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { toast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { supabase } from "@/utils/supabase/client";
 import type { AdminUserRow } from "../types";
 import { saveUserResearch } from "../service/userResearch";
@@ -28,7 +29,8 @@ export function UserResearchDialog({ row, ownerId, existing, myNotes, sharedOrga
   });
   const [category, setCategory] = useState<Relationship>(existing?.category ?? "unknown");
   const [contactState, setContactState] = useState<ContactState>(existing?.contact_state ?? (row.banned ? "hold" : "not_contacted"));
-  const myNote = myNotes[0] ?? null;
+  // Only my own "only me" note is edited here — never a shared one other admins read (F3).
+  const myNote = myNotes.find((n) => n.shown_to === "only_me") ?? null;
   const [notes, setNotes] = useState(myNote?.content ?? "");
   const [saving, setSaving] = useState(false);
   const [plans, setPlans] = useState<{ name: string; plan_key: string }[]>([]);
@@ -49,7 +51,16 @@ export function UserResearchDialog({ row, ownerId, existing, myNotes, sharedOrga
         label: row.display_name ?? row.email ?? row.id, category, contactState, existing, draft: draft ? { text: draft, plan, feature } : null });
       onSaved(saved);
       if (notes !== (myNote?.content ?? "")) {
-        if (myNote) await NotesAPI.update(myNote.note_id, { content: notes });
+        if (myNote && !notes.trim()) {
+          // Clearing the box removes the note (to Trash), never leaves an empty one behind.
+          const ok = await confirm({
+            title: "Delete your private note?",
+            description: "It moves to Trash in Notes.",
+            confirmLabel: "Delete",
+            variant: "destructive",
+          });
+          if (ok) await NotesAPI.remove(myNote.note_id);
+        } else if (myNote) await NotesAPI.update(myNote.note_id, { content: notes });
         else if (notes.trim()) await addUserNote({ userId: row.id, content: notes, shownTo: "only_me", label: `About ${row.display_name ?? row.email ?? "a person"}` });
         onNotesSaved();
       }

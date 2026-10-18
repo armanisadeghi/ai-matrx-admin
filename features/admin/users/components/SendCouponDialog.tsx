@@ -102,7 +102,7 @@ export function SendCouponDialog({
     if (!target || !ready) return;
     setSending(true);
     try {
-      await sendCoupon({
+      const { auditError } = await sendCoupon({
         couponId: target.couponId,
         channel,
         message: message.trim(),
@@ -113,6 +113,7 @@ export function SendCouponDialog({
         organizationId,
       });
       toast.success(channel === "dm" ? "Message sent" : channel === "email" ? "Email sent" : "Text sent");
+      if (auditError) toast.warning(`Sent, but not recorded in the admin history: ${auditError}`);
       onSent?.();
       onClose();
     } catch (err) {

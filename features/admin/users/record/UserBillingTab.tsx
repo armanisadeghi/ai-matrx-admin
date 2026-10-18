@@ -40,6 +40,19 @@ const KIND_LABEL: Record<BillingEventKind, string> = {
   plan: "Plan",
 };
 
+const BILLING_PAGE = 200;
+const BILLING_MAX = 500;
+const BY_LIMIT = new Map<number, (userId: string) => Promise<UserBillingEvent[]>>();
+/** Stable fetchers, one per window size (useRecordLoad wants a stable function). */
+function billingEventsFor(limit: number): (userId: string) => Promise<UserBillingEvent[]> {
+  let fetcher = BY_LIMIT.get(limit);
+  if (!fetcher) {
+    fetcher = (userId: string) => fetchUserBillingEvents(userId, limit);
+    BY_LIMIT.set(limit, fetcher);
+  }
+  return fetcher;
+}
+
 function columnsFor(personId: string): MatrxColumnDef<UserBillingEvent>[] {
   return [
     { id: "at", accessorKey: "at", header: "When", format: { id: "datetime" }, width: 170 },
@@ -76,8 +89,13 @@ export function UserBillingTab({ userId, overview, version: pageVersion, reload,
   const planBlocked = actions.blockedReason("change_plan", subject);
   const monthsBlocked = actions.blockedReason("free_months", subject);
 
-  const { data: eventsData, loading, error } = useRecordLoad(fetchUserBillingEvents, userId, pageVersion + version);
+  const [limit, setLimit] = useState(BILLING_PAGE);
+  const { data: eventsData, loading, error } = useRecordLoad(billingEventsFor(limit), userId, `${pageVersion + version}:${limit}`);
   const events = eventsData ?? [];
+  // A full window means older rows exist: offer them, never cap silently (F8).
+  // admin.user_billing_events answers at most BILLING_MAX rows; past that the list says it is cut.
+  const more = events.length >= limit && limit < BILLING_MAX;
+  const cut = events.length >= BILLING_MAX;
   useEffect(() => shareForAi({ events }), [events, shareForAi]);
 
   return (
@@ -115,7 +133,8 @@ export function UserBillingTab({ userId, overview, version: pageVersion, reload,
         <PropertyRow
           label="Grant ends"
           value={plan?.grant_expires_at ? new Date(plan.grant_expires_at).toLocaleString() : null}
-          missing={plan?.source === "grant" ? true : "No grant"}
+          // The same fact the Overview reads (overview.plan.grant_expires_at); "missing" only when absent (W6).
+          missing={plan?.grant_expires_at ? undefined : plan?.source === "grant" ? "No end date" : "No grant"}
           help={plan?.grant_note ?? undefined}
         />
       </div>
@@ -151,14 +170,23 @@ export function UserBillingTab({ userId, overview, version: pageVersion, reload,
           data={events}
           columns={columnsFor(userId)}
           getRowId={(e) => e.key}
-          isLoading={loading}
+          isLoading={loading && !eventsData}
           pageSize={25}
-          read={readOf({ loading, error }, { what: "billing history", onRetry: () => setVersion((v) => v + 1) })}
+          read={readOf({ loading: loading && !eventsData, error }, { what: "billing history", onRetry: () => setVersion((v) => v + 1) })}
           emptyState={{
             title: "No billing history",
             icon: <Gift className="h-6 w-6 text-muted-foreground" />,
           }}
         />
+        {more ? (
+          <div>
+            <Button variant="outline" disabled={loading} onClick={() => setLimit((n) => Math.min(n + BILLING_PAGE, BILLING_MAX))}>
+              Load older
+            </Button>
+          </div>
+        ) : cut ? (
+          <span className="type-secondary text-muted-foreground">Showing the newest {formatCount(BILLING_MAX)}</span>
+        ) : null}
       </section>
 
       <ResetUsageDialog person={resetPerson} onClose={() => setResetPerson(null)} onDone={() => reload()} />

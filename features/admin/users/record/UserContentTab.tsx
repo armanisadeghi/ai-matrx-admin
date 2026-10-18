@@ -7,20 +7,23 @@
 // member page). Types they own none of collapse into one "None" line; registry types whose table is gone
 // into one "unavailable" line. The census is kept per person (computed_at); Refresh recounts.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ErrorNotice, readOf } from "@ai-matrx/design-system";
 import { OwnedResourcesTable } from "@/features/organizations/admin/components/OwnedResourcesTable";
 import { useRecordLoad } from "./useRecordLoad";
 import { fetchUserOwnedResources, refreshUserOwnedResources } from "./userOwnedResources";
 import type { UserTabBodyProps } from "./UserRecordPage";
 
-export function UserContentTab({ userId }: UserTabBodyProps) {
+export function UserContentTab({ userId, version: pageVersion, shareForAi }: UserTabBodyProps) {
   const [load, setLoad] = useState({ version: 0, recount: false });
   const { data, loading, error } = useRecordLoad(
     load.recount ? refreshUserOwnedResources : fetchUserOwnedResources,
     userId,
-    load.version,
+    pageVersion + load.version,
   );
+  useEffect(() => {
+    if (data) shareForAi({ content: data.rows, shardErrors: data.shardErrors });
+  }, [data, shareForAi]);
   const reload = () => setLoad((l) => ({ version: l.version + 1, recount: true }));
 
   return (

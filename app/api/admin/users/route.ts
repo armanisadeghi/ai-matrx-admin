@@ -341,7 +341,8 @@ export async function GET() {
     });
     return {
       id: u.id,
-      email: u.email ?? null,
+      // An erased account's auth email is a one-way hash, not an address: never shown as one (walk W5).
+      email: erasedIds.has(u.id) ? null : (u.email ?? null),
       display_name:
         profile?.display_name ?? metaString(meta, "full_name", "name"),
       full_name: metaString(meta, "full_name", "name"),
@@ -429,7 +430,7 @@ export async function PATCH(request: NextRequest) {
     p_reason: reason ?? undefined,
   });
   if (setError) {
-    const status = setError.code === "P0002" ? 404 : setError.code === "42501" ? 403 : 500;
+    const status = setError.code === "P0002" ? 404 : setError.code === "42501" ? 403 : setError.code === "22023" ? 400 : 500;
     return NextResponse.json({ error: setError.message }, { status });
   }
 

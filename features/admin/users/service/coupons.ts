@@ -216,7 +216,8 @@ export async function sendSmsMessage(input: { to: string; message: string }): Pr
   if (!res.ok || !json.success) throw new Error(json.error ?? json.msg ?? "Text not sent");
 }
 
-/** Send one coupon on one channel and record it on the coupon. */
+/** Send one coupon on one channel and record it on the coupon. `auditError`: the DM went out but the
+ * person's admin history row was not written (shown by the caller, never a failed send — S9). */
 export async function sendCoupon(input: {
   couponId: string;
   channel: SendChannel;
@@ -226,18 +227,19 @@ export async function sendCoupon(input: {
   email: string | null;
   phone: string | null;
   organizationId: string | null;
-}): Promise<void> {
+}): Promise<{ auditError: string | null }> {
   let address: string | null = null;
+  let auditError: string | null = null;
   if (input.channel === "dm") {
     if (!input.userId) throw new Error("Pick the person to message");
     if (!input.organizationId) throw new Error("Select an organization from the avatar menu first");
-    await sendDirectMessage({
+    ({ auditError } = await sendDirectMessage({
       userId: input.userId,
       content: input.message,
       organizationId: input.organizationId,
       replayKey: (conversationId, content) => couponDmKey(input.couponId, conversationId, content),
       title: input.subject,
-    });
+    }));
     address = input.userId;
   } else if (input.channel === "email") {
     if (!input.email && !input.userId) throw new Error("Add an email address");
@@ -254,4 +256,5 @@ export async function sendCoupon(input: {
     address = input.phone;
   }
   await markCouponSent(input.couponId, input.channel, address);
+  return { auditError };
 }

@@ -13,7 +13,6 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
@@ -73,6 +72,13 @@ import { audienceLabel, type OrgPlanAssignment, type Plan } from "@/features/adm
 import { EnterpriseCustomLimitsEditor } from "@/features/admin/limits/components/EnterpriseCustomLimitsEditor";
 import { mutateOrgMembership } from "@/features/admin/users/service/orgMembership";
 import { loadAdminRoster } from "@/features/admin/users/adminRoster";
+import { REASON_PLACEHOLDER, useReasonPrompt } from "@/features/admin/users/record/useReasonPrompt";
+
+/** A bulk run's reason (the bulk dialog requires one; the database refuses a change without it). */
+function requireReason(reason: string | undefined): string {
+  if (!reason?.trim()) throw new Error("A reason is required");
+  return reason.trim();
+}
 
 interface MemberDisplayRow extends AdminOrganizationMembershipRow {
   email: string | null;
@@ -82,6 +88,7 @@ interface MemberDisplayRow extends AdminOrganizationMembershipRow {
 const ROLE_OPTIONS: OrgRole[] = ["owner", "admin", "member"];
 
 export function OrganizationsAdminClient() {
+  const { askReason, reasonDialog } = useReasonPrompt();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -308,96 +315,78 @@ export function OrganizationsAdminClient() {
 
   async function mutateMembership(
     method: "POST" | "PATCH" | "DELETE",
-    body: { organizationId: string; userId: string; role?: OrgRole },
+    // Every membership change carries its reason: the database refuses one without (F1).
+    body: { organizationId: string; userId: string; role?: OrgRole; reason: string },
   ) {
     await mutateOrgMembership(method, body);
     setRefreshKey((current) => current + 1);
   }
 
-  async function addMember() {
+  function addMember() {
     if (!selectedOrganization || !addUserId) return;
-    setSavingMembershipId(addUserId);
-    try {
-      await mutateMembership("POST", {
-        organizationId: selectedOrganization.id,
-        userId: addUserId,
-        role: addRole,
-      });
-      toast.success("Organization member added");
-      setAddOpen(false);
-      setAddUserId(undefined);
-      setAddUserQuery("");
-      setAddRole("member");
-    } catch (mutationError) {
-      toast.error(
-        mutationError instanceof Error
-          ? mutationError.message
-          : "Failed to add member",
-      );
-    } finally {
-      setSavingMembershipId(null);
-    }
+    const organization = selectedOrganization;
+    const userId = addUserId;
+    askReason({
+      title: `Add to ${organization.name}?`,
+      description: `Joins as ${getRoleLabel(addRole)}.`,
+      confirmLabel: "Add member",
+      run: async (reason) => {
+        setSavingMembershipId(userId);
+        try {
+          await mutateMembership("POST", { organizationId: organization.id, userId, role: addRole, reason });
+          toast.success("Organization member added");
+          setAddOpen(false);
+          setAddUserId(undefined);
+          setAddUserQuery("");
+          setAddRole("member");
+        } finally {
+          setSavingMembershipId(null);
+        }
+      },
+    });
   }
 
-  async function changeRole(member: MemberDisplayRow, nextRole: string) {
+  function changeRole(member: MemberDisplayRow, nextRole: string) {
     if (
       !selectedOrganization ||
       !isOrgRole(nextRole) ||
       nextRole === member.role
     )
       return;
-    const approved = await confirm({
+    const organization = selectedOrganization;
+    askReason({
       title: `Change role to ${getRoleLabel(nextRole)}?`,
-      description: `${member.display_name ?? member.email ?? member.user_id} will become ${getRoleLabel(nextRole)} in ${selectedOrganization.name}.`,
+      description: `${member.display_name ?? member.email ?? member.user_id} will become ${getRoleLabel(nextRole)} in ${organization.name}.`,
       confirmLabel: "Change role",
+      run: async (reason) => {
+        setSavingMembershipId(member.id);
+        try {
+          await mutateMembership("PATCH", { organizationId: organization.id, userId: member.user_id, role: nextRole, reason });
+          toast.success("Organization role updated");
+        } finally {
+          setSavingMembershipId(null);
+        }
+      },
     });
-    if (!approved) return;
-
-    setSavingMembershipId(member.id);
-    try {
-      await mutateMembership("PATCH", {
-        organizationId: selectedOrganization.id,
-        userId: member.user_id,
-        role: nextRole,
-      });
-      toast.success("Organization role updated");
-    } catch (mutationError) {
-      toast.error(
-        mutationError instanceof Error
-          ? mutationError.message
-          : "Failed to change role",
-      );
-    } finally {
-      setSavingMembershipId(null);
-    }
   }
 
-  async function removeMember(member: MemberDisplayRow) {
+  function removeMember(member: MemberDisplayRow) {
     if (!selectedOrganization) return;
-    const approved = await confirm({
-      title: `Remove from ${selectedOrganization.name}?`,
-      description: `${member.display_name ?? member.email ?? member.user_id} will lose this organization membership. The last owner cannot be removed, and neither can a person whose only organization this is.`,
+    const organization = selectedOrganization;
+    askReason({
+      title: `Remove from ${organization.name}?`,
+      description: `${member.display_name ?? member.email ?? member.user_id} loses this membership. The last owner, or a person's only organization, can't be removed.`,
       confirmLabel: "Remove member",
-      variant: "destructive" as const,
+      run: async (reason) => {
+        setSavingMembershipId(member.id);
+        try {
+          await mutateMembership("DELETE", { organizationId: organization.id, userId: member.user_id, reason });
+          toast.success("Organization member removed");
+        } finally {
+          setSavingMembershipId(null);
+        }
+      },
     });
-    if (!approved) return;
-
-    setSavingMembershipId(member.id);
-    try {
-      await mutateMembership("DELETE", {
-        organizationId: selectedOrganization.id,
-        userId: member.user_id,
-      });
-      toast.success("Organization member removed");
-    } catch (mutationError) {
-      toast.error(
-        mutationError instanceof Error
-          ? mutationError.message
-          : "Failed to remove member",
-      );
-    } finally {
-      setSavingMembershipId(null);
-    }
   }
 
   const organizationColumns: MatrxColumnDef<AdminOrganizationRow>[] = [
@@ -549,8 +538,9 @@ export function OrganizationsAdminClient() {
         title: `Make ${sel.count} member${sel.count === 1 ? "" : "s"} admin?`,
         description: `${sel.count} ${sel.count === 1 ? "person" : "people"} will become Admin in ${selectedOrganization?.name ?? "this organization"}.`,
         confirmLabel: "Make admin",
+        reason: { placeholder: REASON_PLACEHOLDER },
       }),
-      run: (sel) =>
+      run: (sel, input) =>
         runPerRow(
           sel,
           async (_id, member) => {
@@ -559,6 +549,7 @@ export function OrganizationsAdminClient() {
               organizationId: selectedOrganization.id,
               userId: member.user_id,
               role: "admin",
+              reason: requireReason(input?.reason),
             });
           },
           {
@@ -580,8 +571,9 @@ export function OrganizationsAdminClient() {
         description: `${sel.count} ${sel.count === 1 ? "person" : "people"} will lose this membership. The last owner and anyone whose only organization this is are skipped and named.`,
         confirmLabel: "Remove members",
         variant: "destructive",
+        reason: { placeholder: REASON_PLACEHOLDER },
       }),
-      run: (sel) =>
+      run: (sel, input) =>
         runPerRow(
           sel,
           async (_id, member) => {
@@ -589,6 +581,7 @@ export function OrganizationsAdminClient() {
             await mutateMembership("DELETE", {
               organizationId: selectedOrganization.id,
               userId: member.user_id,
+              reason: requireReason(input?.reason),
             });
           },
           {
@@ -616,6 +609,7 @@ export function OrganizationsAdminClient() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 p-4">
+      {reasonDialog}
       {/* The read's failure is said once, by the table (read=). */}
       {plansError ? (
         <ErrorNotice
