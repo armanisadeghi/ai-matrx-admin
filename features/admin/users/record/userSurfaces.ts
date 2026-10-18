@@ -17,7 +17,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Building2,
   Gauge,
-  ShieldCheck,
   Gem,
   Gift,
   GraduationCap,
@@ -29,6 +28,7 @@ import {
   LifeBuoy,
   LogOut,
   Mail,
+  MailCheck,
   MailPlus,
   MessageSquare,
   ShieldCheck,
@@ -67,13 +67,13 @@ export interface UserTab {
 
 export const USER_TABS: readonly UserTab[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
-  { id: "activity", label: "Activity", icon: Activity, built: false },
+  { id: "activity", label: "Activity", icon: Activity, built: true },
   { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
   { id: "organizations", label: "Organizations", icon: Building2, built: true },
-  { id: "content", label: "Content", icon: FolderOpen, built: false },
+  { id: "content", label: "Content", icon: FolderOpen, built: true },
   { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
-  { id: "notes", label: "Notes", icon: StickyNote, built: false },
-  { id: "security", label: "Security", icon: ShieldCheck, built: false },
+  { id: "notes", label: "Notes", icon: StickyNote, built: true },
+  { id: "security", label: "Security", icon: ShieldCheck, built: true },
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
   { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
   { id: "history", label: "Admin history", icon: History, built: true },
@@ -106,6 +106,7 @@ export type UserActionId =
   | "message"
   | "email"
   | "magic_link"
+  | "verify_email"
   | "password_reset"
   | "change_plan"
   | "free_months"
@@ -145,6 +146,7 @@ export const USER_ACTIONS: readonly UserActionDef[] = [
   { id: "tutorial", label: "Send a tutorial…", icon: GraduationCap, placement: "menu", group: "plan", live: true },
   { id: "mcp_access", label: "Full MCP access", icon: KeyRound, placement: "menu", group: "access", live: true },
   { id: "top_tier", label: "Top-tier models", icon: Gem, placement: "menu", group: "access", live: true },
+  { id: "verify_email", label: "Mark email verified", icon: MailCheck, placement: "menu", group: "access", live: true },
   { id: "onboarded", label: "Onboarding", icon: UserCog, placement: "menu", group: "access", live: true },
   { id: "sign_out_everywhere", label: "Sign out everywhere…", icon: LogOut, placement: "menu", group: "danger", danger: true, live: true },
   { id: "close", label: "Close account…", icon: UserX, placement: "menu", group: "danger", danger: true, live: true },
@@ -228,6 +230,8 @@ export interface UserActionState {
   mcp_full_access: boolean;
   top_tier_models: boolean;
   onboarding_completed: boolean;
+  /** The email address is verified (auth.users.email_confirmed_at is set). */
+  email_confirmed: boolean;
 }
 
 /** The label an action shows for this person right now, or null to leave it out. */
@@ -239,6 +243,8 @@ export function userActionLabel(id: UserActionId, subject: UserActionState): str
       return subject.top_tier_models ? "Turn off top-tier models" : "Allow top-tier models";
     case "onboarded":
       return subject.onboarding_completed ? "Mark as new" : "Mark as onboarded";
+    case "verify_email":
+      return subject.email_confirmed ? null : userActionDef(id).label;
     case "close":
       return subject.banned ? null : "Close account…";
     case "reopen":
@@ -261,6 +267,8 @@ export function userActionDisabled(
     case "password_reset":
     case "email":
       return !contactable;
+    case "verify_email":
+      return subject.is_anonymous || !subject.email;
     case "message":
     case "change_plan":
     case "free_months":

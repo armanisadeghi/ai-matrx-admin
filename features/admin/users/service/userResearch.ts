@@ -20,6 +20,14 @@ export async function readUserResearch(ownerId: string): Promise<UserResearch[]>
   return rows.map(row => UserResearchSchema.parse(row));
 }
 
+/** My own earlier research about one person (owner-scoped; index created_by, subject_id). */
+export async function readUserResearchAbout(ownerId: string, subjectId: string): Promise<UserResearch | null> {
+  const { data, error } = await client.schema("crm").from("party_research").select("*")
+    .eq("created_by", ownerId).eq("subject_id", subjectId).is("deleted_at", null).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? UserResearchSchema.parse(data) : null;
+}
+
 export async function saveUserResearch(input: {
   ownerId: string; subjectId: string; partyId: string; label: string;
   category: Relationship; notes: string; contactState: ContactState; existing: UserResearch | null; draft?: { text: string; plan: string; feature: string } | null;
