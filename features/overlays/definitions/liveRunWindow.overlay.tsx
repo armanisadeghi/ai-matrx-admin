@@ -29,7 +29,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { LiveRunProgressState } from "@ai-matrx/chat/agents/components/live-run/LiveRunProgress";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "liveRunWindow" as const;

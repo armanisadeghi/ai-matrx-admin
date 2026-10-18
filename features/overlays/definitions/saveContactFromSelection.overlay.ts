@@ -1,6 +1,6 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export type SaveContactFromSelectionDefinitionData = Record<string, unknown>;

@@ -12,7 +12,7 @@ const OVERLAY_ID = "flashcardItemWindow" as const;
 
 import type { ReviewResult } from "@/features/flashcards/types";
 import type { FaceImageRef } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export interface OpenFlashcardItemWindowOptions {

@@ -11,7 +11,7 @@ import {
   type OpenMultiFileSmartCodeEditorWindowOptions,
   type MultiFileSmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/multi-file-smart-code-editor/useOpenMultiFileSmartCodeEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export {

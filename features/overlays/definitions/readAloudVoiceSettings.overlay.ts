@@ -4,7 +4,7 @@
  * `readAloudVoiceSettings` — Read-aloud voice: a window whose component ships in @ai-matrx/chat (CHAT_WINDOWS.readAloudVoiceSettings).
  * Single instance; no data.
  */
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export type ReadAloudVoiceSettingsDefinitionData = Record<string, never>;

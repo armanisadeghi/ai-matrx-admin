@@ -18,7 +18,7 @@ import type {
   ReferenceDelivery,
   ReferencePick,
 } from "@/features/matrx-envelope/components/reference-picker/referencePickerTypes";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "referencePicker" as const;

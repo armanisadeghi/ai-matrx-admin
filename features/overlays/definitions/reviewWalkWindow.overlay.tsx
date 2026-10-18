@@ -20,7 +20,7 @@ import {
   REVIEW_WALK_OVERLAY_ID,
   openReviewWalk,
 } from "@/features/review-walk/openReviewWalk";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export interface OpenReviewWalkWindowOptions {

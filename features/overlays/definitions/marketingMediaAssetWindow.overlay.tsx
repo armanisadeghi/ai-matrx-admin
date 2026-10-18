@@ -9,7 +9,7 @@ import {
   createMarketingMediaAssetCallbackGroup,
   type MarketingMediaAssetWindowHandlers,
 } from "./callbacks/marketingMediaAssetWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "marketingMediaAssetWindow" as const;

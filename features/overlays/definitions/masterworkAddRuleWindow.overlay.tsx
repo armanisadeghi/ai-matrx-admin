@@ -14,7 +14,7 @@ import {
   type AddRuleWindowData,
   type AddRuleWindowHandlers,
 } from "@/features/window-panels/windows/masterwork/callbacks";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "masterworkAddRuleWindow" as const;

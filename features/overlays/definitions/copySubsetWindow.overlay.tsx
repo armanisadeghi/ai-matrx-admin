@@ -23,7 +23,7 @@ import {
   releaseCopySubsetSession,
 } from "@/components/agent-copy/copy-subset/session";
 import type { CopySubsetSource } from "@/components/agent-copy/copy-subset/types";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "copySubsetWindow" as const;

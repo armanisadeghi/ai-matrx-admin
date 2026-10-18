@@ -12,7 +12,7 @@ import {
   type OpenContentEditorListWindowOptions,
   type ContentEditorWindowHandle,
 } from "@/features/window-panels/windows/content-editors/useOpenContentEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export {

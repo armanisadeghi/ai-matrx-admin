@@ -12,7 +12,7 @@ import {
   type OpenCuratedIconPickerOptions,
   type CuratedIconPickerHandle,
 } from "@/features/window-panels/windows/icons/useOpenCuratedIconPickerWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {

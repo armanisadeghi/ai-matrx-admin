@@ -20,7 +20,7 @@ import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 // (map, topic) is the identity of a panel — not the moment it was opened. The
 // format is owned there because the URL hydrator has to read it back.
 import { topicPanelInstanceId } from "@/features/marketing/seo/topical-map/panel/topicPanelInstance";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "topicalMapTopicPanel" as const;

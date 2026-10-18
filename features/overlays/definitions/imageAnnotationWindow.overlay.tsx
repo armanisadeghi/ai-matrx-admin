@@ -12,7 +12,7 @@ import {
   type ImageAnnotationWindowData,
   type ImageAnnotationWindowHandlers,
 } from "./callbacks/imageAnnotationWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "imageAnnotationWindow" as const;
