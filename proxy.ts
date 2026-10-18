@@ -29,6 +29,8 @@ import {
   startRecordRobotsLookup,
 } from "@/lib/seo/record-robots-header";
 import { legacyBrandRedirectUrl } from "@/lib/seo/legacy-brand-host";
+import { hostClass, internalPathFor, normalizeHost } from "@/lib/custom-domains/host-routing";
+import { lookupDomain } from "@/lib/custom-domains/lookup";
 
 // ---------------------------------------------------------------------------
 // Edu host gate — learn.aimatrx.com (Arman's decision, 2026-07)
@@ -208,6 +210,31 @@ function isEduAllowedPath(pathname: string): boolean {
   return EDU_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
+async function customDomainResponse(
+  request: NextRequest,
+  requestHost: string | null,
+): Promise<NextResponse | null> {
+  const kind = hostClass(requestHost, [MAIN_HOST, ADMIN_HOST, DEMOS_HOST, EDU_HOST]);
+  if (kind === "platform" || !requestHost) return null;
+  let domain;
+  try {
+    domain = await lookupDomain(normalizeHost(requestHost));
+  } catch (error) {
+    // NOTHING FAILS SILENTLY: an unreachable lookup is our failure, said as one, never the app.
+    console.error(`[custom-domain] lookup failed for ${requestHost}:`, error);
+    if (kind === "dev") return null;
+    return new NextResponse("This site is temporarily unavailable.", { status: 503 });
+  }
+  if (!domain) {
+    return kind === "dev" ? null : new NextResponse("Not found", { status: 404 });
+  }
+  const target = internalPathFor(request.nextUrl.pathname, domain);
+  if (!target) return new NextResponse("Not found", { status: 404 });
+  const rewriteUrl = request.nextUrl.clone();
+  rewriteUrl.pathname = target;
+  return NextResponse.rewrite(rewriteUrl, { request });
+}
+
 async function routeRequest(request: NextRequest) {
   const requestHost = request.headers.get("host");
 
@@ -219,6 +246,11 @@ async function routeRequest(request: NextRequest) {
     MAIN_HOST,
   );
   if (legacyTarget) return NextResponse.redirect(legacyTarget, 308);
+
+  // A business's own domain serves only the published things its routes map (iam.org_domain_route);
+  // anything else on that host is a 404, never the app. *.localhost previews fall back to the app.
+  const customHost = await customDomainResponse(request, requestHost);
+  if (customHost) return customHost;
 
   // Satellite hosts serve ONLY their surface; everything else bounces to the
   // main origin. Never gate if a satellite host resolves to the main host
