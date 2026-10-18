@@ -48,6 +48,7 @@ export {
   RecordPanel,
   RecordValue,
   RecordsMount,
+  RecordsTableCard,
   RecordsUiProvider,
   RefusalLine,
   RefusalNotice,

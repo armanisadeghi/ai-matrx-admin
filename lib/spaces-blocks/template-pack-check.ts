@@ -404,7 +404,10 @@ function checkBoard(raw: unknown, tables: Map<string, TemplateSpec["tables"][num
         else if ((size.w as number) > widest)
           say(`${tat}.size.w`, `A page-layout chapter is ${PACK_BOARD_COLUMN} wide; a tile is at most ${PACK_BOARD_TILE_W} (it is ${String(size.w)}).`);
         if (t.kind === "table") {
-          if (!str(t.table)) say(`${tat}.table`, "A table tile names a spec table by its token.");
+          if (t.entity !== undefined && t.table !== undefined) say(`${tat}`, "A table tile names a spec table or an entity, never both.");
+          else if (t.entity !== undefined) {
+            if (!str(t.entity) || !/^[a-z][a-z0-9_]*$/.test(t.entity)) say(`${tat}.entity`, "An entity tile names a registered entity token, like web_brand_choice.");
+          } else if (!str(t.table)) say(`${tat}.table`, "A table tile names a spec table by its token, or an entity by its token.");
           else if (!tables.has(t.table)) say(`${tat}.table`, `No table has the token "${t.table}". Tables: ${[...tables.keys()].join(", ") || "none"}.`);
           if (t.layout !== undefined && t.layout !== "section" && t.layout !== "table") say(`${tat}.layout`, `"${String(t.layout)}" is not a table layout. Write "section" or "table".`);
           if (t.text !== undefined) say(`${tat}.text`, "A table tile has no text; its rows are the table's sample rows.");
@@ -412,11 +415,11 @@ function checkBoard(raw: unknown, tables: Map<string, TemplateSpec["tables"][num
           if (!str(t.hero) && !str(t.text)) say(`${tat}`, "A cover tile has a hero (HTML) or text (markdown): write at least one.");
           if (t.hero !== undefined && typeof t.hero !== "string") say(`${tat}.hero`, "A cover's hero is HTML text.");
           else if (typeof t.hero === "string" && /<script\b/i.test(t.hero)) say(`${tat}.hero`, "A cover's hero is markup and CSS only: scripts do not run in it.");
-          if (t.table !== undefined || t.layout !== undefined) say(`${tat}`, "A cover tile names no table and no layout.");
+          if (t.table !== undefined || t.entity !== undefined || t.layout !== undefined) say(`${tat}`, "A cover tile names no table and no layout.");
         } else if (t.kind === "note" || t.kind === "writeUp") {
           if (!str(t.text)) say(`${tat}.text`, `A ${String(t.kind)} tile starts with words: write its text.`);
           else if (/\bNotion\b/.test(t.text)) say(`${tat}.text`, "Write in our own words: the text names another product.");
-          if (t.table !== undefined || t.layout !== undefined) say(`${tat}`, `A ${String(t.kind)} tile names no table and no layout.`);
+          if (t.table !== undefined || t.entity !== undefined || t.layout !== undefined) say(`${tat}`, `A ${String(t.kind)} tile names no table and no layout.`);
         }
       });
     });

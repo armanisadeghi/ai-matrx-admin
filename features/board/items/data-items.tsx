@@ -22,7 +22,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Database, DownloadCloud, LayoutList, Rows3, Table2 } from "lucide-react";
-import { Peek, RecordsMount, SectionCard, TableTokensProvider, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { Peek, RecordsMount, RecordsTableCard, SectionCard, TableTokensProvider, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { recordsDataSource, rowName } from "@ai-matrx/records-ui/helpers";
 import { useFields, useRecords, useTable } from "@ai-matrx/records/react";
 
@@ -50,7 +50,7 @@ import { dataHomeTables, findTables } from "./record-finders";
 import { GetDataBody } from "../data-fetch/GetDataBody";
 import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
-import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, tableLookHint } from "./table-tile";
+import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, entityTableOf, tableLookHint, type EntityTileFilter } from "./table-tile";
 import { useTileAutoHeight } from "../components/BoardTile";
 
 
@@ -220,7 +220,7 @@ function AdoptTableLook({ tableId, source, onSource }: { tableId: string } & Pic
 
 /** The table tile's own "…" entries: switch between the table page and the section card. */
 export function tableMenuActions({ source, onSource }: TileMenuContext): TileMenuAction[] {
-  if (!tableIdOf(source)) return [];
+  if (!tableIdOf(source) && !entityTableOf(source)) return [];
   const next = tableLayoutOf(source) === "section" ? "table" : "section";
   return [
     {
@@ -239,7 +239,7 @@ export function tableMenuActions({ source, onSource }: TileMenuContext): TileMen
  */
 export function SectionWithBoardTokens({ tableId }: { tableId: string }) {
   // The board's tokens are provided once for every tile (`BoardTokensMount`), so the section adds none.
-  return <SectionCard tableId={tableId} />;
+  return <SectionCard source={{ kind: "table", id: tableId }} />;
 }
 
 /**
@@ -295,7 +295,28 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
   );
 }
 
+/**
+ * A table tile over a REAL SCHEMA TABLE (a registered entity token, `meta.token`; optionally one parent's rows,
+ * `meta.filter`): records-ui's section card or table card with `source: { kind: "entity" }`, read and written
+ * through the platform's entity doors. Mounted in the person's working organization: that is where a row added
+ * here is filed (reads are every organization she can see, narrowed only by the tile's own filter).
+ */
+function EntityTableTileBody({ token, filter, source }: { token: string; filter?: EntityTileFilter; source: NodeSource }) {
+  const section = tableLayoutOf(source) === "section";
+  const auto = useTileAutoHeight() && section;
+  const entitySource = { kind: "entity" as const, token, ...(filter ? { filter } : {}) };
+  return (
+    <div className={auto ? "flex min-w-0 flex-col gap-2 overflow-x-auto" : "h-full min-h-0 overflow-y-auto px-2 pb-2 pt-1"}>
+      <WorkingOrganizationRecords>
+        {section ? <SectionCard source={entitySource} /> : <RecordsTableCard source={entitySource} />}
+      </WorkingOrganizationRecords>
+    </div>
+  );
+}
+
 function TableItemBody(props: ItemBodyProps) {
+  const entityTable = entityTableOf(props.source);
+  if (entityTable) return <EntityTableTileBody key={entityTable.token} token={entityTable.token} {...(entityTable.filter ? { filter: entityTable.filter } : {})} source={props.source} />;
   const id = tableIdOf(props.source);
   if (id) return <TableRecordBody key={id} id={id} {...props} />;
   // "Get data": the tile is the fetch panel until the server answers with the table.
@@ -406,8 +427,8 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     Body: TableItemBody,
     menuActions: tableMenuActions,
     // A section card carries its own title (its h2) and lays out at its natural height.
-    namesItself: (s) => Boolean(tableIdOf(s)) && tableLayoutOf(s) === "section",
-    autoHeight: (s) => Boolean(tableIdOf(s)) && tableLayoutOf(s) === "section",
+    namesItself: (s) => (Boolean(tableIdOf(s)) || Boolean(entityTableOf(s))) && tableLayoutOf(s) === "section",
+    autoHeight: (s) => (Boolean(tableIdOf(s)) || Boolean(entityTableOf(s))) && tableLayoutOf(s) === "section",
     // Wakes with its grid, scroll, selection and open cell intact: the gates keep their answers
     // (lib/kept-answer), so a wake never drops to "Opening the table…" (lane REMOUNT-SAFETY).
     sleeps: true,
