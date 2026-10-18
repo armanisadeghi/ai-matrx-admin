@@ -118,9 +118,7 @@ export function BackgroundRunCard({ runId, hint }: { runId: string; hint: Backgr
     : isImport && ratchet.stageIndex >= 0
       ? Math.round(ratchet.fraction * 100)
       : view.phase === "stopped" ? 0 : null;
-  const detail = view.phase === "finished"
-    ? null
-    : view.sample?.detail ?? null;
+  const detail = view.sample?.detail ?? null;
 
   return (
     <Card size="sm" aria-label={title} className="w-full max-w-2xl">
@@ -152,7 +150,7 @@ export function BackgroundRunCard({ runId, hint }: { runId: string; hint: Backgr
 
       <div className="flex flex-col gap-1.5">
         <Progress value={barValue} tone={BAR_TONE[view.phase]} aria-label="Progress" />
-        <div className="flex h-5 items-center gap-2">
+        {view.phase === "finished" ? null : <div className="flex h-5 items-center gap-2">
           {view.phase === "opening" || (view.phase === "working" && !view.sample) ? (
             <Skeleton motion="shimmer" shape="line" width="1/3" aria-label="Waiting for the first step" />
           ) : (
@@ -165,7 +163,7 @@ export function BackgroundRunCard({ runId, hint }: { runId: string; hint: Backgr
               {formatCount(view.sample?.current ?? 0)} of {formatCount(view.sample?.total ?? 0)}
             </span>
           ) : null}
-        </div>
+        </div>}
         {!over ? (
           <p className="type-meta h-4 text-muted-foreground" aria-live="polite">
             {view.readFailure
@@ -205,8 +203,13 @@ interface MadeTable {
   rows: number | null;
 }
 
+/** "1 databases" reads wrong: a count of one drops the plural "s" the server's label carries. */
+function countWord({ label, count }: { label: string; count: number }): string {
+  return count === 1 && label.endsWith("s") ? label.slice(0, -1) : label;
+}
+
 function ImportReportView({ report }: { report: ImportReport }) {
-  const facts = report.counts.map((entry) => `${formatCount(entry.count)} ${entry.label}`).join(" · ");
+  const facts = report.counts.map((entry) => `${formatCount(entry.count)} ${countWord(entry)}`).join(" · ");
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
@@ -215,7 +218,11 @@ function ImportReportView({ report }: { report: ImportReport }) {
           {report.tableIds.length === 1 ? "1 table made" : `${formatCount(report.tableIds.length)} tables made`}
           {facts ? <span className="text-muted-foreground"> · {facts}</span> : null}
         </p>
-        {report.reportTableId ? <DoorLink href={tableHref(report.reportTableId)}>Report</DoorLink> : null}
+        {report.reportTableId ? (
+          <span className="type-secondary shrink-0">
+            <DoorLink href={tableHref(report.reportTableId)}>Report</DoorLink>
+          </span>
+        ) : null}
       </div>
       {report.tableIds.length > 0 ? <MadeTables tableIds={report.tableIds} /> : null}
       <LossList title="Came over with a difference" losses={report.different} reportTableId={report.reportTableId} />
@@ -280,6 +287,8 @@ function MadeTables({ tableIds }: { tableIds: string[] }) {
       reorderableColumns={false}
       resizableColumns={false}
       detail={{ enabled: false }}
+      selection={false}
+      copyControls={{ row: false }}
     />
   );
 }
@@ -365,6 +374,8 @@ function CopyReportView({ report }: { report: CopyReport }) {
           reorderableColumns={false}
           resizableColumns={false}
           detail={{ enabled: false }}
+          selection={false}
+          copyControls={{ row: false }}
         />
       ) : null}
     </div>
