@@ -26,8 +26,8 @@ export interface ResourcePeekRequest {
   anchor?: Element | DOMRect | null;
   trigger?: ResourcePeekTrigger;
   /**
-   * Where the record opens when no peek host is mounted on this page (a shell without `Providers`):
-   * the request then opens it in a new tab instead of doing nothing.
+   * Where the record opens when no peek host registers within `RESOURCE_PEEK_HOST_WAIT_MS` (a shell
+   * without `Providers`): the request then opens it in a new tab instead of doing nothing.
    */
   fallbackHref?: string | null;
   /** One open peek per key; a second request with the same key replaces it. Default `kind:id`. */
@@ -43,40 +43,87 @@ let firstRequest: OpenResourcePeek | null = null;
 let hostCount = 0;
 const listeners = new Set<() => void>();
 
+/**
+ * How long a request waits for a host before it falls back (2026-10-18, adversarial IMPORTANT-3).
+ * `ResourcePeekRoot` registers in an effect, and it mounts AFTER `{children}` in `app/Providers.tsx`,
+ * so on the first commit every child effect that asks for a peek runs before the host exists. Such a
+ * request is QUEUED and drawn the moment the host registers; only when no host arrives within this
+ * window (a shell with no `Providers`) does it open the record in a new tab.
+ */
+export const RESOURCE_PEEK_HOST_WAIT_MS = 1000;
+
+let pending: readonly OpenResourcePeek[] = [];
+let pendingTimer: ReturnType<typeof setTimeout> | null = null;
+
 function emit(): void {
   for (const l of listeners) l();
 }
 
-/**
- * Ask the app's one peek host to show a record. Returns a function that closes THIS peek.
- * Returns `null` when no host is mounted on this page (a shell without `Providers`) — the caller
- * degrades (e.g. opens the record in a new tab) instead of leaving a door that does nothing.
- */
-export function openResourcePeek(request: ResourcePeekRequest): (() => void) | null {
-  if (hostCount === 0 && typeof window !== "undefined") {
-    console.error(
-      `[resource-peek] no peek host on this page — ${request.kind} ${request.id} cannot open in place` +
-        (request.fallbackHref ? `; opening ${request.fallbackHref} in a new tab` : ""),
-    );
-    if (request.fallbackHref) window.open(request.fallbackHref, "_blank", "noopener,noreferrer");
-    return null;
-  }
-  const key = request.key ?? `${request.kind}:${request.id}`;
-  const next: OpenResourcePeek = { ...request, key };
-  const replaced = entries.find((e) => e.key === key);
-  entries = [...entries.filter((e) => e.key !== key), next];
+function keyOf(request: ResourcePeekRequest): string {
+  return request.key ?? `${request.kind}:${request.id}`;
+}
+
+function show(next: OpenResourcePeek): void {
+  const replaced = entries.find((e) => e.key === next.key);
+  entries = [...entries.filter((e) => e.key !== next.key), next];
   if (!firstRequest) firstRequest = next;
   emit();
   // The replaced request's owner is told it closed, unless it is the same owner re-asking.
   if (replaced && replaced.onClose !== next.onClose) replaced.onClose?.();
+}
+
+function giveUpWaiting(): void {
+  pendingTimer = null;
+  if (hostCount > 0) return;
+  const stranded = pending;
+  pending = [];
+  for (const request of stranded) {
+    console.error(
+      `[resource-peek] no peek host on this page after ${RESOURCE_PEEK_HOST_WAIT_MS} ms — ${request.kind} ${request.id} cannot open in place` +
+        (request.fallbackHref ? `; opening ${request.fallbackHref} in a new tab` : "; and it has no fallbackHref, so nothing opens"),
+    );
+    if (request.fallbackHref) window.open(request.fallbackHref, "_blank", "noopener,noreferrer");
+    request.onClose?.();
+  }
+}
+
+/**
+ * Ask the app's one peek host to show a record. Returns a function that closes THIS peek.
+ * With no host registered yet the request waits (see `RESOURCE_PEEK_HOST_WAIT_MS`): drawn as soon as
+ * the host registers, or opened at `fallbackHref` in a new tab when none arrives — never nothing.
+ */
+export function openResourcePeek(request: ResourcePeekRequest): () => void {
+  const key = keyOf(request);
+  const next: OpenResourcePeek = { ...request, key };
+  if (hostCount === 0 && typeof window !== "undefined") {
+    const replaced = pending.find((e) => e.key === key);
+    pending = [...pending.filter((e) => e.key !== key), next];
+    if (replaced && replaced.onClose !== next.onClose) replaced.onClose?.();
+    pendingTimer ??= setTimeout(giveUpWaiting, RESOURCE_PEEK_HOST_WAIT_MS);
+    return () => closeResourcePeek(key);
+  }
+  show(next);
   return () => closeResourcePeek(key);
 }
 
-/** Close one peek by key (idempotent). Calls the request's `onClose` unless `notify: false`. */
-export function closeResourcePeek(key: string, options?: { notify?: boolean }): void {
-  const entry = entries.find((e) => e.key === key);
+export interface CloseResourcePeekOptions {
+  /** Call the request's `onClose` (default true). */
+  notify?: boolean;
+  /** Close only when the open request for this key still belongs to this owner (its `onClose`). */
+  owner?: () => void;
+}
+
+/** Close one peek by key (idempotent), whether drawn or still waiting for the host. */
+export function closeResourcePeek(key: string, options?: CloseResourcePeekOptions): void {
+  const owned = (e: OpenResourcePeek) => e.key === key && (!options?.owner || e.onClose === options.owner);
+  const waiting = pending.find(owned);
+  if (waiting) {
+    pending = pending.filter((e) => e !== waiting);
+    if (options?.notify !== false) waiting.onClose?.();
+  }
+  const entry = entries.find(owned);
   if (!entry) return;
-  entries = entries.filter((e) => e.key !== key);
+  entries = entries.filter((e) => e !== entry);
   emit();
   if (options?.notify !== false) entry.onClose?.();
 }
@@ -112,6 +159,14 @@ export function firstResourcePeekRequest(): OpenResourcePeek | null {
 /** `ResourcePeekRoot` registers itself while mounted, so a request knows someone will draw it. */
 export function registerResourcePeekHost(): () => void {
   hostCount += 1;
+  if (pendingTimer) {
+    clearTimeout(pendingTimer);
+    pendingTimer = null;
+  }
+  // Requests made before the host's effect ran (first commit, deep link) are drawn now.
+  const waiting = pending;
+  pending = [];
+  for (const request of waiting) show(request);
   return () => {
     hostCount = Math.max(0, hostCount - 1);
   };
