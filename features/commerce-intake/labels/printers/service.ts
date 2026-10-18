@@ -139,30 +139,6 @@ const SORTABLE = new Set([
   "created_at",
 ]);
 
-/** Relative-bucket date filters (DATE_FILTER_OPTIONS) → an ISO floor. */
-function bucketFloor(bucket: string): string | null {
-  const hours: Record<string, number> = {
-    "1h": 1,
-    "24h": 24,
-    "7d": 24 * 7,
-    "30d": 24 * 30,
-    "90d": 24 * 90,
-    "1y": 24 * 365,
-  };
-  const h = hours[bucket];
-  if (!h) return null;
-  return new Date(Date.now() - h * 3600_000).toISOString();
-}
-
-/** The widest bucket wins when several are selected (an OR of "since X"). */
-function widestFloor(buckets: string[]): string | null {
-  const floors = buckets
-    .map(bucketFloor)
-    .filter((v): v is string => v !== null)
-    .sort();
-  return floors[0] ?? null;
-}
-
 export interface CertifiedPrinterPageArgs {
   /** Optional explicit filter (the on-page scope control). None = every organization the person can reach. */
   organizationId?: string | null;
@@ -176,8 +152,9 @@ export interface CertifiedPrinterPageArgs {
   connectionContains?: string;
   statuses?: string[];
   templateIds?: string[];
-  certifiedBuckets?: string[];
-  createdBuckets?: string[];
+  /** The table's date range per date column (since inclusive, until exclusive); a printer with no moment is out. */
+  certifiedWindow?: { since?: string; until?: string };
+  createdWindow?: { since?: string; until?: string };
 }
 
 export async function fetchCertifiedPrinterPage(
@@ -210,13 +187,12 @@ export async function fetchCertifiedPrinterPage(
     q = q.in("status", args.statuses);
   if (args.templateIds && args.templateIds.length > 0)
     q = q.in("template_id", args.templateIds);
-  if (args.certifiedBuckets && args.certifiedBuckets.length > 0) {
-    const floor = widestFloor(args.certifiedBuckets);
-    if (floor) q = q.gte("certified_at", floor);
-  }
-  if (args.createdBuckets && args.createdBuckets.length > 0) {
-    const floor = widestFloor(args.createdBuckets);
-    if (floor) q = q.gte("created_at", floor);
+  for (const [column, window] of [
+    ["certified_at", args.certifiedWindow],
+    ["created_at", args.createdWindow],
+  ] as const) {
+    if (window?.since) q = q.gte(column, window.since);
+    if (window?.until) q = q.lt(column, window.until);
   }
 
   q = q.order(SORTABLE.has(args.sort) ? args.sort : "created_at", {

@@ -8,7 +8,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -118,8 +117,7 @@ export const CERTIFIED_PRINTER_COLUMNS: EntityColumnSpec<CertifiedPrinterListRow
         id: "certified_at",
         accessorKey: "certified_at",
         header: "Tested",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         cell: (row) => timeCell(row.certified_at),
       },
     },
@@ -131,8 +129,7 @@ export const CERTIFIED_PRINTER_COLUMNS: EntityColumnSpec<CertifiedPrinterListRow
         id: "created_at",
         accessorKey: "created_at",
         header: "Added",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         cell: (row) => timeCell(row.created_at),
       },
     },

@@ -37,6 +37,11 @@ function selectFilter(query: EntityListQuery, id: string): string[] | undefined 
   return f && f.kind === "select" && f.values.length > 0 ? f.values : undefined;
 }
 
+function dateWindow(query: EntityListQuery, id: string): { since?: string; until?: string } | undefined {
+  const f = query.filters[id];
+  return f && f.kind === "date" ? { since: f.since, until: f.until } : undefined;
+}
+
 function argsFor(
   query: EntityListQuery,
   page: number,
@@ -57,8 +62,8 @@ function argsFor(
     connectionContains: textFilter(query, "connection_note"),
     statuses: selectFilter(query, "status"),
     templateIds: selectFilter(query, "template_id"),
-    certifiedBuckets: selectFilter(query, "certified_at"),
-    createdBuckets: selectFilter(query, "created_at"),
+    certifiedWindow: dateWindow(query, "certified_at"),
+    createdWindow: dateWindow(query, "created_at"),
   };
 }
 
