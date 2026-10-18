@@ -31,8 +31,58 @@ import type {
     EntityScopeCounts,
 } from "@/lib/entity-list/types";
 import type { ListScopeKind } from "@/lib/list-scope/types";
-import { MediaApiError, listLibraries } from "../api";
+import { MediaApiError, listLibraries as listLibrariesPage } from "../api";
 import type { LibraryRow, LibraryVisibility } from "../types";
+
+type LibraryListParams = Parameters<typeof listLibrariesPage>[1];
+
+const DATE_COLUMNS = ["last_synced_at", "created_at"] as const;
+
+/** The table's date range per date column, from the filter bag (bounds already resolved). */
+function dateWindowsForQuery(
+    filters: EntityFilters,
+): { column: (typeof DATE_COLUMNS)[number]; since?: string; until?: string }[] {
+    const windows: { column: (typeof DATE_COLUMNS)[number]; since?: string; until?: string }[] = [];
+    for (const column of DATE_COLUMNS) {
+        const f = filters[column];
+        if (f && f.kind === "date" && (f.since || f.until)) {
+            windows.push({ column, since: f.since, until: f.until });
+        }
+    }
+    return windows;
+}
+
+/**
+ * `GET /media/libraries` publishes no date parameter, so a date range cannot narrow the server's
+ * page or its `total`. While a range is set the shelf (every lane's Libraries — a person's shelf is
+ * small) is read to the end in the endpoint's biggest pages and narrowed here, so the rows, the
+ * page count and every lane total come from ONE narrowed set. With no range it is the plain page.
+ * (since inclusive, until exclusive; a Library with no moment is out of the range.)
+ */
+async function listLibraries(
+    dispatch: AppDispatch,
+    params: NonNullable<LibraryListParams>,
+    windows: ReturnType<typeof dateWindowsForQuery>,
+) {
+    if (windows.length === 0) return listLibrariesPage(dispatch, params);
+    const { limit = 50, offset = 0, ...base } = params;
+    const kept: LibraryRow[] = [];
+    for (let at = 0; ; at += 200) {
+        const page = await listLibrariesPage(dispatch, { ...base, limit: 200, offset: at });
+        for (const row of page.libraries) {
+            const inRange = windows.every(({ column, since, until }) => {
+                const moment = row[column] ? new Date(row[column] as string).getTime() : NaN;
+                if (Number.isNaN(moment)) return false;
+                if (since && moment < new Date(since).getTime()) return false;
+                if (until && moment >= new Date(until).getTime()) return false;
+                return true;
+            });
+            if (inRange) kept.push(row);
+        }
+        if (page.libraries.length < 200 || at + 200 >= page.total) break;
+    }
+    return { libraries: kept.slice(offset, offset + limit), total: kept.length };
+}
 
 const SCOPE_TO_VISIBILITY: Record<string, LibraryVisibility> = {
     mine: "personal",
@@ -118,13 +168,17 @@ export function createLibraryListService(
             try {
                 const limit = sort.pageSize || pageSizeFallback;
                 const adapters = adaptersForQuery(query.filters);
-                const response = await listLibraries(dispatch, {
-                    visibility: visibilityForQuery(query),
-                    ...(adapters.length ? { adapter: adapters } : {}),
-                    ...(query.search ? { q: query.search } : {}),
-                    limit,
-                    offset: (query.page - 1) * limit,
-                });
+                const response = await listLibraries(
+                    dispatch,
+                    {
+                        visibility: visibilityForQuery(query),
+                        ...(adapters.length ? { adapter: adapters } : {}),
+                        ...(query.search ? { q: query.search } : {}),
+                        limit,
+                        offset: (query.page - 1) * limit,
+                    },
+                    dateWindowsForQuery(query.filters),
+                );
                 // `total` is the count of what the FILTER matched, not of the
                 // organization's whole shelf (server contract 0.6.0) — so paging
                 // cannot walk off the end of a narrowed set.
@@ -174,17 +228,22 @@ export function createLibraryListService(
             // the person can see, which is what the All lane lists.
             const lanes = ["all", ...Object.keys(SCOPE_TO_VISIBILITY)];
             const adapters = adaptersForQuery(query.filters);
+            const windows = dateWindowsForQuery(query.filters);
             const results = await Promise.allSettled(
                 lanes.map((kind) =>
-                    listLibraries(dispatch, {
-                        ...(SCOPE_TO_VISIBILITY[kind]
-                            ? { visibility: [SCOPE_TO_VISIBILITY[kind]] }
-                            : {}),
-                        ...(adapters.length ? { adapter: adapters } : {}),
-                        ...(query.search ? { q: query.search } : {}),
-                        limit: 1,
-                        offset: 0,
-                    }),
+                    listLibraries(
+                        dispatch,
+                        {
+                            ...(SCOPE_TO_VISIBILITY[kind]
+                                ? { visibility: [SCOPE_TO_VISIBILITY[kind]] }
+                                : {}),
+                            ...(adapters.length ? { adapter: adapters } : {}),
+                            ...(query.search ? { q: query.search } : {}),
+                            limit: 1,
+                            offset: 0,
+                        },
+                        windows,
+                    ),
                 ),
             );
 

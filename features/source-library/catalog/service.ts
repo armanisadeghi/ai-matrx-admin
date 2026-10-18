@@ -43,14 +43,6 @@ export const LENGTH_BUCKETS = [
     { value: "gt1h", label: "Over an hour", min: 3600, max: undefined },
 ] as const;
 
-export const PUBLISHED_BUCKETS = [
-    { value: "7d", label: "Last 7 days", days: 7 },
-    { value: "30d", label: "Last 30 days", days: 30 },
-    { value: "90d", label: "Last 90 days", days: 90 },
-    { value: "1y", label: "Last year", days: 365 },
-    { value: "3y", label: "Last 3 years", days: 1095 },
-] as const;
-
 const SORT_COLUMNS: Record<string, VideoQuery["order"]> = {
     published_at: "published_at",
     view_count: "view_count",
@@ -95,18 +87,14 @@ export function toVideoQuery(
         }
     }
 
-    const published = selected(query.filters, "published_at");
-    if (published.length) {
-        // The widest selected window is the honest reading of "any of these".
-        const days = Math.max(
-            ...PUBLISHED_BUCKETS.filter((b) => published.includes(b.value)).map(
-                (b) => b.days,
-            ),
-        );
-        if (Number.isFinite(days)) {
-            out.published_after = new Date(
-                Date.now() - days * 24 * 60 * 60 * 1000,
-            ).toISOString();
+    // The table's date range (bounds already resolved): since inclusive, until exclusive. The server's
+    // `published_before` is inclusive, so the exclusive bound goes over one millisecond earlier. A Source
+    // with no publish moment is out of any range.
+    const published = query.filters.published_at;
+    if (published?.kind === "date") {
+        if (published.since) out.published_after = published.since;
+        if (published.until) {
+            out.published_before = new Date(new Date(published.until).getTime() - 1).toISOString();
         }
     }
 

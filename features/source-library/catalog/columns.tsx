@@ -24,7 +24,7 @@ import {
 } from "../format";
 import type { VideoRow } from "../types";
 import { sourceVocabulary, type SourceVocabulary } from "../vocabulary";
-import { LENGTH_BUCKETS, PUBLISHED_BUCKETS } from "./service";
+import { LENGTH_BUCKETS } from "./service";
 import { SourceStateCell } from "./SourceStateCell";
 import { catalogSourceState } from "./sourceState";
 
@@ -151,12 +151,7 @@ function buildBaseColumns(
             accessorKey: "published_at",
             header: "Published",
             defaultSortDirection: "desc",
-            filter: "select",
-            filterOptions: PUBLISHED_BUCKETS.map((b) => ({
-                value: b.value,
-                label: b.label,
-            })),
-            filterSingle: true,
+            filter: "date",
             cell: (row) => timeCell(row.published_at),
         },
     },
