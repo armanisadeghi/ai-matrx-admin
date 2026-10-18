@@ -48,6 +48,19 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-18 — ADVERSARIAL-1 fixes. **Template search is ONE pure module, `lib/spaces-blocks/template-search.ts`**
+  (`searchTemplates(items, query, faceOf)`; the public /templates gallery imports it too): the query is cut into words,
+  each word matches its synonyms (to do/todo/task/checklist, kanban/board, crm/client/customer/lead, calendar/planner/
+  schedule, budget/expense/finance, notes/docs/wiki…, `TEMPLATE_SYNONYMS`), over title, tags, category label, description,
+  for-who and what is INSIDE (`card.space.find`, written by `packCardFace` from `packFindWords`: table names, view names
+  and layouts, page titles; live after the next `spaces:templates:publish`). Every word must match, else any; ranked by
+  field. **Use template** reads the template and the organization together, makes the page tree while the tables
+  install, writes the root first and opens it (`onRootReady`) while the sub-pages fill; phases are
+  `performance.measure("spaces:use-template:*")`. The root's database blocks carry the preview's sizes (`paintedSize`
+  marked `any: 1`, held at any width until the first real save) and a still-loading block keeps its painted size
+  (`DatabaseLoadingBox`). The gallery preview opens at its top every time (`usePinnedTop`). A database view nothing can
+  save onto passes a no-op `onViewChange`, so records-ui's "nowhere to save" line is gone.
+
 - 2026-10-18 — The former built-in sample (a stranger's Notion page, pack T-SPACES-1, retired in the database) is gone
   from the product (Arman). "Add a sample" (empty state) and the source picker's sample tables now install library pack
   SP0002 Projects & Tasks through the Use template door (`templates/use-pack.ts` `readStarterTemplate`). Deleted:
