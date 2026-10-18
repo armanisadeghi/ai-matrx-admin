@@ -11,11 +11,11 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { StatusDot } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system/controls";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import type { MatrixCell } from "../../matrix/types";
 import {
   SYSTEM_LABEL,
-  TRUTH_LABEL,
+  truthLabels,
   domainOf,
   rowStatus,
   type BenchState,
@@ -39,8 +39,6 @@ interface ResultRow {
   statuses: Partial<Record<SystemKey, RowStatus>>;
 }
 
-const TRUTH_OPTIONS = (["ours", "about_us", "not_us"] as Truth[]).map((t) => ({ value: t, label: TRUTH_LABEL[t] }));
-const STANCE_OPTIONS = (["ours", "about_us", "not_us", "cant_tell"] as Stance[]).map((t) => ({ value: t, label: TRUTH_LABEL[t] }));
 
 const STATUS_VIEW: Record<Exclude<RowStatus, "done" | "idle">, { tone: "neutral" | "info" | "danger"; label: string }> = {
   waiting: { tone: "neutral", label: "Waiting" },
@@ -48,7 +46,7 @@ const STATUS_VIEW: Record<Exclude<RowStatus, "done" | "idle">, { tone: "neutral"
   failed: { tone: "danger", label: "Failed" },
 };
 
-function answerCell(row: ResultRow, s: SystemKey) {
+function answerCell(row: ResultRow, s: SystemKey, labels: Record<Stance, string>) {
   const status = row.statuses[s] ?? "idle";
   const a = row.answers[s];
   if (status !== "done" || !a) {
@@ -63,7 +61,7 @@ function answerCell(row: ResultRow, s: SystemKey) {
     );
   }
   const wrong = row.truth && a.stance !== "cant_tell" && a.stance !== row.truth;
-  return <span className={wrong ? "text-destructive font-medium" : undefined}>{TRUTH_LABEL[a.stance]}</span>;
+  return <span className={wrong ? "text-destructive font-medium" : undefined}>{labels[a.stance]}</span>;
 }
 
 export function BenchResultsTable({
@@ -80,6 +78,9 @@ export function BenchResultsTable({
   systems: SystemKey[];
   onTruth: (key: string, truth: Truth | null) => Promise<void>;
 }) {
+  const labels = truthLabels(bench.subject ?? "brand");
+  const TRUTH_OPTIONS = (["ours", "about_us", "not_us"] as Truth[]).map((t) => ({ value: t, label: labels[t] }));
+  const STANCE_OPTIONS = (["ours", "about_us", "not_us", "cant_tell"] as Stance[]).map((t) => ({ value: t, label: labels[t] }));
   const rows: ResultRow[] = bench.results.map((r) => ({
     key: r.key,
     title: r.title || r.url,
@@ -112,14 +113,21 @@ export function BenchResultsTable({
     {
       id: "truth",
       header: "Truth",
-      helpText: "Your mark. Change it here when a system turns out to be right.",
+      helpText: "Your mark. Change it any time; every score recalculates at once.",
       accessorFn: (r) => r.truth ?? "",
       filter: "select",
       filterOptions: [...TRUTH_OPTIONS, { value: "", label: "Not marked" }],
-      editable: "select",
-      editOptions: TRUTH_OPTIONS,
-      width: 120,
-      cell: (r) => (r.truth ? TRUTH_LABEL[r.truth] : <span className="text-muted-foreground">—</span>),
+      width: 150,
+      // One click, saved and scored at once — no edit mode, no Save (Arman, 2026-10-17).
+      cell: (r) => (
+        <Select<string>
+          variant="inline"
+          aria-label={`Truth for ${r.title}`}
+          value={r.truth ?? ""}
+          options={[{ value: "", label: "—" }, ...TRUTH_OPTIONS]}
+          onValueChange={(v) => void onTruth(r.key, v ? (v as Truth) : null)}
+        />
+      ),
     },
     ...systems.flatMap((s): MatrxColumnDef<ResultRow>[] => [
       {
@@ -129,7 +137,7 @@ export function BenchResultsTable({
         filter: "select",
         filterOptions: STANCE_OPTIONS,
         width: 130,
-        cell: (r) => answerCell(r, s),
+        cell: (r) => answerCell(r, s, labels),
       },
       {
         id: `${s}-label`,
@@ -192,16 +200,6 @@ export function BenchResultsTable({
       detail={{ enabled: false }}
       toolbar={{ title: `${rows.length} results` }}
       emptyState={{ title: "No results yet" }}
-      edit={{
-        enabled: true,
-        onSave: async (editsMap) => {
-          for (const [key, patch] of Object.entries(editsMap)) {
-            const next = (patch as { truth?: string }).truth;
-            if (next === undefined) continue;
-            await onTruth(key, next ? (next as Truth) : null);
-          }
-        },
-      }}
     />
   );
 }

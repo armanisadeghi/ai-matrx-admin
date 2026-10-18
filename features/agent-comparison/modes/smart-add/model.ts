@@ -86,6 +86,8 @@ export interface BenchState {
   systems: SystemKey[];
   truth: Record<string, Truth>;
   agents: BenchAgents;
+  /** A brand or a person (absent on benches saved before Person mode: a brand). */
+  subject?: Subject;
   ranAt?: string | null;
 }
 
@@ -104,7 +106,7 @@ export function domainOf(website: string): string {
 }
 
 /** The default queries: the name, the name in its place, the domain, and the name on social and review sites. */
-export function defaultQueries(brand: BenchBrand): string[] {
+export function defaultQueries(brand: BenchBrand, subject: Subject = "brand"): string[] {
   const name = brand.name.trim();
   const place = brand.place.trim();
   const domain = domainOf(brand.website);
@@ -112,10 +114,29 @@ export function defaultQueries(brand: BenchBrand): string[] {
   if (name) out.push(`"${name}"`);
   if (name && place) out.push(`"${name}" ${place}`);
   if (domain) out.push(domain);
-  if (name) out.push(`"${name}" instagram OR facebook OR tiktok OR linkedin`);
-  if (name) out.push(`"${name}" reviews`);
+  if (subject === "person") {
+    // A person's namesakes are the hard part: the bare name pulls them in on purpose.
+    if (name) out.push(`"${name}" linkedin OR instagram OR facebook OR x.com`);
+    if (name) out.push(`"${name}" interview OR podcast OR news`);
+  } else {
+    if (name) out.push(`"${name}" instagram OR facebook OR tiktok OR linkedin`);
+    if (name) out.push(`"${name}" reviews`);
+  }
   return [...new Set(out)];
 }
+
+/** Who the bench is about: a brand, or a person by name (namesakes are the test). */
+export type Subject = "brand" | "person";
+
+/** The three truths in the subject's own words — the keys never change, only how they read. */
+export function truthLabels(subject: Subject): Record<Stance, string> {
+  return subject === "person"
+    ? { ours: "Them", about_us: "About them", not_us: "Someone else", cant_tell: "Can't tell" }
+    : TRUTH_LABEL;
+}
+
+/** The tag that marks each subject's Jev web-result agent (system agents, 2026-10-17). */
+export const JEV_TAG: Record<Subject, string> = { brand: "web-result", person: "web-result-person" };
 
 /** One address per result: no scheme, no www., no trailing slash, no tracking query. */
 export function normalizeUrl(url: string): string {

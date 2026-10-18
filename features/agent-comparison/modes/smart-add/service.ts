@@ -29,8 +29,10 @@ import {
   type BenchState,
   type Engine,
   type RelationKind,
+  type Subject,
   type SystemAnswer,
   type Truth,
+  JEV_TAG,
 } from "./model";
 
 /** Results per engine call: Brave answers up to 20 per page, Google 10. */
@@ -124,6 +126,28 @@ export async function resolveJudges(userId: string | null): Promise<{ holder: st
   const lastBench = (last?.metadata as Record<string, unknown> | null)?.[BENCH_KEY] as { agents?: { jev?: unknown } } | undefined;
   const jev = typeof lastBench?.agents?.jev === "string" ? lastBench.agents.jev : null;
   return { holder, jev };
+}
+
+/**
+ * The Jev web-result agent for a subject, found by its tag through the canonical scoped agent list
+ * (the system lane; never a raw agent list query, never an id in code).
+ */
+export async function resolveJevAgent(subject: Subject): Promise<string | null> {
+  const client = createClient();
+  await requireAuthenticatedSupabaseSession(client);
+  const { data, error } = await client.rpc("agx_list_scoped", {
+    p_scope: "system",
+    p_filters: { tags: { values: [JEV_TAG[subject]] } },
+    p_sort: "updated",
+    p_dir: "desc",
+    p_favorites_first: false,
+    p_archived: "active",
+    p_limit: 10,
+    p_offset: 0,
+  });
+  if (error) throw new Error(`Could not find the Jev agent: ${error.message}`);
+  const hit = (data ?? []).find((a) => (a.tags ?? []).includes(JEV_TAG[subject]) && (a.tags ?? []).includes("jev"));
+  return hit?.id ?? null;
 }
 
 /** The shared relation vocabulary (what today's holder answers in), as production reads it. */

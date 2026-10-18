@@ -43,7 +43,8 @@ import { entryToCell, metadataToSetup } from "../../matrix/model";
 import type { MatrixCell } from "../../matrix/types";
 import {
   SYSTEM_LABEL,
-  TRUTH_LABEL,
+  truthLabels,
+  type Subject,
   defaultQueries,
   applyRunEvent,
   batchAnswerUnreadable,
@@ -66,6 +67,7 @@ import {
   castNet,
   loadFullAnswers,
   loadJevAnswers,
+  resolveJevAgent,
   prepareRun,
   resolveJudges,
   saveTruth,
@@ -161,11 +163,11 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     if (setId || !userId) return;
     let alive = true;
     resolveJudges(userId)
-      .then(
-        (j) =>
-          alive &&
-          setBench((b) => ({ ...b, agents: { ...b.agents, holder: j.holder, jev: b.agents.jev ?? j.jev } })),
-      )
+      .then(async (j) => {
+        // Jev: the one picked on the last bench, else the tagged system agent for this subject.
+        const jev = j.jev ?? (await resolveJevAgent("brand"));
+        if (alive) setBench((b) => ({ ...b, agents: { ...b.agents, holder: j.holder, jev: b.agents.jev ?? jev } }));
+      })
       .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)))
       .finally(() => alive && setJudgesLooked(true));
     return () => {
@@ -237,7 +239,16 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
   const queries = queriesText.split("\n").map((q) => q.trim()).filter(Boolean);
   const canSearch = !judged && !searching && !starting && Boolean(brand.name.trim() || brand.website.trim());
 
-  const onPlan = () => setQueriesText(defaultQueries(brand).join("\n"));
+  const subject: Subject = bench.subject ?? "brand";
+  const labels = truthLabels(subject);
+  const onPlan = () => setQueriesText(defaultQueries(brand, subject).join("\n"));
+  // Brand | Person: the Jev judge follows the subject (its own tagged system agent).
+  const onSubject = (next: Subject) => {
+    setBench((b) => ({ ...b, subject: next, agents: { ...b.agents, jev: null } }));
+    resolveJevAgent(next)
+      .then((jev) => setBench((b) => (b.subject === next ? { ...b, agents: { ...b.agents, jev } } : b)))
+      .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : String(err)));
+  };
 
   const onSearch = async () => {
     const plan = queries.length ? queries : defaultQueries(brand);
@@ -320,7 +331,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
     })),
     choices: (["ours", "about_us", "not_us"] as Truth[]).map((k) => ({
       key: k,
-      label: TRUTH_LABEL[k],
+      label: labels[k],
       pinned: true,
       description: k === "ours" ? "The brand runs it" : k === "about_us" ? "About or tied to the brand" : "Someone or something else",
     })),
@@ -373,7 +384,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
           ) : (
             <>
               {modeSwitch}
-              <BrandCard brand={brand} patchBrand={patchBrand} locked={judged || searching} />
+              <BrandCard brand={brand} patchBrand={patchBrand} locked={judged || searching} subject={subject} onSubject={onSubject} />
               <SearchCard
                 bench={bench}
                 setBench={setBench}
@@ -444,22 +455,40 @@ function BrandCard({
   brand,
   patchBrand,
   locked,
+  subject,
+  onSubject,
 }: {
   brand: BenchState["brand"];
   patchBrand: (p: Partial<BenchState["brand"]>) => void;
   locked: boolean;
+  subject: Subject;
+  onSubject: (s: Subject) => void;
 }) {
+  const person = subject === "person";
   return (
     <section className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
-      <h2 className="type-section">1 · Brand</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="type-section flex-1">{person ? "1 · Person" : "1 · Brand"}</h2>
+        {!locked ? (
+          <SegmentedControl<Subject>
+            aria-label="Who the bench is about"
+            value={subject}
+            onValueChange={onSubject}
+            data={[
+              { value: "brand", label: "Brand" },
+              { value: "person", label: "Person" },
+            ]}
+          />
+        ) : null}
+      </div>
       <div className="grid gap-3 md:grid-cols-2">
         <label className="flex flex-col gap-1">
-          <span className="type-label">Website</span>
+          <span className="type-label">{person ? "Their website" : "Website"}</span>
           {/* ui-exception: a raw address, not prose */}
           <Field
             value={brand.website}
             onChange={(e) => patchBrand({ website: e.target.value })}
-            placeholder="ritualcoffee.com"
+            placeholder={person ? "drkian.com" : "ritualcoffee.com"}
             aria-label="Website"
             disabled={locked}
           />
@@ -469,8 +498,8 @@ function BrandCard({
           <ProInput
             value={brand.name}
             onChange={(e) => patchBrand({ name: e.target.value })}
-            placeholder="Ritual Coffee Roasters"
-            aria-label="Brand name"
+            placeholder={person ? "Kian Karimi" : "Ritual Coffee Roasters"}
+            aria-label="Name"
             disabled={locked}
           />
         </label>
@@ -479,7 +508,7 @@ function BrandCard({
           <ProInput
             value={brand.place}
             onChange={(e) => patchBrand({ place: e.target.value })}
-            placeholder="San Francisco, CA"
+            placeholder={person ? "Beverly Hills, CA" : "San Francisco, CA"}
             aria-label="Place"
             disabled={locked}
           />
@@ -490,7 +519,7 @@ function BrandCard({
           <Field
             value={brand.accounts}
             onChange={(e) => patchBrand({ accounts: e.target.value })}
-            placeholder="instagram.com/ritualcoffee"
+            placeholder={person ? "instagram.com/drkian" : "instagram.com/ritualcoffee"}
             aria-label="Known accounts"
             disabled={locked}
           />
@@ -767,8 +796,8 @@ function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeo
     { id: "wrong", header: "Wrong", accessorFn: (r) => r.sc.wrong, filter: "number", align: "right", width: 90 },
     { id: "cant", header: "Can't tell", accessorFn: (r) => r.sc.cantTell, filter: "number", align: "right", width: 100 },
     { id: "missing", header: "No answer", accessorFn: (r) => r.sc.missing, filter: "number", align: "right", width: 100 },
-    { id: "false-ours", header: "Stranger marked ours", accessorFn: (r) => r.sc.falseOurs, filter: "number", align: "right", width: 170 },
-    { id: "missed-us", header: "Us marked not us", accessorFn: (r) => r.sc.missedUs, filter: "number", align: "right", width: 150 },
+    { id: "false-ours", header: bench.subject === "person" ? "Namesake marked them" : "Stranger marked ours", accessorFn: (r) => r.sc.falseOurs, filter: "number", align: "right", width: 170 },
+    { id: "missed-us", header: bench.subject === "person" ? "Them marked someone else" : "Us marked not us", accessorFn: (r) => r.sc.missedUs, filter: "number", align: "right", width: 150 },
     {
       id: "p50",
       header: "Typical call",
