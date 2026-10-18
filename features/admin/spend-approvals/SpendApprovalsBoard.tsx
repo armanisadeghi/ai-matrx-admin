@@ -97,6 +97,7 @@ const EVENT_LABEL: Record<string, string> = {
   expired: "Expired",
   reset: "Tracking reset",
   volume_hold: "Held by volume",
+  restored: "Owner decision restored",
   merged: "Duplicates merged",
 };
 

@@ -100,7 +100,7 @@ describe("spendAlarmItems", () => {
     });
     const owner = row({
       kind: "spend_volume_hold",
-      refs: { approval_id: APPROVAL, owner_decided: "true", prior_status: "temporary" },
+      refs: { approval_id: APPROVAL, scope: "owner_approved" },
       approval_status: "waiting",
     });
     const [item] = spendAlarmItems([owner], d);

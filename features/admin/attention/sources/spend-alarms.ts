@@ -180,7 +180,7 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
     approvalStatus: row.approval_status,
   });
   const out: AttentionAction[] = [];
-  if (row.kind === "spend_volume_hold" && refs.owner_decided === "true" && refs.approval_id && deps.restoreApproval) {
+  if (row.kind === "spend_volume_hold" && refs.scope === "owner_approved" && refs.approval_id && deps.restoreApproval) {
     const approvalId = refs.approval_id;
     const restoreApproval = deps.restoreApproval;
     out.push({
@@ -189,7 +189,7 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
       variant: "default",
       confirm: {
         title: `Restore your approval of ${subject}?`,
-        description: `Puts ${subject} back to ${refs.prior_status === "temporary" ? "your temporary approval, with its original end date" : "approved"}.`,
+        description: `Puts ${subject} back to the approval you gave it, with its original end date if it had one.`,
         confirmLabel: "Restore",
       },
       run: () => restoreApproval(approvalId),

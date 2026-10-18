@@ -11742,6 +11742,59 @@ export type Database = {
         Args: { p_ids: string[]; p_note?: string }
         Returns: number
       }
+      run_approval_restore_prior: {
+        Args: { p_id: string; p_note?: string }
+        Returns: {
+          agent_id: string | null
+          blocked_runs: number
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          deleted_at: string | null
+          expected_result: string | null
+          expected_runs_per_month: number | null
+          expires_at: string | null
+          first_run_at: string | null
+          first_run_conversation_id: string | null
+          first_run_cost: number | null
+          first_run_key: string | null
+          first_run_models: string[]
+          first_run_person_id: string | null
+          first_run_request_id: string | null
+          first_run_turns: number | null
+          first_run_workflow_run_id: string | null
+          id: string
+          last_blocked_at: string | null
+          mandate_key: string | null
+          metadata: Json
+          organization_id: string
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          reset_at: string | null
+          reset_by: string | null
+          reset_note: string | null
+          seeded: boolean
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          status: string
+          subject_id: string
+          subject_kind: string
+          subject_name: string | null
+          threshold_usd: number
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "run_approval"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       run_approval_status: {
         Args: { p_org_id?: string }
         Returns: {
@@ -11754,6 +11807,7 @@ export type Database = {
           subject_kind: string
         }[]
       }
+      run_approval_subject_name: { Args: { p_id: string }; Returns: string }
       run_approval_sweep: {
         Args: { p_days?: number; p_seed?: boolean }
         Returns: number
@@ -28450,6 +28504,18 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: number
       }
+      sms_thread_recent: {
+        Args: {
+          p_inbound_message_id: string
+          p_limit: number
+          p_older_limit?: number
+        }
+        Returns: Json
+      }
+      sms_thread_summary_store: {
+        Args: { p_conversation_id: string; p_summary: Json }
+        Returns: undefined
+      }
       spare_sms_pool_status: {
         Args: never
         Returns: {
@@ -28461,6 +28527,10 @@ export type Database = {
       spend_desk_claim_reply: {
         Args: { p_inbound_message_id: string; p_window_minutes?: number }
         Returns: Json
+      }
+      spend_desk_release_reply: {
+        Args: { p_inbound_message_id: string }
+        Returns: boolean
       }
       stamp_notification_render: {
         Args: {
@@ -41599,6 +41669,10 @@ export type Database = {
           role_name: string
         }[]
       }
+      comment_counts: {
+        Args: { p_organization_id: string; p_record_ids: string[] }
+        Returns: Json
+      }
       comment_mention_deliver: {
         Args: {
           p_author_name: string
@@ -45019,6 +45093,14 @@ export type Database = {
       record_delete: {
         Args: { p_organization_id: string; p_record_id: string }
         Returns: string
+      }
+      record_drill: {
+        Args: {
+          p_organization_id: string
+          p_question?: Json
+          p_table_id: string
+        }
+        Returns: Json
       }
       record_entity_edges: {
         Args: {
@@ -85551,6 +85633,10 @@ export type Database = {
         }
         Returns: Json
       }
+      org_domain_public_urls: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       org_domain_record: {
         Args: {
           p_actor: string
@@ -90927,6 +91013,75 @@ export type Database = {
   }
   ops: {
     Tables: {
+      _app_log_hourly: {
+        Row: {
+          classified: boolean | null
+          created_at: string
+          exc_type: string | null
+          feature: string | null
+          host_role: string | null
+          id: string
+          level: string | null
+          lines: number
+          logger_name: string | null
+          refreshed_at: string
+          request_id: string | null
+          route: string | null
+          user_id: string | null
+        }
+        Insert: {
+          classified?: boolean | null
+          created_at: string
+          exc_type?: string | null
+          feature?: string | null
+          host_role?: string | null
+          id?: string
+          level?: string | null
+          lines: number
+          logger_name?: string | null
+          refreshed_at?: string
+          request_id?: string | null
+          route?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          classified?: boolean | null
+          created_at?: string
+          exc_type?: string | null
+          feature?: string | null
+          host_role?: string | null
+          id?: string
+          level?: string | null
+          lines?: number
+          logger_name?: string | null
+          refreshed_at?: string
+          request_id?: string | null
+          route?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      _app_log_hourly_watermark: {
+        Row: {
+          covered_from: string
+          covered_to: string
+          refreshed_at: string
+          singleton: boolean
+        }
+        Insert: {
+          covered_from: string
+          covered_to: string
+          refreshed_at?: string
+          singleton?: boolean
+        }
+        Update: {
+          covered_from?: string
+          covered_to?: string
+          refreshed_at?: string
+          singleton?: boolean
+        }
+        Relationships: []
+      }
       api_field_warnings: {
         Row: {
           created_at: string
@@ -92711,9 +92866,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      _app_log_lines: {
+        Row: {
+          classified: boolean | null
+          created_at: string | null
+          exc_type: string | null
+          feature: string | null
+          host_role: string | null
+          id: string | null
+          level: string | null
+          lines: number | null
+          logger_name: string | null
+          message: string | null
+          request_id: string | null
+          route: string | null
+          user_id: string | null
+        }
+        Insert: {
+          classified?: boolean | null
+          created_at?: string | null
+          exc_type?: string | null
+          feature?: string | null
+          host_role?: string | null
+          id?: string | null
+          level?: string | null
+          lines?: never
+          logger_name?: string | null
+          message?: string | null
+          request_id?: string | null
+          route?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          classified?: boolean | null
+          created_at?: string | null
+          exc_type?: string | null
+          feature?: string | null
+          host_role?: string | null
+          id?: string | null
+          level?: string | null
+          lines?: never
+          logger_name?: string | null
+          message?: string | null
+          request_id?: string | null
+          route?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      app_log_hourly_refresh: {
+        Args: { p_from: string; p_to: string }
+        Returns: number
+      }
       auth_lock_watchdog: { Args: { p_min_wait?: string }; Returns: number }
       check_catalog_rename: {
         Args: { p_new_id: string; p_old_id: string; p_repo: string }
@@ -105083,7 +105289,6 @@ export type Database = {
       drill_def__ai_calls: { Args: never; Returns: Json }
       drill_def__ai_usage: { Args: never; Returns: Json }
       drill_def__ai_usage_executions: { Args: never; Returns: Json }
-      drill_def__app_log: { Args: never; Returns: Json }
       drill_def__crm_deals: { Args: never; Returns: Json }
       drill_def__cx_requests: { Args: never; Returns: Json }
       drill_def__hr_timesheets: { Args: never; Returns: Json }
@@ -105091,6 +105296,7 @@ export type Database = {
       drill_def__ops_issue_events: { Args: never; Returns: Json }
       drill_def__rs_analyses: { Args: never; Returns: Json }
       drill_def__rs_syntheses: { Args: never; Returns: Json }
+      drill_def__structured_logs: { Args: never; Returns: Json }
       drill_def__system_errors: { Args: never; Returns: Json }
       drill_def__tool_calls: { Args: never; Returns: Json }
       drill_def__tool_refetch: { Args: never; Returns: Json }
@@ -105429,6 +105635,16 @@ export type Database = {
         Returns: Json
       }
       knob_person_for: { Args: { p_user: string }; Returns: string }
+      knob_platform_grant_set: {
+        Args: {
+          p_feature: string
+          p_key: string
+          p_note?: string
+          p_organization_id: string
+          p_value: Json
+        }
+        Returns: Json
+      }
       knob_resolve: {
         Args: {
           p_feature: string
@@ -116936,10 +117152,6 @@ export type Database = {
           p_query: string
         }
         Returns: number
-      }
-      mkt_initiative_since_bucket: {
-        Args: { p_bucket: string }
-        Returns: string
       }
       mnd_admin_list: {
         Args: {
