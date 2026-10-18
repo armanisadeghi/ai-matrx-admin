@@ -1446,6 +1446,9 @@
 .spaces-db-frame[data-layout="chart"] { min-height: 373px; padding: 18px 16px 16px 22px; border-radius: 12px; }
 .spaces-db-note { flex-direction: row; align-items: center; gap: 8px; font-size: 14px; color: var(--spaces-ink-soft); }
 .spaces-db-title { display: flex; align-items: center; gap: 4px; font-size: 20px; font-weight: 700; padding: 2px 2px 4px; }
+/* SKELETON-HEIGHT: the title row is 34px whether it is the server's read-only span (drew 38) or the editable input (28 + padding) — the first paint and the editor are one height. */
+.spaces-db-title { box-sizing: border-box; height: 34px; }
+.spaces-db-title > span { line-height: 28px; }
 .spaces-db-linked { color: var(--spaces-ink-soft); }
 .spaces-db-bar { display: flex; align-items: center; gap: 8px; min-height: 32px; min-width: 0; }
 .spaces-db-tabs { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1 1 auto; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }

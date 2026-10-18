@@ -23,7 +23,7 @@ import { useOpenNotionImport } from "@/features/spaces/io/NotionImportDoor";
 import { useRouter } from "next/navigation";
 import { OpeningTablePage } from "./OpeningTablePage";
 import { RecordsMount, WhereItLives } from "@/features/data-tables/records-ui-host/recordsUiLazy";
-import { TablePageSkeleton } from "@ai-matrx/records-ui/skeleton";
+import { ExpectedRows, TablePageSkeleton } from "@ai-matrx/records-ui/skeleton";
 import { skeletonLayoutFor } from "@ai-matrx/records-ui/helpers";
 import type { PageView, RecordsMountProps, TablePageActionHost, ViewAddressState } from "@ai-matrx/records-ui";
 import type { RecordFilter } from "@ai-matrx/records";
@@ -424,7 +424,13 @@ export function UnifiedTableBody({
     // The table page's right-click is the proposed menu (`DataMenuProvider`); its ⋯ is the action list.
     <DataMenuProvider>
       <RecordsMount letTheStoreDecideRights config={mount.recordsConfig} host={mount.recordsHost ?? undefined}>
-        {mountedTable}
+        {/* SKELETON-HEIGHT: the rows this person sees (where_id_opens, already asked) — every loading frame below paints that many. */}
+        <ExpectedRows
+          rows={mount.object.state === "found" ? mount.object.rowsVisible : null}
+          groups={mount.object.state === "found" && mount.object.opening?.layout === "kanban" ? mount.object.opening.groups : null}
+        >
+          {mountedTable}
+        </ExpectedRows>
       </RecordsMount>
     </DataMenuProvider>
   );

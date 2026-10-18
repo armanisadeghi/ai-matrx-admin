@@ -11,6 +11,7 @@ import { Plugin } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import type { Node as PmNode } from "@tiptap/pm/model";
 import { DATABASE_EVENT_CLAIMS, DatabaseHost, activeLayout, paintedSizesOf, pickPainted } from "./database-host";
+import { DatabaseLoadingBox, WithExpectedRows } from "./database-loading-box";
 import DisplayMath from "@/features/math/components/DisplayMath";
 import InlineMathText from "@/features/math/components/InlineMathText";
 import { AlignCenter, AlignLeft, AlignRight, Captions, FileText, Paperclip, Replace, TriangleAlert } from "lucide-react";
@@ -519,8 +520,10 @@ export const storedBlockSpecs = {
   database: storedSpec("database", (p, ctx) => (
     <DatabaseHost blockId={ctx.blockId} layout={activeLayout(p)} painted={paintedSizesOf(p)}>
       <BlockBoundary>
-        <LateSeedRecords blockId={ctx.blockId} fallback={<div className="spaces-db-loading" />}>
-          <DatabaseBlockView blockId={ctx.blockId} props={p} onChange={ctx.update} editable={(ctx.editor as unknown as { isEditable: boolean }).isEditable} />
+        <LateSeedRecords blockId={ctx.blockId} fallback={<DatabaseLoadingBox blockId={ctx.blockId} p={p} />}>
+          <WithExpectedRows blockId={ctx.blockId}>
+            <DatabaseBlockView blockId={ctx.blockId} props={p} onChange={ctx.update} editable={(ctx.editor as unknown as { isEditable: boolean }).isEditable} />
+          </WithExpectedRows>
         </LateSeedRecords>
       </BlockBoundary>
     </DatabaseHost>
