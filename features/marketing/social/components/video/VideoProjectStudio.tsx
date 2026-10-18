@@ -39,6 +39,8 @@ import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hook
 import { describeTheirs, rebasePending } from "../../video/conflict";
 import { estimateLabel, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
+import { cutText } from "../../video/text";
+import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../../video/variants";
 import { appendPatch, conflictVersion, estimateProject, getVideoProject } from "../../video/server";
 import { readCompositionHistory } from "../../video/service";
 import { useLocalRenderAllowed } from "../../video/studio-hooks";
@@ -64,6 +66,8 @@ interface ItemOutcome {
   fileId?: string | null;
   usd?: number;
   pts?: number;
+  /** The server said the cloud render itself is not billed. */
+  renderFree?: boolean;
 }
 
 const EVENT = "video_variant_batch.";
@@ -92,7 +96,10 @@ function batchHandler(
         setSteps((p) => pushStep(p, { id: `gen-${vid}`, label: `Making media for ${labelOf(vid)}`, state: "running" }));
         break;
       case "generated":
-        setSteps((p) => pushStep(p, { id: "gen", label: "Media ready", state: "done", meta: dollars(Number(e.total_usd)) }));
+        // Media is billed per picture or voice made; reused media costs nothing, and the line says so.
+        setSteps((p) =>
+          pushStep(p, { id: "gen", label: "Media ready", state: "done", meta: Number(e.total_usd) > 0 ? `Media ${dollars(Number(e.total_usd))}` : "Media · nothing new to pay" }),
+        );
         break;
       case "aligned":
         setSteps((p) => pushStep(p, { id: "align", label: "Captions synced to the voice", state: "done" }));
@@ -106,8 +113,11 @@ function batchHandler(
         break;
       case "render.done": {
         const out = (e.output ?? {}) as { file_id?: string };
-        setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null, usd: Number(e.cost_usd) || 0, pts: Number(e.points) || 0 } }));
-        setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
+        const renderFree = e.render_charged === false;
+        setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null, usd: Number(e.cost_usd) || 0, pts: Number(e.points) || 0, renderFree } }));
+        setSteps((p) =>
+          p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done", meta: renderFree ? "Render · free" : dollars(Number(e.cost_usd)) } : s)),
+        );
         break;
       }
       case "variant.failed": {
@@ -124,9 +134,13 @@ function batchHandler(
       }
       case "batch_report":
         // "Done" only when nothing failed; after a failure the line says what was spent, never that it finished.
-        setSteps((p) =>
-          pushStep(p, flags.failed > 0 || flags.error ? { id: "report", label: "Spent", state: "done", meta: dollars(Number(e.total_usd)) } : { id: "report", label: "Done", state: "done", meta: dollars(Number(e.total_usd)) }),
-        );
+        // The total is the media made; the render line above says whether the cloud render was billed.
+        setSteps((p) => {
+          const total = Number(e.total_usd);
+          const paid = total > 0 ? `Media ${dollars(total)}` : "Nothing charged";
+          const free = e.render_charged === false ? " · render free" : "";
+          return pushStep(p, { id: "report", label: flags.failed > 0 || flags.error ? "Spent" : "Done", state: "done", meta: `${paid}${free}` });
+        });
         break;
       case "error":
         flags.error = plainRenderMessage(
@@ -472,6 +486,13 @@ function Block({ title, icon, children }: { title: string; icon: React.ReactNode
 
 function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: boolean; onOps: (ops: PatchOp[], note: string, what: string) => void }) {
   const [editing, setEditing] = useState<{ turn: string; word: string; text: string } | null>(null);
+  /** An edit that leaves the word as it is changes nothing and makes no version. */
+  const changed = (e: { turn: string; word: string; text: string }, kind: "captions" | "voice") => {
+    const w = doc.script.turns.find((t) => t.id === e.turn)?.words.find((x) => x.id === e.word);
+    const next = e.text.trim();
+    if (!next || !w) return false;
+    return next !== (kind === "voice" ? (w.spoken ?? w.text) : w.text);
+  };
   return (
     <div className="flex flex-col gap-2">
       {doc.script.turns.map((turn) => (
@@ -501,8 +522,9 @@ function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: bo
           <Field value={editing.text} onChange={(e) => setEditing({ ...editing, text: e.target.value })} className="w-40" autoFocus />
           <Button
             variant="primary"
-            disabled={disabled || !editing.text.trim()}
+            disabled={disabled || !changed(editing, "captions")}
             onClick={() => {
+              if (!changed(editing, "captions")) return setEditing(null);
               onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "captions"), "caption word", `caption "${editing.text.trim()}"`);
               setEditing(null);
             }}
@@ -511,8 +533,9 @@ function ScriptEditor({ doc, disabled, onOps }: { doc: Composition; disabled: bo
           </Button>
           <Button
             variant="outline"
-            disabled={disabled || !editing.text.trim()}
+            disabled={disabled || !changed(editing, "voice")}
             onClick={() => {
+              if (!changed(editing, "voice")) return setEditing(null);
               onOps(editWordOps(doc, editing.turn, editing.word, editing.text.trim(), "voice"), "spoken word", `say "${editing.text.trim()}"`);
               setEditing(null);
             }}
@@ -550,7 +573,7 @@ function draftDefaults(doc: Composition, currentPreset: string): Draft[] {
 }
 
 function paramSet(d: Draft): ParamSet | null {
-  if (d.kind === "hook") return d.value.trim() ? { label: `Hook: ${d.value.trim().slice(0, 40)}`, hook_text: d.value.trim() } : null;
+  if (d.kind === "hook") return d.value.trim() ? { label: `Hook: ${cutText(d.value.trim(), 40)}`, hook_text: d.value.trim() } : null;
   if (d.kind === "captions") return d.value ? { label: `Captions: ${CAPTION_PRESETS[d.value]?.label ?? d.value}`, caption_preset: d.value } : null;
   return d.value ? { label: `Shape ${d.value}`, aspect: d.value as CloneAspect } : null;
 }
@@ -584,12 +607,18 @@ function VariantsPanel({
   const [drafts, setDrafts] = useState<Draft[] | null>(openDraft ? draftDefaults(doc, currentPreset) : null);
   const [creating, setCreating] = useState(false);
 
+  // What a click will create: the filled-in rows, minus any the project already has (same overrides = the same variant).
+  const asked = (drafts ?? []).map(paramSet).filter((p): p is ParamSet => p !== null);
+  const { fresh, reused } = splitNewSets(asked, variants.map((v) => v.label));
+  const emptyRows = (drafts ?? []).length - asked.length;
+  const createText = createButtonText(fresh.length);
+
   const create = async () => {
-    const sets = (drafts ?? []).map(paramSet).filter((p): p is ParamSet => p !== null);
-    if (!sets.length) return;
+    if (!fresh.length) return;
     setCreating(true);
     try {
-      await createVariantMatrix(projectId, sets, { organizationId });
+      const out = await createVariantMatrix(projectId, fresh, { organizationId });
+      toast.success(matrixOutcomeText(out.variants));
       setDrafts(null);
       onCreated();
     } catch (err) {
@@ -655,23 +684,27 @@ function VariantsPanel({
             </div>
           ))}
           <div className="flex items-center gap-2">
-            <Button variant="primary" disabled={creating || busy || !(drafts ?? []).some((d) => paramSet(d))} onClick={() => void create()}>
-              Create variants
+            <Button variant="primary" disabled={creating || busy || !createText} onClick={() => void create()}>
+              {createText ?? "Nothing new to create"}
             </Button>
             <Button variant="quiet" onClick={() => setDrafts(null)}>
               Cancel
             </Button>
             <span className="type-meta ml-auto text-muted-foreground">Free until you render</span>
           </div>
+          <div className="flex flex-col gap-0.5">
+            {emptyRows > 0 ? <span className="type-meta text-muted-foreground">{`${countWord(emptyRows, "row")} left empty, so not included`}</span> : null}
+            {reused.length > 0 ? <span className="type-meta text-muted-foreground">{`${reused.length} already made: ${reused.map((r) => r.label).join(", ")}`}</span> : null}
+          </div>
         </div>
       ) : (
         <div className="flex items-center gap-2">
           <Button variant="outline" icon={<Layers />} disabled={busy} onClick={() => setDrafts(draftDefaults(doc, currentPreset))}>
-            Create 3 variants
+            Add variants
           </Button>
           {variants.length ? (
             <Button variant="primary" disabled={busy} onClick={() => onRun(variants.map((v) => v.id))}>
-              {`Render ${variants.length} variants`}
+              {`Render ${countWord(variants.length)}`}
             </Button>
           ) : null}
         </div>
@@ -681,24 +714,28 @@ function VariantsPanel({
 }
 
 function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome }) {
-  const materialized = v.baseVersion === head ? materializeVariant(doc, v as unknown as VariantOverride) : null;
+  // A variant made on an older version still shows its look: its overrides are laid over the current head (the render does the same).
+  const rebased = v.baseVersion !== head;
+  const materialized = materializeVariant(doc, (rebased ? { ...v, baseVersion: doc.version } : v) as unknown as VariantOverride);
   return (
     <div className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-lg border border-border p-2">
       <div className="flex min-w-0 items-center gap-1.5">
         <span className="type-label truncate text-foreground">{v.label}</span>
         <Badge tone={outcome?.status === "failed" ? "destructive" : outcome?.status === "rendered" ? "success" : "neutral"} className="ml-auto">
-          {outcome?.status ?? (v.baseVersion === head ? "ready" : `pinned v${v.baseVersion}`)}
+          {outcome?.status ?? (rebased ? rebasedLabel(v.baseVersion, head) : "ready")}
         </Badge>
       </div>
       {materialized?.ok ? (
         <CompositionPreview doc={materialized.doc} />
       ) : (
         <div className="flex items-center justify-center rounded-lg bg-muted p-4 type-meta text-muted-foreground" style={{ aspectRatio: "9 / 16" }}>
-          {v.baseVersion === head ? "Can't preview" : `Made on v${v.baseVersion}; rebased on render`}
+          {rebased ? `Can't show this on v${head} (made on v${v.baseVersion}); it is rebased when rendered` : "Can't preview"}
         </div>
       )}
       {outcome?.error ? <ErrorAlchemyMenu error={new Error(outcome.error)} operation="video variant render" /> : null}
-      {outcome?.usd !== undefined ? <CostLine usd={outcome.usd} pts={outcome.pts} /> : null}
+      {outcome?.usd !== undefined ? (
+        outcome.renderFree && !outcome.usd ? <span className="type-meta text-muted-foreground">Render · free</span> : <CostLine usd={outcome.usd} pts={outcome.pts} />
+      ) : null}
       {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} /> : null}
     </div>
   );

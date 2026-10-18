@@ -36,14 +36,21 @@ export function recentRows(
 
 export function DataHomeRecent({
   rows,
+  expected = false,
   onOpened,
   className,
 }: {
   rows: readonly DataHomeRow[];
+  /**
+   * The person has recent ids (their preference is in hand from the first render) while the rows they name
+   * are still being read: the line is drawn at its full height now and its links land inside it. Drawn only
+   * once the rows arrived, it pushed the whole list down ~70 px a few seconds after load (SPACES-REDRAW).
+   */
+  expected?: boolean;
   onOpened: (row: DataHomeRow) => void;
   className?: string;
 }) {
-  if (rows.length === 0) return null;
+  if (rows.length === 0 && !expected) return null;
   return (
     <nav aria-label="Recent" data-data-home-recent="" className={cn("flex min-w-0 items-center gap-2 text-xs", className)}>
       <span className="shrink-0 font-medium text-muted-foreground">Recent</span>

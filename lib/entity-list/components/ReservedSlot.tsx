@@ -12,6 +12,8 @@
  */
 import type { CSSProperties } from "react";
 
+import { PrepaintScript } from "@/components/ssr/PrepaintScript";
+
 import { reserveSlotScript } from "./useReservedSlot";
 
 export function ReservedSlot({
@@ -33,9 +35,8 @@ export function ReservedSlot({
   return (
     <>
       <div ref={slotRef} style={style} className={className} suppressHydrationWarning {...data} />
-      {surfaceKey && reserve ? (
-        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: reserveSlotScript(surfaceKey, name) }} />
-      ) : null}
+      {/* Only in the server's HTML (and while hydrating): a client-drawn list never creates a script. */}
+      {surfaceKey && reserve ? <PrepaintScript html={reserveSlotScript(surfaceKey, name)} /> : null}
     </>
   );
 }

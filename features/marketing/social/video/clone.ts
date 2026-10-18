@@ -225,8 +225,8 @@ export interface ParamSet {
   aspect?: CloneAspect;
 }
 
-export async function createVariantMatrix(projectId: string, variants: ParamSet[], o: CallOptions): Promise<{ variants: unknown[] }> {
-  return (await postJson<{ variants: unknown[] }>(`/video-variants/${projectId}/matrix`, { variants }, o)).data;
+export async function createVariantMatrix(projectId: string, variants: ParamSet[], o: CallOptions): Promise<{ variants: Array<{ id?: string; reused?: boolean }> }> {
+  return (await postJson<{ variants: Array<{ id?: string; reused?: boolean }> }>(`/video-variants/${projectId}/matrix`, { variants }, o)).data;
 }
 
 /** Item id of the project's own head inside a batch (`head: true`). */

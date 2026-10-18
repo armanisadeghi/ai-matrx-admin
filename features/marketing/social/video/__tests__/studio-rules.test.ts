@@ -2,7 +2,9 @@ import { dragonLairComposition, editWordOps, type PatchOp } from "@ai-matrx/medi
 
 import { describeTheirs, historyFromRows, rebasePending } from "../conflict";
 import { summarizeEstimate, estimateLabel } from "../estimate";
-import { brandNameIn } from "../hook-brand";
+import { brandNameIn, hookPrefill } from "../hook-brand";
+import { cutText, hasBrokenCharacter } from "../text";
+import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../variants";
 import { plainRenderMessage } from "../render-errors";
 
 describe("conflict rebase", () => {
@@ -69,5 +71,57 @@ describe("render messages", () => {
   });
   it("uses the typed code's words", () => {
     expect(plainRenderMessage("local_render_disabled", "x")).toMatch(/turned off/);
+  });
+});
+
+describe("text cuts", () => {
+  const caption = "Well, today feels pretty darn special. \u{1F979}\u2764\uFE0F more";
+  it("never leaves half an emoji at any cut length", () => {
+    for (let n = 0; n <= caption.length; n++) expect(hasBrokenCharacter(cutText(caption, n))).toBe(false);
+  });
+  it("the old UTF-16 cut did break it (guard proves itself)", () => {
+    const broken = Array.from({ length: caption.length }, (_, n) => caption.slice(0, n)).some(hasBrokenCharacter);
+    expect(broken).toBe(true);
+  });
+  it("keeps a joined emoji whole", () => {
+    expect(cutText("a\u{1F468}\u200D\u{1F469}\u200D\u{1F467}b", 2)).toBe("a\u{1F468}\u200D\u{1F469}\u200D\u{1F467}");
+  });
+});
+
+describe("hook prefill", () => {
+  it("never calls a contraction a brand", () => {
+    expect(brandNameIn("It's a big day here")).toBeNull();
+    expect(brandNameIn("That's so good. Let's go")).toBeNull();
+    expect(hookPrefill("It's a big day here at Asheville TeaCompany!!", "Cedar Ridge Iced Tea").text).toBe("It's a big day here at Cedar Ridge Iced Tea!!");
+  });
+  it("keeps spaces between joined lines", () => {
+    const out = hookPrefill("Send this to someone\nwho loves Joe's PIZZA", "Cedar Ridge");
+    expect(out.text).toBe("Send this to someone who loves Cedar Ridge");
+    expect(out.text).not.toMatch(/someonewho/);
+  });
+  it("leaves it empty when it is not sure or not readable", () => {
+    expect(hookPrefill("stop scrolling", "Cedar Ridge").text).toBe("");
+    expect(hookPrefill(`Joe's PIZZA ${"word ".repeat(40)}`, "Cedar Ridge").text).toBe("");
+    expect(hookPrefill("Try Dragon Lair Knives today", "Dragon Lair Knives").text).toBe("");
+  });
+});
+
+describe("variants panel rules", () => {
+  const sets = [{ label: "Captions: Bold" }, { label: "Shape 1:1" }, { label: "Shape 1:1" }];
+  it("counts only what will really be created", () => {
+    const { fresh, reused } = splitNewSets(sets, ["Captions: Bold"]);
+    expect(fresh.map((s) => s.label)).toEqual(["Shape 1:1"]);
+    expect(reused).toHaveLength(2);
+    expect(createButtonText(fresh.length)).toBe("Create 1 variant");
+    expect(createButtonText(0)).toBeNull();
+    expect(countWord(3)).toBe("3 variants");
+  });
+  it("says what the server did", () => {
+    expect(matrixOutcomeText([{ reused: false }, { reused: true }])).toBe("Created 1 variant; 1 already existed");
+    expect(matrixOutcomeText([{ reused: true }])).toBe("That variant already exists");
+  });
+  it("labels a variant behind the head as rebased", () => {
+    expect(rebasedLabel(2, 4)).toBe("rebased from v2");
+    expect(rebasedLabel(4, 4)).toBe("");
   });
 });

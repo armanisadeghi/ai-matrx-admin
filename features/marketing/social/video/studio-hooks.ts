@@ -79,7 +79,7 @@ export function useBrandOfferings() {
 }
 
 /** The reference post's stored video file (null when the post has none landed yet). */
-export function useReferenceVideo(postId: string | null) {
+export function useReferenceVideo(postId: string | null, settling = false) {
   const { organizationId } = useSocials();
   return useQuery({
     queryKey: ["marketing", "social", "video", "post-media", postId ?? ""],
@@ -88,6 +88,7 @@ export function useReferenceVideo(postId: string | null) {
       return media.find((m) => (m.mime_type ?? "").startsWith("video/")) ?? media.find((m) => m.role === "video") ?? null;
     },
     enabled: Boolean(postId && organizationId),
+    refetchInterval: (q) => (settling && !q.state.data ? 2500 : false),
   });
 }
 

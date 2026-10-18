@@ -16,24 +16,18 @@
 // dividers, callouts, columns, page links, databases and Applet frames. Anything else holds an empty block (the editor
 // draws it on reveal).
 
-import dynamic from "next/dynamic";
-import { Suspense, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import { listMarker } from "./list-marker";
 import type { SpaceBlock } from "../contract";
-import { ResolvedBlockSeed, useAwaitedBlockSeed } from "../page/space-seed-context";
 import { CalloutGlyph } from "./callout-block";
 import { AppletFrame, appletBlockHeight } from "./applet-frame";
 import { toEngine, type EngineBlock } from "./convert";
-import { DatabaseHost, PAINTED_WIDTH_SLACK, activeLayout, paintedSizesOf } from "./database-host";
+import { PAINTED_WIDTH_SLACK, activeLayout, paintedSizesOf } from "./database-host";
 import { columnCss, useDarkMode } from "./SpaceEditor";
 import { PageRow } from "./schema";
 import { readData } from "./stored-blocks";
-
-// The same chunk the editor's database node view loads, rendered on the server here (rows in the HTML).
-const DatabaseBlock = dynamic(() => import("../data/DatabaseBlock").then((m) => m.DatabaseBlock), {
-  loading: () => <div className="spaces-db-loading" />,
-});
+import { ServerDrawnDatabase } from "./server-drawn-database";
 
 type Inline = { type: string; text?: string; styles?: Record<string, unknown>; href?: string; content?: Inline[]; props?: Record<string, unknown> };
 
@@ -192,16 +186,6 @@ function Plain({ b, index, depth = 0 }: { b: EngineBlock; index?: number; depth?
 const REACT_BLOCKS = new Set(["page", "linkToPage", "columnList", "column", "database", "applet"]);
 const PLAIN_BLOCKS = new Set(["paragraph", "heading", "bulletListItem", "numberedListItem", "checkListItem", "toggleListItem", "quote", "divider", "callout"]);
 
-/** The server's answers for this block (its own seed, awaited inside the block's own Suspense). */
-function SeededDatabase({ blockId, p }: { blockId: string; p: Record<string, unknown> }) {
-  const seed = useAwaitedBlockSeed(blockId);
-  return (
-    <ResolvedBlockSeed blockId={blockId} seed={seed}>
-      <DatabaseBlock blockId={blockId} props={p} onChange={() => undefined} editable={false} />
-    </ResolvedBlockSeed>
-  );
-}
-
 /** A React block's node-view wrapper and the component its node view mounts. */
 function ReactBlock({ b }: { b: EngineBlock }) {
   const props = b.props ?? {};
@@ -221,16 +205,7 @@ function ReactBlock({ b }: { b: EngineBlock }) {
         <AppletFrame height={appletBlockHeight(readData(props.data))} />
       </div>
     );
-  else if (b.type === "database") {
-    const p = readData(props.data);
-    inner = (
-      <DatabaseHost blockId={b.id} layout={activeLayout(p)} painted={paintedSizesOf(p)} serverDrawn>
-        <Suspense fallback={<div className="spaces-db-loading" />}>
-          <SeededDatabase blockId={b.id} p={p} />
-        </Suspense>
-      </DatabaseHost>
-    );
-  }
+  else if (b.type === "database") inner = <ServerDrawnDatabase blockId={b.id} p={readData(props.data)} />;
   return (
     <div className={`react-renderer node-${b.type} bn-react-node-view-renderer`} contentEditable={false}>
       <div className="bn-block-content" data-content-type={b.type} {...contentAttrs(b)} data-node-view-wrapper="" style={{ whiteSpace: "normal" }}>

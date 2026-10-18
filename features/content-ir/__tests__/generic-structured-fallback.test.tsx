@@ -56,6 +56,7 @@ import {
 import { IR_ENVELOPE_KEY } from "@ai-matrx/content-ir";
 import type { KindComponentProjection } from "../registry/schema-source-kind-components";
 import GenericStructuredBlock from "@ai-matrx/rich-content/display/blocks/generic/GenericStructuredBlock";
+import { settleKindLookups } from "@/__tests__/helpers/settle-kind-lookups";
 
 interface TestBlock {
   type: string;
@@ -240,7 +241,9 @@ describe("R6 generic fallback at the render seam", () => {
     });
   });
 
-  it("[unregistered] a kind with NO definition reaches the honest generic floor", () => {
+  it("[unregistered] a kind with NO definition reaches the honest generic floor", async () => {
+    // "Unregistered" is a verdict only once this kind's own lookups have answered (per-kind cold verdict).
+    await settleKindLookups("kind_the_platform_never_heard_of");
     const block = kindBlock("kind_the_platform_never_heard_of", { a: 1 });
     const routed = applyIrKindRoute(block);
     expect(routed.type).toBe(GENERIC_STRUCTURED_COMPONENT_KEY);

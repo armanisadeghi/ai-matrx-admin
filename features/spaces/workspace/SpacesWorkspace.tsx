@@ -3,7 +3,7 @@
 // features/spaces/workspace/SpacesWorkspace.tsx — sidebar + page, the Notion frame (§D, L2).
 //
 // Desktop: a resizable sidebar (drag its edge), Cmd+\ collapses it, and while collapsed the left edge
-// reveals it on hover. Phone: the sidebar is a drawer.
+// reveals it on hover. Phone: the sidebar is a drawer (the same tree at every width; CSS hides the sidebar).
 
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -25,7 +25,7 @@ const WIDTH_KEY = "spaces:sidebar-width";
 const MIN = 200;
 const MAX = 480;
 
-function Frame({ children }: { children: ReactNode }) {
+export function SpacesFrame({ children }: { children: ReactNode }) {
   const { sidebarCollapsed, setSidebarCollapsed, mobileSidebarOpen, setMobileSidebarOpen } = useSpaces();
   const isMobile = useIsMobile();
   const [width, setWidth] = useState(240);
@@ -43,29 +43,25 @@ function Frame({ children }: { children: ReactNode }) {
     setPeek(false);
   });
 
-  if (isMobile) {
-    return (
-      <div className="spaces-frame">
-        <Drawer open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen} direction="left">
-          <DrawerContent className="spaces-drawer">
-            <DrawerTitle className="sr-only">Spaces</DrawerTitle>
-            <SpacesSidebarContent />
-          </DrawerContent>
-        </Drawer>
-        <main className="spaces-main">{children}</main>
-        <QuickFind />
-      </div>
-    );
-  }
-
   return (
     <div className="spaces-frame" style={{ "--spaces-sidebar-w": `${width}px` } as React.CSSProperties}>
+      {/* ONE TREE AT EVERY WIDTH (SPACES-REDRAW): the drawer, the sidebar and the page sit in the same places
+          whatever the width, so the phone check answering after hydration (the server can only guess the
+          width) never moves the page to another place in the tree — that remounted the whole page body and
+          redrew it from scratch at phone widths. The width decides with CSS (spaces.css hides the sidebar
+          under 768px); the phone check only opens the drawer and makes the hidden sidebar inert. */}
+      <Drawer open={isMobile && mobileSidebarOpen} onOpenChange={setMobileSidebarOpen} direction="left">
+        <DrawerContent className="spaces-drawer">
+          <DrawerTitle className="sr-only">Spaces</DrawerTitle>
+          <SpacesSidebarContent />
+        </DrawerContent>
+      </Drawer>
       <aside
         className="spaces-sidebar"
         data-collapsed={sidebarCollapsed ? "true" : undefined}
         data-peek={sidebarCollapsed && peek ? "true" : undefined}
         data-dragging={dragging ? "true" : undefined}
-        inert={sidebarCollapsed && !peek}
+        inert={isMobile || (sidebarCollapsed && !peek)}
         onMouseLeave={() => setPeek(false)}
       >
         <SpacesSidebarContent onCollapse={() => setSidebarCollapsed(true)} />
@@ -111,7 +107,7 @@ export function SpacesWorkspace({ children }: { children: ReactNode }) {
         <DatabaseDesignerHost userId={userId}>
           <MoveInHost userId={userId}>
             <NotionImportHost>
-              <Frame>{children}</Frame>
+              <SpacesFrame>{children}</SpacesFrame>
             </NotionImportHost>
           </MoveInHost>
         </DatabaseDesignerHost>

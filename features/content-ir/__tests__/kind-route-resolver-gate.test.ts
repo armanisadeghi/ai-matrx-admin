@@ -34,6 +34,7 @@ import {
 import { kindRegistry } from "../registry/kind-registry";
 import { IR_ENVELOPE_KEY } from "@ai-matrx/content-ir";
 import type { KindComponentProjection } from "../registry/schema-source-kind-components";
+import { settleKindLookups } from "@/__tests__/helpers/settle-kind-lookups";
 
 const FLASHCARDS = JSON.stringify({
   __kind: "flashcard_set",
@@ -166,7 +167,9 @@ describe("resolver gate at applyIrKindRoute (R6) + __ir_route marker", () => {
     expect(applyIrKindRoute(block)).toBe(block);
   });
 
-  it("an unknown kind (no compiled entry, no DB row) routes to the unregistered generic floor", () => {
+  it("an unknown kind (no compiled entry, no DB row) routes to the unregistered generic floor", async () => {
+    // "Unregistered" is a verdict only once this kind's own lookups have answered (per-kind cold verdict).
+    await settleKindLookups("kind_nobody_registered");
     const block = dbOnlyBlock("kind_nobody_registered");
     const routed = applyIrKindRoute(block);
     expect(routed.type).toBe("generic_structured");

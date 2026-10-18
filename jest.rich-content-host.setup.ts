@@ -59,7 +59,14 @@ configureRichContent({
   useOpenSaveToTable: () => require("@/features/overlays/definitions/saveToTable.overlay").useOpenSaveToTable(),
   kindRegistry: late(() => require("@/features/content-ir/registry/kind-registry").kindRegistry),
   // The package kind registry's database tiers read through these (the host passes the same two to registerKindHost).
-  kindDataClient: async () => require("@/utils/supabase/client").supabase,
+  // An unmocked app client points at a database Jest never reaches, so every kind read would FAIL
+  // (never "none") and a kind with no component could only settle at the bounded wait. The test host
+  // answers instead from an empty database: every lookup asked is answered, "none" settling it
+  // (__tests__/helpers/settle-kind-lookups.ts). A suite that mocks the client keeps its own answers.
+  kindDataClient: async () => {
+    const client = require("@/utils/supabase/client").supabase;
+    return isUnmockedSupabaseClient(client) ? emptyDatabaseClient() : client;
+  },
   loadTableKindSource: async () => require("@/features/content-ir/registry/table-kind-source"),
   componentRegistry: late(() => require("@/features/content-ir/registry/component-registry").componentRegistry),
   sessionReady: {
@@ -77,24 +84,32 @@ registerKindCorrector("draft_critique", (value) => {
   return { value: result.critique, corrections: result.corrections };
 });
 
-// THE COLD-VERDICT RULE is per kind (@ai-matrx/rich-content >= 0.2.205): "unregistered" is published only once
-// THIS kind's own lookups answered. Suites that declare "the list loaded and this kind is not in it" do it with
-// `componentRegistry.replaceDbRows([...])` (the whole tier replaced = the list landed). Honour that declaration
-// for the per-kind predicate in tests: a full replace marks the warm list landed, and a definition nobody
-// registered then reads "absent" (not "pending"). Tests of the pending state itself never call replaceDbRows.
-{
-  const { ComponentRegistry } = require("@ai-matrx/rich-content/kinds/registry/component-registry");
-  const { PackageKindRegistry } = require("@ai-matrx/rich-content/kinds/registry/package-kind-registry");
-  const landed = new WeakSet<object>();
-  const replaceDbRows = ComponentRegistry.prototype.replaceDbRows;
-  ComponentRegistry.prototype.replaceDbRows = function (this: { warmListLanded: boolean }, rows: unknown) {
-    replaceDbRows.call(this, rows);
-    this.warmListLanded = true;
-    landed.add(globalThis);
-  };
-  const schemaState = PackageKindRegistry.prototype.schemaState;
-  PackageKindRegistry.prototype.schemaState = function (this: unknown, kind: string) {
-    const state = schemaState.call(this, kind);
-    return state === "pending" && landed.has(globalThis) ? "absent" : state;
-  };
+/** True for the real supabase-js client (not a suite's jest.mock stand-in). */
+function isUnmockedSupabaseClient(client: unknown): boolean {
+  const from = (client as { from?: unknown } | null)?.from;
+  return typeof from === "function" && !jest.isMockFunction(from) && (client as object).constructor?.name === "SupabaseClient";
+}
+
+/**
+ * A database with no rows: any query chain resolves `{ data, error: null }` — `null` for a single-row
+ * read (`maybeSingle` / `single`), `[]` for everything else, count 0.
+ */
+function emptyDatabaseClient(): unknown {
+  const answer = (single: boolean) => ({ data: single ? null : [], error: null, count: 0, status: 200, statusText: "OK" });
+  // Every property is another link and every link is callable, so `.schema().from().select()…`,
+  // `.rpc()` and `.auth.getSession()` all end in the same empty answer when awaited.
+  // The client itself is NOT thenable (the host's async getter resolves to it); its links are.
+  const chain = (single: boolean, root = false): unknown =>
+    new Proxy(function () {}, {
+      get(_t, key) {
+        if (key === "then") {
+          if (root) return undefined;
+          return (resolve: (v: unknown) => unknown, reject?: (e: unknown) => unknown) =>
+            Promise.resolve(answer(single)).then(resolve, reject);
+        }
+        return chain(single || key === "maybeSingle" || key === "single");
+      },
+      apply: () => chain(single),
+    });
+  return chain(false, true);
 }

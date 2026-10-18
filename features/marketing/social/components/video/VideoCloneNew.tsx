@@ -44,10 +44,11 @@ import {
   type TeleprompterAnswer,
 } from "../../video/clone";
 import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
-import { createVideoProject, fetchPostWords } from "../../video/server";
+import { createVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
 import { contentHashOf, useBrandOfferings, useFileUrls, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
-import { brandNameIn } from "../../video/hook-brand";
+import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
+import { cutText, oneLine } from "../../video/text";
 import { estimateLabel, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { CaptionLookPicker, CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
@@ -148,7 +149,9 @@ function ReferencePanel({ postId }: { postId: string }) {
   const queryClient = useQueryClient();
   const post = useReferencePost(postId);
   const structure = useVideoStructure(postId);
-  const video = useReferenceVideo(postId);
+  // Just after Analyze the clip may still be landing: ask again every few seconds (bounded) instead of showing "none".
+  const [settling, setSettling] = useState(false);
+  const video = useReferenceVideo(postId, settling);
   const { facts } = useFileUrls(video.data ? [video.data.file_id] : []);
   const url = video.data ? facts[video.data.file_id]?.url : null;
   const [steps, setSteps] = useState<RunStep[]>([]);
@@ -175,6 +178,8 @@ function ReferencePanel({ postId }: { postId: string }) {
       setSteps((prev) => closeSteps(prev));
       const spent = { usd: result.cost?.usd ?? 0, points: result.cost?.points ?? 0, reused: result.status === "reused" };
       setLastCost(spent);
+      setSettling(true);
+      window.setTimeout(() => setSettling(false), 90_000);
       try {
         window.sessionStorage.setItem(costKey, JSON.stringify(spent));
       } catch {
@@ -208,7 +213,7 @@ function ReferencePanel({ postId }: { postId: string }) {
       <div className="mx-auto w-full max-w-[18rem] overflow-hidden rounded-lg bg-muted" style={{ aspectRatio: "9 / 16" }}>
         {url ? (
           <video src={url} controls playsInline className="h-full w-full object-contain" />
-        ) : video.isPending ? (
+        ) : video.isPending || (settling && !video.data) ? (
           <div className="h-full w-full animate-pulse" aria-label="Loading video" />
         ) : (
           <div className="flex h-full items-center justify-center p-3 text-center type-meta text-muted-foreground">
@@ -316,7 +321,11 @@ function BriefPanel({
     queryKey: [...videoKeys.post(postId), "words"],
     queryFn: () => fetchPostWords(postId, { organizationId }),
     enabled: Boolean(structure.data && organizationId),
-    staleTime: Infinity,
+    // Right after Analyze the video may not be stored yet: that answer is asked again until the words arrive (a clip with
+    // no speech is a final answer), so the script fills in without a reload.
+    staleTime: (q) => (q.state.data && q.state.data.status !== "no_stored_video" && q.state.data.status !== "words_unavailable" ? Infinity : 0),
+    refetchInterval: (q) => (q.state.data?.status === "no_stored_video" || q.state.data?.status === "words_unavailable" ? 3000 : false),
+    retry: 3,
   });
 
   const [productKey, setProductKey] = useState<string>("");
@@ -335,6 +344,7 @@ function BriefPanel({
   const [uploading, setUploading] = useState<string | null>(null);
 
   const [phase, setPhase] = useState<Phase>("brief");
+  const [resuming, setResuming] = useState(false);
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [plan, setPlan] = useState<ClonePlanResult | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
@@ -344,11 +354,12 @@ function BriefPanel({
   const keptTexts = [structure.data?.hook?.on_screen_text, ...(structure.data?.onScreenText.map((t) => t.text) ?? [])].filter((t): t is string => Boolean(t));
   const keptBrand = keptTexts.map((t) => brandNameIn(t, brand.name)).find(Boolean) ?? null;
   const hookSource = structure.data?.hook?.on_screen_text ?? "";
-  const hookNamesBrand = brandNameIn(hookSource, brand.name);
   // The field shows the reference hook with the other business's name swapped for this brand until the person types.
-  const hookPrefill = hookNamesBrand ? hookSource.replace(hookNamesBrand, brand.name).slice(0, 120) : "";
+  // Only a certain, readable swap is prefilled; anything else leaves the field empty and the warning below does the talking.
+  const prefill = hookPrefillFor(hookSource, brand.name);
+  const hookPrefill = prefill.text;
   const hookValue = hookTouched ? hookLine : hookPrefill;
-  const hookPrefilledFrom = !hookTouched && hookPrefill ? hookNamesBrand : null;
+  const hookPrefilledFrom = !hookTouched && hookPrefill ? prefill.swapped : null;
 
   const referenceScript = (words.data?.words ?? []).map((w) => w.text).join(" ").trim();
   const scriptText = script ?? referenceScript;
@@ -356,10 +367,45 @@ function BriefPanel({
   const product = offering ? offering.name : productName.trim();
   const busy = phase === "planning" || phase === "generating" || uploading !== null;
 
+  // A reload of `...&project=<id>` brings back the saved plan: its version, its price and the Generate / Open project actions.
+  const resumeFor = useRef(projectId);
+  useEffect(() => {
+    const pid = resumeFor.current;
+    if (!pid || !organizationId) return;
+    let alive = true;
+    setResuming(true);
+    void (async () => {
+      try {
+        const answer = await getVideoProject(pid, { organizationId });
+        if (!answer.composition || !alive) return;
+        const estimate = await estimateProject(pid, null, { organizationId });
+        if (!alive) return;
+        setPlan((prev) => prev ?? {
+          project_id: pid,
+          version: answer.head_version,
+          analysis_id: "",
+          post_id: postId,
+          script_source: "kept",
+          script_agent: "not_requested",
+          report: { notes: [] },
+          estimate: estimate as ClonePlanResult["estimate"],
+        });
+        setPhase((p) => (p === "brief" ? "planned" : p));
+      } catch {
+        // No saved plan to bring back: the brief stays as it is, and Plan starts a new one.
+      } finally {
+        if (alive) setResuming(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [organizationId, postId]);
+
   const ensureProject = async (): Promise<string> => {
     if (projectId) return projectId;
-    const caption = (post.data?.caption ?? "").replace(/\s+/g, " ").trim();
-    const name = `${product || brand.name} · ${caption.slice(0, 40) || "clone"}`;
+    const caption = oneLine(post.data?.caption);
+    const name = `${cutText(product || brand.name, 60)} · ${cutText(caption, 40) || "clone"}`;
     const made = await createVideoProject({ post_id: postId, name, brand_id: brandId }, { organizationId });
     onProject(made.project_id);
     const next = new URLSearchParams(window.location.search);
@@ -374,7 +420,7 @@ function BriefPanel({
     ...(product
       ? {
           product: {
-            name: product.slice(0, 60),
+            name: cutText(product, 60),
             ...(offering?.offeringId ? { offeringId: offering.offeringId } : {}),
             ...(offering?.priceText ? { price: offering.priceText } : {}),
             ...(productImage ? { images: [productImage] } : {}),
@@ -386,7 +432,7 @@ function BriefPanel({
       ...(presenter === "own_footage" ? { takes: takes.map((t) => ({ file: t.file })) } : {}),
     },
     script: aiRewrite ? { mode: "rewrite" } : scriptText ? { mode: "rewrite", text: scriptText } : { mode: "keep" },
-    ...(hookValue.trim() ? { hookLine: hookValue.trim().slice(0, 120) } : {}),
+    ...(hookValue.trim() ? { hookLine: cutText(hookValue.trim(), 120) } : {}),
     captions: captionLook === "match" ? { mode: "match" } : captionLook === "off" ? { mode: "off" } : { mode: "preset", preset: captionLook },
     aspect,
   });
@@ -577,7 +623,7 @@ function BriefPanel({
         <ProTextarea
           value={scriptText}
           onChange={(e) => setScript(e.target.value)}
-          placeholder={words.isPending && structure.data ? "Loading the reference script…" : "Write what the video says"}
+          placeholder={words.isPending && structure.data ? "Loading the reference script…" : words.data?.status === "no_stored_video" || words.data?.status === "words_unavailable" ? "Getting the reference script…" : "Write what the video says"}
           autoGrow
           minHeight={120}
           maxHeight={320}
@@ -680,6 +726,7 @@ function BriefPanel({
           {ownFootageMissing ? <span className="type-meta text-muted-foreground">Upload your recordings first</span> : null}
           <span className="type-meta ml-auto text-muted-foreground">Planning is free</span>
         </div>
+        {resuming ? <span className="type-meta text-muted-foreground">Loading your saved plan…</span> : null}
         <RunLog steps={steps} />
         {failure ? <FailureLine error={failure} operation="video clone" /> : null}
         {plan && est ? (

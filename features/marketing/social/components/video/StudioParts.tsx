@@ -34,10 +34,29 @@ export interface RunStep {
   label: string;
   state: "running" | "done" | "failed";
   meta?: string;
+  /** When the step started (set when it is pushed running); a running step shows how long it has been going. */
+  startedAt?: number;
+}
+
+/** "42 s" / "2 min 5 s": how long a step has taken. */
+export function secondsText(ms: number): string {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`;
+}
+
+function useNow(active: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active) return;
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, [active]);
+  return now;
 }
 
 /** Steps of a running job, newest last; the running step shimmers. */
 export function RunLog({ steps, className }: { steps: RunStep[]; className?: string }) {
+  const now = useNow(steps.some((s) => s.state === "running"));
   if (steps.length === 0) return null;
   return (
     <ol className={cn("flex flex-col gap-1", className)} aria-live="polite">
@@ -55,7 +74,11 @@ export function RunLog({ steps, className }: { steps: RunStep[]; className?: str
           ) : (
             <span className={cn("truncate", s.state === "failed" ? "text-destructive" : "text-muted-foreground")}>{s.label}</span>
           )}
-          {s.meta ? <span className="ml-auto shrink-0 tabular-nums text-muted-foreground">{s.meta}</span> : null}
+          {s.meta ? (
+            <span className="ml-auto shrink-0 tabular-nums text-muted-foreground">{s.meta}</span>
+          ) : s.state === "running" && s.startedAt ? (
+            <span className="ml-auto shrink-0 tabular-nums text-muted-foreground">{secondsText(now - s.startedAt)}</span>
+          ) : null}
         </li>
       ))}
     </ol>
@@ -64,18 +87,33 @@ export function RunLog({ steps, className }: { steps: RunStep[]; className?: str
 
 /** Push a step: the previous running step is marked done. */
 export function pushStep(steps: RunStep[], step: RunStep): RunStep[] {
-  const closed = steps.map((s) => (s.state === "running" ? { ...s, state: "done" as const } : s));
+  const closed = steps.map((s) => (s.state === "running" && s.id !== step.id ? finish(s, "done") : s));
   const at = closed.findIndex((s) => s.id === step.id);
+  const before = at >= 0 ? closed[at] : undefined;
+  const next: RunStep =
+    step.state === "running"
+      ? { ...step, startedAt: before?.startedAt ?? step.startedAt ?? Date.now() }
+      : { ...step, meta: step.meta ?? tookText(before) };
   if (at >= 0) {
-    const next = [...closed];
-    next[at] = step;
-    return next;
+    const out = [...closed];
+    out[at] = next;
+    return out;
   }
-  return [...closed, step];
+  return [...closed, next];
 }
 
 export function closeSteps(steps: RunStep[], state: "done" | "failed" = "done"): RunStep[] {
-  return steps.map((s) => (s.state === "running" ? { ...s, state } : s));
+  return steps.map((s) => (s.state === "running" ? finish(s, state) : s));
+}
+
+/** A finished step keeps how long it took when that was noticeable (3 s or more): where the wait went. */
+function finish(s: RunStep, state: "done" | "failed"): RunStep {
+  return { ...s, state, meta: s.meta ?? tookText(s) };
+}
+
+function tookText(s: RunStep | undefined): string | undefined {
+  const took = s?.startedAt ? Date.now() - s.startedAt : 0;
+  return took >= 3000 ? secondsText(took) : undefined;
 }
 
 // ── cost ────────────────────────────────────────────────────────────────────────────────────────────

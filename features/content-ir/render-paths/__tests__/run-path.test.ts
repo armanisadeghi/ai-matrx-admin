@@ -14,6 +14,7 @@ import { kindRegistry } from "@/features/content-ir/registry/kind-registry";
 import { runRenderPath, reachedRealComponent } from "../run-path";
 import { IR_ROUTE_KEY } from "@ai-matrx/rich-content/kinds/react/kind-route";
 import { RENDER_PATHS } from "../paths";
+import { settleKindLookups } from "@/__tests__/helpers/settle-kind-lookups";
 
 // 🚨 A PARTIAL MOCK OF A REAL MODULE IS A SUITE THAT DIES ON THE NEXT EXPORT
 // (DD-239). This used to replace the whole capture store with `{ captureError }`.
@@ -80,7 +81,9 @@ describe("render paths report what the route actually did", () => {
     }
   });
 
-  it("a kind with NO component honestly reports the generic floor", () => {
+  it("a kind with NO component honestly reports the generic floor", async () => {
+    // The verdict is honest only once this kind's own lookups have answered (per-kind cold verdict).
+    await settleKindLookups("path_no_component_kind");
     // THE PROPERTY THE OLD PREVIEW LACKED. A real failure, shown as one.
     const run = runRenderPath("chat_bare", "path_no_component_kind", VALUE)!;
     expect(run.verdict.reachedRealComponent).toBe(false);
@@ -112,7 +115,8 @@ describe("render paths report what the route actually did", () => {
     }
   });
 
-  it("artifact paths judge what the artifact card actually draws (SHAPES-BUGS 2.3)", () => {
+  it("artifact paths judge what the artifact card actually draws (SHAPES-BUGS 2.3)", async () => {
+    await settleKindLookups("path_artifact_bare_kind");
     // Live 2026-10-14 (brand_basics): both artifact paths said "generic
     // key/value view · no component drew this" while the shape's own
     // component rendered right under the verdict. The artifact card draws a

@@ -12,6 +12,7 @@
 //     persisted per user and synced across devices.
 //   QUERY (scope, search, filters, page) → useEntityList, always starts clean.
 
+import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 import {
   mergeBulkActions,
   standardBulkActionsFor,
@@ -1598,12 +1599,10 @@ export function EntityListPage<TRow>({
           // First paint = settled paint: hide the columns with no room while the HTML parses
           // (columnPriority.ts). Both carry suppressHydrationWarning: the script text is the
           // same on both sides, and the mark it writes is one attribute on <html>, never on hydrated markup.
+          // The script is only in the server's HTML: a list drawn in the browser never creates one.
           <>
             <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: NO_ROOM_CSS }} />
-            <script
-              suppressHydrationWarning
-              dangerouslySetInnerHTML={{ __html: noRoomScript(pageConfig.columns) }}
-            />
+            <PrepaintScript html={noRoomScript(pageConfig.columns)} />
           </>
         ) : null}
 

@@ -324,6 +324,25 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   useStudioBuilderFeed(state.chatId ?? null, ws);
   const [dropped, setDropped] = useState<ReadonlySet<string>>(new Set());
 
+  // Reload restores the exact stage: the URL carries chat + build + agent, and when it lost them (a bare
+  // reopen with only the chat) the workspace record — which the server stamps with the build at start —
+  // and then the build's own record bring them back.
+  const restoredFor = useRef<string | null>(null);
+  useEffect(() => {
+    const recorded = ws?.build;
+    if (recorded?.build_id && !state.buildId && restoredFor.current !== recorded.build_id) {
+      restoredFor.current = recorded.build_id;
+      go({ buildId: recorded.build_id, ...(recorded.agent_id ? { agentId: recorded.agent_id } : {}) });
+    }
+  }, [ws?.build, state.buildId, go]);
+  const agentRestoredFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (build?.agent_id && build.outcome && KEPT_OUTCOMES.has(build.outcome) && !state.agentId && agentRestoredFor.current !== build.agent_id) {
+      agentRestoredFor.current = build.agent_id;
+      go({ agentId: build.agent_id });
+    }
+  }, [build, state.agentId, go]);
+
   /** "Make this an agent": approve (code), optional missed-inputs check, then the workspace goes to the factory. */
   const makeThisAnAgent = async () => {
     const chatId = state.chatId;
