@@ -80,6 +80,10 @@ import {
 import { extractErrorMessage } from "@/utils/errors";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import {
+  formatYouTubeCount,
+  formatYouTubeDuration,
+} from "@/features/marketing/discovery/youtube/formatters";
 
 const TYPE_ICONS = {
   image: ImageIcon,
@@ -817,57 +821,81 @@ function YouTubeVideoCard({
   identity?: YouTubeVideoIdentity;
   onToggleRelevance: (item: ResearchMedia) => void;
 }) {
-  const label =
-    item.alt_text || item.caption || hostLabel(item.url) || item.url;
+  // Poster first, player on press: mounting one live YouTube iframe per video
+  // (169 on a measured topic) painted black boxes until each loaded and cost
+  // the tab a player per card.
+  const [playing, setPlaying] = useState(false);
+  const title =
+    identity?.title || item.alt_text || item.caption || hostLabel(item.url) || item.url;
+  const poster = identity?.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  const meta = [
+    identity?.channel_title,
+    identity?.view_count != null ? `${formatYouTubeCount(identity.view_count)} views` : null,
+    identity?.duration ? formatYouTubeDuration(identity.duration) : null,
+  ].filter(Boolean);
 
   return (
     <div
       className={cn(
-        "group relative rounded-xl border bg-card/60 backdrop-blur-sm overflow-hidden transition-all",
-        item.is_relevant ? "border-primary/20" : "border-border/50 opacity-60",
+        "group relative overflow-hidden rounded-xl border bg-card transition-all",
+        item.is_relevant ? "border-border" : "border-border opacity-60",
       )}
     >
-      <div className="relative aspect-video w-full bg-black">
-        <iframe
-          src={youTubeEmbedUrl(videoId, { start })}
-          aria-label={label}
-          className="absolute inset-0 h-full w-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          loading="lazy"
-        />
-        <VideoPublishDate
-          publishedAt={identity?.published_at}
-          className="pointer-events-none absolute bottom-1.5 left-1.5 z-10 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
-        />
+      <div className="relative aspect-video w-full bg-muted">
+        {playing ? (
+          <iframe
+            src={youTubeEmbedUrl(videoId, { start, autoplay: true })}
+            aria-label={title}
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="absolute inset-0"
+            aria-label={`Play ${title}`}
+          >
+            <img src={poster} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <span className="absolute inset-0 flex items-center justify-center">
+              {/* ui-exception: play glyph sits on a photo — fixed white on a dark scrim. */}
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 transition-colors group-hover:bg-black/75">
+                <Play className="h-5 w-5 text-white" />
+              </span>
+            </span>
+            <VideoPublishDate
+              publishedAt={identity?.published_at}
+              className="pointer-events-none absolute bottom-1.5 left-1.5 z-10 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+            />
+          </button>
+        )}
       </div>
-      <div className="p-1.5 flex items-center justify-between gap-1">
-        <p
-          className="type-meta truncate text-foreground/80 flex-1"
-          title={label}
-        >
-          {label}
-        </p>
+      <div className="flex items-start justify-between gap-2 p-2">
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 type-title text-foreground" title={title}>
+            {title}
+          </p>
+          {meta.length > 0 && (
+            <p className="mt-0.5 truncate type-meta text-muted-foreground">{meta.join(" · ")}</p>
+          )}
+        </div>
         <OutboundLink
           href={item.url}
-          className="shrink-0 text-muted-foreground/50 hover:text-foreground transition-colors"
+          className="mt-0.5 shrink-0 text-muted-foreground transition-colors hover:text-foreground"
           title="Open on YouTube"
           onClick={(e) => e.stopPropagation()}
         >
-          <ExternalLink className="h-3 w-3" />
+          <ExternalLink className="h-3.5 w-3.5" />
         </OutboundLink>
       </div>
       <Button
         variant={item.is_relevant ? "default" : "outline"}
         size="icon"
-        className="absolute top-1.5 right-1.5 z-10 h-6 w-6 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity"
+        className="absolute right-1.5 top-1.5 z-10 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100"
         onClick={() => onToggleRelevance(item)}
       >
-        {item.is_relevant ? (
-          <Check className="h-3 w-3" />
-        ) : (
-          <X className="h-3 w-3" />
-        )}
+        {item.is_relevant ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
       </Button>
     </div>
   );
@@ -1122,7 +1150,7 @@ function VideoSection({
         icon={Video}
         title="Videos"
         count={items.length}
-        description="Embeddable videos play inline via iframe"
+        description="Press a video to play it here"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {items.map((item) => {
@@ -1141,17 +1169,15 @@ function VideoSection({
   );
 }
 
-function docIcon(
-  item: ResearchMedia,
-): React.ComponentType<{ className?: string }> {
+function DocIcon({ item, className }: { item: ResearchMedia; className?: string }) {
   const ext = fileExt(item.url);
   const kind = resourceKind(item);
-  if (ext === "pdf" || kind === "pdf") return FileText;
+  if (ext === "pdf" || kind === "pdf") return <FileText className={className} />;
   if (["csv", "tsv", "xls", "xlsx", "ods"].includes(ext) || kind === "csv")
-    return FileSpreadsheet;
+    return <FileSpreadsheet className={className} />;
   if (["doc", "docx", "ppt", "pptx", "odt", "rtf", "txt"].includes(ext))
-    return FileType;
-  return File;
+    return <FileType className={className} />;
+  return <File className={className} />;
 }
 
 /** Logical folder the gallery saves remote documents into. */
@@ -1184,7 +1210,6 @@ function DocumentCard({
   item: ResearchMedia;
   onToggleRelevance: (item: ResearchMedia) => void;
 }) {
-  const Icon = docIcon(item);
   const owned = isOwnedMedia(item);
   // An owned row's `url` is a durable pointer (CDN URL or the bare file_id),
   // never a file path — so the name/host/extension come from what we actually
@@ -1248,7 +1273,7 @@ function DocumentCard({
     >
       <div className="flex items-start gap-2 p-2.5">
         <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/8 flex items-center justify-center">
-          <Icon className="h-5 w-5 text-primary/70" />
+          <DocIcon item={item} className="h-5 w-5 text-primary/70" />
         </div>
         <div className="min-w-0 flex-1">
           <p

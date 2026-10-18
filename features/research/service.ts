@@ -718,6 +718,7 @@ export type YouTubeVideoIdentity = Pick<
   Database["research"]["Tables"]["youtube_video"]["Row"],
   | "id"
   | "youtube_video_id"
+  | "title"
   | "channel_title"
   | "duration"
   | "view_count"
@@ -729,7 +730,7 @@ export type YouTubeVideoIdentity = Pick<
 >;
 
 const YOUTUBE_IDENTITY_COLUMNS =
-  "id,youtube_video_id,channel_title,duration,view_count,like_count,channel_subscriber_count,processing_status,published_at,thumbnail_url";
+  "id,youtube_video_id,title,channel_title,duration,view_count,like_count,channel_subscriber_count,processing_status,published_at,thumbnail_url";
 
 /**
  * Batch-fetch video identities for a set of YouTube video ids. Rows in the

@@ -78,3 +78,37 @@ export function internalPathFor(pathname: string, domain: ResolvedDomain): strin
   }
   return null;
 }
+
+/**
+ * API endpoints the published pages themselves call (forms, booking pages, the client portal sign-in,
+ * the Stripe return, client error capture, theme). On a custom host every other /api path is a 404:
+ * the host is a business's public face, never a door into the app's API.
+ */
+const PUBLIC_API_PREFIXES = [
+  "/api/forms/",
+  "/api/bookings/",
+  "/api/portal/",
+  "/api/payments/return",
+  "/api/diagnostics/client-error",
+  "/api/set-theme",
+];
+
+export function apiAllowedOnCustomHost(pathname: string): boolean {
+  return PUBLIC_API_PREFIXES.some((prefix) => pathname === prefix.replace(/\/$/, "") || pathname.startsWith(prefix));
+}
+
+/** Sign-in pages a portal visitor needs on the business's own host (session cookies are per host). */
+const SIGN_IN_PATHS = ["/login", "/forgot-password", "/reset-password", "/check-email", "/sign-out"];
+
+/**
+ * Paths a mapped custom host serves AS-IS (no rewrite), beside its routes:
+ * - the sign-in pages, when the domain maps a portal (a signed-out portal visitor signs in here);
+ * - /b/manage/<ref> (the "change or cancel" link of a booking), when the domain maps a booking page.
+ */
+export function passthroughOnCustomHost(pathname: string, domain: ResolvedDomain): boolean {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const kinds = new Set(domain.routes.map((route) => route.target_kind));
+  if (kinds.has("portal") && SIGN_IN_PATHS.some((p) => path === p || path.startsWith(`${p}/`))) return true;
+  if (kinds.has("booking") && path.startsWith("/b/manage/")) return true;
+  return false;
+}

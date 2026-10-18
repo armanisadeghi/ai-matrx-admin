@@ -6,7 +6,7 @@ It only SENDS. It asserts nothing and prints no pass or fail: a runner executes 
 database. Spec: common-docs/operations/real-tests/core-chain/PB-03-unsupported-settings.md (STEPS); fixture
 ids: core-chain LEDGER.md "PB-03 fixtures".
 
-One call per copy: POST /ai/agents/<Settings Desk A|O|G>, active organization Compass, scope Port of
+One call per copy: POST /ai/agents/<Settings Desk A|O|G>, active organization Safety Net Real Tests, scope Port of
 Oakland lane, the same variables on every copy. Each raw response body, its HTTP status, the response
 headers and the conversation id are written to call-<copy>.json in the output directory (default: a new
 temp directory, printed at the end).
@@ -31,18 +31,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SERVER = "https://server.app.matrxserver.com"
-COMPASS = "2c1d4319-bf0d-40bc-8ca1-657f4063d080"  # Compass Route Relocation Advisors
-PORT_OF_OAKLAND_LANE = "3df7a3a6-4d1c-4e17-9fc2-27eb9855dcd0"  # scope (type Lanes)
+ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
+PORT_OF_OAKLAND_LANE = "9a4e5ff6-833a-4b6d-986b-26eaf3893e28"  # scope (type Lanes)
 COPIES = {
-    "A": "0d8c67bc-dd8d-4787-99ff-4dcaba8d9d53",  # Settings Desk A — claude-haiku-5-5
-    "O": "45c69576-df85-4dcc-a6e9-68ab73bb111b",  # Settings Desk O — gpt-5-nano
-    "G": "8f2ea48d-9496-440d-8aa2-fb6472d5ea4d",  # Settings Desk G — gemini-flash-lite-latest
+    "A": "dc479b11-c274-4d80-b4ae-3f8db31f9721",  # Settings Desk A — claude-haiku-5-5
+    "O": "9f6bf0cd-f555-4c3a-a87c-2a66a6c52453",  # Settings Desk O — gpt-5-nano
+    "G": "95e4fec5-b7bb-495e-868a-3b3da74ea2f7",  # Settings Desk G — gemini-flash-lite-latest
 }
 
 CARRIER = (
     "```matrx\n"
-    '{"__kind":"directive_v1_reference_pick_list_item","items":[{"list_id":"7e4227af-3e4e-46f8-874f-3db15e4c469c",'
-    '"item_id":"014ae641-52fa-4c83-b5bf-855f08293302","label":"Pacific Crest"}]}\n'
+    '{"__kind":"directive_v1_reference_pick_list_item","items":[{"list_id":"3a881421-95f0-425f-a7b6-2ad274f66d97",'
+    '"item_id":"9dbf0fe5-e08a-4101-b5d3-f37b279548e5","label":"Pacific Crest"}]}\n'
     "```"
 )
 VARIABLES = {
@@ -91,7 +91,7 @@ def send(token: str, path: str, body: dict) -> tuple[int, dict, str]:
         headers={
             "Authorization": "Bearer " + token,
             "Content-Type": "application/json",
-            "X-Organization-Id": COMPASS,
+            "X-Organization-Id": ORG,
             "User-Agent": "matrx-real-tests/1.0 (pb03-send)",
             "X-Matrx-Agent-Traffic": "real-tests-pb03-send",
         },
@@ -114,7 +114,7 @@ def main() -> None:
     for copy in [args.only] if args.only else ["A", "O", "G"]:
         cid = str(uuid.uuid4())
         path = f"/ai/agents/{COPIES[copy]}"
-        body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": COMPASS,
+        body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG,
                 "scope_ids": [PORT_OF_OAKLAND_LANE], "variables": VARIABLES}
         sent_at = datetime.now(timezone.utc).isoformat()
         status, headers, raw = send(token, path, body)
@@ -123,7 +123,7 @@ def main() -> None:
             "copy": copy,
             "agent_id": COPIES[copy],
             "sent_at": sent_at,
-            "request": {"method": "POST", "url": SERVER + path, "organization": COMPASS, "body": body},
+            "request": {"method": "POST", "url": SERVER + path, "organization": ORG, "body": body},
             "status": status,
             "conversation_id": lower.get("x-conversation-id") or cid,
             "request_id": lower.get("x-request-id"),

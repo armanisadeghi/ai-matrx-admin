@@ -29,7 +29,13 @@ import {
   startRecordRobotsLookup,
 } from "@/lib/seo/record-robots-header";
 import { legacyBrandRedirectUrl } from "@/lib/seo/legacy-brand-host";
-import { hostClass, internalPathFor, normalizeHost } from "@/lib/custom-domains/host-routing";
+import {
+  apiAllowedOnCustomHost,
+  hostClass,
+  internalPathFor,
+  normalizeHost,
+  passthroughOnCustomHost,
+} from "@/lib/custom-domains/host-routing";
 import { lookupDomain } from "@/lib/custom-domains/lookup";
 
 // ---------------------------------------------------------------------------
@@ -229,10 +235,36 @@ async function customDomainResponse(
     return kind === "dev" ? null : new NextResponse("Not found", { status: 404 });
   }
   const target = internalPathFor(request.nextUrl.pathname, domain);
-  if (!target) return new NextResponse("Not found", { status: 404 });
+  if (!target) {
+    // Sign-in (portal) and booking management are served as-is on the business's own host.
+    if (passthroughOnCustomHost(request.nextUrl.pathname, domain)) return null;
+    return new NextResponse("Not found", { status: 404 });
+  }
   const rewriteUrl = request.nextUrl.clone();
   rewriteUrl.pathname = target;
   return NextResponse.rewrite(rewriteUrl, { request });
+}
+
+/**
+ * /api on a business's own host: only the endpoints its published pages call answer
+ * (lib/custom-domains/host-routing.ts `apiAllowedOnCustomHost`); the rest of the API is a 404 there.
+ * Our own hosts never reach this (the /api matcher entry is limited to non-platform hosts).
+ */
+async function customDomainApiGate(request: NextRequest): Promise<NextResponse | null> {
+  const requestHost = request.headers.get("host");
+  const kind = hostClass(requestHost, [MAIN_HOST, ADMIN_HOST, DEMOS_HOST, EDU_HOST]);
+  if (kind === "platform" || !requestHost) return null;
+  let domain;
+  try {
+    domain = await lookupDomain(normalizeHost(requestHost));
+  } catch (error) {
+    console.error(`[custom-domain] api lookup failed for ${requestHost}:`, error);
+    if (kind === "dev") return null;
+    return NextResponse.json({ error: "This site is temporarily unavailable." }, { status: 503 });
+  }
+  if (!domain) return kind === "dev" ? null : NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (apiAllowedOnCustomHost(request.nextUrl.pathname)) return null;
+  return NextResponse.json({ error: "Not found" }, { status: 404 });
 }
 
 async function routeRequest(request: NextRequest) {
@@ -400,6 +432,8 @@ export async function proxy(request: NextRequest, event: NextFetchEvent) {
   // stamp: API routes gate their own auth, capture nothing, and never run the
   // session pass here.
   if (request.nextUrl.pathname.startsWith("/api/")) {
+    const refused = await customDomainApiGate(request);
+    if (refused) return refused;
     return NextResponse.next({ request });
   }
   const capture = prepareAcquisitionCapture(request, event);
@@ -422,6 +456,18 @@ export const config = {
     // stamp (see `stampAdminLane`); `proxy` returns before any session work.
     "/api/admin/:path*",
     "/api/sms/admin/:path*",
+    // Every /api path on a NON-platform host (a business's custom domain, or a *.localhost
+    // preview) — so `customDomainApiGate` can 404 what its published pages do not call.
+    // Our own hosts stay out: the API's cold-start budget is untouched for them.
+    {
+      source: "/api/:path*",
+      missing: [
+        {
+          type: "host",
+          value: "(?:.+\\.)?(?:aimatrx\\.com|appmatrx\\.com|matrxserver\\.com|vercel\\.app)|localhost|127\\.0\\.0\\.1",
+        },
+      ],
+    },
     /*
      * Match all request paths except:
      * - _next/static (static files)

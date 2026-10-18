@@ -10,13 +10,13 @@ Every call carries the same state payload S (the eight provision values). Each r
 HTTP status, the response headers and the conversation id are written to one JSON file per call in the
 output directory (default: a new temp directory, printed at the end).
 
-  0  POST /mandates/compass.routing_line/placement   preview, no model call (holder = the one the ladder
+  0  POST /mandates/realtests.routing_line/placement   preview, no model call (holder = the one the ladder
                                                       resolves for admin now, read from /resolution)
-  1  POST /ai/mandates/compass.routing_line           client door, active organization Compass
-  2  POST /mandates/compass.routing_line/try          try door, the binding that runs for admin now
+  1  POST /ai/mandates/realtests.routing_line           client door, active organization Safety Net Real Tests
+  2  POST /mandates/realtests.routing_line/try          try door, the binding that runs for admin now
   3  POST /workflows/<Compass routing via mandate>/runs   workflow door, S as the run inputs
   4  POST /ai/agents/<Compass Dispatcher>             agent calls the mandate (mandate_call), S as variables
-  5  POST /ai/mandates/compass.routing_line           client door again, active organization admin's Workspace
+  5  POST /ai/mandates/realtests.routing_line           client door again, active organization admin's Workspace
 
 Usage:
   pb02-send.py                 send 0..5 in order
@@ -38,17 +38,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SERVER = "https://server.app.matrxserver.com"
-KEY = "compass.routing_line"
-COMPASS = "2c1d4319-bf0d-40bc-8ca1-657f4063d080"  # Compass Route Relocation Advisors
+KEY = "realtests.routing_line"  # was compass.routing_line in Compass; mandate keys are global
+ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
 WORKSPACE = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f"  # admin's Workspace
-WORKFLOW = "fe3ed64e-5326-468a-a031-2befff8dfd04"  # "Compass routing via mandate"
-DISPATCHER = "662ce614-6d31-4bb6-8acb-47dde80d65f0"  # agent "Compass Dispatcher"
+WORKFLOW = "1fef39d6-bd61-4d74-8ad9-3930b9ce3859"  # "Compass routing via mandate"
+DISPATCHER = "53661c82-052e-4569-b151-49a016a7dba9"  # agent "Compass Dispatcher"
 DISPATCHER_MESSAGE = "Fill the routing line for this move."
 
 CARRIER = (
     "```matrx\n"
-    '{"__kind":"directive_v1_reference_pick_list_item","items":[{"list_id":"7e4227af-3e4e-46f8-874f-3db15e4c469c",'
-    '"item_id":"014ae641-52fa-4c83-b5bf-855f08293302","label":"Pacific Crest"}]}\n'
+    '{"__kind":"directive_v1_reference_pick_list_item","items":[{"list_id":"3a881421-95f0-425f-a7b6-2ad274f66d97",'
+    '"item_id":"9dbf0fe5-e08a-4101-b5d3-f37b279548e5","label":"Pacific Crest"}]}\n'
     "```"
 )
 S = {
@@ -117,27 +117,27 @@ def client_door_body(org: str, conversation_id: str) -> dict:
 def build(n: int, token: str) -> tuple[str, str, dict | None, str, str | None]:
     """(method, path, body, org, conversation id we chose or None)."""
     if n == 0:
-        _, _, raw = send(token, "GET", f"/mandates/{KEY}/resolution", None, COMPASS)
+        _, _, raw = send(token, "GET", f"/mandates/{KEY}/resolution", None, ORG)
         res = json.loads(raw)
         holder = {"type": res["holder_type"], "id": res.get("definition_agent_id") or res.get("agent_id")}
         if res.get("holder_type") == "workflow":
             holder = {"type": "workflow", "id": res["workflow_id"], "version_id": res.get("workflow_version_id")}
         elif res.get("is_version"):
             holder["version_id"] = res["agent_id"]
-        return "POST", f"/mandates/{KEY}/placement", {"provisions": S, "holder": holder, "organization_id": COMPASS}, COMPASS, None
+        return "POST", f"/mandates/{KEY}/placement", {"provisions": S, "holder": holder, "organization_id": ORG}, ORG, None
     if n in (1, 5):
-        org = COMPASS if n == 1 else WORKSPACE
+        org = ORG if n == 1 else WORKSPACE
         cid = str(uuid.uuid4())
         return "POST", f"/ai/mandates/{KEY}", client_door_body(org, cid), org, cid
     if n == 2:
-        return "POST", f"/mandates/{KEY}/try", {"variables": S, "candidate": {"selection": "current"}, "organization_id": COMPASS}, COMPASS, None
+        return "POST", f"/mandates/{KEY}/try", {"variables": S, "candidate": {"selection": "current"}, "organization_id": ORG}, ORG, None
     if n == 3:
-        return "POST", f"/workflows/{WORKFLOW}/runs", {"inputs": S, "organization_id": COMPASS}, COMPASS, None
+        return "POST", f"/workflows/{WORKFLOW}/runs", {"inputs": S, "organization_id": ORG}, ORG, None
     if n == 4:
         cid = str(uuid.uuid4())
-        body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": COMPASS,
+        body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG,
                 "user_input": DISPATCHER_MESSAGE, "variables": S}
-        return "POST", f"/ai/agents/{DISPATCHER}", body, COMPASS, cid
+        return "POST", f"/ai/agents/{DISPATCHER}", body, ORG, cid
     raise SystemExit(f"no call {n}; calls are 0-5")
 
 
