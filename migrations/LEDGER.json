@@ -11431,12 +11431,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/portal_blocks_a_portal_page_has_blocks.sql": {
-      "source": "matrx-frontend",
-      "filename": "portal_blocks_a_portal_page_has_blocks.sql",
-      "checksum": "386bcdb46ed7d0d8feb2c42ebdc29835d1bf3427d3be1dd2f454168a84ca29c7",
-      "applied_at": "2026-10-18 04:48:42.678486+00"
     }
   }
 }
