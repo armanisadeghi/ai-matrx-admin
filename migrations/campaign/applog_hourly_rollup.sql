@@ -205,3 +205,8 @@ insert into platform.entity_types (
   'Lane APPLOG-ROLLUP: the records relation of structured_logs.',
   false, false, 'ops._app_log_lines'::regclass
 ) on conflict (token) do nothing;
+
+-- 2026-10-18 05:1xZ (lane APPLOG-ROLLUP): the 48 h rebuild's hash aggregate spilled to disk during the 2026-10-17 log burst.
+alter function ops.app_log_hourly_refresh(timestamptz, timestamptz) set work_mem = '256MB';
+-- and the raw covering index now carries request_id (built CONCURRENTLY as _v2 over the session pooler, old one dropped CONCURRENTLY, renamed):
+--   create index concurrently idx_app_log_created_at_drill_v2 on ops.app_log (created_at) include (level, feature, route, logger_name, exc_type, host_role, classified, user_id, request_id);
