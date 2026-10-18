@@ -604,6 +604,26 @@ export type Database = {
         Args: { p_before: string; p_limit: number; p_user: string }
         Returns: Json
       }
+      add_user_note: {
+        Args: {
+          p_content: string
+          p_label?: string
+          p_organization_id: string
+          p_shown_to?: Database["platform"]["Enums"]["shown_to"]
+          p_user: string
+        }
+        Returns: string
+      }
+      my_user_notes: {
+        Args: never
+        Returns: {
+          content: string
+          note_id: string
+          shown_to: Database["platform"]["Enums"]["shown_to"]
+          updated_at: string
+          user_id: string
+        }[]
+      }
       record_contact: {
         Args: {
           p_action: string
@@ -735,6 +755,21 @@ export type Database = {
           record_id: string
           record_type: string
           title: string
+        }[]
+      }
+      user_notes: {
+        Args: { p_user: string }
+        Returns: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          label: string
+          metadata: Json
+          organization_id: string
+          pinned: boolean
+          shown_to: Database["platform"]["Enums"]["shown_to"]
+          updated_at: string
         }[]
       }
       user_overview: { Args: { p_user: string }; Returns: Json }
@@ -11833,6 +11868,8 @@ export type Database = {
         Returns: undefined
       }
       external_vendor_category: { Args: { p_vendor: string }; Returns: string }
+      free_allowance_report: { Args: { p_limit?: number }; Returns: Json }
+      free_feature_usage: { Args: { p_user: string }; Returns: Json }
       free_months_apply: {
         Args: {
           p_months: number
@@ -11856,6 +11893,8 @@ export type Database = {
         }
         Returns: Json
       }
+      free_spend_today: { Args: never; Returns: Json }
+      free_tier_of: { Args: { p_user: string }; Returns: string }
       hard_cost_unbanked_executions: {
         Args: never
         Returns: {
@@ -106744,6 +106783,23 @@ export type Database = {
           rel: unknown
         }[]
       }
+      _transcription_capability: {
+        Args: { p_capability: string; p_capability_type: string }
+        Returns: {
+          organization_id: string
+          refusal: string
+          subject_id: string
+          subject_type: string
+        }[]
+      }
+      _transcription_knob: {
+        Args: { p_key: string; p_organization_id: string }
+        Returns: Json
+      }
+      _transcription_refusal_message: {
+        Args: { p_reason: string }
+        Returns: string
+      }
       access_request_recipient_report: {
         Args: { p_sample?: number }
         Returns: {
@@ -108987,6 +109043,10 @@ export type Database = {
         }
         Returns: Json
       }
+      mint_transcription_grant: {
+        Args: { p_capability: string; p_capability_type: string }
+        Returns: Json
+      }
       module_config: {
         Args: { p_org: string; p_token: string }
         Returns: {
@@ -110163,6 +110223,14 @@ export type Database = {
         Returns: string
       }
       token_is_detail: { Args: { p_token: string }; Returns: boolean }
+      transcription_grant_admit: {
+        Args: { p_bytes: number; p_ip?: unknown; p_secret: string }
+        Returns: Json
+      }
+      transcription_grant_settle: {
+        Args: { p_event_id: string; p_ok: boolean; p_seconds: number }
+        Returns: undefined
+      }
       trash_annotation_title_census: {
         Args: never
         Returns: {
@@ -151697,6 +151765,89 @@ export type Database = {
           },
         ]
       }
+      brand_choice: {
+        Row: {
+          brand_id: string
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decided_via: string | null
+          decision: string
+          decision_reason: string | null
+          deleted_at: string | null
+          element_id: string
+          id: string
+          metadata: Json
+          opinion: string | null
+          opinion_reason: string | null
+          organization_id: string
+          origin: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          version: number
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_via?: string | null
+          decision?: string
+          decision_reason?: string | null
+          deleted_at?: string | null
+          element_id: string
+          id?: string
+          metadata?: Json
+          opinion?: string | null
+          opinion_reason?: string | null
+          organization_id: string
+          origin: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          version?: number
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_via?: string | null
+          decision?: string
+          decision_reason?: string | null
+          deleted_at?: string | null
+          element_id?: string
+          id?: string
+          metadata?: Json
+          opinion?: string | null
+          opinion_reason?: string | null
+          organization_id?: string
+          origin?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_choice_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_exclusion: {
         Row: {
           brand_id: string
@@ -152076,6 +152227,92 @@ export type Database = {
           visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: []
+      }
+      brand_testimony: {
+        Row: {
+          brand_id: string
+          checkable: boolean | null
+          conferred: boolean | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          firsthand: boolean | null
+          how_to_check: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          quote: string | null
+          respondent_key: string | null
+          room_id: string
+          source_url: string | null
+          source_value: string | null
+          statement: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          topic: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          brand_id: string
+          checkable?: boolean | null
+          conferred?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          firsthand?: boolean | null
+          how_to_check?: string | null
+          id?: string
+          metadata?: Json
+          organization_id: string
+          quote?: string | null
+          respondent_key?: string | null
+          room_id: string
+          source_url?: string | null
+          source_value?: string | null
+          statement: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          topic: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          brand_id?: string
+          checkable?: boolean | null
+          conferred?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          firsthand?: boolean | null
+          how_to_check?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          quote?: string | null
+          respondent_key?: string | null
+          room_id?: string
+          source_url?: string | null
+          source_value?: string | null
+          statement?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          topic?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_testimony_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       business_fact: {
         Row: {
