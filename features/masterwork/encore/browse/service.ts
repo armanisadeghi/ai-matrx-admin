@@ -12,15 +12,6 @@ import { listEncoreShelves } from "../service";
 import { operationFailed } from "@/utils/errors";
 import type { EncoreListRow } from "./types";
 
-const DATE_BUCKET_MS: Record<string, number> = {
-  "1h": 60 * 60 * 1000,
-  "24h": 24 * 60 * 60 * 1000,
-  "7d": 7 * 24 * 60 * 60 * 1000,
-  "30d": 30 * 24 * 60 * 60 * 1000,
-  "90d": 90 * 24 * 60 * 60 * 1000,
-  "1y": 365 * 24 * 60 * 60 * 1000,
-};
-
 let cachedRows: Promise<EncoreListRow[]> | null = null;
 let cacheUntil = 0;
 
@@ -80,20 +71,12 @@ function matches(row: EncoreListRow, query: EntityListQuery): boolean {
         return false;
       }
     }
-    if (
-      id === "updated_at" &&
-      filter.kind === "select" &&
-      filter.values.length > 0
-    ) {
-      const widest = Math.max(
-        ...filter.values.map((value) => DATE_BUCKET_MS[value] ?? 0),
-      );
-      if (
-        widest > 0 &&
-        new Date(row.updated_at).getTime() < Date.now() - widest
-      ) {
-        return false;
-      }
+    if (id === "updated_at" && filter.kind === "date") {
+      // since inclusive, until exclusive; a row with no moment is out.
+      const at = new Date(row.updated_at).getTime();
+      if (Number.isNaN(at)) return false;
+      if (filter.since && at < new Date(filter.since).getTime()) return false;
+      if (filter.until && at >= new Date(filter.until).getTime()) return false;
     }
   }
   return true;

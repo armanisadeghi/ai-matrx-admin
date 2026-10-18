@@ -4,7 +4,6 @@ import { InfoHint } from "@/components/official/InfoHint";
 import { Badge } from "@/components/ui/badge";
 import { PUBLISHED_TO_WEB_LABEL, publishedToWebLabel } from "@/lib/row-access";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -189,8 +188,7 @@ export const RULEBOOK_COLUMNS: EntityColumnSpec<RulebookListRow>[] = [
       id: "updated_at",
       accessorKey: "updated_at",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       cell: (row) => timeCell(row.updated_at),
     },
   },
@@ -209,8 +207,7 @@ export const RULEBOOK_COLUMNS: EntityColumnSpec<RulebookListRow>[] = [
       id: "created_at",
       accessorKey: "created_at",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       cell: (row) => timeCell(row.created_at),
     },
   },

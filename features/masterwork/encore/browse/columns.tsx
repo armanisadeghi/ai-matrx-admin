@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   TextCell,
   timeCell,
@@ -102,8 +101,7 @@ export const ENCORE_COLUMNS: EntityColumnSpec<EncoreListRow>[] = [
       id: "updated_at",
       accessorKey: "updated_at",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       cell: (row) => timeCell(row.updated_at),
     },
   },

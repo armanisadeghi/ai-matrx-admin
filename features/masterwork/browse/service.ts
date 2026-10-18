@@ -61,15 +61,6 @@ const SORTABLE = new Set([
   "created_at",
 ]);
 
-const DATE_BUCKET_MS: Record<string, number> = {
-  "1h": 3600_000,
-  "24h": 86_400_000,
-  "7d": 7 * 86_400_000,
-  "30d": 30 * 86_400_000,
-  "90d": 90 * 86_400_000,
-  "1y": 365 * 86_400_000,
-};
-
 /** Rulebook ids granted directly to me, cached per session alongside orgs. */
 let sharedIdsCache: string[] | null = null;
 
@@ -107,6 +98,7 @@ interface RulebookFilterable {
   in(column: string, values: string[] | boolean[]): this;
   or(filters: string): this;
   gte(column: string, value: string): this;
+  lt(column: string, value: string): this;
   ilike(column: string, pattern: string): this;
 }
 
@@ -207,15 +199,11 @@ function applyFilters<Q extends RulebookFilterable>(
           id,
           f.values.map((v) => v === "true"),
         );
-      } else if (id === "updated_at" || id === "created_at") {
-        // Date filters are relative buckets; multiple selections = widest wins.
-        const widest = Math.max(
-          ...f.values.map((v) => DATE_BUCKET_MS[v] ?? 0),
-        );
-        if (widest > 0) {
-          q = q.gte(id, new Date(Date.now() - widest).toISOString());
-        }
       }
+    } else if (f.kind === "date" && (id === "updated_at" || id === "created_at")) {
+      // The table's date range: since inclusive, until exclusive (a row with no moment is out).
+      if (f.since) q = q.gte(id, f.since);
+      if (f.until) q = q.lt(id, f.until);
     } else if (f.kind === "text" && f.value.trim()) {
       const v = f.value.trim().replaceAll("%", "\\%");
       // No `author` branch: the SOURCE column stopped reading the
