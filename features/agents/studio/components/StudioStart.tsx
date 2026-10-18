@@ -31,6 +31,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ExamplesField, filledExamples } from "@/features/agents/factory/components/ExamplesField";
 import { startAgentBuild } from "@/features/agents/factory/service";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { STUDIO_MODES, STUDIO_STARTERS, type StudioMode } from "../modes";
@@ -248,9 +249,10 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
             }
           />
           {buildError ? (
-            <p role="alert" className="type-secondary text-destructive" data-testid="studio-build-error">
+            <div role="alert" className="type-secondary text-destructive" data-testid="studio-build-error">
               The build did not start. {buildError}
-            </p>
+              <ErrorAlchemyMenu error={buildError} />
+            </div>
           ) : null}
           {examples.length > 0 && <ExamplesField examples={examples} onChange={setExamples} disabled={starting} />}
         </div>

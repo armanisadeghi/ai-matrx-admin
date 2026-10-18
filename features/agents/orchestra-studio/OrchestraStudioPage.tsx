@@ -105,7 +105,7 @@ function NoteEditor({
         placeholder={placeholder}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="h-8 min-w-48 flex-1"
+        className="min-w-48 flex-1"
         data-testid={`${testId}-input`}
       />
       <Button type="submit" variant="outline" data-testid={`${testId}-save`}>
