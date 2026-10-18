@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1557,
+  "routeCount": 1556,
   "routes": [
     {
       "pattern": "/",
@@ -1374,14 +1374,9 @@
       "source": "app/(admin)/administration/users/page.tsx"
     },
     {
-      "pattern": "/administration/users/[id]",
+      "pattern": "/administration/users/[id]/[[...tab]]",
       "status": "live",
-      "source": "app/(admin)/administration/users/[id]/page.tsx"
-    },
-    {
-      "pattern": "/administration/users/[id]/[tab]",
-      "status": "live",
-      "source": "app/(admin)/administration/users/[id]/[tab]/page.tsx"
+      "source": "app/(admin)/administration/users/[id]/[[...tab]]/page.tsx"
     },
     {
       "pattern": "/administration/users/acquisition",
