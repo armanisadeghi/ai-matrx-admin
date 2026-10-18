@@ -18,6 +18,8 @@ import { ORG_LINK_KIND_META, boxId, parseBoxId, type OrgBoxType } from "./consta
 
 export interface OrchestraShape {
   members: Array<{ agentId: string; roleTitle: string | null }>;
+  /** People in the Orchestra: the seats it asks (position boxes, directed like members). */
+  seats?: Array<{ positionId: string; roleTitle: string | null }>;
   accent?: OrchestraAccent;
   mode?: OrchestraMode;
 }
@@ -128,6 +130,9 @@ export function buildAgentOrgForest(input: BuildAgentOrgForestInput): OrgChartTr
     all.add(conductorId);
     for (const m of o.members) {
       link(conductorId, { bid: boxId("agent", m.agentId), kind: "directs", roleTitle: m.roleTitle });
+    }
+    for (const s of o.seats ?? []) {
+      link(conductorId, { bid: boxId("position", s.positionId), kind: "directs", roleTitle: s.roleTitle });
     }
   }
   const manualSorted = [...manualEdges].sort((a, b) =>

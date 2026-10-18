@@ -140,6 +140,11 @@ export interface DecisionSpecView {
   items: DecisionItemView[];
   minAnswers: number;
   submitLabel: string;
+  /** A gate addressed to an org-chart seat: the engine's words for who it asks
+   * ("Waiting on Arman (Brand owner)" / "No one holds Brand owner"). */
+  seatNotice: string | null;
+  /** False when nobody held the seat as the gate opened. */
+  seatFilled: boolean;
 }
 
 /** One person's answer to one item — the wire shape the engine validates. */
@@ -175,6 +180,8 @@ export function parseDecisionSpec(raw: unknown): DecisionSpecView | null {
     items,
     minAnswers: typeof raw.min_answers === "number" ? raw.min_answers : 0,
     submitLabel: str(raw.submit_label).trim() || "Confirm",
+    seatNotice: isRecord(raw.seat) ? str(raw.seat.notice).trim() || null : null,
+    seatFilled: !isRecord(raw.seat) || raw.seat.filled !== false,
   };
 }
 

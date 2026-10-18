@@ -10,7 +10,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowUpRight, Briefcase, Copy, Lightbulb, Loader2, Network, UsersRound } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Briefcase, Copy, Hand, Lightbulb, Loader2, Network, UsersRound } from "lucide-react";
 import { Button, Chip, type ChipTone } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -26,6 +26,7 @@ import type { AgentOrgNodeData } from "../buildAgentOrgForest";
 import { ORG_BOX_LABEL } from "../constants";
 import { useBoxIdentity } from "../useBoxIdentity";
 import { useAgentActivity, type AgentActivity } from "../useOrgChartActivity";
+import { useSeatGate, type SeatGate } from "../seatGates";
 import { usePlacementPoints } from "../useOrgChartPoints";
 import { Cost } from "@/components/cost/Cost";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
@@ -90,6 +91,7 @@ export function AgentOrgCard({
   const who = useBoxIdentity(d.boxType, d.entityId);
   const a = accentClasses(d.accent);
   const activity = useAgentActivity(d.boxType === "agent" ? d.entityId : null);
+  const seatGate = useSeatGate(d.boxType === "position" ? d.entityId : null);
   const points = usePlacementPoints(node.key);
   const isAgent = d.boxType === "agent";
   const Icon = d.isConductor
@@ -203,6 +205,7 @@ export function AgentOrgCard({
         )}
         {activity && <ActivityBadge activity={activity} />}
         {who.seat && <SeatBadge stage={who.seat} />}
+        {seatGate && <SeatGateBadge gate={seatGate} />}
         {who.coverage && (
           <Chip
             tone={who.coverage.covered === who.coverage.seats ? "success" : "neutral"}
@@ -316,6 +319,21 @@ function SeatBadge({ stage }: { stage: keyof typeof SEAT_STYLE }) {
   const s = SEAT_STYLE[stage];
   return (
     <Chip tone={s.tone} label={s.label} title={s.title} />
+  );
+}
+
+/** A decision addressed to this seat is open — opens the run, where it is answered. */
+function SeatGateBadge({ gate }: { gate: SeatGate }) {
+  const label = gate.count > 1 ? `${gate.count} decisions waiting` : "Decision waiting";
+  return (
+    <Link href={`/workflows/runs/${gate.runId}`} onClick={(e) => e.stopPropagation()} data-no-pan>
+      <Chip
+        tone={gate.filled ? "warning" : "destructive"}
+        icon={<Hand />}
+        label={label}
+        title={gate.notice ?? "A workflow is waiting on this seat"}
+      />
+    </Link>
   );
 }
 

@@ -375,3 +375,35 @@ export function deleteOrchestra(args: {
     return { ok: true };
   };
 }
+
+/**
+ * Seat a PERSON in an Orchestra (a member edge to an org-chart position), then
+ * re-read it. Refused by name for a Supervisor Orchestra (the service says why).
+ */
+export function addSeatToOrchestra(args: {
+  conductorId: string;
+  positionId: string;
+  roleTitle?: string;
+}): AppThunk<Promise<OrchestraWriteResult>> {
+  return async (dispatch) => {
+    const res = await orchestrasService.addSeatMember(args.conductorId, args.positionId, {
+      roleTitle: args.roleTitle,
+    });
+    if (isRecordsErr(res)) return { ok: false, error: res.error.message };
+    await dispatch(loadOrchestra(args.conductorId, { force: true }));
+    return { ok: true };
+  };
+}
+
+/** Take a person (seat) out of an Orchestra, then re-read it. */
+export function removeSeatFromOrchestra(args: {
+  conductorId: string;
+  positionId: string;
+}): AppThunk<Promise<OrchestraWriteResult>> {
+  return async (dispatch) => {
+    const res = await orchestrasService.removeSeatMember(args.conductorId, args.positionId);
+    if (isRecordsErr(res)) return { ok: false, error: res.error.message };
+    await dispatch(loadOrchestra(args.conductorId, { force: true }));
+    return { ok: true };
+  };
+}
