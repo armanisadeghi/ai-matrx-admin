@@ -12,7 +12,7 @@
  * using it; "Write my own" opens an empty box.
  */
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Loader2, Pencil } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system";
@@ -43,12 +43,15 @@ export default function InlineDecisionBlock({
   const [editText, setEditText] = useState("");
   const [fadeOut, setFadeOut] = useState(false);
 
+  // One choice per block: a second click during the fade-out never resolves it twice.
+  const resolving = useRef(false);
+
   const options = decision.options.filter((o) => o.id !== CUSTOM_ID);
-  const groupName = `decision-${decision.id}`;
 
   const resolveWith = (option: InlineDecisionOption | undefined, text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || isStreamActive) return;
+    if (!trimmed || isStreamActive || resolving.current) return;
+    resolving.current = true;
     setFadeOut(true);
     setTimeout(() => {
       const kept = option !== undefined && option.text.trim() === trimmed;
@@ -79,31 +82,19 @@ export default function InlineDecisionBlock({
       <div className="flex flex-col gap-1.5">
         {options.map((option) => (
           <div key={option.id} className="flex items-start gap-1">
-            <label
-              data-clickable=""
-              className={cn(
-                "flex min-w-0 flex-1 items-start gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent",
-                editingId === option.id && "border-primary",
-              )}
+            <ChoiceRow
+              selected={editingId === option.id}
+              disabled={isStreamActive}
+              ariaLabel={`Choose ${option.label}`}
+              onChoose={() => resolveWith(option, option.text)}
             >
-              <input
-                type="radio"
-                name={groupName}
-                value={option.id}
-                checked={editingId === option.id}
-                disabled={isStreamActive}
-                onChange={() => resolveWith(option, option.text)}
-                className="mt-0.5 size-3.5"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="font-medium text-foreground">{option.label}</div>
-                {option.text && option.text !== option.label ? (
-                  <div className="mt-0.5 whitespace-pre-wrap text-muted-foreground">
-                    {option.text}
-                  </div>
-                ) : null}
-              </div>
-            </label>
+              <div className="font-medium text-foreground">{option.label}</div>
+              {option.text && option.text !== option.label ? (
+                <div className="mt-0.5 whitespace-pre-wrap text-muted-foreground">
+                  {option.text}
+                </div>
+              ) : null}
+            </ChoiceRow>
             <Button
               variant="quiet"
               icon={<Pencil />}
@@ -115,24 +106,15 @@ export default function InlineDecisionBlock({
         ))}
 
         <div className="flex items-start gap-1">
-        <label
-          data-clickable=""
-          className={cn(
-            "flex min-w-0 flex-1 items-start gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-accent",
-            editingId === CUSTOM_ID && "border-primary",
-          )}
+        <ChoiceRow
+          dashed
+          selected={editingId === CUSTOM_ID}
+          disabled={isStreamActive}
+          ariaLabel="Write my own"
+          onChoose={() => startEdit(CUSTOM_ID, "")}
         >
-          <input
-            type="radio"
-            name={groupName}
-            value={CUSTOM_ID}
-            checked={editingId === CUSTOM_ID}
-            disabled={isStreamActive}
-            onChange={() => startEdit(CUSTOM_ID, "")}
-            className="mt-0.5 size-3.5"
-          />
           <span className="font-medium text-foreground">Write my own</span>
-        </label>
+        </ChoiceRow>
         {/* Keeps this row's right edge on the option rows' (they carry a 28px pencil). */}
         <span aria-hidden="true" className="w-7 shrink-0" />
         </div>
@@ -173,6 +155,59 @@ export default function InlineDecisionBlock({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * One choosable row. A press IS the choice (click, Enter or Space), so it is a button — never a
+ * native radio, whose arrow keys would commit the next option while the person is only browsing.
+ */
+function ChoiceRow({
+  selected,
+  disabled,
+  dashed = false,
+  ariaLabel,
+  onChoose,
+  children,
+}: {
+  selected: boolean;
+  disabled: boolean;
+  dashed?: boolean;
+  ariaLabel: string;
+  onChoose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-label={ariaLabel}
+      aria-disabled={disabled || undefined}
+      aria-pressed={selected}
+      data-clickable=""
+      onClick={() => {
+        if (!disabled) onChoose();
+      }}
+      onKeyDown={(e) => {
+        if (disabled || (e.key !== "Enter" && e.key !== " ")) return;
+        e.preventDefault();
+        onChoose();
+      }}
+      className={cn(
+        "flex min-w-0 flex-1 items-start gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+        dashed && "border-dashed",
+        selected && "border-primary",
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "mt-0.5 size-3.5 shrink-0 rounded-full border border-border",
+          selected && "border-[4px] border-primary",
+        )}
+      />
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
 }
