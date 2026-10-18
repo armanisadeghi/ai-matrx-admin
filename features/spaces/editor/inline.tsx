@@ -9,7 +9,7 @@ import { createReactInlineContentSpec } from "@blocknote/react";
 import { ArrowUpRight, Bell, FileText } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Field, Select } from "@ai-matrx/design-system/controls";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLinkPreview } from "@/lib/link-preview";
 
 import type { RichSpan } from "../contract";
