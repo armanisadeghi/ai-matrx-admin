@@ -2,7 +2,8 @@
  * THE overlay list: one hand-written line per overlay, in render order (the host renders them in
  * this order, so a new overlay goes at the end).
  *
- * Adding an overlay = write <id>.overlay.ts(x) + <id>.render.tsx, add `d.<id>Overlay,` below, run
+ * Adding an overlay = write <id>.overlay.ts(x) (openers) + <id>.definition.ts(x) (its defineOverlay)
+ * + <id>.render.tsx, add `d.<id>Overlay,` below, run
  * `pnpm gen:overlays`. That regenerates the imports (overlay-definitions.gen.ts) and the
  * server-safe metadata (overlay-meta-index.ts); `pnpm check:overlays` fails when either is stale
  * or when a definition file is missing from this list.

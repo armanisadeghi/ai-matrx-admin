@@ -17,7 +17,6 @@ import { dispatchThunk, useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay } from "@ai-matrx/summon/open";
 import type { DetailInstanceData } from "@ai-matrx/detail";
 import { openDetailSingleton } from "@/features/window-panels/detail/openDetailSingleton";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "detailWindow" as const;
@@ -72,36 +71,7 @@ export function DetailWindowController(props: OpenDetailWindowOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type DetailWindowDefinitionData = OpenDetailWindowOptions;
-
-export const detailWindowOverlay = /* @__PURE__ */ defineOverlay<DetailWindowDefinitionData>()({
-  id: "detailWindow",
-  label: "Record detail",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          type: null,
-          id: null,
-          seedName: null,
-          seedAbout: null,
-          listItems: null,
-          listIndex: null,
-        },
-    windowId: "detail-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-  link: {
-    key: "detail",
-    hydrate: (ctx) => import("./detailWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

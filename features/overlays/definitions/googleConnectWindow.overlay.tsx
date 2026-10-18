@@ -16,7 +16,6 @@ import {
   createGoogleConnectCallbackGroup,
   type GoogleConnectWindowHandlers,
 } from "./callbacks/googleConnectWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "googleConnectWindow" as const;
@@ -81,29 +80,7 @@ export function useOpenGoogleConnectWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type GoogleConnectWindowDefinitionData = OpenGoogleConnectOptions;
-
-export const googleConnectWindowOverlay = /* @__PURE__ */ defineOverlay<GoogleConnectWindowDefinitionData>()({
-  id: "googleConnectWindow",
-  label: "Connect Google",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { reason: null },
-    windowId: "google-connect-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-  link: {
-    key: "google_connect",
-    hydrate: (ctx) => import("./googleConnectWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

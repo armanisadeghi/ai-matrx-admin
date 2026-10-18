@@ -15,7 +15,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "surfaceContextInspector" as const;
@@ -78,31 +77,7 @@ export function SurfaceContextInspectorController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SurfaceContextInspectorDefinitionData = OpenSurfaceContextInspectorOptions;
-
-export const surfaceContextInspectorOverlay = /* @__PURE__ */ defineOverlay<SurfaceContextInspectorDefinitionData>()({
-  id: "surfaceContextInspector",
-  label: "Surface Context Admin",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          surfaceName: null,
-          scope: {},
-          isEditable: false,
-          preferRuntime: false,
-        },
-    windowId: "surface-context-inspector-window",
-    mobile: "drawer",
-    mobileSidebarAs: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

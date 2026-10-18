@@ -13,7 +13,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "pickListManagerWindow" as const;
@@ -63,28 +62,7 @@ export function PickListManagerWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type PickListManagerWindowDefinitionData = OpenPickListManagerWindowOptions;
-
-export const pickListManagerWindowOverlay = /* @__PURE__ */ defineOverlay<PickListManagerWindowDefinitionData>()({
-  id: "pickListManagerWindow",
-  label: "Pick lists",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { forcedListId: null, title: null },
-    windowId: "pick-list-manager-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "pickListManager",
-    hydrate: (ctx) => import("./pickListManagerWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

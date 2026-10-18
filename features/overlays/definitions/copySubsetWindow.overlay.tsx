@@ -23,7 +23,6 @@ import {
   releaseCopySubsetSession,
 } from "@/components/agent-copy/copy-subset/session";
 import type { CopySubsetSource } from "@/components/agent-copy/copy-subset/types";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "copySubsetWindow" as const;
@@ -99,19 +98,7 @@ export function CopySubsetWindowController<T>(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CopySubsetWindowDefinitionData = OpenCopySubsetWindowOptions<unknown>;
-
-export const copySubsetWindowOverlay = /* @__PURE__ */ defineOverlay<CopySubsetWindowDefinitionData>()({
-  id: "copySubsetWindow",
-  label: "Copy subset",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {},
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

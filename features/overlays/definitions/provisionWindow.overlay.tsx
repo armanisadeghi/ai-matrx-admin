@@ -8,7 +8,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "provisionWindow" as const;
@@ -24,29 +23,7 @@ export function useOpenProvisionWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ProvisionWindowDefinitionData = Record<string, unknown>;
-
-export const provisionWindowOverlay = /* @__PURE__ */ defineOverlay<ProvisionWindowDefinitionData>()({
-  id: "provisionWindow",
-  label: "Provision",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { snapshotId: null, title: null },
-    windowId: "provision-window",
-    mobile: "fullscreen",
-    preservation: { dataKeys: ["snapshotId", "title"] },
-  },
-  link: {
-    key: "provision",
-    hydrate: (ctx) => import("./provisionWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

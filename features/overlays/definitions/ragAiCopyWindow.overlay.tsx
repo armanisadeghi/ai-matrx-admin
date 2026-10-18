@@ -7,7 +7,6 @@ import type {
   RagAiCopyBundle,
   RagAiSectionKey,
 } from "@/features/rag/components/search/ragAiCopy";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "ragAiCopyWindow" as const;
@@ -54,25 +53,7 @@ export function RagAiCopyWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type RagAiCopyWindowDefinitionData = OpenRagAiCopyWindowOptions;
-
-export const ragAiCopyWindowOverlay = /* @__PURE__ */ defineOverlay<RagAiCopyWindowDefinitionData>()({
-  id: "ragAiCopyWindow",
-  label: "Copy Knowledge Result for AI",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { bundle: null, initialSections: null },
-    windowId: "rag-ai-copy-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

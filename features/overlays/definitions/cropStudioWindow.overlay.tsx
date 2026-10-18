@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "cropStudioWindow" as const;
@@ -65,33 +64,7 @@ export function CropStudioWindowController(props: OpenCropStudioWindowOptions): 
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CropStudioWindowDefinitionData = OpenCropStudioWindowOptions;
-
-export const cropStudioWindowOverlay = /* @__PURE__ */ defineOverlay<CropStudioWindowDefinitionData>()({
-  id: "cropStudioWindow",
-  label: "Crop Studio Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          folderId: null as string | null,
-          defaultFolderPath: "Images/Crops",
-          aspect: null as number | null,
-        },
-    windowId: "crop-studio-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-  },
-  link: {
-    key: "crop_studio",
-    hydrate: (ctx) => import("./cropStudioWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

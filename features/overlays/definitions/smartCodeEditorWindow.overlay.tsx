@@ -13,7 +13,6 @@ import {
   type OpenSmartCodeEditorWindowOptions,
   type SmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/smart-code-editor/useOpenSmartCodeEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export {
@@ -34,34 +33,7 @@ export function SmartCodeEditorWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SmartCodeEditorWindowDefinitionData = OpenSmartCodeEditorWindowOptions;
-
-export const smartCodeEditorWindowOverlay = /* @__PURE__ */ defineOverlay<SmartCodeEditorWindowDefinitionData>()({
-  id: "smartCodeEditorWindow",
-  label: "Smart Code Editor Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          agentId: null,
-          initialCode: "",
-          language: "plaintext",
-          filePath: null,
-          selection: null,
-          diagnostics: null,
-          title: null,
-          variables: null,
-        },
-    windowId: "smart-code-editor-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

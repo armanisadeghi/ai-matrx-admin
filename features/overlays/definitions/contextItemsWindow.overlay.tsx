@@ -12,7 +12,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { ContextItemsWindowData } from "@/features/window-panels/windows/context-scopes/ContextItemsWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "contextItemsWindow" as const;
@@ -57,30 +56,7 @@ export function ContextItemsWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ContextItemsWindowDefinitionData = OpenContextItemsWindowOptions;
-
-export const contextItemsWindowOverlay = /* @__PURE__ */ defineOverlay<ContextItemsWindowDefinitionData>()({
-  id: "contextItemsWindow",
-  label: "Context Items",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          scopeTypeId: null,
-          initialItemId: null,
-          openNewOnMount: false,
-        },
-    windowId: "context-items-window",
-    mobile: "drawer",
-    mobileSidebarAs: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

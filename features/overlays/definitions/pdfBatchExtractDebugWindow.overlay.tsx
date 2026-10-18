@@ -7,7 +7,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "pdfBatchExtractDebugWindow" as const;
@@ -53,25 +52,7 @@ export function PdfBatchExtractDebugWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type PdfBatchExtractDebugWindowDefinitionData = OpenPdfBatchExtractDebugWindowOptions;
-
-export const pdfBatchExtractDebugWindowOverlay = /* @__PURE__ */ defineOverlay<PdfBatchExtractDebugWindowDefinitionData>()({
-  id: "pdfBatchExtractDebugWindow",
-  label: "PDF Batch Extract Debug Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { selectedSessionId: null },
-    windowId: "pdf-batch-extract-debug",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

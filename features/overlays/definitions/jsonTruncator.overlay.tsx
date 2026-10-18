@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "jsonTruncator" as const;
@@ -66,28 +65,7 @@ export function JsonTruncatorDialogController(props: OpenJsonTruncatorDialogOpti
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type JsonTruncatorDefinitionData = OpenJsonTruncatorDialogOptions;
-
-export const jsonTruncatorOverlay = /* @__PURE__ */ defineOverlay<JsonTruncatorDefinitionData>()({
-  id: "jsonTruncator",
-  label: "Json Truncator",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { input: null },
-    windowId: "json-truncator",
-    ephemeral: true,
-  },
-  link: {
-    key: "json_truncator",
-    hydrate: (ctx) => import("./jsonTruncator.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

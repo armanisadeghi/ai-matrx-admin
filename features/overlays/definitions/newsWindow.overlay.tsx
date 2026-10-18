@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "newsWindow" as const;
@@ -53,28 +52,7 @@ export function NewsWindowController(props: OpenNewsWindowOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type NewsWindowDefinitionData = OpenNewsWindowOptions;
-
-export const newsWindowOverlay = /* @__PURE__ */ defineOverlay<NewsWindowDefinitionData>()({
-  id: "newsWindow",
-  label: "News Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { category: "general", country: "us" },
-    windowId: "news-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "news",
-    hydrate: (ctx) => import("./newsWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

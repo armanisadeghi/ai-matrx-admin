@@ -12,7 +12,6 @@ import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gscWhyScoreWindow" as const;
@@ -71,25 +70,7 @@ export function useOpenGscWhyScoreWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type GscWhyScoreWindowDefinitionData = OpenGscWhyScoreWindowOptions;
-
-export const gscWhyScoreWindowOverlay = /* @__PURE__ */ defineOverlay<GscWhyScoreWindowDefinitionData>()({
-  id: "gscWhyScoreWindow",
-  label: "Why This Score",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "gsc-why-score-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

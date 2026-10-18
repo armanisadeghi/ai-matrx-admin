@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "userPreferencesWindow" as const;
@@ -53,23 +52,7 @@ export function SettingsShellOverlayController(props: OpenSettingsShellOverlayOp
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type UserPreferencesWindowDefinitionData = OpenSettingsShellOverlayOptions;
-
-export const userPreferencesWindowOverlay = /* @__PURE__ */ defineOverlay<UserPreferencesWindowDefinitionData>()({
-  id: "userPreferencesWindow",
-  label: "User Preferences Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  link: {
-    key: "user_preferences",
-    hydrate: (ctx) => import("./userPreferencesWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

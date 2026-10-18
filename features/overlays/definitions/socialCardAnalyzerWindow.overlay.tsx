@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "socialCardAnalyzerWindow" as const;
@@ -47,36 +46,7 @@ export function useOpenSocialCardWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SocialCardAnalyzerWindowDefinitionData = OpenSocialCardWindowOptions;
-
-export const socialCardAnalyzerWindowOverlay = /* @__PURE__ */ defineOverlay<SocialCardAnalyzerWindowDefinitionData>()({
-  id: "socialCardAnalyzerWindow",
-  label: "Social Cards",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          url: "",
-          title: "",
-          description: "",
-          image: "",
-          siteName: "",
-          ogType: "",
-          cardType: "",
-        },
-    windowId: "social-card-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "social_cards",
-    hydrate: (ctx) => import("./socialCardAnalyzerWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

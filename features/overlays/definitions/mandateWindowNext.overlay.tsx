@@ -13,7 +13,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "mandateWindowNext" as const;
@@ -62,33 +61,7 @@ export function MandateWindowNextController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MandateWindowNextDefinitionData = OpenMandateWindowNextOptions;
-
-export const mandateWindowNextOverlay = /* @__PURE__ */ defineOverlay<MandateWindowNextDefinitionData>()({
-  id: "mandateWindowNext",
-  label: "Mandates (new)",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          initialMandateKey: null,
-          initialTab: null,
-        },
-    windowId: "mandate-window-next",
-    mobile: "drawer",
-    mobileSidebarAs: "drawer",
-    preservation: { dataKeys: ["initialMandateKey", "initialTab"] },
-  },
-  link: {
-    key: "mandate_next",
-    hydrate: (ctx) => import("./mandateWindowNext.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

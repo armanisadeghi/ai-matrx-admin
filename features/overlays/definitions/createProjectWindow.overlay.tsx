@@ -15,7 +15,6 @@ import {
   type OpenCreateProjectWindowOptions,
   type CreateProjectWindowHandle,
 } from "@/features/window-panels/windows/projects/useOpenCreateProjectWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -36,31 +35,7 @@ export function CreateProjectWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CreateProjectWindowDefinitionData = OpenCreateProjectWindowOptions;
-
-export const createProjectWindowOverlay = /* @__PURE__ */ defineOverlay<CreateProjectWindowDefinitionData>()({
-  id: "createProjectWindow",
-  label: "Create Project",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null as string | null,
-          initialOrgId: null as string | null,
-          initialOrgSlug: null as string | null,
-          orgLocked: false,
-          skipRedirect: true,
-        },
-    windowId: "create-project-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

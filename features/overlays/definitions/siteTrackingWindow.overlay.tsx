@@ -9,7 +9,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteTrackingWindow" as const;
@@ -39,33 +38,7 @@ export function useOpenSiteTrackingWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SiteTrackingWindowDefinitionData = OpenSiteTrackingWindowOptions;
-
-export const siteTrackingWindowOverlay = /* @__PURE__ */ defineOverlay<SiteTrackingWindowDefinitionData>()({
-  id: "siteTrackingWindow",
-  label: "Tracking",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { siteId: "", siteLabel: "" },
-    windowId: "site-tracking-window",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["siteId", "siteLabel"],
-      // A restored tracking panel with no site is an empty frame, not a window.
-      requiredDataKeys: ["siteId"],
-    },
-  },
-  link: {
-    key: "site_tracking",
-    hydrate: (ctx) => import("./siteTrackingWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

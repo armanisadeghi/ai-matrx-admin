@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "executionInspectorWindow" as const;
@@ -53,29 +52,7 @@ export function ExecutionInspectorWindowController(props: OpenExecutionInspector
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ExecutionInspectorWindowDefinitionData = OpenExecutionInspectorWindowOptions;
-
-export const executionInspectorWindowOverlay = /* @__PURE__ */ defineOverlay<ExecutionInspectorWindowDefinitionData>()({
-  id: "executionInspectorWindow",
-  label: "Execution Inspector Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "exec-inspector-window",
-    mobile: "card",
-    ephemeral: true,
-  },
-  link: {
-    key: "exec-inspector",
-    hydrate: (ctx) => import("./executionInspectorWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

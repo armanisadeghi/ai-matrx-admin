@@ -19,7 +19,6 @@ import {
   type OpenImageUploaderWindowOptions,
   type ImageUploaderWindowHandle,
 } from "@/features/window-panels/windows/image/useOpenImageUploaderWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -53,34 +52,7 @@ export function ImageUploaderWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ImageUploaderWindowDefinitionData = OpenImageUploaderWindowOptions;
-
-export const imageUploaderWindowOverlay = /* @__PURE__ */ defineOverlay<ImageUploaderWindowDefinitionData>()({
-  id: "imageUploaderWindow",
-  label: "Image Uploader Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null,
-          preset: "social",
-          bucket: null,
-          folder: null,
-          title: null,
-          description: null,
-          currentUrl: null,
-          allowUrlPaste: true,
-        },
-    windowId: "image-uploader-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

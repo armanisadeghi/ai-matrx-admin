@@ -13,7 +13,6 @@ import {
   type OpenSurfaceAgentBindWindowOptions,
   type SurfaceAgentBindWindowHandle,
 } from "@/features/window-panels/windows/surfaces/useOpenSurfaceAgentBindWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -34,29 +33,7 @@ export function SurfaceAgentBindWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SurfaceAgentBindWindowDefinitionData = OpenSurfaceAgentBindWindowOptions;
-
-export const surfaceAgentBindWindowOverlay = /* @__PURE__ */ defineOverlay<SurfaceAgentBindWindowDefinitionData>()({
-  id: "surfaceAgentBindWindow",
-  label: "Add Agent to Surface",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          surfaceName: "",
-          initialAgentId: null as string | null,
-          callbackGroupId: null as string | null,
-        },
-    windowId: "surface-agent-bind-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentFindUsagesWindow" as const;
@@ -61,25 +60,7 @@ export function AgentFindUsagesWindowController(props: OpenAgentFindUsagesWindow
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentFindUsagesWindowDefinitionData = OpenAgentFindUsagesWindowOptions;
-
-export const agentFindUsagesWindowOverlay = /* @__PURE__ */ defineOverlay<AgentFindUsagesWindowDefinitionData>()({
-  id: "agentFindUsagesWindow",
-  label: "Agent Find Usages Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { agentId: null },
-    windowId: "agent-find-usages-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

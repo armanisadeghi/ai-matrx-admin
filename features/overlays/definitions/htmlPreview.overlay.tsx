@@ -21,7 +21,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createFullScreenEditorCallbackGroup, disposeFullScreenEditorCallbackGroup } from "./callbacks/fullScreenEditor";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "htmlPreview" as const;
@@ -127,19 +126,7 @@ export function HtmlPreviewBridgeController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type HtmlPreviewDefinitionData = OpenHtmlPreviewBridgeOptions;
-
-export const htmlPreviewOverlay = /* @__PURE__ */ defineOverlay<HtmlPreviewDefinitionData>()({
-  id: "htmlPreview",
-  label: "Html Preview",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

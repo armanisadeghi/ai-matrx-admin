@@ -3,7 +3,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "sandboxManagementWindow" as const;
@@ -52,28 +51,7 @@ export function SandboxManagementWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SandboxManagementWindowDefinitionData = OpenSandboxManagementWindowOptions;
-
-export const sandboxManagementWindowOverlay = /* @__PURE__ */ defineOverlay<SandboxManagementWindowDefinitionData>()({
-  id: "sandboxManagementWindow",
-  label: "Sandbox management",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { sandboxId: null, title: null },
-    windowId: "sandbox-management-window",
-    mobile: "fullscreen",
-    preservation: {
-      dataKeys: ["sandboxId", "title"],
-      requiredDataKeys: ["sandboxId"],
-    },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "filePreviewWindow" as const;
@@ -72,33 +71,7 @@ export function FilePreviewWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FilePreviewWindowDefinitionData = OpenFilePreviewWindowOptions;
-
-export const filePreviewWindowOverlay = /* @__PURE__ */ defineOverlay<FilePreviewWindowDefinitionData>()({
-  id: "filePreviewWindow",
-  label: "File Preview Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          fileId: null,
-          pageNumber: null,
-          navigationRequestId: null,
-        },
-    windowId: "file-preview-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-  link: {
-    key: "file_preview",
-    hydrate: (ctx) => import("./filePreviewWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

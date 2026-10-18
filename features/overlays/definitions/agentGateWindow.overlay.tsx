@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentGateWindow" as const;
@@ -70,24 +69,7 @@ export function AgentGateWindowController(props: OpenAgentGateWindowOptions): nu
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentGateWindowDefinitionData = OpenAgentGateWindowOptions;
-
-export const agentGateWindowOverlay = /* @__PURE__ */ defineOverlay<AgentGateWindowDefinitionData>()({
-  id: "agentGateWindow",
-  label: "Agent Gate Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { conversationId: null },
-    windowId: "agent-gate-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

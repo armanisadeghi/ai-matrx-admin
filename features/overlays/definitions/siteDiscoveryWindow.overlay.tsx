@@ -11,7 +11,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteDiscoveryWindow" as const;
@@ -45,32 +44,7 @@ export function useOpenSiteDiscoveryWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SiteDiscoveryWindowDefinitionData = OpenSiteDiscoveryWindowOptions;
-
-export const siteDiscoveryWindowOverlay = /* @__PURE__ */ defineOverlay<SiteDiscoveryWindowDefinitionData>()({
-  id: "siteDiscoveryWindow",
-  label: "Business discovery",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          siteId: "",
-          brandId: "",
-          organizationId: "",
-          siteLabel: "",
-        },
-    windowId: "site-discovery-window",
-    mobile: "fullscreen",
-    preservation: {
-      dataKeys: ["siteId", "brandId", "organizationId", "siteLabel"],
-    },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

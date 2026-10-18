@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "codeWorkspaceWindow" as const;
@@ -85,24 +84,7 @@ export function CodeWorkspaceWindowController(props: OpenCodeWorkspaceWindowOpti
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CodeWorkspaceWindowDefinitionData = OpenCodeWorkspaceWindowOptions;
-
-export const codeWorkspaceWindowOverlay = /* @__PURE__ */ defineOverlay<CodeWorkspaceWindowDefinitionData>()({
-  id: "codeWorkspaceWindow",
-  label: "Code Workspace Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { title: null, sandboxId: null },
-    windowId: "code-workspace",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

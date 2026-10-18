@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "instanceUIStateWindow" as const;
@@ -61,25 +60,7 @@ export function InstanceUIStateWindowController(props: OpenInstanceUIStateWindow
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type InstanceUIStateWindowDefinitionData = OpenInstanceUIStateWindowOptions;
-
-export const instanceUIStateWindowOverlay = /* @__PURE__ */ defineOverlay<InstanceUIStateWindowDefinitionData>()({
-  id: "instanceUIStateWindow",
-  label: "Instance U I State Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { selectedConversationId: null },
-    windowId: "instance-ui-state-window",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

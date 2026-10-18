@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentTestCasesWindow" as const;
@@ -60,25 +59,7 @@ export function AgentTestCasesWindowController({
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentTestCasesWindowDefinitionData = OpenAgentTestCasesWindowOptions;
-
-export const agentTestCasesWindowOverlay = /* @__PURE__ */ defineOverlay<AgentTestCasesWindowDefinitionData>()({
-  id: "agentTestCasesWindow",
-  label: "Test Cases",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { agentId: "", conversationId: "" },
-    windowId: "agent-test-cases-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

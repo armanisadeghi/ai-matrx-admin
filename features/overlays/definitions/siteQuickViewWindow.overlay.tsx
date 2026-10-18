@@ -13,7 +13,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteQuickViewWindow" as const;
@@ -57,33 +56,7 @@ export function SiteQuickViewWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SiteQuickViewWindowDefinitionData = OpenSiteQuickViewWindowOptions;
-
-export const siteQuickViewWindowOverlay = /* @__PURE__ */ defineOverlay<SiteQuickViewWindowDefinitionData>()({
-  id: "siteQuickViewWindow",
-  label: "Site Quick view",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { siteId: "", siteLabel: "" },
-    windowId: "site-quick-view-window",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["siteId", "siteLabel"],
-      // A restored Quick view with no site is an empty frame, not a window.
-      requiredDataKeys: ["siteId"],
-    },
-  },
-  link: {
-    key: "site_quick_view",
-    hydrate: (ctx) => import("./siteQuickViewWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

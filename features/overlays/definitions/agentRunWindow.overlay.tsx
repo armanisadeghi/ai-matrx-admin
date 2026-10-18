@@ -18,7 +18,6 @@ import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentRunWindow" as const;
@@ -174,32 +173,7 @@ export function AgentRunWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentRunWindowDefinitionData = OpenAgentRunWindowOptions;
-
-export const agentRunWindowOverlay = /* @__PURE__ */ defineOverlay<AgentRunWindowDefinitionData>()({
-  id: "agentRunWindow",
-  label: "Chat Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          initialAgentId: null,
-          initialSelectedConversationId: null,
-        },
-    windowId: "agent-run-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-  },
-  link: {
-    key: "agent",
-    hydrate: (ctx) => import("./agentRunWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

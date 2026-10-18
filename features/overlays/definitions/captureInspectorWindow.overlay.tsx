@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "captureInspectorWindow" as const;
@@ -56,25 +55,7 @@ export function CaptureInspectorWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CaptureInspectorWindowDefinitionData = OpenCaptureInspectorWindowOptions;
-
-export const captureInspectorWindowOverlay = /* @__PURE__ */ defineOverlay<CaptureInspectorWindowDefinitionData>()({
-  id: "captureInspectorWindow",
-  label: "Capture Inspector",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { initialExchangeId: null },
-    windowId: "capture-inspector",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

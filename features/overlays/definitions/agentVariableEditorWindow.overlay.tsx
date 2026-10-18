@@ -14,7 +14,6 @@ import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AgentVariableEditorWindowData } from "@/features/agents/components/variables-management/AgentVariableEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentVariableEditorWindow" as const;
@@ -49,33 +48,7 @@ export function useOpenAgentVariableEditorWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentVariableEditorWindowDefinitionData = OpenAgentVariableEditorWindowOptions;
-
-export const agentVariableEditorWindowOverlay = /* @__PURE__ */ defineOverlay<AgentVariableEditorWindowDefinitionData>()({
-  id: "agentVariableEditorWindow",
-  label: "Variable Editor",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          agentId: null,
-          variableName: null,
-          justCreated: false,
-        },
-    windowId: "agent-variable-editor-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-  link: {
-    key: "agent_variable",
-    hydrate: (ctx) => import("./agentVariableEditorWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

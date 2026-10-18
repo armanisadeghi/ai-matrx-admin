@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentAssistantMarkdownDebugWindow" as const;
@@ -53,29 +52,7 @@ export function AgentAssistantMarkdownDebugWindowController(props: OpenAgentAssi
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentAssistantMarkdownDebugWindowDefinitionData = OpenAgentAssistantMarkdownDebugWindowOptions;
-
-export const agentAssistantMarkdownDebugWindowOverlay = /* @__PURE__ */ defineOverlay<AgentAssistantMarkdownDebugWindowDefinitionData>()({
-  id: "agentAssistantMarkdownDebugWindow",
-  label: "Agent Assistant Markdown Debug Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "agent-md-debug-window",
-    mobile: "card",
-    ephemeral: true,
-  },
-  link: {
-    key: "agent-md-debug",
-    hydrate: (ctx) => import("./agentAssistantMarkdownDebugWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

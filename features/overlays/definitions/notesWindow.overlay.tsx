@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "notesWindow" as const;
@@ -76,28 +75,7 @@ export function NotesWindowController(props: OpenNotesWindowOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type NotesWindowDefinitionData = OpenNotesWindowOptions;
-
-export const notesWindowOverlay = /* @__PURE__ */ defineOverlay<NotesWindowDefinitionData>()({
-  id: "notesWindow",
-  label: "Notes Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { openNoteId: null, title: undefined },
-    windowId: "notes-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "notes",
-    hydrate: (ctx) => import("./notesWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

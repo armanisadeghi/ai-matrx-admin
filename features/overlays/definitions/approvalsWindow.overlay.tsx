@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "approvalsWindow" as const;
@@ -40,29 +39,7 @@ export function ApprovalsWindowController(): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ApprovalsWindowDefinitionData = Record<string, unknown>;
-
-export const approvalsWindowOverlay = /* @__PURE__ */ defineOverlay<ApprovalsWindowDefinitionData>()({
-  id: "approvalsWindow",
-  label: "Waiting on you",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "approvals-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-  link: {
-    key: "approvals",
-    hydrate: (ctx) => import("./approvalsWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

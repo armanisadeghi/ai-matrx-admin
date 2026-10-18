@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentOptimizerWindow" as const;
@@ -61,26 +60,7 @@ export function AgentOptimizerWindowController(props: OpenAgentOptimizerWindowOp
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentOptimizerWindowDefinitionData = OpenAgentOptimizerWindowOptions;
-
-export const agentOptimizerWindowOverlay = /* @__PURE__ */ defineOverlay<AgentOptimizerWindowDefinitionData>()({
-  id: "agentOptimizerWindow",
-  label: "Agent Optimizer Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { agentId: null },
-    windowId: "agent-optimizer-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-    deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

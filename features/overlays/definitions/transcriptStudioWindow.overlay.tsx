@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "transcriptStudioWindow" as const;
@@ -63,25 +62,7 @@ export function TranscriptStudioWindowController(props: OpenTranscriptStudioWind
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type TranscriptStudioWindowDefinitionData = OpenTranscriptStudioWindowOptions;
-
-export const transcriptStudioWindowOverlay = /* @__PURE__ */ defineOverlay<TranscriptStudioWindowDefinitionData>()({
-  id: "transcriptStudioWindow",
-  label: "Transcript Studio Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { activeSessionId: null },
-    windowId: "transcript-studio-window",
-    mobile: "fullscreen",
-    preservation: { dataKeys: ["activeSessionId"] },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

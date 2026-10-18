@@ -4,7 +4,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickMessageTemplateSaveWindow" as const;
@@ -41,25 +40,7 @@ export function QuickMessageTemplateSaveWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type QuickMessageTemplateSaveWindowDefinitionData = OpenQuickMessageTemplateSaveWindowOptions;
-
-export const quickMessageTemplateSaveWindowOverlay = /* @__PURE__ */ defineOverlay<QuickMessageTemplateSaveWindowDefinitionData>()({
-  id: "quickMessageTemplateSaveWindow",
-  label: "Save as Message Template",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { initialContent: "", defaultRole: "assistant" },
-    windowId: "quick-message-template-save-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

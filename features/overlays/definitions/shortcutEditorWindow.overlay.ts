@@ -10,7 +10,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "shortcutEditorWindow" as const;
@@ -45,29 +44,7 @@ export function useOpenShortcutEditorWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ShortcutEditorWindowDefinitionData = OpenShortcutEditorWindowArgs;
-
-export const shortcutEditorWindowOverlay = /* @__PURE__ */ defineOverlay<ShortcutEditorWindowDefinitionData>()({
-  id: "shortcutEditorWindow",
-  label: "Shortcut editor",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          agentId: null as string | null,
-          shortcutId: "new",
-          seedId: null as string | null,
-        },
-    windowId: "shortcut-editor-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

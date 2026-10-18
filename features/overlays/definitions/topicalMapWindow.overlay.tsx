@@ -21,7 +21,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "topicalMapWindow" as const;
@@ -97,32 +96,7 @@ export function TopicalMapWindowController(props: OpenTopicalMapWindowOptions): 
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type TopicalMapWindowDefinitionData = OpenTopicalMapWindowOptions;
-
-export const topicalMapWindowOverlay = /* @__PURE__ */ defineOverlay<TopicalMapWindowDefinitionData>()({
-  id: "topicalMapWindow",
-  label: "Topical map",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { mapId: "", screen: "outline", siteId: null },
-    windowId: "topical-map-window",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["mapId", "screen", "siteId"],
-      requiredDataKeys: ["mapId"],
-    },
-  },
-  link: {
-    key: "topical_map",
-    hydrate: (ctx) => import("./topicalMapWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

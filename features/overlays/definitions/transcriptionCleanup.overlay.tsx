@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "transcriptionCleanup" as const;
@@ -71,28 +70,7 @@ export function TranscriptionCleanupController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type TranscriptionCleanupDefinitionData = OpenTranscriptionCleanupOptions;
-
-export const transcriptionCleanupOverlay = /* @__PURE__ */ defineOverlay<TranscriptionCleanupDefinitionData>()({
-  id: "transcriptionCleanup",
-  label: "Transcription Cleanup",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { transcript: null },
-    windowId: "transcription-cleanup",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "transcription-cleanup",
-    hydrate: (ctx) => import("./transcriptionCleanup.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

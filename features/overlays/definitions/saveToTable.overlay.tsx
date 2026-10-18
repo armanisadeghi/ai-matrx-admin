@@ -16,7 +16,6 @@ import {
   createSaveToTableCallbackGroup,
   type SaveToTableHandlers,
 } from "./callbacks/saveToTable";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "saveToTable" as const;
@@ -86,18 +85,7 @@ export function useOpenSaveToTable(): ((options: OpenSaveToTableOptions) => Save
   return dispatch ? open : null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SaveToTableDefinitionData = OpenSaveToTableOptions;
-
-export const saveToTableOverlay = /* @__PURE__ */ defineOverlay<SaveToTableDefinitionData>()({
-  id: "saveToTable",
-  label: "Save to a table",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

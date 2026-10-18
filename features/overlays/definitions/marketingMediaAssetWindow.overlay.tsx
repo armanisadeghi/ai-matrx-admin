@@ -9,7 +9,6 @@ import {
   createMarketingMediaAssetCallbackGroup,
   type MarketingMediaAssetWindowHandlers,
 } from "./callbacks/marketingMediaAssetWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "marketingMediaAssetWindow" as const;
@@ -91,29 +90,7 @@ export function useOpenMarketingMediaAssetWindow() {
   };
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MarketingMediaAssetWindowDefinitionData = OpenMarketingMediaAssetWindowOptions;
-
-export const marketingMediaAssetWindowOverlay = /* @__PURE__ */ defineOverlay<MarketingMediaAssetWindowDefinitionData>()({
-  id: "marketingMediaAssetWindow",
-  label: "Media Asset",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null,
-          siteId: null,
-          assetSrc: null,
-        },
-    windowId: "marketing-media-asset-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -12,7 +12,6 @@ import {
   type OpenCuratedIconPickerOptions,
   type CuratedIconPickerHandle,
 } from "@/features/window-panels/windows/icons/useOpenCuratedIconPickerWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
@@ -33,25 +32,7 @@ export function CuratedIconPickerWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CuratedIconPickerWindowDefinitionData = OpenCuratedIconPickerOptions;
-
-export const curatedIconPickerWindowOverlay = /* @__PURE__ */ defineOverlay<CuratedIconPickerWindowDefinitionData>()({
-  id: "curatedIconPickerWindow",
-  label: "Curated Icon Picker Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { callbackGroupId: null as string | null },
-    windowId: "curated-icon-picker-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

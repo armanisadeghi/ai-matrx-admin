@@ -9,7 +9,6 @@ import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { HelperMethod } from "@/features/marketing/smart-add/helpers/types";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "smartAddHelperWindow" as const;
@@ -25,29 +24,7 @@ export function useOpenSmartAddHelper() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SmartAddHelperWindowDefinitionData = Record<string, unknown>;
-
-export const smartAddHelperWindowOverlay = /* @__PURE__ */ defineOverlay<SmartAddHelperWindowDefinitionData>()({
-  id: "smartAddHelperWindow",
-  label: "Smart Add helper",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { method: null },
-    windowId: "smart-add-helper-window",
-    mobile: "fullscreen",
-    preservation: { dataKeys: ["method"] },
-  },
-  link: {
-    key: "smart_add_helper",
-    hydrate: (ctx) => import("./smartAddHelperWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

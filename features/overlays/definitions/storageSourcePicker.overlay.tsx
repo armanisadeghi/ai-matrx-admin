@@ -7,7 +7,6 @@ import {
   createStorageSourcePickerCallbackGroup,
   type StorageSourcePickerHandlers,
 } from "./callbacks/storageSourcePicker";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "storageSourcePicker" as const;
@@ -44,30 +43,7 @@ export function useOpenStorageSourcePicker() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type StorageSourcePickerDefinitionData = OpenStorageSourcePickerOptions;
-
-export const storageSourcePickerOverlay = /* @__PURE__ */ defineOverlay<StorageSourcePickerDefinitionData>()({
-  id: "storageSourcePicker",
-  label: "Import from cloud storage",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null,
-          destinationFolderPath: "",
-          accept: null,
-          multiple: true,
-        },
-    windowId: "storage-source-picker",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -22,7 +22,6 @@ import {
   type AgentPickerHandlers,
   type AgentPickerWindowData,
 } from "@/features/window-panels/windows/agents/agent-picker-callbacks";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentPickerWindow" as const;
@@ -98,29 +97,7 @@ export function AgentPickerWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentPickerWindowDefinitionData = OpenAgentPickerWindowOptions;
-
-export const agentPickerWindowOverlay = /* @__PURE__ */ defineOverlay<AgentPickerWindowDefinitionData>()({
-  id: "agentPickerWindow",
-  label: "Select Agent",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null as string | null,
-          title: null as string | null,
-          activeAgentId: null as string | null,
-        },
-    windowId: "agent-picker-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

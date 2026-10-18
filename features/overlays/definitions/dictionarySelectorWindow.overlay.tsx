@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "dictionarySelectorWindow" as const;
@@ -54,24 +53,7 @@ export function DictionarySelectorWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type DictionarySelectorWindowDefinitionData = OpenDictionarySelectorOptions;
-
-export const dictionarySelectorWindowOverlay = /* @__PURE__ */ defineOverlay<DictionarySelectorWindowDefinitionData>()({
-  id: "dictionarySelectorWindow",
-  label: "Dictionary Context",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { surfaceKey: "_default" },
-    windowId: "dictionary-selector",
-    mobile: "drawer",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

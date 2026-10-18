@@ -12,7 +12,6 @@ const OVERLAY_ID = "flashcardItemWindow" as const;
 
 import type { ReviewResult } from "@/features/flashcards/types";
 import type { FaceImageRef } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export interface OpenFlashcardItemWindowOptions {
@@ -77,32 +76,7 @@ export function FlashcardItemWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FlashcardItemWindowDefinitionData = OpenFlashcardItemWindowOptions;
-
-export const flashcardItemWindowOverlay = /* @__PURE__ */ defineOverlay<FlashcardItemWindowDefinitionData>()({
-  id: "flashcardItemWindow",
-  label: "Flashcard Item Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: true,
-  window: {
-    restoreDefaults: {
-          front: "",
-          back: null,
-          index: 0,
-          layoutMode: "grid",
-          title: null,
-          additionalDetails: null,
-          lastResult: null,
-        },
-    windowId: "flashcard-item-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -15,9 +15,7 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { ResourceType } from "@/utils/permissions/registry";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
-import { RESOURCE_TYPES } from "@/utils/permissions/registry";
 
 const OVERLAY_ID = "shareModalWindow" as const;
 
@@ -69,33 +67,7 @@ export function ShareModalWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ShareModalWindowDefinitionData = OpenShareModalWindowOptions;
-
-export const shareModalWindowOverlay = /* @__PURE__ */ defineOverlay<ShareModalWindowDefinitionData>()({
-  id: "shareModalWindow",
-  label: "Share Modal Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          resourceType: null,
-          resourceId: null,
-          resourceName: null,
-        },
-    windowId: "share-modal-window",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["resourceType", "resourceId", "resourceName"],
-      requiredDataKeys: ["resourceType", "resourceId"],
-      allowedDataValues: { resourceType: RESOURCE_TYPES },
-    },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

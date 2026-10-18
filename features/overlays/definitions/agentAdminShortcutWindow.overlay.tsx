@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentAdminShortcutWindow" as const;
@@ -64,25 +63,7 @@ export function AgentShortcutQuickCreateWindowController(props: OpenAgentShortcu
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentAdminShortcutWindowDefinitionData = OpenAgentShortcutQuickCreateWindowOptions;
-
-export const agentAdminShortcutWindowOverlay = /* @__PURE__ */ defineOverlay<AgentAdminShortcutWindowDefinitionData>()({
-  id: "agentAdminShortcutWindow",
-  label: "Agent Admin Shortcut Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { agentId: null, activeTab: "essentials" },
-    windowId: "agent-admin-shortcut-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

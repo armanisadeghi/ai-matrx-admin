@@ -16,7 +16,6 @@ import {
   type SourceReviewOptions,
   type SourceReviewOutcome,
 } from "@/features/resource-manager/source-input/review/openSourceReview";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export { openSourceReview, type SourceReviewOptions, type SourceReviewOutcome };
@@ -26,29 +25,7 @@ export function useOpenSourceReviewWindow(): typeof openSourceReview {
   return openSourceReview;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SourceReviewWindowDefinitionData = Record<string, unknown>;
-
-export const sourceReviewWindowOverlay = /* @__PURE__ */ defineOverlay<SourceReviewWindowDefinitionData>()({
-  id: "sourceReviewWindow",
-  label: "Review what goes in",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null as string | null,
-          sourceSet: null,
-          options: null,
-        },
-    windowId: "source-review-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

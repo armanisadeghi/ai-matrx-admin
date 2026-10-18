@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentCreateAppWindow" as const;
@@ -56,25 +55,7 @@ export function AgentCreateAppWindowController(props: OpenAgentCreateAppWindowOp
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentCreateAppWindowDefinitionData = OpenAgentCreateAppWindowOptions;
-
-export const agentCreateAppWindowOverlay = /* @__PURE__ */ defineOverlay<AgentCreateAppWindowDefinitionData>()({
-  id: "agentCreateAppWindow",
-  label: "Agent Create App Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "agent-create-app-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

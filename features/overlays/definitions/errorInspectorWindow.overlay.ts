@@ -1,24 +1,8 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export type ErrorInspectorWindowDefinitionData = Record<string, unknown>;
-
-export const errorInspectorWindowOverlay = /* @__PURE__ */ defineOverlay<ErrorInspectorWindowDefinitionData>()({
-  id: "errorInspectorWindow",
-  label: "Error Inspector",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "error-inspector-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

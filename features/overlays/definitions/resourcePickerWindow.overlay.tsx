@@ -15,7 +15,6 @@ import {
   type ResourcePickerWindowCallbackGroup,
 } from "./callbacks/resourcePickerWindow";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 export interface OpenResourcePickerWindowOptions extends ResourcePickerWindowCallbackGroup {
@@ -39,25 +38,7 @@ export function useOpenResourcePickerWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ResourcePickerWindowDefinitionData = OpenResourcePickerWindowOptions;
-
-export const resourcePickerWindowOverlay = /* @__PURE__ */ defineOverlay<ResourcePickerWindowDefinitionData>()({
-  id: "resourcePickerWindow",
-  label: "Resource Picker Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { lastResourceType: null },
-    windowId: "resource-picker-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

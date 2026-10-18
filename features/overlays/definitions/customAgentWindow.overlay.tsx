@@ -19,7 +19,6 @@ import {
   registerCustomAgentSession,
   type CustomAgentSession,
 } from "@ai-matrx/chat/agents/components/custom-agent/session";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "customAgentWindow" as const;
@@ -43,25 +42,7 @@ export function useOpenCustomAgentWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CustomAgentWindowDefinitionData = Record<string, unknown>;
-
-export const customAgentWindowOverlay = /* @__PURE__ */ defineOverlay<CustomAgentWindowDefinitionData>()({
-  id: "customAgentWindow",
-  label: "Custom agent",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { sessionId: null as string | null },
-    windowId: "custom-agent-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {
