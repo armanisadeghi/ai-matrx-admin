@@ -23,6 +23,7 @@ export function ResearchTopicSelect({
   triggerClassName,
   ariaLabel = "Research topic",
   refreshKey = null,
+  brandId = null,
 }: {
   value: string | null;
   onChange: (topicId: string | null) => void;
@@ -37,6 +38,8 @@ export function ResearchTopicSelect({
    * remount; the orphan-value row keeps the selection itself working).
    */
   refreshKey?: string | number | null;
+  /** The brand this picker works for: a topic created here is linked to it. */
+  brandId?: string | null;
 }) {
   const topics = useAllTopics();
   const [createdTopic, setCreatedTopic] = useState<{
@@ -80,7 +83,15 @@ export function ResearchTopicSelect({
     }
 
     try {
-      const { topic } = await createTopic(organizationId, { name });
+      const { topic, brandLink } = await createTopic(organizationId, {
+        name,
+        ...(brandId ? { subject: { brand_id: brandId } } : {}),
+      });
+      if (!brandLink.ok) {
+        toast.error(
+          `Topic created, but linking it to the brand failed: ${brandLink.error ?? "unknown error"}.`,
+        );
+      }
       setCreatedTopic({ id: topic.id, name: topic.name });
       refresh();
       recordToast.success(

@@ -8,9 +8,12 @@ import type { ListScopeWord } from "@/lib/list-scope";
 import { listOrgParam } from "@/lib/list-scope/types";
 import { listTemplateRows } from "../editor/api/realApi";
 import type { TemplateRow } from "./types";
+import { inDateWindows } from "../dateWindow";
 
 async function rows(lane: "all" | "mine", query: EntityListQuery): Promise<TemplateRow[]> {
-  return listTemplateRows({ lane, orgId: listOrgParam(query) ?? null, search: query.search });
+  const all = await listTemplateRows({ lane, orgId: listOrgParam(query) ?? null, search: query.search });
+  // The list is read whole and sorted/paged here, so the date window (updated_at) is applied here too.
+  return all.filter((row) => inDateWindows(row, query, { updated_at: (r) => r.updated_at }));
 }
 
 const SORTABLE: Record<string, (r: TemplateRow) => string | number> = {

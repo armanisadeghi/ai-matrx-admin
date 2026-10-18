@@ -50,6 +50,20 @@ const SORTABLE: Record<string, string> = {
   arrow_count: "updated_at",
 };
 
+/** The table's date windows (keyed by column id, bounds resolved: `since` inclusive, `until` exclusive). */
+function applyDateWindows<Q extends { gte: (c: string, v: string) => Q; lt: (c: string, v: string) => Q }>(
+  q: Q,
+  query: EntityListQuery,
+): Q {
+  for (const column of ["updated_at", "created_at"]) {
+    const filter = query.filters[column];
+    if (!filter || filter.kind !== "date") continue;
+    if (filter.since) q = q.gte(column, filter.since);
+    if (filter.until) q = q.lt(column, filter.until);
+  }
+  return q;
+}
+
 function toRow(raw: Record<string, unknown>): MapListRow {
   const title =
     typeof raw.title === "string" && raw.title ? raw.title : "Untitled map";
@@ -93,6 +107,7 @@ export async function fetchMapListPage(
 
   const search = query.search.trim();
   if (search) q = q.or(buildSearchOr(search, ["title", "description"]));
+  q = applyDateWindows(q, query);
 
   const column = SORTABLE[sort.sort] ?? "updated_at";
   q = q.order(column, { ascending: sort.direction === "asc" });
@@ -129,6 +144,7 @@ export async function fetchMapScopeCounts(
 
   const search = query.search.trim();
   if (search) q = q.or(buildSearchOr(search, ["title", "description"]));
+  q = applyDateWindows(q, query);
 
   const { count, error } = await q;
   if (error) throw operationFailed("count your maps", error);

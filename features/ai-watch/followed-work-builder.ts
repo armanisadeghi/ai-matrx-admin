@@ -12,6 +12,8 @@ export const SERVER_WORK_SURFACE = "ai.server_work";
 export const PAGE_RUNS_SURFACE = "ai.page_runs";
 export const SERVER_WORK_PREFIX = "work.";
 export const PAGE_RUN_PREFIX = "run.";
+/** The app-wide feeds: they ride along on every route, so a page's own surface always leads the Builder. */
+export const APP_WIDE_SURFACES: readonly string[] = [SERVER_WORK_SURFACE, PAGE_RUNS_SURFACE];
 
 /** Inputs, progress and every step (answer + the AI call it opens) of each followed work item. */
 export function serverWorkEntries(work: readonly FollowedWork[], resolved: Readonly<Record<string, Resolved>>): BuilderPublishInput[] {

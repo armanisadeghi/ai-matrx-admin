@@ -2,6 +2,7 @@
 
 // THE SHAPES COME FROM THE REGISTRY (`pnpm shape:types`) — this file never
 // re-declares a registered kind's fields (`check:kind-type-twins`).
+import { FullScreenPortal } from "../FullScreenPortal";
 import type { RecipeStep } from "./parseRecipeMarkdown";
 import React, { useState, useMemo, useRef, useCallback } from "react";
 import {
@@ -287,7 +288,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
   };
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {/* Fullscreen Backdrop */}
       {isFullScreen && (
         <div
@@ -648,7 +649,7 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
           </div>
         </div>
       </div>
-    </>
+    </FullScreenPortal>
   );
 };
 

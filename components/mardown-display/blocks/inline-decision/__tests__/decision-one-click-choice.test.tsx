@@ -11,6 +11,11 @@ import { createRoot, type Root } from "react-dom/client";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+// ProTextarea needs the app store (mic, agents); this test is about the decision, so a plain box stands in.
+jest.mock("@/components/official/ProTextarea", () => ({
+  ProTextarea: (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea {...props} />,
+}));
+
 import InlineDecisionBlock from "../InlineDecisionBlock";
 
 const decision = {
@@ -43,11 +48,20 @@ const render = (onResolve: jest.Mock) =>
 const button = (name: string) =>
   Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === name || b.getAttribute("aria-label") === name) as HTMLButtonElement;
 const click = (el: HTMLElement) => act(() => { el.click(); });
+const radio = (value: string) => container.querySelector(`input[type="radio"][value="${value}"]`) as HTMLInputElement;
+
+test("the question and every option's own text are shown before anything is picked", () => {
+  render(jest.fn());
+  const text = container.textContent ?? "";
+  expect(text).toContain("Pick our first launch channel");
+  expect(text).toContain("Start with an email waitlist.");
+  expect(text).toContain("Start in niche communities.");
+});
 
 test("a single click on an option resolves it with the option's label", () => {
   const onResolve = jest.fn();
   render(onResolve);
-  click(button("Email List"));
+  click(radio("a"));
   act(() => { jest.advanceTimersByTime(400); });
   expect(onResolve).toHaveBeenCalledTimes(1);
   expect(onResolve).toHaveBeenCalledWith("d1", "<decision/>", "Start with an email waitlist.", "Email List");
@@ -63,10 +77,10 @@ test("the pencil customizes the text, and Cancel clears the selection", () => {
   expect(onResolve).not.toHaveBeenCalled();
 });
 
-test("Custom opens free text and resolves with no label", () => {
+test("Write my own opens free text and resolves with no label", () => {
   const onResolve = jest.fn();
   render(onResolve);
-  click(button("Custom"));
+  click(radio("custom"));
   const ta = container.querySelector("textarea") as HTMLTextAreaElement;
   expect(ta.value).toBe("");
   act(() => {

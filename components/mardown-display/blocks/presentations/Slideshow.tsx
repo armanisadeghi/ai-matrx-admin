@@ -33,6 +33,7 @@ import { slideThumbnailPlacement } from "@ai-matrx/rich-content/display/blocks/c
 import { Button } from "@ai-matrx/design-system/controls";
 import { SaveToPresentationsButton } from "@/features/presentations/components/SaveToPresentationsButton";
 import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { FullScreenPortal } from "../FullScreenPortal";
 
 // Lazy load PresentationExportMenu to avoid loading GoogleAPIProvider on initial render
 const PresentationExportMenu = lazy(() => import("./PresentationExportMenu"));
@@ -125,9 +126,16 @@ const Slideshow = (
       return;
     }
 
+    // Canvas data is plain JSON — the deck only, never this block's callbacks
+    // (onStateChange made the canvas refuse the open).
     openCanvas({
       type: "presentation",
-      data: presentationData,
+      data: {
+        title: presentationData.deckTitle || title,
+        slides,
+        theme: theme ?? null,
+        slideSize: slideSize ?? null,
+      },
       metadata: {
         title,
         sourceTaskId: presentationData.taskId,
@@ -179,7 +187,7 @@ const Slideshow = (
   const slide = slides[currentSlide];
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {/* Blur backdrop when fullscreen */}
       {isFullScreen && (
         <div
@@ -432,7 +440,7 @@ const Slideshow = (
           `}</style>
         </div>
       </div>
-    </>
+    </FullScreenPortal>
   );
 };
 

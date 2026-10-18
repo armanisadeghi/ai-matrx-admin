@@ -16,10 +16,15 @@
 
 import {
   AssociationList,
+  useContainerLinksAdapter,
   type PrimaryEntity,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { useNeutralLinksAdapter } from "@/features/scopes/hooks/useNeutralLinksAdapter";
+
+// The section heading is "Links"; hide the list's own fixed "Resources" label
+// (it would repeat it) and keep the Add / refresh controls right-aligned.
+const HIDE_LIST_HEADING =
+  "[&>div:first-child]:justify-end [&>div:first-child>h3]:hidden";
 
 const TOPIC_LINK_TOKENS = [
   "web_brand",
@@ -44,15 +49,18 @@ export function ResearchTopicLinks({
     label: topicName,
     direction: "outgoing",
   };
-  const adapter = useNeutralLinksAdapter(container, TOPIC_LINK_TOKENS);
+  const adapter = useContainerLinksAdapter(container, TOPIC_LINK_TOKENS);
   return (
-    <section className="space-y-1.5">
-      <h3 className="type-secondary font-semibold text-foreground">Links</h3>
+    <section className="space-y-2">
+      <h2 className="type-secondary font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">
+        Links
+      </h2>
       <AssociationList
         container={container}
         adapter={adapter}
         tokens={[...TOPIC_LINK_TOKENS]}
         variant="compact"
+        className={HIDE_LIST_HEADING}
       />
     </section>
   );

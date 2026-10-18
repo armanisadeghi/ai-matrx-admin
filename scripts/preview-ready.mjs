@@ -303,9 +303,18 @@ function mintLoginPath(target) {
   return m[1];
 }
 
-async function signedInLoad(target) {
-  const cookies = {};
-  let path = mintLoginPath(target);
+// ONE sign-in per preflight (2026-10-17): every dev-login handshake used to be a fresh password
+// sign-in — the page check, the browser check and every --warm route each minted one — and ~10 seats
+// doing that pushed the auth host into 429. The first handshake's cookies are kept here and every
+// later load (warm routes, the headless browser) reuses them; a new handshake happens only if the
+// stored session stops working.
+const sessionJar = {};
+const jarSignedIn = () => Object.keys(sessionJar).some((k) => /^sb-[\w-]*auth/.test(k));
+
+async function signedInLoad(target, { reuse = true } = {}) {
+  const usingJar = reuse && jarSignedIn();
+  const cookies = sessionJar;
+  let path = usingJar ? target : mintLoginPath(target);
   const hops = [];
   let current = path;
   let lastSay = Date.now();
@@ -330,7 +339,13 @@ async function signedInLoad(target) {
         path = loc.pathname + loc.search;
         continue;
       }
-      return { ...r, finalPath: path, hops, signedInCookie: Object.keys(cookies).some((k) => /^sb-[\w-]*auth/.test(k)) /* sb-matrx-auth-v2.N (chunked) */ };
+      const landed = path.split("?")[0];
+      // The kept session stopped working (signed out): one fresh handshake, then judge that.
+      if (usingJar && (landed.startsWith("/login") || landed.startsWith("/sign"))) {
+        for (const k of Object.keys(sessionJar)) delete sessionJar[k];
+        return signedInLoad(target, { reuse: false });
+      }
+      return { ...r, finalPath: path, hops, signedInCookie: jarSignedIn() /* sb-matrx-auth-v2.N (chunked) */ };
     }
     return { status: 0, error: "too many redirects", finalPath: path, hops };
   } finally {
@@ -343,12 +358,26 @@ if (!(await waitForListener())) notReady(`port ${PORT} never answered in ${forma
 say(`listener: port ${PORT} answers (${secs()}s)`);
 
 let restarted = false;
+let rateLimitWaits = 0;
 let verified = false;
 let capWaitSaid = 0;
 let settleWaits = 0;
 for (let attempt = 1; attempt <= 2; attempt++) {
   const logStart = logSize();
   const r = await signedInLoad(route);
+  // The AUTH HOST is rate-limiting sign-ins from this machine (dev-login answers 429). The page
+  // would render signed out; that is never READY. Wait as the host asks, a few times, then say so.
+  if (r.status === 429) {
+    const retryAfter = Math.max(20, Number(r.headers?.["retry-after"]) || 0);
+    if (rateLimitWaits < 3 && left() > (retryAfter + 20) * 1000) {
+      rateLimitWaits++;
+      say(`sign-in: the auth host is rate-limiting sign-ins from this machine (429); waiting ${retryAfter}s (try ${rateLimitWaits} of 3)`);
+      await sleep(retryAfter * 1000);
+      attempt--;
+      continue;
+    }
+    notReady("the auth host is rate-limiting sign-ins from this machine (dev-login answers 429) — pages would render signed out. Too many seats are signing in at once; retry in a few minutes");
+  }
   // THE LIVE-DATABASE WALK CAP (utils/supabase/walkCap.ts): at most N session hosts sign in against
   // production at once. Our hold keeps us in once admitted; while every slot is busy, wait for one.
   if (r.status === 503 && r.headers?.["x-matrx-walk-cap"] === "refused" && left() > 25000) {
@@ -416,7 +445,8 @@ if (!verified) notReady(`${route} never loaded signed in`);
 if (browserCheck) {
   say(`browser: opening ${route} signed in, headless, and watching it for 20 s`);
   const b = await browserStability({
-    url: `http://${HOST}:${PORT}${mintLoginPath(route)}`,
+    url: jarSignedIn() ? `http://${HOST}:${PORT}${route}` : `http://${HOST}:${PORT}${mintLoginPath(route)}`,
+    cookies: jarSignedIn() ? Object.entries(sessionJar).map(([name, value]) => ({ name, value, domain: HOST, path: "/" })) : [],
     port: PORT,
     windowSec: 20,
     timeoutMs: Math.max(60000, left()),

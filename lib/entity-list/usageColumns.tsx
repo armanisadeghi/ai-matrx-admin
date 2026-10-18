@@ -28,7 +28,6 @@ import Link from "next/link";
 import { formatPercentFromFraction, safeRatio } from "@ai-matrx/kit/format";
 import { Cost } from "@/components/cost/Cost";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -192,8 +191,7 @@ export function usageColumns<TRow>(
         id: lastUsedId,
         accessorFn: (row) => read(row).lastUsedAt,
         header: "Last used",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         width: 120,
         align: "right",
         cell: (row) => {

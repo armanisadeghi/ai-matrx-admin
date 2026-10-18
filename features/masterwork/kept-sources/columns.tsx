@@ -14,7 +14,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   TextCell,
   timeCell,
@@ -125,12 +124,7 @@ export const KEPT_SOURCE_COLUMNS: EntityColumnSpec<KeptSourceRow>[] = [
       accessorKey: "captured_at",
       header: "Captured",
       sortable: true,
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
-      // Relative-date buckets are mutually exclusive VIEWS, not an OR set —
-      // without this the popover accumulates and the first choice wins forever
-      // (D218).
-      filterSingle: true,
+      filter: "date",
       cell: (row) => timeCell(row.captured_at),
     },
   },

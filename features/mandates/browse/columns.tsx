@@ -10,7 +10,6 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 import { Badge } from "@/components/ui/badge";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -333,9 +332,7 @@ export function mandateColumnsFor(
         id: "updated",
         accessorFn: (row) => row.updated_at,
         header: "Updated",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
-        filterSingle: true,
+        filter: "date",
         width: 120,
         cell: (row) => timeCell(row.updated_at),
       },

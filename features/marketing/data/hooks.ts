@@ -11,6 +11,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { promoteSmartAddFindings } from "@/features/marketing/smart-add/promote";
 import {
   keepPreviousData,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -122,6 +123,8 @@ import {
 import {
   fetchResearchImageOrganization,
   fetchResearchImages,
+  fetchResearchImagesPage,
+  RESEARCH_IMAGE_PAGE_SIZE,
   saveSiteMediaStandards,
   tagResearchImages,
   unlinkResearchImagesFromBrand,
@@ -745,6 +748,28 @@ export function useResearchImages(organizationId: string | null) {
   return useQuery({
     queryKey: marketingKeys.researchImages(organizationId ?? "none"),
     queryFn: ({ signal }) => fetchResearchImages(organizationId ?? "", signal),
+    enabled: Boolean(organizationId),
+    staleTime: 120_000,
+  });
+}
+
+/**
+ * Research images read a page at a time: the first page on mount, more only
+ * when the person asks (Load more). `total` is the exact organization count.
+ */
+export function useResearchImagePages(organizationId: string | null) {
+  return useInfiniteQuery({
+    queryKey: [
+      ...marketingKeys.researchImages(organizationId ?? "none"),
+      "pages",
+    ] as const,
+    queryFn: ({ signal, pageParam }) =>
+      fetchResearchImagesPage(organizationId ?? "", pageParam, signal),
+    initialPageParam: 0,
+    getNextPageParam: (last) => {
+      const next = last.offset + RESEARCH_IMAGE_PAGE_SIZE;
+      return next < last.total ? next : undefined;
+    },
     enabled: Boolean(organizationId),
     staleTime: 120_000,
   });

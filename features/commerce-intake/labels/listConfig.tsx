@@ -33,6 +33,16 @@ function stateFilterValues(query: EntityListQuery): string[] | null {
   return null;
 }
 
+/** The table's date range on the date columns, as since/until per column id. */
+function dateWindows(query: EntityListQuery): Record<string, { since?: string; until?: string }> {
+  const windows: Record<string, { since?: string; until?: string }> = {};
+  for (const id of ["printed_at", "created_at"]) {
+    const f = query.filters[id];
+    if (f && f.kind === "date") windows[id] = { since: f.since, until: f.until };
+  }
+  return windows;
+}
+
 /** The page's organization filter (`?org_filter=`) — never the header's active organization. */
 function scopedOrganizationId(query: EntityListQuery): string | null {
   return query.orgId;
@@ -50,6 +60,7 @@ async function fetchPage(
     sort: sort.sort,
     ascending: sort.direction === "asc",
     states: stateFilterValues(query) ?? undefined,
+    dates: dateWindows(query),
   });
 }
 

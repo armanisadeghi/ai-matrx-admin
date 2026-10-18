@@ -59,7 +59,7 @@ function countHmrRestarts(port, ms) {
  * Open `url` (a fresh dev-login URL) headless and watch the landed page for `windowSec`.
  * Returns { ok, why, skipped? }.
  */
-export async function browserStability({ url, port, windowSec = 20, timeoutMs = 300000, say = () => {} }) {
+export async function browserStability({ url, port, windowSec = 20, timeoutMs = 300000, cookies = [], say = () => {} }) {
   let chromium;
   try {
     ({ chromium } = require("playwright-core"));
@@ -73,7 +73,10 @@ export async function browserStability({ url, port, windowSec = 20, timeoutMs = 
     return { ok: true, skipped: true, why: `headless browser would not start (${String(e).split("\n")[0].slice(0, 120)})` };
   }
   try {
-    const page = await (await browser.newContext({ viewport: { width: 1400, height: 900 } })).newPage();
+    const context = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+    // The preflight's own signed-in session: no second sign-in for the browser check.
+    if (cookies.length) await context.addCookies(cookies);
+    const page = await context.newPage();
     await page.goto(url, { waitUntil: "load", timeout: timeoutMs });
     const hmr = countHmrRestarts(port, windowSec * 1000);
     const samples = [];

@@ -2,6 +2,7 @@
 
 // THE SHAPES COME FROM THE REGISTRY, via the parser that produces them —
 // this renderer never re-declares them (`check:kind-type-twins`).
+import { FullScreenPortal } from "../FullScreenPortal";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
 import { Button, Badge, Chip, Select } from "@ai-matrx/design-system/controls";
@@ -249,7 +250,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
   };
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {/* Fullscreen Backdrop */}
       {isFullScreen && (
         <div 
@@ -815,7 +816,7 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
           </div>
         </div>
       </div>
-    </>
+    </FullScreenPortal>
   );
 };
 

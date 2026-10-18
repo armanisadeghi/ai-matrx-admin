@@ -183,6 +183,8 @@ export async function fetchLabelBatchPage(args: {
   sort: string;
   ascending: boolean;
   states?: string[];
+  /** The table's date range per date column (since inclusive, until exclusive); a batch with no moment is out. */
+  dates?: Record<string, { since?: string; until?: string }>;
 }): Promise<{ rows: LabelBatchListRow[]; total: number }> {
   const sortable = new Set([
     "created_at",
@@ -198,6 +200,10 @@ export async function fetchLabelBatchPage(args: {
     .is("deleted_at", null);
   if (args.organizationId) q = q.eq("organization_id", args.organizationId);
   if (args.states && args.states.length > 0) q = q.in("state", args.states);
+  for (const [column, window] of Object.entries(args.dates ?? {})) {
+    if (window.since) q = q.gte(column, window.since);
+    if (window.until) q = q.lt(column, window.until);
+  }
   const search = args.search.trim();
   if (search) {
     const term = search.replace(/[%_,()]/g, " ").trim();

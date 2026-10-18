@@ -71,6 +71,8 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
 
   const [closeTarget, setCloseTarget] = useState<UserActionSubject | null>(null);
   const [closing, setClosing] = useState(false);
+  const [reopenTarget, setReopenTarget] = useState<UserActionSubject | null>(null);
+  const [reopening, setReopening] = useState(false);
   const [signOutTarget, setSignOutTarget] = useState<UserActionSubject | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [messageTarget, setMessageTarget] = useState<UserActionSubject | null>(null);
@@ -170,7 +172,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     return null;
   };
 
-  /** Close asks for the reason (it is recorded with the closure); reopen states what returns. */
+  /** Close and reopen both ask for the reason (recorded in the admin history). */
   const setAccountClosed = async (subject: UserActionSubject, close: boolean) => {
     const blocked = closeBlockedReason(subject);
     if (blocked) {
@@ -181,22 +183,27 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
       setCloseTarget(subject);
       return;
     }
-    const who = whoOf(subject);
-    const ok = await confirm({
-      title: "Reopen account?",
-      description: `${who} can sign in again; paused schedules and connections resume. Revoked API keys stay revoked.`,
-      confirmLabel: "Reopen",
-    });
-    if (!ok) return;
-    const { error } = await createClient()
-      .schema("iam")
-      .rpc("reopen_account", { p_user: subject.id, p_reason: "reopened by a platform admin" });
-    if (error) {
-      toast.error(error.message);
-      return;
+    setReopenTarget(subject);
+  };
+
+  const confirmReopen = async (reason: string) => {
+    if (!reopenTarget) return;
+    const who = whoOf(reopenTarget);
+    setReopening(true);
+    try {
+      const { error } = await createClient()
+        .schema("iam")
+        .rpc("reopen_account", { p_user: reopenTarget.id, p_reason: reason.trim() });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      onPatched?.(reopenTarget.id, { banned: false });
+      toast.success(`Reopened ${who}`);
+      setReopenTarget(null);
+    } finally {
+      setReopening(false);
     }
-    onPatched?.(subject.id, { banned: false });
-    toast.success(`Reopened ${who}`);
   };
 
   const confirmClose = async (reason: string) => {
@@ -288,6 +295,18 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
         confirmLabel="Close account"
         busy={closing}
         onConfirm={confirmClose}
+      />
+      <TextInputDialog
+        open={reopenTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !reopening) setReopenTarget(null);
+        }}
+        title={`Reopen ${reopenTarget ? whoOf(reopenTarget) : "account"}?`}
+        description="They can sign in again; paused schedules and connections resume. Revoked API keys stay revoked."
+        placeholder="Reason (recorded in the admin history)"
+        confirmLabel="Reopen"
+        busy={reopening}
+        onConfirm={confirmReopen}
       />
       <TextInputDialog
         open={signOutTarget !== null}

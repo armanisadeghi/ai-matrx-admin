@@ -89,11 +89,16 @@ export function createConnectedSourceListService(
       try {
         const limit = sort.pageSize || pageSizeFallback;
         const offset = (query.page - 1) * limit;
+        const modified = query.filters.modified_at;
         const response = await browseConnectedSources(dispatch, {
           adapter: target.adapter,
           connection_id: target.connectionId,
           container_id: target.containerId ?? null,
-          filter: query.search ? { query: query.search } : {},
+          filter: {
+            ...(query.search ? { query: query.search } : {}),
+            ...(modified?.kind === "date" && modified.since ? { modified_after: modified.since } : {}),
+            ...(modified?.kind === "date" && modified.until ? { modified_before: modified.until } : {}),
+          },
           limit,
           offset,
         });

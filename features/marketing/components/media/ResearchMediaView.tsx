@@ -34,7 +34,7 @@ import {
   useBrandOptions,
   useCreateBrandAsset,
   useResearchImageOrganization,
-  useResearchImages,
+  useResearchImagePages,
   useTagResearchImages,
   useUnlinkResearchImagesFromBrand,
   useUntagResearchImages,
@@ -87,7 +87,7 @@ export function ResearchMediaView({
   /** Hand this image to the Generate view as a creative brief. */
   onUseAsBrief: (image: ResearchImageRow) => void;
 }) {
-  const images = useResearchImages(organizationId);
+  const images = useResearchImagePages(organizationId);
   const createAsset = useCreateBrandAsset();
   const [topicFilter, setTopicFilter] = useState("all");
   const [originFilter, setOriginFilter] = useState<"all" | "own" | "external">(
@@ -113,7 +113,11 @@ export function ResearchMediaView({
         .filter((host): host is string => Boolean(host)),
     [siteRootUrls],
   );
-  const rows = useMemo(() => images.data ?? [], [images.data]);
+  const rows = useMemo(
+    () => images.data?.pages.flatMap((page) => page.rows) ?? [],
+    [images.data],
+  );
+  const total = images.data?.pages[0]?.total ?? rows.length;
   const imageIds = useMemo(() => rows.map((row) => row.id), [rows]);
   const topicIds = useMemo(
     () => [
@@ -207,6 +211,17 @@ export function ResearchMediaView({
     links,
   ]);
 
+  // Selection only ever holds visible images: when the filtered list changes,
+  // drop ids that left it (adjust-state-during-render, no effect).
+  const [seenFiltered, setSeenFiltered] = useState(filtered);
+  if (seenFiltered !== filtered) {
+    setSeenFiltered(filtered);
+    const visible = new Set(filtered.map((row) => row.id));
+    if ([...selected].some((id) => !visible.has(id))) {
+      setSelected(new Set([...selected].filter((id) => visible.has(id))));
+    }
+  }
+
   const brandOptions: SelectOption[] = [
     { value: brandId, label: brandName },
     ...(brands.data ?? [])
@@ -224,12 +239,10 @@ export function ResearchMediaView({
     { value: CATEGORY_NONE, label: "Uncategorized" },
   ];
 
-  const selectedIds = [...selected].filter((id) =>
-    filtered.some((row) => row.id === id),
-  );
+  const selectedIds = [...selected];
   const selectedCategoryIds = [
     ...new Set(
-      rows
+      filtered
         .filter((row) => selected.has(row.id))
         .flatMap((row) => categoriesOf(row)),
     ),
@@ -241,6 +254,14 @@ export function ResearchMediaView({
       else next.delete(id);
       return next;
     });
+  };
+
+  const resetFilters = () => {
+    setBrandFilter(BRAND_ALL);
+    setCategoryFilter(CATEGORY_ALL);
+    setTopicFilter("all");
+    setOriginFilter("all");
+    setSearch("");
   };
 
   const applyCategory = async (categoryId: string | null) => {
@@ -262,7 +283,7 @@ export function ResearchMediaView({
     }
   };
 
-  const selectedLinkedToBrand = rows.some(
+  const selectedLinkedToBrand = filtered.some(
     (row) =>
       selected.has(row.id) &&
       (links?.imageBrands[row.id] ?? []).includes(brandId),
@@ -351,6 +372,7 @@ export function ResearchMediaView({
       headerExtra={
         <span className="type-meta tabular-nums text-muted-foreground">
           {filtered.length}/{rows.length}
+          {total > rows.length ? ` of ${total}` : ""}
         </span>
       }
     >
@@ -420,7 +442,7 @@ export function ResearchMediaView({
             disabled={selectedIds.length === 0 || tagImages.isPending}
           />
         </div>
-        {selectedCategoryIds.length > 0 ? (
+        {selectedIds.length > 0 && selectedCategoryIds.length > 0 ? (
           <ChipSet>
             {selectedCategoryIds.map((categoryId) => (
               <Chip
@@ -439,7 +461,7 @@ export function ResearchMediaView({
             ))}
           </ChipSet>
         ) : null}
-        {selectedLinkedToBrand ? (
+        {selectedIds.length > 0 && selectedLinkedToBrand ? (
           <Button
             variant="quiet"
             disabled={unlinkImages.isPending}
@@ -461,8 +483,12 @@ export function ResearchMediaView({
 
       {filtered.length === 0 ? (
         <MediaEmptyState
-          title="No research images matched the current filters"
-          detail="Set Brand to All research, or clear the other filters."
+          title="No research images match"
+          action={
+            <Button variant="quiet" onClick={resetFilters}>
+              Reset filters
+            </Button>
+          }
         />
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -505,8 +531,8 @@ export function ResearchMediaView({
                       variant="outline"
                       className={
                         own
-                          ? "h-4 border-emerald-500/50 px-1 text-[9px] text-emerald-600 dark:text-emerald-400"
-                          : "h-4 px-1 text-[9px]"
+                          ? "h-4 border-success/50 px-1 type-meta text-success-ink"
+                          : "h-4 px-1 type-meta"
                       }
                     >
                       {own ? "own domain" : (row.sourceHostname ?? "external")}
@@ -577,6 +603,18 @@ export function ResearchMediaView({
           })}
         </div>
       )}
+      {images.hasNextPage ? (
+        <div className="flex justify-center">
+          <Button
+            variant="quiet"
+            disabled={images.isFetchingNextPage}
+            title={`${total - rows.length} more research images`}
+            onClick={() => void images.fetchNextPage()}
+          >
+            {images.isFetchingNextPage ? "Loading…" : "Load more"}
+          </Button>
+        </div>
+      ) : null}
     </div>
     </SectionCard>
   );

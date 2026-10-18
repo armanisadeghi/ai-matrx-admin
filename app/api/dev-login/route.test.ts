@@ -49,6 +49,8 @@ const signOut = jest.fn(async () => ({}));
 const verifyOtp = jest.fn(async () => ({ error: null }));
 let cookieWrites: string[] = [];
 let existingUser: { id: string; email: string } | null = null;
+// What the AUTH SERVER says about the session (getUser); undefined = same as the local claims.
+let serverUser: { id: string; email: string } | null | undefined = undefined;
 const handOverSession = jest.fn(
   (_via: string, replace: () => Promise<unknown>) => replace(),
 );
@@ -60,12 +62,19 @@ jest.mock("@/utils/supabase/server", () => ({
   createClient: jest.fn(async (options?: { appendSetCookie?: (header: string) => void }) => {
     cookieWrites.forEach((header) => options?.appendSetCookie?.(header));
     return ({
-    auth: mockWithClaims({
-      getUser: async () => ({ data: { user: existingUser } }),
-      signOut,
-      signInWithPassword,
-      verifyOtp,
-    }),
+    auth: {
+      // Local claims (getClaims) see the cookie's session; getUser asks the AUTH SERVER.
+      ...mockWithClaims({
+        getUser: async () => ({ data: { user: existingUser } }),
+        signOut,
+        signInWithPassword,
+        verifyOtp,
+      }),
+      getUser: async () => {
+        const user = serverUser === undefined ? existingUser : serverUser;
+        return user ? { data: { user }, error: null } : { data: { user: null }, error: { message: "session not found" } };
+      },
+    },
     });
   }),
 }));
@@ -103,6 +112,7 @@ afterAll(() => {
 beforeEach(() => {
   cookieWrites = [];
   existingUser = null;
+  serverUser = undefined;
   signOut.mockClear();
   verifyOtp.mockClear();
   signInWithPassword.mockClear();
@@ -169,8 +179,20 @@ describe("dev-login accepts ONLY the nonce handshake", () => {
     expect(existsSync(NONCE_FILE)).toBe(false);
   });
 
+  it("reuses a same-account session the server confirms live — no new sign-in spent (2026-10-17 429s)", async () => {
+    existingUser = { id: "admin-session-refresh", email: "guard@example.invalid" };
+    writeFileSync(NONCE_FILE, A_NONCE + "\n");
+
+    const response = await GET(get(`?nonce=${A_NONCE}&next=/tasks`));
+
+    expect(response.headers.get("location")).toBe("http://localhost:3000/tasks");
+    expect(signInWithPassword).not.toHaveBeenCalled();
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
   it("replaces a same-account session so a revoked server session cannot survive the dev-login shortcut", async () => {
     existingUser = { id: "admin-session-refresh", email: "guard@example.invalid" };
+    serverUser = null; // the local claims still look fine; the server revoked it
     writeFileSync(NONCE_FILE, A_NONCE + "\n");
 
     const response = await GET(get(`?nonce=${A_NONCE}&next=/tasks`));

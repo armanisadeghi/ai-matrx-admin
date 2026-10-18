@@ -10,10 +10,11 @@
 
 import { useEffect, useState } from "react";
 import { Check, Swords, ThumbsDown, ThumbsUp } from "lucide-react";
-import { Badge, Button, EmptyState, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState, RegionSkeleton, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { Cost } from "@/components/cost/Cost";
+import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
 import { fetchCaseResults, fetchRunResults, launchBattle, toCaseView } from "@/features/agent-tests/service";
 import { DEFAULT_RUN_OPTIONS, type TestResultView } from "@/features/agent-tests/types";
@@ -34,6 +35,8 @@ import {
   type RunSetupBody,
   type StudioCandidate,
 } from "../battle";
+import { battleVerdict, keepLabel } from "../tab-logic";
+import { ResultCard, TabHead, Waiting } from "./StudioTabParts";
 
 type Challenger = "candidate" | "model" | "version";
 
@@ -48,12 +51,15 @@ export function StudioBattle({
   candidate,
   onKeep,
   onDiscard,
+  onOpenCases,
 }: {
   agentId: string;
   casesVersion: number;
   candidate: StudioCandidate | null;
   onKeep: () => Promise<void>;
   onDiscard: () => void;
+  /** The way out of "no cases yet": the Cases tab, where one is added. */
+  onOpenCases?: () => void;
 }) {
   const [challenger, setChallenger] = useState<Challenger>(candidate ? "candidate" : "model");
   const [modelId, setModelId] = useState<string | null>(null);
@@ -69,6 +75,8 @@ export function StudioBattle({
   const [keeping, setKeeping] = useState(false);
   const [readError, setReadError] = useState<unknown>(null);
   const [kept, setKept] = useState(false);
+  /** The eval's own run view: open while the battle runs, folded away once it settles (null = follow that). */
+  const [detailOpen, setDetailOpen] = useState<boolean | null>(null);
 
   // A new candidate (Debrief "Try as candidate") becomes the challenger; adjusted while rendering.
   const [seenCandidate, setSeenCandidate] = useState(candidate);
@@ -128,6 +136,8 @@ export function StudioBattle({
     setLaunching(true);
     setLaunchError(null);
     setResults([]);
+    setDetailOpen(null);
+    setKept(false);
     try {
       const launched = await launchBattle(agentId, next, DEFAULT_RUN_OPTIONS, cases.map((c) => c.id));
       setSetups(next);
@@ -160,8 +170,22 @@ export function StudioBattle({
   };
 
   if (readError) return <ReadFailure what="test cases" error={readError} />;
-  if (cases && cases.length === 0) {
-    return <EmptyState icon={<Swords className="h-5 w-5" />} title="No test cases yet" line="Battles run on the agent's cases" />;
+  if (!cases) return <RegionSkeleton shape="rows" count={3} aria-label="Loading test cases" />;
+  if (cases.length === 0) {
+    return (
+      <EmptyState
+        icon={<Swords className="h-5 w-5" />}
+        title="No test cases yet"
+        line="A battle runs on the agent's cases"
+        action={
+          onOpenCases ? (
+            <Button variant="outline" onClick={onOpenCases}>
+              Add a case
+            </Button>
+          ) : undefined
+        }
+      />
+    );
   }
 
   const options: { value: Challenger; label: string }[] = [
@@ -171,51 +195,61 @@ export function StudioBattle({
   ];
   const score = battleScore(results, setups.map((s) => s.key));
   const labelOf = (key: string) => setups.find((s) => s.key === key)?.label ?? key;
+  const verdict = battleVerdict(score, labelOf);
+  const canKeep = score.settled && challenger === "candidate" && candidate !== null;
+  /** One primary action per tab: Keep takes it only when the candidate won. */
+  const keepPrimary = canKeep && verdict.keepIsPrimary && !kept;
+  const showRunView = detailOpen ?? !score.settled;
 
   return (
-    <div className="flex flex-col gap-3" data-testid="studio-battle">
+    <div className="flex flex-col gap-2" data-testid="studio-battle">
       <SegmentedControl
         aria-label="Battle against"
         value={challenger}
         onValueChange={(v) => setChallenger(v as Challenger)}
         data={options}
       />
-      {challenger === "candidate" && candidate ? (
-        <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs" data-testid="studio-candidate">
-          <Badge tone="info">Candidate</Badge>
-          <span className="min-w-0 flex-1 truncate text-foreground">{candidate.title}</span>
-          <Button variant="quiet" onClick={onDiscard}>
-            Discard
-          </Button>
-        </div>
-      ) : null}
-      {challenger === "model" ? (
-        <ModelListDropdown
-          aria-label="Challenger model"
-          modelOnly
-          inputModalities={["text"]}
-          selectionPurpose="agent"
-          value={modelId}
-          onValueChange={setModelId}
-        />
-      ) : null}
-      {challenger === "version" ? (
-        versions.length > 1 ? (
-          <Select
-            aria-label="Challenger version"
-            value={versionId}
-            onValueChange={setVersionId}
-            options={versions.map((v) => ({ value: v.id, label: `Version ${v.version_number}` }))}
-          />
-        ) : (
-          <span className="text-xs text-muted-foreground">Only one saved version</span>
-        )
-      ) : null}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground" data-testid="studio-battle-cost">
-        <span>
-          {caseCount} {caseCount === 1 ? "case" : "cases"} × 2
-        </span>
-        <span className="ml-auto">
+      <div className="flex h-8 items-center" data-testid="studio-challenger">
+        {challenger === "candidate" && candidate ? (
+          <div className="flex min-w-0 flex-1 items-center gap-2 text-xs" data-testid="studio-candidate">
+            <Badge tone="info">Candidate</Badge>
+            <span className="min-w-0 flex-1 truncate text-foreground">{candidate.title}</span>
+            <Button variant="quiet" onClick={onDiscard}>
+              Discard
+            </Button>
+          </div>
+        ) : null}
+        {challenger === "model" ? (
+          <div className="min-w-0 flex-1">
+            <ModelListDropdown
+              aria-label="Challenger model"
+              modelOnly
+              inputModalities={["text"]}
+              selectionPurpose="agent"
+              value={modelId}
+              onValueChange={setModelId}
+            />
+          </div>
+        ) : null}
+        {challenger === "version" ? (
+          versions.length > 1 ? (
+            <div className="min-w-0 flex-1">
+              <Select
+                aria-label="Challenger version"
+                value={versionId}
+                onValueChange={setVersionId}
+                options={versions.map((v) => ({ value: v.id, label: `Version ${v.version_number}` }))}
+              />
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">Only one saved version. Save another to compare</span>
+          )
+        ) : null}
+      </div>
+      {/* Cost first, then the one action. */}
+      <TabHead className="border-t border-border pt-2" >
+        <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground" data-testid="studio-battle-cost">
+          {caseCount} {caseCount === 1 ? "case" : "cases"} × 2 ·{" "}
           {estimate !== null ? (
             <>
               About <Cost usd={estimate / 100} short />
@@ -224,51 +258,61 @@ export function StudioBattle({
             "Cost not measured yet"
           )}
         </span>
-      </div>
-      <Button
-        variant="primary"
-        icon={<Swords />}
-        disabled={!challengerReady || launching || !cases}
-        onClick={() => void run()}
-        data-testid="studio-battle-run"
-      >
-        {launching ? "Starting…" : "Battle on cases"}
-      </Button>
+        <Button
+          variant={keepPrimary ? "outline" : "primary"}
+          icon={<Swords />}
+          disabled={!challengerReady || launching}
+          onClick={() => void run()}
+          data-testid="studio-battle-run"
+        >
+          {launching ? "Starting…" : runId ? "Run again" : "Run battle"}
+        </Button>
+      </TabHead>
       {launchError ? (
         <ErrorNotice size="inline" title="The battle did not start" error={launchError} operation="Battle on cases" />
       ) : null}
       {runId ? (
         <>
-          <TestRunPanel
-            key={runId}
-            runId={runId}
-            cases={cases?.map(toCaseView) ?? []}
-            declarations={[]}
-            seat="user"
-            onOpenRun={setRunId}
-            onSettled={readResults}
-            stacked
-          />
-          {results.length > 0 ? (
+          {results.length === 0 ? (
+            <Waiting text="Running the battle" />
+          ) : (
             <BattleOutcome
               results={results}
-              cases={cases ?? []}
+              cases={cases}
+              setups={setups}
               labelOf={labelOf}
               runId={runId}
-              score={score}
+              verdict={verdict}
+              footer={
+                canKeep ? (
+                  <Button
+                    variant={keepPrimary ? "primary" : "outline"}
+                    icon={<Check />}
+                    disabled={keeping || kept}
+                    onClick={() => void keep()}
+                    data-testid="studio-battle-keep"
+                  >
+                    {keepLabel({ kept, keeping, won: verdict.keepIsPrimary })}
+                  </Button>
+                ) : null
+              }
             />
-          ) : null}
-          {score.settled && challenger === "candidate" && candidate ? (
-            <Button
-              variant={score.winner === "candidate" ? "primary" : "outline"}
-              icon={<Check />}
-              disabled={keeping || kept}
-              onClick={() => void keep()}
-              data-testid="studio-battle-keep"
-            >
-              {kept ? "Kept" : keeping ? "Keeping…" : "Keep candidate"}
-            </Button>
-          ) : null}
+          )}
+          <Button variant="quiet" onClick={() => setDetailOpen(!showRunView)} data-testid="studio-battle-run-view-toggle">
+            {showRunView ? "Hide the run" : "Show the run"}
+          </Button>
+          <div className={showRunView ? undefined : "hidden"}>
+            <TestRunPanel
+              key={runId}
+              runId={runId}
+              cases={cases.map(toCaseView)}
+              declarations={[]}
+              seat="user"
+              onOpenRun={setRunId}
+              onSettled={readResults}
+              stacked
+            />
+          </div>
         </>
       ) : null}
     </div>
@@ -278,15 +322,19 @@ export function StudioBattle({
 function BattleOutcome({
   results,
   cases,
+  setups,
   labelOf,
   runId,
-  score,
+  verdict,
+  footer,
 }: {
   results: TestResultView[];
   cases: TestCaseRow[];
+  setups: RunSetupBody[];
   labelOf: (key: string) => string;
   runId: string;
-  score: ReturnType<typeof battleScore>;
+  verdict: ReturnType<typeof battleVerdict>;
+  footer: React.ReactNode;
 }) {
   const userId = useAppSelector(selectUserId);
   const [votes, setVotes] = useState<Record<string, FeedbackRating>>({});
@@ -306,34 +354,37 @@ function BattleOutcome({
       toast.error("The vote did not save", { description: e instanceof Error ? e.message : String(e) });
     }
   };
+  const shown = results.filter((r) => r.door !== "parity");
+  const caseIds = [...new Set(shown.map((r) => r.caseId))];
   const caseLabel = (id: string) => cases.find((c) => c.id === id)?.label || "Case";
   return (
     <div className="flex flex-col gap-1.5" data-testid="studio-battle-outcome">
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        {score.scores.map((s) => (
-          <Badge key={s.key} tone={score.winner === s.key ? "success" : "neutral"}>
-            {labelOf(s.key)} {s.pass}/{s.pass + s.fail + s.other + s.pending}
-          </Badge>
-        ))}
-        <span className="text-muted-foreground" data-testid="studio-battle-winner">
-          {!score.settled ? "Running" : score.winner ? `${labelOf(score.winner)} wins` : "Tie"}
-        </span>
-      </div>
-      <ul className="flex flex-col gap-1">
-        {results
-          .filter((r) => r.door !== "parity")
-          .map((r) => {
+      <ResultCard tone={verdict.tone === "neutral" ? undefined : verdict.tone}>
+        <div className="flex items-center gap-2">
+          <span className="min-w-0 flex-1 text-sm font-medium text-foreground" data-testid="studio-battle-winner">
+            {verdict.line}
+          </span>
+          {footer}
+        </div>
+      </ResultCard>
+      {caseIds.map((id) => (
+        <ResultCard key={id} data-testid="studio-battle-case">
+          <span className="truncate font-medium text-foreground">{caseLabel(id)}</span>
+          {setups.map((setup) => {
+            const r = shown.find((x) => x.caseId === id && x.setupKey === setup.key);
+            if (!r) return null;
             const meta = r.verdict ? VERDICT_META[r.verdict] : null;
             const mine = votes[r.id];
             return (
-              <li key={r.id} className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-xs">
-                <span className="min-w-0 flex-1 truncate text-foreground">{caseLabel(r.caseId)}</span>
-                <span className="shrink-0 text-muted-foreground">{labelOf(r.setupKey)}</span>
-                {meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : null}
+              <div key={r.id} className="flex h-7 items-center gap-1.5">
+                <span className="w-20 shrink-0 truncate text-muted-foreground">{labelOf(r.setupKey)}</span>
+                <span className="min-w-0 flex-1">
+                  {meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : <ShimmerText text="Judging" />}
+                </span>
                 <Button
                   variant="quiet"
                   icon={<ThumbsUp className={mine === "up" ? "text-primary" : undefined} />}
-                  aria-label="Good answer"
+                  aria-label={`Good answer, ${labelOf(r.setupKey)}`}
                   aria-pressed={mine === "up"}
                   disabled={!r.conversationId}
                   onClick={() => void vote(r, "up")}
@@ -341,16 +392,16 @@ function BattleOutcome({
                 <Button
                   variant="quiet"
                   icon={<ThumbsDown className={mine === "down" ? "text-destructive" : undefined} />}
-                  aria-label="Bad answer"
+                  aria-label={`Bad answer, ${labelOf(r.setupKey)}`}
                   aria-pressed={mine === "down"}
                   disabled={!r.conversationId}
                   onClick={() => void vote(r, "down")}
                 />
-              </li>
+              </div>
             );
           })}
-      </ul>
+        </ResultCard>
+      ))}
     </div>
   );
 }
-

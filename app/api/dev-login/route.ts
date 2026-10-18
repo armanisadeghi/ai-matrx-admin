@@ -390,6 +390,20 @@ async function signIn(request: NextRequest): Promise<NextResponse> {
   if (user) {
     const same =
       (user.email ?? "").trim().toLowerCase() === email.trim().toLowerCase();
+    // 🚨 A LIVE SESSION FOR THE SAME ACCOUNT IS REUSED, NEVER RE-SIGNED (2026-10-17).
+    // Every fresh password sign-in spends the auth host's per-IP sign-in budget; with ~10 test
+    // seats on this machine, re-signing an already signed-in seat on every handshake pushed it
+    // into 429 and tests rendered signed-out. The 2026-10-10 rule still holds — a session the
+    // SERVER revoked must not survive (local claims cannot tell) — so the server is asked first
+    // (getUser: a user lookup, not a sign-in) and only a dead session is replaced.
+    if (same) {
+      const live = await supabase.auth.getUser().catch(() => null);
+      const liveEmail = (live?.data?.user?.email ?? "").trim().toLowerCase();
+      if (!live?.error && liveEmail === email.trim().toLowerCase()) {
+        console.warn(`[dev-login] reusing the live session for ${email} (no new sign-in)`);
+        return authenticatedRedirect();
+      }
+    }
     console.warn(
       same
         ? `[dev-login] renewing the existing session for ${email}`

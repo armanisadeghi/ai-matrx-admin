@@ -4,7 +4,8 @@
 // Start support session (the existing dialog), and the feedback they filed
 // (users.user_feedback by user_id) — each row opens its record in the feedback console.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRecordLoad } from "./useRecordLoad";
 import { LifeBuoy, MessageSquareWarning } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
@@ -70,27 +71,11 @@ const FEEDBACK_COLUMNS: MatrxColumnDef<FeedbackRow>[] = [
 export function UserSupportTab({ userId, overview, reload }: UserTabBodyProps) {
   const [target, setTarget] = useState<SupportSessionTarget | null>(null);
   const [sessionsKey, setSessionsKey] = useState(0);
-  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<unknown>(null);
   const [version, setVersion] = useState(0);
   const contactable = Boolean(overview.identity.email) && !overview.identity.is_anonymous;
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    listFeedbackBy(userId)
-      .then((rows) => {
-        if (!alive) return;
-        setFeedback(rows);
-        setError(null);
-      })
-      .catch((e: unknown) => alive && setError(e))
-      .finally(() => alive && setLoading(false));
-    return () => {
-      alive = false;
-    };
-  }, [userId, version]);
+  const { data: feedbackData, loading, error } = useRecordLoad(listFeedbackBy, userId, version);
+  const feedback = feedbackData ?? [];
 
   return (
     <div className="flex flex-col gap-5" data-testid="user-support-tab">

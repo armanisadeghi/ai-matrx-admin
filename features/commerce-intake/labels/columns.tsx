@@ -120,7 +120,7 @@ export const LABEL_BATCH_COLUMNS: EntityColumnSpec<LabelBatchListRow>[] = [
       id: "printed_at",
       accessorKey: "printed_at",
       header: "Printed",
-      filter: false,
+      filter: "date",
       cell: (row) =>
         row.printed_at ? timeCell(row.printed_at) : <Muted>—</Muted>,
     },
@@ -132,7 +132,7 @@ export const LABEL_BATCH_COLUMNS: EntityColumnSpec<LabelBatchListRow>[] = [
       id: "created_at",
       accessorKey: "created_at",
       header: "Created",
-      filter: false,
+      filter: "date",
       cell: (row) => timeCell(row.created_at),
     },
   },

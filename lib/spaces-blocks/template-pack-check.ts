@@ -255,8 +255,15 @@ const LOOK_READERS: Record<string, { reads: (v: unknown) => boolean; shape: stri
 /** Every sample value of a column wearing a design look is one the look can draw; a per-row ground names a real row. */
 function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, says: string) => void) {
   const fields = (t.fields ?? []) as Array<{ key: string; look?: { id: string; options?: Record<string, unknown> } }>;
-  const titleKey = (t as { titleField?: string }).titleField;
-  const names = new Set((t.rows ?? []).map((r) => String((r.values as Record<string, unknown>)?.[titleKey ?? ""] ?? "")));
+  // A row is named by the table's title field, else a column keyed `name` (the section card's own fallback).
+  const titleField = (t as { titleField?: string }).titleField;
+  const nameKey = titleField && fields.some((x) => x.key === titleField) ? titleField : fields.some((x) => x.key === "name") ? "name" : null;
+  const nameOf = (r: (typeof t.rows)[number]) => {
+    const v = nameKey ? (r.values as Record<string, unknown>)?.[nameKey] : undefined;
+    return typeof v === "string" ? v.trim() : "";
+  };
+  const counts = new Map<string, number>();
+  for (const r of t.rows ?? []) if (nameOf(r)) counts.set(nameOf(r), (counts.get(nameOf(r)) ?? 0) + 1);
   for (const f of fields) {
     const look = f.look;
     if (!look) continue;
@@ -273,10 +280,19 @@ function checkLookValues(t: TemplateSpec["tables"][number], say: (at: string, sa
       say(`${at}.options.contrastWith.readsOnField`, `"${String(on)}" is not a field of "${t.token}"; name the text column that says which row each colour is read on.`);
       continue;
     }
+    if (!nameKey) {
+      say(`spec.tables (${t.token}).titleField`, `"${on}" names rows by their name, but "${t.token}" has no title field and no "name" column; give it a titleField.`);
+      continue;
+    }
+    // Rows are found by name: two rows of one name make "read on X" ambiguous.
+    for (const [name, n] of counts) if (n > 1) say(`spec.tables (${t.token}).rows`, `${n} rows are named "${name}"; "${on}" finds a row by its name, so each name is used once.`);
     (t.rows ?? []).forEach((r, i) => {
-      const ground = (r.values as Record<string, unknown>)?.[on];
-      if (typeof ground === "string" && ground.trim() && !names.has(ground))
-        say(`spec.tables (${t.token}).rows[${i}].values.${on}`, `No row is named "${ground}"; a colour is read on another row of this table, by its name.`);
+      const raw = (r.values as Record<string, unknown>)?.[on];
+      const ground = typeof raw === "string" ? raw.trim() : "";
+      if (!ground) return;
+      const where = `spec.tables (${t.token}).rows[${i}].values.${on}`;
+      if (ground === nameOf(r)) say(where, `"${ground}" is read on itself; name the row it sits on, or leave it empty.`);
+      else if (!counts.has(ground)) say(where, `No row is named "${ground}"; a colour is read on another row of this table, by its name.`);
     });
   }
 }

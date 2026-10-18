@@ -185,18 +185,9 @@ interface KeptSourceFilterable {
   in(column: string, values: string[]): this;
   or(filters: string): this;
   gte(column: string, value: string): this;
+  lt(column: string, value: string): this;
   is(column: string, value: null): this;
 }
-
-/** The Captured column's relative buckets, in the same words the header offers. */
-const DATE_BUCKET_MS: Record<string, number> = {
-  "1h": 3600_000,
-  "24h": 86_400_000,
-  "7d": 7 * 86_400_000,
-  "30d": 30 * 86_400_000,
-  "90d": 90 * 86_400_000,
-  "1y": 365 * 86_400_000,
-};
 
 function applyFilters<Q extends KeptSourceFilterable>(
   q: Q,
@@ -214,14 +205,10 @@ function applyFilters<Q extends KeptSourceFilterable>(
     if (f.kind === "select" && f.values.length > 0) {
       if (id === "lane_label") q = q.in("approach_key", f.values);
       else if (id === "medium") q = q.in("medium", f.values);
-      else if (id === "captured_at") {
-        // Relative buckets; the widest selection wins, so a multi-select that
-        // slipped through still narrows to something a person asked for.
-        const widest = Math.max(...f.values.map((v) => DATE_BUCKET_MS[v] ?? 0));
-        if (widest > 0) {
-          q = q.gte("captured_at", new Date(Date.now() - widest).toISOString());
-        }
-      }
+    } else if (f.kind === "date" && id === "captured_at") {
+      // The table's date range: since inclusive, until exclusive.
+      if (f.since) q = q.gte("captured_at", f.since);
+      if (f.until) q = q.lt("captured_at", f.until);
     }
   }
   return q;

@@ -82,6 +82,7 @@ const DEFAULT_PRIMARY_COUNT = 2;
  * card face.
  */
 function isDateColumn<TRow>(spec: EntityColumnSpec<TRow>): boolean {
+  if (spec.column.filter === "date") return true;
   const options = spec.column.filterOptions;
   if (!options?.length) return false;
   const buckets = new Set(DATE_FILTER_OPTIONS.map((o) => o.value));

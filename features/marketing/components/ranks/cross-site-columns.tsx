@@ -239,6 +239,7 @@ export const CROSS_SITE_RANK_COLUMNS: EntityColumnSpec<CrossSiteRankRow>[] = [
       id: "last_checked_at",
       accessorKey: "last_checked_at",
       header: "Last checked",
+      // Stays a select: the shared date filter has no "no date" choice, and "Never checked" needs one.
       filter: "select",
       filterOptions: LAST_CHECKED_FILTER_OPTIONS,
       cell: (row) => (
@@ -273,8 +274,7 @@ export const CROSS_SITE_RANK_COLUMNS: EntityColumnSpec<CrossSiteRankRow>[] = [
       id: "created_at",
       accessorKey: "created_at",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       cell: (row) => (
         <span className="whitespace-nowrap text-xs text-muted-foreground">
           {formatCompactDate(row.created_at)}

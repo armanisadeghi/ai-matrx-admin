@@ -1,4 +1,5 @@
 "use client";
+import { FullScreenPortal } from "../FullScreenPortal";
 import React, { useEffect, useRef, useState } from "react";
 import { BookOpen, X, Zap } from "lucide-react";
 import ChatCollapsibleWrapper from "@ai-matrx/rich-content/display/blocks/ChatCollapsibleWrapper";
@@ -184,6 +185,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
   if (isFullscreen) {
     return (
       <>
+        <FullScreenPortal active>
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-border bg-background/50 p-3">
@@ -262,6 +264,7 @@ const FlashcardsBlock: React.FC<FlashcardsBlockProps> = ({
             )}
           </div>
         </div>
+        </FullScreenPortal>
 
         <PrintOptionsDialog
           printer={flashcardsPrinter}

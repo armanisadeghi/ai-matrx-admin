@@ -37,8 +37,7 @@ export function offendersFrom(entry: string): string[] {
   const seen = new Set<string>();
   const offenders: string[] = [];
   const queue = [entry];
-  while (queue.length) {
-    const file = queue.pop()!;
+  for (let file = queue.pop(); file !== undefined; file = queue.pop()) {
     if (seen.has(file)) continue;
     seen.add(file);
     const src = fs.readFileSync(file, "utf8");

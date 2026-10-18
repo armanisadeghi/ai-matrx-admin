@@ -58,6 +58,9 @@ export interface ConnectedBrowseRequest {
     kinds?: string[];
     container_id?: string | null;
     ids?: string[];
+    /** The table's date range on "When": modified_after inclusive, modified_before exclusive (ISO). */
+    modified_after?: string | null;
+    modified_before?: string | null;
   };
   limit?: number;
   offset?: number;

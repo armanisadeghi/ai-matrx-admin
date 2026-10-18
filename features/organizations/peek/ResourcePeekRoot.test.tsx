@@ -10,9 +10,9 @@ jest.mock("next/dynamic", () => ({
   },
 }));
 
-describe("ResourcePeekHost", () => {
-  it("loads the peek host as a renderable component", async () => {
-    await import("./ResourcePeekHost");
+describe("ResourcePeekRoot", () => {
+  it("loads the peek stack as a renderable component through its one lazy edge", async () => {
+    await import("./ResourcePeekRoot");
 
     expect(capturedLoader).toBeDefined();
     const loaded = await capturedLoader!();
@@ -21,5 +21,13 @@ describe("ResourcePeekHost", () => {
     // silently discarded by the production lazy boundary, leaving every
     // EntityRef Quick look control visibly clickable but inert.
     expect(typeof (loaded as ComponentType)).toBe("function");
+  });
+
+  it("the declarative ResourcePeekHost has no lazy edge of its own", async () => {
+    capturedLoader = undefined;
+    jest.isolateModules(() => {
+      require("./ResourcePeekHost");
+    });
+    expect(capturedLoader).toBeUndefined();
   });
 });

@@ -125,6 +125,7 @@ export const INITIATIVE_COLUMNS: EntityColumnSpec<InitiativeListRow>[] = [
       id: "starts_on",
       accessorKey: "starts_on",
       header: "Starts",
+      // Day column: stays on day buckets; the date filter sends instants with no time zone to read a calendar day by.
       filter: "select",
       filterOptions: DATE_FILTER_OPTIONS,
       cell: (r) =>
@@ -142,6 +143,7 @@ export const INITIATIVE_COLUMNS: EntityColumnSpec<InitiativeListRow>[] = [
       id: "ends_on",
       accessorKey: "ends_on",
       header: "Ends",
+      // Day column: stays on day buckets; the date filter sends instants with no time zone to read a calendar day by.
       filter: "select",
       filterOptions: DATE_FILTER_OPTIONS,
       cell: (r) =>
@@ -198,8 +200,7 @@ export const INITIATIVE_COLUMNS: EntityColumnSpec<InitiativeListRow>[] = [
       id: "updated_at",
       accessorKey: "updated_at",
       header: "Updated",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       cell: (r) => timeCell(r.updated_at),
     },
   },
@@ -211,8 +212,7 @@ export const INITIATIVE_COLUMNS: EntityColumnSpec<InitiativeListRow>[] = [
       id: "created_at",
       accessorKey: "created_at",
       header: "Created",
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      filter: "date",
       cell: (r) => timeCell(r.created_at),
     },
   },

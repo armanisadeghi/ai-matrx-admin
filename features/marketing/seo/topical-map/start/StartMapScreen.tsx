@@ -393,6 +393,7 @@ export function StartMapScreen({
               value={researchTopicId}
               onChange={setResearchTopicId}
               organizationId={brand.organizationId}
+              brandId={brand.id}
               triggerClassName="h-9 w-full sm:w-80 text-sm"
             />
           </div>

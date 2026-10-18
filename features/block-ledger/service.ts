@@ -69,6 +69,13 @@ function applyFilters(builder: Query, query: EntityListQuery): Query {
     const values = selectedValues(query, id);
     if (values) next = next.in(id, values) as Query;
   }
+  // Date columns: the table's date range, since inclusive, until exclusive (a block with no moment is out).
+  for (const id of ["first_seen_at", "last_seen_at"]) {
+    const window = query.filters[id];
+    if (!window || window.kind !== "date") continue;
+    if (window.since) next = next.gte(id, window.since) as Query;
+    if (window.until) next = next.lt(id, window.until) as Query;
+  }
   const search = query.search.trim();
   if (search) {
     // The three things a person actually types: the address, its name, and a

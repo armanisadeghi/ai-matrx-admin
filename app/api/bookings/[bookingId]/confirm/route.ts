@@ -16,7 +16,11 @@
 
 import { NextResponse } from "next/server";
 
+<<<<<<< origin/main
 import { bucketFor, confirmBooking, publicBooking, recordSmsConsent } from "@/features/booking/service";
+=======
+import { bucketFor, confirmBooking, publicBooking } from "@/features/booking/service";
+>>>>>>> HEAD
 import { checkoutIfAsked } from "@/features/payments/server";
 import { typedAnswersFor } from "@ai-matrx/records/forms";
 
@@ -101,6 +105,7 @@ export async function POST(
       clientKey: typeof body.clientKey === "string" ? body.clientKey : null,
     });
     const done = outcome.state === "booked" || outcome.state === "held";
+<<<<<<< origin/main
     // TEXT REMINDERS, only when the booker ticked the box. The booking is already real: a refusal here
     // (a number that is not a number) is SAID, never a reason the booking failed.
     let sms: { recorded: boolean; say?: string } | null = null;
@@ -113,6 +118,8 @@ export async function POST(
           say: `You are booked, but text reminders were not set up: ${thrown instanceof Error ? thrown.message : "the store refused."}`,
         }));
     }
+=======
+>>>>>>> HEAD
     // PAYMENTS-CONNECT: a booking page that asks for payment sends the booker to Stripe Checkout
     // on the organization's own account right after the slot is confirmed; the booking record
     // says Unpaid until Stripe says paid (hold-until-paid is a store change, not built yet).
@@ -132,7 +139,10 @@ export async function POST(
         booking_ref: outcome.booking_ref,
         slot_at: outcome.slot_at,
         message: outcome.message,
+<<<<<<< origin/main
         ...(sms ? { sms } : {}),
+=======
+>>>>>>> HEAD
         ...(payment && "url" in payment ? { payment_url: payment.url } : {}),
         ...(payment && "refused" in payment ? { payment_refused: payment.refused } : {}),
       },

@@ -1,5 +1,6 @@
 "use client";
 
+import { FullScreenPortal } from "../FullScreenPortal";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
 import { comparisonToMarkdown } from "@/features/rich-content-host/block-note-markdown";
@@ -545,7 +546,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
   };
 
   return (
-    <>
+    <FullScreenPortal active={isFullScreen}>
       {isFullScreen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
@@ -987,7 +988,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
           </div>
         </div>
       </div>
-    </>
+    </FullScreenPortal>
   );
 };
 

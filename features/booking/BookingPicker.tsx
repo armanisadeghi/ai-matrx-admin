@@ -42,8 +42,11 @@ interface ConfirmAnswer {
   message?: string | null;
   /** PAYMENTS-CONNECT: Stripe Checkout on the organization's own account, when the page asks for payment. */
   payment_url?: string | null;
+<<<<<<< origin/main
   /** BOOKING-NOTIFY: how "Text me reminders" went; `say` is present only when it did not. */
   sms?: { recorded: boolean; say?: string } | null;
+=======
+>>>>>>> HEAD
 }
 
 /** THE WORDS A BOOKER IS SHOWN BESIDE "Text me reminders", and the exact words stored as their consent. */

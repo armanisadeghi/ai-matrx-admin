@@ -85,7 +85,7 @@ function sortWordsFor<TRow>(c: EntityColumnSpec<TRow>): {
   if (marker === "favorite")
     return { asc: "Favorites last", desc: "Favorites first" };
   if (marker === "pin") return { asc: "Pins last", desc: "Pins first" };
-  if (c.column.filterOptions === DATE_FILTER_OPTIONS) return DATE_SORT_WORDS;
+  if (c.column.filter === "date" || c.column.filterOptions === DATE_FILTER_OPTIONS) return DATE_SORT_WORDS;
   return { asc: "A→Z", desc: "Z→A" };
 }
 
