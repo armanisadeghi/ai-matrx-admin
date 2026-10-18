@@ -154,7 +154,7 @@ function selfTest() {
     console.error(`check:spaces-fence self-test FAILED\n  ${failures.join("\n  ")}`);
     process.exit(1);
   }
-  console.log("check:spaces-fence self-test passed (18 cases: planted violations fail, clean cases pass)");
+  console.log("check:spaces-fence self-test passed (20 cases: planted violations fail, clean cases pass)");
 }
 
 if (process.argv.includes("--self-test")) {
