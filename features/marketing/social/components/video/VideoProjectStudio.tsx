@@ -11,6 +11,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Clapperboard, Film, Layers, Palette, Type } from "lucide-react";
@@ -50,6 +51,12 @@ import { useSocials } from "../SocialsContext";
 import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
 import { mediaLabel } from "./VideoCloneNew";
 import { useQuery } from "@tanstack/react-query";
+
+/** The timeline editor loads only when the person opens the Timeline view (heavy: the editor + its player). */
+const TimelinePanel = dynamic(() => import("./TimelinePanel").then((m) => m.TimelinePanel), {
+  ssr: false,
+  loading: () => <RegionSkeleton shape="form" count={4} aria-label="Loading timeline" />,
+});
 
 const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
   { value: "9:16", label: "9:16" },
@@ -241,6 +248,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
   const [confirm, setConfirm] = useState<null | { kind: "render" | "variants" | "generate"; ids?: string[] }>(null);
   const [failure, setFailure] = useState<unknown>(null);
   const variants = useProjectVariants(projectId);
+  const [view, setView] = useState<"studio" | "timeline">(params.get("view") === "timeline" ? "timeline" : "studio");
 
   const pending = pendingMediaCount(doc);
   const estimate = useQuery({
@@ -388,10 +396,22 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
 
   const headOut = outcome[HEAD_ITEM];
   const busy = running !== null || saving;
+  const timelineView = view === "timeline";
   return (
-    <div className="grid min-h-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]">
+    <div className="flex min-h-0 flex-col gap-3">
+    <SegmentedControl
+      aria-label="View"
+      value={view}
+      onValueChange={(v) => setView(v as "studio" | "timeline")}
+      data={[
+        { value: "studio", label: "Studio" },
+        { value: "timeline", label: "Timeline" },
+      ]}
+    />
+    {timelineView ? <TimelinePanel doc={doc} disabled={running !== null} onOps={(ops, note) => patch(ops, note)} /> : null}
+    <div className={cn("grid min-h-0 grid-cols-1 gap-4", !timelineView && "lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]")}>
       <section className="flex min-w-0 flex-col gap-3">
-        <CompositionPreview doc={doc} className="mx-auto w-full max-w-[22rem]" />
+        {timelineView ? null : <CompositionPreview doc={doc} className="mx-auto w-full max-w-[22rem]" />}
         <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
           <div className="flex items-center gap-2">
             <span className="type-label text-foreground">Make it</span>
@@ -466,7 +486,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
         <Outputs answer={answer} busy={busy} onRenderAgain={() => void runBatch("render", [], false)} />
       </section>
 
-      <section className="flex min-w-0 flex-col gap-4">
+      {timelineView ? null : <section className="flex min-w-0 flex-col gap-4">
         <Block title="Script" icon={<Type className="size-4" />}>
           <ScriptEditor doc={doc} disabled={busy} onOps={(ops, note, what) => void patch(ops, note, what)} />
         </Block>
@@ -510,7 +530,8 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             onCreated={() => void variants.refetch()}
           />
         </Block>
-      </section>
+      </section>}
+    </div>
     </div>
   );
 }
