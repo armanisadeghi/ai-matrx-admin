@@ -86,3 +86,8 @@ export async function fetchPostWords(postId: string, o: CallOptions): Promise<Po
 export async function listPostVideoMedia(postId: string, o: CallOptions): Promise<PostVideoMedia[]> {
   return (await getJson<PostVideoMedia[]>(`/social/posts/${postId}/media`, opts(o))).data;
 }
+
+/** Make a video the person uploaded the reference post's stored video (used when the platform refuses our download). */
+export async function attachReferenceVideo(postId: string, fileId: string, o: CallOptions): Promise<void> {
+  await postJson<{ post_id: string; file_id: string }>(`/social/posts/${postId}/video-upload`, { file_id: fileId }, opts(o));
+}

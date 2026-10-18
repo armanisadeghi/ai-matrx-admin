@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 
 import {
   analyzeReference,
+  VideoStreamError,
   dollars,
   fetchTeleprompter,
   points,
@@ -43,11 +44,12 @@ import {
   type TeleprompterAnswer,
 } from "../../video/clone";
 import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
-import { createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
+import { attachReferenceVideo, createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
 import { useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
 import { cutText, nameFromCaption } from "../../video/text";
+import { useExpiredSessionGuard } from "../../video/session";
 import { uploadBriefFile } from "../../video/upload";
 import { confirmLine, estimateLabel, perSecondLine, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
@@ -81,6 +83,7 @@ export function mediaLabel(id: string): string {
 
 export function VideoCloneNew() {
   const params = useSearchParams();
+  useExpiredSessionGuard();
   const postId = params.get("post");
   const wantVariants = params.get("variants") === "3";
   const [projectId, setProjectId] = useState<string | null>(params.get("project"));
@@ -167,7 +170,28 @@ function ReferencePanel({ postId }: { postId: string }) {
     }
   }, [costKey]);
 
+  // The platform refused the download: the person's own file of that video carries on from here.
+  const [refused, setRefused] = useState(false);
+  const uploadReference = async (files: FileList | null) => {
+    const f = files?.[0];
+    if (!f) return;
+    setBusy(true);
+    setSteps([{ id: "ref-upload", label: "Uploading your file", state: "running" }]);
+    try {
+      const made = await uploadBriefFile(f, "Video/References");
+      await attachReferenceVideo(postId, made.fileId, { organizationId });
+      setRefused(false);
+      setBusy(false);
+      await queryClient.invalidateQueries({ queryKey: ["marketing", "social", "video", "post-media", postId] });
+      await analyze();
+    } catch (err) {
+      setSteps([{ id: "err", label: err instanceof Error ? err.message : "That upload didn't work", state: "failed" }]);
+      setBusy(false);
+    }
+  };
+
   const analyze = async () => {
+    setRefused(false);
     setBusy(true);
     setSteps([{ id: "start", label: "Starting analysis", state: "running" }]);
     try {
@@ -190,6 +214,7 @@ function ReferencePanel({ postId }: { postId: string }) {
         queryClient.invalidateQueries({ queryKey: ["marketing", "social", "video", "post-media", postId] }),
       ]);
     } catch (err) {
+      setRefused(err instanceof VideoStreamError && (err.code === "download_refused" || /upload the video file/i.test(err.message)));
       setSteps((prev) => [...closeSteps(prev, "failed"), { id: "err", label: err instanceof Error ? err.message : "Analysis failed", state: "failed" }]);
     } finally {
       setBusy(false);
@@ -232,6 +257,14 @@ function ReferencePanel({ postId }: { postId: string }) {
               Analyze
             </Button>
           </div>
+          {refused ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <FilePickButton accept="video/*" icon={<Upload />} disabled={busy} onFiles={(f) => void uploadReference(f)}>
+                Upload the video file
+              </FilePickButton>
+              <span className="type-meta text-muted-foreground">Then it is analyzed from your file</span>
+            </div>
+          ) : null}
           <span className="type-meta text-muted-foreground">Uses AI points · usually a few cents</span>
           <RunLog steps={steps} />
         </div>
