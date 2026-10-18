@@ -52,6 +52,7 @@ import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surf
 import { STUDIO_PANE_MIN_PX, STUDIO_SIDE_MIN_PX, studioLayoutFor } from "../studio-layout";
 import { studioStage } from "../studio-stage";
 import { useMeasuredWidth } from "../use-width";
+import { useStudioUnsavedEdits } from "../unsaved-edits";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
 import { getFactoryBuild } from "@/features/agents/factory/service";
@@ -117,8 +118,19 @@ export function AgentStudioPage() {
   const state = readStudioState(new URLSearchParams(params.toString()));
   // Patches the URL as it stands NOW: the assistant's and the agent's conversations both report
   // their ids asynchronously, and a patch built on a render's stale state dropped the other's.
-  const go = (patch: Partial<StudioState>) =>
-    router.replace(studioHref({ ...readStudioState(new URLSearchParams(window.location.search)), ...patch }));
+  // Patches made before the last replace has landed stack on it (`pendingUrl`): the build's end
+  // patches the agent while a conversation id is still settling, and reading `window.location`
+  // between the two dropped the agent — Describe stayed on "Build" until a reload (2026-10-18).
+  const pendingUrl = useRef<StudioState | null>(null);
+  const paramsKey = params.toString();
+  useEffect(() => {
+    pendingUrl.current = null;
+  }, [paramsKey]);
+  const go = (patch: Partial<StudioState>) => {
+    const next = { ...(pendingUrl.current ?? readStudioState(new URLSearchParams(window.location.search))), ...patch };
+    pendingUrl.current = next;
+    router.replace(studioHref(next));
+  };
   const mode = studioMode(state.mode);
   const planPatch = { planId: state.planId, planStep: state.planStep };
   if (!mode) {
@@ -316,21 +328,30 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     ...(state.buildId ? { build_id: state.buildId } : {}),
   });
 
-  /** One turn into the assistant's conversation (feedback from the controls), through the mandate. */
-  const sendToAssistant = async (text: string) => {
-    if (!state.chatId) {
-      toast.error("Say something to the assistant first");
+  /**
+   * One turn into the assistant's conversation (feedback from the controls), through the mandate.
+   * Never drops the text: with no chat yet it goes into the conversation the assistant pane already
+   * has open (its first send puts it in the URL), or starts one. True only once the turn started.
+   */
+  const sendToAssistant = async (text: string): Promise<boolean> => {
+    const conversationId = state.chatId ?? openChat ?? undefined;
+    try {
+      const launched = await launchMandate(ASSISTANT_MANDATE, {
+        initiation: "user",
+        ...(conversationId ? { conversationId } : {}),
+        surfaceKey: ASSISTANT_SURFACE,
+        sourceFeature: "agent-studio",
+        config: { displayMode: "direct", autoRun: true, allowChat: true },
+        runtime: { userInput: text, variables: assistantVariables(), surfaceName: STUDIO_SURFACE_NAME },
+      });
+      const started = conversationId ?? launched.conversationId;
+      if (!started) throw new Error("The assistant did not open a conversation");
+      if (started !== state.chatId) go({ chatId: started });
+      return true;
+    } catch (e) {
+      toast.error("The assistant did not get your message", { description: e instanceof Error ? e.message : String(e) });
       return false;
     }
-    await launchMandate(ASSISTANT_MANDATE, {
-      initiation: "user",
-      conversationId: state.chatId,
-      surfaceKey: ASSISTANT_SURFACE,
-      sourceFeature: "agent-studio",
-      config: { displayMode: "direct", autoRun: true, allowChat: true },
-      runtime: { userInput: text, variables: assistantVariables(), surfaceName: STUDIO_SURFACE_NAME },
-    });
-    return true;
   };
 
   /** The latest answer that actually came back — never a refused or failed turn. */
@@ -341,6 +362,9 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     for (const id of ids) byId[id] = selectMessageById(chatId, id)(s) as StudioMessageRecord | undefined;
     return approvedAnswerFrom(ids, byId);
   };
+
+  // Applied-but-unsaved edits to the agent live on the assistant's conversation and come back on reload.
+  useStudioUnsavedEdits(state.agentId, state.chatId);
 
   const { ws, edit } = useStudioWorkspace(state.chatId ?? null);
   useStudioBuilderFeed(state.chatId ?? null, ws);
@@ -562,11 +586,12 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     <StudioControls
       agentId={state.agentId}
       runConversationId={runConversation}
-      onFeedback={(text) => {
-        void sendToAssistant(text);
+      onFeedback={async (text) => {
+        const sent = await sendToAssistant(text);
         // The reply comes in the assistant's chat: bring it into view where the layout hides it.
-        if (layout === "two") setSide("assistant");
-        if (layout === "tabs") setPaneTab("assistant");
+        if (sent && layout === "two") setSide("assistant");
+        if (sent && layout === "tabs") setPaneTab("assistant");
+        return sent;
       }}
       onSaved={runAgain}
       onUseCase={runCase}

@@ -67,7 +67,7 @@ interface StudioControlsProps {
   /** The center's current run (Debrief reads its latest answer). */
   runConversationId: string | null;
   /** Send words to the assistant on the left (feedback on the process). */
-  onFeedback: (text: string) => void;
+  onFeedback: (text: string) => Promise<boolean>;
   /** After a save: run the agent again, fresh. */
   onSaved: () => void;
   /** Run one of the agent's test cases, fresh, in the center. */
@@ -187,11 +187,12 @@ export function StudioControls({
   );
 }
 
-function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeedback: (t: string) => void; onSaved: () => void }) {
+function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeedback: (t: string) => Promise<boolean>; onSaved: () => void }) {
   const dispatch = useAppDispatch();
   const record = useAppSelector((s) => selectAgentById(s, agentId));
   const dirty = useAppSelector((s) => selectAgentIsDirty(s, agentId));
   const [feedback, setFeedback] = useState("");
+  const [sending, setSending] = useState(false);
   const [saving, setSaving] = useState(false);
   if (!record) return <RegionSkeleton />;
 
@@ -210,11 +211,16 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
   const discard = () => {
     for (const field of ["name", "description", "modelId"] as const) dispatch(resetAgentField({ id: agentId, field }));
   };
-  const send = () => {
+  /** The box keeps the text until the turn really started (never drops input). */
+  const send = async () => {
     const text = feedback.trim();
-    if (!text) return;
-    onFeedback(text);
-    setFeedback("");
+    if (!text || sending) return;
+    setSending(true);
+    try {
+      if (await onFeedback(text)) setFeedback((now) => (now.trim() === text ? "" : now));
+    } finally {
+      setSending(false);
+    }
   };
 
   const inputs = (record.variableDefinitions ?? []) as StudioInputDefinition[];
@@ -270,14 +276,14 @@ function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeed
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault();
-                  send();
+                  void send();
                 }
               }}
               minHeight={36}
               autoGrow
               wrapperClassName="min-w-0 flex-1"
             />
-            <Button variant="outline" icon={<Send />} aria-label="Send to the assistant" title="Send to the assistant" disabled={!feedback.trim()} onClick={send} />
+            <Button variant="outline" icon={<Send />} aria-label="Send to the assistant" title="Send to the assistant" disabled={!feedback.trim() || sending} onClick={() => void send()} />
           </div>
         </div>
       </div>
