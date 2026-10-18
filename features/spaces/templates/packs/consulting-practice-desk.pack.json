@@ -1,0 +1,3762 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0458",
+  "version": 1,
+  "title": "Consulting Practice Desk",
+  "description": "Clients, proposals, engagements, deliverables and consultant days for a consulting firm.",
+  "forWho": "Management and operations consulting practices",
+  "icon": {
+    "emoji": "🧭"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "consulting",
+    "engagements",
+    "proposals",
+    "utilization"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-consulting-practice-desk",
+    "catalogueId": "SP0458",
+    "useCase": "Evander Kowalczyk-Adeyemi is a partner and uses this to see which proposals are about to expire, how many days each engagement has used, and which deliverables are still waiting on review.",
+    "industry": "cross_industry",
+    "vertical": "Management consulting practice",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Brackenridge Advisory",
+      "describes": "A five-person management consulting practice helping mid-sized companies improve operations, planning and customer service through fixed-scope engagements.",
+      "address": {
+        "line1": "1200 Halsey Avenue",
+        "city": "Raleigh",
+        "region": "NC",
+        "postalCode": "27601",
+        "country": "US"
+      },
+      "phone": "(919) 555-0183",
+      "website": "brackenridgeadvisory.net",
+      "email": "contact@brackenridgeadvisory.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-consulting-practice-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The organizations the practice advises.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Current",
+              "Past"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Current": "blue",
+              "Past": "amber"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Current": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "industry",
+            "label": "Industry",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Manufacturing",
+              "Healthcare",
+              "Logistics",
+              "Education",
+              "Financial services",
+              "Retail"
+            ],
+            "choiceColors": {
+              "Manufacturing": "slate",
+              "Healthcare": "blue",
+              "Logistics": "amber",
+              "Education": "violet",
+              "Financial services": "teal",
+              "Retail": "orange"
+            }
+          },
+          {
+            "key": "contact_email",
+            "label": "Sponsor email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sponsor",
+            "label": "Executive sponsor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Relationship partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "engagement_count",
+            "label": "Engagements",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "engagements",
+            "pick": "engagement_name",
+            "agg": "count"
+          },
+          {
+            "key": "won_value",
+            "label": "Won proposal value (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "proposals",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "stage": "Won"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_proposal",
+            "label": "New proposal",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "proposal",
+              "template": "New proposal",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_engagement",
+            "label": "New engagement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "engagement",
+              "template": "New engagement",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Their situation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The problem as the sponsor describes it and what has been tried."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Stakeholders"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who sponsors, who decides, who is affected."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "History"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Past work and what they said about it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Tanglewood Medical Supply",
+              "status": "Current",
+              "industry": "Healthcare",
+              "contact_email": "ops@tanglewoodmed.net",
+              "sponsor": "Brigitte Osei-Larsen",
+              "since": "@today-400d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Carbon Ridge Fabrication",
+              "status": "Current",
+              "industry": "Manufacturing",
+              "contact_email": "coo@carbonridgefab.net",
+              "sponsor": "Anselm Whitcombe",
+              "since": "@today-180d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Pellham Freight Lines",
+              "status": "Current",
+              "industry": "Logistics",
+              "contact_email": "strategy@pellhamfreight.net",
+              "sponsor": "Yusuf Delacroix",
+              "since": "@today-90d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Eastlake Community College",
+              "status": "Past",
+              "industry": "Education",
+              "contact_email": "provost@eastlakecc.net",
+              "sponsor": "Marguerite Obuya",
+              "since": "@today-800d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Juniper Row Outfitters",
+              "status": "Prospect",
+              "industry": "Retail",
+              "contact_email": "ceo@juniperrow.net",
+              "sponsor": "Tobias Lindgren",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Summit Bay Credit Union",
+              "status": "Prospect",
+              "industry": "Financial services",
+              "contact_email": "ops@summitbaycu.net",
+              "sponsor": "Philippa Nakamura",
+              "owner": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "proposal",
+        "name": "Proposals",
+        "labelSingular": "Proposal",
+        "labelPlural": "Proposals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-signature",
+        "titleField": "proposal_name",
+        "describes": "Proposals out for decision, with value, chance and decision date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "proposal_name",
+            "label": "Proposal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Negotiating",
+              "Won",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Lost": "red",
+              "Draft": "slate",
+              "Sent": "green",
+              "Negotiating": "blue",
+              "Won": "amber"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Negotiating": "in_progress",
+              "Won": "done",
+              "Lost": "done"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ]
+          },
+          {
+            "key": "chance",
+            "label": "Chance (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "weighted",
+            "label": "Weighted value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Value (USD)} * {Chance (%)} / 100, 0)"
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decide_by",
+            "label": "Decision by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "lead",
+            "label": "Lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_won",
+            "label": "Mark won",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "proposal_mark_won"
+            }
+          },
+          {
+            "key": "btn_mark_lost",
+            "label": "Mark lost",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "proposal_mark_lost"
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Sent",
+              "Negotiating",
+              "Won",
+              "Lost"
+            ],
+            "filled": [
+              "sent_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "sent_on",
+            "decide_by"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New proposal",
+            "values": {
+              "proposal_name": "New proposal",
+              "stage": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The problem"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "In the client's words."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approach and scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Phases, deliverables and what is out of scope."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Team, price and terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who works on it, days sold, fee and payment terms."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "proposal-1",
+            "values": {
+              "proposal_name": "Plant scheduling redesign",
+              "stage": "Won",
+              "value": 96000,
+              "chance": 100,
+              "sent_on": "@today-60d",
+              "decide_by": "@today-40d",
+              "client": "client-2",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "proposal-2",
+            "values": {
+              "proposal_name": "Returns process review",
+              "stage": "Won",
+              "value": 54000,
+              "chance": 100,
+              "sent_on": "@today-120d",
+              "decide_by": "@today-100d",
+              "client": "client-1",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "proposal-3",
+            "values": {
+              "proposal_name": "Depot network study",
+              "stage": "Negotiating",
+              "value": 128000,
+              "chance": 60,
+              "sent_on": "@today-18d",
+              "decide_by": "@today+9d",
+              "client": "client-3",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "proposal-4",
+            "values": {
+              "proposal_name": "Service desk operating model",
+              "stage": "Sent",
+              "value": 72000,
+              "chance": 35,
+              "sent_on": "@today-6d",
+              "decide_by": "@today+14d",
+              "client": "client-6",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "proposal-5",
+            "values": {
+              "proposal_name": "Store ops benchmark",
+              "stage": "Draft",
+              "value": 38000,
+              "chance": 20,
+              "decide_by": "@today+21d",
+              "client": "client-5",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "proposal-6",
+            "values": {
+              "proposal_name": "Enrollment funnel analysis",
+              "stage": "Lost",
+              "value": 46000,
+              "chance": 0,
+              "sent_on": "@today-200d",
+              "decide_by": "@today-170d",
+              "client": "client-4",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "proposal-7",
+            "values": {
+              "proposal_name": "Quarterly business reviews package",
+              "stage": "Sent",
+              "value": 24000,
+              "chance": 50,
+              "sent_on": "@today-4d",
+              "decide_by": "@mon+4d",
+              "client": "client-1",
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "proposal-8",
+            "values": {
+              "proposal_name": "Supplier consolidation",
+              "stage": "Draft",
+              "value": 84000,
+              "chance": 25,
+              "decide_by": "@today+30d",
+              "client": "client-2",
+              "lead": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "engagement",
+        "name": "Engagements",
+        "labelSingular": "Engagement",
+        "labelPlural": "Engagements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "briefcase",
+        "titleField": "engagement_name",
+        "describes": "Work in delivery, with days sold against days used.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "engagement_name",
+            "label": "Engagement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Kickoff",
+              "In delivery",
+              "Final readout",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Kickoff": "slate",
+              "In delivery": "blue",
+              "Final readout": "amber",
+              "Closed": "violet"
+            },
+            "required": true,
+            "default": "Kickoff",
+            "statusGroups": {
+              "Kickoff": "todo",
+              "In delivery": "in_progress",
+              "Final readout": "in_progress",
+              "Closed": "done"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ]
+          },
+          {
+            "key": "days_sold",
+            "label": "Days sold",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "days_logged",
+            "label": "Days used",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "timesheets",
+            "pick": "days",
+            "agg": "sum"
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Days sold} - {Days used}"
+          },
+          {
+            "key": "burn_pct",
+            "label": "Days used (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Days sold} > 0, ROUND({Days used} / {Days sold} * 100, 0), 0)"
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "deliv_total",
+            "label": "Deliverables",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliverables",
+            "pick": "deliverable_name",
+            "agg": "count"
+          },
+          {
+            "key": "deliv_done",
+            "label": "Deliverables sent",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliverables",
+            "pick": "deliverable_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "lead",
+            "label": "Engagement lead",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close_engagement",
+            "label": "Close engagement",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "engagement_close_engagement"
+            }
+          },
+          {
+            "key": "add_deliverable",
+            "label": "New deliverable",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deliverable",
+              "template": "New deliverable",
+              "prefill": {
+                "engagement": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New engagement",
+            "values": {
+              "engagement_name": "New engagement",
+              "status": "Kickoff"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Objectives"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What success looks like at the final readout."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Phases, dates and who does what."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Risks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What could go wrong and what we will do about it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "engagement-1",
+            "values": {
+              "engagement_name": "Plant scheduling redesign",
+              "status": "In delivery",
+              "fee": 96000,
+              "days_sold": 48,
+              "starts_on": "@today-35d",
+              "ends_on": "@today+55d",
+              "client": "client-2",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "engagement-2",
+            "values": {
+              "engagement_name": "Returns process review",
+              "status": "Final readout",
+              "fee": 54000,
+              "days_sold": 30,
+              "starts_on": "@today-80d",
+              "ends_on": "@today+6d",
+              "client": "client-1",
+              "lead": "tm-3"
+            }
+          },
+          {
+            "key": "engagement-3",
+            "values": {
+              "engagement_name": "Distribution cost baseline",
+              "status": "In delivery",
+              "fee": 68000,
+              "days_sold": 34,
+              "starts_on": "@today-20d",
+              "ends_on": "@today+40d",
+              "client": "client-3",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "engagement-4",
+            "values": {
+              "engagement_name": "Pellham leadership offsite",
+              "status": "Kickoff",
+              "fee": 18000,
+              "days_sold": 8,
+              "starts_on": "@today+3d",
+              "ends_on": "@today+20d",
+              "client": "client-3",
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "engagement-5",
+            "values": {
+              "engagement_name": "Admissions process mapping",
+              "status": "Closed",
+              "fee": 41000,
+              "days_sold": 22,
+              "starts_on": "@today-300d",
+              "ends_on": "@today-230d",
+              "client": "client-4",
+              "lead": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "deliverable",
+        "name": "Deliverables",
+        "labelSingular": "Deliverable",
+        "labelPlural": "Deliverables",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-check",
+        "titleField": "deliverable_name",
+        "describes": "The documents and workshops promised in each engagement.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "deliverable_name",
+            "label": "Deliverable",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Drafting",
+              "Partner review",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Drafting": "blue",
+              "Partner review": "amber",
+              "Delivered": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Drafting": "in_progress",
+              "Partner review": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "engagement",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "engagement",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_send_to_client",
+            "label": "Send to client",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "deliverable_send_to_client"
+            }
+          }
+        ],
+        "independentOf": {
+          "engagement": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New deliverable",
+            "values": {
+              "deliverable_name": "New deliverable",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What decision this document supports."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Outline"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Sections and the evidence behind each."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Review notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Partner comments and what changed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "deliverable-1",
+            "values": {
+              "deliverable_name": "Current-state process map",
+              "status": "Delivered",
+              "due_on": "@today-14d",
+              "engagement": "engagement-1",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-2",
+            "values": {
+              "deliverable_name": "Constraint analysis",
+              "status": "Partner review",
+              "due_on": "@today+2d",
+              "engagement": "engagement-1",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "deliverable-3",
+            "values": {
+              "deliverable_name": "Scheduling rules workshop",
+              "status": "To do",
+              "due_on": "@today+12d",
+              "engagement": "engagement-1",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-4",
+            "values": {
+              "deliverable_name": "Pilot plan for line three",
+              "status": "To do",
+              "due_on": "@today+30d",
+              "engagement": "engagement-1",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "deliverable-5",
+            "values": {
+              "deliverable_name": "Returns root-cause summary",
+              "status": "Delivered",
+              "due_on": "@today-20d",
+              "engagement": "engagement-2",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-6",
+            "values": {
+              "deliverable_name": "Final recommendations deck",
+              "status": "Drafting",
+              "due_on": "@mon+2d",
+              "engagement": "engagement-2",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "deliverable-7",
+            "values": {
+              "deliverable_name": "Cost baseline model",
+              "status": "Drafting",
+              "due_on": "@today+5d",
+              "engagement": "engagement-3",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-8",
+            "values": {
+              "deliverable_name": "Lane profitability readout",
+              "status": "To do",
+              "due_on": "@today+25d",
+              "engagement": "engagement-3",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "deliverable-9",
+            "values": {
+              "deliverable_name": "Interview synthesis",
+              "status": "Partner review",
+              "due_on": "@today-1d",
+              "engagement": "engagement-3",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "deliverable-10",
+            "values": {
+              "deliverable_name": "Offsite agenda and pre-reads",
+              "status": "To do",
+              "due_on": "@today+10d",
+              "engagement": "engagement-4",
+              "owner": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "timesheet",
+        "name": "Timesheet",
+        "labelSingular": "Timesheet entry",
+        "labelPlural": "Timesheet",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clock",
+        "titleField": "entry",
+        "describes": "Consultant days logged against each engagement.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "entry",
+            "label": "Work done",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "worked_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days",
+            "label": "Days",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "key": "engagement",
+            "label": "Engagement",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "engagement",
+            "relationMax": 1
+          },
+          {
+            "key": "person",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "engagement": "Either record can be created or change status before the other.",
+          "person": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New timesheet entry",
+            "values": {
+              "entry": "New timesheet entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What was done, in a sentence."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "timesheet-1",
+            "values": {
+              "entry": "Plant interviews, line one",
+              "worked_on": "@today-2d",
+              "days": 1,
+              "engagement": "engagement-1",
+              "person": "tm-2"
+            }
+          },
+          {
+            "key": "timesheet-2",
+            "values": {
+              "entry": "Process mapping workshop",
+              "worked_on": "@today-3d",
+              "days": 1,
+              "engagement": "engagement-1",
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "timesheet-3",
+            "values": {
+              "entry": "Model assumptions review",
+              "worked_on": "@today-1d",
+              "days": 0.5,
+              "engagement": "engagement-1",
+              "person": "tm-4"
+            }
+          },
+          {
+            "key": "timesheet-4",
+            "values": {
+              "entry": "Final deck drafting",
+              "worked_on": "@today-2d",
+              "days": 1,
+              "engagement": "engagement-2",
+              "person": "tm-2"
+            }
+          },
+          {
+            "key": "timesheet-5",
+            "values": {
+              "entry": "Client readout rehearsal",
+              "worked_on": "@today-1d",
+              "days": 0.5,
+              "engagement": "engagement-2",
+              "person": "tm-1"
+            }
+          },
+          {
+            "key": "timesheet-6",
+            "values": {
+              "entry": "Rate card analysis",
+              "worked_on": "@today-4d",
+              "days": 1,
+              "engagement": "engagement-3",
+              "person": "tm-4"
+            }
+          },
+          {
+            "key": "timesheet-7",
+            "values": {
+              "entry": "Driver interviews",
+              "worked_on": "@today-5d",
+              "days": 1,
+              "engagement": "engagement-3",
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "timesheet-8",
+            "values": {
+              "entry": "Sponsor check-in",
+              "worked_on": "@today-3d",
+              "days": 0.25,
+              "engagement": "engagement-3",
+              "person": "tm-1"
+            }
+          },
+          {
+            "key": "timesheet-9",
+            "values": {
+              "entry": "Constraint analysis writing",
+              "worked_on": "@today-1d",
+              "days": 1,
+              "engagement": "engagement-1",
+              "person": "tm-2"
+            }
+          },
+          {
+            "key": "timesheet-10",
+            "values": {
+              "entry": "Proposal writing",
+              "worked_on": "@today-6d",
+              "days": 0.75,
+              "engagement": "engagement-1",
+              "person": "tm-1"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one relationship partner.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each proposal belongs to one client.",
+        "fromTable": "proposal",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "proposals"
+      },
+      {
+        "describes": "Each proposal belongs to one lead.",
+        "fromTable": "proposal",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "proposal_by_lead"
+      },
+      {
+        "describes": "Each engagement belongs to one client.",
+        "fromTable": "engagement",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "engagements"
+      },
+      {
+        "describes": "Each engagement belongs to one engagement lead.",
+        "fromTable": "engagement",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "engagement_by_lead"
+      },
+      {
+        "describes": "Each deliverable belongs to one engagement.",
+        "fromTable": "deliverable",
+        "fromField": "engagement",
+        "toTable": "engagement",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deliverables"
+      },
+      {
+        "describes": "Each deliverable belongs to one owner.",
+        "fromTable": "deliverable",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deliverable_by_owner"
+      },
+      {
+        "describes": "Each timesheet entry belongs to one engagement.",
+        "fromTable": "timesheet",
+        "fromField": "engagement",
+        "toTable": "engagement",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "timesheets"
+      },
+      {
+        "describes": "Each timesheet entry belongs to one person.",
+        "fromTable": "timesheet",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "time_by_person"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Evander Kowalczyk-Adeyemi",
+              "role": "Partner",
+              "work_email": "evander@brackenridgeadvisory.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Saffron Whitlock",
+              "role": "Senior consultant",
+              "work_email": "saffron@brackenridgeadvisory.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Nikhil Bhattacharya",
+              "role": "Consultant",
+              "work_email": "nikhil@brackenridgeadvisory.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Odessa Ramirez-Hale",
+              "role": "Analyst",
+              "work_email": "odessa@brackenridgeadvisory.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Cornelius Park",
+              "role": "Practice manager",
+              "work_email": "cornelius@brackenridgeadvisory.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-4y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "proposal_intake",
+        "name": "Log a proposal",
+        "describes": "Capture a new proposal before it is drafted.",
+        "audience": "staff",
+        "table": "proposal",
+        "fields": [
+          {
+            "fieldKey": "proposal_name",
+            "ask": "What is the proposal?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Which client?",
+            "required": true
+          },
+          {
+            "fieldKey": "value",
+            "ask": "Estimated value"
+          },
+          {
+            "fieldKey": "decide_by",
+            "ask": "When will they decide?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is on the board as Draft."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "proposal_mark_won",
+        "table": "proposal",
+        "name": "Mark won",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Won"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "proposal_mark_lost",
+        "table": "proposal",
+        "name": "Mark lost",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Lost"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "engagement_close_engagement",
+        "table": "engagement",
+        "name": "Close engagement",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Closed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "deliverable_send_to_client",
+        "table": "deliverable",
+        "name": "Send to client",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_proposal",
+        "name": "All proposals",
+        "table": "proposal",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "proposal_board",
+        "name": "Proposals board",
+        "table": "proposal",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "proposal_cal",
+        "name": "Proposals calendar",
+        "table": "proposal",
+        "kind": "calendar",
+        "dateField": "decide_by",
+        "allDay": true
+      },
+      {
+        "token": "proposal_over",
+        "name": "Overdue",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Draft",
+            "Sent",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "proposal_week",
+        "name": "Due this week",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Draft",
+            "Sent",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "proposal_next7",
+        "name": "Next 7 days",
+        "table": "proposal",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Draft",
+            "Sent",
+            "Negotiating"
+          ]
+        }
+      },
+      {
+        "token": "all_engagement",
+        "name": "All engagements",
+        "table": "engagement",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "engagement_board",
+        "name": "Engagements board",
+        "table": "engagement",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "engagement_cal",
+        "name": "Engagements calendar",
+        "table": "engagement",
+        "kind": "calendar",
+        "dateField": "ends_on",
+        "allDay": true
+      },
+      {
+        "token": "engagement_over",
+        "name": "Overdue",
+        "table": "engagement",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Kickoff",
+            "In delivery",
+            "Final readout"
+          ]
+        }
+      },
+      {
+        "token": "engagement_week",
+        "name": "Due this week",
+        "table": "engagement",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Kickoff",
+            "In delivery",
+            "Final readout"
+          ]
+        }
+      },
+      {
+        "token": "engagement_next7",
+        "name": "Next 7 days",
+        "table": "engagement",
+        "kind": "grid",
+        "within": {
+          "ends_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Kickoff",
+            "In delivery",
+            "Final readout"
+          ]
+        }
+      },
+      {
+        "token": "engagement_mine",
+        "name": "My engagements",
+        "table": "engagement",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_deliverable",
+        "name": "All deliverables",
+        "table": "deliverable",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "deliverable_board",
+        "name": "Deliverables board",
+        "table": "deliverable",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "deliverable_cal",
+        "name": "Deliverables calendar",
+        "table": "deliverable",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "deliverable_over",
+        "name": "Overdue",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Drafting",
+            "Partner review"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_week",
+        "name": "Due this week",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Drafting",
+            "Partner review"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_next7",
+        "name": "Next 7 days",
+        "table": "deliverable",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Drafting",
+            "Partner review"
+          ]
+        }
+      },
+      {
+        "token": "deliverable_mine",
+        "name": "My deliverables",
+        "table": "deliverable",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_timesheet",
+        "name": "All timesheet",
+        "table": "timesheet",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "timesheet_cal",
+        "name": "Timesheet calendar",
+        "table": "timesheet",
+        "kind": "calendar",
+        "dateField": "worked_on",
+        "allDay": true
+      },
+      {
+        "token": "timesheet_week",
+        "name": "This week",
+        "table": "timesheet",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "timesheet_month",
+        "name": "This month",
+        "table": "timesheet",
+        "kind": "grid",
+        "within": {
+          "worked_on": {
+            "relative": "this_month"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Consulting Practice Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "proposal",
+          "describes": "Proposals out for decision, with value, chance and decision date."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many proposals are sent and awaiting a decision?",
+        "whyItMatters": "The partner follows up on every sent proposal weekly.",
+        "expect": {
+          "table": "proposal",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "stage": "Sent"
+          },
+          "answer": 2,
+          "unit": "proposals"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open proposals.",
+        "action": {
+          "kind": "open",
+          "surface": "proposal_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "proposal_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open engagements.",
+        "action": {
+          "kind": "open",
+          "surface": "engagement_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "engagement_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "brackenridgeadvisory.net"
+      ],
+      "fictionalStreets": [
+        "Halsey Avenue"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "consulting-practice-desk",
+      "parent": null,
+      "title": "Consulting Practice Desk",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The practice in one place: clients, proposals with weighted value, engagements with days sold against days used, deliverables waiting on review, and the timesheet that feeds it all. Start on the Dashboard each Monday, then work Mine and the Overdue views."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:proposal-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:engagement-kickoff"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:days-and-margin"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:final-readout"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The organizations the practice advises."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proposals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Proposals out for decision, with value, chance and decision date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "proposal",
+              "view": "proposal_board"
+            },
+            "inline": true,
+            "title": "Proposals",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "pro-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "decide_by"
+              },
+              {
+                "id": "pro-t",
+                "name": "All proposals",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pro-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "decide_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Draft",
+                    "Sent",
+                    "Negotiating"
+                  ]
+                }
+              },
+              {
+                "id": "pro-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "decide_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Draft",
+                    "Sent",
+                    "Negotiating"
+                  ]
+                }
+              },
+              {
+                "id": "pro-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "decide_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Draft",
+                    "Sent",
+                    "Negotiating"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Engagements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Work in delivery, with days sold against days used."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "engagement",
+              "view": "engagement_board"
+            },
+            "inline": true,
+            "title": "Engagements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "eng-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "eng-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ends_on"
+              },
+              {
+                "id": "eng-t",
+                "name": "All engagements",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "eng-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "ends_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Kickoff",
+                    "In delivery",
+                    "Final readout"
+                  ]
+                }
+              },
+              {
+                "id": "eng-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "ends_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Kickoff",
+                    "In delivery",
+                    "Final readout"
+                  ]
+                }
+              },
+              {
+                "id": "eng-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "ends_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Kickoff",
+                    "In delivery",
+                    "Final readout"
+                  ]
+                }
+              },
+              {
+                "id": "eng-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "eng-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliverables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The documents and workshops promised in each engagement."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "deliverable_board"
+            },
+            "inline": true,
+            "title": "Deliverables",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "del-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "del-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "del-t",
+                "name": "All deliverables",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "del-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Drafting",
+                    "Partner review"
+                  ]
+                }
+              },
+              {
+                "id": "del-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Drafting",
+                    "Partner review"
+                  ]
+                }
+              },
+              {
+                "id": "del-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Drafting",
+                    "Partner review"
+                  ]
+                }
+              },
+              {
+                "id": "del-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "del-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Timesheet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Consultant days logged against each engagement."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "timesheet",
+              "view": "all_timesheet"
+            },
+            "inline": true,
+            "title": "Timesheet",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tim-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "worked_on"
+              },
+              {
+                "id": "tim-t",
+                "name": "All timesheet",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tim-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "tim-month",
+                "name": "This month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "worked_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "tim-c"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "consulting-practice-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The practice at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "proposal",
+                      "view": "all_proposal"
+                    },
+                    "inline": true,
+                    "title": "Proposals by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Proposals by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "stage",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "proposal",
+                      "view": "all_proposal"
+                    },
+                    "inline": true,
+                    "title": "Value by stage (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Value by stage (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "engagement",
+                      "view": "all_engagement"
+                    },
+                    "inline": true,
+                    "title": "Engagements by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Engagements by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "timesheet",
+                      "view": "all_timesheet"
+                    },
+                    "inline": true,
+                    "title": "Days logged by person",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Days logged by person",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "person",
+                          "op": "sum",
+                          "field": "days"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Decisions due in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "proposal",
+              "view": "all_proposal"
+            },
+            "inline": true,
+            "title": "Decisions due in the next 14 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Decisions due in the next 14 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "decide_by": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Draft",
+                    "Sent",
+                    "Negotiating"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliverables overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "deliverable",
+              "view": "all_deliverable"
+            },
+            "inline": true,
+            "title": "Deliverables overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Deliverables overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Drafting",
+                    "Partner review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ending in the next 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "engagement",
+              "view": "all_engagement"
+            },
+            "inline": true,
+            "title": "Ending in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Ending in the next 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "ends_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weighted value (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Proposal value times chance of winning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use for a forecast; keep chances honest and revisit after every call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days used (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Days logged divided by days sold"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 80 percent with deliverables left, tell the sponsor and agree what moves"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Days sold minus days used"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Negative means the engagement is losing money; raise it internally first"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deliverables sent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deliverables marked Delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare with the share of days used to see if delivery is on pace"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "proposal-checklist",
+      "parent": "consulting-practice-desk",
+      "title": "Writing a proposal",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A proposal is a short argument: here is your problem, here is how we will solve it, here is what it costs."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Structure"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The problem in the sponsor's words, with the cost of leaving it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The approach in three to five phases, each with a deliverable."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Who will do the work, with days per person."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price, payment terms and what is not included."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Next step and the date the proposal expires."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before it goes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A second partner has read it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Days sold match the plan, with a buffer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The sponsor has seen the outline before the full document"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Decision date and next step are in the proposal row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "engagement-kickoff",
+      "parent": "consulting-practice-desk",
+      "title": "Engagement kickoff checklist",
+      "icon": {
+        "emoji": "🚦"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engagement row created with fee, days sold, start and end dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kickoff meeting held with sponsor, team and key stakeholders"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Interview list agreed and scheduled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Data request sent with a due date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weekly check-in booked for the length of the work"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The kickoff meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Restate the objective and the three questions the work must answer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree how decisions will be made and who can say no."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm how and when the final readout will happen."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most engagements that go wrong lost their way in the first two weeks."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "days-and-margin",
+      "parent": "consulting-practice-desk",
+      "title": "Days sold, days used and margin",
+      "icon": {
+        "emoji": "⚖️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log days at the end of each day, in quarters of a day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use plain descriptions the partner can scan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the engagement row"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days used (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reading"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check quality, not just speed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "60 to 85"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On pace"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check deliverables sent against days used"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Over 85"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tight"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hold a scope conversation with the sponsor"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When days run over"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write down the cause: scope, data, rework or sponsor changes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer the sponsor options: trim, extend, or swap."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the decision in the engagement page before more work."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "final-readout",
+      "parent": "consulting-practice-desk",
+      "title": "Running the final readout",
+      "icon": {
+        "emoji": "🎤"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Preparing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send a pre-read two days before; the meeting is for decisions, not for reading."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rehearse with the lead once, and walk through the hardest question."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the room"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start with the answer in one slide."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Show the three findings that matter, each with evidence."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Present options and your recommended path with costs and risks."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "End with the decisions you need today and who owns each."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Afterwards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the deck and a one-page summary within a day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the engagement to Closed once the last deliverable is accepted."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for a short testimonial and a reference call."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

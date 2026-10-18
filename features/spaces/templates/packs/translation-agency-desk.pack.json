@@ -1,0 +1,3441 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0461",
+  "version": 1,
+  "title": "Translation Agency Desk",
+  "description": "Clients, linguists, translation jobs, glossaries and quality checks for a language agency.",
+  "forWho": "Translation and localization agencies",
+  "icon": {
+    "emoji": "🌐"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "translation",
+    "linguists",
+    "glossary",
+    "quality"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-translation-agency-desk",
+    "catalogueId": "SP0461",
+    "useCase": "Valentina Arceneaux directs a translation agency and uses this to see which jobs are late, which linguists are free for a language pair and which client glossaries need approval.",
+    "industry": "cross_industry",
+    "vertical": "Translation agency",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Tessera Language Services",
+      "describes": "A six-person translation agency handling legal, medical and marketing documents in twelve language pairs with a vetted network of freelance linguists.",
+      "address": {
+        "line1": "73 Cormorant Way",
+        "city": "Pittsburgh",
+        "region": "PA",
+        "postalCode": "15222",
+        "country": "US"
+      },
+      "phone": "(412) 555-0138",
+      "website": "tesseralang.net",
+      "email": "projects@tesseralang.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-translation-agency-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The companies and law firms that send documents for translation.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Prospect",
+              "Current",
+              "Past"
+            ],
+            "choiceColors": {
+              "Prospect": "slate",
+              "Current": "blue",
+              "Past": "amber"
+            },
+            "required": true,
+            "default": "Prospect",
+            "statusGroups": {
+              "Prospect": "todo",
+              "Current": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "sector",
+            "label": "Sector",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Legal",
+              "Medical",
+              "Marketing",
+              "Technical",
+              "Education"
+            ],
+            "choiceColors": {
+              "Legal": "slate",
+              "Medical": "blue",
+              "Marketing": "amber",
+              "Technical": "violet",
+              "Education": "teal"
+            }
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Project manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "job_count",
+            "label": "Jobs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count"
+          },
+          {
+            "key": "words_total",
+            "label": "Words translated",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "words",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_job",
+            "label": "New job",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "job",
+              "template": "New job",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preferences"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Style, terminology, formality and files they usually send."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approvals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who approves and how long review usually takes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Rates"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Agreed rates per language pair and rush surcharges."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Pryor & Haldane Law",
+              "status": "Current",
+              "sector": "Legal",
+              "contact_email": "docs@pryorhaldane.net",
+              "since": "@today-600d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Marlowe Biologics",
+              "status": "Current",
+              "sector": "Medical",
+              "contact_email": "regulatory@marlowebio.net",
+              "since": "@today-300d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Sundial Travel",
+              "status": "Current",
+              "sector": "Marketing",
+              "contact_email": "content@sundialtravel.net",
+              "since": "@today-150d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Kestrel Machine Tools",
+              "status": "Current",
+              "sector": "Technical",
+              "contact_email": "manuals@kestrelmachine.net",
+              "since": "@today-400d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Oakmont University Press",
+              "status": "Past",
+              "sector": "Education",
+              "contact_email": "rights@oakmontpress.net",
+              "since": "@today-800d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Caldera Health Network",
+              "status": "Prospect",
+              "sector": "Medical",
+              "contact_email": "procurement@calderahealth.net",
+              "owner": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "linguist",
+        "name": "Linguists",
+        "labelSingular": "Linguist",
+        "labelPlural": "Linguists",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-round",
+        "titleField": "full_name",
+        "describes": "Freelance translators and reviewers, with language pairs and availability.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "full_name",
+            "label": "Linguist",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Availability",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Available",
+              "Busy",
+              "Unavailable"
+            ],
+            "choiceColors": {
+              "Available": "slate",
+              "Busy": "blue",
+              "Unavailable": "amber"
+            },
+            "required": true,
+            "default": "Available",
+            "statusGroups": {
+              "Available": "todo",
+              "Busy": "in_progress",
+              "Unavailable": "done"
+            }
+          },
+          {
+            "key": "pairs",
+            "label": "Main language pair",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Spanish to English",
+              "English to Spanish",
+              "French to English",
+              "English to German",
+              "Portuguese to English",
+              "English to Japanese"
+            ],
+            "choiceColors": {
+              "Spanish to English": "slate",
+              "English to Spanish": "blue",
+              "French to English": "amber",
+              "English to German": "violet",
+              "Portuguese to English": "teal",
+              "English to Japanese": "orange"
+            }
+          },
+          {
+            "key": "specialty",
+            "label": "Specialty",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Legal",
+              "Medical",
+              "Marketing",
+              "Technical",
+              "Literary"
+            ],
+            "choiceColors": {
+              "Legal": "slate",
+              "Medical": "blue",
+              "Marketing": "amber",
+              "Technical": "violet",
+              "Literary": "teal"
+            }
+          },
+          {
+            "key": "band",
+            "label": "Rate band",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Standard",
+              "Specialist",
+              "Premium"
+            ],
+            "choiceColors": {
+              "Standard": "slate",
+              "Specialist": "blue",
+              "Premium": "amber"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "words_day",
+            "label": "Words per day",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "key": "last_used",
+            "label": "Last used",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "jobs_done",
+            "label": "Jobs assigned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New linguist",
+            "values": {
+              "full_name": "New linguist",
+              "status": "Available"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Strengths"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Subjects they excel at and styles to avoid."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Test and references"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Test result, references and tools they use."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "linguist-1",
+            "values": {
+              "full_name": "Esperanza Villaverde",
+              "status": "Available",
+              "pairs": "Spanish to English",
+              "specialty": "Legal",
+              "band": "Specialist",
+              "email": "esperanza.v@mailpost.net",
+              "words_day": 2500,
+              "last_used": "@today-10d"
+            }
+          },
+          {
+            "key": "linguist-2",
+            "values": {
+              "full_name": "Matteo Brandt",
+              "status": "Busy",
+              "pairs": "English to German",
+              "specialty": "Technical",
+              "band": "Specialist",
+              "email": "matteo.b@mailpost.net",
+              "words_day": 2200,
+              "last_used": "@today-2d"
+            }
+          },
+          {
+            "key": "linguist-3",
+            "values": {
+              "full_name": "Chloe Abernathy-Nguyen",
+              "status": "Available",
+              "pairs": "French to English",
+              "specialty": "Marketing",
+              "band": "Standard",
+              "email": "chloe.an@mailpost.net",
+              "words_day": 3000,
+              "last_used": "@today-6d"
+            }
+          },
+          {
+            "key": "linguist-4",
+            "values": {
+              "full_name": "Joaquim Teixeira",
+              "status": "Busy",
+              "pairs": "Portuguese to English",
+              "specialty": "Medical",
+              "band": "Premium",
+              "email": "joaquim.t@mailpost.net",
+              "words_day": 2000,
+              "last_used": "@today-1d"
+            }
+          },
+          {
+            "key": "linguist-5",
+            "values": {
+              "full_name": "Haruka Matsuoka",
+              "status": "Available",
+              "pairs": "English to Japanese",
+              "specialty": "Marketing",
+              "band": "Specialist",
+              "email": "haruka.m@mailpost.net",
+              "words_day": 1800,
+              "last_used": "@today-20d"
+            }
+          },
+          {
+            "key": "linguist-6",
+            "values": {
+              "full_name": "Santiago Ferreyra",
+              "status": "Available",
+              "pairs": "English to Spanish",
+              "specialty": "Medical",
+              "band": "Specialist",
+              "email": "santiago.f@mailpost.net",
+              "words_day": 2400,
+              "last_used": "@today-8d"
+            }
+          },
+          {
+            "key": "linguist-7",
+            "values": {
+              "full_name": "Ingeborg Lindahl",
+              "status": "Unavailable",
+              "pairs": "English to German",
+              "specialty": "Legal",
+              "band": "Premium",
+              "email": "ingeborg.l@mailpost.net",
+              "words_day": 2100,
+              "last_used": "@today-45d"
+            }
+          },
+          {
+            "key": "linguist-8",
+            "values": {
+              "full_name": "Rafaela Domingues",
+              "status": "Available",
+              "pairs": "English to Spanish",
+              "specialty": "Literary",
+              "band": "Standard",
+              "email": "rafaela.d@mailpost.net",
+              "words_day": 2800,
+              "last_used": "@today-30d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "job",
+        "name": "Jobs",
+        "labelSingular": "Job",
+        "labelPlural": "Jobs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "job_name",
+        "describes": "Each document sent for translation, with words, rate and due date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "job_name",
+            "label": "Job",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Quoted",
+              "In translation",
+              "In review",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "Quoted": "slate",
+              "In translation": "blue",
+              "In review": "amber",
+              "Delivered": "green"
+            },
+            "required": true,
+            "default": "Quoted",
+            "statusGroups": {
+              "Quoted": "todo",
+              "In translation": "in_progress",
+              "In review": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "pair",
+            "label": "Language pair",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Spanish to English",
+              "English to Spanish",
+              "French to English",
+              "English to German",
+              "Portuguese to English",
+              "English to Japanese"
+            ],
+            "choiceColors": {
+              "Spanish to English": "slate",
+              "English to Spanish": "blue",
+              "French to English": "amber",
+              "English to German": "violet",
+              "Portuguese to English": "teal",
+              "English to Japanese": "orange"
+            }
+          },
+          {
+            "key": "words",
+            "label": "Words",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Agreed rate per word (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Job price (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Words} * {Agreed rate per word (USD)}, 0)"
+          },
+          {
+            "key": "received_on",
+            "label": "Received",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_to_due",
+            "label": "Days to due",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Due}, 'days')"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "linguist",
+            "label": "Linguist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "linguist",
+            "relationMax": 1
+          },
+          {
+            "key": "pm",
+            "label": "Project manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "checks_done",
+            "label": "Quality checks",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reviews",
+            "pick": "review_name",
+            "agg": "count"
+          },
+          {
+            "key": "avg_score",
+            "label": "Best review score",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reviews",
+            "pick": "score",
+            "agg": "max"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_send_to_client",
+            "label": "Send to client",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "job_send_to_client"
+            }
+          },
+          {
+            "key": "add_review",
+            "label": "Add quality check",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "review",
+              "template": "New quality check",
+              "prefill": {
+                "job": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "linguist": "Either record can be created or change status before the other.",
+          "pm": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "received_on",
+            "due_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New job",
+            "values": {
+              "job_name": "New job",
+              "status": "Quoted"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Source files"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Format, word count method and anything not to translate."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Instructions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Audience, tone, glossary to use and layout notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Delivery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Format, who receives it, and what to confirm."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "job-1",
+            "values": {
+              "job_name": "Witness statement bundle",
+              "status": "In translation",
+              "pair": "Spanish to English",
+              "words": 6400,
+              "rate": 0.19,
+              "received_on": "@today-3d",
+              "due_on": "@today+2d",
+              "client": "client-1",
+              "linguist": "linguist-1",
+              "pm": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job-2",
+            "values": {
+              "job_name": "Clinical study report summary",
+              "status": "In review",
+              "pair": "Portuguese to English",
+              "words": 11200,
+              "rate": 0.22,
+              "received_on": "@today-8d",
+              "due_on": "@today+1d",
+              "client": "client-2",
+              "linguist": "linguist-4",
+              "pm": "tm-2"
+            }
+          },
+          {
+            "key": "job-3",
+            "values": {
+              "job_name": "Spring campaign landing pages",
+              "status": "In translation",
+              "pair": "English to Spanish",
+              "words": 3800,
+              "rate": 0.14,
+              "received_on": "@today-2d",
+              "due_on": "@mon+3d",
+              "client": "client-3",
+              "linguist": "linguist-6",
+              "pm": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job-4",
+            "values": {
+              "job_name": "Machine service manual, part two",
+              "status": "In translation",
+              "pair": "English to German",
+              "words": 18500,
+              "rate": 0.16,
+              "received_on": "@today-10d",
+              "due_on": "@today+9d",
+              "client": "client-4",
+              "linguist": "linguist-2",
+              "pm": "tm-2"
+            }
+          },
+          {
+            "key": "job-5",
+            "values": {
+              "job_name": "Hotel partner brochure",
+              "status": "Delivered",
+              "pair": "French to English",
+              "words": 2900,
+              "rate": 0.15,
+              "received_on": "@today-20d",
+              "due_on": "@today-14d",
+              "client": "client-3",
+              "linguist": "linguist-3",
+              "pm": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job-6",
+            "values": {
+              "job_name": "Patient information leaflets",
+              "status": "Delivered",
+              "pair": "English to Spanish",
+              "words": 5200,
+              "rate": 0.21,
+              "received_on": "@today-30d",
+              "due_on": "@today-22d",
+              "client": "client-2",
+              "linguist": "linguist-6",
+              "pm": "tm-2"
+            }
+          },
+          {
+            "key": "job-7",
+            "values": {
+              "job_name": "Distribution agreement",
+              "status": "Delivered",
+              "pair": "Spanish to English",
+              "words": 9100,
+              "rate": 0.2,
+              "received_on": "@today-45d",
+              "due_on": "@today-36d",
+              "client": "client-1",
+              "linguist": "linguist-1",
+              "pm": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job-8",
+            "values": {
+              "job_name": "Product video subtitles",
+              "status": "Quoted",
+              "pair": "English to Japanese",
+              "words": 2100,
+              "rate": 0.24,
+              "received_on": "@today-1d",
+              "due_on": "@today+12d",
+              "client": "client-3",
+              "linguist": "linguist-5",
+              "pm": "tm-2"
+            }
+          },
+          {
+            "key": "job-9",
+            "values": {
+              "job_name": "Safety data sheets",
+              "status": "In review",
+              "pair": "English to German",
+              "words": 7600,
+              "rate": 0.17,
+              "received_on": "@today-12d",
+              "due_on": "@today-1d",
+              "client": "client-4",
+              "linguist": "linguist-2",
+              "pm": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "job-10",
+            "values": {
+              "job_name": "Annual report excerpt",
+              "status": "Quoted",
+              "pair": "French to English",
+              "words": 4300,
+              "rate": 0.16,
+              "received_on": "@today-0d",
+              "due_on": "@today+10d",
+              "client": "client-5",
+              "linguist": "linguist-3",
+              "pm": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "term",
+        "name": "Glossary",
+        "labelSingular": "Term",
+        "labelPlural": "Glossary",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "term",
+        "describes": "Approved terminology per client, so every linguist uses the same wording.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "term",
+            "label": "Source term",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "translation",
+            "label": "Approved translation",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pair",
+            "label": "Language pair",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Spanish to English",
+              "English to Spanish",
+              "French to English",
+              "English to German",
+              "Portuguese to English",
+              "English to Japanese"
+            ],
+            "choiceColors": {
+              "Spanish to English": "slate",
+              "English to Spanish": "blue",
+              "French to English": "amber",
+              "English to German": "violet",
+              "Portuguese to English": "teal",
+              "English to Japanese": "orange"
+            }
+          },
+          {
+            "key": "approved",
+            "label": "Approved by client",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "note",
+            "label": "Usage note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New term",
+            "values": {
+              "term": "New term"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Context"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where the term appears and the sentence to remember."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "term-1",
+            "values": {
+              "term": "party of the first part",
+              "translation": "la parte primera",
+              "pair": "English to Spanish",
+              "approved": true,
+              "note": "Used in contract openings",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "term-2",
+            "values": {
+              "term": "deposition",
+              "translation": "declaración jurada",
+              "pair": "Spanish to English",
+              "approved": true,
+              "note": "Keep court context",
+              "client": "client-1"
+            }
+          },
+          {
+            "key": "term-3",
+            "values": {
+              "term": "adverse event",
+              "translation": "evento adverso",
+              "pair": "English to Spanish",
+              "approved": true,
+              "note": "Medical reports",
+              "client": "client-2"
+            }
+          },
+          {
+            "key": "term-4",
+            "values": {
+              "term": "informed consent",
+              "translation": "consentimiento informado",
+              "pair": "English to Spanish",
+              "approved": true,
+              "note": "Always spelled out first time",
+              "client": "client-2"
+            }
+          },
+          {
+            "key": "term-5",
+            "values": {
+              "term": "all-inclusive",
+              "translation": "tout compris",
+              "pair": "French to English",
+              "approved": false,
+              "note": "Marketing tone, check with client",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "term-6",
+            "values": {
+              "term": "book now",
+              "translation": "reservar ahora",
+              "pair": "English to Spanish",
+              "approved": true,
+              "note": "Button text",
+              "client": "client-3"
+            }
+          },
+          {
+            "key": "term-7",
+            "values": {
+              "term": "spindle housing",
+              "translation": "Spindelgehäuse",
+              "pair": "English to German",
+              "approved": true,
+              "note": "Technical manuals",
+              "client": "client-4"
+            }
+          },
+          {
+            "key": "term-8",
+            "values": {
+              "term": "torque limit",
+              "translation": "Drehmomentgrenze",
+              "pair": "English to German",
+              "approved": false,
+              "note": "Waiting on engineering review",
+              "client": "client-4"
+            }
+          },
+          {
+            "key": "term-9",
+            "values": {
+              "term": "patient leaflet",
+              "translation": "folheto informativo",
+              "pair": "Portuguese to English",
+              "approved": true,
+              "note": "Regulatory wording",
+              "client": "client-2"
+            }
+          },
+          {
+            "key": "term-10",
+            "values": {
+              "term": "limited warranty",
+              "translation": "garantía limitada",
+              "pair": "English to Spanish",
+              "approved": false,
+              "note": "Awaiting legal approval",
+              "client": "client-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "review",
+        "name": "Quality checks",
+        "labelSingular": "Quality check",
+        "labelPlural": "Quality checks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "review_name",
+        "describes": "A second linguist reviews each job and scores it.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "review_name",
+            "label": "Check",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Checked"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Checked": "blue"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Checked": "done"
+            }
+          },
+          {
+            "key": "score",
+            "label": "Score out of 100",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "findings",
+            "label": "Main findings",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "checked_on",
+            "label": "Checked on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "job",
+            "label": "Job",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "reviewer",
+            "label": "Reviewer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_log_score",
+            "label": "Log score",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "review_log_score"
+            }
+          }
+        ],
+        "independentOf": {
+          "job": "Either record can be created or change status before the other.",
+          "reviewer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Checked"
+            ],
+            "filled": [
+              "checked_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New quality check",
+            "values": {
+              "review_name": "New quality check",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was checked"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Accuracy, terminology, style and formatting."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Corrections"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The changes requested and whether the linguist agreed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "review-1",
+            "values": {
+              "review_name": "Hotel brochure review",
+              "status": "Checked",
+              "score": 94,
+              "findings": "Two tone corrections",
+              "checked_on": "@today-15d",
+              "job": "job-5",
+              "reviewer": "tm-4"
+            }
+          },
+          {
+            "key": "review-2",
+            "values": {
+              "review_name": "Patient leaflets review",
+              "status": "Checked",
+              "score": 97,
+              "findings": "Consistent terminology",
+              "checked_on": "@today-23d",
+              "job": "job-6",
+              "reviewer": "tm-4"
+            }
+          },
+          {
+            "key": "review-3",
+            "values": {
+              "review_name": "Distribution agreement review",
+              "status": "Checked",
+              "score": 91,
+              "findings": "One missed defined term",
+              "checked_on": "@today-37d",
+              "job": "job-7",
+              "reviewer": "tm-4"
+            }
+          },
+          {
+            "key": "review-4",
+            "values": {
+              "review_name": "Clinical summary review",
+              "status": "Scheduled",
+              "job": "job-2",
+              "reviewer": "tm-4"
+            }
+          },
+          {
+            "key": "review-5",
+            "values": {
+              "review_name": "Safety data sheets review",
+              "status": "Scheduled",
+              "job": "job-9",
+              "reviewer": "tm-4"
+            }
+          },
+          {
+            "key": "review-6",
+            "values": {
+              "review_name": "Witness statements review",
+              "status": "Scheduled",
+              "job": "job-1",
+              "reviewer": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one project manager.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each job belongs to one client.",
+        "fromTable": "job",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each job belongs to one linguist.",
+        "fromTable": "job",
+        "fromField": "linguist",
+        "toTable": "linguist",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "jobs"
+      },
+      {
+        "describes": "Each job belongs to one project manager.",
+        "fromTable": "job",
+        "fromField": "pm",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "job_by_pm"
+      },
+      {
+        "describes": "Each term belongs to one client.",
+        "fromTable": "term",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "terms"
+      },
+      {
+        "describes": "Each quality check belongs to one job.",
+        "fromTable": "review",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "reviews"
+      },
+      {
+        "describes": "Each quality check belongs to one reviewer.",
+        "fromTable": "review",
+        "fromField": "reviewer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "review_by_reviewer"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Valentina Arceneaux",
+              "role": "Agency director",
+              "work_email": "valentina@tesseralang.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Hyun-woo Pappas",
+              "role": "Project manager",
+              "work_email": "hyun-woo@tesseralang.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Imelda Nwosu",
+              "role": "Vendor manager",
+              "work_email": "imelda@tesseralang.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Rainer Falk",
+              "role": "Quality reviewer",
+              "work_email": "rainer@tesseralang.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Catalina Ruiz-Ostrowski",
+              "role": "Coordinator",
+              "work_email": "catalina@tesseralang.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "job_intake",
+        "name": "Request a translation",
+        "describes": "Take in a document before it is quoted.",
+        "audience": "staff",
+        "table": "job",
+        "fields": [
+          {
+            "fieldKey": "job_name",
+            "ask": "What is the document?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "pair",
+            "ask": "Which language pair?"
+          },
+          {
+            "fieldKey": "words",
+            "ask": "About how many words?"
+          },
+          {
+            "fieldKey": "due_on",
+            "ask": "When is it needed?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is logged as Quoted."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "job_send_to_client",
+        "table": "job",
+        "name": "Send to client",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "review_log_score",
+        "table": "review",
+        "name": "Log score",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_linguist",
+        "name": "All linguists",
+        "table": "linguist",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "linguist_board",
+        "name": "Linguists board",
+        "table": "linguist",
+        "kind": "kanban",
+        "groupBy": "pairs"
+      },
+      {
+        "token": "all_job",
+        "name": "All jobs",
+        "table": "job",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "job_board",
+        "name": "Jobs board",
+        "table": "job",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "job_cal",
+        "name": "Jobs calendar",
+        "table": "job",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "job_over",
+        "name": "Overdue",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "In translation",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "job_week",
+        "name": "Due this week",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "In translation",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "job_next7",
+        "name": "Next 7 days",
+        "table": "job",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "In translation",
+            "In review"
+          ]
+        }
+      },
+      {
+        "token": "job_mine",
+        "name": "My jobs",
+        "table": "job",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_term",
+        "name": "All glossary",
+        "table": "term",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "term_board",
+        "name": "Glossary board",
+        "table": "term",
+        "kind": "kanban",
+        "groupBy": "pair"
+      },
+      {
+        "token": "all_review",
+        "name": "All quality checks",
+        "table": "review",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "review_board",
+        "name": "Quality checks board",
+        "table": "review",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "review_cal",
+        "name": "Quality checks calendar",
+        "table": "review",
+        "kind": "calendar",
+        "dateField": "checked_on",
+        "allDay": true
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Translation Agency Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "job",
+          "describes": "Each document sent for translation, with words, rate and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many jobs are in translation?",
+        "whyItMatters": "The project manager balances linguist workload across active jobs.",
+        "expect": {
+          "table": "job",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "In translation"
+          },
+          "answer": 3,
+          "unit": "jobs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open linguists.",
+        "action": {
+          "kind": "open",
+          "surface": "linguist_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "linguist_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open jobs.",
+        "action": {
+          "kind": "open",
+          "surface": "job_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "job_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "tesseralang.net"
+      ],
+      "fictionalStreets": [
+        "Cormorant Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "translation-agency-desk",
+      "parent": null,
+      "title": "Translation Agency Desk",
+      "icon": {
+        "emoji": "🌐"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The agency's work in one place: clients and their glossaries, the linguists you can call, every translation job from quote to delivery, and a quality check for each. Start on the Dashboard and work the jobs due soonest. Never assign a job before checking the linguist's availability and language pair."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quote-and-assign"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:terminology-and-glossaries"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quality-review"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:delivery-and-follow-up"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The companies and law firms that send documents for translation."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Linguists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Freelance translators and reviewers, with language pairs and availability."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "linguist",
+              "view": "linguist_board"
+            },
+            "inline": true,
+            "title": "Linguists",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "lin-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "pairs"
+              },
+              {
+                "id": "lin-t",
+                "name": "All linguists",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "lin-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jobs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each document sent for translation, with words, rate and due date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "job_board"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "job-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "job-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "job-t",
+                "name": "All jobs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "job-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "In translation",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "job-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "In translation",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "job-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "In translation",
+                    "In review"
+                  ]
+                }
+              },
+              {
+                "id": "job-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "job-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Glossary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Approved terminology per client, so every linguist uses the same wording."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "term",
+              "view": "term_board"
+            },
+            "inline": true,
+            "title": "Glossary",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ter-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "pair"
+              },
+              {
+                "id": "ter-t",
+                "name": "All glossary",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "ter-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A second linguist reviews each job and scores it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "review",
+              "view": "review_board"
+            },
+            "inline": true,
+            "title": "Quality checks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rev-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rev-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "checked_on"
+              },
+              {
+                "id": "rev-t",
+                "name": "All quality checks",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "rev-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "translation-agency-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Jobs, linguists and quality at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Jobs by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Jobs by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Words by language pair",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Words by language pair",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "pair",
+                          "op": "sum",
+                          "field": "words"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "linguist",
+                      "view": "all_linguist"
+                    },
+                    "inline": true,
+                    "title": "Linguists by availability",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Linguists by availability",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "job",
+                      "view": "all_job"
+                    },
+                    "inline": true,
+                    "title": "Job value by client (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Job value by client (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "client",
+                          "op": "sum",
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jobs late or due today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs late or due today",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Jobs late or due today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "In translation",
+                    "In review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Due in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Due in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Due in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "In translation",
+                    "In review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Available linguists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "linguist",
+              "view": "all_linguist"
+            },
+            "inline": true,
+            "title": "Available linguists",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Available linguists",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Available"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Job price (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Words multiplied by the agreed rate per word"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check against the quote before delivery"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Due date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 2 with the job still In translation means call the linguist today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Words translated"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Words in jobs marked Delivered for the client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use for volume discounts and annual reviews"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Best review score"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Highest quality-check score on the job"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 90 means a conversation with the linguist"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "quote-and-assign",
+      "parent": "translation-agency-desk",
+      "title": "Quote and assign a job",
+      "icon": {
+        "emoji": "💬"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good quote is quick, specific and states the deadline you can really meet."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quoting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the file and count the words; check for repeated text and images with text."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose the language pair and the rate from the client row."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a rush surcharge only when the deadline needs it, and say so."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the quote with the due date, the format of the delivery and what you need from the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assigning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open Available linguists and filter by the main language pair."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check specialty, words per day and last used date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer the job; wait for a yes before changing the linguist on the job row."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rule of thumb"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Divide the word count by the linguist's words per day to see if the deadline is realistic."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "terminology-and-glossaries",
+      "parent": "translation-agency-desk",
+      "title": "Terminology and glossaries",
+      "icon": {
+        "emoji": "📚"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why it matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Clients notice inconsistent terms faster than they notice style. A glossary fixes this once."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building a glossary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect terms from the client's earlier documents and style guide."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each term with its approved translation and the language pair."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the client to approve; tick Approved by client when they do."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Using it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the approved terms to the linguist with the job."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask the reviewer to check term use and report misses."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add new terms after delivery."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Unapproved terms are suggestions. Mark the row clearly so nobody treats them as final."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "quality-review",
+      "parent": "translation-agency-desk",
+      "title": "Quality review process",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What gets reviewed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every legal and medical job gets a second linguist. Marketing jobs are reviewed by sample."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The reviewer reads the translation against the source."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "They note accuracy, terminology, style and formatting issues separately."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The score and main findings go on the quality check row."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The project manager sends corrections to the linguist and confirms they were applied."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the scores"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Score"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "95 or more"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Excellent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Thank the linguist; consider for premium work"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "90 to 94"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Good"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Share notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 90"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Needs attention"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Talk to the linguist before the next job"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "delivery-and-follow-up",
+      "parent": "translation-agency-desk",
+      "title": "Delivery and follow-up",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before delivering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reviewer's corrections applied"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Layout matches the source"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Glossary terms checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "File names match the client's convention"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the files with a short note listing what is included."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Send to client and make sure the job row shows Delivered."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the client to flag any change requests within five working days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After delivery"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add new terms to the glossary."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record the quality score."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thank the linguist and note anything for next time."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
