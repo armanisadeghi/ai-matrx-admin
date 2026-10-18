@@ -24,7 +24,7 @@ import {
   resumeCostlyWorkflows,
   type CostlyWorkflow,
 } from "@/features/admin/spend-alarms/ciPause";
-import { decideSpendApproval } from "@/features/admin/spend-approvals/spendApprovals";
+import { decideSpendApproval, restoreOwnerApproval } from "@/features/admin/spend-approvals/spendApprovals";
 import { patchSystemTask, runSystemTaskNow } from "@/features/scheduling/service/schedulerClient";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
 import { ATTENTION_POLL_MS } from "../poll";
@@ -76,6 +76,7 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
   const items = spendAlarmItems(query.data ?? [], {
     setStatus: (id, status, options) => after(setSpendAlarmStatus(id, status, options)),
     decideApproval: (approvalId, decision) => after(decideSpendApproval(approvalId, decision)),
+    restoreApproval: (approvalId) => after(restoreOwnerApproval(approvalId)),
     setTaskEnabled: (taskId, enabled) => after(patchSystemTask(taskId, { enabled })),
     runTaskNow: async (taskId) => {
       const { run_id } = await runSystemTaskNow(taskId);

@@ -36,3 +36,8 @@ export async function lookupDomain(host: string): Promise<ResolvedDomain | null>
   cache.set(host, { at: now, value: value && value.organization_id ? value : null });
   return cache.get(host)!.value;
 }
+
+/** Drops one host from this instance's cache (after add/check/remove); other instances follow within 60 s. */
+export function forgetDomain(host: string): void {
+  cache.delete(host.trim().toLowerCase());
+}

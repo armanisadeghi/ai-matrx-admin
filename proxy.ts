@@ -464,7 +464,8 @@ export const config = {
       missing: [
         {
           type: "host",
-          value: "(?:.+\\.)?(?:aimatrx\\.com|appmatrx\\.com|matrxserver\\.com|vercel\\.app)|localhost|127\\.0\\.0\\.1",
+          // Next anchors this as ^…$, so the whole alternation sits inside one group.
+          value: "(?:(?:.+\\.)?(?:aimatrx\\.com|appmatrx\\.com|matrxserver\\.com|vercel\\.app)|localhost|127\\.0\\.0\\.1)",
         },
       ],
     },

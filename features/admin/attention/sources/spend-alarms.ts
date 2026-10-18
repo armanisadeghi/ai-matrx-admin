@@ -65,6 +65,8 @@ export interface SpendAlarmDeps {
     options: { snoozedUntil?: string; note?: string | null },
   ) => Promise<void>;
   decideApproval: (approvalId: string, decision: "approve" | "reject") => Promise<void>;
+  /** Puts back the owner's own approval the volume rule paused (status and expiry as he left them). */
+  restoreApproval?: (approvalId: string) => Promise<void>;
   setTaskEnabled: (taskId: string, enabled: boolean) => Promise<void>;
   /** Starts one run now and opens the task's page to watch it. */
   runTaskNow: (taskId: string) => Promise<void>;
@@ -178,6 +180,21 @@ function actionsOf(row: SpendAlarmAttentionRow, deps: SpendAlarmDeps): Attention
     approvalStatus: row.approval_status,
   });
   const out: AttentionAction[] = [];
+  if (row.kind === "spend_volume_hold" && refs.owner_decided === "true" && refs.approval_id && deps.restoreApproval) {
+    const approvalId = refs.approval_id;
+    const restoreApproval = deps.restoreApproval;
+    out.push({
+      id: "restore_prior",
+      label: "Restore my approval",
+      variant: "default",
+      confirm: {
+        title: `Restore your approval of ${subject}?`,
+        description: `Puts ${subject} back to ${refs.prior_status === "temporary" ? "your temporary approval, with its original end date" : "approved"}.`,
+        confirmLabel: "Restore",
+      },
+      run: () => restoreApproval(approvalId),
+    });
+  }
   for (const id of ids) {
     if (id === "approve" && refs.approval_id) {
       const approvalId = refs.approval_id;

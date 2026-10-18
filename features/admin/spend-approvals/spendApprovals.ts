@@ -320,6 +320,13 @@ export async function decideSpendApproval(
   invalidateApprovalStatus();
 }
 
+/** Put back the owner's own approval (status and expiry) that the volume rule paused: one call, one click. */
+export async function restoreOwnerApproval(id: string): Promise<void> {
+  const { error } = await supabase.schema("billing").rpc("run_approval_restore_prior", { p_id: id });
+  if (error) throw pgErrorToError(error);
+  invalidateApprovalStatus();
+}
+
 /** Restart the "since" stats of these approvals from now. History is kept (a `reset` event each). */
 export async function resetSpendApprovalTracking(ids: string[], note?: string): Promise<number> {
   const { data, error } = await supabase.schema("billing").rpc("run_approval_reset", {

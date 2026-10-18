@@ -138,8 +138,9 @@ async function signIn(browser, who) {
   if (!url) throw new Error(`dev-login printed no URL for ${who}`);
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await ctx.newPage();
-  await page.goto(url, { waitUntil: "load", timeout: 180000 });
+  const resp = await page.goto(url, { waitUntil: "load", timeout: 180000 });
   await page.waitForTimeout(3000);
+  if (!resp || resp.status() >= 400) throw new Error(`dev-login for ${who} answered ${resp?.status()} (walk cap or build error — run pnpm preview:ready /speed-test)`);
   const landed = new URL(page.url()).pathname;
   if (/login|sign-in|auth/.test(landed)) throw new Error(`dev-login for ${who} landed on ${landed}`);
   const state = await ctx.storageState();
@@ -312,7 +313,8 @@ function summaryRow(who, res) {
   const next = ns.filter((r) => r.kind.startsWith("next") && r.kind !== "next doc").length;
   const tp = ns.filter((r) => r.kind === "3p").length;
   const dups = new Set(ns.filter((r) => r.times > 1).map((r) => `${r.method} ${r.dupKey}`)).size;
-  return `| ${res.route} | ${who} | ${res.finalPath === res.route ? "" : res.finalPath} | ${dbB} | ${dbA} | ${srv} | ${next} | ${tp} | ${dups} | ${res.jsFiles} | ${res.jsKB} | ${res.ttfb} | ${res.fcp} | ${res.lcp} | ${res.cls} | ${res.settledAt ?? "never"} |`;
+  const doc = res.rows.find((r) => r.kind === "next doc");
+  return `| ${res.route} | ${who} | ${doc?.status ?? ""} | ${res.finalPath === res.route ? "" : res.finalPath} | ${dbB} | ${dbA} | ${srv} | ${next} | ${tp} | ${dups} | ${res.jsFiles} | ${res.jsKB} | ${res.ttfb} | ${res.fcp} | ${res.lcp} | ${res.cls} | ${res.settledAt ?? "never"} |`;
 }
 
 const browser = await chromium.launch();
@@ -344,8 +346,8 @@ md.push(`base \`${LOCAL ? "shared preview (dev server — timings inflated, coun
 md.push("");
 md.push("DB = every request to the database host (tables, rpc, auth, storage, realtime socket, functions). Before/after = request start vs the load trace's PAGE SETTLED.");
 md.push("");
-md.push("| route | who | landed on | DB before settle | DB after settle | server | Next/RSC | 3rd party | dup keys | JS files | JS KB | TTFB | FCP | LCP | CLS | settled |");
-md.push("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
+md.push("| route | who | doc | landed on | DB before settle | DB after settle | server | Next/RSC | 3rd party | dup keys | JS files | JS KB | TTFB | FCP | LCP | CLS | settled |");
+md.push("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
 for (const r of results) md.push(summaryRow(r.who, r));
 md.push("");
 for (const r of results) md.push(routeMarkdown(r.who, r));

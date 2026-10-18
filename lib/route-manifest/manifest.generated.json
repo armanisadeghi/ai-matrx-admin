@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1474,
+  "routeCount": 1553,
   "routes": [
     {
       "pattern": "/",
@@ -42,6 +42,11 @@
       "pattern": "/acquisition/blocks",
       "status": "live",
       "source": "app/(core)/acquisition/blocks/page.tsx"
+    },
+    {
+      "pattern": "/acquisition/speed-test",
+      "status": "live",
+      "source": "app/(core)/acquisition/speed-test/page.tsx"
     },
     {
       "pattern": "/administration",
@@ -1269,6 +1274,11 @@
       "source": "app/(admin)/administration/shared-knowledge/page.tsx"
     },
     {
+      "pattern": "/administration/speed-test",
+      "status": "live",
+      "source": "app/(admin)/administration/speed-test/page.tsx"
+    },
+    {
       "pattern": "/administration/tool-battle",
       "status": "live",
       "source": "app/(admin)/administration/tool-battle/page.tsx"
@@ -1627,6 +1637,11 @@
       "pattern": "/agent-connections/skills",
       "status": "live",
       "source": "app/(core)/agent-connections/skills/page.tsx"
+    },
+    {
+      "pattern": "/agent-connections/speed-test",
+      "status": "live",
+      "source": "app/(core)/agent-connections/speed-test/page.tsx"
     },
     {
       "pattern": "/agent-connections/sub-agents",
@@ -2014,6 +2029,11 @@
       "source": "app/(core)/agents/shortcuts/new/page.tsx"
     },
     {
+      "pattern": "/agents/speed-test",
+      "status": "live",
+      "source": "app/(core)/agents/speed-test/page.tsx"
+    },
+    {
       "pattern": "/agents/templates",
       "status": "live",
       "source": "app/(core)/agents/templates/page.tsx"
@@ -2084,6 +2104,11 @@
       "source": "app/(core)/applets/manage/[id]/versions/page.tsx"
     },
     {
+      "pattern": "/applets/speed-test",
+      "status": "live",
+      "source": "app/(core)/applets/speed-test/page.tsx"
+    },
+    {
       "pattern": "/appointment-reminder",
       "status": "live",
       "source": "app/(public)/appointment-reminder/page.tsx"
@@ -2094,6 +2119,11 @@
       "source": "app/(core)/approvals/page.tsx"
     },
     {
+      "pattern": "/approvals/speed-test",
+      "status": "live",
+      "source": "app/(core)/approvals/speed-test/page.tsx"
+    },
+    {
       "pattern": "/artifacts",
       "status": "live",
       "source": "app/(core)/artifacts/page.tsx"
@@ -2102,6 +2132,11 @@
       "pattern": "/artifacts/[id]",
       "status": "live",
       "source": "app/(core)/artifacts/[id]/page.tsx"
+    },
+    {
+      "pattern": "/artifacts/speed-test",
+      "status": "live",
+      "source": "app/(core)/artifacts/speed-test/page.tsx"
     },
     {
       "pattern": "/assists",
@@ -2154,6 +2189,11 @@
       "source": "app/(core)/board/all/page.tsx"
     },
     {
+      "pattern": "/board/speed-test",
+      "status": "live",
+      "source": "app/(core)/board/speed-test/page.tsx"
+    },
+    {
       "pattern": "/bring-your-work",
       "status": "live",
       "source": "app/(core)/bring-your-work/page.tsx"
@@ -2172,6 +2212,11 @@
       "pattern": "/camera/admin",
       "status": "live",
       "source": "app/(core)/camera/admin/page.tsx"
+    },
+    {
+      "pattern": "/camera/speed-test",
+      "status": "live",
+      "source": "app/(core)/camera/speed-test/page.tsx"
     },
     {
       "pattern": "/canvas/discover",
@@ -2232,6 +2277,11 @@
       "pattern": "/chat/new",
       "status": "live",
       "source": "app/(core)/chat/new/page.tsx"
+    },
+    {
+      "pattern": "/chat/speed-test",
+      "status": "live",
+      "source": "app/(core)/chat/speed-test/page.tsx"
     },
     {
       "pattern": "/chat/talk",
@@ -2329,9 +2379,19 @@
       "source": "app/(core)/cms/html-pages/[pageId]/page.tsx"
     },
     {
+      "pattern": "/cms/speed-test",
+      "status": "live",
+      "source": "app/(core)/cms/speed-test/page.tsx"
+    },
+    {
       "pattern": "/code",
       "status": "live",
       "source": "app/(core)/code/page.tsx"
+    },
+    {
+      "pattern": "/code/speed-test",
+      "status": "live",
+      "source": "app/(core)/code/speed-test/page.tsx"
     },
     {
       "pattern": "/commerce/attention",
@@ -2504,6 +2564,11 @@
       "source": "app/(core)/context-items/page.tsx"
     },
     {
+      "pattern": "/context-items/speed-test",
+      "status": "live",
+      "source": "app/(core)/context-items/speed-test/page.tsx"
+    },
+    {
       "pattern": "/crm",
       "status": "live",
       "source": "app/(core)/crm/page.tsx"
@@ -2574,6 +2639,11 @@
       "source": "app/(core)/crm/sending-identities/[identityId]/page.tsx"
     },
     {
+      "pattern": "/crm/speed-test",
+      "status": "live",
+      "source": "app/(core)/crm/speed-test/page.tsx"
+    },
+    {
       "pattern": "/d/[renderId]",
       "status": "live",
       "source": "app/(core)/d/[renderId]/page.tsx"
@@ -2582,6 +2652,11 @@
       "pattern": "/dashboard",
       "status": "live",
       "source": "app/(core)/dashboard/page.tsx"
+    },
+    {
+      "pattern": "/dashboard/speed-test",
+      "status": "live",
+      "source": "app/(core)/dashboard/speed-test/page.tsx"
     },
     {
       "pattern": "/data",
@@ -2654,6 +2729,11 @@
       "source": "app/(core)/data/pages/[pageId]/page.tsx"
     },
     {
+      "pattern": "/data/speed-test",
+      "status": "live",
+      "source": "app/(core)/data/speed-test/page.tsx"
+    },
+    {
       "pattern": "/decisions",
       "status": "live",
       "source": "app/(core)/decisions/page.tsx"
@@ -2662,6 +2742,11 @@
       "pattern": "/decisions/review",
       "status": "live",
       "source": "app/(core)/decisions/review/page.tsx"
+    },
+    {
+      "pattern": "/decisions/speed-test",
+      "status": "live",
+      "source": "app/(core)/decisions/speed-test/page.tsx"
     },
     {
       "pattern": "/desktop",
@@ -2679,6 +2764,11 @@
       "source": "app/(core)/detail/[type]/[id]/page.tsx"
     },
     {
+      "pattern": "/detail/speed-test",
+      "status": "live",
+      "source": "app/(core)/detail/speed-test/page.tsx"
+    },
+    {
       "pattern": "/developers/oauth",
       "status": "live",
       "source": "app/(public)/developers/oauth/page.tsx"
@@ -2694,9 +2784,19 @@
       "source": "app/(core)/devices/[deviceId]/page.tsx"
     },
     {
+      "pattern": "/devices/speed-test",
+      "status": "live",
+      "source": "app/(core)/devices/speed-test/page.tsx"
+    },
+    {
       "pattern": "/dictionary/admin",
       "status": "live",
       "source": "app/(core)/dictionary/admin/page.tsx"
+    },
+    {
+      "pattern": "/dictionary/speed-test",
+      "status": "live",
+      "source": "app/(core)/dictionary/speed-test/page.tsx"
     },
     {
       "pattern": "/documents",
@@ -2707,6 +2807,11 @@
       "pattern": "/documents/[id]",
       "status": "live",
       "source": "app/(core)/documents/[id]/page.tsx"
+    },
+    {
+      "pattern": "/documents/speed-test",
+      "status": "live",
+      "source": "app/(core)/documents/speed-test/page.tsx"
     },
     {
       "pattern": "/documents/templates",
@@ -2722,6 +2827,11 @@
       "pattern": "/drive",
       "status": "live",
       "source": "app/(core)/drive/page.tsx"
+    },
+    {
+      "pattern": "/drive/speed-test",
+      "status": "live",
+      "source": "app/(core)/drive/speed-test/page.tsx"
     },
     {
       "pattern": "/education",
@@ -3179,6 +3289,11 @@
       "source": "app/(core)/education/sessions/page.tsx"
     },
     {
+      "pattern": "/education/speed-test",
+      "status": "live",
+      "source": "app/(core)/education/speed-test/page.tsx"
+    },
+    {
       "pattern": "/education/start",
       "status": "live",
       "source": "app/(core)/education/start/page.tsx"
@@ -3284,6 +3399,11 @@
       "source": "app/(core)/esign/new/page.tsx"
     },
     {
+      "pattern": "/esign/speed-test",
+      "status": "live",
+      "source": "app/(core)/esign/speed-test/page.tsx"
+    },
+    {
       "pattern": "/esign/templates",
       "status": "live",
       "source": "app/(core)/esign/templates/page.tsx"
@@ -3304,6 +3424,11 @@
       "source": "app/(core)/exports/[libraryId]/page.tsx"
     },
     {
+      "pattern": "/exports/speed-test",
+      "status": "live",
+      "source": "app/(core)/exports/speed-test/page.tsx"
+    },
+    {
       "pattern": "/extend",
       "status": "live",
       "source": "app/(public)/extend/page.tsx"
@@ -3317,6 +3442,11 @@
       "pattern": "/features",
       "status": "live",
       "source": "app/(core)/features/page.tsx"
+    },
+    {
+      "pattern": "/features/speed-test",
+      "status": "live",
+      "source": "app/(core)/features/speed-test/page.tsx"
     },
     {
       "pattern": "/files",
@@ -3382,6 +3512,11 @@
       "pattern": "/files/shared",
       "status": "live",
       "source": "app/(core)/files/shared/page.tsx"
+    },
+    {
+      "pattern": "/files/speed-test",
+      "status": "live",
+      "source": "app/(core)/files/speed-test/page.tsx"
     },
     {
       "pattern": "/files/starred",
@@ -3809,6 +3944,11 @@
       "source": "app/(core)/hr/settings/workflows/page.tsx"
     },
     {
+      "pattern": "/hr/speed-test",
+      "status": "live",
+      "source": "app/(core)/hr/speed-test/page.tsx"
+    },
+    {
       "pattern": "/hr/tasks",
       "status": "live",
       "source": "app/(core)/hr/tasks/page.tsx"
@@ -3960,6 +4100,11 @@
       "source": "app/(core)/images/public-search/page.tsx"
     },
     {
+      "pattern": "/images/speed-test",
+      "status": "live",
+      "source": "app/(core)/images/speed-test/page.tsx"
+    },
+    {
       "pattern": "/images/studio",
       "status": "live",
       "source": "app/(core)/images/studio/page.tsx"
@@ -4070,6 +4215,11 @@
       "source": "app/(core)/knowledge-graph/page.tsx"
     },
     {
+      "pattern": "/knowledge-graph/speed-test",
+      "status": "live",
+      "source": "app/(core)/knowledge-graph/speed-test/page.tsx"
+    },
+    {
       "pattern": "/knowledge/about",
       "status": "live",
       "source": "app/(core)/knowledge/about/page.tsx"
@@ -4155,6 +4305,11 @@
       "source": "app/(core)/knowledge/sources/[id]/page.tsx"
     },
     {
+      "pattern": "/knowledge/speed-test",
+      "status": "live",
+      "source": "app/(core)/knowledge/speed-test/page.tsx"
+    },
+    {
       "pattern": "/knowledge/transcripts/[id]",
       "status": "live",
       "source": "app/(core)/knowledge/transcripts/[id]/page.tsx"
@@ -4178,6 +4333,11 @@
       "pattern": "/launchpad",
       "status": "live",
       "source": "app/(core)/launchpad/page.tsx"
+    },
+    {
+      "pattern": "/launchpad/speed-test",
+      "status": "live",
+      "source": "app/(core)/launchpad/speed-test/page.tsx"
     },
     {
       "pattern": "/legal",
@@ -4225,6 +4385,11 @@
       "source": "app/(core)/legal/ca-wc/utilities/weeks/page.tsx"
     },
     {
+      "pattern": "/legal/speed-test",
+      "status": "live",
+      "source": "app/(core)/legal/speed-test/page.tsx"
+    },
+    {
       "pattern": "/libraries",
       "status": "live",
       "source": "app/(core)/libraries/page.tsx"
@@ -4233,6 +4398,11 @@
       "pattern": "/libraries/[id]",
       "status": "live",
       "source": "app/(core)/libraries/[id]/page.tsx"
+    },
+    {
+      "pattern": "/libraries/speed-test",
+      "status": "live",
+      "source": "app/(core)/libraries/speed-test/page.tsx"
     },
     {
       "pattern": "/local",
@@ -4258,6 +4428,11 @@
       "pattern": "/make",
       "status": "live",
       "source": "app/(core)/make/page.tsx"
+    },
+    {
+      "pattern": "/make/speed-test",
+      "status": "live",
+      "source": "app/(core)/make/speed-test/page.tsx"
     },
     {
       "pattern": "/mandates",
@@ -4290,6 +4465,11 @@
       "source": "app/(core)/mandates/record-preview/[mandateKey]/page.tsx"
     },
     {
+      "pattern": "/mandates/speed-test",
+      "status": "live",
+      "source": "app/(core)/mandates/speed-test/page.tsx"
+    },
+    {
       "pattern": "/maps",
       "status": "live",
       "source": "app/(core)/maps/page.tsx"
@@ -4300,9 +4480,19 @@
       "source": "app/(core)/maps/[id]/page.tsx"
     },
     {
+      "pattern": "/maps/speed-test",
+      "status": "live",
+      "source": "app/(core)/maps/speed-test/page.tsx"
+    },
+    {
       "pattern": "/markdown-studio",
       "status": "live",
       "source": "app/(core)/markdown-studio/page.tsx"
+    },
+    {
+      "pattern": "/markdown-studio/speed-test",
+      "status": "live",
+      "source": "app/(core)/markdown-studio/speed-test/page.tsx"
     },
     {
       "pattern": "/marketing",
@@ -5480,6 +5670,11 @@
       "source": "app/(core)/marketing/social/page.tsx"
     },
     {
+      "pattern": "/marketing/speed-test",
+      "status": "live",
+      "source": "app/(core)/marketing/speed-test/page.tsx"
+    },
+    {
       "pattern": "/marketing/tools",
       "status": "live",
       "source": "app/(core)/marketing/tools/page.tsx"
@@ -5640,6 +5835,11 @@
       "source": "app/(core)/masterwork/new/page.tsx"
     },
     {
+      "pattern": "/masterwork/speed-test",
+      "status": "live",
+      "source": "app/(core)/masterwork/speed-test/page.tsx"
+    },
+    {
       "pattern": "/masterwork/vision-interview",
       "status": "live",
       "source": "app/(core)/masterwork/vision-interview/page.tsx"
@@ -5671,6 +5871,11 @@
       "promiseKey": "medical.workspace"
     },
     {
+      "pattern": "/medical/speed-test",
+      "status": "live",
+      "source": "app/(core)/medical/speed-test/page.tsx"
+    },
+    {
       "pattern": "/meet",
       "status": "live",
       "source": "app/(meet)/meet/page.tsx"
@@ -5696,6 +5901,11 @@
       "source": "app/(core)/meetings/[id]/page.tsx"
     },
     {
+      "pattern": "/meetings/speed-test",
+      "status": "live",
+      "source": "app/(core)/meetings/speed-test/page.tsx"
+    },
+    {
       "pattern": "/messages",
       "status": "live",
       "source": "app/(core)/messages/page.tsx"
@@ -5716,6 +5926,11 @@
       "source": "app/(core)/messages/admin/page.tsx"
     },
     {
+      "pattern": "/messages/speed-test",
+      "status": "live",
+      "source": "app/(core)/messages/speed-test/page.tsx"
+    },
+    {
       "pattern": "/messenger",
       "status": "live",
       "source": "app/(core)/messenger/page.tsx"
@@ -5724,6 +5939,11 @@
       "pattern": "/messenger/agents",
       "status": "live",
       "source": "app/(core)/messenger/agents/page.tsx"
+    },
+    {
+      "pattern": "/messenger/speed-test",
+      "status": "live",
+      "source": "app/(core)/messenger/speed-test/page.tsx"
     },
     {
       "pattern": "/messenger/whatsapp",
@@ -5751,9 +5971,19 @@
       "source": "app/(core)/notes/[id]/diff/page.tsx"
     },
     {
+      "pattern": "/notes/speed-test",
+      "status": "live",
+      "source": "app/(core)/notes/speed-test/page.tsx"
+    },
+    {
       "pattern": "/notifications",
       "status": "live",
       "source": "app/(core)/notifications/page.tsx"
+    },
+    {
+      "pattern": "/notifications/speed-test",
+      "status": "live",
+      "source": "app/(core)/notifications/speed-test/page.tsx"
     },
     {
       "pattern": "/o/[id]",
@@ -5986,6 +6216,11 @@
       "source": "app/(core)/organizations/[orgId]/settings/configuration/page.tsx"
     },
     {
+      "pattern": "/organizations/[orgId]/settings/domains",
+      "status": "live",
+      "source": "app/(core)/organizations/[orgId]/settings/domains/page.tsx"
+    },
+    {
       "pattern": "/organizations/[orgId]/settings/keyword-value",
       "status": "live",
       "source": "app/(core)/organizations/[orgId]/settings/keyword-value/page.tsx"
@@ -6051,6 +6286,11 @@
       "source": "app/(core)/organizations/[orgId]/workflows/page.tsx"
     },
     {
+      "pattern": "/organizations/speed-test",
+      "status": "live",
+      "source": "app/(core)/organizations/speed-test/page.tsx"
+    },
+    {
       "pattern": "/p/e/[resourceType]/[id]",
       "status": "live",
       "source": "app/(public)/p/e/[resourceType]/[id]/page.tsx"
@@ -6066,6 +6306,11 @@
       "source": "app/(core)/pick-lists/[id]/page.tsx"
     },
     {
+      "pattern": "/pick-lists/speed-test",
+      "status": "live",
+      "source": "app/(core)/pick-lists/speed-test/page.tsx"
+    },
+    {
       "pattern": "/podcast",
       "status": "live",
       "source": "app/(core)/podcast/page.tsx"
@@ -6079,6 +6324,11 @@
       "pattern": "/podcast/[slug]/blog",
       "status": "live",
       "source": "app/(core)/podcast/[slug]/blog/page.tsx"
+    },
+    {
+      "pattern": "/podcast/speed-test",
+      "status": "live",
+      "source": "app/(core)/podcast/speed-test/page.tsx"
     },
     {
       "pattern": "/podcast/studio",
@@ -6241,6 +6491,11 @@
       "source": "app/(core)/presentations/[id]/page.tsx"
     },
     {
+      "pattern": "/presentations/speed-test",
+      "status": "live",
+      "source": "app/(core)/presentations/speed-test/page.tsx"
+    },
+    {
       "pattern": "/presentations/templates",
       "status": "live",
       "source": "app/(core)/presentations/templates/page.tsx"
@@ -6326,6 +6581,11 @@
       "source": "app/(core)/print/qr/page.tsx"
     },
     {
+      "pattern": "/print/speed-test",
+      "status": "live",
+      "source": "app/(core)/print/speed-test/page.tsx"
+    },
+    {
       "pattern": "/print/zpl",
       "status": "live",
       "source": "app/(core)/print/zpl/page.tsx"
@@ -6364,6 +6624,11 @@
       "pattern": "/projects/new",
       "status": "live",
       "source": "app/(core)/projects/new/page.tsx"
+    },
+    {
+      "pattern": "/projects/speed-test",
+      "status": "live",
+      "source": "app/(core)/projects/speed-test/page.tsx"
     },
     {
       "pattern": "/q/[token]",
@@ -6421,6 +6686,11 @@
       "source": "app/(core)/rag/search/page.tsx"
     },
     {
+      "pattern": "/rag/speed-test",
+      "status": "live",
+      "source": "app/(core)/rag/speed-test/page.tsx"
+    },
+    {
       "pattern": "/rag/viewer/[id]",
       "status": "live",
       "source": "app/(core)/rag/viewer/[id]/page.tsx"
@@ -6466,6 +6736,11 @@
       "source": "app/(core)/reports/agent-drift/page.tsx"
     },
     {
+      "pattern": "/reports/speed-test",
+      "status": "live",
+      "source": "app/(core)/reports/speed-test/page.tsx"
+    },
+    {
       "pattern": "/request-access/thank-you",
       "status": "live",
       "source": "app/(public)/request-access/thank-you/page.tsx"
@@ -6474,6 +6749,11 @@
       "pattern": "/research",
       "status": "live",
       "source": "app/(core)/research/page.tsx"
+    },
+    {
+      "pattern": "/research/speed-test",
+      "status": "live",
+      "source": "app/(core)/research/speed-test/page.tsx"
     },
     {
       "pattern": "/research/tags/[tagId]",
@@ -6656,6 +6936,11 @@
       "source": "app/(core)/sandbox/[id]/page.tsx"
     },
     {
+      "pattern": "/sandbox/speed-test",
+      "status": "live",
+      "source": "app/(core)/sandbox/speed-test/page.tsx"
+    },
+    {
       "pattern": "/schedules",
       "status": "live",
       "source": "app/(core)/schedules/page.tsx"
@@ -6676,6 +6961,11 @@
       "source": "app/(core)/schedules/new/page.tsx"
     },
     {
+      "pattern": "/schedules/speed-test",
+      "status": "live",
+      "source": "app/(core)/schedules/speed-test/page.tsx"
+    },
+    {
       "pattern": "/scopes",
       "status": "live",
       "source": "app/(core)/scopes/page.tsx"
@@ -6694,6 +6984,11 @@
       "pattern": "/scopes/settings",
       "status": "live",
       "source": "app/(core)/scopes/settings/page.tsx"
+    },
+    {
+      "pattern": "/scopes/speed-test",
+      "status": "live",
+      "source": "app/(core)/scopes/speed-test/page.tsx"
     },
     {
       "pattern": "/scopes/templates",
@@ -6731,9 +7026,19 @@
       "source": "app/(core)/scraper/search-and-scrape/page.tsx"
     },
     {
+      "pattern": "/scraper/speed-test",
+      "status": "live",
+      "source": "app/(core)/scraper/speed-test/page.tsx"
+    },
+    {
       "pattern": "/search",
       "status": "live",
       "source": "app/(core)/search/page.tsx"
+    },
+    {
+      "pattern": "/search/speed-test",
+      "status": "live",
+      "source": "app/(core)/search/speed-test/page.tsx"
     },
     {
       "pattern": "/secure/[token]",
@@ -6866,6 +7171,11 @@
       "source": "app/(core)/shapes/(workspace)/playground/page.tsx"
     },
     {
+      "pattern": "/shapes/speed-test",
+      "status": "live",
+      "source": "app/(core)/shapes/speed-test/page.tsx"
+    },
+    {
       "pattern": "/sign-out",
       "status": "live",
       "source": "app/(auth-pages)/sign-out/page.tsx"
@@ -6916,9 +7226,24 @@
       "source": "app/(core)/spaces/home/page.tsx"
     },
     {
+      "pattern": "/spaces/speed-test",
+      "status": "live",
+      "source": "app/(core)/spaces/speed-test/page.tsx"
+    },
+    {
+      "pattern": "/speed-test",
+      "status": "live",
+      "source": "app/(core)/speed-test/page.tsx"
+    },
+    {
       "pattern": "/staff",
       "status": "live",
       "source": "app/(core)/staff/page.tsx"
+    },
+    {
+      "pattern": "/staff/speed-test",
+      "status": "live",
+      "source": "app/(core)/staff/speed-test/page.tsx"
     },
     {
       "pattern": "/start",
@@ -6931,6 +7256,11 @@
       "source": "app/(core)/suggestions/page.tsx"
     },
     {
+      "pattern": "/suggestions/speed-test",
+      "status": "live",
+      "source": "app/(core)/suggestions/speed-test/page.tsx"
+    },
+    {
       "pattern": "/surfaces",
       "status": "live",
       "source": "app/(core)/surfaces/page.tsx"
@@ -6939,6 +7269,11 @@
       "pattern": "/surfaces/[...name]",
       "status": "live",
       "source": "app/(core)/surfaces/[...name]/page.tsx"
+    },
+    {
+      "pattern": "/surfaces/speed-test",
+      "status": "live",
+      "source": "app/(core)/surfaces/speed-test/page.tsx"
     },
     {
       "pattern": "/tasks",
@@ -6954,6 +7289,11 @@
       "pattern": "/tasks/new",
       "status": "live",
       "source": "app/(core)/tasks/new/page.tsx"
+    },
+    {
+      "pattern": "/tasks/speed-test",
+      "status": "live",
+      "source": "app/(core)/tasks/speed-test/page.tsx"
     },
     {
       "pattern": "/teams/id/[teamId]",
@@ -7066,6 +7406,11 @@
       "source": "app/(core)/tools/scanner/page.tsx"
     },
     {
+      "pattern": "/tools/speed-test",
+      "status": "live",
+      "source": "app/(core)/tools/speed-test/page.tsx"
+    },
+    {
       "pattern": "/transcripts",
       "status": "live",
       "source": "app/(core)/transcripts/page.tsx"
@@ -7106,6 +7451,11 @@
       "source": "app/(core)/transcripts/scribe/unsorted/page.tsx"
     },
     {
+      "pattern": "/transcripts/speed-test",
+      "status": "live",
+      "source": "app/(core)/transcripts/speed-test/page.tsx"
+    },
+    {
       "pattern": "/transcripts/studio",
       "status": "live",
       "source": "app/(core)/transcripts/studio/page.tsx"
@@ -7116,6 +7466,11 @@
       "source": "app/(core)/trash/page.tsx"
     },
     {
+      "pattern": "/trash/speed-test",
+      "status": "live",
+      "source": "app/(core)/trash/speed-test/page.tsx"
+    },
+    {
       "pattern": "/unsubscribe/[token]",
       "status": "live",
       "source": "app/(public)/unsubscribe/[token]/page.tsx"
@@ -7124,6 +7479,11 @@
       "pattern": "/user-settings/[[...path]]",
       "status": "live",
       "source": "app/(core)/user-settings/[[...path]]/page.tsx"
+    },
+    {
+      "pattern": "/user-settings/speed-test",
+      "status": "live",
+      "source": "app/(core)/user-settings/speed-test/page.tsx"
     },
     {
       "pattern": "/v/[slug]",
@@ -7151,6 +7511,11 @@
       "source": "app/(core)/vault/authenticator/page.tsx"
     },
     {
+      "pattern": "/vault/speed-test",
+      "status": "live",
+      "source": "app/(core)/vault/speed-test/page.tsx"
+    },
+    {
       "pattern": "/voice",
       "status": "live",
       "source": "app/(core)/voice/page.tsx"
@@ -7159,6 +7524,11 @@
       "pattern": "/voice/playground",
       "status": "live",
       "source": "app/(core)/voice/playground/page.tsx"
+    },
+    {
+      "pattern": "/voice/speed-test",
+      "status": "live",
+      "source": "app/(core)/voice/speed-test/page.tsx"
     },
     {
       "pattern": "/voice/tester",
@@ -7191,9 +7561,19 @@
       "source": "app/(core)/war-room/new/page.tsx"
     },
     {
+      "pattern": "/war-room/speed-test",
+      "status": "live",
+      "source": "app/(core)/war-room/speed-test/page.tsx"
+    },
+    {
       "pattern": "/welcome",
       "status": "live",
       "source": "app/(core)/welcome/page.tsx"
+    },
+    {
+      "pattern": "/welcome/speed-test",
+      "status": "live",
+      "source": "app/(core)/welcome/speed-test/page.tsx"
     },
     {
       "pattern": "/why-ai-matrx",
@@ -7241,6 +7621,11 @@
       "source": "app/(core)/work/requests/page.tsx"
     },
     {
+      "pattern": "/work/speed-test",
+      "status": "live",
+      "source": "app/(core)/work/speed-test/page.tsx"
+    },
+    {
       "pattern": "/workbooks",
       "status": "live",
       "source": "app/(core)/workbooks/page.tsx"
@@ -7249,6 +7634,11 @@
       "pattern": "/workbooks/[id]",
       "status": "live",
       "source": "app/(core)/workbooks/[id]/page.tsx"
+    },
+    {
+      "pattern": "/workbooks/speed-test",
+      "status": "live",
+      "source": "app/(core)/workbooks/speed-test/page.tsx"
     },
     {
       "pattern": "/workbooks/templates",
@@ -7369,6 +7759,11 @@
       "pattern": "/workflows/runs/analyze",
       "status": "live",
       "source": "app/(core)/workflows/runs/analyze/page.tsx"
+    },
+    {
+      "pattern": "/workflows/speed-test",
+      "status": "live",
+      "source": "app/(core)/workflows/speed-test/page.tsx"
     },
     {
       "pattern": "/workflows/waiting",

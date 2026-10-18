@@ -92,6 +92,26 @@ describe("spendAlarmItems", () => {
     expect(item.fix).toBe("Approve or reject the held automation");
   });
 
+  it("a volume hold that paused the owner's own approval offers one Restore click, and a plain volume hold does not", async () => {
+    const d = deps({
+      restoreApproval: async (...args) => {
+        d.calls.push(["restoreApproval", ...args]);
+      },
+    });
+    const owner = row({
+      kind: "spend_volume_hold",
+      refs: { approval_id: APPROVAL, owner_decided: "true", prior_status: "temporary" },
+      approval_status: "waiting",
+    });
+    const [item] = spendAlarmItems([owner], d);
+    const restore = item.actions.find((a) => a.id === "restore_prior");
+    expect(restore?.label).toBe("Restore my approval");
+    await restore!.run();
+    expect(d.calls).toEqual([["restoreApproval", APPROVAL]]);
+    const [plain] = spendAlarmItems([row({ kind: "spend_volume_hold", refs: { approval_id: APPROVAL } })], d);
+    expect(plain.actions.map((a) => a.id)).not.toContain("restore_prior");
+  });
+
   it("info is its own severity; critical stays critical", () => {
     const items = spendAlarmItems([row({ id: "a", level: "info" }), row({ id: "b", level: "critical" })], deps());
     expect(items.map((i) => i.severity)).toEqual(["info", "critical"]);
