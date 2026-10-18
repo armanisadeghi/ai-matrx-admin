@@ -22,6 +22,8 @@ import {
   Gift,
   GraduationCap,
   History,
+  Activity,
+  FolderOpen,
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
@@ -29,7 +31,9 @@ import {
   Mail,
   MailPlus,
   MessageSquare,
+  ShieldCheck,
   SlidersHorizontal,
+  StickyNote,
   UserCheck,
   UserCog,
   UserPlus,
@@ -42,11 +46,15 @@ export const USERS_HUB_PATH = "/administration/users";
 
 export type UserTabId =
   | "overview"
+  | "activity"
   | "organizations"
   | "billing"
   | "preferences"
   | "acquisition"
   | "support"
+  | "content"
+  | "notes"
+  | "security"
   | "history";
 
 export interface UserTab {
@@ -59,11 +67,15 @@ export interface UserTab {
 
 export const USER_TABS: readonly UserTab[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
-  { id: "organizations", label: "Organizations", icon: Building2, built: true },
+  { id: "activity", label: "Activity", icon: Activity, built: false },
   { id: "billing", label: "Billing & usage", icon: WalletCards, built: true },
+  { id: "organizations", label: "Organizations", icon: Building2, built: true },
+  { id: "content", label: "Content", icon: FolderOpen, built: false },
+  { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
+  { id: "notes", label: "Notes", icon: StickyNote, built: false },
+  { id: "security", label: "Security", icon: ShieldCheck, built: false },
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: true },
   { id: "acquisition", label: "Acquisition", icon: UserPlus, built: true },
-  { id: "support", label: "Support sessions", icon: LifeBuoy, built: true },
   { id: "history", label: "Admin history", icon: History, built: true },
 ];
 

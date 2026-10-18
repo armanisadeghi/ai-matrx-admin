@@ -34,6 +34,10 @@ import { UserPreferencesTab } from "./UserPreferencesTab";
 import { UserAcquisitionTab } from "./UserAcquisitionTab";
 import { UserSupportTab } from "./UserSupportTab";
 import { UserHistoryTab } from "./UserHistoryTab";
+import { UserActivityTab } from "./UserActivityTab";
+import { UserContentTab } from "./UserContentTab";
+import { UserNotesTab } from "./UserNotesTab";
+import { UserSecurityTab } from "./UserSecurityTab";
 import {
   USERS_HUB_PATH,
   isVisibleUserTab,
@@ -62,6 +66,10 @@ const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = 
   acquisition: UserAcquisitionTab,
   support: UserSupportTab,
   history: UserHistoryTab,
+  activity: UserActivityTab,
+  content: UserContentTab,
+  notes: UserNotesTab,
+  security: UserSecurityTab,
 };
 
 export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }) {
