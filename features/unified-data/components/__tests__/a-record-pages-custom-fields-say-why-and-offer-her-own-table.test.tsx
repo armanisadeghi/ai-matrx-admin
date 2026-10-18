@@ -24,10 +24,32 @@ const MARISOL = "82a25af4-27cb-4e94-a2de-155eae7c8992";
 let activeOrganization: string | null = ELM_STREET;
 const dispatched: unknown[] = [];
 const sectionProps: Array<Record<string, unknown>> = [];
+// The page's agent doors (the platform registry's shape): the real section registers through `agentDoor`.
+const doors: Array<Record<string, unknown> & { entityToken: string; recordId: string }> = [];
+const KEPT_RECORD = {
+  fields: [
+    { key: "tier", label: "Tier", type: "text", value: "Gold" },
+    { key: "since", label: "Member since", type: "date" },
+    { key: "secret", label: "Secret", type: "text", hidden: true },
+  ],
+  custom: { since: "2024-03-01" },
+};
 
 jest.mock("@ai-matrx/records-ui", () => ({
   CustomFieldsSection: (props: Record<string, unknown>) => {
     sectionProps.push(props);
+    // What records-ui does on mount: hand the host its door.
+    const { useEffect } = jest.requireActual("react") as typeof import("react");
+    useEffect(() => {
+      const agentDoor = props["agentDoor"] as ((d: unknown) => () => void) | undefined;
+      return agentDoor?.({
+        entityToken: "party",
+        recordId: MARISOL,
+        state: () => ({ entityToken: "party", recordId: MARISOL, fields: [] }),
+        check: () => [],
+        addField: async (r: { label: string; type?: string }) => ({ ok: true, field_id: "f1", label: r.label, type: r.type ?? "text" }),
+      });
+    }, [props]);
     return <div data-test-section="" />;
   },
   RecordsMount: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -38,7 +60,7 @@ jest.mock("@ai-matrx/records-ui", () => ({
 jest.mock("@/features/unified-data/components/EntityBackLinks", () => ({ EntityBackLinks: () => null }));
 jest.mock("@/features/unified-data/hub/doors", () => ({
   entityRecordHome: async () => ({ ok: true, data: { organization_id: CEDAR_RIDGE } }),
-  entityRecordReadable: async () => ({ ok: true, data: null }),
+  entityRecordReadable: async () => ({ ok: true, data: KEPT_RECORD }),
 }));
 // The section's own reads are kept in Redux by record (`useStoreRead`); this page's cases are about
 // what the answers SAY, so a plain one-read stand-in carries them (the read-once law has its own
@@ -94,7 +116,13 @@ jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
 jest.mock("@ai-matrx/chat/surfaces/runtime/custom-field-targets", () => ({
   CUSTOM_FIELDS_VALUE_NAME: "custom_fields",
   customFieldsScopeValue: () => null,
-  registerCustomFieldsDoor: () => () => undefined,
+  registerCustomFieldsDoor: (door: (typeof doors)[number]) => {
+    doors.push(door);
+    return () => {
+      doors.splice(doors.indexOf(door), 1);
+    };
+  },
+  listCustomFieldsDoors: () => [...doors],
 }));
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({
   useSurfaceDormant: () => false,
@@ -123,6 +151,7 @@ describe("a record page's custom fields say why, and offer her own table", () =>
     activeOrganization = ELM_STREET;
     dispatched.length = 0;
     sectionProps.length = 0;
+    doors.length = 0;
     host = document.createElement("div");
     document.body.appendChild(host);
     root = createRoot(host);
@@ -175,10 +204,38 @@ describe("a record page's custom fields say why, and offer her own table", () =>
     const line = host.querySelector('[data-section="custom-fields"]');
     expect(line?.getAttribute("data-state")).toBe("collapsed");
     expect(sectionProps).toHaveLength(0);
-    const open = [...host.querySelectorAll("button")].find((b) => b.textContent === "Show");
+    const open = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Show"));
     expect(open).toBeDefined();
     await act(async () => open!.click());
     expect(sectionProps.length).toBeGreaterThan(0);
     expect(host.querySelector('[data-section="custom-fields"]')?.getAttribute("data-state")).toBe("ready");
+  });
+  it("4a: the collapsed line shows the field COUNT and registers the agent door without loading the screen", async () => {
+    await show(true);
+    const open = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Show"));
+    // Two readable fields (the hidden one is not counted), read from the answer the line already holds.
+    expect(open?.textContent).toContain("2");
+    expect(sectionProps).toHaveLength(0);
+    expect(doors).toHaveLength(1);
+    const state = (doors[0]!["state"] as () => { fields: Array<{ label: string; value: unknown }> })();
+    expect(state.fields.map((f) => f.label)).toEqual(["Tier", "Member since"]);
+    expect(state.fields[0]?.value).toBe("Gold");
+  });
+
+  it("4a: the agent's write opens the section, then the real door performs it", async () => {
+    await show(true);
+    const stand = doors[0]!;
+    let pending: Promise<unknown> = Promise.resolve();
+    // React renders the opened section when act exits; the write's next poll then finds the real door.
+    await act(async () => {
+      pending = (stand["addField"] as (r: { label: string }) => Promise<unknown>)({ label: "Region" });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+    const result = await pending;
+    expect(result).toEqual({ ok: true, field_id: "f1", label: "Region", type: "text" });
+    expect(sectionProps.length).toBeGreaterThan(0);
+    // The stand-in leaves once the real door is there: one door per record.
+    expect(doors).toHaveLength(1);
+    expect(doors[0]).not.toBe(stand);
   });
 });
