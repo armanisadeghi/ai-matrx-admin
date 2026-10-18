@@ -81,7 +81,8 @@ TURN_2_SHORT_LINE = (
     "this back to me exactly: {{carrier}} / {{hold_code}}"
 )
 TURN_3_MESSAGE = (
-    "Send the line one more time, with the door and the yard contact added, and include whatever the attached "
+    "Send the line one more time, with the door and the yard contact added. After its last field, add two more "
+    "fields: the hold code exactly as it appeared in the very first line you sent me, then whatever the attached "
     "note gives the driver for getting through the gate."
 )
 SHORT_LINE_VERSION = 2  # Kestrel Dock Desk v2 (1f6dcd51-…, built 2026-10-18) is the short-line recipe
