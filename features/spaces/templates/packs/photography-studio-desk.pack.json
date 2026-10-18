@@ -1,0 +1,3373 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0455",
+  "version": 1,
+  "title": "Photography Studio Desk",
+  "description": "Clients, packages, shoots and the editing-to-delivery checklist for a photo studio.",
+  "forWho": "Portrait, wedding and brand photographers",
+  "icon": {
+    "emoji": "📷"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "clients",
+  "tags": [
+    "photography",
+    "bookings",
+    "packages",
+    "delivery"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-photography-studio-desk",
+    "catalogueId": "SP0455",
+    "useCase": "Aurelio Fennimore runs a photography studio and uses this to see what is booked, which deposits are unpaid, which galleries are late and what each package earns.",
+    "industry": "media_creators",
+    "vertical": "Photography studio",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Saltmarsh Photography",
+      "describes": "A four-person photography studio shooting weddings, families and small-brand sessions with a retoucher and a studio manager.",
+      "address": {
+        "line1": "12 Weaver Close",
+        "city": "Charleston",
+        "region": "SC",
+        "postalCode": "29401",
+        "country": "US"
+      },
+      "phone": "(843) 555-0131",
+      "website": "saltmarshphoto.net",
+      "email": "book@saltmarshphoto.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-photography-studio-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "The people and businesses the studio photographs.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Active",
+              "Past"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Active": "green",
+              "Past": "blue"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Active": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "source",
+            "label": "How they found us",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral",
+              "Instagram",
+              "Venue partner",
+              "Search"
+            ],
+            "choiceColors": {
+              "Referral": "slate",
+              "Instagram": "blue",
+              "Venue partner": "amber",
+              "Search": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_inquiry",
+            "label": "First inquiry",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Looked after by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "shoot_count",
+            "label": "Shoots",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shoots",
+            "pick": "shoot_name",
+            "agg": "count"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_shoot",
+            "label": "Book a shoot",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "shoot",
+              "template": "New shoot",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Their story"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who they are, what the photos are for, and what they are nervous about."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Preferences"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Style references, family notes, accessibility needs."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contract and payments"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Package, deposit, balance and signing dates."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Calista and Joren Whitfield",
+              "status": "Active",
+              "source": "Venue partner",
+              "email": "calista.whitfield@mailpost.net",
+              "phone": "(843) 555-0161",
+              "first_inquiry": "@today-210d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "The Ashgrove family",
+              "status": "Active",
+              "source": "Referral",
+              "email": "ashgrove.fam@mailpost.net",
+              "phone": "(843) 555-0162",
+              "first_inquiry": "@today-40d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Verdant Pantry",
+              "status": "Active",
+              "source": "Instagram",
+              "email": "hello@verdantpantry.net",
+              "phone": "(843) 555-0163",
+              "first_inquiry": "@today-30d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Marisol and Tadeo Brennan",
+              "status": "Inquiry",
+              "source": "Search",
+              "email": "marisol.brennan@mailpost.net",
+              "phone": "(843) 555-0164",
+              "first_inquiry": "@today-3d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Priyanka Deshmukh",
+              "status": "Active",
+              "source": "Referral",
+              "email": "priyanka.d@mailpost.net",
+              "phone": "(843) 555-0165",
+              "first_inquiry": "@today-25d",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "The Okonkwo-Lindqvist family",
+              "status": "Past",
+              "source": "Referral",
+              "email": "okonkwo.lindqvist@mailpost.net",
+              "phone": "(843) 555-0166",
+              "first_inquiry": "@today-500d",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "client-7",
+            "values": {
+              "client_name": "Kestrel Coffee Roasters",
+              "status": "Active",
+              "source": "Search",
+              "email": "studio@kestrelcoffee.net",
+              "phone": "(843) 555-0167",
+              "first_inquiry": "@today-95d",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-8",
+            "values": {
+              "client_name": "Wesley and Anneliese Hargrove",
+              "status": "Active",
+              "source": "Venue partner",
+              "email": "hargrove.pair@mailpost.net",
+              "phone": "(843) 555-0168",
+              "first_inquiry": "@today-130d",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "package",
+        "name": "Packages",
+        "labelSingular": "Package",
+        "labelPlural": "Packages",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "package_name",
+        "describes": "The packages the studio sells, with what each one includes.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "package_name",
+            "label": "Package",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "For",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wedding",
+              "Family",
+              "Portrait",
+              "Brand",
+              "Event",
+              "Newborn"
+            ],
+            "choiceColors": {
+              "Wedding": "slate",
+              "Family": "blue",
+              "Portrait": "amber",
+              "Brand": "violet",
+              "Event": "teal",
+              "Newborn": "orange"
+            }
+          },
+          {
+            "key": "price_floor",
+            "label": "Price floor (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Coverage hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "images",
+            "label": "Edited images promised",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "includes",
+            "label": "Includes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "bookings",
+            "label": "Shoots in this package",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shoots",
+            "pick": "shoot_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New package",
+            "values": {
+              "package_name": "New package"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is included"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Hours, people, images and delivery time."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Add-ons"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Albums, extra hours, prints and their prices."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "package-1",
+            "values": {
+              "package_name": "Full wedding day",
+              "kind": "Wedding",
+              "price_floor": 4800,
+              "hours": 9,
+              "images": 600,
+              "includes": "Two photographers, engagement session, online gallery, printing rights"
+            }
+          },
+          {
+            "key": "package-2",
+            "values": {
+              "package_name": "Elopement and ceremony",
+              "kind": "Wedding",
+              "price_floor": 2200,
+              "hours": 3,
+              "images": 200,
+              "includes": "One photographer, gallery, 20 retouched favourites"
+            }
+          },
+          {
+            "key": "package-3",
+            "values": {
+              "package_name": "Family session",
+              "kind": "Family",
+              "price_floor": 550,
+              "hours": 1.5,
+              "images": 45,
+              "includes": "Outdoor location, gallery, two prints"
+            }
+          },
+          {
+            "key": "package-4",
+            "values": {
+              "package_name": "Studio portrait",
+              "kind": "Portrait",
+              "price_floor": 380,
+              "hours": 1,
+              "images": 25,
+              "includes": "Studio lighting, wardrobe guidance, retouching"
+            }
+          },
+          {
+            "key": "package-5",
+            "values": {
+              "package_name": "Brand story day",
+              "kind": "Brand",
+              "price_floor": 1800,
+              "hours": 5,
+              "images": 80,
+              "includes": "Product and people images with licence for web and social"
+            }
+          },
+          {
+            "key": "package-6",
+            "values": {
+              "package_name": "Event coverage, evening",
+              "kind": "Event",
+              "price_floor": 900,
+              "hours": 3,
+              "images": 150,
+              "includes": "Candid and group photos, next-day preview"
+            }
+          }
+        ]
+      },
+      {
+        "token": "shoot",
+        "name": "Shoots",
+        "labelSingular": "Shoot",
+        "labelPlural": "Shoots",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "camera",
+        "titleField": "shoot_name",
+        "describes": "Each booked session from inquiry to gallery delivery.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "shoot_name",
+            "label": "Shoot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Booked",
+              "Shot",
+              "Editing",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Booked": "green",
+              "Shot": "blue",
+              "Editing": "amber",
+              "Delivered": "violet"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Booked": "in_progress",
+              "Shot": "in_progress",
+              "Editing": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wedding",
+              "Family",
+              "Portrait",
+              "Brand",
+              "Event",
+              "Newborn"
+            ],
+            "choiceColors": {
+              "Wedding": "slate",
+              "Family": "blue",
+              "Portrait": "amber",
+              "Brand": "violet",
+              "Event": "teal",
+              "Newborn": "orange"
+            }
+          },
+          {
+            "key": "shoot_on",
+            "label": "Shoot date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "deliver_by",
+            "label": "Gallery due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "location",
+            "label": "Location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee",
+            "label": "Quoted fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit received (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "balance",
+            "label": "Balance due (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Quoted fee (USD)} - {Deposit received (USD)}"
+          },
+          {
+            "key": "contract_signed",
+            "label": "Contract signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "images_delivered",
+            "label": "Images delivered",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "package",
+            "label": "Package",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "package",
+            "relationMax": 1
+          },
+          {
+            "key": "photographer",
+            "label": "Photographer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "tasks_open",
+            "label": "Checklist items left",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "To do",
+                "Doing"
+              ]
+            }
+          },
+          {
+            "key": "days_to_shoot",
+            "label": "Days to shoot",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Shoot date}, 'days')"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_hand_over_gallery",
+            "label": "Hand over gallery",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shoot_hand_over_gallery"
+            }
+          },
+          {
+            "key": "add_task",
+            "label": "Add checklist item",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New checklist item",
+              "prefill": {
+                "shoot": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "package": "Either record can be created or change status before the other.",
+          "photographer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "images_delivered"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "shoot_on",
+            "deliver_by"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New shoot",
+            "values": {
+              "shoot_name": "New shoot",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Timeline, locations, must-have shots and family or group notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Day-of"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Arrival time, contact numbers, backup plan for weather."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Editing notes, selects count and delivery message."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "shoot-1",
+            "values": {
+              "shoot_name": "Whitfield wedding",
+              "status": "Booked",
+              "kind": "Wedding",
+              "shoot_on": "@today+34d",
+              "deliver_by": "@today+80d",
+              "location": "Marlowe Gardens, Charleston",
+              "fee": 4800,
+              "deposit": 1200,
+              "contract_signed": true,
+              "client": "client-1",
+              "package": "package-1",
+              "photographer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shoot-2",
+            "values": {
+              "shoot_name": "Ashgrove autumn family session",
+              "status": "Booked",
+              "kind": "Family",
+              "shoot_on": "@mon+5d",
+              "deliver_by": "@today+14d",
+              "location": "Palmetto Park",
+              "fee": 620,
+              "deposit": 150,
+              "contract_signed": true,
+              "client": "client-2",
+              "package": "package-3",
+              "photographer": "tm-2"
+            }
+          },
+          {
+            "key": "shoot-3",
+            "values": {
+              "shoot_name": "Verdant Pantry product day",
+              "status": "Editing",
+              "kind": "Brand",
+              "shoot_on": "@today-9d",
+              "deliver_by": "@today+4d",
+              "location": "Verdant kitchen",
+              "fee": 1950,
+              "deposit": 975,
+              "contract_signed": true,
+              "client": "client-3",
+              "package": "package-5",
+              "photographer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shoot-4",
+            "values": {
+              "shoot_name": "Brennan engagement inquiry",
+              "status": "Inquiry",
+              "kind": "Portrait",
+              "shoot_on": "@today+21d",
+              "location": "To be decided",
+              "contract_signed": false,
+              "client": "client-4",
+              "package": "package-4",
+              "photographer": "tm-1"
+            }
+          },
+          {
+            "key": "shoot-5",
+            "values": {
+              "shoot_name": "Deshmukh milestone portraits",
+              "status": "Shot",
+              "kind": "Portrait",
+              "shoot_on": "@today-2d",
+              "deliver_by": "@today+12d",
+              "location": "Studio A",
+              "fee": 420,
+              "contract_signed": true,
+              "client": "client-5",
+              "package": "package-4",
+              "photographer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shoot-6",
+            "values": {
+              "shoot_name": "Okonkwo-Lindqvist holiday session",
+              "status": "Delivered",
+              "kind": "Family",
+              "shoot_on": "@today-480d",
+              "deliver_by": "@today-455d",
+              "location": "Waterfront Park",
+              "fee": 580,
+              "deposit": 580,
+              "contract_signed": true,
+              "images_delivered": 52,
+              "client": "client-6",
+              "package": "package-3",
+              "photographer": "tm-2"
+            }
+          },
+          {
+            "key": "shoot-7",
+            "values": {
+              "shoot_name": "Kestrel roastery day",
+              "status": "Delivered",
+              "kind": "Brand",
+              "shoot_on": "@today-75d",
+              "deliver_by": "@today-50d",
+              "location": "Kestrel roastery",
+              "fee": 1800,
+              "deposit": 900,
+              "contract_signed": true,
+              "images_delivered": 96,
+              "client": "client-7",
+              "package": "package-5",
+              "photographer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shoot-8",
+            "values": {
+              "shoot_name": "Hargrove ceremony",
+              "status": "Delivered",
+              "kind": "Wedding",
+              "shoot_on": "@today-120d",
+              "deliver_by": "@today-80d",
+              "location": "Oak Hall Lawn",
+              "fee": 2400,
+              "deposit": 1100,
+              "contract_signed": true,
+              "images_delivered": 214,
+              "client": "client-8",
+              "package": "package-2",
+              "photographer": "tm-1"
+            }
+          },
+          {
+            "key": "shoot-9",
+            "values": {
+              "shoot_name": "Kestrel spring menu stills",
+              "status": "Booked",
+              "kind": "Brand",
+              "shoot_on": "@today+12d",
+              "deliver_by": "@today+30d",
+              "location": "Kestrel cafe",
+              "fee": 1100,
+              "deposit": 550,
+              "contract_signed": true,
+              "client": "client-7",
+              "package": "package-5",
+              "photographer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shoot-10",
+            "values": {
+              "shoot_name": "Ashgrove newborn session",
+              "status": "Shot",
+              "kind": "Newborn",
+              "shoot_on": "@today-5d",
+              "deliver_by": "@mon+3d",
+              "location": "Client home",
+              "fee": 640,
+              "deposit": 160,
+              "contract_signed": true,
+              "client": "client-2",
+              "package": "package-3",
+              "photographer": "tm-2"
+            }
+          },
+          {
+            "key": "shoot-11",
+            "values": {
+              "shoot_name": "Whitfield engagement session",
+              "status": "Editing",
+              "kind": "Portrait",
+              "shoot_on": "@today-14d",
+              "deliver_by": "@today-1d",
+              "location": "Battery Promenade",
+              "fee": 650,
+              "deposit": 650,
+              "contract_signed": true,
+              "client": "client-1",
+              "package": "package-4",
+              "photographer": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "shoot-12",
+            "values": {
+              "shoot_name": "Deshmukh office group event",
+              "status": "Booked",
+              "kind": "Event",
+              "shoot_on": "@today+16d",
+              "deliver_by": "@today+24d",
+              "location": "Harbor Room",
+              "fee": 950,
+              "deposit": 0,
+              "contract_signed": false,
+              "client": "client-5",
+              "package": "package-6",
+              "photographer": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Checklist",
+        "labelSingular": "Checklist item",
+        "labelPlural": "Checklist",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Prep, shooting and editing steps for each shoot.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Step",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Doing": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Before",
+              "Shoot day",
+              "Editing",
+              "Delivery"
+            ],
+            "choiceColors": {
+              "Before": "slate",
+              "Shoot day": "blue",
+              "Editing": "amber",
+              "Delivery": "violet"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "shoot",
+            "label": "Shoot",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "shoot",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_tick_done",
+            "label": "Tick done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_tick_done"
+            }
+          }
+        ],
+        "independentOf": {
+          "shoot": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New checklist item",
+            "values": {
+              "task_name": "New checklist item",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the next person doing this step should know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "task-1",
+            "values": {
+              "task_name": "Send questionnaire and shot list to Whitfields",
+              "status": "Doing",
+              "phase": "Before",
+              "due_on": "@today+3d",
+              "shoot": "shoot-1",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-2",
+            "values": {
+              "task_name": "Scout ceremony lighting at the gardens",
+              "status": "To do",
+              "phase": "Before",
+              "due_on": "@today+14d",
+              "shoot": "shoot-1",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "task-3",
+            "values": {
+              "task_name": "Confirm Ashgrove location and sunset time",
+              "status": "Doing",
+              "phase": "Before",
+              "due_on": "@mon+3d",
+              "shoot": "shoot-2",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-4",
+            "values": {
+              "task_name": "Cull Verdant Pantry images to selects",
+              "status": "Done",
+              "phase": "Editing",
+              "due_on": "@today-4d",
+              "shoot": "shoot-3",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-5",
+            "values": {
+              "task_name": "Retouch Verdant hero images",
+              "status": "Doing",
+              "phase": "Editing",
+              "due_on": "@today+1d",
+              "shoot": "shoot-3",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-6",
+            "values": {
+              "task_name": "Upload Verdant gallery and licence note",
+              "status": "To do",
+              "phase": "Delivery",
+              "due_on": "@today+4d",
+              "shoot": "shoot-3",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "task-7",
+            "values": {
+              "task_name": "Send Brennan package options",
+              "status": "To do",
+              "phase": "Before",
+              "due_on": "@today+2d",
+              "shoot": "shoot-4",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-8",
+            "values": {
+              "task_name": "Cull Deshmukh portraits",
+              "status": "To do",
+              "phase": "Editing",
+              "due_on": "@today+2d",
+              "shoot": "shoot-5",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-9",
+            "values": {
+              "task_name": "Back up Deshmukh cards twice",
+              "status": "Done",
+              "phase": "Shoot day",
+              "due_on": "@today-2d",
+              "shoot": "shoot-5",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-10",
+            "values": {
+              "task_name": "Retouch Whitfield engagement favourites",
+              "status": "Doing",
+              "phase": "Editing",
+              "due_on": "@today-1d",
+              "shoot": "shoot-11",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-11",
+            "values": {
+              "task_name": "Deliver Whitfield engagement gallery",
+              "status": "To do",
+              "phase": "Delivery",
+              "due_on": "@today",
+              "shoot": "shoot-11",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-12",
+            "values": {
+              "task_name": "Collect balance for Deshmukh event",
+              "status": "To do",
+              "phase": "Before",
+              "due_on": "@today+10d",
+              "shoot": "shoot-12",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one looked after by.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each shoot belongs to one client.",
+        "fromTable": "shoot",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "shoots"
+      },
+      {
+        "describes": "Each shoot belongs to one package.",
+        "fromTable": "shoot",
+        "fromField": "package",
+        "toTable": "package",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "shoots"
+      },
+      {
+        "describes": "Each shoot belongs to one photographer.",
+        "fromTable": "shoot",
+        "fromField": "photographer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "shoot_by_photographer"
+      },
+      {
+        "describes": "Each checklist item belongs to one shoot.",
+        "fromTable": "task",
+        "fromField": "shoot",
+        "toTable": "shoot",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each checklist item belongs to one owner.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "task_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Aurelio Fennimore",
+              "role": "Lead photographer",
+              "work_email": "aurelio@saltmarshphoto.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Beatrix Oyelaran-Cho",
+              "role": "Second shooter",
+              "work_email": "beatrix@saltmarshphoto.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Kasimir Dvorak",
+              "role": "Retoucher",
+              "work_email": "kasimir@saltmarshphoto.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Ngozi Whitlock",
+              "role": "Studio manager",
+              "work_email": "ngozi@saltmarshphoto.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "shoot_intake",
+        "name": "Book a session",
+        "describes": "Take an inquiry before it becomes a booked shoot.",
+        "audience": "staff",
+        "table": "shoot",
+        "fields": [
+          {
+            "fieldKey": "shoot_name",
+            "ask": "What is the session?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What type of shoot?"
+          },
+          {
+            "fieldKey": "shoot_on",
+            "ask": "When would you like it?"
+          },
+          {
+            "fieldKey": "location",
+            "ask": "Where?"
+          }
+        ],
+        "submitLabel": "Send the inquiry",
+        "confirmation": "Thanks. Your inquiry is saved as a new shoot."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "shoot_hand_over_gallery",
+        "table": "shoot",
+        "name": "Hand over gallery",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_tick_done",
+        "table": "task",
+        "name": "Tick done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_package",
+        "name": "All packages",
+        "table": "package",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "package_board",
+        "name": "Packages board",
+        "table": "package",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_shoot",
+        "name": "All shoots",
+        "table": "shoot",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shoot_board",
+        "name": "Shoots board",
+        "table": "shoot",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "shoot_cal",
+        "name": "Shoots calendar",
+        "table": "shoot",
+        "kind": "calendar",
+        "dateField": "shoot_on",
+        "allDay": true
+      },
+      {
+        "token": "shoot_over",
+        "name": "Overdue",
+        "table": "shoot",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Booked",
+            "Shot",
+            "Editing"
+          ]
+        }
+      },
+      {
+        "token": "shoot_week",
+        "name": "Due this week",
+        "table": "shoot",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Booked",
+            "Shot",
+            "Editing"
+          ]
+        }
+      },
+      {
+        "token": "shoot_next7",
+        "name": "Next 7 days",
+        "table": "shoot",
+        "kind": "grid",
+        "within": {
+          "deliver_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Booked",
+            "Shot",
+            "Editing"
+          ]
+        }
+      },
+      {
+        "token": "shoot_mine",
+        "name": "My shoots",
+        "table": "shoot",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_task",
+        "name": "All checklist",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_board",
+        "name": "Checklist board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_cal",
+        "name": "Checklist calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My checklist",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Photography Studio Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "shoot",
+          "describes": "Each booked session from inquiry to gallery delivery."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many shoots are in editing?",
+        "whyItMatters": "The retoucher plans the week around what is in editing.",
+        "expect": {
+          "table": "shoot",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Editing"
+          },
+          "answer": 2,
+          "unit": "shoots"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open packages.",
+        "action": {
+          "kind": "open",
+          "surface": "package_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "package_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open shoots.",
+        "action": {
+          "kind": "open",
+          "surface": "shoot_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shoot_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "saltmarshphoto.net"
+      ],
+      "fictionalStreets": [
+        "Weaver Close"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "photography-studio-desk",
+      "parent": null,
+      "title": "Photography Studio Desk",
+      "icon": {
+        "emoji": "📷"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the studio from one page: clients, the packages you sell, every shoot from inquiry to delivered gallery, and the checklist that gets each one finished on time. Open the Dashboard each morning, then work Mine and the late galleries view. Chase every unpaid deposit before the shoot date."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:inquiry-to-booking"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:shoot-day-prep"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:editing-and-delivery"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:pricing-and-deposits"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The people and businesses the studio photographs."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The packages the studio sells, with what each one includes."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "package",
+              "view": "package_board"
+            },
+            "inline": true,
+            "title": "Packages",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pac-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "pac-t",
+                "name": "All packages",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pac-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shoots"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each booked session from inquiry to gallery delivery."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shoot",
+              "view": "shoot_board"
+            },
+            "inline": true,
+            "title": "Shoots",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sho-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sho-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shoot_on"
+              },
+              {
+                "id": "sho-t",
+                "name": "All shoots",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sho-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "deliver_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Booked",
+                    "Shot",
+                    "Editing"
+                  ]
+                }
+              },
+              {
+                "id": "sho-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "deliver_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Booked",
+                    "Shot",
+                    "Editing"
+                  ]
+                }
+              },
+              {
+                "id": "sho-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "deliver_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Booked",
+                    "Shot",
+                    "Editing"
+                  ]
+                }
+              },
+              {
+                "id": "sho-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "sho-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Prep, shooting and editing steps for each shoot."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Checklist",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tas-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tas-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tas-t",
+                "name": "All checklist",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tas-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tas-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "photography-studio-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bookings, money and deliveries at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shoot",
+                      "view": "all_shoot"
+                    },
+                    "inline": true,
+                    "title": "Shoots by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Shoots by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shoot",
+                      "view": "all_shoot"
+                    },
+                    "inline": true,
+                    "title": "Quoted fees by shoot type (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Quoted fees by shoot type (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "fee"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Checklist by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Checklist by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "package",
+                      "view": "all_package"
+                    },
+                    "inline": true,
+                    "title": "Shoots by package",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Shoots by package",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "package_name",
+                          "op": "sum",
+                          "field": "bookings"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Galleries past their due date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shoot",
+              "view": "all_shoot"
+            },
+            "inline": true,
+            "title": "Galleries past their due date",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Galleries past their due date",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "deliver_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Shot",
+                    "Editing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shooting in the next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shoot",
+              "view": "all_shoot"
+            },
+            "inline": true,
+            "title": "Shooting in the next 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Shooting in the next 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "shoot_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist items due this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Checklist items due this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Checklist items due this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Balance due (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quoted fee minus deposit received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Collect the balance a week before the shoot or per the contract"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to shoot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shoot date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 7 with the contract unsigned means call the client today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Checklist items left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Items still To do or Doing on the shoot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "More than five with a shoot inside three days means ask for help"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Gallery due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The date promised for delivery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Past due means message the client the same day with a new date"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "inquiry-to-booking",
+      "parent": "photography-studio-desk",
+      "title": "From inquiry to booked",
+      "icon": {
+        "emoji": "📨"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Reply fast, sound human, and make the next step obvious. Most clients book the first studio that answers well."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within one working day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reply with availability for their date and two package suggestions."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the client row and a shoot at the Inquiry stage."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer a short call or a studio visit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "To hold the date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contract signed and deposit received, then change the shoot to Booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Without a deposit, the date is held for seven days only."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Welcome email with what happens next"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Questionnaire sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Calendar invite with address and arrival time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Checklist items added to the shoot"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "shoot-day-prep",
+      "parent": "photography-studio-desk",
+      "title": "Shoot day preparation",
+      "icon": {
+        "emoji": "🎒"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Batteries charged and spares counted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cards formatted, spare cards packed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Flash, reflectors and backdrops packed per the plan"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weather checked; indoor backup location confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Morning of"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Message the client with arrival time and a cheerful reminder of what to wear."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the shot list for must-have groups and family notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the shoot"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Back up the cards to two places before leaving."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the shoot Shot and add the editing checklist items."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a thank-you with the delivery date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "editing-and-delivery",
+      "parent": "photography-studio-desk",
+      "title": "Editing and gallery delivery",
+      "icon": {
+        "emoji": "🖼️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The editing pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Cull to the promised number of selects."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Color and exposure on all selects, retouching on favourites."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Export web-sized images and full-resolution files."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Upload to the client gallery with a short welcome note."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask a second person to open the gallery as the client would."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check names, captions and download links."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm the images delivered count against the package promise."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When you deliver"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press Hand over gallery, record the images delivered, and ask for a short review a week later."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A gallery that arrives early is the best advertising you will ever get."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "pricing-and-deposits",
+      "parent": "photography-studio-desk",
+      "title": "Packages, pricing and deposits",
+      "icon": {
+        "emoji": "💳"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping packages simple"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Three to five packages per kind of shoot; each states hours, people and images."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add-ons are priced separately so the package stays easy to compare."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shoot type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical deposit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wedding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quarter to half"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At signing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Family or portrait"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quarter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At booking"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brand day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Half"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At signing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tracking money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record the quoted fee and deposit received on every shoot. The Balance due column does the rest, and the Dashboard lists anything unpaid."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

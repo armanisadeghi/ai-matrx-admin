@@ -84,11 +84,11 @@
               "Churned"
             ],
             "choiceColors": {
+              "Churned": "red",
               "Prospect": "slate",
               "Onboarding": "blue",
               "Active": "green",
-              "Paused": "amber",
-              "Churned": "violet"
+              "Paused": "amber"
             },
             "required": true,
             "default": "Prospect",
@@ -117,10 +117,10 @@
             "choiceColors": {
               "Retail": "slate",
               "Restaurants": "blue",
-              "Home services": "green",
-              "Health and fitness": "amber",
-              "Software": "violet",
-              "Nonprofit": "red"
+              "Home services": "amber",
+              "Health and fitness": "violet",
+              "Software": "teal",
+              "Nonprofit": "orange"
             }
           },
           {
@@ -668,12 +668,12 @@
               "Organic social"
             ],
             "choiceColors": {
-              "Paid search": "slate",
-              "Paid social": "blue",
-              "Email": "green",
+              "Paid search": "green",
+              "Paid social": "slate",
+              "Email": "blue",
               "SEO": "amber",
               "Content": "violet",
-              "Organic social": "red"
+              "Organic social": "teal"
             }
           },
           {
@@ -1180,8 +1180,8 @@
             "choiceColors": {
               "To do": "slate",
               "In progress": "blue",
-              "In review": "green",
-              "Done": "amber"
+              "In review": "amber",
+              "Done": "green"
             },
             "required": true,
             "default": "To do",
@@ -1209,10 +1209,10 @@
             "choiceColors": {
               "Ad creative": "slate",
               "Landing page": "blue",
-              "Email": "green",
-              "Article": "amber",
-              "Tracking setup": "violet",
-              "Audit": "red"
+              "Email": "amber",
+              "Article": "violet",
+              "Tracking setup": "teal",
+              "Audit": "orange"
             }
           },
           {
@@ -1871,8 +1871,8 @@
             "choiceColors": {
               "Not started": "slate",
               "Drafting": "blue",
-              "Client review": "green",
-              "Sent": "amber"
+              "Client review": "amber",
+              "Sent": "green"
             },
             "required": true,
             "default": "Not started",

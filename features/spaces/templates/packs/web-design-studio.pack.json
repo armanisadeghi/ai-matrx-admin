@@ -84,8 +84,8 @@
             ],
             "choiceColors": {
               "Lead": "slate",
-              "Active": "blue",
-              "Maintenance": "green",
+              "Active": "green",
+              "Maintenance": "blue",
               "Past": "amber"
             },
             "required": true,
@@ -114,10 +114,10 @@
             "choiceColors": {
               "Hospitality": "slate",
               "Trades": "blue",
-              "Health": "green",
-              "Retail": "amber",
-              "Professional": "violet",
-              "Arts": "red"
+              "Health": "amber",
+              "Retail": "violet",
+              "Professional": "teal",
+              "Arts": "orange"
             }
           },
           {
@@ -460,9 +460,9 @@
             "choiceColors": {
               "Discovery": "slate",
               "Design": "blue",
-              "Build": "green",
-              "Review": "amber",
-              "Launched": "violet"
+              "Build": "amber",
+              "Review": "violet",
+              "Launched": "green"
             },
             "required": true,
             "default": "Discovery",
@@ -490,9 +490,9 @@
             "choiceColors": {
               "New site": "slate",
               "Redesign": "blue",
-              "Landing page": "green",
-              "Online store": "amber",
-              "Care plan": "violet"
+              "Landing page": "amber",
+              "Online store": "violet",
+              "Care plan": "teal"
             }
           },
           {
@@ -946,9 +946,9 @@
             "choiceColors": {
               "Not started": "slate",
               "Copy drafted": "blue",
-              "Designed": "green",
-              "Built": "amber",
-              "Approved": "violet"
+              "Designed": "amber",
+              "Built": "violet",
+              "Approved": "green"
             },
             "required": true,
             "default": "Not started",
@@ -977,10 +977,10 @@
             "choiceColors": {
               "Home": "slate",
               "Service": "blue",
-              "About": "green",
-              "Blog": "amber",
-              "Contact": "violet",
-              "Store": "red"
+              "About": "amber",
+              "Blog": "violet",
+              "Contact": "teal",
+              "Store": "orange"
             }
           },
           {
@@ -1024,14 +1024,14 @@
             "contextPolicy": "include"
           },
           {
-            "key": "btn_mark_approved",
-            "label": "Mark approved",
+            "key": "btn_sign_off",
+            "label": "Sign off",
             "parityType": "button",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "button": {
               "do": "run_action",
-              "action": "page_mark_approved"
+              "action": "page_sign_off"
             }
           }
         ],
@@ -1116,7 +1116,7 @@
           {
             "key": "page-1",
             "values": {
-              "page_title": "Home",
+              "page_title": "Juniper home page",
               "status": "Built",
               "page_type": "Home",
               "due_on": "@today+3d",
@@ -1151,7 +1151,7 @@
           {
             "key": "page-4",
             "values": {
-              "page_title": "Home",
+              "page_title": "Calloway home page",
               "status": "Designed",
               "page_type": "Home",
               "due_on": "@today+9d",
@@ -1162,7 +1162,7 @@
           {
             "key": "page-5",
             "values": {
-              "page_title": "Services",
+              "page_title": "Calloway services",
               "status": "Copy drafted",
               "page_type": "Service",
               "due_on": "@today+14d",
@@ -1185,7 +1185,7 @@
           {
             "key": "page-7",
             "values": {
-              "page_title": "Home",
+              "page_title": "Tern & Tide home page",
               "status": "Approved",
               "page_type": "Home",
               "due_on": "@today-12d",
@@ -1243,7 +1243,7 @@
           {
             "key": "page-12",
             "values": {
-              "page_title": "Home",
+              "page_title": "Wren Creek home page",
               "status": "Designed",
               "page_type": "Home",
               "due_on": "@today+10d",
@@ -1266,7 +1266,7 @@
           {
             "key": "page-14",
             "values": {
-              "page_title": "Visit us",
+              "page_title": "Wren Creek visit us",
               "status": "Copy drafted",
               "page_type": "Contact",
               "due_on": "@today+11d",
@@ -1359,7 +1359,7 @@
             "choiceColors": {
               "Client": "slate",
               "Internal": "blue",
-              "Testing": "green"
+              "Testing": "amber"
             }
           },
           {
@@ -1613,7 +1613,7 @@
         "ordered": false,
         "icon": "receipt",
         "titleField": "invoice_name",
-        "describes": "Milestone invoices for each project. Tracking only.",
+        "describes": "Milestone invoices for each project, tracked here and never paid from here.",
         "subject": "thing",
         "fields": [
           {
@@ -1637,10 +1637,10 @@
               "Paid"
             ],
             "choiceColors": {
+              "Overdue": "red",
               "Draft": "slate",
-              "Sent": "blue",
-              "Overdue": "green",
-              "Paid": "amber"
+              "Sent": "green",
+              "Paid": "blue"
             },
             "required": true,
             "default": "Draft",
@@ -2097,9 +2097,9 @@
       },
       {
         "kind": "row_action",
-        "token": "page_mark_approved",
+        "token": "page_sign_off",
         "table": "page",
-        "name": "Mark approved",
+        "name": "Sign off",
         "actionKind": "update",
         "steps": [
           {
@@ -3022,7 +3022,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Milestone invoices for each project. Tracking only."
+              "text": "Milestone invoices for each project, tracked here and never paid from here."
             }
           ]
         },

@@ -1,0 +1,3722 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0454",
+  "version": 1,
+  "title": "Video Production Studio",
+  "description": "Clients, productions, shot lists, bookings and edit versions for a video company.",
+  "forWho": "Video and film production companies",
+  "icon": {
+    "emoji": "🎬"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "clients",
+  "tags": [
+    "video",
+    "production",
+    "shot list",
+    "post"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-video-production-studio",
+    "catalogueId": "SP0454",
+    "useCase": "Ignatius Okonkwo-Hale runs a video company and uses this to see what shoots are coming, which shots are still missing, what has been booked and which cuts are waiting on a client.",
+    "industry": "media_creators",
+    "vertical": "Video production company",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Redwood Lane Pictures",
+      "describes": "A seven-person video company making brand films, product videos and social cutdowns for regional businesses and nonprofits.",
+      "address": {
+        "line1": "402 Tannery Row",
+        "city": "Sacramento",
+        "region": "CA",
+        "postalCode": "95814",
+        "country": "US"
+      },
+      "phone": "(916) 555-0149",
+      "website": "redwoodlanepictures.net",
+      "email": "studio@redwoodlanepictures.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-video-production-studio",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "client_name",
+        "describes": "The companies and organizations the studio makes video for.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Active",
+              "Past"
+            ],
+            "choiceColors": {
+              "Lead": "slate",
+              "Active": "green",
+              "Past": "blue"
+            },
+            "required": true,
+            "default": "Lead",
+            "statusGroups": {
+              "Lead": "todo",
+              "Active": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "sector",
+            "label": "Sector",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Food and drink",
+              "Real estate",
+              "Education",
+              "Nonprofit",
+              "Manufacturing",
+              "Tourism"
+            ],
+            "choiceColors": {
+              "Food and drink": "slate",
+              "Real estate": "blue",
+              "Education": "amber",
+              "Nonprofit": "violet",
+              "Manufacturing": "teal",
+              "Tourism": "orange"
+            }
+          },
+          {
+            "key": "contact_email",
+            "label": "Contact email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "since",
+            "label": "Client since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Producer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "prod_count",
+            "label": "Productions",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "productions",
+            "pick": "title",
+            "agg": "count"
+          },
+          {
+            "key": "prod_live",
+            "label": "Productions in progress",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "productions",
+            "pick": "title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Brief",
+                "Pre-production",
+                "Shoot",
+                "Post"
+              ]
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_production",
+            "label": "New production",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "production",
+              "template": "New production",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{contact_email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About them"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they sell, who they sell to, and the tone they want."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Approvals"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who signs the script, the cut and final delivery."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Brand rules"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Logo use, colors, music limits and legal lines."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Sutter Valley Brewing",
+              "status": "Active",
+              "sector": "Food and drink",
+              "contact_email": "marketing@suttervalleybrew.net",
+              "since": "@today-300d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Capitol Row Realty",
+              "status": "Active",
+              "sector": "Real estate",
+              "contact_email": "media@capitolrowrealty.net",
+              "since": "@today-120d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Delta Heritage Museum",
+              "status": "Active",
+              "sector": "Education",
+              "contact_email": "outreach@deltaheritage.net",
+              "since": "@today-60d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Harvest Table Alliance",
+              "status": "Past",
+              "sector": "Nonprofit",
+              "contact_email": "comms@harvesttablealliance.net",
+              "since": "@today-700d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Ironbark Machine Works",
+              "status": "Active",
+              "sector": "Manufacturing",
+              "contact_email": "brand@ironbarkmachine.net",
+              "since": "@today-200d",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Sierra Foothill Tours",
+              "status": "Lead",
+              "sector": "Tourism",
+              "contact_email": "hello@sierrafoothilltours.net",
+              "owner": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "production",
+        "name": "Productions",
+        "labelSingular": "Production",
+        "labelPlural": "Productions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "video",
+        "titleField": "title",
+        "describes": "Each video job from brief through delivery.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "title",
+            "label": "Production",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Phase",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Brief",
+              "Pre-production",
+              "Shoot",
+              "Post",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "Brief": "slate",
+              "Pre-production": "blue",
+              "Shoot": "amber",
+              "Post": "violet",
+              "Delivered": "green"
+            },
+            "required": true,
+            "default": "Brief",
+            "statusGroups": {
+              "Brief": "todo",
+              "Pre-production": "in_progress",
+              "Shoot": "in_progress",
+              "Post": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Brand film",
+              "Product video",
+              "Social cutdowns",
+              "Interview series",
+              "Event recap",
+              "Documentary"
+            ],
+            "choiceColors": {
+              "Brand film": "slate",
+              "Product video": "blue",
+              "Social cutdowns": "amber",
+              "Interview series": "violet",
+              "Event recap": "teal",
+              "Documentary": "orange"
+            }
+          },
+          {
+            "key": "shoot_on",
+            "label": "Shoot day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "delivery_on",
+            "label": "Delivery due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "budget",
+            "label": "Budget (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "crew_gear_cost",
+            "label": "Crew and gear costs (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "rate",
+            "agg": "sum"
+          },
+          {
+            "key": "budget_left",
+            "label": "Budget left (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Budget (USD)} - {Crew and gear costs (USD)}"
+          },
+          {
+            "key": "shots_total",
+            "label": "Shots planned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shots",
+            "pick": "shot_name",
+            "agg": "count"
+          },
+          {
+            "key": "shots_got",
+            "label": "Shots captured",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shots",
+            "pick": "shot_name",
+            "agg": "count",
+            "filter": {
+              "status": "Captured"
+            }
+          },
+          {
+            "key": "capture_pct",
+            "label": "Captured (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Shots planned} > 0, ROUND({Shots captured} / {Shots planned} * 100, 0), 0)"
+          },
+          {
+            "key": "cuts_waiting",
+            "label": "Cuts waiting on client",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cuts",
+            "pick": "cut_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Client review",
+                "Revisions"
+              ]
+            }
+          },
+          {
+            "key": "days_to_delivery",
+            "label": "Days to delivery",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Delivery due}, 'days')"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "producer",
+            "label": "Producer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close_out",
+            "label": "Close out",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "production_close_out"
+            }
+          },
+          {
+            "key": "add_shot",
+            "label": "Add shot",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "shot",
+              "template": "New shot",
+              "prefill": {
+                "production": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_booking",
+            "label": "Add booking",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "New booking",
+              "prefill": {
+                "production": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_cut",
+            "label": "Add cut",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "cut",
+              "template": "New cut",
+              "prefill": {
+                "production": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "producer": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "shoot_on",
+            "delivery_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New production",
+            "values": {
+              "title": "New production",
+              "status": "Brief"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Brief"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Audience, message, length, where it will run."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Treatment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How it will look and feel, in a few lines."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Logistics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Locations, permits, release forms, call time, contacts."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "production-1",
+            "values": {
+              "title": "Sutter Valley autumn release film",
+              "status": "Post",
+              "format": "Brand film",
+              "shoot_on": "@today-12d",
+              "delivery_on": "@today+10d",
+              "budget": 18000,
+              "client": "client-1",
+              "producer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "production-2",
+            "values": {
+              "title": "Capitol Row listing tours, spring batch",
+              "status": "Shoot",
+              "format": "Product video",
+              "shoot_on": "@mon+2d",
+              "delivery_on": "@today+14d",
+              "budget": 9500,
+              "client": "client-2",
+              "producer": "tm-2"
+            }
+          },
+          {
+            "key": "production-3",
+            "values": {
+              "title": "Delta Heritage oral history series",
+              "status": "Pre-production",
+              "format": "Interview series",
+              "shoot_on": "@today+9d",
+              "delivery_on": "@today+45d",
+              "budget": 26000,
+              "client": "client-3",
+              "producer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "production-4",
+            "values": {
+              "title": "Ironbark factory story",
+              "status": "Post",
+              "format": "Brand film",
+              "shoot_on": "@today-30d",
+              "delivery_on": "@today-2d",
+              "budget": 22000,
+              "client": "client-5",
+              "producer": "tm-1"
+            }
+          },
+          {
+            "key": "production-5",
+            "values": {
+              "title": "Ironbark safety training cutdowns",
+              "status": "Brief",
+              "format": "Social cutdowns",
+              "shoot_on": "@today+25d",
+              "delivery_on": "@today+55d",
+              "budget": 7000,
+              "client": "client-5",
+              "producer": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "production-6",
+            "values": {
+              "title": "Sutter Valley summer festival recap",
+              "status": "Delivered",
+              "format": "Event recap",
+              "shoot_on": "@today-70d",
+              "delivery_on": "@today-40d",
+              "budget": 8500,
+              "client": "client-1",
+              "producer": "tm-2"
+            }
+          },
+          {
+            "key": "production-7",
+            "values": {
+              "title": "Harvest Table fundraiser reel",
+              "status": "Delivered",
+              "format": "Social cutdowns",
+              "shoot_on": "@today-400d",
+              "delivery_on": "@today-380d",
+              "budget": 4200,
+              "client": "client-4",
+              "producer": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "shot",
+        "name": "Shot list",
+        "labelSingular": "Shot",
+        "labelPlural": "Shot list",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "camera",
+        "titleField": "shot_name",
+        "describes": "Every planned shot, ticked off on the shoot day.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "shot_name",
+            "label": "Shot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Captured",
+              "Pickup needed"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Captured": "blue",
+              "Pickup needed": "amber"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Captured": "done",
+              "Pickup needed": "in_progress"
+            }
+          },
+          {
+            "key": "size",
+            "label": "Framing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wide",
+              "Medium",
+              "Close-up",
+              "Insert",
+              "Drone",
+              "Interview"
+            ],
+            "choiceColors": {
+              "Wide": "slate",
+              "Medium": "blue",
+              "Close-up": "amber",
+              "Insert": "violet",
+              "Drone": "teal",
+              "Interview": "orange"
+            }
+          },
+          {
+            "key": "shoot_day",
+            "label": "Shoot day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "production",
+            "label": "Production",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "production",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_tick_off",
+            "label": "Tick off",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shot_tick_off"
+            }
+          }
+        ],
+        "independentOf": {
+          "production": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New shot",
+            "values": {
+              "shot_name": "New shot",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Lens, movement, light and any props."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the director wants out of it."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "shot-1",
+            "values": {
+              "shot_name": "Barrel room dolly in",
+              "status": "Captured",
+              "size": "Wide",
+              "shoot_day": "@today-12d",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "shot-2",
+            "values": {
+              "shot_name": "Brewer pouring the first pint",
+              "status": "Captured",
+              "size": "Close-up",
+              "shoot_day": "@today-12d",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "shot-3",
+            "values": {
+              "shot_name": "Hands tying the label",
+              "status": "Pickup needed",
+              "size": "Insert",
+              "shoot_day": "@today-12d",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "shot-4",
+            "values": {
+              "shot_name": "Exterior at golden hour",
+              "status": "Captured",
+              "size": "Drone",
+              "shoot_day": "@today-13d",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "shot-5",
+            "values": {
+              "shot_name": "Front step of the first listing",
+              "status": "Planned",
+              "size": "Wide",
+              "shoot_day": "@mon+2d",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "shot-6",
+            "values": {
+              "shot_name": "Kitchen walk-through, left to right",
+              "status": "Planned",
+              "size": "Medium",
+              "shoot_day": "@mon+2d",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "shot-7",
+            "values": {
+              "shot_name": "Agent to camera greeting",
+              "status": "Planned",
+              "size": "Interview",
+              "shoot_day": "@mon+2d",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "shot-8",
+            "values": {
+              "shot_name": "Curator at the archive shelves",
+              "status": "Planned",
+              "size": "Interview",
+              "shoot_day": "@today+9d",
+              "production": "production-3"
+            }
+          },
+          {
+            "key": "shot-9",
+            "values": {
+              "shot_name": "Hands turning pages of the ledger",
+              "status": "Planned",
+              "size": "Insert",
+              "shoot_day": "@today+9d",
+              "production": "production-3"
+            }
+          },
+          {
+            "key": "shot-10",
+            "values": {
+              "shot_name": "Foundry pour, side angle",
+              "status": "Captured",
+              "size": "Wide",
+              "shoot_day": "@today-30d",
+              "production": "production-4"
+            }
+          },
+          {
+            "key": "shot-11",
+            "values": {
+              "shot_name": "Founder at the lathe",
+              "status": "Captured",
+              "size": "Medium",
+              "shoot_day": "@today-30d",
+              "production": "production-4"
+            }
+          },
+          {
+            "key": "shot-12",
+            "values": {
+              "shot_name": "Apprentice close-up at the bench",
+              "status": "Pickup needed",
+              "size": "Close-up",
+              "shoot_day": "@today-30d",
+              "production": "production-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Bookings",
+        "labelSingular": "Booking",
+        "labelPlural": "Bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Crew, gear, locations and talent booked for each production.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Confirmed",
+              "Wrapped"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Confirmed": "green",
+              "Wrapped": "blue"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Confirmed": "in_progress",
+              "Wrapped": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Crew",
+              "Gear",
+              "Location",
+              "Talent"
+            ],
+            "choiceColors": {
+              "Crew": "slate",
+              "Gear": "blue",
+              "Location": "amber",
+              "Talent": "violet"
+            }
+          },
+          {
+            "key": "rate",
+            "label": "Rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "on_date",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "production",
+            "label": "Production",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "production",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_lock_in",
+            "label": "Lock in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_lock_in"
+            }
+          }
+        ],
+        "independentOf": {
+          "production": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New booking",
+            "values": {
+              "booking_name": "New booking",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Rate, hours, cancellation and who confirmed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "booking-1",
+            "values": {
+              "booking_name": "Second camera operator, two days",
+              "status": "Confirmed",
+              "kind": "Crew",
+              "rate": 1400,
+              "on_date": "@mon+2d",
+              "supplier": "Aldana Freelance",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "booking-2",
+            "values": {
+              "booking_name": "Cinema lens kit rental",
+              "status": "Confirmed",
+              "kind": "Gear",
+              "rate": 650,
+              "on_date": "@mon+2d",
+              "supplier": "Lensworks Rentals",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "booking-3",
+            "values": {
+              "booking_name": "Listing homes access",
+              "status": "Requested",
+              "kind": "Location",
+              "rate": 0,
+              "on_date": "@mon+2d",
+              "supplier": "Capitol Row Realty",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "booking-4",
+            "values": {
+              "booking_name": "Museum archive room",
+              "status": "Confirmed",
+              "kind": "Location",
+              "rate": 300,
+              "on_date": "@today+9d",
+              "supplier": "Delta Heritage Museum",
+              "production": "production-3"
+            }
+          },
+          {
+            "key": "booking-5",
+            "values": {
+              "booking_name": "Sound recordist",
+              "status": "Requested",
+              "kind": "Crew",
+              "rate": 700,
+              "on_date": "@today+9d",
+              "supplier": "Marlow Audio",
+              "production": "production-3"
+            }
+          },
+          {
+            "key": "booking-6",
+            "values": {
+              "booking_name": "Drone operator",
+              "status": "Wrapped",
+              "kind": "Crew",
+              "rate": 600,
+              "on_date": "@today-13d",
+              "supplier": "Skyhook Aerial",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "booking-7",
+            "values": {
+              "booking_name": "Colorist, three days",
+              "status": "Confirmed",
+              "kind": "Crew",
+              "rate": 1800,
+              "on_date": "@today+4d",
+              "supplier": "Fenwick Color",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "booking-8",
+            "values": {
+              "booking_name": "Foundry shoot permit and safety lead",
+              "status": "Wrapped",
+              "kind": "Location",
+              "rate": 450,
+              "on_date": "@today-30d",
+              "supplier": "Ironbark Machine Works",
+              "production": "production-4"
+            }
+          },
+          {
+            "key": "booking-9",
+            "values": {
+              "booking_name": "Lighting package",
+              "status": "Wrapped",
+              "kind": "Gear",
+              "rate": 520,
+              "on_date": "@today-30d",
+              "supplier": "Lensworks Rentals",
+              "production": "production-4"
+            }
+          }
+        ]
+      },
+      {
+        "token": "cut",
+        "name": "Cuts",
+        "labelSingular": "Cut",
+        "labelPlural": "Cuts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "scissors",
+        "titleField": "cut_name",
+        "describes": "Each edit version sent to the client, with its review status.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "cut_name",
+            "label": "Cut",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Rough cut",
+              "Client review",
+              "Revisions",
+              "Approved",
+              "Delivered"
+            ],
+            "choiceColors": {
+              "Rough cut": "slate",
+              "Client review": "blue",
+              "Revisions": "amber",
+              "Approved": "green",
+              "Delivered": "violet"
+            },
+            "required": true,
+            "default": "Rough cut",
+            "statusGroups": {
+              "Rough cut": "todo",
+              "Client review": "in_progress",
+              "Revisions": "in_progress",
+              "Approved": "in_progress",
+              "Delivered": "done"
+            }
+          },
+          {
+            "key": "version",
+            "label": "Version",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "key": "sent_on",
+            "label": "Sent to client",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "due_on",
+            "label": "Feedback due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "production",
+            "label": "Production",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "production",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_approve_cut",
+            "label": "Approve cut",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cut_approve_cut"
+            }
+          }
+        ],
+        "independentOf": {
+          "production": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "sent_on",
+            "due_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New cut",
+            "values": {
+              "cut_name": "New cut",
+              "status": "Rough cut"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes sent with the cut"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What changed since the last version and what to look for."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Feedback received"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The client's notes, numbered, with timecodes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "cut-1",
+            "values": {
+              "cut_name": "Autumn release film, first assembly",
+              "status": "Client review",
+              "version": 1,
+              "sent_on": "@today-2d",
+              "due_on": "@today+3d",
+              "production": "production-1"
+            }
+          },
+          {
+            "key": "cut-2",
+            "values": {
+              "cut_name": "Factory story, version two",
+              "status": "Revisions",
+              "version": 2,
+              "sent_on": "@today-6d",
+              "due_on": "@today-1d",
+              "production": "production-4"
+            }
+          },
+          {
+            "key": "cut-3",
+            "values": {
+              "cut_name": "Factory story, version one",
+              "status": "Delivered",
+              "version": 1,
+              "sent_on": "@today-20d",
+              "due_on": "@today-14d",
+              "production": "production-4"
+            }
+          },
+          {
+            "key": "cut-4",
+            "values": {
+              "cut_name": "Festival recap, final",
+              "status": "Delivered",
+              "version": 3,
+              "sent_on": "@today-45d",
+              "due_on": "@today-41d",
+              "production": "production-6"
+            }
+          },
+          {
+            "key": "cut-5",
+            "values": {
+              "cut_name": "Fundraiser reel, final",
+              "status": "Delivered",
+              "version": 2,
+              "sent_on": "@today-390d",
+              "due_on": "@today-385d",
+              "production": "production-7"
+            }
+          },
+          {
+            "key": "cut-6",
+            "values": {
+              "cut_name": "Listing tour one, rough",
+              "status": "Rough cut",
+              "version": 1,
+              "due_on": "@today+9d",
+              "production": "production-2"
+            }
+          },
+          {
+            "key": "cut-7",
+            "values": {
+              "cut_name": "Autumn film social cutdowns",
+              "status": "Rough cut",
+              "version": 1,
+              "due_on": "@mon+4d",
+              "production": "production-1"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one producer.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each production belongs to one client.",
+        "fromTable": "production",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "productions"
+      },
+      {
+        "describes": "Each production belongs to one producer.",
+        "fromTable": "production",
+        "fromField": "producer",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "production_by_producer"
+      },
+      {
+        "describes": "Each shot belongs to one production.",
+        "fromTable": "shot",
+        "fromField": "production",
+        "toTable": "production",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "shots"
+      },
+      {
+        "describes": "Each booking belongs to one production.",
+        "fromTable": "booking",
+        "fromField": "production",
+        "toTable": "production",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each cut belongs to one production.",
+        "fromTable": "cut",
+        "fromField": "production",
+        "toTable": "production",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "cuts"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Ignatius Okonkwo-Hale",
+              "role": "Executive producer",
+              "work_email": "ignatius@redwoodlanepictures.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Thea Barrington",
+              "role": "Producer",
+              "work_email": "thea@redwoodlanepictures.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Mateo Ruzicka",
+              "role": "Director and camera",
+              "work_email": "mateo@redwoodlanepictures.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Saoirse Pellegrino",
+              "role": "Editor",
+              "work_email": "saoirse@redwoodlanepictures.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Dmitri Vasquez-Lang",
+              "role": "Gaffer and operations",
+              "work_email": "dmitri@redwoodlanepictures.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "production_intake",
+        "name": "Request a video",
+        "describes": "Capture a new job before it is scoped.",
+        "audience": "staff",
+        "table": "production",
+        "fields": [
+          {
+            "fieldKey": "title",
+            "ask": "What is the video?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "format",
+            "ask": "What format?"
+          },
+          {
+            "fieldKey": "delivery_on",
+            "ask": "When is it needed?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. It is on the board as Brief."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "production_close_out",
+        "table": "production",
+        "name": "Close out",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shot_tick_off",
+        "table": "shot",
+        "name": "Tick off",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Captured"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_lock_in",
+        "table": "booking",
+        "name": "Lock in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cut_approve_cut",
+        "table": "cut",
+        "name": "Approve cut",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_production",
+        "name": "All productions",
+        "table": "production",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "production_board",
+        "name": "Productions board",
+        "table": "production",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "production_cal",
+        "name": "Productions calendar",
+        "table": "production",
+        "kind": "calendar",
+        "dateField": "shoot_on",
+        "allDay": true
+      },
+      {
+        "token": "production_over",
+        "name": "Overdue",
+        "table": "production",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Brief",
+            "Pre-production",
+            "Shoot",
+            "Post"
+          ]
+        }
+      },
+      {
+        "token": "production_week",
+        "name": "Due this week",
+        "table": "production",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Brief",
+            "Pre-production",
+            "Shoot",
+            "Post"
+          ]
+        }
+      },
+      {
+        "token": "production_next7",
+        "name": "Next 7 days",
+        "table": "production",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Brief",
+            "Pre-production",
+            "Shoot",
+            "Post"
+          ]
+        }
+      },
+      {
+        "token": "production_mine",
+        "name": "My productions",
+        "table": "production",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_shot",
+        "name": "All shot list",
+        "table": "shot",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shot_board",
+        "name": "Shot list board",
+        "table": "shot",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "shot_cal",
+        "name": "Shot list calendar",
+        "table": "shot",
+        "kind": "calendar",
+        "dateField": "shoot_day",
+        "allDay": true
+      },
+      {
+        "token": "shot_week",
+        "name": "Shooting this week",
+        "table": "shot",
+        "kind": "grid",
+        "within": {
+          "shoot_day": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "all_booking",
+        "name": "All bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "on_date",
+        "allDay": true
+      },
+      {
+        "token": "booking_week",
+        "name": "Booked this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "on_date": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "all_cut",
+        "name": "All cuts",
+        "table": "cut",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "cut_board",
+        "name": "Cuts board",
+        "table": "cut",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "cut_cal",
+        "name": "Cuts calendar",
+        "table": "cut",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "cut_over",
+        "name": "Overdue",
+        "table": "cut",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Rough cut",
+            "Client review",
+            "Revisions"
+          ]
+        }
+      },
+      {
+        "token": "cut_week",
+        "name": "Due this week",
+        "table": "cut",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Rough cut",
+            "Client review",
+            "Revisions"
+          ]
+        }
+      },
+      {
+        "token": "cut_next7",
+        "name": "Next 7 days",
+        "table": "cut",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Rough cut",
+            "Client review",
+            "Revisions"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Video Production Studio assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "production",
+          "describes": "Each video job from brief through delivery."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many productions are in post?",
+        "whyItMatters": "The editor schedules cuts around what is in post.",
+        "expect": {
+          "table": "production",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Post"
+          },
+          "answer": 2,
+          "unit": "productions"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open productions.",
+        "action": {
+          "kind": "open",
+          "surface": "production_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "production_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open shot list.",
+        "action": {
+          "kind": "open",
+          "surface": "shot_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shot_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "redwoodlanepictures.net"
+      ],
+      "fictionalStreets": [
+        "Tannery Row"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "video-production-studio",
+      "parent": null,
+      "title": "Video Production Studio",
+      "icon": {
+        "emoji": "🎬"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every job on one board: clients, productions from brief to delivery, the shot list for each shoot, crew and gear bookings, and the cuts waiting on feedback. Check the Dashboard before each shoot day, tick shots off as they are captured and keep Cuts waiting on client honest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pre-production-checklist"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:shoot-day-runbook"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:post-and-feedback"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:quoting-a-job"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The companies and organizations the studio makes video for."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Productions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each video job from brief through delivery."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "production",
+              "view": "production_board"
+            },
+            "inline": true,
+            "title": "Productions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pro-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shoot_on"
+              },
+              {
+                "id": "pro-t",
+                "name": "All productions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pro-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "delivery_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Pre-production",
+                    "Shoot",
+                    "Post"
+                  ]
+                }
+              },
+              {
+                "id": "pro-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "delivery_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Pre-production",
+                    "Shoot",
+                    "Post"
+                  ]
+                }
+              },
+              {
+                "id": "pro-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Pre-production",
+                    "Shoot",
+                    "Post"
+                  ]
+                }
+              },
+              {
+                "id": "pro-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shot list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every planned shot, ticked off on the shoot day."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shot",
+              "view": "shot_board"
+            },
+            "inline": true,
+            "title": "Shot list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sho-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sho-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shoot_day"
+              },
+              {
+                "id": "sho-t",
+                "name": "All shot list",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sho-week",
+                "name": "Shooting this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "shoot_day": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "sho-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Crew, gear, locations and talent booked for each production."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "on_date"
+              },
+              {
+                "id": "boo-t",
+                "name": "All bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-week",
+                "name": "Booked this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "on_date": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cuts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each edit version sent to the client, with its review status."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cut",
+              "view": "cut_board"
+            },
+            "inline": true,
+            "title": "Cuts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cut-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cut-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "cut-t",
+                "name": "All cuts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cut-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Rough cut",
+                    "Client review",
+                    "Revisions"
+                  ]
+                }
+              },
+              {
+                "id": "cut-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Rough cut",
+                    "Client review",
+                    "Revisions"
+                  ]
+                }
+              },
+              {
+                "id": "cut-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Rough cut",
+                    "Client review",
+                    "Revisions"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "cut-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "video-production-studio",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is shooting, editing and waiting on feedback."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "production",
+                      "view": "all_production"
+                    },
+                    "inline": true,
+                    "title": "Productions by phase",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Productions by phase",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shot",
+                      "view": "all_shot"
+                    },
+                    "inline": true,
+                    "title": "Shots by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Shots by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Booking cost by kind (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Booking cost by kind (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "rate"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cut",
+                      "view": "all_cut"
+                    },
+                    "inline": true,
+                    "title": "Cuts by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Cuts by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery due soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "production",
+              "view": "all_production"
+            },
+            "inline": true,
+            "title": "Delivery due soon",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Delivery due soon",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Brief",
+                    "Pre-production",
+                    "Shoot",
+                    "Post"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shots still to get"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shot",
+              "view": "all_shot"
+            },
+            "inline": true,
+            "title": "Shots still to get",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Shots still to get",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Pickup needed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Feedback overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cut",
+              "view": "all_cut"
+            },
+            "inline": true,
+            "title": "Feedback overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Feedback overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Rough cut",
+                    "Client review",
+                    "Revisions"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Captured (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shots captured divided by shots planned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 100 after the shoot day means schedule pickups now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Budget left (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Budget minus the cost of bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Negative before post starts means talk to the client about scope"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cuts waiting on client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cuts in client review or revisions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "More than two per production means chase and set a firm feedback date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to delivery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivery date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under seven with open revisions means clear the calendar for the edit"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "pre-production-checklist",
+      "parent": "video-production-studio",
+      "title": "Pre-production checklist",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most shoot-day problems were decided two weeks earlier. Work this list from the moment the brief is signed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Script or interview questions approved in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Locations visited; power, parking, sound and light noted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Releases for people and places sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Crew and gear requests logged in Bookings"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One week out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shot list complete and shared with the director"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call sheet drafted with times, addresses and phone numbers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weather plan or backup location agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Batteries charged, cards formatted, spares counted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call sheet sent to every person on the shoot"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client reminded who will be on set and when they arrive"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "shoot-day-runbook",
+      "parent": "video-production-studio",
+      "title": "Shoot day runbook",
+      "icon": {
+        "emoji": "🎥"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On arrival"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the location with the client contact and confirm what is off limits."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set up audio first; a good picture with bad sound is unusable."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Capture the hardest shots while the light and the people are fresh."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tick off shots in the Shot list as they are captured, and mark misses Pickup needed straight away."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Slate or name each take so the editor can find it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Back up every card before it is formatted, to two places."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At wrap"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "All releases signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cards labelled and backed up twice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gear counted back into cases"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client told what happens next and when they will see a cut"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "post-and-feedback",
+      "parent": "video-production-studio",
+      "title": "Post-production and feedback rounds",
+      "icon": {
+        "emoji": "🎞️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rounds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Round"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Purpose"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client sees"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Assembly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Story order and pacing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rough cut, no color or final music"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fine cut"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Trims, graphics, music"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Near-final with temporary elements"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Final"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Color, mix, legal text"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Locked picture, ready for delivery"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Collecting feedback"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send one link with a feedback due date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for one consolidated list from one person."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log notes in the Cut row with timecodes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Limits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Two rounds of changes are included; extra rounds are quoted before work starts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Changes to the story after the fine cut count as a new edit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Export the agreed formats, name files clearly, send the checksum list and move the production to Delivered with Close out."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "quoting-a-job",
+      "parent": "video-production-studio",
+      "title": "Quoting a video job",
+      "icon": {
+        "emoji": "💬"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to ask first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Where will it run: social, a website, an event screen, television?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How long should it be, and how many versions?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who is on screen, and do they need to be booked?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building the number"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List crew days, gear days, locations, talent and post days as lines in Bookings."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a buffer of ten to fifteen percent for pickups and extra rounds."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Compare Crew and gear costs against the budget on the production row and note the margin."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Terms to state"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Number of included revisions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Usage rights and music licensing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancellation and weather days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What the client must supply and by when."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
