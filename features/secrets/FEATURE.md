@@ -46,9 +46,9 @@ Hand-written transport kept only for consumers outside the Vault screens; each i
 |---|---|
 | `fetchVaultItems`, type `VaultItem` | `features/marketing/connections/DomainConnections.tsx`, `features/marketing/news-monitor/DeliveryControls.tsx` (credential pickers) |
 | `createVaultItem` | `features/spaces/io/NotionImport.tsx`, `features/unified-data/base/AirtableImportDialog.tsx` |
-| `getVaultExportActor`, `confirmVaultPasswordIdentity`, `restoreVaultItem`, `VaultRestoreTransportError`, `VaultIdentityConfirmationError`, types `VaultRestoreResult` / `VaultVerifiedExportActor` | `app/(core)/trash/page.tsx`, `features/trash/VaultTrashRestoreDialog.tsx`, `components/VaultRevealReauthDialog.tsx` |
+| `getVaultExportActor`, `confirmVaultPasswordIdentity`, `restoreVaultItem`, `VaultRestoreTransportError`, `VaultIdentityConfirmationError`, types `VaultRestoreResult` / `VaultVerifiedExportActor` | `app/(core)/trash/page.tsx`, `features/trash/VaultTrashRestoreDialog.tsx` |
 | `fetchOrganizationVaultMemberAccess`, `setOrganizationVaultMemberAccess` (via `components/MemberVaultAccessControl.tsx`) | `features/organizations/components/MemberManagement.tsx` |
-| `components/VaultRevealReauthDialog.tsx` | `features/sharing/secure/SecureLinkPanel.tsx` |
+| `webVaultIdentity`, `webVaultSignIn` (`webVaultIdentity.ts`): the web's ONE "Confirm it's you" (Google, password, email code; a different account back from Google is signed out of this device) and sign-in door | `components/WebVault.tsx`, `features/sharing/secure/SecureLinkPanel.tsx` (through `@ai-matrx/vault` `IdentityGate`) |
 | `safeVaultLoginUrl` (`utils.ts`) | `features/organizations/provider-accounts/ProviderAccountsSection.tsx` |
 
 ## Item/field model and handling doctrine
@@ -123,6 +123,8 @@ owned by the connecting user (`definition_key='oauth_token_set'` or
   connection AND soft-deletes the owned vault item.
 
 ## Change Log
+
+- 2026-10-18 — the password-only `VaultRevealReauthDialog` is deleted: the secure-link sender confirms through the package's ONE `IdentityGate` over `webVaultIdentity`; Google confirmations check the same person came back (device-scoped sign-out otherwise); the Vault offers the site's sign-in when the session ended.
 
 - **2026-10-16** — Adopted `@ai-matrx/vault` 0.1.x: `/vault`, `/vault/[itemId]`, the Vault window and the organization vault section render the package's `VaultApp` through `components/WebVault.tsx`; `/vault/authenticator` and `/vault/approve-browser` redirect into it. Deleted every old screen (workspace, item detail, create/import/export/backup dialogs, generator, password history, browsers dialog, approve-browser workspace, authenticator UI), the import parsers and workers, the authenticator client and hooks, `vault-list.ts`, `use-vault-item-state.ts`, `vault-hooks.ts`, `credential-identity.ts`, `features/files/vault/vaultAttachmentTransport.ts`, their tests and the old import-dialog browser harnesses. `vault-service.ts`, `types.ts` and `utils.ts` keep only what the consumers listed above import.
 
