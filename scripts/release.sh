@@ -449,6 +449,12 @@ ship_guard_twins() {  # $1 = the temporary index (lockfile repairs already appli
                 ship_finding "WARNING" "Lockfile" "pnpm-lock.yaml held two versions of one @ai-matrx package (Vercel's postinstall refuses it) — remedied inside the release commit: ${moved:0:600}" "pnpm sync:matrx-packages, commit the lockfile"
             fi
             ;;
+        4)
+            # The collapsed set breaks a package-to-package import (v0.4.3327's class): keep the old lockfile,
+            # say which import, and go on — a release never stops for this.
+            echo "--- lockfile-twins ---" >&2; tail -20 "$err" >&2
+            ship_finding "ERROR" "Lockfile" "Collapsing @ai-matrx twins was REJECTED, old lockfile kept (it still holds twins): $(tr '\n' ' ' <"$err" | sed 's/  */ /g' | cut -c1-420)" "pnpm sync:matrx-packages after the importer is republished, commit the lockfile"
+            ;;
         1)
             echo "--- lockfile-twins ---" >&2; tail -20 "$err" >&2
             rm -f "$out" "$err"
