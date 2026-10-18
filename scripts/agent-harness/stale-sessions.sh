@@ -25,8 +25,11 @@
 #      launcher is gone (parent is launchd) for ORPHAN_GRACE_SEC, with no client attached to its
 #      debugging port, is closed with its whole tree.
 #   3. A detached launcher of such a browser — parent launchd, working directory a temp dir or this
-#      checkout (agent scratch / walk scripts), older than HOLD_MAX_MIN (the longest a run may hold the
-#      preview) — is closed with its browser.
+#      checkout (agent scratch / walk scripts) — is closed with its browser once the agent session that
+#      started it is gone (CLAUDE_PID in its environment names a process that is no longer a session;
+#      after ORPHAN_GRACE_SEC — 2026-10-17: such daemons press "Resume this preview" every 10 s and kept
+#      walk slots for hours after their session ended), or, when no session can be read, once it is
+#      older than HOLD_MAX_MIN (the longest a run may hold the preview).
 #   Nothing else is ever touched: never the shared dev server, never a browser whose launcher is
 #   alive, never a process outside these markers.
 
@@ -39,6 +42,14 @@ MEMORY_FILE="$STATE_DIR/memory"
 WALKS_JSON="$STATE_DIR/walks.json"
 WALK_KNOBS="$STATE_DIR/walk-knobs"
 ORPHANS_SEEN="$STATE_DIR/orphans.seen"
+MACHINE_GUARD_PY="${MACHINE_GUARD_PY:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../machine-guard" 2>/dev/null && pwd)/machine_guard.py}"
+
+# launcher_session <pid> — alive | gone | unknown: whether the agent session that started it still runs.
+launcher_session() { /usr/bin/python3 "$MACHINE_GUARD_PY" session-state "$1" 2>/dev/null || echo unknown; }
+
+# ensure_machine_guard — the one machine-wide memory guard for agent-started jobs runs (it starts
+# itself at most once; scripts/machine-guard/machine_guard.py, docs/perf/machine-guard.md).
+ensure_machine_guard() { /usr/bin/python3 "$MACHINE_GUARD_PY" ensure >/dev/null 2>&1 || true; }
 
 # cleanup_note <what> — every cleanup is one dated line, in the cleanup log and the preview log.
 cleanup_note() {
@@ -248,13 +259,21 @@ sweep_orphan_browsers() {
       fi
       continue
     fi
-    # Rule 3: the launcher itself is detached from every session and older than the longest hold.
+    # Rule 3: the launcher itself is detached, from agent scratch, and its session is gone (or, when
+    # no session can be read, it is older than the longest hold).
     read -r lppid letime largs <<<"$(awk -v p="$ppid" '$1 == p { $1 = ""; print; exit }' <<<"$table")"
     [[ "$lppid" == 1 ]] || continue
     [[ "$largs" == "$PW_BROWSERS_DIR"/* ]] && continue
-    (( $(etime_seconds "$letime") >= launcher_max )) || continue
     scratch_cwd "$ppid" || continue
-    why="detached Playwright launcher pid $ppid (${largs:0:80}, up $letime, no session) and its browser pid $pid"
+    local lage lsession
+    lage="$(etime_seconds "$letime")"
+    if (( lage >= launcher_max )); then
+      why="detached Playwright launcher pid $ppid (${largs:0:80}, up $letime, no session) and its browser pid $pid"
+    elif (( lage >= ORPHAN_GRACE_SEC )) && lsession="$(launcher_session "$ppid")" && [[ "$lsession" == gone ]]; then
+      why="detached Playwright launcher pid $ppid (${largs:0:80}, up $letime, its agent session is gone) and its browser pid $pid"
+    else
+      continue
+    fi
     if (( dry )); then
       printf '%s\n' "$why"
     else

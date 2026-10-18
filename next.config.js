@@ -1189,12 +1189,24 @@ const nextConfig = {
 // `next dev` — another port, a second concurrent server even with a valid token,
 // any mode but live — is refused here, before a single
 // worker spawns. The table and the rule: scripts/agent-harness/shared-dev-servers.cjs.
-const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
+const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } = require("next/constants");
 const { sharedDevServerRefusal, otherDevServers } = require("./scripts/agent-harness/shared-dev-servers.cjs");
 
 function assertSharedDevServer(phase) {
   if (phase !== PHASE_DEVELOPMENT_SERVER) return;
   const refusal = sharedDevServerRefusal({ env: process.env, argv: process.argv, others: otherDevServers() });
+  if (refusal) throw new Error(refusal);
+}
+
+// AN AGENT'S LOCAL `next build` RUNS UNDER THE MACHINE GUARD (Arman, 2026-10-17: "make the wrong one
+// very very very difficult"). Runaway local jobs of 28-112 GB ran the Mac out of memory about five
+// times a day; the wrapper runs one local build at a time and stops it at its memory ceiling.
+// `pnpm build:next` routes through it by itself. Vercel, CI and a person's own terminal are never
+// refused. Rule and wrapper: scripts/machine-guard/build-guard.cjs, docs/perf/machine-guard.md.
+const { rawBuildRefusal } = require("./scripts/machine-guard/build-guard.cjs");
+function assertGuardedBuild(phase) {
+  if (phase !== PHASE_PRODUCTION_BUILD) return;
+  const refusal = rawBuildRefusal({ env: process.env, platform: process.platform });
   if (refusal) throw new Error(refusal);
 }
 
@@ -1236,6 +1248,7 @@ function withDevNativeReactCompiler(config) {
 copyFiles();
 module.exports = (phase) => {
   assertSharedDevServer(phase);
+  assertGuardedBuild(phase);
   const config =
     phase === PHASE_DEVELOPMENT_SERVER ? withDevNativeReactCompiler(withPendingImportRescue(nextConfig)) : nextConfig;
   return withBundleAnalyzer(config);
