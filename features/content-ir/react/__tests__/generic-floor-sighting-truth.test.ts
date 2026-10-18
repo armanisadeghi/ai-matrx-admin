@@ -59,6 +59,18 @@ import {
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 30));
 
+/**
+ * The sighting measures through lazy `import()`s (the registry and the route module). The FIRST file in a
+ * process pays their cold transform, which is longer than a fixed 30 ms flush on a loaded machine; a test
+ * that expects a filing waits for it (bounded), a test that expects none still flushes after a warm-up.
+ */
+async function waitForFiled(limitMs = 8_000): Promise<void> {
+  const deadline = Date.now() + limitMs;
+  while (filedKinds().length === 0 && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+
 function fileGenericFloor(kind: string) {
   reportKindComponentIncident({
     kind,
@@ -90,7 +102,7 @@ afterAll(() => setKindComponentIncidentsEnabledForTests(false));
 
 it("files when the settled resolver still answers no component", async () => {
   fileGenericFloor("truly_bare_kind");
-  await flush();
+  await waitForFiled();
   expect(filedKinds()).toEqual(["truly_bare_kind"]);
 });
 
