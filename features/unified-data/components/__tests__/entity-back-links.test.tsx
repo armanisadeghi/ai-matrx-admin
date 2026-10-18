@@ -24,8 +24,15 @@ const item = (n: number, table: string) => ({
 const hook = jest.fn();
 const asked = jest.fn();
 
+// The section rides the records CLIENT only: drawing a records-ui screen here would load the
+// records-ui root in every quick look (2026-10-18), so the screen mock refuses to draw.
 jest.mock("@ai-matrx/records-ui", () => ({
-  RecordsMount: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  RecordsMount: () => {
+    throw new Error("EntityBackLinks drew a records-ui screen");
+  },
+}));
+jest.mock("@ai-matrx/records/react", () => ({
+  RecordsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 jest.mock("@/features/unified-data/components/useKeptEntityBackLinks", () => ({
   useKeptEntityBackLinks: (...a: unknown[]) => {

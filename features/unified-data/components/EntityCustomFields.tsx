@@ -92,6 +92,11 @@ export interface EntityCustomFieldsProps {
    * screenshot, a collection run), so no "Linked records" section and no admin badge. Default `true`.
    */
   backLinks?: boolean;
+  /**
+   * A quick look sets this: the section shows its line collapsed, and the records-ui screen (the
+   * front door's root) loads only when the person opens it. Record pages keep it open.
+   */
+  collapsed?: boolean;
   className?: string;
 }
 
@@ -251,7 +256,9 @@ function EntityCustomFieldsSection({
   className,
   absentWhenNotApplicable,
   organizationId: pageOrganizationId,
+  collapsed,
 }: EntityCustomFieldsProps) {
+  const [opened, setOpened] = useState(false);
   const { home, retry: retryHome } = useRecordHome(entityToken, recordId, pageOrganizationId ?? null);
   // The record's organization is known only once the home door answers; the host wiring (own-table
   // offer, registry word, dormant-aware agent door) is the ONE hook every record page shares.
@@ -319,6 +326,15 @@ function EntityCustomFieldsSection({
         <span data-error-box className="text-muted-foreground">Couldn&apos;t read this record<ErrorAlchemyMenu /></span>
         <Button size="sm" variant="ghost" className="ml-auto" onClick={retryRead}>
           Retry
+        </Button>
+      </SectionLine>
+    );
+  }
+  if (collapsed && !opened) {
+    return (
+      <SectionLine state="collapsed" title={title} className={className}>
+        <Button size="sm" variant="ghost" className="ml-auto" aria-expanded={false} onClick={() => setOpened(true)}>
+          Show
         </Button>
       </SectionLine>
     );

@@ -965,7 +965,7 @@ function AccountsRoster() {
         })
       }
     >
-    <div className="flex h-full flex-col gap-3 p-4">
+    <div data-matrx-page-end="" className="flex h-full flex-col gap-3 p-4">
       {/* The read's failure is said once, by the table (read=). */}
 
       {focusedUserId ? (

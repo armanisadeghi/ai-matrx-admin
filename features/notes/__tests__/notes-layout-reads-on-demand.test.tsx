@@ -4,7 +4,8 @@
  *
  * Named breaks this suite catches:
  *  - the notes workspace (list, assists, realtime) mounting under a static
- *    /notes/<segment> page that is not the workspace (/notes/speed-test);
+ *    /notes/<segment> page that is not the workspace (/notes/speed-test), or
+ *    its code being statically imported by the layout's route body;
  *  - "Shared with me" read on route entry, or a refresh path (focus, realtime
  *    catch-up, Refresh) reading it before anyone opened the section;
  *  - the scope-tag read re-reading every visible note id
@@ -35,9 +36,11 @@ jest.mock("@/features/scopes/service/scopesService", () => ({
 jest.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
 }));
-jest.mock("../components/NotesView", () => ({
-  NotesView: () => <div data-testid="notes-workspace" />,
-}));
+// The workspace is split at the route condition; the stub stands where the
+// loaded NotesView would render.
+jest.mock("next/dynamic", () => () => function NotesWorkspaceStub() {
+  return <div data-testid="notes-workspace" />;
+});
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -118,6 +121,15 @@ describe("the notes layout mounts the workspace only on workspace routes", () =>
     const html = renderToStaticMarkup(<NotesRouteBody><p>empty page</p></NotesRouteBody>);
     expect(html).not.toContain("notes-workspace");
     expect(html).toContain("empty page");
+  });
+
+  it("never statically imports the workspace (its code loads only where it renders)", () => {
+    const source = readFileSync(
+      join(__dirname, "..", "components", "NotesRouteBody.tsx"),
+      "utf8",
+    );
+    expect(source).not.toMatch(/^import[^;]*from "\.\/NotesView";/m);
+    expect(source).toMatch(/import\("\.\/NotesView"\)/);
   });
 
   it("still renders the workspace on /notes and /notes/<id>", () => {

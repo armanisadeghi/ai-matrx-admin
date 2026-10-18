@@ -114,6 +114,7 @@ export function PeekDialog({
                   entityToken={record.token}
                   recordId={record.id}
                   absentWhenNotApplicable
+                  collapsed
                   className="mt-4"
                 />
               ) : null}

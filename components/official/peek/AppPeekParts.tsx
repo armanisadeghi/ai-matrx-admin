@@ -37,7 +37,8 @@ const MediaThumbnail = dynamic(() => import("@ai-matrx/media/react").then((m) =>
 function renderPeekPart(part: PeekPart): ReactNode {
   switch (part.part) {
     case "custom-fields":
-      return <EntityCustomFields entityToken={part.token} recordId={part.id} absentWhenNotApplicable />;
+      // Collapsed in a quick look: the records-ui screen loads when the person opens the section.
+      return <EntityCustomFields entityToken={part.token} recordId={part.id} absentWhenNotApplicable collapsed />;
     case "access":
       return <AccessGate token={part.token} id={part.id} {...(part.error !== undefined ? { error: part.error } : {})} />;
     case "media":

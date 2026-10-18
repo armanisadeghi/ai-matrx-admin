@@ -132,9 +132,9 @@ describe("a record page's custom fields say why, and offer her own table", () =>
     host.remove();
   });
 
-  async function show() {
+  async function show(collapsed = false) {
     await act(async () => {
-      root.render(<EntityCustomFields entityToken="party" recordId={MARISOL} organizationId={CEDAR_RIDGE} />);
+      root.render(<EntityCustomFields entityToken="party" recordId={MARISOL} organizationId={CEDAR_RIDGE} collapsed={collapsed} />);
     });
     for (let i = 0; i < 10; i += 1) {
       await act(async () => {
@@ -168,5 +168,17 @@ describe("a record page's custom fields say why, and offer her own table", () =>
     await act(async () => offer());
     expect(dispatched).toEqual([]);
     expect(host.querySelector('[data-new-table-dialog="create"]')).not.toBeNull();
+  });
+
+  it("in a quick look (collapsed) the records-ui section draws only once she opens it (2026-10-18)", async () => {
+    await show(true);
+    const line = host.querySelector('[data-section="custom-fields"]');
+    expect(line?.getAttribute("data-state")).toBe("collapsed");
+    expect(sectionProps).toHaveLength(0);
+    const open = [...host.querySelectorAll("button")].find((b) => b.textContent === "Show");
+    expect(open).toBeDefined();
+    await act(async () => open!.click());
+    expect(sectionProps.length).toBeGreaterThan(0);
+    expect(host.querySelector('[data-section="custom-fields"]')?.getAttribute("data-state")).toBe("ready");
   });
 });

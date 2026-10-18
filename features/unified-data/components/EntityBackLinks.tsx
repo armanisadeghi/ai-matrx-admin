@@ -23,7 +23,7 @@
 
 import Link from "next/link";
 import { Link2 } from "lucide-react";
-import { RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { RecordsProvider } from "@ai-matrx/records/react";
 import type { EntityBackLinkItem } from "@ai-matrx/records";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
@@ -64,9 +64,12 @@ export function EntityBackLinks(props: EntityBackLinksProps) {
   const config = useAppRecordsConfig(props.organizationId);
   if (!props.organizationId || LINKED_ANOTHER_WAY.has(props.entityToken)) return null;
   return (
-    <RecordsMount config={config}>
+    // The records CLIENT only (`@ai-matrx/records/react`), never a records-ui screen: this section draws
+    // EntityRefs, so a quick look that shows it no longer loads the records-ui root (2026-10-18,
+    // adversarial IMPORTANT-8 — a task peek printed "HEAVY LOADED BEFORE ENGAGEMENT Records grid").
+    <RecordsProvider config={config}>
       <BackLinksSection {...props} organizationId={props.organizationId} />
-    </RecordsMount>
+    </RecordsProvider>
   );
 }
 
