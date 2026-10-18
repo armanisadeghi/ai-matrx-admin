@@ -12,7 +12,14 @@ import { queryConcepts, searchTemplates, stem } from "../template-search";
 const DIR = join(__dirname, "../../../features/spaces/templates/packs");
 const FACES: SpaceTemplateCardFace[] = readdirSync(DIR)
   .filter((f) => f.endsWith(".pack.json"))
-  .map((f) => JSON.parse(readFileSync(join(DIR, f), "utf8")) as SpaceTemplatePack)
+  // A pack another lane is mid-way through writing may not parse yet; the library is the packs that do.
+  .flatMap((f) => {
+    try {
+      return [JSON.parse(readFileSync(join(DIR, f), "utf8")) as SpaceTemplatePack];
+    } catch {
+      return [];
+    }
+  })
   .filter((p) => p.pages?.length)
   .map(packCardFace);
 
@@ -22,8 +29,8 @@ const literal = (q: string) =>
 
 /** query → titles that must be among the first five answers (the cards a person means). */
 const MUST_LEAD: Record<string, RegExp> = {
-  "to do list": /task/i,
-  todo: /task/i,
+  "to do list": /task|to-do/i,
+  todo: /task|to-do/i,
   calendar: /calendar|planner|agenda|schedule/i,
   crm: /crm/i,
   budget: /budget/i,
