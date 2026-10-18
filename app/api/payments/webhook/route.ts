@@ -2,13 +2,16 @@
 //
 // Events here come from the businesses' own connected accounts (direct charges), so this is a
 // separate endpoint from the platform billing webhook (/api/stripe/webhook), with its own
-// secret: STRIPE_CONNECT_WEBHOOK_SECRET (a Connect endpoint in the Stripe dashboard or API).
+// secret pair (lib/stripe/server.ts, endpoint "connect"): STRIPE_CONNECT_WEBHOOK_SECRET is the live
+// secret in production and the test secret elsewhere; production's test endpoint secret is
+// STRIPE_TEST_MODE_CONNECT_WEBHOOK_SECRET. An event is accepted only under the secret of its own
+// livemode, so a test event can never settle through the live endpoint's secret or the reverse.
 // Every write goes through billing.payment_settle, which is idempotent and forward-only, so
 // Stripe's retries and the return route racing this endpoint never double-apply.
 
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { getStripe } from "@/lib/stripe/server";
+import { StripeWebhookVerificationError, verifyStripeWebhook } from "@/lib/stripe/server";
 import { sessionForPaymentIntent, settle, syncAccount } from "@/features/payments/server";
 
 export const dynamic = "force-dynamic";
@@ -18,17 +21,16 @@ function intentOf(session: Stripe.Checkout.Session): string | null {
 }
 
 export async function POST(request: NextRequest) {
-  const secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET?.trim();
-  if (!secret) {
-    return NextResponse.json({ error: "STRIPE_CONNECT_WEBHOOK_SECRET is not configured." }, { status: 503 });
-  }
   const signature = request.headers.get("stripe-signature");
   if (!signature) return NextResponse.json({ error: "Missing signature." }, { status: 400 });
   const body = await request.text();
   let event: Stripe.Event;
   try {
-    event = getStripe().webhooks.constructEvent(body, signature, secret);
-  } catch {
+    ({ event } = verifyStripeWebhook(body, signature, "connect"));
+  } catch (thrown) {
+    if (thrown instanceof StripeWebhookVerificationError && /No Stripe webhook secrets/.test(thrown.message)) {
+      return NextResponse.json({ error: "The Connect webhook secret is not configured." }, { status: 503 });
+    }
     return NextResponse.json({ error: "Signature did not verify." }, { status: 400 });
   }
 

@@ -81,13 +81,29 @@ export function getPublishableKey(
  * same URL, so its additional test secret has a mode-specific name while the
  * established setting remains the live secret.
  */
+/**
+ * The two Stripe webhook endpoints this app receives. `platform` is our own billing account
+ * (/api/stripe/webhook); `connect` is the Connect endpoint for businesses' own accounts
+ * (/api/payments/webhook, direct charges, no platform fee). Each has its own secret pair,
+ * named the same way: the established name holds the live secret in production and the
+ * test secret everywhere else; production's extra test secret carries TEST_MODE.
+ */
+export type StripeWebhookEndpoint = "platform" | "connect";
+
+const WEBHOOK_SECRET_SETTINGS: Record<StripeWebhookEndpoint, { base: string; testInProduction: string }> = {
+  platform: { base: "STRIPE_WEBHOOK_SECRET", testInProduction: "STRIPE_TEST_MODE_WEBHOOK_SECRET" },
+  connect: { base: "STRIPE_CONNECT_WEBHOOK_SECRET", testInProduction: "STRIPE_TEST_MODE_CONNECT_WEBHOOK_SECRET" },
+};
+
 export function getWebhookSecret(
   mode: StripeMode = requiredStripeMode(),
+  endpoint: StripeWebhookEndpoint = "platform",
 ): string {
+  const names = WEBHOOK_SECRET_SETTINGS[endpoint];
   const setting =
     mode === "test" && process.env.VERCEL_ENV === "production"
-      ? "STRIPE_TEST_MODE_WEBHOOK_SECRET"
-      : "STRIPE_WEBHOOK_SECRET";
+      ? names.testInProduction
+      : names.base;
   const secret = process.env[setting]?.trim();
   if (!secret) {
     throw new Error(
@@ -107,6 +123,7 @@ export function getWebhookSecret(
 export function verifyStripeWebhook(
   body: string,
   signature: string,
+  endpoint: StripeWebhookEndpoint = "platform",
 ): VerifiedStripeWebhook {
   const modes: StripeMode[] =
     process.env.VERCEL_ENV === "production" ? ["live", "test"] : ["test"];
@@ -115,7 +132,7 @@ export function verifyStripeWebhook(
   for (const mode of modes) {
     let secret: string;
     try {
-      secret = getWebhookSecret(mode);
+      secret = getWebhookSecret(mode, endpoint);
     } catch {
       continue;
     }
