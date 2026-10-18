@@ -25,6 +25,31 @@ import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-s
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { StudioTurnModel } from "./StudioTurnModel";
 
+/**
+ * Which conversation each launched run (agent/mandate + runKey) opened, kept ABOVE the component. A mount
+ * (a window resize swapping three panes for tabs, a layout change, a parent re-key) must never start a run:
+ * the only thing that launches is the person's own action (a new `runKey`, a first send). A mount that finds
+ * its run already launched reopens that conversation instead.
+ */
+const launchedRuns = new Map<string, string>();
+
+/** What a mount does: reopen a stored conversation, or (first time only) launch. Pure, so it is tested. */
+export function mountAction(
+  key: string,
+  conversationId: string | null,
+  runKey: number,
+  launched: ReadonlyMap<string, string> = launchedRuns,
+): { kind: "open"; conversationId: string } | { kind: "launch" } {
+  if (conversationId && runKey === 0) return { kind: "open", conversationId };
+  const known = launched.get(key);
+  if (known) return { kind: "open", conversationId: known };
+  return { kind: "launch" };
+}
+
+export function rememberLaunchedRun(key: string, conversationId: string): void {
+  launchedRuns.set(key, conversationId);
+}
+
 export interface StudioRunSeed {
   variables?: Record<string, string>;
   userInput?: string;
@@ -82,6 +107,8 @@ export function StudioRun({
     const key = `${agentId ?? mandateKey}:${runKey}`;
     if (startedFor.current === key) return;
     startedFor.current = key;
+    const action = mountAction(key, conversationId, runKey);
+    const openId = action.kind === "open" ? action.conversationId : null;
     setShown(null);
     setError(null);
 
@@ -106,6 +133,7 @@ export function StudioRun({
             }
           : undefined,
       onConversationCreated: (id: string) => {
+        rememberLaunchedRun(key, id);
         hookUp(id);
         setShown(id);
         onConversation?.(id);
@@ -126,10 +154,10 @@ export function StudioRun({
       });
     };
 
-    if (conversationId && runKey === 0) {
+    if (openId) {
       dispatch(
         loadConversation({
-          conversationId,
+          conversationId: openId,
           surfaceKey,
           displayOverrides: { displayMode: "direct", allowChat: true, autoRun: false, showVariablePanel: showVariables },
         }),
@@ -137,13 +165,14 @@ export function StudioRun({
         .unwrap()
         .then(() => {
           // A conversation that was opened but never sent reloads with no composer: start fresh.
-          if (selectOrderedMessageIds(conversationId)(store.getState()).length === 0) {
+          if (selectOrderedMessageIds(openId)(store.getState()).length === 0) {
             void fresh();
             return;
           }
-          hookUp(conversationId);
-          setShown(conversationId);
-          onConversation?.(conversationId);
+          rememberLaunchedRun(key, openId);
+          hookUp(openId);
+          setShown(openId);
+          onConversation?.(openId);
         })
         .catch(() => void fresh());
     } else {
