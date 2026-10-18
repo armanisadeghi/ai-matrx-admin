@@ -221,6 +221,7 @@ function DatabaseFrame({
       .then(
         (res) => {
           if (res.ok) {
+            if (res.pageError) toast.error(res.pageError);
             setFresh(res.recordId);
             setOpen(res.recordId);
           } else refused(template);
@@ -440,10 +441,10 @@ function DatabaseFrame({
                 const started = tableOrg
                   ? startTemplatePage(rowPageDb(), { organizationId: tableOrg, tableId, recordId, template: pickTemplate, onPage: (spaceId) => primeOwningRow(spaceId, { recordId, tableId, organizationId: tableOrg }) })
                   : Promise.resolve("");
-                void started.then(
-                  () => setOpen(recordId),
-                  (err: unknown) => toast.error(err instanceof Error ? err.message : "The new row's page could not be started."),
-                );
+                // The row exists either way: it opens, and a page that could not start is said.
+                void started
+                  .catch((err: unknown) => toast.error(err instanceof Error ? err.message : "The new row's page could not be started."))
+                  .then(() => setOpen(recordId));
               }}
             />
           ) : null}

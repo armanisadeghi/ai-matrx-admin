@@ -5,7 +5,7 @@
 
 import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Badge, Button, Input } from "@ai-matrx/design-system/controls";
-import { ChevronDown, Copy, FileText, Trash2, X } from "lucide-react";
+import { ChevronDown, Copy, FileText, Star, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { NewRowPick, RowTemplateChoice } from "./row-templates";
@@ -352,13 +352,14 @@ export function NewButton({
                       ) : onSetDefault ? (
                         <Button
                           variant="quiet"
+                          icon={<Star size={14} />}
+                          aria-label="Set as default"
+                          title="Set as default"
                           onClick={(e) => {
                             e.stopPropagation();
                             void onSetDefault(t.id).then(load, (err: unknown) => setList({ state: "failed", message: err instanceof Error ? err.message : String(err) }));
                           }}
-                        >
-                          Set as default
-                        </Button>
+                        />
                       ) : null
                     }
                   />

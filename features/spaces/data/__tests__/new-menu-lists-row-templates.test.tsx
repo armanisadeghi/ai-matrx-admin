@@ -116,7 +116,7 @@ describe("the New button's chevron", () => {
     const { picks, root } = mount({ loadTemplates: async () => templates, onSetDefault: async () => undefined });
     await act(async () => document.querySelector<HTMLElement>('[aria-label="Templates"]')!.click());
     expect(rowNamed("Weekly 1:1")?.textContent).toContain("Default");
-    expect(rowNamed("Bug report")?.textContent).toContain("Set as default");
+    expect(rowNamed("Bug report")?.querySelector('[aria-label="Set as default"]')).not.toBeNull();
     expect(rowNamed("Empty page")).toBeDefined();
     act(() => rowNamed("Bug report")!.click());
     expect(picks).toEqual([{ kind: "template", id: "t-bug" }]);
@@ -129,5 +129,15 @@ describe("the New button's chevron", () => {
     expect(chevron.disabled).toBe(true);
     expect(chevron.title).toContain("Templates open");
     act(() => root.unmount());
+  });
+});
+
+describe("a page that cannot start never loses the row", () => {
+  it("answers the row with the page's problem, so the row still opens", async () => {
+    const { db } = fakeDb();
+    const broken: RowTemplateChoice = { id: "t-x", name: "Broken", values: {}, body: { v: 1, blocks: [{ type: "todo", props: {}, text: [] }] as never }, isDefault: false };
+    const out = await startNewRow(db, { organizationId: "org", tableId: "table", template: broken, viewValues: {}, writeRow: async () => ({ ok: true, id: "row-kept" }) });
+    expect(out).toMatchObject({ ok: true, recordId: "row-kept" });
+    expect((out as { pageError?: string }).pageError).toMatch(/checked/);
   });
 });

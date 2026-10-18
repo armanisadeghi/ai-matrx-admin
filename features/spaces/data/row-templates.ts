@@ -69,10 +69,15 @@ export async function startNewRow(
     /** Told the row's page id once it exists (primes "This page's row" for its views). */
     onPage?: (spaceId: string, recordId: string) => void;
   },
-): Promise<{ ok: true; recordId: string } | { ok: false; message: string }> {
+): Promise<{ ok: true; recordId: string; pageError?: string } | { ok: false; message: string }> {
   const written = await args.writeRow(newRowData(args.template, args.viewValues));
   if (!written.ok) return written;
-  await startTemplatePage(db, { ...args, recordId: written.id });
+  // The row exists whatever happens to its page: a page that cannot start is said, and the row still opens.
+  try {
+    await startTemplatePage(db, { ...args, recordId: written.id });
+  } catch (err) {
+    return { ok: true, recordId: written.id, pageError: err instanceof Error ? err.message : String(err) };
+  }
   return { ok: true, recordId: written.id };
 }
 
