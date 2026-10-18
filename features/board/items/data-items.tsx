@@ -52,7 +52,6 @@ import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
 import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, tableLookHint } from "./table-tile";
 import { useTileAutoHeight } from "../components/BoardTile";
-import { useBoardTokenTables } from "./board-token-tables";
 
 
 function tableSource(id: string | null): NodeSource {
@@ -235,13 +234,32 @@ export function tableMenuActions({ source, onSource }: TileMenuContext): TileMen
 
 /**
  * A section drawn in its BOARD'S design system: every component sample in it reads the board's token
- * tables (`useBoardTokenTables`, reading order) as CSS variables. Off a board, or a board with no token
+ * tables (reading order) as CSS variables. Off a board, or a board with no token
  * tables, it is the plain section (samples keep the app's own tokens).
  */
 export function SectionWithBoardTokens({ tableId }: { tableId: string }) {
-  const tokenTables = useBoardTokenTables();
-  const card = <SectionCard tableId={tableId} />;
-  return tokenTables.length > 0 ? <TableTokensProvider tableIds={tokenTables}>{card}</TableTokensProvider> : card;
+  // The board's tokens are provided once for every tile (`BoardTokensMount`), so the section adds none.
+  return <SectionCard tableId={tableId} />;
+}
+
+/**
+ * A BOARD DRAWS IN ITS OWN DESIGN SYSTEM: every component sample on the board (sections, the cover, any
+ * html frame) reads the board's token tables as CSS variables, provided ONCE around the whole tile layer.
+ * The token tables are read through the record store in the organization the person works in; until that
+ * organization is ready the tiles draw as they are, never behind a notice; with no token tables the samples
+ * keep the app's own tokens.
+ */
+export function BoardTokensMount({ tableIds, children }: { tableIds: readonly string[]; children: ReactNode }) {
+  const active = useOrganizationRequired();
+  const recordsConfig = useAppRecordsConfig(active.organizationId ?? null);
+  const ports = useRecordsUiPorts({ organizationId: active.organizationId, dataSource: recordsConfig.dataSource });
+  // Mounted whatever the token tables are, so a board gaining its first token table never remounts its tiles.
+  if (active.organizationState !== "ready" || !active.organizationId) return <>{children}</>;
+  return (
+    <RecordsMount letTheStoreDecideRights config={recordsConfig} host={recordsUiHostFor({ ports, merged: false })}>
+      <TableTokensProvider tableIds={tableIds}>{children}</TableTokensProvider>
+    </RecordsMount>
+  );
 }
 
 export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBodyProps & { id: string }) {
