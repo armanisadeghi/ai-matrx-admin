@@ -26,6 +26,8 @@ row says otherwise, it passes when the answer uses the hidden fact.
 | SB-05 | An empty variable reaches the instructions as text ("None", "null") | Instructions say the code is `{{prefix}}7740` with prefix left empty; passes only on 7740 exactly |
 | SB-06 | A called agent receives the caller's context | A fact given only to the calling agent; passes only if the called agent's input and reply never contain it |
 | SB-07 | One way of starting the agent changes what it receives | The same chain started from the run page, chat and the AI Dream connector; passes only if the answer is identical on every door |
+| SB-08 | State the agent did not bind still reaches it | A fact in a value the call supplies but the agent's binding does not take; passes only if no request to the model ever contains it |
+| SB-09 | A variable filled from the user's own table arrives empty on some way in | The fact only in a table row the variable is bound to; the same run started from every door must carry it |
 
 ## Test concepts
 
