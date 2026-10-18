@@ -738,7 +738,7 @@ function ModeSwitch() {
               "inline-flex items-center gap-1.5 rounded-md h-7 px-2 text-xs font-medium whitespace-nowrap transition-all",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
               on
-                ? "bg-card text-primary shadow-[var(--elevation-1)]"
+                ? "bg-card text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

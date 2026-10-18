@@ -38,7 +38,7 @@ export function ParkedThreadChip({
       title={`Bring "${title}" back to the stage`}
       className={cn(
         "group/chip flex w-full items-center gap-2 rounded-lg border border-border/70 bg-card px-2 py-1.5 text-left transition-all",
-        "hover:border-primary/40 hover:bg-accent/40 hover:shadow-[var(--elevation-1)]",
+        "hover:border-primary/40 hover:bg-accent/40 hover:shadow-sm",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
       )}
     >

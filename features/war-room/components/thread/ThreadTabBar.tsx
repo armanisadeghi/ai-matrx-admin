@@ -52,7 +52,7 @@ export function ThreadTabBar({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
               size === "md" ? "h-7 px-2" : "h-6 px-1.5",
               isActive
-                ? cn("bg-card shadow-[var(--elevation-1)]", k.text)
+                ? cn("bg-card shadow-sm", k.text)
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
