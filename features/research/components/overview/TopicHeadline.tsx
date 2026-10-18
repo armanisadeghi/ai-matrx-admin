@@ -25,10 +25,11 @@ export function TopicHeadline() {
   const figures: { label: string; value: string; of?: string; href: string }[] = [
     { label: "Sources found", value: progress.total_sources.toLocaleString(), href: hrefFor("sources", topicId) },
     { label: "Captured", value: progress.total_content.toLocaleString(), href: hrefFor("content", topicId) },
+    // No "of N": N is every page and video captured, not a goal, so "29 of 38"
+    // read as unfinished on a topic whose report is ready.
     {
       label: "Analyzed",
       value: progress.total_analyses.toLocaleString(),
-      of: progress.total_eligible_for_analysis > 0 ? `of ${progress.total_eligible_for_analysis}` : undefined,
       href: hrefFor("analysis", topicId),
     },
     {

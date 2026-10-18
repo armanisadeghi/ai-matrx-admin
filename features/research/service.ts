@@ -738,18 +738,29 @@ const YOUTUBE_IDENTITY_COLUMNS =
  * Returns a map keyed by `youtube_video_id`; ids with no library row are
  * simply absent (discovered outside the canonical paths).
  */
-/** How many videos a topic found, and how many it captured a transcript for. */
+/**
+ * How many videos a topic holds, and how many it captured a transcript for.
+ * "Found" counts the same thing the Videos page lists: a YouTube source linked to
+ * its canonical library row. A channel link or a video YouTube no longer serves
+ * has no row and is not a video (topic b8afc7f7: 163 YouTube links, 160 videos).
+ */
 export async function getTopicVideoCounts(
   topicId: string,
 ): Promise<{ found: number; transcribed: number }> {
-  const [found, transcribed] = await Promise.all([
-    supabase
-      .schema("research")
-      .from("rs_source")
-      .select("id", { count: "exact", head: true })
-      .eq("topic_id", topicId)
-      .eq("source_type", "youtube")
-      .is("deleted_at", null),
+  const [sources, transcribed] = await Promise.all([
+    readAllRows<{ id: string }>(
+      ({ from, to }) =>
+        supabase
+          .schema("research")
+          .from("rs_source")
+          .select("id", { count: "exact" })
+          .eq("topic_id", topicId)
+          .eq("source_type", "youtube")
+          .is("deleted_at", null)
+          .order("id", { ascending: true })
+          .range(from, to),
+      { label: "research.rs_source youtube ids" },
+    ),
     supabase
       .schema("research")
       .from("rs_content")
@@ -760,9 +771,23 @@ export async function getTopicVideoCounts(
       .eq("is_current", true)
       .is("deleted_at", null),
   ]);
-  if (found.error) throw found.error;
   if (transcribed.error) throw transcribed.error;
-  return { found: found.count ?? 0, transcribed: transcribed.count ?? 0 };
+  const ids = sources.map((row) => row.id);
+  let found = 0;
+  for (let i = 0; i < ids.length; i += 200) {
+    const { count, error } = await supabase
+      .schema("platform")
+      .from("associations")
+      .select("id", { count: "exact", head: true })
+      .eq("source_type", "research_source")
+      .eq("target_type", "youtube_video")
+      .eq("role", "canonical_video")
+      .is("deleted_at", null)
+      .in("source_id", ids.slice(i, i + 200));
+    if (error) throw error;
+    found += count ?? 0;
+  }
+  return { found, transcribed: transcribed.count ?? 0 };
 }
 
 export async function getYouTubeVideoIdentities(

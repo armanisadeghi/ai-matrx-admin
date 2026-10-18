@@ -42,10 +42,6 @@ import {
   useResearchSources,
   useResearchMedia,
 } from "../../../hooks/useResearchState";
-import {
-  ResultsHeroMetrics,
-  buildHeroMetrics,
-} from "../../results/ResultsHeroMetrics";
 import { TopSourcesGrid } from "../../results/TopSourcesGrid";
 import { ResultsMediaBand } from "../../results/ResultsMediaBand";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
@@ -186,31 +182,6 @@ export function LastRunSummary({
   // Pages read (succeeded) vs attempted — integers only, honestly labelled.
   const pagesRead = progress?.total_content ?? 0;
   const attempted = pagesAttempted(progress?.sources_by_status);
-
-  // Hero metric tiles — cost-free, integer chars, single tidy row. Reuses the
-  // exact builder the Results page used so the numbers + styling stay in lock-
-  // step. "Reports" counts every analysis report the run produced (keyword +
-  // project syntheses + document versions).
-  const metrics = useMemo(() => {
-    const inputTokens = costSummary?.total_input_tokens ?? 0;
-    const outputTokens = costSummary?.total_output_tokens ?? 0;
-    const reports =
-      (progress?.keyword_syntheses ?? 0) +
-      (progress?.topic_syntheses ?? 0) +
-      (progress?.total_documents ?? 0);
-    return buildHeroMetrics({
-      sources: progress?.total_sources ?? sources?.length ?? 0,
-      includedSources: progress?.included_sources ?? 0,
-      pagesRead,
-      // "Characters processed" — derived from the tokens the models consumed
-      // and produced (~4 chars / token). Honest proxy, large & impressive.
-      characters: (inputTokens + outputTokens) * 4,
-      analyses: progress?.total_analyses ?? 0,
-      reports,
-      totalCostUsd: costSummary?.total_estimated_cost_usd ?? 0,
-      llmCalls: costSummary?.total_llm_calls ?? 0,
-    });
-  }, [progress, sources, costSummary, pagesRead]);
 
   const hasRankedSources = useMemo(() => {
     if (!sources) return false;
@@ -479,11 +450,10 @@ export function LastRunSummary({
         </div>
       </div>
 
-      {/* ── Results showcase — folded in from the retired /results page ──── */}
-      <ResultsHeroMetrics
-        metrics={metrics}
-        copyContext={{ surface, topicId, kpis }}
-      />
+      {/* The hero tile row (ResultsHeroMetrics) is not rendered here: every true
+          figure it held is in the topic headline band and the list above, and its
+          "Characters" (tokens x 4) and "Reports" (syntheses + documents) figures
+          contradicted them (adversarial review, 2026-10-18). */}
 
       {hasRankedSources && sources && (
         <TopSourcesGrid sources={sources} topicId={topicId} />
