@@ -31,6 +31,9 @@ import type { BoardTileBase } from "../board/board-store";
 /** World px above a chapter kept in view when jumping to it (its title sits there). */
 export const PAGE_LABEL_ROOM = 16;
 
+/** A press with no release seen this long is treated as released (its pointerup went elsewhere). */
+const PRESS_RELEASE_MS = 3000;
+
 /** Quiet time after a change before the page re-flows. */
 const REFLOW_MS = 120;
 
@@ -183,8 +186,18 @@ export function usePageLayout<T extends BoardTileBase>({
     const unsubscribeSize = store.subscribeFrame(() => {
       if (pageColumnFor(store) !== column) schedule();
     });
+    // A press whose release never reaches the window (a drawer or menu that captured it) must not
+    // stop the page from re-flowing for good: it counts as released after a few seconds.
+    let pressTimer: ReturnType<typeof setTimeout> | null = null;
     const down = () => {
       pressing = true;
+      if (pressTimer) clearTimeout(pressTimer);
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        if (!pressing) return;
+        pressing = false;
+        schedule();
+      }, PRESS_RELEASE_MS);
     };
     const up = () => {
       if (!pressing) return;
@@ -196,6 +209,7 @@ export function usePageLayout<T extends BoardTileBase>({
     window.addEventListener("pointercancel", up, true);
     return () => {
       if (timer) clearTimeout(timer);
+      if (pressTimer) clearTimeout(pressTimer);
       cancelAnimationFrame(raf);
       unsubscribe();
       unsubscribeSize();

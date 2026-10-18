@@ -511,6 +511,12 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
    * controls); a press here never takes focus from the field.
    */
   leading?: React.ReactNode;
+  /**
+   * `all` (default): "…" carries the shared action registry (copy, save, export, rulebook, tasks…).
+   * `none`: a field where those apply to nothing (an empty front-door prompt): "…" holds only the
+   * field's own controls (Audio settings, and the mic / Expand when they do not fit).
+   */
+  menuActions?: "all" | "none";
 }
 
 export const ProTextarea = React.forwardRef<
@@ -524,6 +530,7 @@ export const ProTextarea = React.forwardRef<
       onTranscriptionComplete,
       onTranscriptionError,
       appendTranscript = true,
+      menuActions = "all",
       enableVoice = true,
       autoGrow = false,
       minHeight,
@@ -1341,6 +1348,7 @@ export const ProTextarea = React.forwardRef<
     // The menu's OWN actions; "…" also shows to hold whatever did not fit.
     const showMenu =
       !disabled &&
+      menuActions !== "none" &&
       (showCopyButton ||
         enabledAgentActionIds.length > 0 ||
         showBoundAgentsMenu);
@@ -1744,7 +1752,7 @@ export const ProTextarea = React.forwardRef<
                             AI powers (Clean up / Help / Custom agent), which
                             the registry reaches through the callback below. */}
                           <Suspense fallback={null}>
-                            <RegistryActionList
+                            {menuActions === "none" ? null : <RegistryActionList
                               content={valueAsString}
                               source={TEXT_FIELD_SOURCE}
                               onClose={() => setMenuOpen(false)}
@@ -1779,7 +1787,7 @@ export const ProTextarea = React.forwardRef<
                                   />
                                 ) : undefined
                               }
-                            />
+                            />}
                           </Suspense>
                           {showTextStats && (
                             <>

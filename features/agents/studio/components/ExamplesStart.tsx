@@ -12,6 +12,7 @@ import { FileUp, Plus, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { startAgentBuild } from "@/features/agents/factory/service";
+import { ProofCount } from "@/features/agents/factory/components/ExamplesField";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import {
@@ -154,8 +155,8 @@ export function ExamplesStart({ onStart }: { onStart: (patch: Partial<StudioStat
             e.target.value = "";
           }}
         />
-        <span className="type-meta ml-auto text-muted-foreground">
-          {given.length < EXAMPLES_MIN ? `${given.length} of ${EXAMPLES_MIN} needed` : `${given.length} examples`}
+        <span className="ml-auto">
+          <ProofCount count={given.length} />
         </span>
         <Button
           variant="primary"

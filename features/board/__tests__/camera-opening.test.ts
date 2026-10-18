@@ -58,3 +58,22 @@ describe("cameraIsUnreadable", () => {
     expect(cameraIsUnreadable({ z: 0.7 }, { w: 375 })).toBe(false);
   });
 });
+
+// A phone's page column is measured from the room the chrome leaves; when that room changes after load
+// (an outline drawer closing), the page must hear it, or it keeps a too-narrow first column.
+describe("setInsets", () => {
+  it("tells frame listeners when the room changes, and only then", () => {
+    const store = new BoardCameraStore({ x: 0, y: 0, z: 1 });
+    store.setSize({ w: 376, h: 700 });
+    store.setInsets({ top: 0, right: 0, bottom: 0, left: 260 });
+    const heard = jest.fn();
+    store.subscribeFrame(heard);
+    const narrow = store.pageViewWidth();
+    store.setInsets({ top: 0, right: 0, bottom: 0, left: 0 });
+    expect(heard).toHaveBeenCalled();
+    expect(store.pageViewWidth()).toBeGreaterThan(narrow);
+    heard.mockClear();
+    store.setInsets({ top: 0, right: 0, bottom: 0, left: 0 });
+    expect(heard).not.toHaveBeenCalled();
+  });
+});

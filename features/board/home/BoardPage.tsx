@@ -14,6 +14,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { FilePlus, LayoutGrid, LayoutTemplate, ListTree, Pencil, Plus, Rows3, Shapes } from "lucide-react";
 import { ChatCanvasWorkspace } from "@ai-matrx/chat/canvas/workspace/ChatCanvasWorkspace";
 import type { CanvasWorkspaceLayout } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
@@ -100,7 +101,9 @@ export function BoardPage({
   // The outline: open by default in page layout, a toggle on the canvas (per open board, per layout).
   const [outlinePick, setOutlinePick] = useState<{ key: string; open: boolean } | null>(null);
   const outlineKey = `${readyId ?? ""}|${layout}`;
-  const outlineOpen = outlinePick?.key === outlineKey ? outlinePick.open : layout === "page";
+  // A phone's outline is a drawer over the page: it opens when asked, never by default (it would cover the page).
+  const isMobile = useIsMobile();
+  const outlineOpen = outlinePick?.key === outlineKey ? outlinePick.open : layout === "page" && !isMobile;
   const setOutlineOpen = (open: boolean) => setOutlinePick({ key: outlineKey, open });
   const family = usePageFamily(
     ready

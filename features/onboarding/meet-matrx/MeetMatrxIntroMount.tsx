@@ -13,6 +13,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { supabase } from "@/utils/supabase/client";
 import { useOpenMeetMatrxWindow } from "@/features/overlays/definitions/meetMatrxWindow.overlay";
+import { coppaService } from "@/features/education/compliance/coppaService";
 import { ageQuestionSettled } from "@/features/education/compliance/FirstSignInAgeGateMount";
 import { MEET_MATRX_INTRO_SESSION_KEY, isHomePath, shouldShowMeetMatrxIntro } from "./meetMatrxIntro";
 
@@ -36,14 +37,23 @@ export function MeetMatrxIntroMount() {
   useEffect(() => {
     if (!ready || !userId || tried.current || !isHomePath(pathname)) return;
     tried.current = true;
-    void supabase.auth.getSession().then(({ data }) => {
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
       const user = data.session?.user ?? null;
       if (user?.id !== userId) return;
+      // Cheap exits first: the age answer is read from the account (server) only when it could change the verdict.
+      if (!shouldShowMeetMatrxIntro({ user, pathname, ageSettled: true, shownThisSession: shownThisSession() })) return;
+      let settled = ageSettledAtMount || ageQuestionSettled(userId, { declaredOnly: true });
+      if (!settled) {
+        // The account knows whether the age question was answered, whatever browser they answered it in.
+        const gate = await coppaService.getGate();
+        settled = !gate.error && gate.data.ageBand !== null;
+      }
       if (
         shouldShowMeetMatrxIntro({
           user,
           pathname,
-          ageSettled: ageSettledAtMount || ageQuestionSettled(userId, { declaredOnly: true }),
+          ageSettled: settled,
           shownThisSession: shownThisSession(),
         })
       ) {
@@ -54,7 +64,7 @@ export function MeetMatrxIntroMount() {
         }
         open();
       }
-    });
+    })();
   }, [ready, userId, pathname, ageSettledAtMount, open]);
 
   return null;

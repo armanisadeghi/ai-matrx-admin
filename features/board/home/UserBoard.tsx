@@ -86,6 +86,7 @@ import {
 import { BOARD_ITEM_TYPES, itemTypeByKey, itemTypeFor } from "../items/catalog";
 import { coverOf, coverSource } from "../items/cover-source";
 import { BoardTokenTablesContext, boardTokenTableIds } from "../items/board-token-tables";
+import { BoardTokensMount } from "../items/data-items";
 import { startNewEntries, type BoardItemType, type ItemBasicValues, type PickerProps, type PlacedItem, type StartNewEntry } from "../items/types";
 import { filesToBoardItems } from "../items/file-drop";
 import { noteSeedEdit } from "../items/work-sources";
@@ -1054,6 +1055,7 @@ export function UserBoard({
             <TileLayersContext.Provider value={tileLayers}>
               <BoardCommentCountsContext.Provider value={boardCommentCounts}>
               <BoardTokenTablesContext.Provider value={tokenTables}>
+              <BoardTokensMount tableIds={tokenTables}>
               {layout.tileIds.map((id) => (
                 <BoardItemTile
                   key={id}
@@ -1066,6 +1068,7 @@ export function UserBoard({
                   onConnect={onConnect}
                 />
               ))}
+              </BoardTokensMount>
               </BoardTokenTablesContext.Provider>
               </BoardCommentCountsContext.Provider>
             </TileLayersContext.Provider>

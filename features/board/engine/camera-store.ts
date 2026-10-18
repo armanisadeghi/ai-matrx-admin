@@ -279,7 +279,14 @@ export class BoardCameraStore {
 
   /** Screen px covered by overlay chrome; fits frame content inside the rest. */
   setInsets(insets: Insets): void {
+    const was = this.insets;
     this.insets = insets;
+    if (was.top === insets.top && was.right === insets.right && was.bottom === insets.bottom && was.left === insets.left) return;
+    // The room the chrome leaves changed (a phone's outline drawer closing, a panel collapsing): the page
+    // column is measured from it, so the view tells its listeners exactly as a resize does.
+    if (this.pageLock) this.camera = this.lockedCamera(this.camera);
+    for (const l of this.frameListeners) l();
+    this.scheduleCoarse();
   }
 
   getInsets = (): Insets => this.insets;

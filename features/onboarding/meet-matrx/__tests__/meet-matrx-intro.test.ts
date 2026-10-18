@@ -3,7 +3,7 @@
  * Each "not shown" case flips exactly one input of an otherwise-showing case, so the base case
  * proves the rule can say yes and every other case proves it can say no.
  */
-import { shouldShowMeetMatrxIntro, isHomePath } from "../meetMatrxIntro";
+import { shouldShowMeetMatrxIntro, isHomePath, isExistingAccount } from "../meetMatrxIntro";
 import { MEET_MATRX_GROUPS } from "../meetMatrx";
 
 const existing = { user_metadata: { onboarding_completed: true } };
@@ -16,11 +16,26 @@ describe("shouldShowMeetMatrxIntro", () => {
   it("not when already seen (server-side flag)", () => {
     expect(shouldShowMeetMatrxIntro({ ...base, user: { user_metadata: { onboarding_completed: true, meet_matrx_seen: true } } })).toBe(false);
   });
-  it("not for a brand-new account (its welcome has the step)", () => {
-    expect(shouldShowMeetMatrxIntro({ ...base, user: { user_metadata: {} } })).toBe(false);
+  it("not for a brand-new signup (its welcome has the step)", () => {
+    const now = Date.parse("2026-10-18T12:00:00Z");
+    const fresh = { user_metadata: {}, created_at: "2026-10-18T10:00:00Z" };
+    expect(shouldShowMeetMatrxIntro({ ...base, user: fresh, now })).toBe(false);
+  });
+  it("YES for an old account that never carried the onboarding mark (802 of 804 real accounts)", () => {
+    const now = Date.parse("2026-10-18T12:00:00Z");
+    const old = { user_metadata: {}, created_at: "2026-08-01T10:00:00Z" };
+    expect(shouldShowMeetMatrxIntro({ ...base, user: old, now })).toBe(true);
+    expect(isExistingAccount(old, now)).toBe(true);
+    expect(isExistingAccount({ user_metadata: {} }, now)).toBe(false);
+  });
+  it("shows on the chat and agents landings too, so people who skip the dashboard still meet it", () => {
+    for (const p of ["/chat", "/chat/new", "/agents", "/agents/all", "/dashboard/"]) {
+      expect(shouldShowMeetMatrxIntro({ ...base, pathname: p })).toBe(true);
+    }
+    expect(shouldShowMeetMatrxIntro({ ...base, pathname: "/chat/abc-123" })).toBe(false);
   });
   it("not away from home, and not on /welcome", () => {
-    expect(shouldShowMeetMatrxIntro({ ...base, pathname: "/agents/all" })).toBe(false);
+    expect(shouldShowMeetMatrxIntro({ ...base, pathname: "/agents/abc/edit" })).toBe(false);
     expect(shouldShowMeetMatrxIntro({ ...base, pathname: "/welcome" })).toBe(false);
     expect(isHomePath("/dashboard/")).toBe(true);
   });

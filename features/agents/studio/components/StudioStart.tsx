@@ -228,6 +228,8 @@ export function StudioStart({ onStart, onBack, initialJob = "", planLink }: Stud
             autoGrow
             autoFocus={!initialJob}
             surfaceName="agent-studio:start"
+            menuActions="none"
+            enableTextStats={false}
             onSubmit={() => void build()}
             submitLabel="Build agent"
             submitText="Build agent"

@@ -14,6 +14,7 @@ import { ORGANIZATION_CONTEXT_REQUIRED_CODE } from "@ai-matrx/auth/organizations
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 import type { ApiCallError } from "@/lib/api/call-api";
 import { isJsonObject } from "@/types/json";
+import { noteServerSessionRefusal } from "@/lib/api/session-lost";
 
 interface ApiErrorContext {
   /** Fully-resolved request URL. */
@@ -47,6 +48,9 @@ export function captureApiError(
     ) {
       return;
     }
+
+    // The server no longer knows this signed-in session: refresh once, else go to /login.
+    void noteServerSessionRefusal({ status: error.status, code: error.code, message: error.message });
 
     const isNetwork =
       error.type === "network_error" ||
