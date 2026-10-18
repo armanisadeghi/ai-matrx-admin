@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1553,
+  "routeCount": 1557,
   "routes": [
     {
       "pattern": "/",
@@ -6246,6 +6246,11 @@
       "source": "app/(core)/organizations/[orgId]/settings/scopes/page.tsx"
     },
     {
+      "pattern": "/organizations/[orgId]/settings/system-context",
+      "status": "live",
+      "source": "app/(core)/organizations/[orgId]/settings/system-context/page.tsx"
+    },
+    {
       "pattern": "/organizations/[orgId]/shortcuts",
       "status": "live",
       "source": "app/(core)/organizations/[orgId]/shortcuts/page.tsx"
@@ -7231,6 +7236,11 @@
       "source": "app/(core)/spaces/speed-test/page.tsx"
     },
     {
+      "pattern": "/spaces/use-template",
+      "status": "live",
+      "source": "app/(core)/spaces/use-template/page.tsx"
+    },
+    {
       "pattern": "/speed-test",
       "status": "live",
       "source": "app/(core)/speed-test/page.tsx"
@@ -7324,6 +7334,16 @@
       "pattern": "/templates/job/[job]",
       "status": "live",
       "source": "app/(public)/templates/job/[job]/page.tsx"
+    },
+    {
+      "pattern": "/templates/workspaces",
+      "status": "live",
+      "source": "app/(public)/templates/workspaces/page.tsx"
+    },
+    {
+      "pattern": "/templates/workspaces/[category]",
+      "status": "live",
+      "source": "app/(public)/templates/workspaces/[category]/page.tsx"
     },
     {
       "pattern": "/terms-and-conditions",
