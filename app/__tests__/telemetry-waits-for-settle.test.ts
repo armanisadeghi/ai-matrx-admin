@@ -10,10 +10,12 @@ const root = join(__dirname, "../..");
 const code = (p: string) =>
   readFileSync(join(root, p), "utf8").replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
 
-test("V21: config attestation starts after late idle; the install row is upserted once per tab session", () => {
+test("V21: config attestation starts only after settle + engagement; the install row is upserted once per tab session", () => {
   const boot = code("components/config-attestation/ConfigAttestationBoot.tsx");
-  expect(boot).toMatch(/whenLateIdle\(undefined, controller\.signal\)\.then\(\(ok\) => \{\s*if \(ok && !stopped\) attempt\(\);/);
-  expect(boot).not.toMatch(/^\s*attempt\(\);\s*$/m);
+  // 2026-10-17: stricter than late idle — waits for settle AND first engagement (lib/boot/engagedLate).
+  expect(boot).toMatch(/whenEngagedLate\(undefined, controller\.signal\)\.then\(\(ok\) => \{\s*if \(ok && !stopped\) \{[\s\S]*?attempt\(\);/);
+  // The only call is the one inside the engaged-late gate (no mount-time attempt).
+  expect(boot.match(/\battempt\(\);/g) ?? []).toHaveLength(1);
   const recorder = code("lib/config-attestation/recorder.client.ts");
   expect(recorder).toMatch(/area: "session"/);
   expect(recorder).toMatch(/if \(cached && cached\.tag === sessionTag/);
@@ -28,6 +30,7 @@ test("V23: first touch waits for late idle and is filed once per browser", () =>
 
 test("V24: the age gate is read only after settle, and never again once this browser saw a band", () => {
   const mount = code("features/education/compliance/FirstSignInAgeGateMount.tsx");
-  expect(mount).toMatch(/enabled: settled && !onPortal && !askedAtMount && !declared/);
+  expect(mount).toMatch(/const settled = useEngagedLateReady\(\)/);
+  expect(mount).toMatch(/enabled: settled && !onPortal && (?:!onWelcome && )?!askedAtMount && !declared/);
   expect(mount).toMatch(/markDeclaredInThisBrowser\(userId\)/);
 });
