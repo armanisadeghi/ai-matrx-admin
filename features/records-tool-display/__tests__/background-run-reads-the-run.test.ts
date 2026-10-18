@@ -318,13 +318,26 @@ describe("a run that is not simply working", () => {
     expect(readBackgroundRun(runOf([...started, event(3, { event: "run_cancelled", ts: "2026-10-17T10:01:00Z" })]), "workflow").phase).toBe("cancelled");
   });
 
-  it("a long quiet says no worker has it, never that it continues by itself", () => {
+  it("a long quiet states the quiet time, never a claim about workers", () => {
     const view = { phase: "working" as const, readFailure: null };
     const fmt = (ms: number) => `${Math.round(ms / 1000)}s`;
     expect(quietNote(view, 5_000, fmt)).toBe("");
     expect(quietNote(view, 60_000, fmt)).toBe("Still working · last moved 60s ago");
-    expect(quietNote(view, STALLED_AFTER_MS, fmt)).toBe("No worker on it · it resumes when one is free");
+    expect(quietNote(view, STALLED_AFTER_MS, fmt)).toBe("No progress for 300s");
+    expect(quietNote(view, STALLED_AFTER_MS, fmt)).not.toMatch(/worker/i);
     expect(quietNote({ phase: "needs_you", readFailure: null }, STALLED_AFTER_MS * 4, fmt)).toBe("");
     expect(quietNote({ phase: "working", readFailure: "Could not read the run." }, STALLED_AFTER_MS, fmt)).toBe("Could not read the run.");
+  });
+
+  it("a durable timer park is Waiting with its wake time, not a question for the person", () => {
+    const run = runOf([
+      ...started,
+      event(3, { event: "run_interrupted", node_id: "import", checkpoint_id: "c1", payload: { matrx_sleep: { wake_at: "2026-10-18T15:40:00+00:00" } }, ts: "2026-10-17T10:01:00Z" }),
+    ]);
+    const view = readBackgroundRun(run, "workflow");
+    expect(view.phase).toBe("sleeping");
+    expect(STATUS_WORD[view.phase]).toBe("Waiting");
+    expect(view.wakeAt).toBe("2026-10-18T15:40:00+00:00");
+    expect(view.ask).toBeNull();
   });
 });
