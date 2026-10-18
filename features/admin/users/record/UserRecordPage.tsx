@@ -1,0 +1,287 @@
+"use client";
+
+// THE ONE PAGE for one person in platform admin (/administration/users/<id>[/<tab>]; users one-roof,
+// Arman 2026-10-17). The record-page pattern every admin record follows (SpendAlarmRecordPage,
+// HeldRunView): RecordPageHeader (back + crumbs + name + status + the header verbs + ONE Actions
+// menu), a Copy-for-AI of the whole record, and the tab bodies the registry (userSurfaces.ts) says
+// are built. Data: admin.user_overview, one call.
+
+import { useEffect, useState, type ComponentType } from "react";
+import { useRouter } from "next/navigation";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
+import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
+import {
+  RecordPageHeader,
+  type RecordPageAction,
+  type RecordPageMenuItem,
+} from "@/features/shell/components/header/templates/RecordPageHeader";
+import { useRecordTitle } from "@/lib/record-title/record-title";
+import { pushAppHref } from "@/lib/deployment/navigate";
+import { ChangePlanDialog, type ChangePlanSubject } from "@/features/admin/limits/components/ChangePlanDialog";
+import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "../components/GiveFreeMonthsDialog";
+import { StartSupportSessionDialog, type SupportSessionTarget } from "../support-sessions/StartSupportSessionDialog";
+import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
+import { ADMIN_LEVEL_LABEL } from "../constants";
+import { useUserActions } from "./useUserActions";
+import { actionSubjectOf, fetchUserOverview, isClosed, personTitle, type UserOverview } from "./userOverview";
+import { UserOverviewTab } from "./UserOverviewTab";
+import {
+  USERS_HUB_PATH,
+  isVisibleUserTab,
+  userActionDef,
+  userActions,
+  userRecordHref,
+  visibleUserTabs,
+  type UserActionId,
+  type UserTabId,
+} from "./userSurfaces";
+
+export interface UserTabBodyProps {
+  userId: string;
+  overview: UserOverview;
+  reload: () => void;
+}
+
+// The body of every BUILT tab (userSurfaces.ts `built: true`). Overview renders inline below because
+// it needs the page's reopen action; lane B2 adds the others here as it flips their `built` flag.
+const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = {};
+
+export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }) {
+  const router = useRouter();
+  const validId = isUuidShape(userId);
+  const [overview, setOverview] = useState<UserOverview | null>(null);
+  const [loading, setLoading] = useState(validId);
+  const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
+  const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
+  const [freeMonthsPeople, setFreeMonthsPeople] = useState<FreeMonthsPerson[] | null>(null);
+  const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
+  const [tutorialPerson, setTutorialPerson] = useState<TutorialRecipient | null>(null);
+
+  const reload = () => setVersion((v) => v + 1);
+  const actions = useUserActions({ onPatched: () => reload() });
+
+  // A tab that is not registered, or not built yet, is never an empty page: it opens Overview.
+  const activeTab: UserTabId = isVisibleUserTab(tab) ? tab : "overview";
+  useEffect(() => {
+    if (tab && !isVisibleUserTab(tab)) router.replace(userRecordHref(userId));
+  }, [tab, userId, router]);
+
+  useEffect(() => {
+    if (!validId) return;
+    let alive = true;
+    setLoading(true);
+    fetchUserOverview(userId)
+      .then((o) => {
+        if (!alive) return;
+        setOverview(o);
+        setError(o ? null : "No account with this id");
+      })
+      .catch((e: unknown) => {
+        if (alive) setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [userId, validId, version]);
+
+  const title = overview ? personTitle(overview) : null;
+  useRecordTitle(title);
+
+  const subject = overview ? actionSubjectOf(overview) : null;
+  const label = title ?? "this person";
+  const contactable = Boolean(subject?.email) && !subject?.is_anonymous;
+
+  const run = (id: UserActionId) => {
+    if (!subject || !overview) return;
+    switch (id) {
+      case "support_session":
+        setSupportTarget({ id: subject.id, email: subject.email, displayName: subject.display_name });
+        return;
+      case "message":
+        actions.openMessage(subject);
+        return;
+      case "email":
+        pushAppHref(router, `/administration/users/email?userId=${encodeURIComponent(subject.id)}`);
+        return;
+      case "magic_link":
+        void actions.sendAuthLink(subject, "magiclink");
+        return;
+      case "password_reset":
+        void actions.sendAuthLink(subject, "recovery");
+        return;
+      case "change_plan":
+        setPlanTarget({
+          kind: "user",
+          id: subject.id,
+          name: label,
+          currentPlanKey: overview.plan?.key ?? null,
+          grantActive: overview.plan?.source === "grant",
+        });
+        return;
+      case "free_months":
+        setFreeMonthsPeople([{ id: subject.id, label }]);
+        return;
+      case "tutorial":
+        setTutorialPerson({ id: subject.id, label, email: subject.email });
+        return;
+      case "mcp_access":
+        void actions.toggleMcpFullAccess(subject);
+        return;
+      case "top_tier":
+        void actions.toggleTopTierModels(subject);
+        return;
+      case "onboarded":
+        void actions.toggleOnboarding(subject);
+        return;
+      case "close":
+        void actions.setAccountClosed(subject, true);
+        return;
+      case "reopen":
+        void actions.setAccountClosed(subject, false);
+        return;
+      case "sign_out_everywhere":
+        return;
+    }
+  };
+
+  /** The label an action shows for this person's current state, or null to leave it out. */
+  const labelFor = (id: UserActionId): string | null => {
+    if (!subject) return null;
+    switch (id) {
+      case "mcp_access":
+        return subject.admin_level ? null : subject.mcp_full_access ? "Revoke full MCP access" : "Grant full MCP access";
+      case "top_tier":
+        return subject.top_tier_models ? "Turn off top-tier models" : "Allow top-tier models";
+      case "onboarded":
+        return subject.onboarding_completed ? "Mark as new" : "Mark as onboarded";
+      case "close":
+        return subject.banned ? null : "Close account…";
+      case "reopen":
+        return subject.banned && !subject.erased ? "Reopen account" : null;
+      default:
+        return userActionDef(id).label;
+    }
+  };
+
+  const disabledFor = (id: UserActionId): boolean => {
+    if (!subject) return true;
+    if (id === "support_session" || id === "magic_link" || id === "password_reset" || id === "email") return !contactable;
+    if (id === "message" || id === "change_plan" || id === "free_months" || id === "tutorial" || id === "top_tier") return subject.is_anonymous;
+    if (id === "close") return actions.closeBlockedReason(subject) !== null;
+    return false;
+  };
+
+  const headerActions: RecordPageAction[] = subject
+    ? userActions("header").map((def) => ({
+        label: def.label,
+        icon: def.icon,
+        showLabel: true,
+        disabled: disabledFor(def.id),
+        onPress: () => run(def.id),
+      }))
+    : [];
+
+  const menuItems: RecordPageMenuItem[] = subject
+    ? userActions("menu").flatMap((def) => {
+        const itemLabel = labelFor(def.id);
+        if (!itemLabel) return [];
+        return [
+          {
+            id: def.id,
+            label: itemLabel,
+            icon: def.icon,
+            group: def.group,
+            destructive: def.danger,
+            disabled: disabledFor(def.id),
+            onPress: () => run(def.id),
+          },
+        ];
+      })
+    : [];
+
+  const status = overview
+    ? isClosed(overview)
+      ? { label: overview.closure?.erased_at ? "Erased" : "Closed", tone: "destructive" as const }
+      : overview.identity.is_anonymous
+        ? { label: "Guest", tone: "neutral" as const }
+        : overview.admin_level
+          ? { label: ADMIN_LEVEL_LABEL[overview.admin_level] ?? overview.admin_level, tone: "info" as const }
+          : undefined
+    : undefined;
+
+  const tabs = visibleUserTabs();
+  const Body = activeTab === "overview" ? null : TAB_BODIES[activeTab];
+
+  return (
+    <>
+      <RecordPageHeader
+        backHref={USERS_HUB_PATH}
+        parents={[{ label: "Users & Access", href: USERS_HUB_PATH }]}
+        record={{ name: title ?? (loading ? "User" : "User not found") }}
+        status={status}
+        actions={headerActions}
+        menu={menuItems.length ? { items: menuItems } : undefined}
+      />
+      <div className="h-full overflow-y-auto px-4 pt-4 sm:px-6" data-matrx-page-scroll="" data-testid="user-record">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 pb-6">
+          {!validId ? (
+            <ErrorNotice size="inline" message="That address does not name an account." error={`Not a user id: ${userId}`} operation="Open user" />
+          ) : error ? (
+            <ErrorNotice size="inline" message={error} error={error} operation="Read user overview" calls={["admin.user_overview"]} />
+          ) : null}
+
+          {loading && !overview ? <RegionSkeleton shape="cards" count={6} aria-label="Loading user" /> : null}
+
+          {overview ? (
+            <>
+              <div className="flex items-end justify-between gap-3">
+                {tabs.length > 1 ? (
+                  <Tabs<UserTabId>
+                    aria-label="User sections"
+                    value={activeTab}
+                    onValueChange={(next) => router.push(userRecordHref(userId, next))}
+                    data={tabs.map((t) => ({ value: t.id, label: t.label }))}
+                  />
+                ) : (
+                  <span />
+                )}
+                <CopyForAiAction
+                  label="User"
+                  agent={() => ({
+                    kind: "admin-user",
+                    location: userRecordHref(userId, activeTab),
+                    description: "One person's admin record: identity, plan, usage, attention.",
+                    attributes: { id: overview.identity.id, email: overview.identity.email ?? "" },
+                    data: overview,
+                  })}
+                />
+              </div>
+              {activeTab === "overview" ? (
+                <UserOverviewTab overview={overview} onReopen={() => run("reopen")} />
+              ) : Body ? (
+                <Body userId={userId} overview={overview} reload={reload} />
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      {actions.dialogs}
+      <StartSupportSessionDialog target={supportTarget} onClose={() => setSupportTarget(null)} />
+      <ChangePlanDialog subject={planTarget} onClose={() => setPlanTarget(null)} onChanged={reload} />
+      <GiveFreeMonthsDialog
+        open={freeMonthsPeople !== null}
+        people={freeMonthsPeople ?? []}
+        onClose={() => setFreeMonthsPeople(null)}
+        onApplied={reload}
+      />
+      <SendTutorialDialog person={tutorialPerson} onClose={() => setTutorialPerson(null)} />
+    </>
+  );
+}

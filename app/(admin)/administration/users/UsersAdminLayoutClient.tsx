@@ -3,6 +3,8 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 import {
   Activity,
   Building2,
@@ -107,6 +109,13 @@ export function UsersAdminLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
+  // One person's record (/administration/users/<uuid>[/<tab>]) carries its own header and tabs
+  // (RecordPageHeader); the hub's tab bar would be a second tab row, so it steps aside there.
+  const pathname = usePathname() ?? "";
+  const segment = pathname.split("/")[3] ?? "";
+  if (isUuidShape(segment)) {
+    return <div className="flex h-[calc(100dvh-2.5rem)] flex-col overflow-hidden bg-textured">{children}</div>;
+  }
   return (
     <AdminSectionShell
       title="Users & Access"

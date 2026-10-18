@@ -82,6 +82,8 @@ export interface AdminUserRefProps {
   email?: string | null;
   /** Hide the secondary email line (dense tables that show email in its own column). */
   hideEmail?: boolean;
+  /** Where the NAME opens, when the surface has a better door than the Accounts focus. */
+  href?: string;
   className?: string;
 }
 
@@ -208,6 +210,7 @@ export function AdminUserRef({
   name,
   email,
   hideEmail = false,
+  href,
   className,
 }: AdminUserRefProps) {
   // Given only an id, look the person up (batched, cached) — an admin never reads a bare id
@@ -227,7 +230,7 @@ export function AdminUserRef({
           // are standing in. stopPropagation so a row-detail click handler on
           // the enclosing table does not also fire.
           <AppLink
-            href={accountHrefFor(userId)}
+            href={href ?? accountHrefFor(userId)}
             onClick={(event) => event.stopPropagation()}
             title={`Open account ${primary}`}
             className="block truncate text-sm font-medium hover:text-primary hover:underline"
