@@ -49,6 +49,6 @@ export const TEMPLATE_COLUMNS: EntityColumnSpec<TemplateRow>[] = [
   {
     id: "updated_at",
     label: "Updated",
-    column: { id: "updated_at", accessorKey: "updated_at", header: "Updated", filter: false, cell: (row) => timeCell(row.updated_at) },
+    column: { id: "updated_at", accessorKey: "updated_at", header: "Updated", filter: "date", cell: (row) => timeCell(row.updated_at) },
   },
 ];

@@ -24,6 +24,7 @@ import type {
 import type { ListScopeWord } from "@/lib/list-scope";
 import { listOrgParam } from "@/lib/list-scope/types";
 import type { EnvelopeListRow } from "./types";
+import { inDateWindows } from "../dateWindow";
 
 export type SendBody = Omit<components["schemas"]["EsignSendBody"], "organization_id" | "project_id" | "task_id">;
 export type SendAnswer = components["schemas"]["EsignSendAnswer"];
@@ -68,7 +69,15 @@ async function listEnvelopes(lane: "all" | "sent", query: EntityListQuery): Prom
   });
   if (error) throw operationFailed("load your envelopes", error);
   const answer = data as { granted?: boolean; envelopes?: EnvelopeListRow[] } | null;
-  return answer?.envelopes ?? [];
+  // The list door returns up to 500 rows and this page sorts and pages them here, so the date
+  // windows (created_at, sent_at, updated_at) are applied here too — rows, totals and lane counts alike.
+  return (answer?.envelopes ?? []).filter((row) =>
+    inDateWindows(row, query, {
+      created_at: (r) => r.created_at,
+      sent_at: (r) => r.sent_at,
+      updated_at: (r) => r.updated_at,
+    }),
+  );
 }
 
 function laneFor(scope?: ListScopeWord | string): "all" | "sent" {
