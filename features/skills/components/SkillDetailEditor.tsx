@@ -39,6 +39,8 @@ import { createSkill, deleteSkill, patchSkill } from "../redux/skillsThunks";
 import type { SkillDraft, SkillType } from "../types";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { SkillProjectAssociations } from "./SkillProjectAssociations";
+import { SkillSetMembersField } from "./SkillSetMembersEditor";
+import { SKILL_SET_TYPE, setMemberIds, withSetMembers } from "../skill-sets";
 import { SkillResourcesPanel } from "./SkillResourcesPanel";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
@@ -78,6 +80,7 @@ const KNOWN_SKILL_TYPES: SkillType[] = [
   "render_block",
   "mode",
   "agent_behavior",
+  SKILL_SET_TYPE,
 ];
 
 export function SkillDetailEditor({
@@ -565,9 +568,27 @@ export function SkillDetailEditor({
             </Field>
           </div>
 
+          {draft.skillType === SKILL_SET_TYPE && (
+            <Field
+              label="Members"
+              hint="Attaching the set attaches every member, in this order."
+            >
+              <SkillSetMembersField
+                memberIds={setMemberIds(draft.config)}
+                onChange={(ids) => set("config", withSetMembers(draft.config, ids))}
+                setId={draft.id}
+                disabled={readOnly}
+              />
+            </Field>
+          )}
+
           <Field
             label="Body"
-            hint="Markdown. Inlined into the agent's system prompt when included."
+            hint={
+              draft.skillType === SKILL_SET_TYPE
+                ? "Optional notes about the set. Agents see the members."
+                : "Markdown. Inlined into the agent's system prompt when included."
+            }
           >
             <BodyEditor
               value={draft.body}

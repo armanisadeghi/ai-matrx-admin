@@ -20,6 +20,7 @@ import * as React from "react";
 import {
   ArrowLeft,
   Check,
+  Layers,
   Shapes,
   Wrench,
   Zap,
@@ -31,6 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { cn } from "@/lib/utils";
 
+import { isSkillSet } from "../skill-sets";
 import type { SkillRow } from "../types";
 import { SkillAttributionLine, SkillOriginBadges } from "./SkillOriginBadges";
 import { SKILL_TIER_META, SKILL_TIER_ORDER, type SkillTierKey } from "./skill-tiers";
@@ -44,6 +46,10 @@ interface SkillDetailViewProps {
   onMove: (tier: SkillTierKey | null) => void;
   onBack: () => void;
   disabled?: boolean;
+  /** For a skill SET: its members in order (null = not in the loaded catalogue). */
+  members?: Array<{ id: string; skill: SkillRow | null }>;
+  /** Opens one member in this pane. */
+  onOpenMember?: (id: string) => void;
 }
 
 export function SkillDetailView({
@@ -53,7 +59,10 @@ export function SkillDetailView({
   onMove,
   onBack,
   disabled = false,
+  members,
+  onOpenMember,
 }: SkillDetailViewProps) {
+  const isSet = isSkillSet(skill);
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col bg-background">
       <div className="shrink-0 border-b border-border px-3 py-2">
@@ -165,6 +174,54 @@ export function SkillDetailView({
             />
           )}
 
+          {isSet && (
+            <section data-testid="skill-set-member-list">
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Members · {members?.length ?? 0}
+                </h4>
+              </div>
+              {members && members.length > 0 ? (
+                <ol className="space-y-1">
+                  {members.map(({ id, skill: member }, index) => (
+                    <li
+                      key={id}
+                      className="flex items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs"
+                    >
+                      <span className="w-4 shrink-0 text-right tabular-nums text-muted-foreground">
+                        {index + 1}
+                      </span>
+                      {member && onOpenMember ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenMember(id)}
+                          className="min-w-0 flex-1 truncate text-left text-foreground hover:underline"
+                        >
+                          {member.label}
+                        </button>
+                      ) : (
+                        <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                          {member?.label ?? `Skill ${id.slice(0, 8)}`}
+                        </span>
+                      )}
+                      {member && (
+                        <span className="shrink-0 text-muted-foreground">
+                          {member.skillType}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="rounded-md border border-dashed border-border px-3 py-2 text-[11px] text-muted-foreground">
+                  This set has no members yet.
+                </p>
+              )}
+            </section>
+          )}
+
+          {!(isSet && !(skill.body && skill.body.trim())) && (
           <section>
             <div className="mb-1.5 flex items-center gap-1.5">
               <Shapes className="h-3.5 w-3.5 text-muted-foreground" />
@@ -183,6 +240,7 @@ export function SkillDetailView({
               </p>
             )}
           </section>
+          )}
         </div>
       </ScrollArea>
     </div>
