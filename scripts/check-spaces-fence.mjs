@@ -59,7 +59,8 @@ const SELF = "scripts/check-spaces-fence.mjs";
 // editor that writes it land in step. Nothing else outside the fence is opened.
 // Adopting a package the Spaces change uses (owner, 2026-10-07): package.json + pnpm-lock.yaml may ride a
 // `spaces:` commit, so the import and the version that carries it land together (never import before install).
-const OWNER_OPENED = [/^lib\/spaces-blocks\//, /^package\.json$/, /^pnpm-lock\.yaml$/];
+// Spaces' own database changes: a migration named spaces_* (and its inverse) is Spaces work, not a step outside.
+const OWNER_OPENED = [/^lib\/spaces-blocks\//, /^package\.json$/, /^pnpm-lock\.yaml$/, /^migrations\/(?:inverse\/)?spaces_[^/]+\.sql$/];
 const SCRATCH = /(?:^|\/)[^/]*\.tmp\.[^/]+$/;
 
 /** Tracked paths → violations for scratch (`*.tmp.*`) files inside the fence. */
@@ -129,6 +130,8 @@ function selfTest() {
   };
   expect("planted commit leaves the fence", judgeCommits([{ sha: "a".repeat(40), subject: "spaces: columns", files: ["features/spaces/blocks/Columns.tsx", "features/notes/NoteEditor.tsx"] }]), 1);
   expect("route commit inside the fence", judgeCommits([{ sha: "b".repeat(40), subject: "spaces(sidebar): tree", files: ["app/(core)/spaces/page.tsx", "features/spaces/sidebar/Tree.tsx"] }]), 0);
+  expect("a spaces_* migration and its inverse are Spaces' own", judgeCommits([{ sha: "f".repeat(40), subject: "spaces: db", files: ["migrations/spaces_x.sql", "migrations/inverse/spaces_x_down.sql"] }]), 0);
+  expect("any other migration still leaves the fence", judgeCommits([{ sha: "9".repeat(40), subject: "spaces: db", files: ["migrations/notes_x.sql"] }]), 1);
   expect("non-spaces commit is not judged", judgeCommits([{ sha: "c".repeat(40), subject: "fix(notes): save", files: ["features/notes/x.ts"] }]), 0);
   expect("alias import from outside", judgeImports([{ path: "features/notes/a.tsx", source: 'import { X } from "@/features/spaces/blocks";' }]), 1);
   expect("relative import from outside", judgeImports([{ path: "components/b.tsx", source: 'const m = await import("../features/spaces/editor");' }]), 1);
