@@ -178,6 +178,16 @@ begin
   if v_meta is null or v_body not like '%was moved%' then raise exception '4: no moved notice for the booker'; end if;
   raise notice 'TEST 4 PASSED — moved: old reminders ended, new ones due, booker told';
 
+  -- 4b. EVERY REMINDER CARRIES A STILL-DUE GUARD, answered at send time: the old time's says "moved",
+  -- the new time's says due.
+  select (communication.notification_still_due(n.id)) ->> 'due' into v_code from communication.notification n
+   where n.organization_id = v_org and n.dedupe_key = format('booking:%s:remind:60:%s:email', v_ref, v_key);
+  if v_code is distinct from 'false' then raise exception '4b: the reminder for the OLD time is still due (%)', v_code; end if;
+  select (communication.notification_still_due(n.id)) ->> 'due' into v_code from communication.notification n
+   where n.organization_id = v_org and n.dedupe_key = format('booking:%s:remind:60:%s:email', v_ref, v_key2);
+  if v_code is distinct from 'true' then raise exception '4b: the reminder for the standing booking is not due (%)', v_code; end if;
+  raise notice 'TEST 4b PASSED — a reminder for a moved time is not due, the new one is';
+
   -- 5. A CANCEL: reminders ended, booker gets a CANCEL calendar file.
   select * into v_row from custom.booking_cancel(v_ref, 'https://s.test');
   if v_row.state <> 'cancelled' then raise exception '5: cancel said % (%)', v_row.state, v_row.message; end if;
@@ -190,6 +200,19 @@ begin
     raise exception '5: no cancel notice with a CANCEL calendar file';
   end if;
   raise notice 'TEST 5 PASSED — cancelled: reminders ended, booker told with a CANCEL file';
+
+  -- 5b. A reminder for a CANCELLED booking is not due, with the reason in words.
+  select (communication.notification_still_due(n.id)) ->> 'why' into v_code from communication.notification n
+   where n.organization_id = v_org and n.dedupe_key = format('booking:%s:remind:60:%s:email', v_ref, v_key2);
+  if v_code is null or v_code not like '%cancelled%' then raise exception '5b: no reason said for a cancelled booking: %', v_code; end if;
+  -- 5c. A SECOND CANCEL IS IDEMPOTENT and still ends reminders that are somehow waiting.
+  update communication.notification set status = 'render_pending', error_code = null
+   where organization_id = v_org and dedupe_key like format('booking:%s:remind:%%', v_ref);
+  select * into v_row from custom.booking_cancel(v_ref, 'https://s.test');
+  select count(*) into v_n from communication.notification
+   where organization_id = v_org and dedupe_key like format('booking:%s:remind:%%', v_ref) and status = 'render_pending';
+  if v_n <> 0 then raise exception '5c: a second cancel left % reminders waiting', v_n; end if;
+  raise notice 'TEST 5b/5c PASSED — a cancelled booking is not due; cancelling twice ends reminders again';
 
   -- ══ PAGE 2: THE KNOBS ═══════════════════════════════════════════════════════════
   select s ->> 'key' into v_key from custom.booking_public(v_form2, 3) b, jsonb_array_elements(b.slots) s
