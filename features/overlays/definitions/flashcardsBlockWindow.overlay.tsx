@@ -6,9 +6,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "flashcardsBlockWindow" as const;
@@ -74,7 +74,7 @@ export function FlashcardsBlockWindowController(
 
 export type FlashcardsBlockWindowDefinitionData = OpenFlashcardsBlockWindowOptions;
 
-export const flashcardsBlockWindowOverlay = defineOverlay<FlashcardsBlockWindowDefinitionData>()({
+export const flashcardsBlockWindowOverlay = /* @__PURE__ */ defineOverlay<FlashcardsBlockWindowDefinitionData>()({
   id: "flashcardsBlockWindow",
   label: "Flashcards Block Window",
   instance: "single",

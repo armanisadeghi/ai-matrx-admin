@@ -7,14 +7,14 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createExtractionCellEditorCallbackGroup,
   extractionCellEditorInstanceId,
   type ExtractionCellEditorHandlers,
   type ExtractionCellEditorTargetInput,
 } from "@/features/page-extraction/data-review/extractionCellEditorCallbacks";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "extractionCellEditorWindow" as const;
@@ -97,7 +97,7 @@ export function useOpenExtractionCellEditor(
 
 export type ExtractionCellEditorWindowDefinitionData = OpenExtractionCellEditorOptions;
 
-export const extractionCellEditorWindowOverlay = defineOverlay<ExtractionCellEditorWindowDefinitionData>()({
+export const extractionCellEditorWindowOverlay = /* @__PURE__ */ defineOverlay<ExtractionCellEditorWindowDefinitionData>()({
   id: "extractionCellEditorWindow",
   label: "Extraction Cell Editor Window",
   instance: "multi",

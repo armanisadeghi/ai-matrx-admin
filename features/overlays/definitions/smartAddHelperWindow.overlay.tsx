@@ -7,9 +7,9 @@
  */
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { HelperMethod } from "@/features/marketing/smart-add/helpers/types";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "smartAddHelperWindow" as const;
@@ -29,7 +29,7 @@ export function useOpenSmartAddHelper() {
 
 export type SmartAddHelperWindowDefinitionData = Record<string, unknown>;
 
-export const smartAddHelperWindowOverlay = defineOverlay<SmartAddHelperWindowDefinitionData>()({
+export const smartAddHelperWindowOverlay = /* @__PURE__ */ defineOverlay<SmartAddHelperWindowDefinitionData>()({
   id: "smartAddHelperWindow",
   label: "Smart Add helper",
   instance: "multi",

@@ -13,9 +13,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { ResourceType } from "@/utils/permissions/registry";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 import { RESOURCE_TYPES } from "@/utils/permissions/registry";
 
@@ -73,7 +73,7 @@ export function ShareModalWindowController(
 
 export type ShareModalWindowDefinitionData = OpenShareModalWindowOptions;
 
-export const shareModalWindowOverlay = defineOverlay<ShareModalWindowDefinitionData>()({
+export const shareModalWindowOverlay = /* @__PURE__ */ defineOverlay<ShareModalWindowDefinitionData>()({
   id: "shareModalWindow",
   label: "Share Modal Window",
   instance: "single",

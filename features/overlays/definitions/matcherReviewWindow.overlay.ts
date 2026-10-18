@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 export type MatcherReviewWindowDefinitionData = Record<string, unknown>;
 
-export const matcherReviewWindowOverlay = defineOverlay<MatcherReviewWindowDefinitionData>()({
+export const matcherReviewWindowOverlay = /* @__PURE__ */ defineOverlay<MatcherReviewWindowDefinitionData>()({
   id: "matcherReviewWindow",
   label: "What this match caught",
   instance: "single",

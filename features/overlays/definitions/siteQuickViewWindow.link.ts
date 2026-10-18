@@ -1,7 +1,7 @@
 import { getRestorableResourceId } from "./link-helpers";
 import type { SiteQuickViewWindowDefinitionData } from "./siteQuickViewWindow.overlay";
-import { openOverlay } from "@ai-matrx/summon";
-import type { LinkHydrateContext } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
+import type { LinkHydrateContext } from "@ai-matrx/summon/open";
 
 export function hydrate({ dispatch, id, open }: LinkHydrateContext<SiteQuickViewWindowDefinitionData>) {
     const siteId = getRestorableResourceId(id, "siteQuickViewWindow");

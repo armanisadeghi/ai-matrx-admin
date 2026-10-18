@@ -9,19 +9,19 @@ import { SettingsSubHeader } from "@/components/official/settings/layout/Setting
 import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { minimizeAll, restoreAll, toggleWindowsHidden } from "@ai-matrx/summon";
+import { minimizeAll, restoreAll, toggleWindowsHidden } from "@ai-matrx/summon/open";
 
 export default function WindowsTab() {
   const dispatch = useAppDispatch();
   const windowsHidden = useSelector(
-    (s: RootState) => s.windowManager.windowsHidden,
+    (s: RootState) => s.windowManager?.windowsHidden ?? false,
   );
   const windowCount = useSelector(
-    (s: RootState) => Object.keys(s.windowManager.windows).length,
+    (s: RootState) => Object.keys(s.windowManager?.windows ?? {}).length,
   );
   const minimizedCount = useSelector(
     (s: RootState) =>
-      Object.values(s.windowManager.windows).filter(
+      Object.values(s.windowManager?.windows ?? {}).filter(
         (w) => w.state === "minimized",
       ).length,
   );

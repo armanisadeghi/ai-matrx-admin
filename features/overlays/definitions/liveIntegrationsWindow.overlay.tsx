@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "liveIntegrationsWindow" as const;
@@ -38,7 +38,7 @@ export function LiveIntegrationsWindowController(): null {
 
 export type LiveIntegrationsWindowDefinitionData = Record<string, unknown>;
 
-export const liveIntegrationsWindowOverlay = defineOverlay<LiveIntegrationsWindowDefinitionData>()({
+export const liveIntegrationsWindowOverlay = /* @__PURE__ */ defineOverlay<LiveIntegrationsWindowDefinitionData>()({
   id: "liveIntegrationsWindow",
   label: "Live Integrations",
   instance: "single",

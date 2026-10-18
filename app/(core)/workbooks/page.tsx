@@ -43,7 +43,7 @@ import type {
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createWorkbooksScope } from "@/features/surfaces/manifests/workbooks.manifest";
 import { ImportRouteDialog } from "@/features/data-tables/components/ImportRouteDialog";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";

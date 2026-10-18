@@ -20,7 +20,7 @@
 
 import { useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@ai-matrx/summon";
+import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
 import { isSearchKeyClaimed } from "@/features/shell/hooks/searchKeyClaim";
 import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
 import { editorOwnsKeyEvent } from "@ai-matrx/rich-content/editor/format/editor-keys";

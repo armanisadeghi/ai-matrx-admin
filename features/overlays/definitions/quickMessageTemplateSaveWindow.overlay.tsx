@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickMessageTemplateSaveWindow" as const;
@@ -45,7 +45,7 @@ export function QuickMessageTemplateSaveWindowController(
 
 export type QuickMessageTemplateSaveWindowDefinitionData = OpenQuickMessageTemplateSaveWindowOptions;
 
-export const quickMessageTemplateSaveWindowOverlay = defineOverlay<QuickMessageTemplateSaveWindowDefinitionData>()({
+export const quickMessageTemplateSaveWindowOverlay = /* @__PURE__ */ defineOverlay<QuickMessageTemplateSaveWindowDefinitionData>()({
   id: "quickMessageTemplateSaveWindow",
   label: "Save as Message Template",
   instance: "single",

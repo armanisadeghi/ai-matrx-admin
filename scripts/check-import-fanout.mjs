@@ -56,6 +56,9 @@ export const HOST_ONLY = [
   { module: "features/notifications/openPanelsInPlace.ts", hosts: [] },
   { module: "features/overlays/host/OverlayServices.tsx", hosts: ["app/DeferredSingletonCore.tsx"] },
   { module: "app/DeferredSingletonCore.tsx", hosts: [] },
+  // The summon window runtime (tray sync, router port): loaded by <SummonRoot runtime> once the
+  // summon core installs (one import() in AppSummonProvider), never statically.
+  { module: "features/overlays/host/AppSummonRuntime.tsx", hosts: [] },
 ];
 
 const STATIC_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^'"`;]*?\sfrom\s*)?(["'])([^"']+)\1/gm;

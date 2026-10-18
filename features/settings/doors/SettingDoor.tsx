@@ -11,7 +11,7 @@ import Link from "next/link";
 import { Settings } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { settingDoorHref, type SettingDoorTarget } from "./settingDoorTarget";
 
 export function SettingDoor({
