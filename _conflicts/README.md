@@ -31,9 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-<<<<<<< HEAD
-=======
->>>>>>> origin/main
 
 ## Resolution log
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
@@ -55,3 +52,4 @@ Its files stay as they are.
 - 2026-10-18 00:3x PDT — Claude resolver (lane from 10d1f900) cleared `_conflicts/2026-10-18-000555-old-path-refused/features/surfaces/utils/pinned-binding-args.ts.held`: the aidream copy did not exist, so the held file (new `pinnedBindingArgs` version-pin helper from lane L6, session 52397d01) was ported unchanged (import made package-relative) to `aidream/apps/shared/chat/src/surfaces/utils/pinned-binding-args.ts` with a `@ai-matrx/chat/surfaces/utils/pinned-binding-args` export, aidream 78005c73bd; chat typecheck 0 errors. L6 mailed to repoint its three uncommitted importers once the chat package publishes.
 
 - 2026-10-18 09:40 PDT — Claude 97527eb1 resolved `_conflicts/2026-10-18-091307/` battle.ts + BattleOutcome.tsx: kept LOCAL — identical feature, LOCAL adds the `reasons`→`rationales` / `why`→`rationale` rename that clears the error-render-carries-alchemy lint false positive.
+- 2026-10-18 10:5x PDT — Claude ship-all resolved `_conflicts/2026-10-18-101458-old-path-refused/` binding-tier.ts + bindings-changed.ts: kept live. Both refused files are byte-identical to what L6c already committed at features/surfaces/utils/ (31ce7eb21cc); they import host-only `@/features/agent-shortcuts/constants`, and their eight importers are host admin/bind components, so they are host code, not chat-package code. Also removed a stray empty conflict-marker block from this README.

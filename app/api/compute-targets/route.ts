@@ -22,7 +22,7 @@ import { createClient } from "@/utils/supabase/server";
 import { sandboxDisplayName } from "@/lib/sandbox/format";
 import { isJsonObject } from "@/types/json";
 import { filesDb } from "@/features/files/filesDb";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { isRestDeadlineError } from "@/utils/supabase/restDeadline";
 import { onlyRealComputers } from "@/lib/app-instances/computers";
 

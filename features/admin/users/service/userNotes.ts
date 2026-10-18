@@ -23,6 +23,7 @@ export type MyUserNoteRow = Database["admin"]["Functions"]["my_user_notes"]["Ret
 
 export async function readUserNotes(userId: string): Promise<PersonNoteRow[]> {
   const { data, error } = await createClient().schema("admin").rpc("user_notes", { p_user: userId });
+  // access-errors: ok — an admin-only read; the notes tab shows this message in its own error notice
   if (error) throw new Error(error.message);
   return data ?? [];
 }

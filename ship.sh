@@ -56,10 +56,10 @@ case " $* " in
     # macOS's Bash with `set -u` treats an empty array expansion as unbound.
     # Keep the explicit-target path free of an optional array altogether.
     *" --target "*)
-        "$ROOT/scripts/release.sh" --message "$NOTE" "$@"
+        bash "$ROOT/scripts/release.sh" --message "$NOTE" "$@"
         ;;
     *)
-        "$ROOT/scripts/release.sh" --message "$NOTE" --target all "$@"
+        bash "$ROOT/scripts/release.sh" --message "$NOTE" --target all "$@"
         ;;
 esac
 RELEASE_RC=$?

@@ -40,7 +40,7 @@ import type {
   TelemetrySnapshot,
 } from "./types";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { BackendApiError } from "@ai-matrx/api";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 type ProfileRow = Database["browser"]["Tables"]["profile"]["Row"];

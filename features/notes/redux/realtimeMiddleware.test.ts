@@ -45,6 +45,8 @@ import { notesRealtimeMiddleware } from "./realtimeMiddleware";
 // door fired the right read). Their payload creators are allowed to fail fast:
 // createAsyncThunk dispatches `pending` BEFORE the creator runs, so a rejecting
 // client still proves which reads were issued without touching a network.
+// The channel joins on the engaged-late tier; these tests start engaged.
+jest.mock("@/lib/boot/engagedLate", () => ({ whenEngagedLate: () => Promise.resolve(true) }));
 jest.mock("@/utils/supabase/client", () => {
   const boom = () => {
     throw new Error("no network in this suite");
@@ -155,6 +157,9 @@ function baseState(): RootState {
   } as unknown as RootState;
 }
 
+/** The channel joins after `whenEngagedLate()` resolves (mocked: at once). */
+const joined = () => new Promise<void>((r) => setTimeout(r, 0));
+
 describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
   let stub: ReturnType<typeof stubManager>;
   let opened: Harness | null = null;
@@ -177,9 +182,10 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
     setAmbientRealtimeManager(null);
   });
 
-  it("declares one workbench.notes binding with NO owner filter", () => {
+  it("declares one workbench.notes binding with NO owner filter", async () => {
     const h = (opened = harness(baseState()));
     h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
 
     const spec = stub.spec();
     expect(spec.topic).toBe("mx:notes:user-1");
@@ -197,6 +203,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
   it("declares a backfill door that re-reads BOTH lists", async () => {
     const h = (opened = harness(baseState()));
     h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
 
     h.dispatched.length = 0;
     await stub.spec().onBackfill?.({
@@ -216,6 +223,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
     const state = baseState();
     const h = (opened = harness(state));
     h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
 
     state.userAuth.id = null;
     h.dispatched.length = 0;
@@ -229,7 +237,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
   });
 
   describe("THE FREEZE-CLASS GUARD — own writes reach the ledger", () => {
-    it("classifies the echo of a save as own-echo, not a collaborator write", () => {
+    it("classifies the echo of a save as own-echo, not a collaborator write", async () => {
       const state = baseState();
       (state.notes as unknown as { notes: Record<string, unknown> }).notes = {
         "note-1": {
@@ -242,6 +250,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       };
       const h = (opened = harness(state));
       h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
 
       // Before the save is announced, this payload is a stranger's write.
       const echo = {
@@ -267,7 +276,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       expect(stub.ledger.classify(echo).origin).toBe("own-echo");
     });
 
-    it("still lets a genuine collaborator write through", () => {
+    it("still lets a genuine collaborator write through", async () => {
       const state = baseState();
       (state.notes as unknown as { notes: Record<string, unknown> }).notes = {
         "note-1": {
@@ -280,6 +289,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       };
       const h = (opened = harness(state));
       h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
       h.handle({ type: "notes/markNoteSaving", payload: "note-1" });
       h.handle({
         type: "notes/markNoteSaved",
@@ -305,7 +315,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       ).toBe("remote");
     });
 
-    it("registers the revision a save produces, and never calls a HIGHER revision an echo (the phantom conflict)", () => {
+    it("registers the revision a save produces, and never calls a HIGHER revision an echo (the phantom conflict)", async () => {
       const state = baseState();
       (state.notes as unknown as { notes: Record<string, unknown> }).notes = {
         "note-1": {
@@ -319,6 +329,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       };
       const h = (opened = harness(state));
       h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
       const fingerprint = JSON.stringify(["The Best Chicken Alfredo", "the recipe", null, [], null, null]);
 
       // The save opens a ticket for the number it will produce (1 → 2)…
@@ -344,9 +355,10 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       expect(verdict.reason).toBe("newer-revision");
     });
 
-    it("hands the reducer the WHOLE row so every edited field can be compared to the base", () => {
+    it("hands the reducer the WHOLE row so every edited field can be compared to the base", async () => {
       const h = (opened = harness(baseState()));
       h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
       const binding = notesBinding(stub.spec());
       const row = {
         id: "note-1", organization_id: "org-1", version: 2, content: "the recipe", label: "L", home_scope_id: "home-1", tags: [], metadata: {}, shown_to: null, published_to_web: false,
@@ -371,7 +383,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       expect("search_tsv" in upsert.payload.note).toBe(false);
     });
 
-    it("registers a save that never announced itself (legacy service path)", () => {
+    it("registers a save that never announced itself (legacy service path)", async () => {
       const state = baseState();
       (state.notes as unknown as { notes: Record<string, unknown> }).notes = {
         "note-2": {
@@ -383,6 +395,7 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
       };
       const h = (opened = harness(state));
       h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
 
       // No markNoteSaving — a legacy surface called notesService directly.
       h.handle({
@@ -403,10 +416,11 @@ describe("notes realtime middleware on @ai-matrx/data/realtime", () => {
     });
   });
 
-  it("drops a queued payload after the auth identity disappears, without issuing editor RPCs", () => {
+  it("drops a queued payload after the auth identity disappears, without issuing editor RPCs", async () => {
     const state = baseState();
     const h = (opened = harness(state));
     h.handle(fetchNotesList.fulfilled(undefined, "request-1", undefined));
+    await joined();
 
     const binding = notesBinding(stub.spec());
     state.userAuth.id = null;

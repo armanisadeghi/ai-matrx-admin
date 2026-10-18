@@ -25,7 +25,19 @@ const BASE = opt("base", "https://www.aimatrx.com").replace(/\/$/, "");
 const CONCURRENCY = Number(opt("concurrency", "8"));
 const TIMEOUT_MS = Number(opt("timeout-ms", "40000"));
 
-const EXTRA = ["/", "/chat/new", "/login"];
+/**
+ * Dynamic routes: a dynamic segment's route function is shared by every id, so ONE GET warms it.
+ * Review A1 (2026-10-18): the first agent switch after a release paid a 3-6 s cold start on
+ * `/chat/a/[agentId]`. The agent is General Chat (system, active — the chat package's
+ * DEFAULT_AGENT_ID); the conversation id is a well-formed id that matches no conversation (the
+ * route still loads and renders its "not found" path, which warms the same function).
+ */
+export const DYNAMIC = [
+  "/chat/a/6b6b4e45-4699-4860-8dea-d8a60e07d69a",
+  "/chat/00000000-0000-4000-8000-000000000000",
+];
+
+const EXTRA = ["/", "/chat/new", "/login", ...DYNAMIC];
 
 export function coreRoutes(root = process.cwd()) {
   const dir = join(root, "app", "(core)");

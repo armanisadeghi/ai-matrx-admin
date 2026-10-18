@@ -5,10 +5,8 @@ import { VaultTrashRestoreDialog } from "./VaultTrashRestoreDialog";
 import type { TrashItem, VaultRecoveryPreview } from "./service";
 import type { VaultRestoreResult } from "@/features/secrets/vault-service";
 import {
-  confirmVaultPasswordIdentity,
   getVaultExportActor,
   restoreVaultItem,
-  VaultIdentityConfirmationError,
   VaultRestoreTransportError,
 } from "@/features/secrets/vault-service";
 
@@ -38,15 +36,23 @@ jest.mock("@/utils/supabase/client", () => ({
     },
   }),
 }));
+jest.mock("@/features/secrets/webVaultIdentity", () => ({
+  webVaultIdentity: {
+    account: async () => ({ email: "admin@admin.com", providers: ["google"], hasPassword: false }),
+    withProvider: jest.fn(async () => "confirmed"),
+    withPassword: async () => undefined,
+    sendEmailCode: async () => undefined,
+    withEmailCode: async () => undefined,
+  },
+}));
+const googleOnly = (
+  jest.requireMock("@/features/secrets/webVaultIdentity") as {
+    webVaultIdentity: { withProvider: jest.Mock };
+  }
+).webVaultIdentity;
 jest.mock("@/features/secrets/vault-service", () => ({
   getVaultExportActor: jest.fn(),
   restoreVaultItem: jest.fn(),
-  confirmVaultPasswordIdentity: jest.fn(),
-  VaultIdentityConfirmationError: class VaultIdentityConfirmationError extends Error {
-    constructor(public code: string) {
-      super(code);
-    }
-  },
   VaultRestoreTransportError: class VaultRestoreTransportError extends Error {
     constructor(public code: string) {
       super(code);
@@ -55,7 +61,6 @@ jest.mock("@/features/secrets/vault-service", () => ({
 }));
 
 const getActorMock = jest.mocked(getVaultExportActor);
-const confirmMock = jest.mocked(confirmVaultPasswordIdentity);
 const restoreMock = jest.mocked(restoreVaultItem);
 const itemId = "item-1";
 const item: TrashItem = {
@@ -120,7 +125,7 @@ describe("VaultTrashRestoreDialog", () => {
     onRestored.mockReset();
     onOpenChange.mockReset();
     getActorMock.mockReset();
-    confirmMock.mockReset();
+    googleOnly.withProvider.mockClear();
     restoreMock.mockReset();
     getActorMock.mockResolvedValue(actor);
     restoreMock.mockResolvedValue(restoredResult);
@@ -192,65 +197,45 @@ describe("VaultTrashRestoreDialog", () => {
     expect(document.body.textContent).toContain("website accepts it");
   });
 
-  test("fresh-auth refusal opens identity confirmation without retrying", async () => {
+  const settle = () =>
+    act(async () => void (await new Promise((r) => setTimeout(r, 30))));
+
+  test("a Google-only person confirms with Google and the restore runs again by itself", async () => {
+    restoreMock
+      .mockRejectedValueOnce(
+        new VaultRestoreTransportError("recent_auth_required"),
+      )
+      .mockResolvedValueOnce(restoredResult);
+    await render();
+    await act(async () => button("Restore disabled credential").click());
+    await settle();
+    // The ONE gate offers what this account uses: Google, and no password box.
+    expect(document.body.textContent).toContain("Confirm it\u2019s you");
+    expect(button("Continue with Google")).toBeDefined();
+    expect(document.querySelector('input[type="password"]')).toBeNull();
+    expect(restoreMock).toHaveBeenCalledTimes(1);
+    await act(async () => button("Continue with Google").click());
+    await settle();
+    expect(googleOnly.withProvider).toHaveBeenCalledWith("google");
+    expect(restoreMock).toHaveBeenCalledTimes(2);
+    expect(onRestored).toHaveBeenCalledWith(
+      item,
+      expect.objectContaining({ already_restored: false }),
+    );
+  });
+
+  test("cancelling the confirmation restores nothing and says so", async () => {
     restoreMock.mockRejectedValue(
       new VaultRestoreTransportError("recent_auth_required"),
     );
     await render();
     await act(async () => button("Restore disabled credential").click());
-    expect(document.querySelector("#vault-restore-password")).toBeInstanceOf(
-      HTMLInputElement,
-    );
+    await settle();
+    await act(async () => button("Close").click());
+    await settle();
     expect(restoreMock).toHaveBeenCalledTimes(1);
-  });
-
-  async function requestIdentityConfirmation() {
-    restoreMock.mockRejectedValueOnce(
-      new VaultRestoreTransportError("recent_auth_required"),
-    );
-    await render();
-    await act(async () => button("Restore disabled credential").click());
-    const password = document.querySelector("#vault-restore-password");
-    if (!(password instanceof HTMLInputElement))
-      throw new Error("password missing");
-    password.value = "test-only-password";
-  }
-
-  test("keeps Trash confirmation open when credentials are rejected", async () => {
-    await requestIdentityConfirmation();
-    confirmMock.mockRejectedValueOnce(
-      new VaultIdentityConfirmationError("credentials_rejected"),
-    );
-    await act(async () => button("Confirm identity").click());
-    expect(document.querySelector("#vault-restore-password")).toBeInstanceOf(
-      HTMLInputElement,
-    );
-    expect(document.body.textContent).toContain(
-      "That password could not confirm your identity",
-    );
-  });
-
-  async function expectIdentityFailureInvalidatesTrash(
-    code: "context_changed" | "identity_unverified",
-  ) {
-    await requestIdentityConfirmation();
-    confirmMock.mockRejectedValueOnce(new VaultIdentityConfirmationError(code));
-    await act(async () => button("Confirm identity").click());
-    expect(document.querySelector("#vault-restore-password")).toBeNull();
-    expect(button("Restore disabled credential").disabled).toBe(true);
-    expect(document.body.textContent).toContain("Review this credential again");
-  }
-
-  test("invalidates Trash recovery after pre-confirmation context failure", async () => {
-    await expectIdentityFailureInvalidatesTrash("context_changed");
-  });
-
-  test("invalidates Trash recovery after post-confirmation identity failure", async () => {
-    await expectIdentityFailureInvalidatesTrash("identity_unverified");
-  });
-
-  test("invalidates Trash recovery after a missing password AMR", async () => {
-    await expectIdentityFailureInvalidatesTrash("identity_unverified");
+    expect(onRestored).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("identity was not confirmed");
   });
 
   test("an organization change before confirmation fences the restore", async () => {

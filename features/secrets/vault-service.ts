@@ -13,7 +13,7 @@
  * (`service.ts` / `organization-service.ts`).
  */
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { makeAssertData } from "@/utils/errors";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import {
@@ -130,15 +130,6 @@ export type VaultRestoreResult = Pick<
   | "already_restored"
   | "notice"
 >;
-
-export class VaultIdentityConfirmationError extends Error {
-  constructor(
-    public readonly code:
-      "credentials_rejected" | "context_changed" | "identity_unverified",
-  ) {
-    super(code);
-  }
-}
 
 export class VaultRecentAuthRequiredError extends Error {
   constructor() {
@@ -285,78 +276,6 @@ export async function getVaultExportActor(): Promise<VaultVerifiedExportActor> {
     organizationId: await readActiveOrganizationForIdentity(), // org-filter: server-call the organization the vault request runs in, bound to the signed-in identity
     email: user.email,
   };
-}
-
-/** Confirm a password without retaining it in application state. The caller
- * owns the uncontrolled input and clears it before and after this call. */
-export async function confirmVaultPasswordIdentity(
-  expectedActor: VaultVerifiedExportActor,
-  password: string,
-  getActor: () => Promise<VaultVerifiedExportActor> = getVaultExportActor,
-): Promise<VaultVerifiedExportActor> {
-  let before: VaultVerifiedExportActor;
-  try {
-    before = await getActor();
-  } catch {
-    throw new VaultIdentityConfirmationError("context_changed");
-  }
-  if (
-    before.userId !== expectedActor.userId ||
-    before.organizationId !== expectedActor.organizationId
-  ) {
-    throw new VaultIdentityConfirmationError("context_changed");
-  }
-  const supabase = createClient();
-  const { data, error: signInError } = await supabase.auth.signInWithPassword({
-    email: expectedActor.email,
-    password,
-  });
-  if (signInError || !data.user || !data.session) {
-    throw new VaultIdentityConfirmationError("credentials_rejected");
-  }
-  const { data: claimData, error: claimsError } = await getClaimsUser(
-    supabase,
-    data.session.access_token,
-  );
-  let actual: VaultVerifiedExportActor;
-  try {
-    actual = await getActor();
-  } catch {
-    throw new VaultIdentityConfirmationError("context_changed");
-  }
-  if (
-    actual.userId !== expectedActor.userId ||
-    actual.organizationId !== expectedActor.organizationId
-  ) {
-    throw new VaultIdentityConfirmationError("context_changed");
-  }
-  if (
-    claimsError ||
-    data.user.id !== expectedActor.userId ||
-    !hasFreshPasswordAmr(claimData.user)
-  ) {
-    throw new VaultIdentityConfirmationError("identity_unverified");
-  }
-  return actual;
-}
-
-function hasFreshPasswordAmr(claims: unknown): boolean {
-  if (!claims || typeof claims !== "object" || !("amr" in claims)) return false;
-  const { amr } = claims;
-  if (!Array.isArray(amr)) return false;
-  const now = Math.floor(Date.now() / 1_000);
-  return amr.some((entry) => {
-    if (!entry || typeof entry !== "object") return false;
-    const value = entry as Record<string, unknown>;
-    return (
-      value.method === "password" &&
-      typeof value.timestamp === "number" &&
-      Number.isFinite(value.timestamp) &&
-      value.timestamp > 0 &&
-      value.timestamp <= now &&
-      now - value.timestamp <= 900
-    );
-  });
 }
 
 async function assertVaultRestoreActor(

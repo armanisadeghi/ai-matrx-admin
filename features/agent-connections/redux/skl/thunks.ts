@@ -13,7 +13,7 @@ import {
 import type { Scope } from "../../types";
 import type { SklRenderDefinition } from "./types";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 // NOTE — May 2026: skill-definition + category thunks moved to
 // `features/skills/redux/skillsThunks.ts` (Supabase direct + Python
 // admin endpoints). Render-blocks + resources stay here until they

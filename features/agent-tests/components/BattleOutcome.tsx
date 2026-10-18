@@ -161,7 +161,8 @@ function PairLine({
   return (
     <div className="flex min-w-0 items-center gap-1.5" data-testid="battle-case-pair">
       <Badge tone={verdict.winner === "tie" ? "neutral" : "info"}>{head}</Badge>
-      {rounds > 1 && !verdict.byVote ? (
+      {/* "2/2" says how many runs the winner took; an even case has no winner to count (live: "Even 0/2"). */}
+      {rounds > 1 && !verdict.byVote && verdict.winner !== "tie" ? (
         <span className="shrink-0 text-muted-foreground">
           {Math.max(verdict.judge.challenger, verdict.judge.baseline)}/{rounds}
         </span>

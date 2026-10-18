@@ -20,7 +20,7 @@
  * so the hook stays free of feature-specific knowledge.
  *
  * Renders nothing. Every signed-in tab joins `matrx-extension-bridge:<userId>`,
- * but only AFTER the page settles (`useLateIdleReady`) — never at first paint.
+ * but only once the page settled AND was engaged (`useEngagedLateReady`) — never at first paint.
  * The broadcast exists for the cross-device case (the extension is on a different
  * machine and "every open frontend tab answers", CHANNELS.md §C), so a local
  * `chrome.runtime` ping cannot gate it. Bundles only this file + `openPanelHandler`
@@ -30,7 +30,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useExtensionBridgeChannel } from "@/hooks/useExtensionBridgeChannel";
@@ -42,7 +42,7 @@ import {
 
 export function ExtensionBridgeSubscriber() {
   const userId = useSelector(selectUserId);
-  const settled = useLateIdleReady();
+  const settled = useEngagedLateReady();
 
   if (!settled || !userId) return null;
   return <ExtensionBridgeChannel />;

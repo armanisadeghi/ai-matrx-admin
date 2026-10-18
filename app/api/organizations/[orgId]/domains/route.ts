@@ -14,7 +14,7 @@
 //   DELETE ?domain_id=…                   → Vercel remove → row removed (its routes go with it)
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import type { Json } from "@/types/database.types";
 import { createClient } from "@/utils/supabase/server";

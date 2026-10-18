@@ -26,7 +26,7 @@ import {
   type UserFormProfileData,
   type UserFormProfilePatch,
 } from "@/features/user-profile/types";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 type FormProfileRow = Database["users"]["Tables"]["user_form_profile"]["Row"];
 type FormProfileInsert =

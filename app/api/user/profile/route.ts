@@ -17,7 +17,7 @@ import type { UserAccountData, UserAccountPatch } from "@/features/user-profile/
 import { EMPTY_ACCOUNT_DATA } from "@/features/user-profile/types";
 import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
 import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 // Fields the client is allowed to PATCH on this surface. Anything outside
 // this list is ignored — auth.users has many sensitive metadata namespaces

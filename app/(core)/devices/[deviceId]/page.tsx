@@ -1,5 +1,5 @@
 // record-view: none — a connected computer's console; devices are not a registry Entity/Detail table
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

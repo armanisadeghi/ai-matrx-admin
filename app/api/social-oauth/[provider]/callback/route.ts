@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { requestOrigin } from "@/utils/auth/request-origin";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { isSocialCallbackOrigin, isSocialProvider, parseSocialBrowserSession, socialCookieName, SOCIAL_SETTINGS_RETURN } from "../session";

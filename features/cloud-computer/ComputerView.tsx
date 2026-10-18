@@ -39,7 +39,7 @@ import {
 } from "@/features/cloud-browser/service";
 import type { StreamTicketEnvelope } from "@/features/cloud-browser/types";
 import { useCloudComputer } from "./useCloudComputer";
-import { ScaledFrame, type ScaledFrameHandle } from "./ScaledFrame";
+import { ScaledFrame, type ScaledFrameHandle, type StreamState } from "./ScaledFrame";
 import { liveStream, type HeldStream } from "./liveStream";
 
 const WAITING = "animate-ssr-shimmer-opacity";
@@ -169,7 +169,8 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   // The claim this view held is gone (superseded by another viewer or tab, or
   // expired): a plain recoverable state, never a frozen picture.
   const [lost, setLost] = useState(false);
-  const [busy, setBusy] = useState(false);
+  // Which of the person's own presses is in flight (its button says so).
+  const [pending, setPending] = useState<"claim" | "stop" | null>(null);
 
   const controller = cb.controller;
   const inControl = controller?.kind === "human" && controller.isMe;
@@ -181,6 +182,9 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   const runReady =
     !!run &&
     !["provisioning", "stopping", "stopped", "failed", "failed_persistence"].includes(run.state);
+  // The machine answers but its screen (the run on it) is still coming up:
+  // that is still waking, never "Watching" (2026-10-18: up to 79 s of it).
+  const runStarting = !run || run.state === "provisioning";
   const runFailed = run?.state === "failed" || run?.state === "failed_persistence";
   const revision = controller?.controlRevision ?? 0;
 
@@ -292,7 +296,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         toast.warning(blocked);
         return;
       }
-      setBusy(true);
+      setPending("claim");
       try {
         await cb.takeControl(opts);
         setLarge(true);
@@ -301,7 +305,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
           e instanceof Error ? e.message : "Could not take control.",
         );
       } finally {
-        setBusy(false);
+        setPending(null);
       }
     },
     [cb],
@@ -313,7 +317,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   });
 
   const stop = useCallback(async () => {
-    setBusy(true);
+    setPending("stop");
     try {
       await cb.returnControl();
       // A server with the watch stream keeps this same connection as the
@@ -325,7 +329,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
         e instanceof Error ? e.message : "Could not hand the screen back.",
       );
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }, [cb, viewSupport]);
 
@@ -347,13 +351,33 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   }
 
   const viewport = stream?.ticket.viewport ?? { width: 1280, height: 720 };
-  const claiming = busy || takeover.phase === "claiming";
+  const claiming = pending === "claim" || takeover.phase === "claiming";
+  const stopping = pending === "stop";
   const reopenMode = inControl ? "control" : "view";
 
   // A stream that never shows a picture: open a fresh one once (a new ticket
   // carries new relay credentials), then say so with a way out. Never an
   // endless "Connecting…" (2026-10-17).
-  const onConnectTimeout = () => {
+  // A picture that went away may have been taken by this person's other
+  // window (one live stream per person per run): its claim then answers
+  // "superseded", and this view says so with Take over — never an endless
+  // "Reconnecting…", and never a silent take-back that starts a tug of war.
+  const claimGone = async (): Promise<boolean> => {
+    if (!stream) return false;
+    try {
+      await renewStreamTicket(stream.ticket);
+      return false;
+    } catch (e) {
+      if (!isStreamGone(e)) return false;
+      setLost(true);
+      return true;
+    }
+  };
+  const onStreamState = (state: StreamState) => {
+    if (state === "reconnecting") void claimGone();
+  };
+  const onConnectTimeout = async () => {
+    if (await claimGone()) return;
     if (!freshTried.current) {
       freshTried.current = true;
       void open(reopenMode, true);
@@ -389,8 +413,9 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               interactive={inControl && large}
               controlRef={frameControl}
               connectWithinMs={connectWithinMs}
-              onConnectTimeout={onConnectTimeout}
+              onConnectTimeout={() => void onConnectTimeout()}
               onConnected={onConnected}
+              onStateChange={onStreamState}
             />
           ) : !inControl && frame ? (
             <img
@@ -411,7 +436,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
                     icon={inControl ? <Hand /> : undefined}
                     onClick={() => void open(reopenMode, true)}
                   >
-                    {inControl ? "Take control again" : "Show it here"}
+                    Take over
                   </Button>
                 </>
               ) : openError ? (
@@ -435,7 +460,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
                 </p>
               ) : (
                 <p className={cn("text-xs", WAITING)}>
-                  {inControl ? "Opening…" : "Loading screen…"}
+                  {runStarting ? "Waking up…" : "Connecting…"}
                 </p>
               )}
             </div>
@@ -491,10 +516,10 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
             <Button
               variant="outline"
               icon={<Square />}
-              disabled={claiming}
+              disabled={claiming || stopping}
               onClick={() => void stop()}
             >
-              Stop
+              {stopping ? "Stopping…" : "Stop"}
             </Button>
           </div>
         ) : takeover.waiting ? (
@@ -504,7 +529,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               Now
             </Button>
           </div>
-        ) : (
+        ) : runStarting ? null : (
           <div className="flex items-center gap-2 text-xs">
             <span className="font-medium text-foreground">Watching</span>
             <Button
@@ -513,7 +538,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
               disabled={!runReady || claiming}
               onClick={takeover.begin}
             >
-              Take control
+              {claiming ? "Taking control…" : "Take control"}
             </Button>
           </div>
         )}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Loader2, RotateCcw, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { IdentityGate, useConfirmed, wasCancelled } from "@ai-matrx/vault";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,17 +12,14 @@ import {
   CredenzaHeader,
   CredenzaTitle,
 } from "@/components/ui/credenza-modal/credenza";
-import { Input } from "@ai-matrx/design-system/controls";
-import { Label } from "@/components/ui/label";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
+import { webVaultIdentity } from "@/features/secrets/webVaultIdentity";
 import {
-  confirmVaultPasswordIdentity,
   getVaultExportActor,
   restoreVaultItem,
   VaultRestoreTransportError,
-  VaultIdentityConfirmationError,
   type VaultRestoreResult,
   type VaultVerifiedExportActor,
 } from "@/features/secrets/vault-service";
@@ -65,31 +63,44 @@ function refusalText(reason: string | null): string {
   return "This credential cannot be recovered automatically. Its retained recovery data is preserved.";
 }
 
-export function VaultTrashRestoreDialog({
-  item,
-  preview,
-  actor,
-  open,
-  onOpenChange,
-  onRestored,
-}: {
+/**
+ * Restoring a credential needs a recent sign-in. It is confirmed through the vault's ONE
+ * "Confirm it's you" (`IdentityGate` / `useConfirmed`), so a Google-only person can confirm and the
+ * restore runs again by itself. There is no second dialog here.
+ */
+export function VaultTrashRestoreDialog(props: VaultTrashRestoreDialogProps) {
+  return (
+    <IdentityGate identity={webVaultIdentity}>
+      <RestoreDialogBody {...props} />
+    </IdentityGate>
+  );
+}
+
+type VaultTrashRestoreDialogProps = {
   item: TrashItem | null;
   preview: VaultRecoveryPreview | null;
   actor: VaultVerifiedExportActor | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRestored: (item: TrashItem, result: VaultRestoreResult) => void;
-}) {
+};
+
+function RestoreDialogBody({
+  item,
+  preview,
+  actor,
+  open,
+  onOpenChange,
+  onRestored,
+}: VaultTrashRestoreDialogProps) {
+  const confirmed = useConfirmed();
   const organizationId = useAppSelector(selectOrganizationId);
-  const passwordInput = useRef<HTMLInputElement | null>(null);
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const mounted = useRef(true);
   const expectedActor = useRef<VaultVerifiedExportActor | null>(actor);
   const [restoreActor, setRestoreActor] =
     useState<VaultVerifiedExportActor | null>(actor);
-  const [identityConfirmation, setIdentityConfirmation] =
-    useState<VaultVerifiedExportActor | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,8 +113,6 @@ export function VaultTrashRestoreDialog({
     cancel();
     expectedActor.current = null;
     setRestoreActor(null);
-    passwordInput.current && (passwordInput.current.value = "");
-    setIdentityConfirmation(null);
     setRunning(false);
     setError(null);
   };
@@ -115,8 +124,6 @@ export function VaultTrashRestoreDialog({
     cancel();
     expectedActor.current = null;
     setRestoreActor(null);
-    passwordInput.current && (passwordInput.current.value = "");
-    setIdentityConfirmation(null);
     setRunning(false);
     setError(message);
   };
@@ -177,11 +184,9 @@ export function VaultTrashRestoreDialog({
       }
       if (!isCurrent(operation)) return;
       expectedActor.current = actor;
-      const result = await restoreVaultItem(
-        item.id,
-        preview.deletion_id,
-        actor,
-        request.signal,
+      // A "confirm it's you" refusal opens the gate; once confirmed the same restore runs again.
+      const result = await confirmed(() =>
+        restoreVaultItem(item.id, preview.deletion_id!, actor, request.signal),
       );
       const actual = await getVaultExportActor();
       if (
@@ -199,10 +204,11 @@ export function VaultTrashRestoreDialog({
         (cause instanceof DOMException && cause.name === "AbortError")
       )
         return;
-      if (cause instanceof VaultRestoreTransportError) {
+      if (wasCancelled(cause)) {
+        setError("Not restored: your identity was not confirmed.");
+      } else if (cause instanceof VaultRestoreTransportError) {
         if (cause.code === "recent_auth_required") {
-          setIdentityConfirmation(expectedActor.current);
-          setError(null);
+          setError(cause.message);
         } else if (cause.code === "context_changed") {
           invalidate(cause.message);
         } else {
@@ -219,48 +225,6 @@ export function VaultTrashRestoreDialog({
     }
   };
 
-  const confirmIdentity = async () => {
-    const actor = identityConfirmation;
-    const password = passwordInput.current?.value ?? "";
-    passwordInput.current && (passwordInput.current.value = "");
-    if (!actor || !password) {
-      setError("Enter your current Matrx password to confirm your identity.");
-      return;
-    }
-    const { operation } = begin();
-    setRunning(true);
-    setError(null);
-    try {
-      const actual = await confirmVaultPasswordIdentity(actor, password);
-      if (!isCurrent(operation)) return;
-      expectedActor.current = actual;
-      setRestoreActor(actual);
-      setIdentityConfirmation(null);
-    } catch (cause) {
-      if (!isCurrent(operation)) return;
-      if (cause instanceof VaultIdentityConfirmationError) {
-        if (cause.code === "credentials_rejected") {
-          setError("That password could not confirm your identity. Try again.");
-        } else if (cause.code === "context_changed") {
-          invalidate(
-            "Your account or request organization changed. Review this credential again before restoring it.",
-          );
-        } else {
-          invalidate(
-            "We could not verify your identity. Review this credential again before restoring it.",
-          );
-        }
-      } else {
-        invalidate(
-          "We could not verify your identity. Review this credential again before restoring it.",
-        );
-      }
-    } finally {
-      passwordInput.current && (passwordInput.current.value = "");
-      if (isCurrent(operation)) setRunning(false);
-    }
-  };
-
   if (!item || !preview) return null;
   const supported = preview.supported && Boolean(preview.deletion_id);
   return (
@@ -273,51 +237,7 @@ export function VaultTrashRestoreDialog({
           <CredenzaTitle>Restore credential</CredenzaTitle>
         </CredenzaHeader>
         <CredenzaBody className="space-y-4 px-4 pb-6 md:px-0">
-          {identityConfirmation ? (
-            <section className="space-y-3">
-              <div className="flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
-                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>Confirm your identity before restoring this credential.</p>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="vault-restore-email">Current account</Label>
-                <Input
-                  id="vault-restore-email"
-                  value={identityConfirmation.email}
-                  readOnly
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="vault-restore-password">
-                  Current Matrx password
-                </Label>
-                <Input
-                  ref={passwordInput}
-                  id="vault-restore-password"
-                  type="password"
-                  autoComplete="current-password"
-                  disabled={running}
-                />
-              </div>
-              {error && (
-                <ErrorNotice size="inline" className="text-sm" message={error} />
-              )}
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={close}>
-                  Cancel
-                </Button>
-                <Button
-                  icon={running && <Loader2 className="animate-spin" />}
-                  variant="primary"
-                  type="button"
-                  onClick={() => void confirmIdentity()}
-                  disabled={running}
-                >
-                  Confirm identity
-                </Button>
-              </div>
-            </section>
-          ) : supported ? (
+          {supported ? (
             <section className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Restore{" "}

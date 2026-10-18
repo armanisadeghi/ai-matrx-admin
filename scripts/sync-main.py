@@ -2202,6 +2202,10 @@ def guard_twins():
     if rc == 2:
         say("TWINS GUARD could not judge pnpm-lock.yaml (%s) — not checked before push." % (err.splitlines() or ["?"])[-1])
         return False
+    if rc == 4:
+        say("TWINS REMEDY REJECTED — collapsing @ai-matrx twins would break a package-to-package import; the lockfile "
+            "stays as committed (still holds twins):\n%s" % err)
+        return False
     if rc == 3:
         _, head_text, _ = git("show", "HEAD:pnpm-lock.yaml", check=False)
         try:

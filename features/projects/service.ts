@@ -17,6 +17,7 @@ import { projectsDb } from "@/utils/supabase/projectsDb";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { pgErrorToError } from "@ai-matrx/data";
 import { readAllRows } from "@ai-matrx/data/db";
+import { IN_MY_ORGANIZATIONS } from "@/features/organizations/service/inMyOrganizations";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { readInChunks } from "@/features/scopes/service/inChunks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -934,6 +935,32 @@ export async function listProjectSummariesInOrganizations(
   );
   if (res.error) throw pgErrorToError(res.error as never);
   return [...(res.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * The live projects of EVERY organization she belongs to (id, organization, name, slug), sorted by
+ * name. The scope is asked of the server (`projects.in_my_organizations`, migration
+ * 20261018200000) — never an id list built from the first page of her organizations, which
+ * silently dropped every project past it (bounded organizations, docs/perf/org-scoped-readers.md).
+ * A complete list (`readAllRows`). A failed read throws.
+ */
+export async function listMyOrganizationsProjectSummaries(): Promise<ProjectSummary[]> {
+  // VIEW LAW: org-scoped — her organizations, decided by the database.
+  const res = await readAllRows<ProjectSummary>(
+    ({ from, to }) =>
+      projectsDb(supabase)
+        .from("projects")
+        .select("id, organization_id, name, slug")
+        .is(IN_MY_ORGANIZATIONS, true)
+        .is("deleted_at", null)
+        .order("id")
+        .range(from, to) as unknown as PromiseLike<{
+        data: ProjectSummary[] | null;
+        error: { message: string; code?: string; details?: string; hint?: string } | null;
+      }>,
+    { label: "projects.projects (my organizations)" },
+  );
+  return [...res].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**

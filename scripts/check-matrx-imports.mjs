@@ -177,6 +177,33 @@ export const WHOLE_MODULE = "*";
 
 // ── installed package resolution ─────────────────────────────────────────────
 
+/** The nearest package.json above `file` (its directory + manifest), or null. */
+function owningPackage(file) {
+  let dir = dirname(file);
+  for (;;) {
+    const m = join(dir, "package.json");
+    if (existsSync(m)) {
+      try {
+        return { dir, manifest: JSON.parse(readFileSync(m, "utf8")) };
+      } catch {
+        return null;
+      }
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
+/** A specifier that names the package `file` itself ships in, resolved through that package's own exports map. */
+function resolveSelfSpecifier(file, spec) {
+  const owner = owningPackage(file);
+  if (!owner) return null;
+  const { name, sub } = splitSpecifier(spec);
+  if (name !== owner.manifest.name) return null;
+  return runtimeFileOf(owner.dir, owner.manifest, sub);
+}
+
 const runtimeCache = new Map();
 /**
  * The names an ESM file exports at RUNTIME, following relative `export * from`. Returns null
@@ -204,8 +231,10 @@ export function runtimeExportsOf(file, stack = new Set()) {
         sawEsm = true;
         const from = stmt.moduleSpecifier && ts.isStringLiteral(stmt.moduleSpecifier) ? stmt.moduleSpecifier.text : null;
         if (!stmt.exportClause) {
-          if (!from || !from.startsWith(".")) throw new Error("open star");
-          const target = resolveRelativeJs(file, from);
+          // A package entry that re-exports from ITS OWN package by name (content-ir 0.24.29 dist/react.js:
+          // `export * from "@ai-matrx/content-ir/host-provider"`) resolves through the package's own exports map.
+          const target = from?.startsWith(".") ? resolveRelativeJs(file, from) : from?.startsWith(SCOPE) ? resolveSelfSpecifier(file, from) : null;
+          if (!from || (!from.startsWith(".") && !target)) throw new Error("open star");
           if (!target) throw new Error("unresolved star");
           const inner = runtimeExportsOf(target, stack);
           if (inner === null) throw new Error("open star");
@@ -363,6 +392,7 @@ export function audit(root, { only = null, files: given = null, readText = null,
   const valuesOf = new Map();
   const runtimeOpen = new Set();
   let runtimeChecked = 0;
+  let runtimeOpenImports = 0;
   for (const entry of new Set(imports.map((i) => i.entry))) {
     if (!entry.endsWith(".json")) continue;
     const data = JSON.parse(readFileSync(entry, "utf8"));
@@ -423,12 +453,14 @@ export function audit(root, { only = null, files: given = null, readText = null,
     const runtimeNames = runtimeExportsOf(imp.runtime);
     if (runtimeNames === null) {
       runtimeOpen.add(relative(root, imp.runtime));
+      runtimeOpenImports++;
       continue;
     }
     runtimeChecked++;
     if (!runtimeNames.has(imp.name)) findings.push({ ...imp, why: "runtime" });
   }
   skipped.runtimeOpen = runtimeOpen;
+  skipped.runtimeOpenImports = runtimeOpenImports;
   // The package graph changes only with the lockfile, so a narrowed run leaves it alone.
   const doGraph = wantGraph ?? !only;
   const graph = doGraph ? auditPackageGraph(root) : { packages: 0, specifiers: 0, findings: [] };
@@ -443,6 +475,7 @@ export function audit(root, { only = null, files: given = null, readText = null,
     graphPackages: graph.packages,
     graphSpecifiers: graph.specifiers,
     graphNamed: graph.namedChecked ?? 0,
+    graphUnreadable: graph.unreadable ?? 0,
   };
 }
 
@@ -555,6 +588,7 @@ export function auditPackageGraph(root) {
   const realRoot = realpathSync(root);
   let specifiers = 0;
   let namedChecked = 0;
+  let unreadable = 0; // named imports whose target's runtime exports cannot be read statically: counted, never silent
   const queue = [];
   const enqueueFrom = (fromDir) => {
     const scopeDir = join(fromDir, "node_modules", "@ai-matrx");
@@ -615,7 +649,7 @@ export function auditPackageGraph(root) {
         if (!names?.size) continue;
         const runtimeFile = runtimeFileOf(depDir, dep, sub);
         const shipped = runtimeFile ? runtimeExportsOf(runtimeFile) : null;
-        if (!shipped) continue; // CommonJS / open `export *`: not statically knowable, never guessed
+        if (!shipped) { unreadable += names.size; continue; } // CommonJS / open `export *`: not statically knowable, never guessed, always counted
         for (const [imported, at] of names) {
           namedChecked++;
           if (shipped.has(imported)) continue;
@@ -634,7 +668,7 @@ export function auditPackageGraph(root) {
       }
     }
   }
-  return { packages: seen.size, specifiers, namedChecked, findings };
+  return { packages: seen.size, specifiers, namedChecked, unreadable, findings };
 }
 
 export function findingKey(f) {
@@ -661,11 +695,12 @@ function describe(f) {
 
 function report(result) {
   const { findings } = result;
-  const { unresolved, workspace, runtimeOpen } = result.skipped;
-  if (unresolved.length || workspace || runtimeOpen?.size) {
+  const { unresolved, workspace, runtimeOpen, runtimeOpenImports } = result.skipped;
+  if (unresolved.length || workspace || runtimeOpen?.size || result.graphUnreadable) {
     console.log(
       `[matrx-imports] NOT CHECKED — ${workspace} workspace-source import(s)` +
-        (runtimeOpen?.size ? `; runtime not statically readable: ${[...runtimeOpen].join(", ")}` : "") +
+        (runtimeOpen?.size ? `; ${runtimeOpenImports} app import(s) unreadable at runtime (${runtimeOpen.size} entry file(s)): ${[...runtimeOpen].join(", ")}` : "") +
+        (result.graphUnreadable ? `; ${result.graphUnreadable} package-to-package named import(s) unreadable at runtime` : "") +
         (unresolved.length ? `; unresolvable entries:\n    ${unresolved.join("\n    ")}` : ""),
     );
   }
@@ -718,7 +753,8 @@ function report(result) {
 function reportPackages(graph) {
   if (!graph.findings.length) {
     console.log(
-      `[matrx-imports --packages] OK — ${graph.specifiers} cross-package specifier(s), ${graph.namedChecked} named import(s) across ${graph.packages} installed @ai-matrx package(s) resolve.`,
+      `[matrx-imports --packages] OK — ${graph.specifiers} cross-package specifier(s), ${graph.namedChecked} named import(s) across ${graph.packages} installed @ai-matrx package(s) resolve.` +
+        (graph.unreadable ? ` NOT CHECKED: ${graph.unreadable} named import(s) whose target runtime is not statically readable.` : ""),
     );
     return 0;
   }
@@ -926,6 +962,40 @@ function selfTest() {
     if (!auditPackageGraph(tmp).findings.some((f) => f.why === "graph-missing"))
       failures.push("RED graph-missing: an import of an uninstalled sibling package was not reported");
 
+    // ── THE 2026-10-18 UNREADABLE CASE (final review 5a): content-ir 0.24.29 dist/react.js re-exported from
+    // ITS OWN package by name and the runtime half printed "NOT CHECKED". Self-references now resolve through
+    // the package's own exports map; what still cannot be read is COUNTED, never skipped silently.
+    {
+      const selfDir = join(tmp, "node_modules", "@ai-matrx", "selfref");
+      rmSync(selfDir, { recursive: true, force: true });
+      mkdirSync(join(selfDir, "dist"), { recursive: true });
+      writeFileSync(join(selfDir, "package.json"), JSON.stringify({ name: "@ai-matrx/selfref", version: "1.0.0", type: "module", exports: { ".": "./dist/index.js", "./inner": "./dist/inner.js" } }));
+      writeFileSync(join(selfDir, "dist", "index.js"), `export * from "@ai-matrx/selfref/inner";\nexport const own = 1;\n`);
+      writeFileSync(join(selfDir, "dist", "inner.js"), `export const real = 1;\n`);
+      runtimeCache.clear();
+      const viaSelf = runtimeExportsOf(join(selfDir, "dist", "index.js"));
+      if (!viaSelf || !viaSelf.has("real") || !viaSelf.has("own") || viaSelf.has("ghost"))
+        failures.push(`RED 5a: export * from the package's own specifier was not resolved through its exports map: ${viaSelf && [...viaSelf]}`);
+      // Another package's star stays open, and the open import is COUNTED and PRINTED.
+      graphPkg("kit", "0.26.0", { ".": "./dist/data-table/index.js" }, `export * from "some-external-lib";\n`);
+      graphPkg("design-system", "0.71.0", { "./data-table": "./dist/data-table/index.js" }, `import { somewhere } from "@ai-matrx/kit";\nimport { more } from "@ai-matrx/kit";\n`);
+      clearPackageResolution();
+      runtimeCache.clear();
+      g = auditPackageGraph(tmp);
+      if (g.unreadable !== 2 || g.findings.length) failures.push(`RED 5a: unreadable package-to-package imports were not counted (want 2, no findings): ${JSON.stringify(g)}`);
+      const printed = [];
+      const realLog = console.log;
+      console.log = (m) => printed.push(String(m));
+      reportPackages(g);
+      console.log = realLog;
+      if (!printed.join("\n").includes("NOT CHECKED: 2")) failures.push(`RED 5a: the --packages report did not print the unreadable count: ${printed.join(" | ")}`);
+      rmSync(selfDir, { recursive: true, force: true });
+      rmSync(join(tmp, "node_modules", "@ai-matrx", "kit"), { recursive: true, force: true });
+      rmSync(join(tmp, "node_modules", "@ai-matrx", "design-system"), { recursive: true, force: true });
+      clearPackageResolution();
+      runtimeCache.clear();
+    }
+
     // ── THE 2026-10-07 CASE (v0.4.2980–2982 never deployed): chat 0.4.0 deleted
     // dist/agents/model-registry/ while its `./agents/*` wildcard still matched the app's import.
     const wild = (version, withSlice) => {
@@ -1036,7 +1106,7 @@ function selfTest() {
     for (const f of failures) console.error(`  - ${f}`);
     return 1;
   }
-  console.log("check-matrx-imports --self-test OK — RED on a missing export, subpath, wildcard subpath with no shipped file, runtime-only gap, uninstalled package, a broken package-to-package import (subpath and renamed name) and a require()/import()/export-* specifier; GREEN once shipped.");
+  console.log("check-matrx-imports --self-test OK — RED on a missing export, subpath, wildcard subpath with no shipped file, runtime-only gap, uninstalled package, a broken package-to-package import (subpath and renamed name) a require()/import()/export-* specifier, an unresolvable self-referencing `export *` and an uncounted unreadable import; GREEN once shipped.");
   return 0;
 }
 

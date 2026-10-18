@@ -69,7 +69,7 @@ export async function fetchSecureDeliveryOptions(
         path: "/secure-delivery/options",
         method: "GET",
         queryParams: { resource_type: resourceType, resource_id: resourceId },
-        expectedErrorStatuses: [401, 409, 422],
+        expectedErrorStatuses: [401, 403, 409, 422],
       }),
     ),
   );
@@ -85,7 +85,7 @@ export async function sendSecureDelivery(
         path: "/secure-delivery",
         method: "POST",
         body,
-        expectedErrorStatuses: [401, 409, 422],
+        expectedErrorStatuses: [401, 403, 409, 422],
       }),
     ),
   );

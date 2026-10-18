@@ -24,7 +24,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 import { operationFailed } from "@/utils/errors";
 import { WriteDidNotLandError, tryWriteOne } from "@/utils/supabase/writeOne";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 export type KindIncidentClient = SupabaseClient<Database>;
 
 /** Which failure a row records. Open-ended: a new producer must SHOW UP. */

@@ -7,7 +7,7 @@
  * reach itself is ONE implementation (`createMatrx2Reach`); this file only injects what a browser
  * has. Full Download, Continue, Reconcile and Start all go through it.
  */
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { createDesktopClient } from "@ai-matrx/desktop-protocol/client";
 import { createAppInstanceFilingStore, type PendingFilingStore } from "@ai-matrx/coding-sessions";
 

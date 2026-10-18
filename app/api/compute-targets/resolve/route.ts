@@ -24,7 +24,7 @@ import {
 import { resolveOrchestratorByTier } from "@/lib/sandbox/orchestrator-routing";
 import type { components } from "@ai-matrx/api/types";
 import { isJsonObject } from "@/types/json";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { computerQuery } from "@/lib/app-instances/computers";
 
 export type SandboxBindingPayload = Required<components["schemas"]["SandboxBindingRequest"]>;

@@ -5,7 +5,7 @@ import {
   orchestratorJsonHeaders,
 } from "@/lib/sandbox/orchestrator-routing";
 import { isJsonObject } from "@/types/json";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
 
 const TRANSIENT_UPSTREAM_STATUSES = new Set([502, 503, 504]);

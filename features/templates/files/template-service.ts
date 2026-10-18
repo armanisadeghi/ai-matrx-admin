@@ -5,7 +5,7 @@
  * (a new record is created exactly like "Blank", then given the template's
  * content), and the thumbnail renderer + the ONE file client.
  */
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { supabase } from "@/utils/supabase/client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import {

@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";

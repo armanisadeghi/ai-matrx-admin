@@ -69,6 +69,7 @@ import { NOTE_ROW_KEYS } from "./notes.types";
 import type { Note } from "../types";
 import { fetchNotesList, fetchSharedNotesList } from "./thunks";
 import { captureNoteDrafts } from "../utils/notesDrafts";
+import { whenEngagedLate } from "@/lib/boot/engagedLate";
 
 /** Thunk-aware dispatch — this middleware refreshes lists via async thunks. */
 type NotesDispatch = ThunkDispatch<RootState, unknown, UnknownAction>;
@@ -81,6 +82,8 @@ const notesChannel = defineChannelNamespace({
 });
 
 const NOTES_TABLE = "workbench.notes";
+/** A deferred join this long after the list read re-reads the list once (missed rows). */
+const JOIN_CATCH_UP_AFTER_MS = 15_000;
 
 /** Postgres change payloads are usually full rows (REPLICA IDENTITY FULL),
  * but that is transport behavior, not a reducer contract. A partial event may
@@ -369,6 +372,9 @@ export const notesRealtimeMiddleware: Middleware<
     }, ATTEMPT_POLL_MS);
   }
 
+  /** The user whose engaged-late join is waiting (one wait per user, never stacked). */
+  let pendingJoinFor: string | null = null;
+
   function subscribe(userId: string) {
     unsubscribe();
     subscribedUserId = userId;
@@ -525,12 +531,29 @@ export const notesRealtimeMiddleware: Middleware<
       const userId = state.userAuth?.id;
       // Don't tear down a healthy channel just because a catch-up list refresh
       // completed — only (re)subscribe when missing or for a different user.
-      if (userId && (subscribedUserId !== userId || !stopChannel)) {
-        subscribe(userId);
+      if (userId && (subscribedUserId !== userId || !stopChannel) && pendingJoinFor !== userId) {
+        // The ENGAGED-LATE tier (lib/boot/engagedLate): the channel joins once the page settled
+        // AND the person engaged it — an untouched /notes opens no socket. The list just read is
+        // current; a join that waited longer than JOIN_CATCH_UP_AFTER_MS re-reads once (realtime
+        // has no replay for the rows that changed while nobody was listening).
+        const listedAt = Date.now();
+        pendingJoinFor = userId;
+        void whenEngagedLate().then((ok) => {
+          if (pendingJoinFor !== userId) return;
+          pendingJoinFor = null;
+          const current = (storeApi.getState() as RootState).userAuth?.id;
+          if (!ok || current !== userId || (subscribedUserId === userId && stopChannel)) return;
+          subscribe(userId);
+          if (Date.now() - listedAt > JOIN_CATCH_UP_AFTER_MS) {
+            void storeApi.dispatch(fetchNotesList());
+            void storeApi.dispatch(fetchSharedNotesList({ ifLoaded: true }));
+          }
+        });
       }
     }
 
     if ((action as { type?: string }).type === "notes/resetNotesState") {
+      pendingJoinFor = null;
       unsubscribe();
     }
 

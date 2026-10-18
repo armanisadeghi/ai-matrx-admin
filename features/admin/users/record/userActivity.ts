@@ -9,7 +9,7 @@
 // Doors: the SQL returns {type,id,user_id?,href?}; `activityRecordHref` maps each type to its ONE
 // canonical address (no route strings in SQL). Rows show titles and statuses only, never content
 // bodies (owner ruling 2026-10-18; migration 20261018140000). Types with no record page yet
-// (background agent jobs, text threads, raw app_log rows without a conversation) return null.
+// (background agent jobs, texts with no chat conversation, raw app_log rows without one) return null.
 
 import { createClient } from "@/utils/supabase/client";
 import { isJsonObject } from "@/types/json";

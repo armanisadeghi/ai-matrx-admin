@@ -28,6 +28,22 @@ export function noteOwnPreferencesWrite(version: unknown): void {
 }
 
 /**
+ * Record the version a save is ABOUT to write, before the request leaves: its realtime echo can
+ * beat the HTTP response, and an echo noted only after the response cost one re-read. A save that
+ * did not land that version (`forgetPendingPreferencesWrite`) gives it back, so another writer's
+ * row carrying it is still news.
+ */
+export function notePendingPreferencesWrite(version: unknown): void {
+  noteOwnPreferencesWrite(version);
+}
+
+/** The pending save did not write `version`: un-remember it. */
+export function forgetPendingPreferencesWrite(version: unknown): void {
+  const at = typeof version === "number" ? handledVersions.indexOf(version) : -1;
+  if (at >= 0) handledVersions.splice(at, 1);
+}
+
+/**
  * Is this realtime row news? A row with no readable version is news (degrade to re-reading, never to dropping).
  * Exact match, not "at or below the highest": a collaborator's version 6 arriving after our own save made 7
  * still carries keys this tab has not seen.

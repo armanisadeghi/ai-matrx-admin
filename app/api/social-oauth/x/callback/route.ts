@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import {
   xCallbackOrigin,

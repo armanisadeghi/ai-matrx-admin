@@ -4,13 +4,14 @@
 // separate browser (or private window). The link is good for 10 minutes and works once.
 
 import { useState } from "react";
-import { Copy, LifeBuoy, Loader2 } from "lucide-react";
+import { Copy, LifeBuoy } from "lucide-react";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { formatDurationMinutes } from "@ai-matrx/kit/format";
 import { Button, PropertyRow, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { ProInput } from "@/components/official/ProInput";
 import { MAIN_ORIGIN } from "@/lib/deployment/surfaces";
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import {
   Dialog,
@@ -132,7 +133,7 @@ export function StartSupportSessionDialog({
           ) : (
             <Button
               variant="primary"
-              icon={creating ? <Loader2 className="animate-spin" /> : <LifeBuoy />}
+              icon={creating ? <Spinner size="xs" className="text-current" /> : <LifeBuoy />}
               disabled={creating || reason.trim().length < 3}
               onClick={() => void start()}
             >

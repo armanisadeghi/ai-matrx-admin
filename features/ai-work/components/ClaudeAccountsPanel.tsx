@@ -32,7 +32,7 @@ import { getUserMessage } from "@ai-matrx/api";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { operationFailed } from "@/utils/errors";
 import { isJsonObject } from "@/types/json";
 import {

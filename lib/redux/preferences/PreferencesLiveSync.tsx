@@ -8,13 +8,14 @@
  * network loss). Echoes of this tab's own saves are dropped by version (`preferencesLive.ts`).
  * Doctrine: .claude/skills/supabase-realtime/SKILL.md.
  *
- * Joins only after the page has settled (`useLateIdleReady`): realtime is never part of first paint,
- * so this binding no longer opens the shared socket at boot. The boot read already holds the row;
- * only an edit made in another tab during the few seconds before the join waits for the next
- * recovery reread (tab wake, reconnect) — the same window every late-tier channel accepts.
+ * Joins only on the engaged-late tier (`useEngagedLateReady`: the page settled AND the person
+ * pressed, typed or touched): a page nobody touches opens no socket. The boot read already holds
+ * the row; an edit made in another tab before the join is caught by ONE re-read when the channel
+ * first connects (`onStatusChange`), and later by `onBackfill` (wake, reconnect) and the slice's
+ * focus revalidation (`revalidateOnFocusAfterMs`).
  */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useStore } from "react-redux";
 import { defineChannelNamespace } from "@ai-matrx/data/realtime";
 import { useChannel } from "@ai-matrx/data/realtime/react";
@@ -22,7 +23,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { invokeRemoteFetch } from "@/lib/sync/engine/remoteFetch";
 import type { AppStore } from "@/lib/redux/store";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import { userPreferencesPolicy } from "./userPreferencesSlice";
 import { preferencesRowIsNews, resetPreferencesVersions } from "./preferencesLive";
 
@@ -36,10 +37,14 @@ const preferencesChannel = defineChannelNamespace({
 export function PreferencesLiveSync() {
   const store = useStore() as AppStore;
   const userId = useAppSelector(selectUserId);
-  const settled = useLateIdleReady();
+  const engaged = useEngagedLateReady();
+  // The first connect of this binding re-reads once: an edit made elsewhere between the boot read
+  // and the join has no realtime row to deliver it. Later connects are `onBackfill`'s.
+  const joinedOnce = useRef(false);
 
   useEffect(() => {
     resetPreferencesVersions();
+    joinedOnce.current = false;
   }, [userId]);
 
   const reread = () => {
@@ -52,7 +57,7 @@ export function PreferencesLiveSync() {
   };
 
   useChannel(
-    userId && settled
+    userId && engaged
       ? {
           topic: preferencesChannel.topic({ userId }),
           postgresChanges: [
@@ -70,6 +75,11 @@ export function PreferencesLiveSync() {
             },
           ],
           onBackfill: reread,
+          onStatusChange: (status) => {
+            if (status !== "connected" || joinedOnce.current) return;
+            joinedOnce.current = true;
+            reread();
+          },
         }
       : null,
   );

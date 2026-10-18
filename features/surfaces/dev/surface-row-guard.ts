@@ -10,7 +10,7 @@ import {
   getGlobalSurfaceRegistry,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
-import { whenLateIdle } from "@/lib/boot/lateIdle";
+import { whenEngagedLate } from "@/lib/boot/engagedLate";
 import { getSurfaceByName } from "@ai-matrx/chat/surfaces/services/surfaces.service";
 
 export const MISSING_SURFACE_ROW_MESSAGE = (name: string): string =>
@@ -76,10 +76,11 @@ export function installSurfaceRowGuard(
       for (const name of missing) report(MISSING_SURFACE_ROW_MESSAGE(name));
     });
   };
-  // Dev-only, and still never part of the first paint: the first probe waits for the late tier.
+  // Dev-only (production returns above), and never part of an untouched page: the first probe
+  // waits for the engaged-late tier, so a census of an untouched page sees no `ui_surface` read.
   const controller = new AbortController();
   let unsubscribe: (() => void) | null = null;
-  void whenLateIdle(undefined, controller.signal).then((ok) => {
+  void whenEngagedLate(undefined, controller.signal).then((ok) => {
     if (!ok) return;
     check();
     unsubscribe = registry.subscribe(check);

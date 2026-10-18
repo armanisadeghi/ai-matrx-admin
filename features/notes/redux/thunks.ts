@@ -21,7 +21,7 @@ import { noteEditBaseFromRecord } from "../utils/saveVerification";
 import { readAllRows } from "@ai-matrx/data/db";
 import { createAsyncThunk, unwrapResult, type ThunkAction, type ThunkDispatch, type UnknownAction } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
 import {
   isMissingSessionError,
   runWithSessionRetry,
@@ -121,7 +121,7 @@ async function awaitCurrentNotesUser(
     // A hung `getSession` (the multi-tab navigator.locks class) must not turn
     // the bounded wait into an unbounded one: one poll gets one second.
     const poll = await Promise.race([
-      getClaimsUser(supabase),
+      getClientClaimsUserCached(),
       new Promise<null>((resolve) => setTimeout(() => resolve(null), 1_000)),
     ]);
     if (poll && !poll.error && poll.data.user?.id === expectedUserId) return;

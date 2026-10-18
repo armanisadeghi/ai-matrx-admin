@@ -19,6 +19,11 @@
 #      `pnpm update -r "@ai-matrx/*" --depth Infinity --lockfile-only --ignore-scripts`
 #      (every @ai-matrx spec is `latest`, so this moves each package to ONE version, the newest),
 #      then judges the result again AND confirms `pnpm install --frozen-lockfile` accepts it.
+#   3. THE ADOPTION GATE (final review 1a, 2026-10-18): `pnpm update` moves every `latest` @ai-matrx
+#      package at once, so the collapsed set is installed into the scratch folder (frozen, no scripts)
+#      and `node scripts/check-matrx-imports.mjs --packages --root <scratch>` — the very gate
+#      `pnpm sync:matrx-packages` uses — must pass. On failure package.json and pnpm-lock.yaml are
+#      restored byte-for-byte (as sync does) and the result is exit 4.
 #   .pnpmfile.cjs is copied byte-for-byte (the lockfile pins its sha256) and the harness modules it
 #   requires are stubbed: they guard the shared checkout's node_modules, which a scratch folder
 #   does not have.
@@ -26,6 +31,10 @@
 # USAGE  bash scripts/lockfile-twins.sh <tree-ish> --out <file>
 # EXIT   0 clean (nothing written)
 #        3 remedied: the corrected pnpm-lock.yaml is in <file>; stdout = the versions it moved
+#        4 REJECTED: collapsing the twins adopts a set in which one installed @ai-matrx package imports a
+#          name (or subpath) its sibling no longer ships (v0.4.3327's class). Nothing written to <file>;
+#          the lockfile stays as it was; stderr = the broken import. The caller reports a finding and
+#          the release goes on — a release never stops for it.
 #        1 twins remain (or the remedy broke the lockfile): stderr = the check's own words
 #        2 could not judge (no pnpm-lock.yaml / checker / node / pnpm in that tree) — a finding,
 #          never a verdict
@@ -42,6 +51,7 @@ if [[ -z "$TREE" || -z "$OUT" ]]; then
 fi
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "not inside a git repository" >&2; exit 2; }
 CHECKER="${LOCKFILE_TWINS_CHECKER:-$REPO_ROOT/scripts/check-matrx-packages.mjs}"
+IMPORTS_CHECKER="${LOCKFILE_TWINS_IMPORTS_CHECKER:-$REPO_ROOT/scripts/check-matrx-imports.mjs}"
 git -C "$REPO_ROOT" cat-file -e "$TREE:pnpm-lock.yaml" 2>/dev/null || exit 0   # no pnpm lockfile: nothing to judge
 command -v node >/dev/null 2>&1 || { echo "node is not installed" >&2; exit 2; }
 [[ -f "$CHECKER" ]] || { echo "checker missing: $CHECKER" >&2; exit 2; }
@@ -68,6 +78,7 @@ if judge; then
     exit 0
 fi
 cp "$WORK/pnpm-lock.yaml" "$WORK/.before"
+cp "$WORK/package.json" "$WORK/.before-package.json" 2>/dev/null || true
 if ! command -v pnpm >/dev/null 2>&1; then
     cat "$WORK/.judge" >&2
     echo "pnpm is not installed, so the twins could not be remedied" >&2
@@ -90,6 +101,22 @@ if ! (cd "$WORK" && MATRX_INSTALL_GATE_DISABLE=1 pnpm install --frozen-lockfile 
     echo "the remedied lockfile is refused by pnpm install --frozen-lockfile:" >&2
     tail -15 "$WORK/.frozen" >&2
     exit 1
+fi
+# THE ADOPTION GATE: install the collapsed set and judge every package-to-package import in it.
+reject() {  # $1 = why; restore exactly what sync:matrx-packages restores, say it, exit 4
+    cp "$WORK/.before" "$WORK/pnpm-lock.yaml"
+    [[ -f "$WORK/.before-package.json" ]] && cp "$WORK/.before-package.json" "$WORK/package.json"
+    echo "$1" >&2
+    exit 4
+}
+[[ -f "$IMPORTS_CHECKER" ]] || reject "NOT ADOPTED — the imports gate is missing ($IMPORTS_CHECKER), so the collapsed set could not be judged; the lockfile stays as it was"
+if ! (cd "$WORK" && MATRX_INSTALL_GATE_DISABLE=1 pnpm install --frozen-lockfile --ignore-scripts) >"$WORK/.install" 2>&1; then
+    reject "NOT ADOPTED — the collapsed set could not be installed to judge it (pnpm install --frozen-lockfile: $(tail -3 "$WORK/.install" | tr '\n' ' ')); the lockfile stays as it was"
+fi
+if ! node "$IMPORTS_CHECKER" --packages --root "$WORK" >"$WORK/.imports" 2>&1; then
+    reject "NOT ADOPTED — the newest @ai-matrx set breaks one package's import of another (check-matrx-imports --packages):
+$(grep -E '^\s+@ai-matrx/|\[FAIL\]|could not run|INSTALL INCOMPLETE' "$WORK/.imports" | head -8)
+the lockfile stays as it was"
 fi
 cp "$WORK/pnpm-lock.yaml" "$OUT"
 # The versions it moved, for the finding: "@ai-matrx/x a,b -> c".

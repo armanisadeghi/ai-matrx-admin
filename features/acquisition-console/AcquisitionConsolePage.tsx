@@ -20,7 +20,7 @@
 // its own refresh and its own class of "the tile says 0 and the list says 5",
 // which is precisely the defect this project has hit four times already.
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

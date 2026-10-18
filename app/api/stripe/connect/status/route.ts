@@ -21,7 +21,7 @@ import {
   getConnectAccount,
   refreshConnectAccount,
 } from "@/features/entitlements/stripe/connect";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import {
   billingOwnerRef,
   readRequestOrganizationId,

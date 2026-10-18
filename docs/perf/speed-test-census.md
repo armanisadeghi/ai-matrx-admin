@@ -152,3 +152,25 @@ Chat layout: it awaits nothing (a sync server layout). On the empty page its rea
 Guard: `features/notes/__tests__/notes-layout-reads-on-demand.test.tsx` (7 tests; 5 failed before the change, all pass after).
 
 Open: admin `/notes/speed-test` still loads 256 JS files against member's 219, with no notes reads. Its after-settle calls are the shell's (DM summary, `ues_list`, `knob_index`, `user_surface_state` writes), which points at admin surface state restored after a walk. Not traced. Shared notes that RLS also returns in the owner list now show in Recent until "Shared with me" is opened. Before, they moved to that section as soon as the page loaded.
+
+## 2026-10-18 — load-contract fixes from the adversarial review (engaged-late everywhere)
+
+Census `--as admin,member --caller-frames 12 /speed-test /notes /chat/new /marketing/speed-test` on the shared preview (session `fixes`). DB before / after settle, untouched; WS = realtime socket opened on the untouched page.
+
+| route | admin before fix | admin after | member after | WS after (admin / member) |
+|---|---|---|---|---|
+| /speed-test | 0 / 7, WS at +8.2 s | 0 / 24 | 0 / 4 | none / none |
+| /notes | 4 / 26 (jwks + assists before settle), WS | 2 / 30 | 2 / 10 | none / none |
+| /chat/new | (500 during the before run) | 2 / 29 | 2 / 6 | 1 / none |
+| /marketing/speed-test | (500 during the before run) | 0 / 24 | 0 / 4 | none / none |
+
+- The admin "after" counts went UP because of shared-account state: the admin seat restores a saved "Agent Info Editor" window (`definition?id=eq.agent-settings-window`, `agx_*`, `model_offering`, `ues_get_bulk`, `user_surface_state` writes) on every route. Member has no such window: 4 after-settle calls on an untouched page (layout + `shell_counts`).
+- Realtime: `PreferencesLiveSync`, `PlatformDirectiveSubscriber`, `ExtensionBridgeSubscriber` and the notes channel (`features/notes/redux/realtimeMiddleware.ts`) now join on the engaged-late tier. Untouched pages open no socket, except admin `/chat/new`: `watchSidebarChildren` in `@ai-matrx/chat` (package code, owned by the chat lane — not changed here).
+- Also moved to engaged-late: the inbox approvals badge (`useInbox`), the org cap reminder (`useOrganizationCap` `deferToIdle`), the /notes assist strip (its scope read, assists list and every emit), and the dev-only surface-row guard. "Needs you" was already engaged-late (its producer gates on `useHasEngaged` + the settled shell count); only the comment was stale.
+- `ui_surface ?name=eq.matrx-user/canvas` comes ONLY from `features/surfaces/dev/surface-row-guard.ts`, which returns early in production. It is a dev artifact. It now waits for engagement too.
+- Preferences: one re-read when the channel first connects (closes the join gap). The own-save version is noted BEFORE the update request (its echo can beat the response) and given back if the guarded update did not land. Tab-focus revalidation (`revalidateOnFocusAfterMs`) is unchanged.
+- /notes: `jwks.json` is gone (the raw `getClaimsUser` in `awaitCurrentNotesUser` — fetchNotesList — plus two save-path siblings now use `getClientClaimsUserCached`, which verifies against the pinned keys). `my_organizations_by_ids` is read only for the organization grouping. "Shared with me", opened before its read lands, holds placeholder rows (the count it had last time, at least one) so arriving rows replace them instead of pushing the sections below.
+- /notes route reads, untouched: before the fix `shown_to_context`, notes, `assoc_for_sources` ×2, `my_organizations_by_ids`, `home_names`, `context_scopes` and the five assists calls. After: `shown_to_context` (before settle), notes, one `assoc_for_sources`, `home_names`. Still 4, not the 1–2 target. The list still lands after the settle mark (dev). The 8-row list skeleton holds its place, and CLS is 0.
+- Scope tree: projects are read with `projects.in_my_organizations` (migration `20261018200000_in_my_organizations_projects.sql`, applied + ledgered). A project's organization past page 1 gets its row by id (`iam.my_organizations_by_ids`). Live parity as test@test.com (12 organizations; at `p_limit 10` all 11 projects sit on page 1, so it was forced to `p_limit 2`): first-page reader 8 of 11, server scope 11. "V-19 Receipt Check" is a project in an organization past page 2. `my_organizations_by_ids` answers those organizations.
+
+Guards: `lib/boot/__tests__/engaged-late-load-contract.test.ts`. 11/11 fail on the parent sources (`LOAD_CONTRACT_ROOT=<tip export>`) and 11/11 pass after. `features/organizations/service/__tests__/org-scoped-readers-ask-the-server.test.ts` gained the projects reader and the scope-tree boot read: 17 pass.

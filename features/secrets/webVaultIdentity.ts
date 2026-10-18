@@ -22,7 +22,15 @@ const here = () => `${window.location.pathname}${window.location.search}`;
  */
 export const webVaultIdentity = createSupabaseIdentity(supabase.auth, {
   redirectTo: () => `${window.location.origin}${withAuthDestination("/auth/callback", here())}`,
-  onDifferentPerson: (message) => performLocalSignOut(withAuthFlowParams(loginHref(here()), { error: message })),
+  onDifferentPerson: async (message) => {
+    const to = withAuthFlowParams(loginHref(here()), { error: message });
+    try {
+      await performLocalSignOut(to);
+    } finally {
+      // The sign-in page says why, even when a sign-out listener elsewhere in the app threw.
+      window.location.href = to;
+    }
+  },
 });
 
 /** The site's sign-in, back to this address after: offered when the session has ended. */

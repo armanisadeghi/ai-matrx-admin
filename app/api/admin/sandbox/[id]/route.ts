@@ -7,7 +7,7 @@ import {
   orchestratorJsonHeaders,
   resolvePersistedOrchestrator,
 } from "@/lib/sandbox/orchestrator-routing";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 type SandboxInstance = Tables<"sandbox_instances">;
 

@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { operationFailed } from "@/utils/errors";
 import { attachTiktok, authorizeTiktok, disconnectTiktok, discoverTiktok, finishTiktok, refreshTiktok, videosTiktok } from "@ai-matrx/api/integrations";
 import { serverApi } from "@/lib/api/server-api";

@@ -74,6 +74,13 @@ jest.mock("@/features/connectors/ConnectorPromptCard", () => ({
 
 let mockLateIdle = false;
 jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => mockLateIdle }));
+// The shell's ONE lazy read (`platform.shell_counts`) — shared with the header, so the card reading
+// its answer is no extra request. `undefined` = not answered yet.
+let mockShellGoogleConnected: boolean | null | undefined;
+const mockUseShellCounts = jest.fn(() => ({
+  data: mockShellGoogleConnected === undefined ? undefined : { googleConnected: mockShellGoogleConnected },
+}));
+jest.mock("@/lib/boot/shellCounts", () => ({ useShellCounts: () => mockUseShellCounts() }));
 
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
 import { engageForTest, resetFirstEngagement } from "@/lib/boot/firstEngagement";
@@ -91,6 +98,7 @@ beforeEach(() => {
   mockLiveOrganizationIdsAmong.mockClear();
   mockOpenConsent.mockClear();
   mockLateIdle = false;
+  mockShellGoogleConnected = undefined;
 });
 
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 20)); });
@@ -199,5 +207,34 @@ it("ZERO LAYOUT SHIFT: the card sits in a fixed area; the in-flow anchor is zero
   expect(anchor!.className).toContain("h-0");
   const card = container.querySelector("[data-testid=connect-google-card]");
   expect(card!.closest(".fixed")).not.toBeNull();
+  await act(async () => root.unmount());
+});
+
+it("A NEW DEVICE LEARNS FROM THE SHELL READ: nothing remembered + shell_counts says not connected = the card shows, zero extra reads", async () => {
+  window.localStorage.clear();
+  mockShellGoogleConnected = false;
+  const { container, root } = await mount(null);
+  expectNoReads();
+  expect(container.querySelector("[data-testid=connect-google-card]")).not.toBeNull();
+  // The answer is now this device's hint.
+  expect(readConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, USER)).toEqual({ connected: false, blocked: false });
+  await act(async () => root.unmount());
+});
+
+it("shell_counts says connected = no card, even over a stale \"not connected\" device hint", async () => {
+  mockShellGoogleConnected = true;
+  const { container, root } = await mount(KNOWN_NOT_CONNECTED);
+  expectNoReads();
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
+  expect(readConnectorHint(GOOGLE_CONNECTOR_PROVIDER.id, USER)?.connected).toBe(true);
+  await act(async () => root.unmount());
+});
+
+it("shell_counts could not say (null) = the device's hint decides; still no card on a guess", async () => {
+  window.localStorage.clear();
+  mockShellGoogleConnected = null;
+  const { container, root } = await mount(null);
+  expectNoReads();
+  expect(container.querySelector("[data-testid=connect-google-card]")).toBeNull();
   await act(async () => root.unmount());
 });

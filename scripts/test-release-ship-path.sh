@@ -220,6 +220,14 @@ if [[ "\$1" == update && -f "$SANDBOX/pnpm-can-remedy" ]]; then
     $(declare -f twin_lock)
     twin_lock 0.86.27 0.86.27 > pnpm-lock.yaml
 fi
+if [[ "\$1" == install && "\$*" != *--lockfile-only* && -f "$SANDBOX/fixture-pair" ]]; then
+    # the collapsed set, installed: kit renamed formatShortcut -> formatTapShortcut; design-system imports one of them
+    mkdir -p node_modules/@ai-matrx/kit/dist node_modules/@ai-matrx/design-system/dist
+    printf '{"name":"@ai-matrx/kit","version":"1.0.0","type":"module","exports":{"./tap":"./dist/tap.js"}}' > node_modules/@ai-matrx/kit/package.json
+    echo 'export function formatTapShortcut() {}' > node_modules/@ai-matrx/kit/dist/tap.js
+    printf '{"name":"@ai-matrx/design-system","version":"1.0.0","type":"module","exports":{".":"./dist/i.js"}}' > node_modules/@ai-matrx/design-system/package.json
+    echo "import { \$(cat "$SANDBOX/fixture-pair") } from '@ai-matrx/kit/tap';" > node_modules/@ai-matrx/design-system/dist/i.js
+fi
 exit 0
 STUB
 chmod +x "$SANDBOX/bin/pnpm"
@@ -227,8 +235,10 @@ touch "$SANDBOX/pnpm-can-remedy"
 ( cd "$SANDBOX/other" && git pull -q origin main && twin_lock 0.86.26 0.86.27 > pnpm-lock.yaml \
     && git add -A && git -c user.name=t -c user.email=t@t commit -qm "meet: adopt 0.11.29 (twins)" && git push -q origin main )
 check "the fixture really fails the Vercel postinstall check" '! (mkdir -p "$SANDBOX/fx" && git --git-dir="$SANDBOX/origin.git" show main:pnpm-lock.yaml > "$SANDBOX/fx/pnpm-lock.yaml" && node scripts/check-matrx-packages.mjs --duplicates --root "$SANDBOX/fx" >/dev/null 2>&1)'
+printf 'process.exit(0);\n' > "$SANDBOX/imports-pass.mjs"
+printf 'console.error("[FAIL] [matrx-imports --packages] 1 installed @ai-matrx package(s) import something their installed sibling does not ship:");\nconsole.error("    @ai-matrx/records-ui@0.116.17/dist/helpers.js:3  imports { formatShortcut } from design-system/tap-target");\nprocess.exit(1);\n' > "$SANDBOX/imports-fail.mjs"
 set +e
-PATH="$SANDBOX/bin:$PATH" AIDREAM_DIR="$SANDBOX/aidream" RELEASE_AFTER_PHASE=off RELEASE_LOG_CAPTURED=1 \
+PATH="$SANDBOX/bin:$PATH" LOCKFILE_TWINS_IMPORTS_CHECKER="$SANDBOX/imports-pass.mjs" AIDREAM_DIR="$SANDBOX/aidream" RELEASE_AFTER_PHASE=off RELEASE_LOG_CAPTURED=1 \
     bash scripts/release.sh > "$SANDBOX/out7" 2>&1
 STATUS7=$?
 set -e
@@ -250,6 +260,39 @@ set -e
 check "unremediable twins stop the release"       '[[ $STATUS8 -ne 0 ]]'
 check "nothing was pushed for them"               '[[ "$(git ls-remote origin refs/heads/main | cut -f1)" == "$BEFORE8" ]]'
 check "the stop names the twins"                  'grep -q "@ai-matrx twins that Vercel.s postinstall" "$SANDBOX/out8"'
+
+# ── ninth run: THE ADOPTION GATE (final review 1a, 2026-10-18; v0.4.3327's class) ──
+# The remedy can collapse the twins; if the collapsed set breaks one package's import of another
+# (check-matrx-imports --packages, the gate sync:matrx-packages uses) it is NOT adopted: the old
+# lockfile stays, the broken import is a finding, and the release still ships.
+touch "$SANDBOX/pnpm-can-remedy"
+BEFORE9=$(git ls-remote origin refs/heads/main | cut -f1)
+set +e
+PATH="$SANDBOX/bin:$PATH" LOCKFILE_TWINS_IMPORTS_CHECKER="$SANDBOX/imports-fail.mjs" AIDREAM_DIR="$SANDBOX/aidream" RELEASE_AFTER_PHASE=off RELEASE_LOG_CAPTURED=1 \
+    bash scripts/release.sh > "$SANDBOX/out9" 2>&1
+STATUS9=$?
+set -e
+git fetch -q origin
+echo "release ship path — the twins adoption gate"
+check "a rejected collapse does not stop the release"   '[[ $STATUS9 -eq 0 ]] && [[ "$(git log -1 --format=%s origin/main)" == release:* ]]'
+check "the old lockfile shipped (nothing adopted)"      '[[ "$(git show origin/main:pnpm-lock.yaml | grep -c "design-system@0.86.29")" -ge 1 ]] && ! git show origin/main:pnpm-lock.yaml | grep -q "design-system@0.86.27"'
+check "the rejection is an ERROR finding naming the import" 'grep -q "ERROR.*Lockfile.*REJECTED.*formatShortcut" "$SANDBOX/out9"'
+
+# The same gate with the REAL checker and a stubbed install that writes a broken, then a fixed, pair.
+REAL_CHECKER="$(cd "$(dirname "$SCRIPT_UNDER_TEST")" && pwd)/check-matrx-imports.mjs"
+if [[ -f "$REAL_CHECKER" ]]; then
+    echo "formatShortcut" > "$SANDBOX/fixture-pair"
+    set +e
+    PATH="$SANDBOX/bin:$PATH" LOCKFILE_TWINS_IMPORTS_CHECKER="$REAL_CHECKER" bash scripts/lockfile-twins.sh origin/main --out "$SANDBOX/adopted-red" >"$SANDBOX/o10" 2>"$SANDBOX/e10"
+    RC10=$?
+    echo "formatTapShortcut" > "$SANDBOX/fixture-pair"
+    PATH="$SANDBOX/bin:$PATH" LOCKFILE_TWINS_IMPORTS_CHECKER="$REAL_CHECKER" bash scripts/lockfile-twins.sh origin/main --out "$SANDBOX/adopted-green" >"$SANDBOX/o11" 2>"$SANDBOX/e11"
+    RC11=$?
+    set -e
+    check "RED: a renamed name between installed packages exits 4, nothing written" '[[ $RC10 -eq 4 ]] && [[ ! -e "$SANDBOX/adopted-red" ]]'
+    check "RED: the broken import is printed"               'grep -q "formatShortcut" "$SANDBOX/e10"'
+    check "GREEN: the same collapse with a matching pair is adopted (exit 3, lockfile written)" '[[ $RC11 -eq 3 ]] && [[ -s "$SANDBOX/adopted-green" ]]'
+fi
 if [[ $FAILED -ne 0 ]]; then
     echo "--- script output ---"; tail -25 "$SANDBOX/out"; echo "--- second run ---"; tail -25 "$SANDBOX/out2" 2>/dev/null; echo "--- third run ---"; tail -25 "$SANDBOX/out3" 2>/dev/null; echo "--- fourth run ---"; tail -25 "$SANDBOX/out4" 2>/dev/null; echo "--- fifth run ---"; tail -25 "$SANDBOX/out5" 2>/dev/null; echo "--- sixth run ---"; tail -25 "$SANDBOX/out6" 2>/dev/null; echo "--- seventh run ---"; tail -25 "$SANDBOX/out7" 2>/dev/null; echo "--- eighth run ---"; tail -25 "$SANDBOX/out8" 2>/dev/null
     exit 1

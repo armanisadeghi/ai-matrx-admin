@@ -41,6 +41,8 @@ import { fetchNotesList } from "../redux/thunks";
 import { notesRealtimeMiddleware } from "../redux/realtimeMiddleware";
 import { NoteSyncStatusStrip } from "./NoteSyncStatusStrip";
 
+// The channel joins on the engaged-late tier; these tests start engaged.
+jest.mock("@/lib/boot/engagedLate", () => ({ whenEngagedLate: () => Promise.resolve(true) }));
 jest.mock("@/utils/supabase/client", () => {
   const boom = () => {
     throw new Error("no network in this suite");

@@ -14,7 +14,12 @@ import type { CatalogVoice } from "@/features/audio/service/engines";
 import type { TableViewSnapshot } from "@ai-matrx/design-system/data-table";
 import { definePolicy } from "@/lib/sync/policies/define";
 import { PREFERENCES_ROW_COLUMNS, savePreferencePatch } from "./preferencePatch";
-import { noteOwnPreferencesWrite, PREFERENCES_REVALIDATE_AFTER_ABSENCE_MS } from "./preferencesLive";
+import {
+  forgetPendingPreferencesWrite,
+  noteOwnPreferencesWrite,
+  notePendingPreferencesWrite,
+  PREFERENCES_REVALIDATE_AFTER_ABSENCE_MS,
+} from "./preferencesLive";
 import {
   REHYDRATE_ACTION_TYPE,
   type RehydrateAction,
@@ -2160,14 +2165,25 @@ export const userPreferencesPolicy = definePolicy<UserPreferencesState>({
               .eq("user_id", identity.userId)
               .abortSignal(signal)
               .maybeSingle(),
-          applyUpdate: ({ value, expectedVersion, nextVersion }) =>
-            table()
-              .update({ preferences: value, version: nextVersion })
-              .eq("user_id", identity.userId)
-              .eq("version", expectedVersion)
-              .select(PREFERENCES_ROW_COLUMNS)
-              .abortSignal(signal)
-              .maybeSingle(),
+          applyUpdate: async ({ value, expectedVersion, nextVersion }) => {
+            // Noted BEFORE the request: the echo may arrive before the response.
+            notePendingPreferencesWrite(nextVersion);
+            try {
+              const answer = await table()
+                .update({ preferences: value, version: nextVersion })
+                .eq("user_id", identity.userId)
+                .eq("version", expectedVersion)
+                .select(PREFERENCES_ROW_COLUMNS)
+                .abortSignal(signal)
+                .maybeSingle();
+              // No row back = the version guard refused (someone else wrote first) or it failed.
+              if (answer.error || !answer.data) forgetPendingPreferencesWrite(nextVersion);
+              return answer;
+            } catch (thrown) {
+              forgetPendingPreferencesWrite(nextVersion);
+              throw thrown;
+            }
+          },
         });
         // Its realtime echo is this tab's own: drop it, never re-read for it.
         if (outcome.status === "saved") noteOwnPreferencesWrite(outcome.version);
