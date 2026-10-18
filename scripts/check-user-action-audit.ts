@@ -38,6 +38,9 @@ export const DECLARED: readonly Declared[] = [
   { fn: "iam.reopen_account(uuid,text)", reaches: [HELPER] },
   { fn: "iam.sign_out_everywhere(uuid,text)", reaches: [HELPER] },
   { fn: "iam.admin_confirm_email(uuid,text)", reaches: [HELPER] },
+  { fn: "iam.end_session(uuid,uuid,text)", reaches: [HELPER] },
+  { fn: "iam.remove_mfa_factor(uuid,uuid,text)", reaches: [HELPER] },
+  { fn: "iam.revoke_api_key_for_person(uuid,uuid,text)", reaches: [HELPER] },
   { fn: "billing.user_plan_set(uuid,text,text,timestamptz)", reaches: [HELPER] },
   { fn: "billing.free_months_apply(uuid[],text,integer,text)", reaches: [HELPER] },
   { fn: "billing.usage_reset_apply(uuid,billing.meter_period[],text)", reaches: [HELPER] },
@@ -138,13 +141,45 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
     const steps: Array<{ name: string; as: () => Promise<void>; run: () => Promise<unknown>; action: string }> = [
       { name: "iam.sign_out_everywhere", as: asAdmin, action: "sign_out_everywhere",
         run: () => c.query("select iam.sign_out_everywhere($1, 'audit guard')", [target]) },
-      { name: "iam.admin_confirm_email", as: asAdmin, action: "update",
+      { name: "iam.admin_confirm_email", as: asAdmin, action: "email_verified",
         run: async () => {
           // The target may already be verified (then nothing is audited): make it unverified first, as the owner.
           await c.query("reset role");
           await c.query("update auth.users set email_confirmed_at = null where id = $1", [target]);
           await asAdmin();
           await c.query("select iam.admin_confirm_email($1, 'audit guard')", [target]);
+        } },
+      // Security tab (lane S): each fixture row is written as the owner, inside the rolled-back transaction.
+      { name: "iam.end_session", as: asAdmin, action: "session_end",
+        run: async () => {
+          await c.query("reset role");
+          const r = await c.query("insert into auth.sessions (id, user_id, created_at, updated_at) values (gen_random_uuid(), $1, now(), now()) returning id", [target]);
+          await asAdmin();
+          await c.query("select iam.end_session($1, $2, 'audit guard')", [target, r.rows[0].id]);
+        } },
+      { name: "iam.remove_mfa_factor", as: asAdmin, action: "mfa_factor_remove",
+        run: async () => {
+          await c.query("reset role");
+          const r = await c.query(
+            "insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at) values (gen_random_uuid(), $1, 'audit guard', 'totp', 'unverified', now(), now()) returning id",
+            [target],
+          );
+          await asAdmin();
+          await c.query("select iam.remove_mfa_factor($1, $2, 'audit guard')", [target, r.rows[0].id]);
+        } },
+      { name: "iam.revoke_api_key_for_person", as: asAdmin, action: "api_key_revoke",
+        run: async () => {
+          await c.query("reset role");
+          // A personal key: the mint trigger reads auth.uid() from the claims, so they name the target.
+          await c.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: target, role: "authenticated" })]);
+          const r = await c.query(
+            `insert into iam.api_keys (organization_id, key_id, secret_hash, display_prefix, name, service_user_id, created_by)
+             select o.organization_id, 'guard' || substr(md5(random()::text), 1, 10), md5(random()::text), 'mx_live_guard…', 'audit guard', $1, $1
+               from iam.system_orgs o where o.key = 'system' returning id`,
+            [target],
+          );
+          await asAdmin();
+          await c.query("select iam.revoke_api_key_for_person($1, $2, 'audit guard')", [target, r.rows[0].id]);
         } },
       { name: "iam.close_account (admin)", as: asAdmin, action: "account_close",
         run: () => c.query("select iam.close_account($1, 'audit guard')", [target]) },
