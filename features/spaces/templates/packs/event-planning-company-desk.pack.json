@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Event Planning Company Desk",
   "description": "Clients, events, vendors, bookings and planning tasks for an event planning company.",
   "forWho": "Event planners and event production companies",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "services",
-=======
-  "category": "operations",
->>>>>>> origin/main
   "tags": [
     "events",
     "vendors",
@@ -2191,11 +2183,7 @@
         "Harbor Lantern Road"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -3701,8 +3689,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # matrx-agent-traffic: marked every server request carries X-Matrx-Agent-Traffic: real-tests-pb04-send
-"""Send the two turns of real test PB-04 (core-chain, turn two) to the LIVE server as admin@admin.com.
+"""Send the three turns of real test PB-04 (core-chain, turn two) to the LIVE server as admin@admin.com.
 
 It only SENDS and WRITES the between-turn data. It asserts nothing and prints no pass or fail: a runner
 executes it, a grader reads the database. Before it sends it prints and saves (run-identity.json) the live
@@ -20,7 +20,7 @@ A run:
      short-line version when the live version is SHORT_LINE_VERSION, otherwise the message written for the
      original version. The two never mix: SHORT_LINE_VERSION is set in the same change that builds that
      version.
-Each raw response body, its HTTP status and headers are written to turn-1.json / turn-2.json, and every
+Each raw response body, its HTTP status and headers are written to turn-1.json / turn-2.json / turn-3.json, and every
 between-turn write with its raw result to between.json, in the output directory (default: a new temp dir).
 
 Usage:
@@ -31,6 +31,11 @@ Usage:
                                   what the store now holds; sends no turn
   pb04-send.py --dry-run          no model call and no write: turn 1 goes with dry_run true, the between-turn
                                   writes and turn 2 are printed, not sent
+
+  4. Turn 3 — POST /ai/conversations/<conversation id> again, the same conversation, with admin's Workspace
+     (TURN_3_ORG) as the active organization in the X-Organization-Id header AND in the body. The message
+     asks for the door and the yard contact and attaches the note "Kestrel gate memo" (MEMO_NOTE, in Safety
+     Net Real Tests) as an input_notes part. It follows turn 2 at once (no wait, no between-turn writes).
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way pb03-send.py does.
@@ -60,6 +65,10 @@ PICK_LIST = "8ebbac58-96a5-46b8-9bb6-5b2b8fad715d"  # "Kestrel carriers"
 HOLDS_TABLE = "0fc3df59-20b8-4db4-971c-962dbf9d8431"  # "Kestrel appointment holds"
 APT_3318 = "8ad69d91-0570-4477-a54b-6ef3ca25f0e2"  # row APT-3318
 
+WORKSPACE_ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f"  # admin's Workspace (the active organization on turn 3)
+MEMO_NOTE = "09c8fe3d-e72d-44bd-9d16-49c1b1adffd6"  # note "Kestrel gate memo" in Safety Net Real Tests
+TURN_3_ORG = WORKSPACE_ORG
+
 DRIVER = "Teodora Vass"
 # Turn 2's typed message, per agent version. The agent's original recipe (v1) prints every field on every
 # turn; its short-line version prints the door and the yard contact only when asked, so its message asks.
@@ -70,6 +79,10 @@ TURN_2_ORIGINAL = (
 TURN_2_SHORT_LINE = (
     "The driver called again. Send the line once more, now with the door and the yard contact added, and quote "
     "this back to me exactly: {{carrier}} / {{hold_code}}"
+)
+TURN_3_MESSAGE = (
+    "Send the line one more time, with the door and the yard contact added, and include whatever the attached "
+    "note gives the driver for getting through the gate."
 )
 SHORT_LINE_VERSION = 2  # Kestrel Dock Desk v2 (1f6dcd51-…, built 2026-10-18) is the short-line recipe
 
@@ -132,8 +145,14 @@ def _call(method: str, url: str, token: str, body: dict | None, extra: dict) -> 
         return e.code, dict(e.headers), e.read().decode("utf-8", "replace")
 
 
-def server(token: str, path: str, body: dict) -> tuple[int, dict, str]:
-    return _call("POST", SERVER + path, token, body, {"X-Organization-Id": ORG})
+def server(token: str, path: str, body: dict, org: str = ORG) -> tuple[int, dict, str]:
+    return _call("POST", SERVER + path, token, body, {"X-Organization-Id": org})
+
+
+def turn_3_body() -> dict:
+    """Turn 3: the active organization is admin's Workspace (body AND header), the memo note rides as a part."""
+    return {"user_input": [{"type": "text", "text": TURN_3_MESSAGE}, {"type": "input_notes", "note_ids": [MEMO_NOTE]}],
+            "scope_ids": [DOCK_SCOPE], "organization_id": TURN_3_ORG}
 
 
 def store(token: str, fn: str, args: dict) -> dict:
@@ -216,7 +235,8 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true", help="no model call and no write (see the header)")
     args = ap.parse_args()
     fixtures = {"organization": ORG, "agent": AGENT, "scope": DOCK_SCOPE, "context_item": DOCK_STATUS_ITEM,
-                "pick_list": PICK_LIST, "holds_table": HOLDS_TABLE, "record": APT_3318}
+                "pick_list": PICK_LIST, "holds_table": HOLDS_TABLE, "record": APT_3318,
+                "turn_3_organization": TURN_3_ORG, "memo_note": MEMO_NOTE}
 
     if args.reset:
         record_run_identity("pb04-send --reset", SERVER, fixtures)
@@ -258,7 +278,10 @@ def main() -> None:
         body2 = {"user_input": turn_2, "scope_ids": [DOCK_SCOPE], "organization_id": ORG}
         save(out, "turn-2.planned.json", {"turn": 2, "sent": False, "request": {"method": "POST",
              "url": f"{SERVER}/ai/conversations/<conversation id>", "organization": ORG, "body": body2}})
-        print("dry run: turn 2 not sent (a dry-run turn 1 stores no conversation to continue)")
+        body3 = turn_3_body()
+        save(out, "turn-3.planned.json", {"turn": 3, "sent": False, "request": {"method": "POST",
+             "url": f"{SERVER}/ai/conversations/<conversation id>", "organization": TURN_3_ORG, "body": body3}})
+        print("dry run: turns 2 and 3 not sent (a dry-run turn 1 stores no conversation to continue)")
         print(f"responses in {out}")
         return
 
@@ -286,6 +309,16 @@ def main() -> None:
          "organization": ORG, "body": body2}, "status": status, "conversation_id": cid,
          "request_id": lower.get("x-request-id"), "headers": headers, "raw_response": raw})
     print(f"turn 2: HTTP {status}, conversation {cid}")
+
+    # Turn 3 — the same conversation, a different active organization, the memo note attached.
+    body3 = turn_3_body()
+    sent3 = datetime.now(timezone.utc).isoformat()
+    status, headers, raw = server(token, f"/ai/conversations/{cid}", body3, TURN_3_ORG)
+    lower = {k.lower(): v for k, v in headers.items()}
+    save(out, "turn-3.json", {"turn": 3, "sent_at": sent3, "request": {"method": "POST", "url": f"{SERVER}/ai/conversations/{cid}",
+         "organization": TURN_3_ORG, "body": body3}, "status": status, "conversation_id": cid,
+         "request_id": lower.get("x-request-id"), "headers": headers, "raw_response": raw})
+    print(f"turn 3: HTTP {status}, conversation {cid}")
     print(f"responses in {out}")
 
 

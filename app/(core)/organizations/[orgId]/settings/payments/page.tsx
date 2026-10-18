@@ -124,19 +124,27 @@ export default function OrgPaymentsPage() {
   const canManage = Boolean(status?.can_manage);
   const ready = Boolean(status?.connected && status.charges_enabled);
 
+  // The badge follows the press at once (REVIEW-PAYMENTS item 9): a reconnect re-reads the status
+  // before leaving for Stripe; a disconnect shows Not connected immediately and puts the old status
+  // back if the server refused.
   async function startConnect() {
     setBusy("connect");
     const body = await connectApi("POST");
-    if (body?.url) window.location.assign(body.url);
-    else setBusy(null);
+    if (body?.url) {
+      await load();
+      window.location.assign(body.url);
+    } else setBusy(null);
   }
 
   async function disconnect() {
+    const before = status;
     setBusy("disconnect");
-    await connectApi("DELETE");
     setConfirmDisconnect(false);
+    setStatus({ connected: false, can_manage: Boolean(before?.can_manage) });
+    const body = await connectApi("DELETE");
+    if (!body) setStatus(before);
     setBusy(null);
-    await load();
+    void load();
   }
 
   return (

@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0454",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Video Production Studio",
   "description": "Clients, productions, shot lists, bookings and edit versions for a video company.",
   "forWho": "Video and film production companies",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-desert-dunes",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "agencies",
-=======
-  "category": "clients",
->>>>>>> origin/main
   "tags": [
     "video",
     "production",
@@ -2167,11 +2159,7 @@
         "Tannery Row"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -3731,8 +3719,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main

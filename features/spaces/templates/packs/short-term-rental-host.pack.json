@@ -671,6 +671,17 @@
             }
           },
           {
+            "key": "t10",
+            "values": {
+              "turn_title": "Clean before Lindqvist arrival",
+              "booking": "b02",
+              "property": "p02",
+              "cleaner": "tm-dolores",
+              "clean_on": "@today",
+              "status": "Scheduled"
+            }
+          },
+          {
             "key": "t05",
             "values": {
               "turn_title": "Clean after Nwosu stay",

@@ -39,6 +39,11 @@ import {
 import { parseInput, type KindKey } from "./parse-input";
 import { discover, discoveryRecord, inferMode, type DiscoverResult, type InputMode, type Scope } from "./discovery";
 import { DiscoveryStep, rowsOf, type DiscoveryRow } from "./components/DiscoveryStep";
+import { CompareRows } from "./components/CompareRows";
+import { editRow, rowsFromText, startRows, type CompareRow } from "./rows";
+
+/** Kinds whose default input is the guaranteed rows (a name and where it is, per item). */
+const ROW_KINDS = new Set(["local_business", "companies_reviews"]);
 import { CompareInput } from "./components/CompareInput";
 import { ComparisonView } from "./components/ComparisonView";
 import { FoundStep, type FoundRow } from "./components/FoundStep";
@@ -88,7 +93,9 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const seesDollars = useSeesDollars();
   const params = useSearchParams();
   const live = kinds.filter((k) => k.status === "live");
-  const [kindKey, setKindKey] = useState<string>(live[0]?.key ?? "");
+  const [kindKey, setKindKey] = useState<string>(
+    live.find((k) => k.key === "local_business")?.key ?? live[0]?.key ?? "");
+  const [compareRows, setCompareRows] = useState<CompareRow[]>(startRows);
   const [text, setText] = useState(() => params.get("q") ?? ""); // a public-page hand-off arrives as ?q=
   const [area, setArea] = useState("");
   // A page opened on ?run=<id> (a refresh, a new tab, a shared link) starts on that saved run.
@@ -388,10 +395,21 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   return (
     <div className="space-y-8">
       <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">Compare</h1>
-      <CompareInput kinds={kinds} kindKey={kindKey} onKind={setKindKey} text={text} onText={onText}
+      <CompareInput kinds={kinds} kindKey={kindKey}
+        onKind={(k) => { setKindKey(k); setCompareRows((rs) => rs.map((r) => editRow(r, {}))); }}
+        text={text} onText={onText}
         area={area} onArea={setArea} onFind={() => void find()} finding={finding}
         mode={mode} onMode={setModeOverride} scope={scope} onScope={setScope}
-        onDiscover={() => void runDiscover()} organizationId={organizationId} stage={stage} />
+        onDiscover={() => void runDiscover()} organizationId={organizationId} stage={stage}
+        onFillRows={kind && ROW_KINDS.has(kind.key) ? () => {
+          const filled = rowsFromText(text, kindKey as KindKey, area);
+          if (filled.length) { setCompareRows(filled.length === 1 ? [...filled, ...startRows().slice(1)] : filled); onText(""); }
+        } : undefined}>
+        {kind && ROW_KINDS.has(kind.key) ? (
+          <CompareRows kind={kind} rows={compareRows} onRows={setCompareRows} near={area} onNear={setArea}
+            organizationId={organizationId} seesDollars={seesDollars} onCompare={(m) => void compare(m)} />
+        ) : null}
+      </CompareInput>
       {lookupError ? <ErrorNotice message={lookupError} /> : null}
     </div>
   );

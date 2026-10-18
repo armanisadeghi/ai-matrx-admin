@@ -135,17 +135,10 @@
               "Lost"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "Lost": "red",
               "New": "blue",
               "Called": "amber",
               "Booked": "green"
-=======
-              "New": "blue",
-              "Called": "green",
-              "Booked": "amber",
-              "Lost": "violet"
->>>>>>> origin/main
             },
             "statusGroups": {
               "New": "todo",
@@ -482,19 +475,11 @@
               "Cancelled"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "No-show": "red",
               "Cancelled": "orange",
               "Scheduled": "blue",
               "Checked in": "amber",
               "Completed": "green"
-=======
-              "Scheduled": "blue",
-              "Checked in": "green",
-              "Completed": "amber",
-              "No-show": "violet",
-              "Cancelled": "teal"
->>>>>>> origin/main
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -1215,15 +1200,9 @@
               "Expired"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "Expired": "red",
               "Active": "blue",
               "Used up": "green"
-=======
-              "Active": "blue",
-              "Used up": "green",
-              "Expired": "amber"
->>>>>>> origin/main
             },
             "statusGroups": {
               "Active": "in_progress",
@@ -1326,7 +1305,6 @@
               "expires_on": "@today-15d",
               "status": "Expired"
             }
-<<<<<<< HEAD
           },
           {
             "key": "k07",
@@ -1338,8 +1316,6 @@
               "expires_on": "@today-4d",
               "status": "Active"
             }
-=======
->>>>>>> origin/main
           }
         ],
         "independentOf": {
@@ -1903,11 +1879,7 @@
           "filter": {
             "status": "Active"
           },
-<<<<<<< HEAD
           "answer": 5,
-=======
-          "answer": 4,
->>>>>>> origin/main
           "unit": "packages"
         }
       }

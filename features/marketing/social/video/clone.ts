@@ -5,6 +5,7 @@
  */
 
 import { parseHttpError } from "@ai-matrx/api";
+import type { MusicBedMood, MusicBedTempo } from "@ai-matrx/media/video";
 
 import { postJson, postNdjson, requestRaw } from "@/lib/python-client";
 
@@ -161,6 +162,8 @@ export interface ServerCloneBrief {
   hookLine?: string;
   captions: { mode: "match" | "preset" | "off"; preset?: string };
   aspect?: CloneAspect;
+  /** Exactly one of a track the person uploaded or a bed made from a mood and a tempo. */
+  music?: { file: BriefFile; bpm?: number } | { bed: { mood: MusicBedMood; tempo: MusicBedTempo } };
 }
 
 export interface ClonePlanNote {

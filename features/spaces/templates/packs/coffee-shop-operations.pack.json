@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Coffee Shop Operations",
   "description": "Menu margins, supplies and par levels, waste log, equipment service and orders for a cafe.",
   "forWho": "Independent coffee shops and cafes",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "hospitality",
-=======
-  "category": "operations",
->>>>>>> origin/main
   "tags": [
     "coffee shop",
     "cafe",
@@ -2004,11 +1996,7 @@
         "Almond Street"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -3422,8 +3410,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main

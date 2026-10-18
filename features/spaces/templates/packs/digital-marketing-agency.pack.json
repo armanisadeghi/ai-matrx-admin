@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Digital Marketing Agency HQ",
   "description": "Clients, retainers, campaigns, deliverables and monthly reports for a marketing agency.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-ocean-horizon",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "agencies",
-=======
-  "category": "clients",
->>>>>>> origin/main
   "tags": [
     "agency",
     "retainers",
@@ -2831,11 +2823,7 @@
         "Alder Quay"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -4631,8 +4619,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main

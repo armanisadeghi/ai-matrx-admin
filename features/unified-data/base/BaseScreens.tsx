@@ -27,6 +27,7 @@ import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree"
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
+import { GithubImportDialog } from "./GithubImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
   listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
@@ -216,7 +217,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   const [identity, setIdentity] = useState<BaseIdentity | null>(null);
   const [extras, setExtras] = useState<Extras>({ pages: [], automations: [] });
   const [error, setError] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets">(null);
+  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets" | "github">(null);
 
   const load = useCallback(async () => {
     try {
@@ -260,6 +261,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
           <Button variant="quiet" onClick={() => setDialog("snapshots")} data-base-snapshots="">Snapshots</Button>
           <Button variant="quiet" onClick={() => setDialog("airtable")} data-base-airtable="">From Airtable</Button>
           <Button variant="quiet" onClick={() => setDialog("sheets")} data-base-sheets="">From Google Sheets</Button>
+          <Button variant="quiet" onClick={() => setDialog("github")} data-base-github="">From GitHub</Button>
         </div>
       </header>
 
@@ -294,6 +296,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
       <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
       <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
       <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
+      <GithubImportDialog open={dialog === "github"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
     </div>
   );
 }

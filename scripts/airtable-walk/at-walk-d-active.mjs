@@ -1,0 +1,10 @@
+import { createClient } from "@supabase/supabase-js";
+import { env } from "/Users/armanisadeghi/code/matrx-frontend/scripts/airtable-walk/lib.mjs";
+const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+const { data: a } = await sb.auth.signInWithPassword({ email: env.AI_ADMIN_USERNAME, password: env.AI_ADMIN_PASSWORD });
+const p = await sb.schema("users").from("user_preferences").select("last_active_organization_id").eq("user_id", a.user.id).maybeSingle();
+console.log("active", JSON.stringify(p.data));
+const m = await sb.schema("users").from("organization_members").select("organization_id, role").eq("user_id", a.user.id).limit(300);
+const ids=(m.data??[]).map(x=>x.organization_id);
+const o = await sb.schema("organizations").from("organization").select("id,name").in("id", ids);
+console.log((o.data??[]).map(x=>x.id.slice(0,8)+" "+(m.data.find(y=>y.organization_id===x.id)?.role)+" "+x.name).join("\n"));

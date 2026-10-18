@@ -9,13 +9,17 @@ start time and the fixture ids it uses.
 One call: POST /ai/agents/<Alder Creek Receiving Desk>, a new stored conversation in the active organization
 Safety Net Real Tests, whose user input is one typed sentence plus five attachments sent the way the web app
 sends them ({"type": "media", "kind": "document" | "image", "file_id": ...}): a PDF, a photo, a CSV, a long
-text and a Word document, all uploaded earlier through the product's file door into that organization. The
+text and a Word document, all uploaded earlier through the product's file door into that organization. Four
+internal resources ride with them as the web app attaches them: a note (input_notes), a published web page
+(input_webpage), one row of a data table (input_table, a table_row bookmark) and a task (input_task). The
 raw response body, its HTTP status and headers and the conversation id are written to call.json in the
 output directory (default: a new temp directory, printed at the end).
 
 Usage:
   pb05-send.py                 send the call
   pb05-send.py --out DIR       write the response file to DIR
+  pb05-send.py --dry-run       no model call: the request goes with dry_run true and the assembled request is
+                               returned; nothing is stored
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way pb03-send.py does.
@@ -46,6 +50,19 @@ ATTACHMENTS = [  # in this order, as the composer would send five attached files
     ("document", "ff66152f-707a-454d-988e-afaccea05eb1"),  # inbound-oct16.csv
     ("document", "7c3a7fe7-7162-4cd2-a63b-1849c1f304f0"),  # night-shift-log.txt
     ("document", "e820ba04-0fdc-4adf-a139-e98601e6339a"),  # handover-note.docx
+]
+# The four internal resources, all in Safety Net Real Tests (built 2026-10-18; ids in LEDGER.md "PB-05 fixtures").
+NOTE_ID = "c208c61b-0cc2-4b78-a8f4-f19d29604795"  # note "Alder Creek dock memo"
+PAGE_URL = "https://www.aimatrx.com/p/e/note/fa4fa742-0c88-44e0-985c-ea0d0c3c7ed1"  # published page "Alder Creek pickup window"
+TABLE_ID = "a318afb1-de90-4eb6-9e37-e437dfea76b5"  # table "Alder Creek grower gates"
+TABLE_NAME = "Alder Creek grower gates"
+ROW_ID = "d1a2fd40-0a7f-4e5a-840d-f2b5df794875"  # its row for the Lodi origin
+TASK_ID = "244bd30d-27c2-4929-9821-7237bf371892"  # task "Re-probe Lodi pallets"
+INTERNAL_PARTS = [
+    {"type": "input_notes", "note_ids": [NOTE_ID]},
+    {"type": "input_webpage", "urls": [PAGE_URL]},
+    {"type": "input_table", "bookmarks": [{"type": "table_row", "table_id": TABLE_ID, "row_id": ROW_ID, "table_name": TABLE_NAME}]},
+    {"type": "input_task", "task_ids": [TASK_ID]},
 ]
 
 
@@ -99,18 +116,23 @@ def send(token: str, path: str, body: dict) -> tuple[int, dict, str]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--out", help="directory for the response file (default: a new temp dir)")
+    ap.add_argument("--dry-run", action="store_true", help="no model call: send with dry_run true (see the header)")
     args = ap.parse_args()
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb05-"))
     out.mkdir(parents=True, exist_ok=True)
-    record_run_identity("pb05-send", SERVER, {"organization": ORG, "agent": AGENT,
-                                              "files": [file_id for _, file_id in ATTACHMENTS]}, out)
+    record_run_identity("pb05-send --dry-run" if args.dry_run else "pb05-send", SERVER, {"organization": ORG, "agent": AGENT,
+                                              "files": [file_id for _, file_id in ATTACHMENTS],
+                                              "note": NOTE_ID, "page": PAGE_URL, "table": TABLE_ID, "row": ROW_ID,
+                                              "task": TASK_ID}, out)
     token = admin_token()
     cid = str(uuid.uuid4())
     user_input = [{"type": "text", "text": MESSAGE}] + [
         {"type": "media", "kind": kind, "file_id": file_id} for kind, file_id in ATTACHMENTS
-    ]
+    ] + INTERNAL_PARTS
     path = f"/ai/agents/{AGENT}"
     body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG, "user_input": user_input}
+    if args.dry_run:
+        body["dry_run"] = True
     sent_at = datetime.now(timezone.utc).isoformat()
     status, headers, raw = send(token, path, body)
     lower = {k.lower(): v for k, v in headers.items()}

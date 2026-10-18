@@ -5,6 +5,9 @@ import type { LucideIcon } from "lucide-react";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import {
   AppWindow,
+  PencilRuler,
+  Sheet,
+  Telescope,
   MessagesSquare,
   MessageSquareText,
   StickyNote,
@@ -150,6 +153,10 @@ import {
 } from "lucide-react";
 
 export const shellIconComponents = {
+  Sheet,
+  Telescope,
+  PencilRuler,
+
   Compass,
   AppWindow,
   Aperture,

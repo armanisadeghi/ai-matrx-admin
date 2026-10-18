@@ -1,0 +1,1 @@
+{ "extends": "./tsconfig.typecheck.json", "include": ["next-env.d.ts", "types/**/*.d.ts", "lib/test-run/*.ts", "lib/test-run/*.tsx", "utils/supabase/testRun.ts", "utils/supabase/server.ts", "app/api/dev-login/route.ts", "app/layout.tsx"], "files": [] }

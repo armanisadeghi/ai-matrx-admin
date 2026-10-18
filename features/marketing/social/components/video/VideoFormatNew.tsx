@@ -37,6 +37,8 @@ import {
 import { videoKeys } from "../../video/hooks";
 import { plainRenderMessage } from "../../video/render-errors";
 import { useSocials } from "../SocialsContext";
+import { MusicPicker } from "./MusicPicker";
+import { NO_MUSIC, musicCostLine, musicForBrief, type MusicChoice } from "../../video/music";
 import { CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
 
 let fontsRequested = false;
@@ -200,6 +202,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
   const [presenter, setPresenter] = useState<PresenterMode>("voiceover");
   const [presenterLook, setPresenterLook] = useState("");
   const [hookLine, setHookLine] = useState("");
+  const [music, setMusic] = useState<MusicChoice>(NO_MUSIC);
   const [ownScript, setOwnScript] = useState(false);
   const [script, setScript] = useState("");
   const [text, setText] = useState<Record<string, string>>({});
@@ -241,6 +244,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
       script: ownScript && script.trim() ? { mode: "rewrite", text: script.trim() } : { mode: "rewrite" },
       ...(hookLine.trim() ? { hookLine: hookLine.trim().slice(0, 120) } : {}),
       captions: { mode: "match" },
+      ...(musicForBrief(music) ? { music: musicForBrief(music) } : {}),
     };
   };
 
@@ -416,6 +420,10 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
           <Field aria-label="Hook line" placeholder="Opening card text" value={hookLine} maxLength={120} disabled={busy} onChange={(e) => setHookLine(e.target.value)} />
         </Row>
 
+        <Row label="Music">
+          <MusicPicker value={music} onChange={setMusic} disabled={busy} />
+        </Row>
+
         <Row label="Script">
           <SegmentedControl
             aria-label="Script"
@@ -444,6 +452,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={source === "template" ? "warning" : "success"}>{source === "agent" ? "Script written" : source === "person" ? "Your script" : "Draft script"}</Badge>
               {est ? <CostLine label="Estimate" usd={est.total_usd} pts={est.total_points} /> : null}
+              {est && musicCostLine(est) ? <span className="type-meta text-muted-foreground">{musicCostLine(est)}</span> : null}
             </div>
             {notes.filter((n) => n.code !== "music-none").map((n) => (
               <span key={n.code} className="type-meta text-muted-foreground">{n.message}</span>

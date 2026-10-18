@@ -21,7 +21,6 @@ import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { uploadFile } from "@/features/files/api/files";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { toast } from "@/lib/toast";
@@ -45,13 +44,16 @@ import {
 } from "../../video/clone";
 import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
 import { createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
-import { contentHashOf, useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
+import { useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
 import { cutText, nameFromCaption } from "../../video/text";
+import { uploadBriefFile } from "../../video/upload";
 import { confirmLine, estimateLabel, perSecondLine, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
-import { CaptionLookPicker, CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
+import { MusicPicker } from "./MusicPicker";
+import { NO_MUSIC, musicCostLine, musicForBrief, type MusicChoice } from "../../video/music";
+import { CaptionLookPicker, CostLine, FailureLine, FilePickButton, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
 
 const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
   { value: "9:16", label: "9:16" },
@@ -75,32 +77,6 @@ export function mediaLabel(id: string): string {
   if (id.startsWith("spokesperson-")) return "Spokesperson";
   if (id === "music") return "Music";
   return id;
-}
-
-function secondsOf(file: File): Promise<number | undefined> {
-  return new Promise((resolve) => {
-    const el = document.createElement("video");
-    el.preload = "metadata";
-    el.onloadedmetadata = () => {
-      const d = el.duration;
-      URL.revokeObjectURL(el.src);
-      resolve(Number.isFinite(d) ? Math.round(d * 1000) / 1000 : undefined);
-    };
-    el.onerror = () => resolve(undefined);
-    el.src = URL.createObjectURL(file);
-  });
-}
-
-async function uploadBriefFile(file: File, folder: string): Promise<BriefFile> {
-  const { data } = await uploadFile({ file, filePath: `${folder}/${Date.now()}-${file.name}` });
-  const hash = contentHashOf(data.checksum);
-  if (!hash) throw new Error("The upload has no content hash yet; try again.");
-  const out: BriefFile = { fileId: data.file_id, contentHash: hash };
-  if (file.type.startsWith("video/")) {
-    const s = await secondsOf(file);
-    if (s) out.durationSeconds = s;
-  }
-  return out;
 }
 
 export function VideoCloneNew() {
@@ -372,6 +348,7 @@ function BriefPanel({
   const [takes, setTakes] = useState<Array<{ name: string; file: BriefFile }>>([]);
   const [teleprompter, setTeleprompter] = useState<TeleprompterAnswer | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [music, setMusic] = useState<MusicChoice>(NO_MUSIC);
 
   const [phase, setPhase] = useState<Phase>("brief");
   const [resuming, setResuming] = useState(false);
@@ -499,6 +476,7 @@ function BriefPanel({
     ...(hookValue.trim() ? { hookLine: cutText(hookValue.trim(), 120) } : {}),
     captions: captionLook === "match" ? { mode: "match" } : captionLook === "off" ? { mode: "off" } : { mode: "preset", preset: captionLook },
     aspect,
+    ...(musicForBrief(music) ? { music: musicForBrief(music) } : {}),
   });
 
   const showLines = async () => {
@@ -832,6 +810,10 @@ function BriefPanel({
         />
       </Row>
 
+      <Row label="Music">
+        <MusicPicker value={music} onChange={setMusic} disabled={busy} />
+      </Row>
+
       <Row label="Shape">
         <SegmentedControl aria-label="Shape" value={aspect} onValueChange={(v) => setAspect(v as CloneAspect)} data={ASPECTS} />
       </Row>
@@ -857,6 +839,7 @@ function BriefPanel({
               </span>
             </div>
             {perSecondLine(est) ? <span className="type-meta text-muted-foreground">{perSecondLine(est)}</span> : null}
+            {musicCostLine(est) ? <span className="type-meta text-muted-foreground">{musicCostLine(est)}</span> : null}
             {confirmLine(est) ? <span className="type-meta text-muted-foreground">{confirmLine(est)}</span> : null}
             {plan.script_source === "fallback" ? <span className="type-meta text-warning">Kept the reference script</span> : null}
             {writerSkipped ? <span className="type-meta text-warning">The script writer didn't run, so the reference script was kept</span> : null}
@@ -916,42 +899,5 @@ function Row({ label, end, children }: { label: string; end?: React.ReactNode; c
       </div>
       {children}
     </div>
-  );
-}
-
-function FilePickButton({
-  accept,
-  multiple,
-  icon,
-  disabled,
-  onFiles,
-  children,
-}: {
-  accept: string;
-  multiple?: boolean;
-  icon: React.ReactNode;
-  disabled?: boolean;
-  onFiles: (files: FileList | null) => void;
-  children: React.ReactNode;
-}) {
-  const input = useRef<HTMLInputElement>(null);
-  return (
-    <>
-      <input
-        ref={input}
-        type="file"
-        accept={accept}
-        multiple={multiple}
-        className="sr-only"
-        tabIndex={-1}
-        onChange={(e) => {
-          onFiles(e.target.files);
-          e.target.value = "";
-        }}
-      />
-      <Button variant="outline" icon={icon} disabled={disabled} onClick={() => input.current?.click()}>
-        {children}
-      </Button>
-    </>
   );
 }

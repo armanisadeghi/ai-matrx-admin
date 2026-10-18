@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Boutique Hotel Desk",
   "description": "Rooms, reservations, housekeeping and repairs for a boutique hotel or bed and breakfast.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-misty-mountains",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "hospitality",
-=======
-  "category": "operations",
->>>>>>> origin/main
   "tags": [
     "hotel",
     "b&b",
@@ -1938,11 +1930,7 @@
         "Cobbler's Green"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -3392,8 +3380,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main

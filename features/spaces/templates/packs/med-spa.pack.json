@@ -162,21 +162,12 @@
               "Cancelled"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "No-show": "red",
               "Cancelled": "orange",
               "Booked": "blue",
               "Confirmed": "amber",
               "In room": "violet",
               "Completed": "green"
-=======
-              "Booked": "blue",
-              "Confirmed": "green",
-              "In room": "amber",
-              "Completed": "violet",
-              "No-show": "teal",
-              "Cancelled": "red"
->>>>>>> origin/main
             },
             "statusGroups": {
               "Booked": "todo",
@@ -979,15 +970,9 @@
               "Cancelled"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "Cancelled": "red",
               "Active": "blue",
               "Paused": "amber"
-=======
-              "Active": "blue",
-              "Paused": "green",
-              "Cancelled": "amber"
->>>>>>> origin/main
             },
             "statusGroups": {
               "Active": "in_progress",

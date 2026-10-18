@@ -37,3 +37,33 @@ export function nameFromCaption(caption: string | null | undefined, max: number)
   const atWord = cut.lastIndexOf(" ");
   return `${(atWord > max / 2 ? cut.slice(0, atWord) : cut).replace(/[\s,;:.\-–—]+$/, "")}…`;
 }
+
+const EMOJI = /[\p{Extended_Pictographic}\p{Regional_Indicator}\u20e3\ufe0f]/gu;
+/** Characters that mark a break between two overlay lines without being whitespace (zero-width space, word joiner, line/paragraph separators). */
+const HIDDEN_BREAKS = /[\u200b\u2060\ufeff\u2028\u2029\u0085]/g;
+
+/**
+ * Lines of on-screen text read as one sentence line: lines are joined with a space; when a line ends a sentence (the
+ * next one starts a capital) and carries no end mark, a full stop is put there ("summer\nIt's so good" becomes
+ * "summer. It's so good"). Emoji are dropped (they do not belong in a typed hook line).
+ */
+export function joinOverlayLines(text: string | null | undefined): string {
+  const lines = (text ?? "")
+    .replace(HIDDEN_BREAKS, "\n")
+    .replace(EMOJI, " ")
+    .replace(/\u200d/g, "")
+    .split(/\r?\n+/)
+    .map((l) => l.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+  let out = "";
+  lines.forEach((line, i) => {
+    if (i === 0) {
+      out = line;
+      return;
+    }
+    const startsSentence = /^["'“‘(]?[A-Z]/.test(line);
+    const ended = /[.!?,;:…)"”’]$/.test(out);
+    out += ended || !startsSentence ? ` ${line}` : `. ${line}`;
+  });
+  return out.replace(/\s+([.!?,;:])/g, "$1");
+}

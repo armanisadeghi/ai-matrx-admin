@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Consulting Practice Desk",
   "description": "Clients, proposals, engagements, deliverables and consultant days for a consulting firm.",
   "forWho": "Management and operations consulting practices",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-misty-mountains",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "services",
-=======
-  "category": "operations",
->>>>>>> origin/main
   "tags": [
     "consulting",
     "engagements",
@@ -2229,11 +2221,7 @@
         "Halsey Avenue"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -3771,8 +3759,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main

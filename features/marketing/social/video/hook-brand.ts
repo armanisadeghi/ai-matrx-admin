@@ -6,7 +6,7 @@
  * come out readable is never offered as a prefill (the page then shows the warning and an empty field).
  */
 
-import { cutText, oneLine } from "./text";
+import { cutText, joinOverlayLines, oneLine } from "./text";
 
 const COMMON_CAPS = new Set(["NEW", "FREE", "WOW", "THE", "AND", "YOU", "NOW", "SALE", "STOP", "WAIT", "WHY", "HOW", "WATCH", "THIS", "ONLY", "TRY", "BEST", "POV", "DIY", "FYI"]);
 
@@ -54,7 +54,7 @@ export interface HookPrefill {
 
 /** The reference hook with the other business's name swapped for the person's brand, or empty when unsure. */
 export function hookPrefill(source: string | null | undefined, ownBrand: string, max = 120): HookPrefill {
-  const flat = oneLine(source);
+  const flat = joinOverlayLines(source);
   const name = brandNameIn(flat, ownBrand);
   if (!flat || !name || !ownBrand.trim()) return { text: "", swapped: null };
   const swapped = flat.split(name).join(ownBrand.trim());

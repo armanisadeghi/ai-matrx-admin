@@ -130,19 +130,11 @@
               "Declined"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "Declined": "red",
               "New": "blue",
               "Contacted": "amber",
               "Assessment booked": "violet",
               "Started": "green"
-=======
-              "New": "blue",
-              "Contacted": "green",
-              "Assessment booked": "amber",
-              "Started": "violet",
-              "Declined": "teal"
->>>>>>> origin/main
             },
             "statusGroups": {
               "New": "todo",
@@ -481,19 +473,11 @@
               "Cancelled"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "Missed": "red",
               "Cancelled": "orange",
               "Scheduled": "blue",
               "In progress": "amber",
               "Completed": "green"
-=======
-              "Scheduled": "blue",
-              "In progress": "green",
-              "Completed": "amber",
-              "Missed": "violet",
-              "Cancelled": "teal"
->>>>>>> origin/main
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -1247,15 +1231,9 @@
               "Expired"
             ],
             "choiceColors": {
-<<<<<<< HEAD
               "Expired": "red",
               "Valid": "green",
               "Renewal requested": "blue"
-=======
-              "Valid": "blue",
-              "Renewal requested": "green",
-              "Expired": "amber"
->>>>>>> origin/main
             },
             "statusGroups": {
               "Valid": "done",

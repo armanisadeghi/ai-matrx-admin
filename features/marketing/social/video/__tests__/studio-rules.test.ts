@@ -1,8 +1,9 @@
 import { dragonLairComposition, editWordOps, type PatchOp } from "@ai-matrx/media/video";
 
 import { describeTheirs, historyFromRows, rebasePending } from "../conflict";
-import { summarizeEstimate, estimateLabel, perSecondLine, confirmLine, outputRows, downloadName } from "../estimate";
+import { summarizeEstimate, estimateLabel, perSecondLine, confirmLine, outputRows, downloadName, variantDownloadName } from "../estimate";
 import { brandNameIn, hookPrefill } from "../hook-brand";
+import { joinOverlayLines } from "../text";
 import { cutText, hasBrokenCharacter, nameFromCaption } from "../text";
 import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../variants";
 import { plainRenderMessage } from "../render-errors";
@@ -99,6 +100,15 @@ describe("hook prefill", () => {
     expect(out.text).toBe("Send this to someone who loves Cedar Ridge");
     expect(out.text).not.toMatch(/someonewho/);
   });
+  it("joins the walk's hook lines with a space and a full stop, and drops emoji", () => {
+    expect(joinOverlayLines("masks need to cover\nyour nose AND mouth")).toBe("masks need to cover your nose AND mouth");
+    expect(joinOverlayLines("masks need to cover\u200byour nose AND mouth")).toBe("masks need to cover your nose AND mouth");
+    expect(joinOverlayLines("This is my favorite recipe I've made all summer\nIt's so good \u{1F60D}")).toBe("This is my favorite recipe I've made all summer. It's so good");
+    expect(joinOverlayLines("Wait!\nIt's so good")).toBe("Wait! It's so good");
+    const out = hookPrefill("This is Joe's PIZZA recipe I've made all summer\nIt's so good \u{1F355}", "Cedar Ridge");
+    expect(out.text).toBe("This is Cedar Ridge recipe I've made all summer. It's so good");
+    expect(out.text).not.toMatch(/summer It's|\u{1F355}/u);
+  });
   it("leaves it empty when it is not sure or not readable", () => {
     expect(hookPrefill("stop scrolling", "Cedar Ridge").text).toBe("");
     expect(hookPrefill(`Joe's PIZZA ${"word ".repeat(40)}`, "Cedar Ridge").text).toBe("");
@@ -154,6 +164,18 @@ describe("finished videos say which version they are", () => {
     const rows = outputRows({ output_file_ids: ["new", "old"], output_versions: { old: 2, new: 5 }, head_version: 5 });
     expect(rows.map((r) => [r.label, r.stale])).toEqual([["Made from v5", false], ["Made from v2", true]]);
     expect(outputRows({ output_file_ids: ["x"], head_version: 5 })[0]).toMatchObject({ label: "Render 1", stale: false, version: null });
+  });
+  it("lists the newest render first even though the server lists the oldest first", () => {
+    const rows = outputRows({ output_file_ids: ["a", "b", "c", "d"], output_versions: { a: 2, b: 3, c: 5, d: 9 }, head_version: 9 });
+    expect(rows.map((r) => r.fileId)).toEqual(["d", "c", "b", "a"]);
+    const bare = outputRows({ output_file_ids: ["a", "b", "c"], head_version: 3 });
+    expect(bare.map((r) => r.fileId)).toEqual(["c", "b", "a"]);
+    expect(bare.map((r) => r.label)).toEqual(["Render 3", "Render 2", "Render 1"]);
+  });
+  it("names each variant's file with its label", () => {
+    const names = ["Hook: friendly reminder", "Captions: Bold", "Shape 1:1"].map((l) => variantDownloadName("Organic cotton tee", l));
+    expect(new Set(names).size).toBe(3);
+    expect(names[0]).toBe("Organic cotton tee Hook friendly reminder.mp4");
   });
   it("saves under the video's name", () => {
     expect(downloadName('Tuft: "Pillow" / v2')).toBe("Tuft Pillow v2.mp4");

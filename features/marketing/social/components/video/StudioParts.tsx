@@ -6,7 +6,7 @@
  * CAPTION_PRESETS, the composition preview (the engine's resolver + VideoPlayer) and an output download row.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, CircleAlert, Download, Film } from "lucide-react";
 
 import type { Composition } from "@ai-matrx/media/video";
@@ -350,5 +350,43 @@ export function FailureLine({ error, operation }: { error: unknown; operation: s
       <span className="type-meta min-w-0 flex-1 text-destructive">{text.slice(0, 220)}</span>
       <ErrorAlchemyMenu error={error} operation={operation} />
     </div>
+  );
+}
+
+/** A button that opens the file chooser; the chosen files go to `onFiles`. */
+export function FilePickButton({
+  accept,
+  multiple,
+  icon,
+  disabled,
+  onFiles,
+  children,
+}: {
+  accept: string;
+  multiple?: boolean;
+  icon: React.ReactNode;
+  disabled?: boolean;
+  onFiles: (files: FileList | null) => void;
+  children: React.ReactNode;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={input}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        className="sr-only"
+        tabIndex={-1}
+        onChange={(e) => {
+          onFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      <Button variant="outline" icon={icon} disabled={disabled} onClick={() => input.current?.click()}>
+        {children}
+      </Button>
+    </>
   );
 }

@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useDraftField } from "../use-draft-field";
 import { Plus, X } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 import { EditableLabel } from "@ai-matrx/design-system";
@@ -48,20 +49,24 @@ function QuietText({
   emphasis = false,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (v: string) => void | Promise<void>;
   label: string;
   className?: string;
   testId?: string;
   emphasis?: boolean;
 }) {
+  // The person's draft owns the field while it is focused/unsaved; echoes and assistant writes never clobber it.
+  const field = useDraftField(value, onChange);
   return (
     <textarea
       rows={1}
-      value={value}
+      value={field.text}
       aria-label={label}
       placeholder="Not set yet"
       data-testid={testId}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => field.onChange(e.target.value)}
+      onFocus={field.onFocus}
+      onBlur={field.onBlur}
       style={{ fieldSizing: "content" } as CSSProperties}
       className={`block w-full min-w-0 resize-none rounded-md border border-transparent bg-transparent px-1.5 py-1 text-sm leading-snug outline-none placeholder:text-muted-foreground hover:border-border focus:border-ring focus:bg-background ${
         emphasis ? "font-medium text-foreground" : "text-foreground"
@@ -84,15 +89,19 @@ export function useStudioWorkspace(conversationId: string | null) {
       return next ? { id: conversationId, ws: next } : null;
     });
   };
-  const edits = useRef(0);
+  const edits = useRef(0); // edits queued or in flight
+  const gen = useRef(0); // bumps on every edit, so a read that started earlier is discarded
+  const chain = useRef<Promise<unknown>>(Promise.resolve()); // saves land in the order they were made
   useEffect(() => {
     if (!conversationId) return;
     let live = true;
     const read = async () => {
       if (edits.current > 0) return; // never overwrite the screen under a pending edit
+      const started = gen.current;
       try {
         const next = await loadWorkspace(conversationId);
-        if (live) setHeld(next ? { id: conversationId, ws: next } : null);
+        if (!live || edits.current > 0 || gen.current !== started) return; // an edit began while this read was out
+        setHeld(next ? { id: conversationId, ws: next } : null);
       } catch {
         /* the next poll tries again; a failed read never blanks what is on screen */
       }
@@ -104,17 +113,24 @@ export function useStudioWorkspace(conversationId: string | null) {
       clearInterval(t);
     };
   }, [conversationId]);
-  const edit = async (change: (w: StudioWorkspace) => StudioWorkspace) => {
-    if (!conversationId) return;
+  const edit = (change: (w: StudioWorkspace) => StudioWorkspace): Promise<void> => {
+    if (!conversationId) return Promise.resolve();
     edits.current += 1;
+    gen.current += 1;
     setWs((w) => (w ? change(w) : w)); // optimistic
-    try {
-      setWs(await editWorkspace(conversationId, change));
-    } catch (e) {
-      toast.error("That edit did not save", { description: e instanceof Error ? e.message : String(e) });
-    } finally {
-      edits.current -= 1;
-    }
+    const run = chain.current.then(async () => {
+      try {
+        const saved = await editWorkspace(conversationId, change);
+        // Only the LAST queued save's echo is shown: an earlier echo would land on top of newer typing.
+        if (edits.current === 1) setWs(saved);
+      } catch (e) {
+        toast.error("That edit did not save", { description: e instanceof Error ? e.message : String(e) });
+      } finally {
+        edits.current -= 1;
+      }
+    });
+    chain.current = run;
+    return run;
   };
   return { ws, edit };
 }
@@ -131,7 +147,7 @@ function InputRow({
 }: {
   input: WorkspaceInput;
   onRename: (label: string) => void;
-  onValue: (value: string) => void;
+  onValue: (value: string) => void | Promise<void>;
   onRemove: () => void;
 }) {
   const [renaming, setRenaming] = useState(false);
@@ -210,7 +226,7 @@ export function StudioWorkspacePane({
       <QuietText
         label={title}
         value={ws[field] ?? ""}
-        onChange={(v) => void edit((w) => personSetText(w, field, v))}
+        onChange={(v) => edit((w) => personSetText(w, field, v))}
         testId={`workspace-${field}`}
       />
     </div>
@@ -231,7 +247,7 @@ export function StudioWorkspacePane({
               key={i.name}
               input={i}
               onRename={(label) => void edit((w) => personSetInput(w, i.name, { label }))}
-              onValue={(value) => void edit((w) => personSetInput(w, i.name, { value }))}
+              onValue={(value) => edit((w) => personSetInput(w, i.name, { value }))}
               onRemove={() => void edit((w) => personRemoveInput(w, i.name))}
             />
           ))}
@@ -270,7 +286,7 @@ export function StudioWorkspacePane({
                   <QuietText
                     label={`${title} ${idx + 1}`}
                     value={v}
-                    onChange={(val) => void edit((w) => personSetListItem(w, field, idx, val))}
+                    onChange={(val) => edit((w) => personSetListItem(w, field, idx, val))}
                   />
                   <Button variant="quiet" icon={<X />} aria-label={`Remove ${title} ${idx + 1}`} onClick={() => void edit((w) => personRemoveListItem(w, field, idx))} />
                 </div>

@@ -14,7 +14,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Clapperboard, Film, Layers, Palette, Type } from "lucide-react";
+import { ArrowLeft, Clapperboard, Film, Layers, Music, Palette, Type } from "lucide-react";
 
 import type { Composition, PatchOp, VariantOverride } from "@ai-matrx/media/video";
 import { editWordOps, materializeVariant, setAspectOps } from "@ai-matrx/media/video";
@@ -38,7 +38,7 @@ import {
 } from "../../video/clone";
 import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
-import { confirmLine, downloadName, estimateLabel, outputRows, perSecondLine, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, downloadName, estimateLabel, variantDownloadName, outputRows, perSecondLine, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
 import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../../video/variants";
@@ -50,6 +50,8 @@ import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
 import { useSocials } from "../SocialsContext";
 import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
 import { mediaLabel } from "./VideoCloneNew";
+import { MusicPicker } from "./MusicPicker";
+import { musicCostLine, musicOfDocument, musicOps, videoSecondsOf, type MusicChoice } from "../../video/music";
 import { useQuery } from "@tanstack/react-query";
 
 /** The timeline editor loads only when the person opens the Timeline view (heavy: the editor + its player). */
@@ -420,6 +422,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             </span>
           </div>
           {estimate.data && perSecondLine(estimate.data) ? <span className="type-meta text-muted-foreground">{perSecondLine(estimate.data)}</span> : null}
+          {estimate.data && musicCostLine(estimate.data) ? <span className="type-meta text-muted-foreground">{musicCostLine(estimate.data)}</span> : null}
           {estimate.data && confirmLine(estimate.data) ? <span className="type-meta text-muted-foreground">{confirmLine(estimate.data)}</span> : null}
           <div className="flex flex-wrap items-center gap-2">
             {pending || (sum && sum.toMake > 0) ? (
@@ -483,7 +486,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
           {failure ? <FailureLine error={failure} operation="video render" /> : null}
           {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" fileName={downloadName(answer.name)} /> : null}
         </div>
-        <Outputs answer={answer} busy={busy} onRenderAgain={() => void runBatch("render", [], false)} />
+        <Outputs answer={answer} busy={busy} onRenderAgain={() => void runBatch("render", [], false)} onCards={new Set(Object.entries(outcome).filter(([k, o]) => k !== HEAD_ITEM && o.fileId).map(([, o]) => o.fileId as string))} />
       </section>
 
       {timelineView ? null : <section className="flex min-w-0 flex-col gap-4">
@@ -516,11 +519,15 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             />
           </div>
         </Block>
+        <Block title="Music" icon={<Music className="size-4" />}>
+          <ProjectMusic key={head} doc={doc} disabled={busy} onChoose={(c) => void patch(musicOps(doc, c, videoSecondsOf(doc)) as PatchOp[], `music: ${c.kind === "none" ? "none" : c.kind === "bed" ? `${c.mood} ${c.tempo}` : "own track"}`)} />
+        </Block>
         <Block title="Variants" icon={<Layers className="size-4" />}>
           <VariantsPanel
             doc={doc}
             head={head}
             projectId={projectId}
+            projectName={answer.name}
             variants={variants.data ?? []}
             loading={variants.isPending}
             outcome={outcome}
@@ -648,6 +655,7 @@ function VariantsPanel({
   doc,
   head,
   projectId,
+  projectName,
   variants,
   loading,
   outcome,
@@ -659,6 +667,7 @@ function VariantsPanel({
   doc: Composition;
   head: number;
   projectId: string;
+  projectName: string;
   variants: VariantAnswer[];
   loading: boolean;
   outcome: Record<string, ItemOutcome>;
@@ -700,7 +709,7 @@ function VariantsPanel({
       {variants.length ? (
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-3">
           {variants.map((v) => (
-            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} />
+            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} projectName={projectName} />
           ))}
         </div>
       ) : null}
@@ -779,7 +788,7 @@ function VariantsPanel({
   );
 }
 
-function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome }) {
+function VariantCard({ v, doc, head, outcome, projectName }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome; projectName: string }) {
   // A variant made on an older version still shows its look: its overrides are laid over the current head (the render does the same).
   const rebased = v.baseVersion !== head;
   const materialized = materializeVariant(doc, (rebased ? { ...v, baseVersion: doc.version } : v) as unknown as VariantOverride);
@@ -802,16 +811,18 @@ function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composi
       {outcome?.usd !== undefined ? (
         outcome.renderFree && !outcome.usd ? <span className="type-meta text-muted-foreground">Render · free</span> : <CostLine usd={outcome.usd} pts={outcome.pts} />
       ) : null}
-      {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} /> : null}
+      {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} fileName={variantDownloadName(projectName, v.label)} /> : null}
     </div>
   );
 }
 
 // ── every finished output ───────────────────────────────────────────────────────────────────────────
 
-function Outputs({ answer, busy, onRenderAgain }: { answer: VideoProjectAnswer; busy: boolean; onRenderAgain: () => void }) {
+function Outputs({ answer, busy, onRenderAgain, onCards }: { answer: VideoProjectAnswer; busy: boolean; onRenderAgain: () => void; onCards: Set<string> }) {
   if (!answer.output_file_ids.length) return null;
-  const rows = outputRows(answer);
+  // A variant's video has its own card with its own Download; the list holds the rest, so no card has two.
+  const rows = outputRows(answer).filter((r) => !onCards.has(r.fileId));
+  if (!rows.length) return null;
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
       <span className="type-label text-foreground">{`Finished videos (${rows.length})`}</span>
@@ -829,5 +840,22 @@ function Outputs({ answer, busy, onRenderAgain }: { answer: VideoProjectAnswer; 
         </div>
       ))}
     </div>
+  );
+}
+
+/** The project's music: what it carries now, changed through one patch (a bed is made when you press Generate). */
+function ProjectMusic({ doc, disabled, onChoose }: { doc: Composition; disabled: boolean; onChoose: (c: MusicChoice) => void }) {
+  const [draft, setDraft] = useState<MusicChoice>(() => musicOfDocument(doc as never));
+  return (
+    <MusicPicker
+      value={draft}
+      disabled={disabled}
+      onChange={(c) => {
+        setDraft(c);
+        // A track kind waits for its upload; every other pick is saved at once.
+        if (c.kind === "file" && !c.file.fileId) return;
+        onChoose(c);
+      }}
+    />
   );
 }

@@ -69,13 +69,24 @@ export interface OutputRow {
   stale: boolean;
 }
 
-/** The finished videos, newest first, each saying which version it was made from and whether the head has moved on. */
+/**
+ * The finished videos, newest first, each saying which version it was made from and whether the head has moved on.
+ * The server lists renders in the order they were attached (oldest first), so the newest is found by the version it was
+ * made from, and by position when a render has no version (a later one is newer).
+ */
 export function outputRows(answer: { output_file_ids: string[]; output_versions?: Record<string, number>; head_version: number }): OutputRow[] {
-  const n = answer.output_file_ids.length;
-  return answer.output_file_ids.map((fileId, i) => {
-    const version = answer.output_versions?.[fileId] ?? null;
-    return { fileId, version, stale: version !== null && version < answer.head_version, label: version !== null ? `Made from v${version}` : `Render ${n - i}` };
-  });
+  return answer.output_file_ids
+    .map((fileId, index) => {
+      const version = answer.output_versions?.[fileId] ?? null;
+      return { fileId, index, version, stale: version !== null && version < answer.head_version, label: version !== null ? `Made from v${version}` : `Render ${index + 1}` };
+    })
+    .sort((a, b) => (b.version ?? -1) - (a.version ?? -1) || b.index - a.index)
+    .map(({ index: _index, ...row }) => row);
+}
+
+/** A file name for one variant's video: the project's name and the variant's label. */
+export function variantDownloadName(projectName: string, variantLabel: string): string {
+  return downloadName(`${projectName} ${variantLabel}`);
 }
 
 /** A file name for a saved video: the video's name, safe for a file system. */

@@ -1,11 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-<<<<<<< HEAD
   "version": 2,
-=======
-  "version": 1,
->>>>>>> origin/main
   "title": "Insurance Agency Desk",
   "description": "Insureds, policies, renewals, claims and follow-ups for an independent insurance agency.",
   "forWho": "Independent insurance agencies and brokers",
@@ -16,11 +12,7 @@
     "url": "gallery:photo-pine-forest",
     "offsetY": 50
   },
-<<<<<<< HEAD
   "category": "services",
-=======
-  "category": "operations",
->>>>>>> origin/main
   "tags": [
     "insurance",
     "policies",
@@ -1945,11 +1937,7 @@
         "Chandler Plaza"
       ]
     },
-<<<<<<< HEAD
     "version": 2
-=======
-    "version": 1
->>>>>>> origin/main
   },
   "pages": [
     {
@@ -3351,8 +3339,4 @@
     }
   ],
   "waivers": []
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> origin/main
