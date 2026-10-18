@@ -9,9 +9,9 @@
  * stale write is refused and the page reloads the newer version.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Clapperboard, Film, Layers, Palette, Type } from "lucide-react";
 
@@ -37,10 +37,11 @@ import {
 } from "../../video/clone";
 import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
-import { estimateLabel, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, downloadName, estimateLabel, outputRows, perSecondLine, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
 import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../../video/variants";
+import { BackendApiError } from "@ai-matrx/api";
 import { appendPatch, conflictVersion, estimateProject, getVideoProject } from "../../video/server";
 import { readCompositionHistory } from "../../video/service";
 import { useLocalRenderAllowed } from "../../video/studio-hooks";
@@ -156,11 +157,32 @@ function batchHandler(
 
 export function VideoProjectStudio({ projectId }: { projectId: string }) {
   const project = useVideoProject(projectId);
-  const { brandSeg } = useSocials();
+  const { brandSeg, brandId } = useSocials();
+  const router = useRouter();
   const base = `${marketingRoutes.brandSocials(brandSeg)}/videos`;
+  // A project opened under another brand's address moves to its own brand (the address, not the video, was wrong).
+  const ownBrand = project.data?.brand_ids[0];
+  useEffect(() => {
+    if (ownBrand && brandId && ownBrand !== brandId) router.replace(`${marketingRoutes.brandSocials(ownBrand)}/videos/${projectId}`);
+  }, [ownBrand, brandId, projectId, router]);
 
   if (project.isPending) return <RegionSkeleton shape="form" count={6} aria-label="Loading video" />;
   if (project.isError) {
+    const status = project.error instanceof BackendApiError ? project.error.status : null;
+    if (status === 404 || status === 400 || status === 422) {
+      return (
+        <EmptyState
+          icon={<Film />}
+          title="This video doesn't exist"
+          line="It may have been deleted, or the address is wrong"
+          action={
+            <Button asChild variant="primary">
+              <Link href={base}>Back to Videos</Link>
+            </Button>
+          }
+        />
+      );
+    }
     return (
       <EmptyState
         icon={<Film />}
@@ -235,16 +257,17 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
   };
 
   /** One edit. A refusal because the video moved on rebases the pending edit onto the new head; nothing is dropped. */
-  const patch = async (ops: PatchOp[], note: string, what = note, base = head) => {
-    if (!ops.length) return;
+  const patch = async (ops: PatchOp[], note: string, what = note, base = head): Promise<boolean> => {
+    if (!ops.length) return false;
     setSaving(true);
     try {
       await save(ops, base, note);
       await reload();
+      return true;
     } catch (err) {
       if (conflictVersion(err) === null) {
         toast.error(err instanceof Error ? err.message : "Couldn't save the change");
-        return;
+        return false;
       }
       try {
         const fresh = await getVideoProject(projectId, { organizationId });
@@ -256,6 +279,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
           await save(moved.ops, newHead, note);
           await reload();
           toast.success(`Saved as v${newHead + 1}. Someone saved v${newHead} first; your change was kept.`);
+          return true;
         } else {
           const headDoc = fresh.composition?.document as unknown as Composition | undefined;
           setConflict({
@@ -270,6 +294,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
         toast.error(inner instanceof Error ? inner.message : "Couldn't save the change");
         await reload();
       }
+      return false;
     } finally {
       setSaving(false);
     }
@@ -280,6 +305,18 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
     if (!c) return;
     setConflict(null);
     await patch(c.ops, c.note, c.what, c.head);
+  };
+
+  // A look or shape click is a saved version; the toast beside it puts the previous value back (as a new version, history kept).
+  const patchRef = useRef(patch);
+  useEffect(() => {
+    patchRef.current = patch;
+  });
+  const changeWithUndo = async (ops: PatchOp[], note: string, undoOps: PatchOp[] | null) => {
+    const ok = await patch(ops, note);
+    if (ok && undoOps) {
+      toast(`Changed ${note.replace(":", " to")}`, { action: { label: "Undo", onClick: () => void patchRef.current(undoOps, `undo ${note}`) }, duration: 8000 });
+    }
   };
 
   const captionTrack = Object.keys(doc.tracks.captions)[0] ?? null;
@@ -362,6 +399,8 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
               {sum ? <CostLine label={estimateLabel(sum)} usd={sum.usd} pts={sum.points} /> : null}
             </span>
           </div>
+          {estimate.data && perSecondLine(estimate.data) ? <span className="type-meta text-muted-foreground">{perSecondLine(estimate.data)}</span> : null}
+          {estimate.data && confirmLine(estimate.data) ? <span className="type-meta text-muted-foreground">{confirmLine(estimate.data)}</span> : null}
           <div className="flex flex-wrap items-center gap-2">
             {pending || (sum && sum.toMake > 0) ? (
               <Button variant="primary" disabled={busy} onClick={() => void runGenerate(false)}>
@@ -422,9 +461,9 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
           ) : null}
           <RunLog steps={steps} />
           {failure ? <FailureLine error={failure} operation="video render" /> : null}
-          {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" /> : null}
+          {headOut?.fileId ? <OutputDownload fileId={headOut.fileId} label="The video" fileName={downloadName(answer.name)} /> : null}
         </div>
-        <Outputs answer={answer} />
+        <Outputs answer={answer} busy={busy} onRenderAgain={() => void runBatch("render", [], false)} />
       </section>
 
       <section className="flex min-w-0 flex-col gap-4">
@@ -436,7 +475,13 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             <CaptionLookPicker
               value={preset}
               disabled={busy}
-              onChange={(id) => void patch([{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset: id } }], `captions: ${id}`)}
+              onChange={(id) =>
+                void changeWithUndo(
+                  [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset: id } }],
+                  `captions: ${id}`,
+                  preset ? [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset } }] : null,
+                )
+              }
             />
           ) : (
             <span className="type-meta text-muted-foreground">This plan has no captions</span>
@@ -446,7 +491,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
             <SegmentedControl
               aria-label="Shape"
               value={doc.timeline.aspect as CloneAspect}
-              onValueChange={(v) => void patch(setAspectOps(v as CloneAspect), `shape: ${v}`)}
+              onValueChange={(v) => void changeWithUndo(setAspectOps(v as CloneAspect), `shape: ${v}`, setAspectOps(doc.timeline.aspect as CloneAspect))}
               data={ASPECTS}
             />
           </div>
@@ -743,13 +788,24 @@ function VariantCard({ v, doc, head, outcome }: { v: VariantAnswer; doc: Composi
 
 // ── every finished output ───────────────────────────────────────────────────────────────────────────
 
-function Outputs({ answer }: { answer: VideoProjectAnswer }) {
+function Outputs({ answer, busy, onRenderAgain }: { answer: VideoProjectAnswer; busy: boolean; onRenderAgain: () => void }) {
   if (!answer.output_file_ids.length) return null;
+  const rows = outputRows(answer);
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
-      <span className="type-label text-foreground">{`Finished videos (${answer.output_file_ids.length})`}</span>
-      {answer.output_file_ids.map((id, i) => (
-        <OutputDownload key={id} fileId={id} label={`Render ${answer.output_file_ids.length - i}`} />
+      <span className="type-label text-foreground">{`Finished videos (${rows.length})`}</span>
+      {rows.map((r, i) => (
+        <div key={r.fileId} className="flex min-w-0 flex-col gap-1">
+          <OutputDownload fileId={r.fileId} label={r.label} fileName={downloadName(`${answer.name}${r.version !== null ? ` v${r.version}` : ""}`)} />
+          {r.stale && i === 0 ? (
+            <div className="flex items-center gap-2">
+              <span className="type-meta text-warning">{`The video is now v${answer.head_version}; this file does not have your latest changes`}</span>
+              <Button variant="outline" className="ml-auto" disabled={busy} onClick={onRenderAgain}>
+                Render again
+              </Button>
+            </div>
+          ) : null}
+        </div>
       ))}
     </div>
   );

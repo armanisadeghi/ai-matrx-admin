@@ -59,3 +59,27 @@ export function confirmLine(est: Pick<EstimateAnswer, "confirm_over_points">): s
   const usd = pts / 20000;
   return `Asks before spending over ${Number.isInteger(usd) ? `$${usd}` : USD(usd)}`;
 }
+
+export interface OutputRow {
+  fileId: string;
+  label: string;
+  /** The version this file was rendered from, when known. */
+  version: number | null;
+  /** True when the head has moved on since: the file is not what the preview shows. */
+  stale: boolean;
+}
+
+/** The finished videos, newest first, each saying which version it was made from and whether the head has moved on. */
+export function outputRows(answer: { output_file_ids: string[]; output_versions?: Record<string, number>; head_version: number }): OutputRow[] {
+  const n = answer.output_file_ids.length;
+  return answer.output_file_ids.map((fileId, i) => {
+    const version = answer.output_versions?.[fileId] ?? null;
+    return { fileId, version, stale: version !== null && version < answer.head_version, label: version !== null ? `Made from v${version}` : `Render ${n - i}` };
+  });
+}
+
+/** A file name for a saved video: the video's name, safe for a file system. */
+export function downloadName(name: string): string {
+  const safe = name.replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  return `${safe || "video"}.mp4`;
+}

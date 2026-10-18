@@ -49,7 +49,7 @@ import { contentHashOf, useBrandOfferings, useFileUrls, useOfferingFacts, useRef
 import { useSocials } from "../SocialsContext";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
 import { cutText, nameFromCaption } from "../../video/text";
-import { estimateLabel, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, estimateLabel, perSecondLine, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { CaptionLookPicker, CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
 
@@ -635,6 +635,7 @@ function BriefPanel({
     <section className="flex min-w-0 flex-col gap-4 rounded-lg border border-border bg-card p-3">
       <Row label="Product">
         <div className="flex flex-col gap-2">
+          {offerings.isPending || (offerings.data?.length ?? 0) > 0 ? (
           <Select
             aria-label="Product"
             value={productKey}
@@ -648,6 +649,7 @@ function BriefPanel({
               ...(offerings.data ?? []).map((o) => ({ value: o.key, label: o.name })),
             ]}
           />
+          ) : null}
           {!offering ? (
             <Field placeholder="Product name" value={productName} maxLength={60} onChange={(e) => setProductName(e.target.value)} />
           ) : null}

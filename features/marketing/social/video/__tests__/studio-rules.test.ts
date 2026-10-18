@@ -1,9 +1,9 @@
 import { dragonLairComposition, editWordOps, type PatchOp } from "@ai-matrx/media/video";
 
 import { describeTheirs, historyFromRows, rebasePending } from "../conflict";
-import { summarizeEstimate, estimateLabel, perSecondLine, confirmLine } from "../estimate";
+import { summarizeEstimate, estimateLabel, perSecondLine, confirmLine, outputRows, downloadName } from "../estimate";
 import { brandNameIn, hookPrefill } from "../hook-brand";
-import { cutText, hasBrokenCharacter } from "../text";
+import { cutText, hasBrokenCharacter, nameFromCaption } from "../text";
 import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../variants";
 import { plainRenderMessage } from "../render-errors";
 
@@ -136,5 +136,27 @@ describe("estimate lines the person reads", () => {
     expect(confirmLine({ confirm_over_points: 20000 })).toBe("Asks before spending over $1");
     expect(confirmLine({ confirm_over_points: 10000 })).toBe("Asks before spending over $0.50");
     expect(confirmLine({ confirm_over_points: null })).toBeNull();
+  });
+});
+
+describe("project names from captions", () => {
+  it("drops emoji and hashtags and cuts at a word, never mid-word", () => {
+    expect(nameFromCaption("Egg roll tacos \u{1F32E}\u{1F525} #recipe", 40)).toBe("Egg roll tacos");
+    const cut = nameFromCaption("Comment RECIPE and I'll send it to you right away friend", 40);
+    expect(cut).toBe("Comment RECIPE and I'll send it to you…");
+    expect(hasBrokenCharacter(cut)).toBe(false);
+    expect(nameFromCaption("\u{1F525}\u{1F525}", 40)).toBe("");
+  });
+});
+
+describe("finished videos say which version they are", () => {
+  it("flags a render older than the head and names the version", () => {
+    const rows = outputRows({ output_file_ids: ["new", "old"], output_versions: { old: 2, new: 5 }, head_version: 5 });
+    expect(rows.map((r) => [r.label, r.stale])).toEqual([["Made from v5", false], ["Made from v2", true]]);
+    expect(outputRows({ output_file_ids: ["x"], head_version: 5 })[0]).toMatchObject({ label: "Render 1", stale: false, version: null });
+  });
+  it("saves under the video's name", () => {
+    expect(downloadName('Tuft: "Pillow" / v2')).toBe("Tuft Pillow v2.mp4");
+    expect(downloadName("  ")).toBe("video.mp4");
   });
 });

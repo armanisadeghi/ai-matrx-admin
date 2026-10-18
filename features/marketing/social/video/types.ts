@@ -49,6 +49,8 @@ export interface VideoProjectAnswer {
   reference_post_ids: string[];
   brand_ids: string[];
   output_file_ids: string[];
+  /** File id -> the composition version that render was made from (absent for older renders). */
+  output_versions?: Record<string, number>;
   render_run_ids: string[];
 }
 

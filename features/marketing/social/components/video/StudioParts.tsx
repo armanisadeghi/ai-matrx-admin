@@ -313,7 +313,7 @@ export function CompositionPreview({ doc, className }: { doc: Composition; class
 
 // ── outputs ─────────────────────────────────────────────────────────────────────────────────────────
 
-export function OutputDownload({ fileId, label }: { fileId: string; label: string }) {
+export function OutputDownload({ fileId, label, fileName }: { fileId: string; label: string; fileName?: string }) {
   const client = useMediaClient();
   const { facts } = useFileUrls([fileId]);
   const f = facts[fileId];
@@ -324,7 +324,7 @@ export function OutputDownload({ fileId, label }: { fileId: string; label: strin
       // The bytes come through the media door as a blob so the file saves under its name (a cross-origin link
       // would only open in a tab).
       const handle = await client.getBlob({ file_id: fileId, mime_type: "video/mp4" });
-      downloadUrl(handle.url, f?.name ?? `${label}.mp4`);
+      downloadUrl(handle.url, fileName ?? f?.name ?? `${label}.mp4`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't download the video");
     } finally {
