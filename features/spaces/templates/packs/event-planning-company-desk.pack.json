@@ -1,0 +1,3692 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0462",
+  "version": 1,
+  "title": "Event Planning Company Desk",
+  "description": "Clients, events, vendors, bookings and planning tasks for an event planning company.",
+  "forWho": "Event planners and event production companies",
+  "icon": {
+    "emoji": "🎉"
+  },
+  "cover": {
+    "url": "gallery:photo-lavender-dusk",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "events",
+    "vendors",
+    "budget",
+    "planning"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-event-planning-company-desk",
+    "catalogueId": "SP0462",
+    "useCase": "Marguerite Haverford-Oduya leads an event company and uses this to see which events are close, how much budget is committed, which vendors are still unconfirmed and which planning tasks are late.",
+    "industry": "events_weddings",
+    "vertical": "Event planning company",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Evergreen & Ivory Events",
+      "describes": "A five-person event company planning weddings, corporate dinners and fundraisers, from first call through vendor contracts to event day.",
+      "address": {
+        "line1": "305 Harbor Lantern Road",
+        "city": "Savannah",
+        "region": "GA",
+        "postalCode": "31401",
+        "country": "US"
+      },
+      "phone": "(912) 555-0124",
+      "website": "evergreenivory.net",
+      "email": "plan@evergreenivory.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-event-planning-company-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "The people and organizations the company plans events for.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Current",
+              "Past"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Current": "blue",
+              "Past": "amber"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Current": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Client type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Couple",
+              "Company",
+              "Nonprofit",
+              "Family"
+            ],
+            "choiceColors": {
+              "Couple": "slate",
+              "Company": "blue",
+              "Nonprofit": "amber",
+              "Family": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_contact",
+            "label": "First contact",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Client manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "event_count",
+            "label": "Events",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "events",
+            "pick": "event_name",
+            "agg": "count"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_event",
+            "label": "New event",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "event",
+              "template": "New event",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they want"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The occasion in their words, guest count and vibe."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Budget and decisions"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who pays, who decides and how fast."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Must-haves and no-gos"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Cultural, dietary and personal requirements."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Odalys Marchetti and Wren Takahashi",
+              "status": "Current",
+              "kind": "Couple",
+              "email": "odalys.wren@mailpost.net",
+              "phone": "(912) 555-0141",
+              "first_contact": "@today-240d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Coastal Pines Insurance",
+              "status": "Current",
+              "kind": "Company",
+              "email": "events@coastalpinesins.net",
+              "phone": "(912) 555-0142",
+              "first_contact": "@today-120d",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "Savannah Harbor Arts Fund",
+              "status": "Current",
+              "kind": "Nonprofit",
+              "email": "gala@harborartsfund.net",
+              "phone": "(912) 555-0143",
+              "first_contact": "@today-300d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "The Brennan-Osei family",
+              "status": "Current",
+              "kind": "Family",
+              "email": "brennanosei@mailpost.net",
+              "phone": "(912) 555-0144",
+              "first_contact": "@today-60d",
+              "owner": "tm-1"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Pelham Tech Partners",
+              "status": "Past",
+              "kind": "Company",
+              "email": "people@pelhamtech.net",
+              "phone": "(912) 555-0145",
+              "first_contact": "@today-700d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Calista Rowe and Thomas Eberhardt",
+              "status": "Inquiry",
+              "kind": "Couple",
+              "email": "calista.thomas@mailpost.net",
+              "phone": "(912) 555-0146",
+              "first_contact": "@today-4d",
+              "owner": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "event",
+        "name": "Events",
+        "labelSingular": "Event",
+        "labelPlural": "Events",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-heart",
+        "titleField": "event_name",
+        "describes": "Each event from inquiry to wrap-up, with budget and readiness.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Event",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Booked",
+              "Planning",
+              "Event week",
+              "Wrapped"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Booked": "green",
+              "Planning": "blue",
+              "Event week": "amber",
+              "Wrapped": "violet"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Booked": "in_progress",
+              "Planning": "in_progress",
+              "Event week": "in_progress",
+              "Wrapped": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wedding",
+              "Corporate dinner",
+              "Fundraiser",
+              "Birthday",
+              "Conference"
+            ],
+            "choiceColors": {
+              "Wedding": "slate",
+              "Corporate dinner": "blue",
+              "Fundraiser": "amber",
+              "Birthday": "violet",
+              "Conference": "teal"
+            }
+          },
+          {
+            "key": "event_on",
+            "label": "Event date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "budget",
+            "label": "Client budget (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "vendor_cost",
+            "label": "Vendor costs (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "cost",
+            "agg": "sum"
+          },
+          {
+            "key": "budget_left",
+            "label": "Budget left (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Client budget (USD)} - {Vendor costs (USD)}"
+          },
+          {
+            "key": "vendors_total",
+            "label": "Vendors",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count"
+          },
+          {
+            "key": "vendors_ok",
+            "label": "Vendors confirmed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Confirmed",
+                "Settled"
+              ]
+            }
+          },
+          {
+            "key": "tasks_left",
+            "label": "Tasks left",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tasks",
+            "pick": "task_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "To do",
+                "Doing"
+              ]
+            }
+          },
+          {
+            "key": "days_to_go",
+            "label": "Days to go",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Event date}, 'days')"
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "planner",
+            "label": "Lead planner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_wrap_up",
+            "label": "Wrap up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "event_wrap_up"
+            }
+          },
+          {
+            "key": "add_booking",
+            "label": "Book a vendor",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "New vendor booking",
+              "prefill": {
+                "event": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_task",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "event": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "planner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New event",
+            "values": {
+              "event_name": "New event",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Vision"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "The feel of the event and the three things it must get right."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Program"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Timeline, key moments and who runs each."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contacts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Client day-of contact, venue manager and each vendor lead."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "event-1",
+            "values": {
+              "event_name": "Marchetti-Takahashi wedding",
+              "status": "Planning",
+              "kind": "Wedding",
+              "event_on": "@today+75d",
+              "guests": 140,
+              "budget": 62000,
+              "client": "client-1",
+              "planner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-2",
+            "values": {
+              "event_name": "Coastal Pines client dinner",
+              "status": "Event week",
+              "kind": "Corporate dinner",
+              "event_on": "@today+5d",
+              "guests": 60,
+              "budget": 18500,
+              "client": "client-2",
+              "planner": "tm-2"
+            }
+          },
+          {
+            "key": "event-3",
+            "values": {
+              "event_name": "Harbor Arts spring gala",
+              "status": "Planning",
+              "kind": "Fundraiser",
+              "event_on": "@today+40d",
+              "guests": 220,
+              "budget": 85000,
+              "client": "client-3",
+              "planner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-4",
+            "values": {
+              "event_name": "Brennan-Osei 70th birthday",
+              "status": "Booked",
+              "kind": "Birthday",
+              "event_on": "@today+120d",
+              "guests": 55,
+              "budget": 12000,
+              "client": "client-4",
+              "planner": "tm-2"
+            }
+          },
+          {
+            "key": "event-5",
+            "values": {
+              "event_name": "Pelham product summit",
+              "status": "Wrapped",
+              "kind": "Conference",
+              "event_on": "@today-45d",
+              "guests": 180,
+              "budget": 48000,
+              "client": "client-5",
+              "planner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-6",
+            "values": {
+              "event_name": "Rowe-Eberhardt wedding inquiry",
+              "status": "Inquiry",
+              "kind": "Wedding",
+              "event_on": "@today+210d",
+              "guests": 90,
+              "budget": 40000,
+              "client": "client-6",
+              "planner": "tm-1"
+            }
+          },
+          {
+            "key": "event-7",
+            "values": {
+              "event_name": "Coastal Pines holiday reception",
+              "status": "Booked",
+              "kind": "Corporate dinner",
+              "event_on": "@today+150d",
+              "guests": 120,
+              "budget": 32000,
+              "client": "client-2",
+              "planner": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "vendor",
+        "name": "Vendors",
+        "labelSingular": "Vendor",
+        "labelPlural": "Vendors",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "store",
+        "titleField": "vendor_name",
+        "describes": "The venues, caterers and suppliers the company books.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "vendor_name",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Venue",
+              "Catering",
+              "Florals",
+              "Music",
+              "Photography",
+              "Rentals",
+              "Lighting"
+            ],
+            "choiceColors": {
+              "Venue": "slate",
+              "Catering": "blue",
+              "Florals": "amber",
+              "Music": "violet",
+              "Photography": "teal",
+              "Rentals": "orange",
+              "Lighting": "pink"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rating",
+            "label": "Our rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Excellent",
+              "Good",
+              "Mixed"
+            ],
+            "choiceColors": {
+              "Excellent": "slate",
+              "Good": "blue",
+              "Mixed": "amber"
+            }
+          },
+          {
+            "key": "notes",
+            "label": "Good to know",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "booking_count",
+            "label": "Bookings",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New vendor",
+            "values": {
+              "vendor_name": "New vendor"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Deposit, cancellation and overtime terms."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "History"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Events used for and anything that went wrong."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "vendor-1",
+            "values": {
+              "vendor_name": "Magnolia Hall",
+              "category": "Venue",
+              "email": "events@magnoliahall.net",
+              "phone": "(912) 555-0161",
+              "rating": "Excellent",
+              "notes": "Staff set up from noon; loading dock on the east side"
+            }
+          },
+          {
+            "key": "vendor-2",
+            "values": {
+              "vendor_name": "Saltwater Table Catering",
+              "category": "Catering",
+              "email": "book@saltwatertable.net",
+              "phone": "(912) 555-0162",
+              "rating": "Excellent",
+              "notes": "Needs final counts ten days out"
+            }
+          },
+          {
+            "key": "vendor-3",
+            "values": {
+              "vendor_name": "Wild Fern Florals",
+              "category": "Florals",
+              "email": "studio@wildfernflorals.net",
+              "phone": "(912) 555-0163",
+              "rating": "Good",
+              "notes": "Delivers the morning of; tell them the load-in door"
+            }
+          },
+          {
+            "key": "vendor-4",
+            "values": {
+              "vendor_name": "Lowcountry Strings",
+              "category": "Music",
+              "email": "booking@lowcountrystrings.net",
+              "phone": "(912) 555-0164",
+              "rating": "Excellent",
+              "notes": "Quartet or trio, sound check thirty minutes"
+            }
+          },
+          {
+            "key": "vendor-5",
+            "values": {
+              "vendor_name": "Lantern & Frame Photography",
+              "category": "Photography",
+              "email": "hello@lanternframe.net",
+              "phone": "(912) 555-0165",
+              "rating": "Good",
+              "notes": "Second shooter costs extra"
+            }
+          },
+          {
+            "key": "vendor-6",
+            "values": {
+              "vendor_name": "Tidewater Rentals",
+              "category": "Rentals",
+              "email": "orders@tidewaterrentals.net",
+              "phone": "(912) 555-0166",
+              "rating": "Mixed",
+              "notes": "Check linen counts on arrival"
+            }
+          },
+          {
+            "key": "vendor-7",
+            "values": {
+              "vendor_name": "Glowworks Lighting",
+              "category": "Lighting",
+              "email": "crew@glowworks.net",
+              "phone": "(912) 555-0167",
+              "rating": "Good",
+              "notes": "Needs power plan in advance"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Vendor bookings",
+        "labelSingular": "Vendor booking",
+        "labelPlural": "Vendor bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "booking_name",
+        "describes": "A vendor booked for an event, with cost and deposit date.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Contract sent",
+              "Confirmed",
+              "Settled"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Contract sent": "blue",
+              "Confirmed": "green",
+              "Settled": "amber"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Contract sent": "in_progress",
+              "Confirmed": "in_progress",
+              "Settled": "done"
+            }
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "deposit_due",
+            "label": "Deposit due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "event",
+            "label": "Event",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "event",
+            "relationMax": 1
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "vendor",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_lock_in",
+            "label": "Lock in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_lock_in"
+            }
+          }
+        ],
+        "independentOf": {
+          "event": "Either record can be created or change status before the other.",
+          "vendor": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New vendor booking",
+            "values": {
+              "booking_name": "New vendor booking",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Scope"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the vendor will deliver, times and numbers."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Deposit, balance date, overtime and cancellation."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "booking-1",
+            "values": {
+              "booking_name": "Magnolia Hall for the wedding",
+              "status": "Confirmed",
+              "cost": 9500,
+              "deposit_due": "@today-20d",
+              "event": "event-1",
+              "vendor": "vendor-1"
+            }
+          },
+          {
+            "key": "booking-2",
+            "values": {
+              "booking_name": "Saltwater Table for the wedding",
+              "status": "Contract sent",
+              "cost": 21000,
+              "deposit_due": "@today+6d",
+              "event": "event-1",
+              "vendor": "vendor-2"
+            }
+          },
+          {
+            "key": "booking-3",
+            "values": {
+              "booking_name": "Wild Fern for the wedding",
+              "status": "Requested",
+              "cost": 6200,
+              "deposit_due": "@today+14d",
+              "event": "event-1",
+              "vendor": "vendor-3"
+            }
+          },
+          {
+            "key": "booking-4",
+            "values": {
+              "booking_name": "Lowcountry Strings for the wedding",
+              "status": "Confirmed",
+              "cost": 2800,
+              "deposit_due": "@today-10d",
+              "event": "event-1",
+              "vendor": "vendor-4"
+            }
+          },
+          {
+            "key": "booking-5",
+            "values": {
+              "booking_name": "Saltwater Table for the client dinner",
+              "status": "Confirmed",
+              "cost": 9800,
+              "deposit_due": "@today-30d",
+              "event": "event-2",
+              "vendor": "vendor-2"
+            }
+          },
+          {
+            "key": "booking-6",
+            "values": {
+              "booking_name": "Wild Fern for the client dinner",
+              "status": "Confirmed",
+              "cost": 1400,
+              "deposit_due": "@today-25d",
+              "event": "event-2",
+              "vendor": "vendor-3"
+            }
+          },
+          {
+            "key": "booking-7",
+            "values": {
+              "booking_name": "Magnolia Hall for the gala",
+              "status": "Confirmed",
+              "cost": 16000,
+              "deposit_due": "@today-60d",
+              "event": "event-3",
+              "vendor": "vendor-1"
+            }
+          },
+          {
+            "key": "booking-8",
+            "values": {
+              "booking_name": "Glowworks Lighting for the gala",
+              "status": "Contract sent",
+              "cost": 7200,
+              "deposit_due": "@mon+3d",
+              "event": "event-3",
+              "vendor": "vendor-7"
+            }
+          },
+          {
+            "key": "booking-9",
+            "values": {
+              "booking_name": "Tidewater Rentals for the gala",
+              "status": "Requested",
+              "cost": 5400,
+              "deposit_due": "@today+9d",
+              "event": "event-3",
+              "vendor": "vendor-6"
+            }
+          },
+          {
+            "key": "booking-10",
+            "values": {
+              "booking_name": "Lantern & Frame for the gala",
+              "status": "Confirmed",
+              "cost": 3600,
+              "deposit_due": "@today-40d",
+              "event": "event-3",
+              "vendor": "vendor-5"
+            }
+          },
+          {
+            "key": "booking-11",
+            "values": {
+              "booking_name": "Saltwater Table for the summit",
+              "status": "Settled",
+              "cost": 17200,
+              "deposit_due": "@today-80d",
+              "event": "event-5",
+              "vendor": "vendor-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "task",
+        "name": "Tasks",
+        "labelSingular": "Task",
+        "labelPlural": "Tasks",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "task_name",
+        "describes": "Planning steps with owners and due dates for each event.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_name",
+            "label": "Task",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To do",
+              "Doing",
+              "Done"
+            ],
+            "choiceColors": {
+              "To do": "slate",
+              "Doing": "blue",
+              "Done": "green"
+            },
+            "required": true,
+            "default": "To do",
+            "statusGroups": {
+              "To do": "todo",
+              "Doing": "in_progress",
+              "Done": "done"
+            }
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Design",
+              "Vendors",
+              "Guests",
+              "Logistics",
+              "Day of"
+            ],
+            "choiceColors": {
+              "Design": "slate",
+              "Vendors": "blue",
+              "Guests": "amber",
+              "Logistics": "violet",
+              "Day of": "teal"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "event",
+            "label": "Event",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "event",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_tick_done",
+            "label": "Tick done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "task_tick_done"
+            }
+          }
+        ],
+        "independentOf": {
+          "event": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New task",
+            "values": {
+              "task_name": "New task",
+              "status": "To do"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything the next person needs to know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "task-1",
+            "values": {
+              "task_name": "Final headcount to the caterer",
+              "status": "To do",
+              "phase": "Guests",
+              "due_on": "@today+2d",
+              "event": "event-2",
+              "owner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-2",
+            "values": {
+              "task_name": "Print place cards and menus",
+              "status": "Doing",
+              "phase": "Logistics",
+              "due_on": "@today+1d",
+              "event": "event-2",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "task-3",
+            "values": {
+              "task_name": "Confirm run of show with the venue",
+              "status": "To do",
+              "phase": "Day of",
+              "due_on": "@today+3d",
+              "event": "event-2",
+              "owner": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-4",
+            "values": {
+              "task_name": "Send invitations to the guest list",
+              "status": "Doing",
+              "phase": "Guests",
+              "due_on": "@today-1d",
+              "event": "event-1",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "task-5",
+            "values": {
+              "task_name": "Book hair and makeup trial",
+              "status": "To do",
+              "phase": "Vendors",
+              "due_on": "@today+10d",
+              "event": "event-1",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-6",
+            "values": {
+              "task_name": "Order linens and chair covers",
+              "status": "To do",
+              "phase": "Vendors",
+              "due_on": "@mon+4d",
+              "event": "event-3",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-7",
+            "values": {
+              "task_name": "Auction items list and display plan",
+              "status": "Doing",
+              "phase": "Design",
+              "due_on": "@today+12d",
+              "event": "event-3",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-8",
+            "values": {
+              "task_name": "Sound check schedule",
+              "status": "To do",
+              "phase": "Day of",
+              "due_on": "@today+25d",
+              "event": "event-3",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "task-9",
+            "values": {
+              "task_name": "Send thank-you notes to sponsors",
+              "status": "Done",
+              "phase": "Guests",
+              "due_on": "@today-5d",
+              "event": "event-5",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "task-10",
+            "values": {
+              "task_name": "Collect final vendor invoices",
+              "status": "Done",
+              "phase": "Vendors",
+              "due_on": "@today-20d",
+              "event": "event-5",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "task-11",
+            "values": {
+              "task_name": "Build seating chart",
+              "status": "To do",
+              "phase": "Guests",
+              "due_on": "@today+14d",
+              "event": "event-1",
+              "owner": "tm-1",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one client manager.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each event belongs to one client.",
+        "fromTable": "event",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "events"
+      },
+      {
+        "describes": "Each event belongs to one lead planner.",
+        "fromTable": "event",
+        "fromField": "planner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "event_by_planner"
+      },
+      {
+        "describes": "Each vendor booking belongs to one event.",
+        "fromTable": "booking",
+        "fromField": "event",
+        "toTable": "event",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each vendor booking belongs to one vendor.",
+        "fromTable": "booking",
+        "fromField": "vendor",
+        "toTable": "vendor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "Each task belongs to one event.",
+        "fromTable": "task",
+        "fromField": "event",
+        "toTable": "event",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each task belongs to one owner.",
+        "fromTable": "task",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "task_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Marguerite Haverford-Oduya",
+              "role": "Lead planner",
+              "work_email": "marguerite@evergreenivory.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Dashiell Orozco",
+              "role": "Event producer",
+              "work_email": "dashiell@evergreenivory.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Anneliese Kwon",
+              "role": "Vendor coordinator",
+              "work_email": "anneliese@evergreenivory.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Thaddeus Boyle",
+              "role": "Logistics",
+              "work_email": "thaddeus@evergreenivory.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Priya Lindqvist",
+              "role": "Client manager",
+              "work_email": "priya@evergreenivory.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "event_intake",
+        "name": "Plan an event",
+        "describes": "Capture a new inquiry before it is booked.",
+        "audience": "staff",
+        "table": "event",
+        "fields": [
+          {
+            "fieldKey": "event_name",
+            "ask": "What is the event?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What kind of event?"
+          },
+          {
+            "fieldKey": "event_on",
+            "ask": "When is it?"
+          },
+          {
+            "fieldKey": "guests",
+            "ask": "How many guests?"
+          }
+        ],
+        "submitLabel": "Send the inquiry",
+        "confirmation": "Thanks. It is on the board as an Inquiry."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "event_wrap_up",
+        "table": "event",
+        "name": "Wrap up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Wrapped"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_lock_in",
+        "table": "booking",
+        "name": "Lock in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "task_tick_done",
+        "table": "task",
+        "name": "Tick done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_event",
+        "name": "All events",
+        "table": "event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "event_board",
+        "name": "Events board",
+        "table": "event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "event_cal",
+        "name": "Events calendar",
+        "table": "event",
+        "kind": "calendar",
+        "dateField": "event_on",
+        "allDay": true
+      },
+      {
+        "token": "event_over",
+        "name": "Overdue",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Booked",
+            "Planning",
+            "Event week"
+          ]
+        }
+      },
+      {
+        "token": "event_week",
+        "name": "Due this week",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Booked",
+            "Planning",
+            "Event week"
+          ]
+        }
+      },
+      {
+        "token": "event_next7",
+        "name": "Next 7 days",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Booked",
+            "Planning",
+            "Event week"
+          ]
+        }
+      },
+      {
+        "token": "event_mine",
+        "name": "My events",
+        "table": "event",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_vendor",
+        "name": "All vendors",
+        "table": "vendor",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "vendor_board",
+        "name": "Vendors board",
+        "table": "vendor",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_booking",
+        "name": "All vendor bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Vendor bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Vendor bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "deposit_due",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "deposit_due": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Contract sent"
+          ]
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "deposit_due": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Contract sent"
+          ]
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "deposit_due": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Contract sent"
+          ]
+        }
+      },
+      {
+        "token": "all_task",
+        "name": "All tasks",
+        "table": "task",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "task_board",
+        "name": "Tasks board",
+        "table": "task",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "task_cal",
+        "name": "Tasks calendar",
+        "table": "task",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "task_over",
+        "name": "Overdue",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_week",
+        "name": "Due this week",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_next7",
+        "name": "Next 7 days",
+        "table": "task",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To do",
+            "Doing"
+          ]
+        }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Event Planning Company Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "event",
+          "describes": "Each event from inquiry to wrap-up, with budget and readiness."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many events are in planning?",
+        "whyItMatters": "The lead planner balances the team across events in planning.",
+        "expect": {
+          "table": "event",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Planning"
+          },
+          "answer": 2,
+          "unit": "events"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open events.",
+        "action": {
+          "kind": "open",
+          "surface": "event_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "event_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open vendors.",
+        "action": {
+          "kind": "open",
+          "surface": "vendor_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "vendor_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "evergreenivory.net"
+      ],
+      "fictionalStreets": [
+        "Harbor Lantern Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "event-planning-company-desk",
+      "parent": null,
+      "title": "Event Planning Company Desk",
+      "icon": {
+        "emoji": "🎉"
+      },
+      "cover": {
+        "url": "gallery:photo-lavender-dusk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan every event from one page: clients, events with budget left and days to go, the vendor directory, each vendor booking and the task list. Start on the Dashboard, then work Mine and the vendor bookings still waiting on contracts. Check Budget left before agreeing any extra."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:planning-timeline"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:vendor-booking-checklist"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:run-of-show"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:post-event-wrap-up"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The people and organizations the company plans events for."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each event from inquiry to wrap-up, with budget and readiness."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "event_board"
+            },
+            "inline": true,
+            "title": "Events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "eve-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "eve-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "event_on"
+              },
+              {
+                "id": "eve-t",
+                "name": "All events",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "eve-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "event_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Booked",
+                    "Planning",
+                    "Event week"
+                  ]
+                }
+              },
+              {
+                "id": "eve-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "event_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Booked",
+                    "Planning",
+                    "Event week"
+                  ]
+                }
+              },
+              {
+                "id": "eve-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Booked",
+                    "Planning",
+                    "Event week"
+                  ]
+                }
+              },
+              {
+                "id": "eve-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "eve-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vendors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The venues, caterers and suppliers the company books."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "vendor",
+              "view": "vendor_board"
+            },
+            "inline": true,
+            "title": "Vendors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ven-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "ven-t",
+                "name": "All vendors",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "ven-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vendor bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A vendor booked for an event, with cost and deposit date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Vendor bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "deposit_due"
+              },
+              {
+                "id": "boo-t",
+                "name": "All vendor bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "deposit_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Contract sent"
+                  ]
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "deposit_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Contract sent"
+                  ]
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "deposit_due": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Contract sent"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Planning steps with owners and due dates for each event."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "task_board"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tas-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tas-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "tas-t",
+                "name": "All tasks",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tas-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              },
+              {
+                "id": "tas-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "tas-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "event-planning-company-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Events, money and vendors at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Events by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Events by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "booking",
+                      "view": "all_booking"
+                    },
+                    "inline": true,
+                    "title": "Vendor cost by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Vendor cost by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "cost"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "task",
+                      "view": "all_task"
+                    },
+                    "inline": true,
+                    "title": "Tasks by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Tasks by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "vendor",
+                      "view": "all_vendor"
+                    },
+                    "inline": true,
+                    "title": "Vendors by category",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Vendors by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events in the next 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Events in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Events in the next 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Planning",
+                    "Event week"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposits due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Deposits due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Deposits due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "deposit_due": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Contract sent"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasks overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task",
+              "view": "all_task"
+            },
+            "inline": true,
+            "title": "Tasks overdue",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Tasks overdue",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To do",
+                    "Doing"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Budget left (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client budget minus the cost of vendor bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under ten percent of budget with vendors unbooked means a budget conversation now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vendors confirmed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vendors Confirmed or Settled over all vendors on the event"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Everything essential should be confirmed 8 weeks out"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to go"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Event date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 14 with open tasks means a daily stand-up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tasks left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tasks still To do or Doing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clear before the final walk-through"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "planning-timeline",
+      "parent": "event-planning-company-desk",
+      "title": "Planning timeline",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Work backwards from the event date. Most stress comes from decisions made too late."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "9 to 12 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Big decisions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Venue, date, budget, guest list outline"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "6 to 9 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Core vendors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Caterer, photographer, music, rentals"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3 to 6 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Details"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invitations, florals, lighting, transport"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1 to 3 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Logistics"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Seating, run of show, final menus, rehearsal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Final month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Headcounts, load-in times, payments, contacts"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to use it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When an event is booked, add tasks for each phase with due dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review the list weekly with the client manager."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the event stage as phases finish."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "vendor-booking-checklist",
+      "parent": "event-planning-company-desk",
+      "title": "Booking a vendor",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm date, guest count, budget and what the client cares about."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the vendor's rating and notes in the directory."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Request availability and a written quote for the exact scope."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Compare at least two options for the large lines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the contract for the client's approval; log it as Contract sent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the deposit due date and the balance date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When signed, press Lock in and add the load-in time to the event page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the event"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pay the balance on time, update the rating, and add notes for next time."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "run-of-show",
+      "parent": "event-planning-company-desk",
+      "title": "Building the run of show",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A run of show is a minute-by-minute promise. Everyone should be able to read their line and know what to do."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contents"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Time, what happens, who leads, and what is needed (audio, lighting, props)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Load-in and load-out times for every vendor."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contacts for the venue, caterer and anyone with a key."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start from the client's must-have moments and place them first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Work out meal service and speeches around the venue's timing rules."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Share a draft with vendors two weeks out and collect corrections."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Print copies for the planner, venue and each vendor lead."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walk the room one hour before doors with the venue manager, then do a final check on audio, lighting and the first moment of the program."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "post-event-wrap-up",
+      "parent": "event-planning-company-desk",
+      "title": "Post-event wrap-up",
+      "icon": {
+        "emoji": "🎁"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within three days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank-you notes sent to the client and key vendors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final headcount and vendor invoices collected"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rented items counted and returned"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos and links saved on the event page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within two weeks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hold a short debrief with the team: what worked, what did not, what to change."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update vendor ratings and notes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask the client for a review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press Wrap up on the event and move open tasks to Done or delete them."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

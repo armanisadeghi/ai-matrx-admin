@@ -1,0 +1,3413 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0467",
+  "version": 1,
+  "title": "Coffee Shop Operations",
+  "description": "Menu margins, supplies and par levels, waste log, equipment service and orders for a cafe.",
+  "forWho": "Independent coffee shops and cafes",
+  "icon": {
+    "emoji": "☕"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "coffee shop",
+    "cafe",
+    "waste",
+    "inventory"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-coffee-shop-operations",
+    "catalogueId": "SP0467",
+    "useCase": "Marisol Brennan-Okoye owns a coffee shop and uses this to see menu margins, what is below par, what is being wasted, which machines are due for service and what is on order.",
+    "industry": "hospitality_food",
+    "vertical": "Coffee shop",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Fernwood Coffee Roasters",
+      "describes": "A single-location specialty coffee shop and bakery counter with a small retail bean wall and a team of eight.",
+      "address": {
+        "line1": "21 Almond Street",
+        "city": "Eugene",
+        "region": "OR",
+        "postalCode": "97401",
+        "country": "US"
+      },
+      "phone": "(541) 555-0112",
+      "website": "fernwoodcoffee.net",
+      "email": "hello@fernwoodcoffee.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-coffee-shop-operations",
+    "tables": [
+      {
+        "token": "product",
+        "name": "Menu",
+        "labelSingular": "Menu item",
+        "labelPlural": "Menu",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "coffee",
+        "titleField": "item_name",
+        "describes": "What the shop sells, with price, cost and margin.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Drink or food",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Seasonal",
+              "Core",
+              "Retired"
+            ],
+            "choiceColors": {
+              "Seasonal": "slate",
+              "Core": "blue",
+              "Retired": "amber"
+            },
+            "required": true,
+            "default": "Seasonal",
+            "statusGroups": {
+              "Seasonal": "in_progress",
+              "Core": "todo",
+              "Retired": "done"
+            }
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Espresso",
+              "Brewed",
+              "Tea",
+              "Pastry",
+              "Food",
+              "Retail beans"
+            ],
+            "choiceColors": {
+              "Espresso": "slate",
+              "Brewed": "blue",
+              "Tea": "amber",
+              "Pastry": "violet",
+              "Food": "teal",
+              "Retail beans": "orange"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Cost to make (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "margin_usd",
+            "label": "Margin per sale (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Price (USD)} - {Cost to make (USD)}"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost to make (USD)}) / {Price (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "sold_week",
+            "label": "Sold last week",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "waste_month",
+            "label": "Value wasted this month (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "waste",
+            "pick": "value",
+            "agg": "sum",
+            "filter": {
+              "logged_on": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New menu item",
+            "values": {
+              "item_name": "New menu item",
+              "status": "Seasonal"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recipe"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Dose, yield, milk and syrup quantities."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Costing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "How the cost was worked out and the date."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "product-1",
+            "values": {
+              "item_name": "Flat white",
+              "status": "Core",
+              "category": "Espresso",
+              "price": 4.75,
+              "cost": 1.05,
+              "sold_week": 410
+            }
+          },
+          {
+            "key": "product-2",
+            "values": {
+              "item_name": "Oat milk latte",
+              "status": "Core",
+              "category": "Espresso",
+              "price": 5.5,
+              "cost": 1.4,
+              "sold_week": 365
+            }
+          },
+          {
+            "key": "product-3",
+            "values": {
+              "item_name": "Americano",
+              "status": "Core",
+              "category": "Espresso",
+              "price": 3.5,
+              "cost": 0.4,
+              "sold_week": 150
+            }
+          },
+          {
+            "key": "product-4",
+            "values": {
+              "item_name": "Pour-over, single origin",
+              "status": "Core",
+              "category": "Brewed",
+              "price": 5,
+              "cost": 1.2,
+              "sold_week": 120
+            }
+          },
+          {
+            "key": "product-5",
+            "values": {
+              "item_name": "Cold brew",
+              "status": "Core",
+              "category": "Brewed",
+              "price": 4.75,
+              "cost": 0.9,
+              "sold_week": 205
+            }
+          },
+          {
+            "key": "product-6",
+            "values": {
+              "item_name": "Iced chai",
+              "status": "Seasonal",
+              "category": "Tea",
+              "price": 5.25,
+              "cost": 1.1,
+              "sold_week": 95
+            }
+          },
+          {
+            "key": "product-7",
+            "values": {
+              "item_name": "Earl grey",
+              "status": "Core",
+              "category": "Tea",
+              "price": 3.75,
+              "cost": 0.35,
+              "sold_week": 40
+            }
+          },
+          {
+            "key": "product-8",
+            "values": {
+              "item_name": "Brown butter croissant",
+              "status": "Core",
+              "category": "Pastry",
+              "price": 4.25,
+              "cost": 1.3,
+              "sold_week": 260
+            }
+          },
+          {
+            "key": "product-9",
+            "values": {
+              "item_name": "Seeded banana bread",
+              "status": "Core",
+              "category": "Pastry",
+              "price": 3.75,
+              "cost": 0.95,
+              "sold_week": 115
+            }
+          },
+          {
+            "key": "product-10",
+            "values": {
+              "item_name": "Egg and cheddar sandwich",
+              "status": "Core",
+              "category": "Food",
+              "price": 8.5,
+              "cost": 2.8,
+              "sold_week": 98
+            }
+          },
+          {
+            "key": "product-11",
+            "values": {
+              "item_name": "Fernwood house blend, 12 oz",
+              "status": "Core",
+              "category": "Retail beans",
+              "price": 16,
+              "cost": 7.2,
+              "sold_week": 64
+            }
+          },
+          {
+            "key": "product-12",
+            "values": {
+              "item_name": "Pumpkin spice cortado",
+              "status": "Seasonal",
+              "category": "Espresso",
+              "price": 5.75,
+              "cost": 1.5,
+              "sold_week": 0
+            }
+          },
+          {
+            "key": "product-13",
+            "values": {
+              "item_name": "Almond croissant",
+              "status": "Retired",
+              "category": "Pastry",
+              "price": 4.75,
+              "cost": 1.7
+            }
+          }
+        ]
+      },
+      {
+        "token": "supply",
+        "name": "Supplies",
+        "labelSingular": "Supply",
+        "labelPlural": "Supplies",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "supply_name",
+        "describes": "Everything stocked, counted against par.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "supply_name",
+            "label": "Supply",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Coffee",
+              "Milk and dairy",
+              "Syrups",
+              "Bakery",
+              "Cups and lids",
+              "Cleaning"
+            ],
+            "choiceColors": {
+              "Coffee": "slate",
+              "Milk and dairy": "blue",
+              "Syrups": "amber",
+              "Bakery": "violet",
+              "Cups and lids": "teal",
+              "Cleaning": "orange"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Counted in",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "par",
+            "label": "Par level",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "to_order",
+            "label": "Quantity to order",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Par level} > {On hand}, {Par level} - {On hand}, 0)"
+          },
+          {
+            "key": "stock_flag",
+            "label": "Order?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} < {Par level}, \"Order\", \"OK\")"
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ordered_on",
+            "label": "Last ordered",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "counter",
+            "label": "Counted by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "counter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "ordered_on",
+            "counted_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New supply",
+            "values": {
+              "supply_name": "New supply"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Storage"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where it lives and shelf life."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Ordering"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Minimums, lead time and substitutes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "supply-1",
+            "values": {
+              "supply_name": "House blend beans",
+              "category": "Coffee",
+              "unit": "lb",
+              "on_hand": 38,
+              "par": 60,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-6d",
+              "vendor": "Fernwood roastery",
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "supply-2",
+            "values": {
+              "supply_name": "Single origin, Guatemala",
+              "category": "Coffee",
+              "unit": "lb",
+              "on_hand": 14,
+              "par": 20,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-9d",
+              "vendor": "Fernwood roastery",
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "supply-3",
+            "values": {
+              "supply_name": "Whole milk",
+              "category": "Milk and dairy",
+              "unit": "gallon",
+              "on_hand": 12,
+              "par": 18,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-2d",
+              "vendor": "Cascadia Dairy",
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "supply-4",
+            "values": {
+              "supply_name": "Oat milk",
+              "category": "Milk and dairy",
+              "unit": "case",
+              "on_hand": 3,
+              "par": 5,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-4d",
+              "vendor": "Cascadia Dairy",
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "supply-5",
+            "values": {
+              "supply_name": "Vanilla syrup",
+              "category": "Syrups",
+              "unit": "bottle",
+              "on_hand": 4,
+              "par": 4,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-20d",
+              "vendor": "Lantern Beverage",
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "supply-6",
+            "values": {
+              "supply_name": "Chai concentrate",
+              "category": "Syrups",
+              "unit": "carton",
+              "on_hand": 2,
+              "par": 6,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-11d",
+              "vendor": "Lantern Beverage",
+              "counter": "tm-4"
+            }
+          },
+          {
+            "key": "supply-7",
+            "values": {
+              "supply_name": "Croissant dough",
+              "category": "Bakery",
+              "unit": "tray",
+              "on_hand": 3,
+              "par": 6,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-1d",
+              "vendor": "Fernwood bakery",
+              "counter": "tm-5"
+            }
+          },
+          {
+            "key": "supply-8",
+            "values": {
+              "supply_name": "Banana bread loaves",
+              "category": "Bakery",
+              "unit": "loaf",
+              "on_hand": 5,
+              "par": 6,
+              "counted_on": "@today-1d",
+              "ordered_on": "@today-1d",
+              "vendor": "Fernwood bakery",
+              "counter": "tm-5"
+            }
+          },
+          {
+            "key": "supply-9",
+            "values": {
+              "supply_name": "12 oz hot cups",
+              "category": "Cups and lids",
+              "unit": "sleeve",
+              "on_hand": 22,
+              "par": 25,
+              "counted_on": "@today-3d",
+              "ordered_on": "@today-12d",
+              "vendor": "Greenware Packaging",
+              "counter": "tm-2"
+            }
+          },
+          {
+            "key": "supply-10",
+            "values": {
+              "supply_name": "Compostable lids",
+              "category": "Cups and lids",
+              "unit": "sleeve",
+              "on_hand": 9,
+              "par": 20,
+              "counted_on": "@today-3d",
+              "ordered_on": "@today-12d",
+              "vendor": "Greenware Packaging",
+              "counter": "tm-2"
+            }
+          },
+          {
+            "key": "supply-11",
+            "values": {
+              "supply_name": "Espresso machine cleaner",
+              "category": "Cleaning",
+              "unit": "box",
+              "on_hand": 2,
+              "par": 2,
+              "counted_on": "@today-8d",
+              "ordered_on": "@today-30d",
+              "vendor": "Tidy Supply Co.",
+              "counter": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "waste",
+        "name": "Waste log",
+        "labelSingular": "Waste entry",
+        "labelPlural": "Waste log",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "trash-2",
+        "titleField": "waste_name",
+        "describes": "Everything thrown away, with the reason and the value lost.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "waste_name",
+            "label": "What was wasted",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "logged_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "qty",
+            "label": "Quantity",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Expired",
+              "Spill",
+              "Mistake",
+              "Quality",
+              "Staff meal"
+            ],
+            "choiceColors": {
+              "Expired": "red",
+              "Spill": "slate",
+              "Mistake": "blue",
+              "Quality": "amber",
+              "Staff meal": "violet"
+            }
+          },
+          {
+            "key": "value",
+            "label": "Value lost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "item",
+            "label": "Menu item",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "product",
+            "relationMax": 1
+          },
+          {
+            "key": "by",
+            "label": "Logged by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "item": "Either record can be created or change status before the other.",
+          "by": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New waste entry",
+            "values": {
+              "waste_name": "New waste entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why it happened"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to change so it does not happen again."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "waste-1",
+            "values": {
+              "waste_name": "Unsold croissants",
+              "logged_on": "@today-1d",
+              "qty": 6,
+              "reason": "Expired",
+              "value": 7.8,
+              "item": "product-8",
+              "by": "tm-5"
+            }
+          },
+          {
+            "key": "waste-2",
+            "values": {
+              "waste_name": "Banana bread slices",
+              "logged_on": "@today-2d",
+              "qty": 4,
+              "reason": "Expired",
+              "value": 3.8,
+              "item": "product-9",
+              "by": "tm-5"
+            }
+          },
+          {
+            "key": "waste-3",
+            "values": {
+              "waste_name": "Milk shot dropped",
+              "logged_on": "@today-2d",
+              "qty": 1,
+              "reason": "Spill",
+              "value": 1.1,
+              "item": "product-1",
+              "by": "tm-4"
+            }
+          },
+          {
+            "key": "waste-4",
+            "values": {
+              "waste_name": "Wrong drink made, iced chai",
+              "logged_on": "@today-3d",
+              "qty": 2,
+              "reason": "Mistake",
+              "value": 2.2,
+              "item": "product-6",
+              "by": "tm-2"
+            }
+          },
+          {
+            "key": "waste-5",
+            "values": {
+              "waste_name": "Cold brew batch off taste",
+              "logged_on": "@today-4d",
+              "qty": 3,
+              "reason": "Quality",
+              "value": 18,
+              "item": "product-5",
+              "by": "tm-3"
+            }
+          },
+          {
+            "key": "waste-6",
+            "values": {
+              "waste_name": "Egg sandwiches unsold",
+              "logged_on": "@today-5d",
+              "qty": 5,
+              "reason": "Expired",
+              "value": 14,
+              "item": "product-10",
+              "by": "tm-5"
+            }
+          },
+          {
+            "key": "waste-7",
+            "values": {
+              "waste_name": "Oat latte remakes",
+              "logged_on": "@today-6d",
+              "qty": 3,
+              "reason": "Mistake",
+              "value": 4.2,
+              "item": "product-2",
+              "by": "tm-4"
+            }
+          },
+          {
+            "key": "waste-8",
+            "values": {
+              "waste_name": "Croissants unsold",
+              "logged_on": "@today-7d",
+              "qty": 9,
+              "reason": "Expired",
+              "value": 11.7,
+              "item": "product-8",
+              "by": "tm-5"
+            }
+          },
+          {
+            "key": "waste-9",
+            "values": {
+              "waste_name": "Pour-over spilled during training",
+              "logged_on": "@today-9d",
+              "qty": 2,
+              "reason": "Spill",
+              "value": 2.4,
+              "item": "product-4",
+              "by": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "equipment",
+        "name": "Equipment",
+        "labelSingular": "Machine",
+        "labelPlural": "Equipment",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "settings",
+        "titleField": "machine_name",
+        "describes": "The machines that make the coffee, with service dates.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "machine_name",
+            "label": "Machine",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Condition",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Working",
+              "Needs service",
+              "Out of order"
+            ],
+            "choiceColors": {
+              "Working": "slate",
+              "Needs service": "blue",
+              "Out of order": "amber"
+            },
+            "required": true,
+            "default": "Working",
+            "statusGroups": {
+              "Working": "todo",
+              "Needs service": "in_progress",
+              "Out of order": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Espresso machine",
+              "Grinder",
+              "Brewer",
+              "Refrigeration",
+              "Oven"
+            ],
+            "choiceColors": {
+              "Espresso machine": "slate",
+              "Grinder": "blue",
+              "Brewer": "amber",
+              "Refrigeration": "violet",
+              "Oven": "teal"
+            }
+          },
+          {
+            "key": "last_service",
+            "label": "Last serviced",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_service",
+            "label": "Next service due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "technician",
+            "label": "Technician",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "days_to_service",
+            "label": "Days to service",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Next service due}, 'days')"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_service_done",
+            "label": "Service done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "equipment_service_done"
+            }
+          }
+        ],
+        "statusImplies": [],
+        "before": [
+          [
+            "last_service",
+            "next_service"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New machine",
+            "values": {
+              "machine_name": "New machine",
+              "status": "Working"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Service history"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Visits, parts and costs."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Settings"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Grind, pressure and other settings that matter."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "equipment-1",
+            "values": {
+              "machine_name": "Two-group espresso machine",
+              "status": "Working",
+              "kind": "Espresso machine",
+              "last_service": "@today-70d",
+              "next_service": "@today+20d",
+              "technician": "Bellwether Coffee Service"
+            }
+          },
+          {
+            "key": "equipment-2",
+            "values": {
+              "machine_name": "Main grinder",
+              "status": "Needs service",
+              "kind": "Grinder",
+              "last_service": "@today-160d",
+              "next_service": "@today-10d",
+              "technician": "Bellwether Coffee Service"
+            }
+          },
+          {
+            "key": "equipment-3",
+            "values": {
+              "machine_name": "Decaf grinder",
+              "status": "Working",
+              "kind": "Grinder",
+              "last_service": "@today-90d",
+              "next_service": "@today+90d",
+              "technician": "Bellwether Coffee Service"
+            }
+          },
+          {
+            "key": "equipment-4",
+            "values": {
+              "machine_name": "Batch brewer",
+              "status": "Working",
+              "kind": "Brewer",
+              "last_service": "@today-45d",
+              "next_service": "@today+135d",
+              "technician": "In-house"
+            }
+          },
+          {
+            "key": "equipment-5",
+            "values": {
+              "machine_name": "Undercounter fridge",
+              "status": "Working",
+              "kind": "Refrigeration",
+              "last_service": "@today-200d",
+              "next_service": "@today+165d",
+              "technician": "Coldline Repair"
+            }
+          },
+          {
+            "key": "equipment-6",
+            "values": {
+              "machine_name": "Pastry oven",
+              "status": "Out of order",
+              "kind": "Oven",
+              "last_service": "@today-380d",
+              "next_service": "@today-15d",
+              "technician": "Coldline Repair"
+            }
+          },
+          {
+            "key": "equipment-7",
+            "values": {
+              "machine_name": "Walk-in cooler",
+              "status": "Working",
+              "kind": "Refrigeration",
+              "last_service": "@today-120d",
+              "next_service": "@today+60d",
+              "technician": "Coldline Repair"
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Orders",
+        "labelSingular": "Order",
+        "labelPlural": "Orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-cart",
+        "titleField": "order_name",
+        "describes": "Orders sent to vendors and when they arrive.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Placed",
+              "Arrived"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Placed": "green",
+              "Arrived": "blue"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Placed": "in_progress",
+              "Arrived": "done"
+            }
+          },
+          {
+            "key": "placed_on",
+            "label": "Placed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "arrives_on",
+            "label": "Arrives",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "total",
+            "label": "Order total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "by",
+            "label": "Placed by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_log_delivery",
+            "label": "Log delivery",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_log_delivery"
+            }
+          }
+        ],
+        "independentOf": {
+          "by": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Placed",
+              "Arrived"
+            ],
+            "filled": [
+              "placed_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "placed_on",
+            "arrives_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New order",
+            "values": {
+              "order_name": "New order",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Lines"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to order and the quantities."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "order-1",
+            "values": {
+              "order_name": "Weekly milk and dairy",
+              "status": "Placed",
+              "placed_on": "@today-1d",
+              "arrives_on": "@today+1d",
+              "total": 286,
+              "vendor": "Cascadia Dairy",
+              "by": "tm-4"
+            }
+          },
+          {
+            "key": "order-2",
+            "values": {
+              "order_name": "Cups and lids restock",
+              "status": "Draft",
+              "arrives_on": "@today+6d",
+              "total": 410,
+              "vendor": "Greenware Packaging",
+              "by": "tm-2"
+            }
+          },
+          {
+            "key": "order-3",
+            "values": {
+              "order_name": "Roastery beans, wall and bar",
+              "status": "Placed",
+              "placed_on": "@today-2d",
+              "arrives_on": "@today+2d",
+              "total": 640,
+              "vendor": "Fernwood roastery",
+              "by": "tm-2"
+            }
+          },
+          {
+            "key": "order-4",
+            "values": {
+              "order_name": "Syrups and chai",
+              "status": "Draft",
+              "arrives_on": "@mon+3d",
+              "total": 198,
+              "vendor": "Lantern Beverage",
+              "by": "tm-4"
+            }
+          },
+          {
+            "key": "order-5",
+            "values": {
+              "order_name": "Cleaning supplies",
+              "status": "Arrived",
+              "placed_on": "@today-8d",
+              "arrives_on": "@today-5d",
+              "total": 74,
+              "vendor": "Tidy Supply Co.",
+              "by": "tm-2"
+            }
+          },
+          {
+            "key": "order-6",
+            "values": {
+              "order_name": "Weekly milk and dairy, last week",
+              "status": "Arrived",
+              "placed_on": "@today-8d",
+              "arrives_on": "@today-6d",
+              "total": 301,
+              "vendor": "Cascadia Dairy",
+              "by": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each supply belongs to one counted by.",
+        "fromTable": "supply",
+        "fromField": "counter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "supply_by_counter"
+      },
+      {
+        "describes": "Each waste entry belongs to one menu item.",
+        "fromTable": "waste",
+        "fromField": "item",
+        "toTable": "product",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "waste"
+      },
+      {
+        "describes": "Each waste entry belongs to one logged by.",
+        "fromTable": "waste",
+        "fromField": "by",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "waste_by"
+      },
+      {
+        "describes": "Each order belongs to one placed by.",
+        "fromTable": "order",
+        "fromField": "by",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "order_by"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Marisol Brennan-Okoye",
+              "role": "Owner",
+              "work_email": "marisol@fernwoodcoffee.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Dexter Halvorsen",
+              "role": "Shift lead",
+              "work_email": "dexter@fernwoodcoffee.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Anaya Petrovic",
+              "role": "Barista trainer",
+              "work_email": "anaya@fernwoodcoffee.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Cyrus Delacroix",
+              "role": "Opening barista",
+              "work_email": "cyrus@fernwoodcoffee.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Wilhelmina Tan",
+              "role": "Baker",
+              "work_email": "wilhelmina@fernwoodcoffee.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "waste_intake",
+        "name": "Log waste",
+        "describes": "Record something thrown away so the cost is visible.",
+        "audience": "staff",
+        "table": "waste",
+        "fields": [
+          {
+            "fieldKey": "waste_name",
+            "ask": "What was wasted?",
+            "required": true
+          },
+          {
+            "fieldKey": "qty",
+            "ask": "How many?"
+          },
+          {
+            "fieldKey": "reason",
+            "ask": "Why was it thrown away?"
+          },
+          {
+            "fieldKey": "value",
+            "ask": "Roughly what is it worth?"
+          }
+        ],
+        "submitLabel": "Log it",
+        "confirmation": "Thanks. The waste entry is saved."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "equipment_service_done",
+        "table": "equipment",
+        "name": "Service done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Working"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "order_log_delivery",
+        "table": "order",
+        "name": "Log delivery",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Arrived"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_product",
+        "name": "All menu",
+        "table": "product",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "product_board",
+        "name": "Menu board",
+        "table": "product",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_supply",
+        "name": "All supplies",
+        "table": "supply",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "supply_board",
+        "name": "Supplies board",
+        "table": "supply",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_waste",
+        "name": "All waste log",
+        "table": "waste",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "waste_cal",
+        "name": "Waste log calendar",
+        "table": "waste",
+        "kind": "calendar",
+        "dateField": "logged_on",
+        "allDay": true
+      },
+      {
+        "token": "waste_wk",
+        "name": "Wasted this week",
+        "table": "waste",
+        "kind": "grid",
+        "within": {
+          "logged_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "waste_mo",
+        "name": "Wasted this month",
+        "table": "waste",
+        "kind": "grid",
+        "within": {
+          "logged_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "all_equipment",
+        "name": "All equipment",
+        "table": "equipment",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "equipment_board",
+        "name": "Equipment board",
+        "table": "equipment",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "equipment_cal",
+        "name": "Equipment calendar",
+        "table": "equipment",
+        "kind": "calendar",
+        "dateField": "next_service",
+        "allDay": true
+      },
+      {
+        "token": "equipment_over",
+        "name": "Overdue",
+        "table": "equipment",
+        "kind": "grid",
+        "within": {
+          "next_service": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Working",
+            "Needs service"
+          ]
+        }
+      },
+      {
+        "token": "equipment_week",
+        "name": "Due this week",
+        "table": "equipment",
+        "kind": "grid",
+        "within": {
+          "next_service": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Working",
+            "Needs service"
+          ]
+        }
+      },
+      {
+        "token": "equipment_next7",
+        "name": "Next 7 days",
+        "table": "equipment",
+        "kind": "grid",
+        "within": {
+          "next_service": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Working",
+            "Needs service"
+          ]
+        }
+      },
+      {
+        "token": "all_order",
+        "name": "All orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "arrives_on",
+        "allDay": true
+      },
+      {
+        "token": "order_over",
+        "name": "Overdue",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "arrives_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Placed"
+          ]
+        }
+      },
+      {
+        "token": "order_week",
+        "name": "Due this week",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "arrives_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Placed"
+          ]
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "arrives_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Placed"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Coffee Shop Operations assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "product",
+          "describes": "What the shop sells, with price, cost and margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "supply",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many menu items are seasonal?",
+        "whyItMatters": "The owner reviews seasonal items at the end of each season.",
+        "expect": {
+          "table": "product",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Seasonal"
+          },
+          "answer": 2,
+          "unit": "menu"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open menu.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open supplies.",
+        "action": {
+          "kind": "open",
+          "surface": "supply_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "supply_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open waste log.",
+        "action": {
+          "kind": "open",
+          "surface": "all_waste"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "all_waste",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "fernwoodcoffee.net"
+      ],
+      "fictionalStreets": [
+        "Almond Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "coffee-shop-operations",
+      "parent": null,
+      "title": "Coffee Shop Operations",
+      "icon": {
+        "emoji": "☕"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The daily running of the shop in one page: the menu with margins, supplies against par, the waste log, machines and their service dates, and orders on the way. Start with the Dashboard, order whatever the Order? column flags and log waste before you close."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:opening-closing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dialing-in-and-training"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:waste-and-ordering"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:machine-care"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Menu"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What the shop sells, with price, cost and margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Menu",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pro-t",
+                "name": "All menu",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything stocked, counted against par."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supply",
+              "view": "supply_board"
+            },
+            "inline": true,
+            "title": "Supplies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "sup-t",
+                "name": "All supplies",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "sup-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waste log"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything thrown away, with the reason and the value lost."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "waste",
+              "view": "all_waste"
+            },
+            "inline": true,
+            "title": "Waste log",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "was-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "logged_on"
+              },
+              {
+                "id": "was-t",
+                "name": "All waste log",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "was-wk",
+                "name": "Wasted this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "logged_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "was-mo",
+                "name": "Wasted this month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "logged_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "was-c"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Equipment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The machines that make the coffee, with service dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "equipment",
+              "view": "equipment_board"
+            },
+            "inline": true,
+            "title": "Equipment",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "equ-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "equ-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_service"
+              },
+              {
+                "id": "equ-t",
+                "name": "All equipment",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "equ-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_service": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Working",
+                    "Needs service"
+                  ]
+                }
+              },
+              {
+                "id": "equ-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_service": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Working",
+                    "Needs service"
+                  ]
+                }
+              },
+              {
+                "id": "equ-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_service": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Working",
+                    "Needs service"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "equ-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Orders sent to vendors and when they arrive."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ord-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "arrives_on"
+              },
+              {
+                "id": "ord-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "arrives_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Placed"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "arrives_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Placed"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "arrives_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Placed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "coffee-shop-operations",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Margin, waste and machines at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "product",
+                      "view": "all_product"
+                    },
+                    "inline": true,
+                    "title": "Sold last week by category",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Sold last week by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "sold_week"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "waste",
+                      "view": "all_waste"
+                    },
+                    "inline": true,
+                    "title": "Waste by reason (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Waste by reason (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "reason",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "equipment",
+                      "view": "all_equipment"
+                    },
+                    "inline": true,
+                    "title": "Machines by condition",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Machines by condition",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "supply",
+                      "view": "all_supply"
+                    },
+                    "inline": true,
+                    "title": "Supplies by category",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Supplies by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Counted in the last 3 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supply",
+              "view": "all_supply"
+            },
+            "inline": true,
+            "title": "Counted in the last 3 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Counted in the last 3 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "counted_on": {
+                    "relative": "past_days",
+                    "n": 3
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service due in the next 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "equipment",
+              "view": "all_equipment"
+            },
+            "inline": true,
+            "title": "Service due in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Service due in the next 30 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "next_service": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Arriving in the next 3 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Arriving in the next 3 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Arriving in the next 3 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "arrives_on": {
+                    "relative": "next_days",
+                    "n": 3
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Placed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Margin (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price minus cost, divided by price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 60 on drinks deserves a closer look at portions and milk"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Order?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compares on hand to par"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order the Quantity to order before the vendor cut-off"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Value wasted this month (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Value of waste logged against the menu item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cut pastry orders if waste is steady for two weeks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next service date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Book the technician when it is under 14"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "opening-closing",
+      "parent": "coffee-shop-operations",
+      "title": "Opening and closing checklist",
+      "icon": {
+        "emoji": "🌅"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Opening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Machine on, grinders purged, shots dialed in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fridge temperatures logged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pastry case filled and priced"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cash drawer counted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Waste logged before anything leaves the building"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Milk and syrups counted; low items flagged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Machines cleaned and backflushed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors, counters and bathrooms done"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tomorrow's bake order checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The shop in the morning is the shop you left it in the night before."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dialing-in-and-training",
+      "parent": "coffee-shop-operations",
+      "title": "Dialing in and training baristas",
+      "icon": {
+        "emoji": "🎓"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dialing in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weigh the dose and the yield; time the shot."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Taste and adjust grind first, then dose."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the recipe on the card: dose, yield, time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Training week one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Learn the menu by tasting every drink."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Practice milk steaming with water, then milk."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shadow the shift lead on opening and closing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Signing off"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A barista is signed off when they can make the top five drinks to spec, in order, at pace."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "waste-and-ordering",
+      "parent": "coffee-shop-operations",
+      "title": "Waste and ordering routine",
+      "icon": {
+        "emoji": "♻️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging waste"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log it when it happens, with the reason."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose the menu item so cost rolls up on the Menu."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open Wasted this month and look at the top two items."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If it is bakery, reduce the next order; if it is milk, check the par."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ordering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dairy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bakery"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cups, lids, cleaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Syrups and retail beans"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the Quantity to order column to build each list."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "machine-care",
+      "parent": "coffee-shop-operations",
+      "title": "Machine care and service",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Backflush the group heads and wipe steam wands after every use."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Purge the grinders and check the burrs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Descale the batch brewer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check water filter indicators and replace as needed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep service dates on the Equipment table."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the technician a month ahead."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After a visit, press Service done, update the dates and note what was changed."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

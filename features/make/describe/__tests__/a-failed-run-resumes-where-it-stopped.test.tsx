@@ -74,7 +74,6 @@ jest.mock("../describeTemplate", () => ({
   checkDescribeTemplate: (t: unknown) => ({ ok: true, spec: t, autoFixes: [] }),
   coerceDescribeAnswer: (v: unknown) => v,
   declareDescribeSpec: async () => "tpl-1",
-  declareWithStarter: async () => ({ templateId: "tpl-1", notes: [] }),
   describeVariables: () => ({}),
   findBuiltSpace: async () => null,
   readExistingTables: async () => [],

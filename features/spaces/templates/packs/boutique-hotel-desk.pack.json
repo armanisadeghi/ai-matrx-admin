@@ -1,0 +1,3383 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0465",
+  "version": 1,
+  "title": "Boutique Hotel Desk",
+  "description": "Rooms, reservations, housekeeping and repairs for a boutique hotel or bed and breakfast.",
+  "forWho": "Boutique hotels, inns and bed and breakfasts",
+  "icon": {
+    "emoji": "🛎️"
+  },
+  "cover": {
+    "url": "gallery:photo-misty-mountains",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "hotel",
+    "b&b",
+    "housekeeping",
+    "reservations"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-boutique-hotel-desk",
+    "catalogueId": "SP0465",
+    "useCase": "Evangeline Prescott-Adeyemi owns an inn and uses this to see who arrives and leaves today, which rooms are ready, what is waiting to be cleaned and which repairs are open.",
+    "industry": "hospitality_food",
+    "vertical": "Boutique hotel",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "The Larkfield Inn",
+      "describes": "A nine-room boutique inn with a breakfast room and garden, run by a small team who handle rooms, breakfast and the front desk themselves.",
+      "address": {
+        "line1": "6 Cobbler's Green",
+        "city": "Stowe",
+        "region": "VT",
+        "postalCode": "05672",
+        "country": "US"
+      },
+      "phone": "(802) 555-0163",
+      "website": "larkfieldinn.net",
+      "email": "stay@larkfieldinn.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-boutique-hotel-desk",
+    "tables": [
+      {
+        "token": "room",
+        "name": "Rooms",
+        "labelSingular": "Room",
+        "labelPlural": "Rooms",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "bed-double",
+        "titleField": "room_name",
+        "describes": "Each room with its type, rate and current state.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "room_name",
+            "label": "Room",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "State",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ready",
+              "Occupied",
+              "Needs cleaning",
+              "Out of service"
+            ],
+            "choiceColors": {
+              "Ready": "slate",
+              "Occupied": "blue",
+              "Needs cleaning": "amber",
+              "Out of service": "violet"
+            },
+            "required": true,
+            "default": "Ready",
+            "statusGroups": {
+              "Ready": "todo",
+              "Occupied": "in_progress",
+              "Needs cleaning": "in_progress",
+              "Out of service": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Queen",
+              "King",
+              "Suite",
+              "Cottage"
+            ],
+            "choiceColors": {
+              "Queen": "slate",
+              "King": "blue",
+              "Suite": "amber",
+              "Cottage": "violet"
+            }
+          },
+          {
+            "key": "sleeps",
+            "label": "Sleeps",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Nightly rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "feature",
+            "label": "Feature",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "stays_count",
+            "label": "Reservations",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reservations",
+            "pick": "guest_name",
+            "agg": "count"
+          },
+          {
+            "key": "nights_month",
+            "label": "Nights this month",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "reservations",
+            "pick": "nights",
+            "agg": "sum",
+            "filter": {
+              "check_in": {
+                "relative": "this_month"
+              }
+            }
+          },
+          {
+            "key": "repairs_waiting",
+            "label": "Repairs waiting",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "repairs",
+            "pick": "issue",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Reported",
+                "Scheduled"
+              ]
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_open_for_guests",
+            "label": "Open for guests",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "room_open_for_guests"
+            }
+          },
+          {
+            "key": "add_repair",
+            "label": "Report a repair",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "repair",
+              "template": "New repair",
+              "prefill": {
+                "room": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_cleaning",
+            "label": "Add cleaning job",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "cleaning",
+              "template": "New cleaning job",
+              "prefill": {
+                "room": "@row"
+              }
+            }
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New room",
+            "values": {
+              "room_name": "New room",
+              "status": "Ready"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What guests get"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Bed, bath, view and amenities."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Care notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Surfaces, linens and the quirks of this room."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "room-1",
+            "values": {
+              "room_name": "Garden Queen",
+              "status": "Ready",
+              "kind": "Queen",
+              "sleeps": 2,
+              "rate": 189,
+              "feature": "Doors to the herb garden"
+            }
+          },
+          {
+            "key": "room-2",
+            "values": {
+              "room_name": "Orchard King",
+              "status": "Occupied",
+              "kind": "King",
+              "sleeps": 2,
+              "rate": 229,
+              "feature": "Window seat over the orchard"
+            }
+          },
+          {
+            "key": "room-3",
+            "values": {
+              "room_name": "Birch Suite",
+              "status": "Occupied",
+              "kind": "Suite",
+              "sleeps": 4,
+              "rate": 329,
+              "feature": "Sitting room and fireplace"
+            }
+          },
+          {
+            "key": "room-4",
+            "values": {
+              "room_name": "Hearth Queen",
+              "status": "Needs cleaning",
+              "kind": "Queen",
+              "sleeps": 2,
+              "rate": 179,
+              "feature": "Wood stove"
+            }
+          },
+          {
+            "key": "room-5",
+            "values": {
+              "room_name": "Meadow King",
+              "status": "Ready",
+              "kind": "King",
+              "sleeps": 2,
+              "rate": 239,
+              "feature": "Private balcony"
+            }
+          },
+          {
+            "key": "room-6",
+            "values": {
+              "room_name": "Loft Suite",
+              "status": "Ready",
+              "kind": "Suite",
+              "sleeps": 3,
+              "rate": 299,
+              "feature": "Vaulted ceiling"
+            }
+          },
+          {
+            "key": "room-7",
+            "values": {
+              "room_name": "Carriage House Cottage",
+              "status": "Occupied",
+              "kind": "Cottage",
+              "sleeps": 4,
+              "rate": 359,
+              "feature": "Separate kitchenette and porch"
+            }
+          },
+          {
+            "key": "room-8",
+            "values": {
+              "room_name": "Mill Queen",
+              "status": "Out of service",
+              "kind": "Queen",
+              "sleeps": 2,
+              "rate": 169,
+              "feature": "Ground floor, step-free"
+            }
+          },
+          {
+            "key": "room-9",
+            "values": {
+              "room_name": "Pond King",
+              "status": "Ready",
+              "kind": "King",
+              "sleeps": 2,
+              "rate": 219,
+              "feature": "View of the pond"
+            }
+          }
+        ]
+      },
+      {
+        "token": "reservation",
+        "name": "Reservations",
+        "labelSingular": "Reservation",
+        "labelPlural": "Reservations",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "guest_name",
+        "describes": "Each stay, from inquiry to checkout, with nights and total.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "guest_name",
+            "label": "Guest",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Confirmed",
+              "Checked in",
+              "Checked out",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Cancelled": "red",
+              "Inquiry": "slate",
+              "Confirmed": "green",
+              "Checked in": "blue",
+              "Checked out": "amber"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Confirmed": "in_progress",
+              "Checked in": "in_progress",
+              "Checked out": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "check_in",
+            "label": "Check-in",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "check_out",
+            "label": "Check-out",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "nights",
+            "label": "Nights",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF({Check-in}, {Check-out}, 'days')"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
+          },
+          {
+            "key": "source",
+            "label": "Booked via",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Direct",
+              "Booking site",
+              "Phone",
+              "Returning guest"
+            ],
+            "choiceColors": {
+              "Direct": "slate",
+              "Booking site": "blue",
+              "Phone": "amber",
+              "Returning guest": "violet"
+            }
+          },
+          {
+            "key": "rate",
+            "label": "Room rate (USD)",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "room",
+            "pick": "rate"
+          },
+          {
+            "key": "total",
+            "label": "Stay total (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Nights} * {Room rate (USD)}"
+          },
+          {
+            "key": "requests",
+            "label": "Requests",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "room",
+            "relationMax": 1
+          },
+          {
+            "key": "host",
+            "label": "Host",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_check_in_guest",
+            "label": "Check in guest",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "reservation_check_in_guest"
+            }
+          },
+          {
+            "key": "btn_check_out_guest",
+            "label": "Check out guest",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "reservation_check_out_guest"
+            }
+          }
+        ],
+        "independentOf": {
+          "room": "Either record can be created or change status before the other.",
+          "host": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "check_in",
+            "check_out"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New reservation",
+            "values": {
+              "guest_name": "New reservation",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before arrival"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Special requests, dietary needs and arrival time."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "During the stay"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Anything requested or noticed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Feedback, billing notes and follow-up."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "reservation-1",
+            "values": {
+              "guest_name": "The Moreau-Lindqvist stay",
+              "status": "Checked in",
+              "check_in": "@today-1d",
+              "check_out": "@today+2d",
+              "guests": 2,
+              "source": "Direct",
+              "requests": "Anniversary; late checkout",
+              "room": "room-2",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "reservation-2",
+            "values": {
+              "guest_name": "Hollis Brandt party",
+              "status": "Checked in",
+              "check_in": "@today-2d",
+              "check_out": "@today+1d",
+              "guests": 4,
+              "source": "Booking site",
+              "requests": "Extra towels",
+              "room": "room-3",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "reservation-3",
+            "values": {
+              "guest_name": "Priyanka Raman",
+              "status": "Checked in",
+              "check_in": "@today-3d",
+              "check_out": "@today+4d",
+              "guests": 3,
+              "source": "Phone",
+              "requests": "Quiet room please",
+              "room": "room-7",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "reservation-4",
+            "values": {
+              "guest_name": "Desmond and Alicia Fairweather",
+              "status": "Confirmed",
+              "check_in": "@today+2d",
+              "check_out": "@today+5d",
+              "guests": 2,
+              "source": "Direct",
+              "requests": "Vegetarian breakfast",
+              "room": "room-1",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "reservation-5",
+            "values": {
+              "guest_name": "Theodora Aziz",
+              "status": "Confirmed",
+              "check_in": "@today+0d",
+              "check_out": "@today+2d",
+              "guests": 2,
+              "source": "Booking site",
+              "requests": "Arriving late",
+              "room": "room-5",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "reservation-6",
+            "values": {
+              "guest_name": "Gabriel Oyelowo",
+              "status": "Confirmed",
+              "check_in": "@mon+4d",
+              "check_out": "@mon+6d",
+              "guests": 2,
+              "source": "Returning guest",
+              "requests": "Same room as last time",
+              "room": "room-6",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "reservation-7",
+            "values": {
+              "guest_name": "Wexford wedding block",
+              "status": "Confirmed",
+              "check_in": "@today+20d",
+              "check_out": "@today+22d",
+              "guests": 2,
+              "source": "Direct",
+              "requests": "Block of three rooms",
+              "room": "room-9",
+              "host": "tm-1",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "reservation-8",
+            "values": {
+              "guest_name": "Annika Solberg",
+              "status": "Inquiry",
+              "check_in": "@today+12d",
+              "check_out": "@today+15d",
+              "guests": 2,
+              "source": "Phone",
+              "requests": "Asked about dog policy",
+              "room": "room-4",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "reservation-9",
+            "values": {
+              "guest_name": "Rafael and Imogen Teixeira",
+              "status": "Checked out",
+              "check_in": "@today-6d",
+              "check_out": "@today-3d",
+              "guests": 2,
+              "source": "Direct",
+              "requests": "",
+              "room": "room-1",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "reservation-10",
+            "values": {
+              "guest_name": "Cho family",
+              "status": "Checked out",
+              "check_in": "@today-5d",
+              "check_out": "@today-2d",
+              "guests": 4,
+              "source": "Booking site",
+              "requests": "Cot needed",
+              "room": "room-3",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "reservation-11",
+            "values": {
+              "guest_name": "Lucia Bellamy",
+              "status": "Cancelled",
+              "check_in": "@today+7d",
+              "check_out": "@today+9d",
+              "guests": 2,
+              "source": "Booking site",
+              "requests": "Cancelled due to illness",
+              "room": "room-8",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "cleaning",
+        "name": "Housekeeping",
+        "labelSingular": "Cleaning job",
+        "labelPlural": "Housekeeping",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "sparkles",
+        "titleField": "cleaning_name",
+        "describes": "Cleaning and turnover jobs for each room.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "cleaning_name",
+            "label": "Job",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To clean",
+              "Cleaning",
+              "Inspected"
+            ],
+            "choiceColors": {
+              "To clean": "slate",
+              "Cleaning": "blue",
+              "Inspected": "amber"
+            },
+            "required": true,
+            "default": "To clean",
+            "statusGroups": {
+              "To clean": "todo",
+              "Cleaning": "in_progress",
+              "Inspected": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Turnover",
+              "Stay-over",
+              "Deep clean",
+              "Public areas"
+            ],
+            "choiceColors": {
+              "Turnover": "slate",
+              "Stay-over": "blue",
+              "Deep clean": "amber",
+              "Public areas": "violet"
+            }
+          },
+          {
+            "key": "due_on",
+            "label": "Needed by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "room",
+            "relationMax": 1
+          },
+          {
+            "key": "cleaner",
+            "label": "Cleaner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_passed_inspection",
+            "label": "Passed inspection",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cleaning_passed_inspection"
+            }
+          }
+        ],
+        "independentOf": {
+          "room": "Either record can be created or change status before the other.",
+          "cleaner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New cleaning job",
+            "values": {
+              "cleaning_name": "New cleaning job",
+              "status": "To clean"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checklist"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Linens, bathroom, floors, surfaces, amenities and a last walk-through."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "cleaning-1",
+            "values": {
+              "cleaning_name": "Hearth Queen turnover",
+              "status": "To clean",
+              "kind": "Turnover",
+              "due_on": "@today+0d",
+              "room": "room-4",
+              "cleaner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cleaning-2",
+            "values": {
+              "cleaning_name": "Orchard King stay-over",
+              "status": "To clean",
+              "kind": "Stay-over",
+              "due_on": "@today+0d",
+              "room": "room-2",
+              "cleaner": "tm-3"
+            }
+          },
+          {
+            "key": "cleaning-3",
+            "values": {
+              "cleaning_name": "Birch Suite stay-over",
+              "status": "Cleaning",
+              "kind": "Stay-over",
+              "due_on": "@today+0d",
+              "room": "room-3",
+              "cleaner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cleaning-4",
+            "values": {
+              "cleaning_name": "Garden Queen arrival prep",
+              "status": "Inspected",
+              "kind": "Turnover",
+              "due_on": "@today-1d",
+              "room": "room-1",
+              "cleaner": "tm-3"
+            }
+          },
+          {
+            "key": "cleaning-5",
+            "values": {
+              "cleaning_name": "Meadow King arrival prep",
+              "status": "To clean",
+              "kind": "Turnover",
+              "due_on": "@today+2d",
+              "room": "room-5",
+              "cleaner": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cleaning-6",
+            "values": {
+              "cleaning_name": "Pond King deep clean",
+              "status": "To clean",
+              "kind": "Deep clean",
+              "due_on": "@mon+3d",
+              "room": "room-9",
+              "cleaner": "tm-3"
+            }
+          },
+          {
+            "key": "cleaning-7",
+            "values": {
+              "cleaning_name": "Breakfast room and lobby",
+              "status": "Inspected",
+              "kind": "Public areas",
+              "due_on": "@today-1d",
+              "room": "room-1",
+              "cleaner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cleaning-8",
+            "values": {
+              "cleaning_name": "Loft Suite arrival prep",
+              "status": "To clean",
+              "kind": "Turnover",
+              "due_on": "@mon+4d",
+              "room": "room-6",
+              "cleaner": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "repair",
+        "name": "Repairs",
+        "labelSingular": "Repair",
+        "labelPlural": "Repairs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "issue",
+        "describes": "Maintenance issues found in rooms or public areas.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "issue",
+            "label": "Issue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reported",
+              "Scheduled",
+              "Fixed"
+            ],
+            "choiceColors": {
+              "Reported": "slate",
+              "Scheduled": "blue",
+              "Fixed": "amber"
+            },
+            "required": true,
+            "default": "Reported",
+            "statusGroups": {
+              "Reported": "todo",
+              "Scheduled": "in_progress",
+              "Fixed": "done"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Urgent",
+              "Soon",
+              "Whenever"
+            ],
+            "choiceColors": {
+              "Urgent": "slate",
+              "Soon": "blue",
+              "Whenever": "amber"
+            }
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "fix_by",
+            "label": "Fix by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "room",
+            "relationMax": 1
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_mark_fixed",
+            "label": "Mark fixed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "repair_mark_fixed"
+            }
+          }
+        ],
+        "independentOf": {
+          "room": "Either record can be created or change status before the other.",
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "before": [
+          [
+            "reported_on",
+            "fix_by"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New repair",
+            "values": {
+              "issue": "New repair",
+              "status": "Reported"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What is wrong"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Symptoms and what the guest saw."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What was done"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Parts, time and when it was checked."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "repair-1",
+            "values": {
+              "issue": "Shower drains slowly",
+              "status": "Scheduled",
+              "priority": "Soon",
+              "reported_on": "@today-3d",
+              "fix_by": "@today+2d",
+              "room": "room-8",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "repair-2",
+            "values": {
+              "issue": "Stove door seal is loose",
+              "status": "Reported",
+              "priority": "Soon",
+              "reported_on": "@today-1d",
+              "fix_by": "@today+6d",
+              "room": "room-4",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "repair-3",
+            "values": {
+              "issue": "Balcony lock sticks",
+              "status": "Reported",
+              "priority": "Urgent",
+              "reported_on": "@today-0d",
+              "fix_by": "@today+1d",
+              "room": "room-5",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "repair-4",
+            "values": {
+              "issue": "Reading lamp flickers",
+              "status": "Fixed",
+              "priority": "Whenever",
+              "reported_on": "@today-9d",
+              "fix_by": "@today-6d",
+              "room": "room-2",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "repair-5",
+            "values": {
+              "issue": "Porch step needs re-sealing",
+              "status": "Scheduled",
+              "priority": "Soon",
+              "reported_on": "@today-6d",
+              "fix_by": "@today+9d",
+              "room": "room-7",
+              "owner": "tm-4",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "repair-6",
+            "values": {
+              "issue": "Hot water pressure drops after 8 pm",
+              "status": "Reported",
+              "priority": "Urgent",
+              "reported_on": "@today-1d",
+              "fix_by": "@today+2d",
+              "room": "room-3",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each reservation belongs to one room.",
+        "fromTable": "reservation",
+        "fromField": "room",
+        "toTable": "room",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "reservations"
+      },
+      {
+        "describes": "Each reservation belongs to one host.",
+        "fromTable": "reservation",
+        "fromField": "host",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "reservation_by_host"
+      },
+      {
+        "describes": "Each cleaning job belongs to one room.",
+        "fromTable": "cleaning",
+        "fromField": "room",
+        "toTable": "room",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "cleaning_jobs"
+      },
+      {
+        "describes": "Each cleaning job belongs to one cleaner.",
+        "fromTable": "cleaning",
+        "fromField": "cleaner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "cleaning_by_cleaner"
+      },
+      {
+        "describes": "Each repair belongs to one room.",
+        "fromTable": "repair",
+        "fromField": "room",
+        "toTable": "room",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "repairs"
+      },
+      {
+        "describes": "Each repair belongs to one owner.",
+        "fromTable": "repair",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "repair_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Evangeline Prescott-Adeyemi",
+              "role": "Innkeeper and owner",
+              "work_email": "evangeline@larkfieldinn.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Lorenzo Baptiste",
+              "role": "Front desk",
+              "work_email": "lorenzo@larkfieldinn.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Mariko Hendricks",
+              "role": "Head housekeeper",
+              "work_email": "mariko@larkfieldinn.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Cormac Abernathy",
+              "role": "Maintenance",
+              "work_email": "cormac@larkfieldinn.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Yusra Delacroix",
+              "role": "Breakfast chef",
+              "work_email": "yusra@larkfieldinn.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "reservation_intake",
+        "name": "Request a stay",
+        "describes": "Take in a booking inquiry from a guest.",
+        "audience": "staff",
+        "table": "reservation",
+        "fields": [
+          {
+            "fieldKey": "guest_name",
+            "ask": "Guest name",
+            "required": true
+          },
+          {
+            "fieldKey": "check_in",
+            "ask": "Arrival date",
+            "required": true
+          },
+          {
+            "fieldKey": "check_out",
+            "ask": "Departure date",
+            "required": true
+          },
+          {
+            "fieldKey": "guests",
+            "ask": "Number of guests"
+          },
+          {
+            "fieldKey": "requests",
+            "ask": "Anything we should know?"
+          }
+        ],
+        "submitLabel": "Send the inquiry",
+        "confirmation": "Thanks. The inquiry is saved."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "room_open_for_guests",
+        "table": "room",
+        "name": "Open for guests",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Ready"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "reservation_check_in_guest",
+        "table": "reservation",
+        "name": "Check in guest",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "reservation_check_out_guest",
+        "table": "reservation",
+        "name": "Check out guest",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked out"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cleaning_passed_inspection",
+        "table": "cleaning",
+        "name": "Passed inspection",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Inspected"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "repair_mark_fixed",
+        "table": "repair",
+        "name": "Mark fixed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Fixed"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_room",
+        "name": "All rooms",
+        "table": "room",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "room_board",
+        "name": "Rooms board",
+        "table": "room",
+        "kind": "kanban",
+        "groupBy": "kind"
+      },
+      {
+        "token": "all_reservation",
+        "name": "All reservations",
+        "table": "reservation",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "reservation_board",
+        "name": "Reservations board",
+        "table": "reservation",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "reservation_cal",
+        "name": "Reservations calendar",
+        "table": "reservation",
+        "kind": "calendar",
+        "dateField": "check_in",
+        "allDay": true
+      },
+      {
+        "token": "reservation_arr",
+        "name": "Arriving this week",
+        "table": "reservation",
+        "kind": "grid",
+        "within": {
+          "check_in": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "reservation_dep",
+        "name": "Leaving this week",
+        "table": "reservation",
+        "kind": "grid",
+        "within": {
+          "check_out": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "reservation_arrtoday",
+        "name": "Arriving today",
+        "table": "reservation",
+        "kind": "grid",
+        "within": {
+          "check_in": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "reservation_deptoday",
+        "name": "Leaving today",
+        "table": "reservation",
+        "kind": "grid",
+        "within": {
+          "check_out": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "reservation_mine",
+        "name": "My reservations",
+        "table": "reservation",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_cleaning",
+        "name": "All housekeeping",
+        "table": "cleaning",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "cleaning_board",
+        "name": "Housekeeping board",
+        "table": "cleaning",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "cleaning_cal",
+        "name": "Housekeeping calendar",
+        "table": "cleaning",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "cleaning_over",
+        "name": "Overdue",
+        "table": "cleaning",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To clean",
+            "Cleaning"
+          ]
+        }
+      },
+      {
+        "token": "cleaning_week",
+        "name": "Due this week",
+        "table": "cleaning",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To clean",
+            "Cleaning"
+          ]
+        }
+      },
+      {
+        "token": "cleaning_next7",
+        "name": "Next 7 days",
+        "table": "cleaning",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To clean",
+            "Cleaning"
+          ]
+        }
+      },
+      {
+        "token": "cleaning_mine",
+        "name": "My housekeeping",
+        "table": "cleaning",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_repair",
+        "name": "All repairs",
+        "table": "repair",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "repair_board",
+        "name": "Repairs board",
+        "table": "repair",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "repair_cal",
+        "name": "Repairs calendar",
+        "table": "repair",
+        "kind": "calendar",
+        "dateField": "fix_by",
+        "allDay": true
+      },
+      {
+        "token": "repair_over",
+        "name": "Overdue",
+        "table": "repair",
+        "kind": "grid",
+        "within": {
+          "fix_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Reported",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "repair_week",
+        "name": "Due this week",
+        "table": "repair",
+        "kind": "grid",
+        "within": {
+          "fix_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Reported",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "repair_next7",
+        "name": "Next 7 days",
+        "table": "repair",
+        "kind": "grid",
+        "within": {
+          "fix_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Reported",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "repair_mine",
+        "name": "My repairs",
+        "table": "repair",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Boutique Hotel Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "reservation",
+          "describes": "Each stay, from inquiry to checkout, with nights and total."
+        },
+        {
+          "name": "related_tables",
+          "table": "room",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many reservations are checked in?",
+        "whyItMatters": "The host plans breakfast numbers from current guests.",
+        "expect": {
+          "table": "reservation",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Checked in"
+          },
+          "answer": 3,
+          "unit": "reservations"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open rooms.",
+        "action": {
+          "kind": "open",
+          "surface": "room_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "room_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open reservations.",
+        "action": {
+          "kind": "open",
+          "surface": "reservation_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "reservation_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open housekeeping.",
+        "action": {
+          "kind": "open",
+          "surface": "cleaning_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "cleaning_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "larkfieldinn.net"
+      ],
+      "fictionalStreets": [
+        "Cobbler's Green"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "boutique-hotel-desk",
+      "parent": null,
+      "title": "Boutique Hotel Desk",
+      "icon": {
+        "emoji": "🛎️"
+      },
+      "cover": {
+        "url": "gallery:photo-misty-mountains",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the inn from one page: rooms and their state, reservations with nights and totals, today's cleaning and the repairs that cannot wait. Start the day on the Dashboard and Arriving today, then work Mine. Never mark a room Ready until the cleaning job has passed inspection."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:arrival-and-departure"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:housekeeping-standards"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:maintenance-rhythm"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:breakfast-and-requests"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rooms"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each room with its type, rate and current state."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "room",
+              "view": "room_board"
+            },
+            "inline": true,
+            "title": "Rooms",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "roo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "roo-t",
+                "name": "All rooms",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "roo-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reservations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each stay, from inquiry to checkout, with nights and total."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "reservation",
+              "view": "reservation_board"
+            },
+            "inline": true,
+            "title": "Reservations",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "res-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "res-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "check_in"
+              },
+              {
+                "id": "res-t",
+                "name": "All reservations",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "res-arr",
+                "name": "Arriving this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "check_in": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "res-dep",
+                "name": "Leaving this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "check_out": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "res-arrtoday",
+                "name": "Arriving today",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "check_in": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "res-deptoday",
+                "name": "Leaving today",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "check_out": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "res-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "res-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Housekeeping"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Cleaning and turnover jobs for each room."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cleaning",
+              "view": "cleaning_board"
+            },
+            "inline": true,
+            "title": "Housekeeping",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cle-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cle-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "cle-t",
+                "name": "All housekeeping",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cle-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To clean",
+                    "Cleaning"
+                  ]
+                }
+              },
+              {
+                "id": "cle-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To clean",
+                    "Cleaning"
+                  ]
+                }
+              },
+              {
+                "id": "cle-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To clean",
+                    "Cleaning"
+                  ]
+                }
+              },
+              {
+                "id": "cle-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cle-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repairs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Maintenance issues found in rooms or public areas."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "repair",
+              "view": "repair_board"
+            },
+            "inline": true,
+            "title": "Repairs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rep-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rep-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "fix_by"
+              },
+              {
+                "id": "rep-t",
+                "name": "All repairs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rep-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "fix_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "rep-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "fix_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "rep-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "fix_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "rep-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rep-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "boutique-hotel-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rooms, arrivals and work to do today."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "room",
+                      "view": "all_room"
+                    },
+                    "inline": true,
+                    "title": "Rooms by state",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Rooms by state",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "reservation",
+                      "view": "all_reservation"
+                    },
+                    "inline": true,
+                    "title": "Reservations by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Reservations by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cleaning",
+                      "view": "all_cleaning"
+                    },
+                    "inline": true,
+                    "title": "Cleaning by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Cleaning by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "repair",
+                      "view": "all_repair"
+                    },
+                    "inline": true,
+                    "title": "Repairs by priority",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Repairs by priority",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "priority",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Arriving today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "reservation",
+              "view": "all_reservation"
+            },
+            "inline": true,
+            "title": "Arriving today",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Arriving today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "check_in": {
+                    "relative": "today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leaving today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "reservation",
+              "view": "all_reservation"
+            },
+            "inline": true,
+            "title": "Leaving today",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Leaving today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "check_out": {
+                    "relative": "today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repairs due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "repair",
+              "view": "all_repair"
+            },
+            "inline": true,
+            "title": "Repairs due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Repairs due",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "fix_by": {
+                    "relative": "next_days",
+                    "n": 3
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cleaning needed by today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cleaning",
+              "view": "all_cleaning"
+            },
+            "inline": true,
+            "title": "Cleaning needed by today",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl3",
+                "name": "Cleaning needed by today",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To clean",
+                    "Cleaning"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nights"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check-out date minus check-in date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check the total against the rate before confirming"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stay total (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nights multiplied by the room rate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quote this to the guest and note any package or discount"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nights this month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nights of stays beginning this month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare against room count times days to see occupancy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Repairs waiting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Repairs Reported or Scheduled for the room"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep rooms with an urgent repair out of service"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "arrival-and-departure",
+      "parent": "boutique-hotel-desk",
+      "title": "Arrival and departure routine",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before arrival"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Room cleaned and passed inspection"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Welcome note, towels and amenities in place"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Requests read: allergies, dietary needs, occasions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Arrival time confirmed by message"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At check-in"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Greet by name and confirm the stay dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Explain breakfast, parking, quiet hours and the Wi-Fi."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Check in guest on the reservation."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At check-out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask about the stay and thank them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press Check out guest, then create a cleaning job for the room."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first and last five minutes decide the review."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "housekeeping-standards",
+      "parent": "boutique-hotel-desk",
+      "title": "Housekeeping standards",
+      "icon": {
+        "emoji": "🧼"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Turnover order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Strip linens and open windows."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Dust high to low and wipe all surfaces."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clean the bathroom top to bottom; polish fixtures."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make the bed with fresh linens and fold towels."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Vacuum or mop and check under beds."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Final walk-through with the checklist."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A second person checks each turnover before the room is marked Ready."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anything broken becomes a repair row, not a note on a paper."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Do stay-over service by midday; leave a card with the option to skip it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "maintenance-rhythm",
+      "parent": "boutique-hotel-desk",
+      "title": "Maintenance rhythm",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Walk the building with the Repairs view open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check smoke and carbon monoxide alarms; test hot water in one room per day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Seasonal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Season"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spring"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Windows, gutters, garden furniture, patio"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Summer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Air conditioning, screens, outdoor lighting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Autumn"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Heating service, chimney, weather sealing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Winter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pipes, snow plan, emergency lighting"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reporting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Any repair that affects safety goes to Urgent and the room is set to Out of service until it is fixed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "breakfast-and-requests",
+      "parent": "boutique-hotel-desk",
+      "title": "Breakfast and guest requests",
+      "icon": {
+        "emoji": "🍳"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The evening before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Read tomorrow's reservations for dietary needs and arrival times."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Prepare the breakfast prep list with counts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check allergies against the menu before service."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Serve on time; offer a take-away option for early departures."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log guest feedback in the reservation."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Special requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write down every request in the reservation, and tick it off once it is done. Surprises are best when they are planned."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

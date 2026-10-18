@@ -16,7 +16,6 @@
 // Pure parts are exported for the guard; the doors take a client.
 
 import {
-  addStarterInterface,
   capabilitiesUsed,
   DEFAULT_TEMPLATE_AGENT,
   describeCheck,
@@ -343,30 +342,6 @@ export async function readExistingTables(
       ...(Array.isArray(f.choices) ? { choices: f.choices as string[] } : {}),
     })),
   }));
-}
-
-/**
- * AT-AIBASE (Airtable "Create base with AI"): declare the checked spec WITH a starter dashboard and suggested automations
- * (saved switched off) worked out from its own new tables by the package (no model, no mandate change). A starter the
- * declaration refuses never sinks the setup: the tables are declared without it and the note says why.
- */
-export async function declareWithStarter(
-  client: SupabaseClient,
-  organizationId: string,
-  spec: TemplateSpec,
-  stamp: string,
-): Promise<{ templateId: string; notes: string[] }> {
-  const starter = addStarterInterface(spec);
-  try {
-    return { templateId: await declareDescribeSpec(client, organizationId, starter.spec, stamp), notes: [...starter.built, ...starter.notBuilt] };
-  } catch (err) {
-    console.warn("[make:describe] the starter was refused; declaring the tables without it", err);
-    const why = err instanceof Error ? err.message : String(err);
-    return {
-      templateId: await declareDescribeSpec(client, organizationId, spec, stamp),
-      notes: [`Starter dashboard and suggested automations: not made — ${why}`],
-    };
-  }
 }
 
 /** Declare the checked spec as the organization's own template; its id is what the install door takes. */
