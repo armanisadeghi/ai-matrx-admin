@@ -31,6 +31,8 @@ import { listBrandWebDecisions, webDecisionSummary, type WebSaveStatus } from ".
 /** Enrich's "On the web" answers: already saved on the brand as they were given; Apply only makes sure of it. */
 export interface EnrichWebReview {
   choices: WebChoice[];
+  /** How many results got Ask me later / Ignore on this visit (saved too, but with no relationship). */
+  markCount: number;
   statuses: Record<string, WebSaveStatus>;
   flush: () => Promise<{ saved: string[]; failed: { key: string; error: string }[] }>;
 }
@@ -60,29 +62,31 @@ function WebDecisionsRow({
     refetchOnMount: "always",
     enabled: saving === 0,
   });
-  const counts = webDecisionSummary(web.choices, savedQuery.data ?? null, kinds);
+  const counts = webDecisionSummary(web.choices, savedQuery.data ?? null, kinds, web.markCount);
   if (!counts.total) return null;
   const failed = result ? result.failed.length : states.filter((s) => s.state === "failed").length;
   return (
     <RowGroup title="On the web" data-testid="enrich-web-decisions">
-      <Link href={brandOnTheWebHref(brandId)} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50" data-testid="enrich-web-decisions-link">
-        <span className="w-28 shrink-0 text-xs text-muted-foreground">Websites decided</span>
-        <span className="shrink-0 text-sm tabular-nums" data-testid="enrich-web-decisions-total">
-          {counts.total}
+      <Link href={brandOnTheWebHref(brandId)} className="flex flex-col gap-0.5 px-3 py-2 hover:bg-muted/50" data-testid="enrich-web-decisions-link">
+        <span className="flex items-center gap-3">
+          <span className="w-28 shrink-0 text-xs text-muted-foreground">Websites decided</span>
+          <span className="shrink-0 text-sm tabular-nums" data-testid="enrich-web-decisions-total">
+            {counts.total}
+          </span>
+          <span className="min-w-0 truncate text-xs text-muted-foreground" data-testid="enrich-web-decisions-tail">
+            {counts.tail}
+          </span>
+          <span className="ml-auto shrink-0 text-xs" data-testid="enrich-web-decisions-state">
+            {failed ? (
+              <span className="text-destructive">{`${failed} not saved`}</span>
+            ) : saving ? (
+              <span className="text-muted-foreground">Saving…</span>
+            ) : (
+              <span className="text-muted-foreground">Saved</span>
+            )}
+          </span>
         </span>
-        <span className="shrink-0 text-xs text-muted-foreground" data-testid="enrich-web-decisions-tail">
-          {counts.tail}
-        </span>
-        <span className="min-w-0 truncate text-sm text-muted-foreground">{counts.parts.map((p) => `${p.count} ${p.label}`).join(" · ")}</span>
-        <span className="ml-auto shrink-0 text-xs" data-testid="enrich-web-decisions-state">
-          {failed ? (
-            <span className="text-destructive">{`${failed} not saved`}</span>
-          ) : saving ? (
-            <span className="text-muted-foreground">Saving…</span>
-          ) : (
-            <span className="text-muted-foreground">Saved</span>
-          )}
-        </span>
+        <span className="pl-[7.75rem] text-sm text-muted-foreground">{counts.parts.map((p) => `${p.count} ${p.label}`).join(" · ")}</span>
       </Link>
     </RowGroup>
   );
@@ -200,7 +204,7 @@ export function ChangesReview({
   const choiceOf = (c: EnrichChange) => choices[c.id] ?? c.defaultChoice;
   const set = (id: string, c: ChangeChoice) => setChoices((cur) => ({ ...cur, [id]: c }));
   const pending = changes.filter((c) => c.kind !== "unchanged" && choiceOf(c) === "apply").length;
-  const webCount = web?.choices.length ?? 0;
+  const webCount = (web?.choices.length ?? 0) + (web?.markCount ?? 0);
   const conflicts = changes.filter((c) => c.kind === "conflict");
   const replaces = changes.filter((c) => c.kind === "replace");
   const adds = changes.filter((c) => c.kind === "add");

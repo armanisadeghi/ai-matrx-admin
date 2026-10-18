@@ -422,11 +422,13 @@ export function webDecisionSummary(
   visit: WebChoice[],
   saved: Pick<WebDecisionRow, "relationKey" | "mark">[] | null,
   kinds: Pick<BrandRelationKind, "key" | "label">[],
+  /** Ask me later / Ignore given on this visit (they are saved too, with no relationship). */
+  visitMarks = 0,
 ): { total: number; parts: { label: string; count: number }[]; thisVisit: number; tail: string } {
-  const thisVisit = visit.length;
+  const thisVisit = visit.length + visitMarks;
   if (!saved) {
     const own = webDecisionCounts(visit, kinds);
-    return { total: own.total, parts: own.parts, thisVisit, tail: own.total ? "answered this visit" : "" };
+    return { total: thisVisit, parts: own.parts, thisVisit, tail: thisVisit ? "decided this visit" : "" };
   }
   const label = new Map(kinds.map((k) => [k.key, k.label]));
   const counts = new Map<string, number>();
@@ -436,6 +438,7 @@ export function webDecisionSummary(
   }
   const parts = [...counts.entries()].map(([l, count]) => ({ label: l, count })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
   const total = saved.length;
-  const tail = !thisVisit ? "saved on this brand" : thisVisit === total ? "saved, all answered this visit" : `saved on this brand, ${thisVisit} answered this visit`;
+  // "This visit" is not claimed: earlier answers come back into the screen as answered, so only the saved total is exact.
+  const tail = "saved on this brand";
   return { total, parts, thisVisit, tail };
 }

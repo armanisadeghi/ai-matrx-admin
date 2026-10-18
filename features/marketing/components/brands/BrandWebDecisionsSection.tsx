@@ -115,7 +115,7 @@ export function BrandWebDecisionsSection({ brand, canEdit }: { brand: MarketingB
   const columns: MatrxColumnDef<WebDecisionRow>[] = [
     {
       id: "page",
-      width: 420,
+      width: 340,
       header: "Page",
       accessorFn: (row) => `${row.label} ${row.host}`,
       cell: (row) => (
@@ -131,19 +131,19 @@ export function BrandWebDecisionsSection({ brand, canEdit }: { brand: MarketingB
         </OutboundLink>
       ),
     },
-    { id: "host", width: 160, header: "Site", accessorFn: (row) => row.host, cell: (row) => <span className="truncate text-sm text-muted-foreground">{row.host}</span> },
+    { id: "host", width: 150, header: "Site", accessorFn: (row) => row.host, cell: (row) => <span className="truncate text-sm text-muted-foreground">{row.host}</span> },
     {
       id: "relationship",
-      width: 220,
+      width: 190,
       header: "Relationship",
       accessorFn: (row) => (row.mark ? MARK_LABEL[row.mark] : labelOf(row.relationKey)),
       cell: (row) => <RelationCell row={row} kinds={kinds} canEdit={canEdit} onChange={change} />,
     },
-    { id: "sentiment", width: 100, header: "Tone", accessorFn: (row) => (row.sentiment ? SENTIMENT_LABEL[row.sentiment] : ""), cell: (row) => <span className="text-sm">{row.sentiment ? SENTIMENT_LABEL[row.sentiment] : ""}</span> },
-    { id: "found", width: 120, header: "Found as", accessorFn: (row) => FIELD_LABEL[row.field ?? ""] ?? row.field ?? "", cell: (row) => <span className="text-sm text-muted-foreground">{FIELD_LABEL[row.field ?? ""] ?? row.field ?? ""}</span> },
+    { id: "sentiment", width: 90, header: "Tone", accessorFn: (row) => (row.sentiment ? SENTIMENT_LABEL[row.sentiment] : ""), cell: (row) => <span className="text-sm">{row.sentiment ? SENTIMENT_LABEL[row.sentiment] : ""}</span> },
+    { id: "found", width: 110, header: "Found as", accessorFn: (row) => FIELD_LABEL[row.field ?? ""] ?? row.field ?? "", cell: (row) => <span className="text-sm text-muted-foreground">{FIELD_LABEL[row.field ?? ""] ?? row.field ?? ""}</span> },
     {
       id: "decided",
-      width: 110,
+      width: 100,
       header: "Decided",
       accessorFn: (row) => row.decidedAt ?? "",
       cell: (row) => <span className="text-sm tabular-nums text-muted-foreground">{row.decidedAt ? new Date(row.decidedAt).toLocaleDateString() : ""}</span>,
