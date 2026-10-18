@@ -20,6 +20,7 @@ import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { previewExport, type ExportPreview } from "./bring-over-api";
 import { BuildFromImport } from "./BuildFromImport";
 import { BringOverFrame } from "./BringOverFrame";
+import { countLabel } from "./count-label";
 
 type Source = { file_id: string } | { text: string };
 
@@ -135,7 +136,7 @@ export function FromClaudeAccount() {
                   />
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{c.title || "Untitled"}</span>
-                    <span className="text-xs text-muted-foreground">{c.turns} messages</span>
+                    <span className="text-xs text-muted-foreground">{countLabel(c.turns, "message")}</span>
                   </span>
                 </label>
               ))}
@@ -156,7 +157,7 @@ export function FromClaudeAccount() {
                   { value: "", label: "No project" },
                   ...preview.projects.map((p) => ({
                     value: p.key,
-                    label: `${p.name} (${p.files.length} files)`,
+                    label: `${p.name} (${countLabel(p.files.length, "file")})`,
                   })),
                 ]}
               />
