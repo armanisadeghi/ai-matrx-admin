@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0361",
-  "version": 2,
+  "version": 3,
   "title": "Customer Interview Notes",
   "description": "Log customer calls with themes, sentiment and follow-ups, and spot patterns.",
   "forWho": "Product and customer success teams",
@@ -227,6 +227,17 @@
             "button": {
               "do": "run_action",
               "action": "interview_followed"
+            }
+          },
+          {
+            "key": "open_recording",
+            "label": "Open recording",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{recording}}"
             }
           }
         ],
@@ -796,7 +807,7 @@
         "Piper Cove Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

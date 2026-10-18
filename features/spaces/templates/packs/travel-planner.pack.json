@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 2,
+  "version": 3,
   "title": "Travel Planner",
   "description": "Trips with itinerary, bookings, packing and places in one hub.",
   "forWho": "Travelers planning trips",
@@ -234,6 +234,21 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_itinerary_btn",
+            "label": "Add day plan",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "itinerary",
+              "template": "Day plan",
+              "prefill": {
+                "trip": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -654,7 +669,9 @@
         "rowTemplates": [
           {
             "name": "Day plan",
-            "values": {},
+            "values": {
+              "activity": "New plan item"
+            },
             "default": true,
             "body": {
               "v": 1,
@@ -1253,6 +1270,17 @@
               "do": "open_url",
               "url": "https://www.openstreetmap.org/search?query={{place_name}}"
             }
+          },
+          {
+            "key": "open_link",
+            "label": "Open link",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
+            }
           }
         ],
         "rows": [
@@ -1632,7 +1660,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

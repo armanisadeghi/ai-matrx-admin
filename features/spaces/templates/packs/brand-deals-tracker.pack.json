@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0310",
-  "version": 2,
+  "version": 3,
   "title": "Brand Deals Tracker",
   "description": "Manage sponsored deals from pitch to payment, with deliverables and due dates.",
   "forWho": "Influencers and UGC creators",
@@ -293,6 +293,21 @@
             "button": {
               "do": "run_action",
               "action": "deal_closed"
+            }
+          },
+          {
+            "key": "add_deliverable_btn",
+            "label": "Add deliverable",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deliverable",
+              "template": "New deliverable",
+              "prefill": {
+                "deal": "@row"
+              }
             }
           }
         ],
@@ -691,7 +706,8 @@
           {
             "name": "New deliverable",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "item": "New deliverable"
             },
             "default": true,
             "body": {
@@ -1362,7 +1378,7 @@
         "Sandpiper Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

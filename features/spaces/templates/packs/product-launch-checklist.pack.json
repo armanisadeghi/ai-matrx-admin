@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0354",
-  "version": 2,
+  "version": 3,
   "title": "Product Launch Checklist",
   "description": "A launch with phased tasks, owners and a progress count that counts down.",
   "forWho": "Product marketing teams",
@@ -185,6 +185,21 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Launch date} < TODAY(), \"Launched\", IF(AND({Launch progress (%)} >= 50, {Days to launch} >= 14), \"Healthy\", IF({Launch progress (%)} >= 80, \"Healthy\", \"Needs attention\")))"
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New launch task",
+              "prefill": {
+                "launch": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -434,6 +449,13 @@
               "do": "run_action",
               "action": "task_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -448,7 +470,8 @@
               "launch": "l1",
               "channel": [
                 "Docs"
-              ]
+              ],
+              "assigned_to": "@installer"
             }
           },
           {
@@ -462,7 +485,8 @@
               "launch": "l1",
               "channel": [
                 "Blog"
-              ]
+              ],
+              "assigned_to": "@installer"
             }
           },
           {
@@ -476,7 +500,8 @@
               "launch": "l1",
               "channel": [
                 "Docs"
-              ]
+              ],
+              "assigned_to": "@installer"
             }
           },
           {
@@ -707,7 +732,8 @@
           {
             "name": "New launch task",
             "values": {
-              "done": false
+              "done": false,
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -996,6 +1022,15 @@
         "filters": {
           "done": false
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1084,7 +1119,7 @@
         "Marlowe Quay"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1224,6 +1259,15 @@
                         "filters": {
                           "done": false
                         }
+                      },
+                      {
+                        "id": "view-mine-task",
+                        "name": "Mine",
+                        "layout": "list",
+                        "icon": "List",
+                        "me": [
+                          "assigned_to"
+                        ]
                       }
                     ],
                     "activeViewId": "view-chart"

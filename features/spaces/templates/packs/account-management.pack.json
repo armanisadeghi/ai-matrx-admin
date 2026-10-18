@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0159",
-  "version": 3,
+  "version": 4,
   "title": "Account Management",
   "description": "Track customer health, renewals, contacts and every touch in one view.",
   "forWho": "Customer success and account managers",
@@ -181,6 +181,17 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_site",
+            "label": "Open website",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{site}}"
+            }
           }
         ],
         "rows": [
@@ -1318,7 +1329,7 @@
         "Marlin Terrace"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

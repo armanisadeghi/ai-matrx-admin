@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 2,
+  "version": 3,
   "title": "Meal Planner",
   "description": "Weekly meal plan from a recipe library with a shopping list by aisle.",
   "forWho": "Home cooks and families",
@@ -252,6 +252,17 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_source",
+            "label": "Open recipe",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{source}}"
+            }
           }
         ],
         "rows": [
@@ -1525,7 +1536,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

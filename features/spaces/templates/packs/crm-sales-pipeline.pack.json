@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0304",
-  "version": 2,
+  "version": 3,
   "title": "CRM and Sales Pipeline",
   "description": "Track accounts, contacts, deals and follow-ups from first call to closed.",
   "forWho": "Sales-led small businesses and consultants",
@@ -208,6 +208,21 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_deal_btn",
+            "label": "New deal",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deal",
+              "template": "New deal",
+              "prefill": {
+                "account": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -809,6 +824,21 @@
               "do": "run_action",
               "action": "deal_lost"
             }
+          },
+          {
+            "key": "add_activity_btn",
+            "label": "Log activity",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "activity",
+              "template": "Call notes",
+              "prefill": {
+                "deal": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -952,7 +982,8 @@
           {
             "name": "New deal",
             "values": {
-              "stage": "Lead"
+              "stage": "Lead",
+              "deal_name": "New deal"
             },
             "default": true,
             "body": {
@@ -1321,7 +1352,8 @@
           {
             "name": "Call notes",
             "values": {
-              "type": "Call"
+              "type": "Call",
+              "summary": "New activity"
             },
             "default": true,
             "body": {
@@ -1820,7 +1852,7 @@
         "Merriweather Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

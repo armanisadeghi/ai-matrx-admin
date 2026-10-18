@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "version": 2,
+  "version": 3,
   "title": "Proposals Tracker",
   "description": "Track proposals from draft to decision, with line items and expiry dates.",
   "forWho": "Agencies and freelancers",
@@ -271,6 +271,17 @@
             "button": {
               "do": "run_action",
               "action": "proposal_lost"
+            }
+          },
+          {
+            "key": "open_document",
+            "label": "Open document",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{document}}"
             }
           }
         ],
@@ -1124,7 +1135,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

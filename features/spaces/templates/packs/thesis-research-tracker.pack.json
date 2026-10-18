@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 2,
+  "version": 3,
   "title": "Thesis & Research Tracker",
   "description": "Chapters, sources, tasks and advisor meetings for a thesis from outline to defence.",
   "forWho": "Graduate students and researchers",
@@ -216,6 +216,21 @@
                 "To do",
                 "In progress"
               ]
+            }
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "chapter": "@row"
+              }
             }
           }
         ],
@@ -475,6 +490,17 @@
             "button": {
               "do": "run_action",
               "action": "so_read"
+            }
+          },
+          {
+            "key": "open_link",
+            "label": "Open source",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
             }
           }
         ],
@@ -957,7 +983,8 @@
           {
             "name": "New task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -1616,7 +1643,7 @@
         "Quillfeather Place"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

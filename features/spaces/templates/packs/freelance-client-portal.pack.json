@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 3,
+  "version": 4,
   "title": "Freelance Client Portal",
   "description": "Share deliverables, approvals and invoices with each freelance client on one private page.",
   "forWho": "Solo freelancers delivering work to clients",
@@ -780,6 +780,17 @@
               "do": "run_action",
               "action": "file_approved"
             }
+          },
+          {
+            "key": "open_link",
+            "label": "Open file",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
+            }
           }
         ],
         "rows": [
@@ -1446,7 +1457,7 @@
         "Tallow Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

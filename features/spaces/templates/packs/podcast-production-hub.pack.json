@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0309",
-  "version": 2,
+  "version": 3,
   "title": "Podcast Production Hub",
   "description": "Plan episodes, book guests, manage sponsors and track every production task.",
   "forWho": "Podcasters and small audio teams",
@@ -742,6 +742,32 @@
               "do": "run_action",
               "action": "episode_pub"
             }
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "episode": "@row"
+              }
+            }
+          },
+          {
+            "key": "open_audio_link",
+            "label": "Open audio",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{audio_link}}"
+            }
           }
         ],
         "rows": [
@@ -1101,6 +1127,13 @@
               "do": "run_action",
               "action": "task_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -1111,7 +1144,8 @@
               "task_name": "Rough cut and level pass",
               "status": "In progress",
               "owner": "tm-jolene",
-              "due_on": "@today+1d"
+              "due_on": "@today+1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1121,7 +1155,8 @@
               "task_name": "Draft show notes",
               "status": "To do",
               "owner": "tm-cassius",
-              "due_on": "@today-1d"
+              "due_on": "@today-1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1131,7 +1166,8 @@
               "task_name": "Sponsor read approval",
               "status": "Waiting",
               "owner": "tm-pavel",
-              "due_on": "@today+1d"
+              "due_on": "@today+1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1214,7 +1250,8 @@
           {
             "name": "New task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -1602,6 +1639,15 @@
             "Confirmed"
           ]
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1694,7 +1740,7 @@
         "Dovecote Mews"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2076,6 +2122,15 @@
                     "Waiting"
                   ]
                 }
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-board"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 2,
+  "version": 3,
   "title": "Weekly Agenda",
   "description": "Plan the week by day with tasks and meetings side by side, then review on Friday.",
   "forWho": "Solo consultants and small teams",
@@ -195,6 +195,13 @@
               "do": "run_action",
               "action": "task_start"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -231,7 +238,8 @@
               "priority": "High",
               "minutes": 60,
               "owner": "tm-rohan",
-              "on": "@mon"
+              "on": "@mon",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -243,7 +251,8 @@
               "priority": "Low",
               "minutes": 15,
               "owner": "tm-maeve",
-              "on": "@mon+1d"
+              "on": "@mon+1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -255,7 +264,8 @@
               "priority": "High",
               "minutes": 90,
               "owner": "tm-celeste",
-              "on": "@mon+1d"
+              "on": "@mon+1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1053,6 +1063,15 @@
             "relative": "this_week"
           }
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1141,7 +1160,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1322,6 +1341,15 @@
                     "relative": "next_week"
                   }
                 }
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

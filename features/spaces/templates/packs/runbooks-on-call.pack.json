@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0110",
-  "version": 2,
+  "version": 3,
   "title": "Runbooks & On-call",
   "description": "Runbooks per service with freshness checks, plus a weekly on-call schedule and handoff.",
   "forWho": "Infrastructure and support engineering teams",
@@ -185,6 +185,17 @@
             "button": {
               "do": "run_action",
               "action": "runbook_retested"
+            }
+          },
+          {
+            "key": "open_link",
+            "label": "Open link",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
             }
           }
         ],
@@ -1303,7 +1314,7 @@
         "Foxcroft Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

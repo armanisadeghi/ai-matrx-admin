@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0301",
-  "version": 3,
+  "version": 4,
   "title": "Creator Content Planner",
   "description": "Script and schedule videos, podcast episodes, posts and emails across all your channels.",
   "forWho": "Solo creators with YouTube, podcast and newsletter",
@@ -512,6 +512,17 @@
             "button": {
               "do": "run_action",
               "action": "content_pub"
+            }
+          },
+          {
+            "key": "open_asset_link",
+            "label": "Open asset",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{asset_link}}"
             }
           }
         ],
@@ -1414,7 +1425,7 @@
         "Marrow Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

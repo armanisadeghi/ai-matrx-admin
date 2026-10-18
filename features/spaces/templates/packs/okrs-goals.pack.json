@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0103",
-  "version": 2,
+  "version": 3,
   "title": "OKRs & Goals",
   "description": "Objectives and key results with live progress rollups, weekly check-ins, cycle review.",
   "forWho": "Leadership teams setting quarterly goals",
@@ -167,6 +167,21 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_key_result_btn",
+            "label": "Add key result",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "key_result",
+              "template": "New key result",
+              "prefill": {
+                "objective": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -653,7 +668,16 @@
         "independentOf": {
           "owner": "Any leader can own a result.",
           "objective": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "New key result",
+            "values": {
+              "kr_name": "New key result",
+              "trend": "Up"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -955,7 +979,7 @@
         "Wrenhall Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

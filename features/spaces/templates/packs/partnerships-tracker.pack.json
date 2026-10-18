@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
-  "version": 2,
+  "version": 3,
   "title": "Partnerships Tracker",
   "description": "Partners, contacts, milestones and revenue share in one workspace.",
   "forWho": "Business development and partner teams",
@@ -245,6 +245,17 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_site",
+            "label": "Open website",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{site}}"
+            }
           }
         ],
         "rows": [
@@ -1279,7 +1290,7 @@
         "Embarcadero Mews"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

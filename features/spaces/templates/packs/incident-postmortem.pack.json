@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 2,
+  "version": 3,
   "title": "Incident Postmortems",
   "description": "Log incidents, write blameless postmortems and track the actions that prevent repeats.",
   "forWho": "Engineering and operations teams",
@@ -154,6 +154,13 @@
               "do": "run_action",
               "action": "action_item_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -187,7 +194,8 @@
               "owner": "tm-sigrid",
               "due_on": "@today",
               "status": "In progress",
-              "incident": "in-01"
+              "incident": "in-01",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -220,7 +228,8 @@
               "owner": "tm-patrick",
               "due_on": "@today-4d",
               "status": "In progress",
-              "incident": "in-03"
+              "incident": "in-03",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -231,7 +240,8 @@
               "owner": "tm-bruno",
               "due_on": "@today-9d",
               "status": "In progress",
-              "incident": "in-03"
+              "incident": "in-03",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -282,7 +292,16 @@
         "independentOf": {
           "owner": "Anyone can take an action.",
           "incident": "The two sides move on their own schedule and status; neither forces the other."
-        }
+        },
+        "rowTemplates": [
+          {
+            "name": "New action item",
+            "values": {
+              "action_title": "New action item",
+              "status": "Open"
+            }
+          }
+        ]
       },
       {
         "token": "incident",
@@ -478,6 +497,21 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_action_item_btn",
+            "label": "Add action",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "action_item",
+              "template": "New action item",
+              "prefill": {
+                "incident": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -1200,6 +1234,15 @@
             "relative": "this_month"
           }
         }
+      },
+      {
+        "token": "action_item_mine",
+        "name": "My action items",
+        "table": "action_item",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1288,7 +1331,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1556,6 +1599,15 @@
                     "In progress"
                   ]
                 }
+              },
+              {
+                "id": "view-mine-action_item",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

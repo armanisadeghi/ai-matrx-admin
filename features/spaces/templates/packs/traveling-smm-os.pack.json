@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "T-SPACES-1",
-  "version": 4,
+  "version": 5,
   "title": "The Traveling SMM™ OS",
   "description": "A social-media agency's whole operating system: clients, wins, NPS and team boards.",
   "forWho": "Social-media agencies and freelance managers",
@@ -4455,7 +4455,7 @@
         "Driftwood Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -5091,8 +5091,11 @@
                         "chart": {
                           "centerValue": true,
                           "type": "donut",
-                          "groupBy": "task",
+                          "groupBy": "kind",
                           "op": "count"
+                        },
+                        "filters": {
+                          "status": "Done"
                         }
                       }
                     ],

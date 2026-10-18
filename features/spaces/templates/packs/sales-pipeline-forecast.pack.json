@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
-  "version": 2,
+  "version": 3,
   "title": "Sales Pipeline Forecast",
   "description": "Deals with stage probabilities and weighted value so the forecast is always current.",
   "forWho": "Sales managers and revenue teams",
@@ -164,6 +164,17 @@
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_site",
+            "label": "Open website",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{site}}"
+            }
           }
         ],
         "rows": [
@@ -1168,7 +1179,7 @@
         "Aspenglow Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

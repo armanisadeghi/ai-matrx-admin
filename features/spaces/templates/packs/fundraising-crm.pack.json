@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0357",
-  "version": 2,
+  "version": 3,
   "title": "Fundraising CRM",
   "description": "Run an investor pipeline with rounds, interactions, monthly updates and a cap table.",
   "forWho": "Startup founders",
@@ -295,6 +295,21 @@
             "button": {
               "do": "run_action",
               "action": "investor_passed"
+            }
+          },
+          {
+            "key": "add_interaction_btn",
+            "label": "Log call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "interaction",
+              "template": "Call or meeting notes",
+              "prefill": {
+                "investor": "@row"
+              }
             }
           }
         ],
@@ -1160,7 +1175,8 @@
           {
             "name": "Call or meeting notes",
             "values": {
-              "kind": "Call"
+              "kind": "Call",
+              "summary": "New interaction"
             },
             "default": true,
             "body": {
@@ -1993,7 +2009,7 @@
         "Hollin Wharf"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

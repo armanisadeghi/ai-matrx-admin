@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 2,
+  "version": 3,
   "title": "Small Business OS",
   "description": "One home for sales, projects, money, team and goals in a small company.",
   "forWho": "Owners of 1 to 15 person businesses",
@@ -200,6 +200,21 @@
             "button": {
               "do": "open_url",
               "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "add_deal_btn",
+            "label": "New deal",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deal",
+              "template": "New deal",
+              "prefill": {
+                "contact": "@row"
+              }
             }
           }
         ],
@@ -617,7 +632,8 @@
           {
             "name": "New deal",
             "values": {
-              "stage": "Lead"
+              "stage": "Lead",
+              "deal_name": "New deal"
             },
             "default": true,
             "body": {
@@ -860,6 +876,21 @@
               "do": "run_action",
               "action": "project_done"
             }
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "project": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -1099,6 +1130,13 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned person",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -1109,7 +1147,8 @@
               "task_name": "Proof approval from school",
               "status": "In progress",
               "assignee": "tm-priyanka",
-              "due_on": "@today+1d"
+              "due_on": "@today+1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1119,7 +1158,8 @@
               "task_name": "Print and trim banners",
               "status": "To do",
               "assignee": "tm-ngozi",
-              "due_on": "@today-1d"
+              "due_on": "@today-1d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1129,7 +1169,8 @@
               "task_name": "Pack and label for delivery",
               "status": "To do",
               "assignee": "tm-ngozi",
-              "due_on": "@today+5d"
+              "due_on": "@today+5d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1212,7 +1253,8 @@
           {
             "name": "New task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -2784,6 +2826,15 @@
             "relative": "this_week"
           }
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -2879,7 +2930,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -3231,6 +3282,15 @@
                     "In progress"
                   ]
                 }
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "v-twk"

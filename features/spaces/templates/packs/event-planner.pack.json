@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 2,
+  "version": 3,
   "title": "Event Planner",
   "description": "Plan an event end to end: guests and RSVPs, vendors, tasks, budget and run-of-show.",
   "forWho": "Small organisers and event planners",
@@ -287,6 +287,36 @@
             "parityType": "modified_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "event": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_guest_btn",
+            "label": "Add guest",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "guest",
+              "template": "New guest",
+              "prefill": {
+                "event": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -801,7 +831,8 @@
             "name": "New guest",
             "values": {
               "rsvp": "Pending",
-              "party": 1
+              "party": 1,
+              "guest_name": "New guest"
             },
             "default": true,
             "body": {
@@ -1187,6 +1218,13 @@
               "do": "run_action",
               "action": "task_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -1207,7 +1245,8 @@
               "task_name": "Finalise seating chart",
               "status": "In progress",
               "owner": "tm-ottilie",
-              "due_on": "@today-2d"
+              "due_on": "@today-2d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1217,7 +1256,8 @@
               "task_name": "Collect auction item donations",
               "status": "In progress",
               "owner": "tm-caspian",
-              "due_on": "@today+20d"
+              "due_on": "@today+20d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1227,7 +1267,8 @@
               "task_name": "Print programmes",
               "status": "To do",
               "owner": "tm-june",
-              "due_on": "@today+28d"
+              "due_on": "@today+28d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1300,7 +1341,8 @@
           {
             "name": "New task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -2203,6 +2245,15 @@
             "In progress"
           ]
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -2297,7 +2348,7 @@
         "Starling Passage"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2608,6 +2659,15 @@
                     "In progress"
                   ]
                 }
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-board"

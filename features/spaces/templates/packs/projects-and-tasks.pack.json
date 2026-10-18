@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0002",
-  "version": 2,
+  "version": 3,
   "title": "Projects & Tasks",
   "description": "Projects, tasks, owners and due dates on a board, a calendar and a timeline.",
   "forWho": "Small teams running client or internal projects",
@@ -197,6 +197,21 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Tasks} > 0, ROUND({Tasks done} / {Tasks} * 100, 0), 0)"
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "Task",
+              "prefill": {
+                "project": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -602,6 +617,13 @@
               "do": "run_action",
               "action": "task_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -641,7 +663,8 @@
               "assignee": "tm-grace",
               "start_on": "@today-7d",
               "due_on": "@today",
-              "estimate": 6
+              "estimate": 6,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -655,7 +678,8 @@
               "start_on": "@today-11d",
               "due_on": "@today-4d",
               "estimate": 16,
-              "parent_task": "tk-03"
+              "parent_task": "tk-03",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -669,7 +693,8 @@
               "start_on": "@today-16d",
               "due_on": "@today-9d",
               "estimate": 5,
-              "parent_task": "tk-03"
+              "parent_task": "tk-03",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1002,7 +1027,8 @@
           {
             "name": "Task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -1388,6 +1414,15 @@
             "On hold"
           ]
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1476,7 +1511,7 @@
         "Quillmoss Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1753,6 +1788,15 @@
                     "Blocked"
                   ]
                 }
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-board"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 2,
+  "version": 3,
   "title": "Newsletter Growth OS",
   "description": "Write issues, sell sponsor slots and watch subscriber growth and open rates week by week.",
   "forWho": "Independent newsletter writers",
@@ -909,6 +909,17 @@
               "do": "run_action",
               "action": "idea_used"
             }
+          },
+          {
+            "key": "open_source",
+            "label": "Open source",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{source}}"
+            }
           }
         ],
         "rows": [
@@ -1629,7 +1640,7 @@
         "Quillfeather Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

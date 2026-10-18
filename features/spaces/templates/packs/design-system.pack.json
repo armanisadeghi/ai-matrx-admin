@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0360",
-  "version": 2,
+  "version": 3,
   "title": "Design System",
   "description": "Document tokens, components and usage rules with owners and status.",
   "forWho": "Design and front-end teams",
@@ -586,6 +586,28 @@
             "button": {
               "do": "run_action",
               "action": "component_deprecate"
+            }
+          },
+          {
+            "key": "open_design_link",
+            "label": "Open design",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{design_link}}"
+            }
+          },
+          {
+            "key": "open_code_link",
+            "label": "Open code",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{code_link}}"
             }
           }
         ],
@@ -1394,7 +1416,7 @@
         "Sallow Fen Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

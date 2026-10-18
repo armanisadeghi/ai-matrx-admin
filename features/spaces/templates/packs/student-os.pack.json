@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 2,
+  "version": 3,
   "title": "Student OS",
   "description": "Classes, tasks, notes and study time in one dashboard for the whole term.",
   "forWho": "Students in high school and college",
@@ -219,6 +219,36 @@
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add assignment",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New assignment",
+              "prefill": {
+                "class": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_note_btn",
+            "label": "Add note",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "note",
+              "template": "Lecture note",
+              "prefill": {
+                "class": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -695,7 +725,8 @@
           {
             "name": "New assignment",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -980,7 +1011,8 @@
           {
             "name": "Lecture note",
             "values": {
-              "type": "Lecture"
+              "type": "Lecture",
+              "note_name": "New note"
             },
             "default": true,
             "body": {
@@ -1557,7 +1589,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

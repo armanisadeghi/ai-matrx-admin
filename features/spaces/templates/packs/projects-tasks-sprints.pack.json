@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 2,
+  "version": 3,
   "title": "Projects, Tasks & Sprints",
   "description": "Projects with tasks, two-week sprints, points rollups and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -198,6 +198,21 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Points planned} > 0, ROUND({Points done} / {Points planned} * 100, 0), 0)"
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "Task",
+              "prefill": {
+                "project": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -630,6 +645,24 @@
               "do": "run_action",
               "action": "task_start"
             }
+          },
+          {
+            "key": "open_pull_request",
+            "label": "Open PR",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{pull_request}}"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -706,7 +739,8 @@
               "pull_request": "https://code.harborline-labs.net/pull/404",
               "project": "pr-checkout",
               "sprint": "sp-23",
-              "parent_task": "tk-04"
+              "parent_task": "tk-04",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -722,7 +756,8 @@
               "pull_request": "https://code.harborline-labs.net/pull/405",
               "project": "pr-checkout",
               "sprint": "sp-23",
-              "parent_task": "tk-04"
+              "parent_task": "tk-04",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -736,7 +771,8 @@
               "type": "Bug",
               "due_on": "@today-9d",
               "project": "pr-checkout",
-              "sprint": "sp-23"
+              "sprint": "sp-23",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -918,7 +954,8 @@
           {
             "name": "Task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -1331,6 +1368,15 @@
             "Blocked"
           ]
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1419,7 +1465,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1561,6 +1607,15 @@
                   }
                 ],
                 "id": "view-2"
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

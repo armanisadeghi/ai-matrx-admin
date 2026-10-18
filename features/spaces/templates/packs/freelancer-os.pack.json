@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 2,
+  "version": 3,
   "title": "Freelancer OS",
   "description": "Run clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -214,6 +214,47 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_project_btn",
+            "label": "New project",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "project",
+              "template": "New project",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_invoice_btn",
+            "label": "New invoice",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "invoice",
+              "template": "New invoice",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "open_website",
+            "label": "Open website",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{website}}"
+            }
           }
         ],
         "rows": [
@@ -634,6 +675,36 @@
               "do": "run_action",
               "action": "project_done"
             }
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "project": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_time_entry_btn",
+            "label": "Add time entry",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "time_entry",
+              "template": "Time entry",
+              "prefill": {
+                "project": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -718,7 +789,8 @@
           {
             "name": "New project",
             "values": {
-              "status": "Proposed"
+              "status": "Proposed",
+              "project_name": "New project"
             },
             "default": true,
             "body": {
@@ -1120,7 +1192,8 @@
           {
             "name": "New task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -1397,7 +1470,8 @@
           {
             "name": "Time entry",
             "values": {
-              "billable": true
+              "billable": true,
+              "entry": "New time entry"
             },
             "default": true,
             "body": {
@@ -1759,7 +1833,8 @@
           {
             "name": "New invoice",
             "values": {
-              "status": "Draft"
+              "status": "Draft",
+              "memo": "New invoice"
             },
             "default": true,
             "body": {
@@ -2748,7 +2823,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

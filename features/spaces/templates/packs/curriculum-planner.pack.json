@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0260",
-  "version": 2,
+  "version": 3,
   "title": "Course & Curriculum Planner",
   "description": "Plan courses, units, lessons and outcomes with pacing timelines.",
   "forWho": "Instructors and course designers",
@@ -229,6 +229,21 @@
                 "value": 20000
               }
             ]
+          },
+          {
+            "key": "add_unit_btn",
+            "label": "Add unit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "unit",
+              "template": "Unit plan",
+              "prefill": {
+                "course": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -386,6 +401,21 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Lessons} > 0, ROUND({Lessons complete} / {Lessons} * 100, 0), 0)"
+          },
+          {
+            "key": "add_lesson_btn",
+            "label": "Add lesson",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "lesson",
+              "template": "Lesson plan",
+              "prefill": {
+                "unit": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -453,7 +483,9 @@
         "rowTemplates": [
           {
             "name": "Unit plan",
-            "values": {},
+            "values": {
+              "unit_name": "New unit"
+            },
             "default": true,
             "body": {
               "v": 1,
@@ -910,7 +942,8 @@
           {
             "name": "Lesson plan",
             "values": {
-              "status": "Draft"
+              "status": "Draft",
+              "lesson_name": "New lesson"
             },
             "default": true,
             "body": {
@@ -1547,7 +1580,7 @@
         "Pennywhistle Close"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

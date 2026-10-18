@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 2,
+  "version": 3,
   "title": "Bug Tracker",
   "description": "Report, triage and fix bugs by severity, with a board, a triage guide and release rollups.",
   "forWho": "Engineering and support teams",
@@ -139,6 +139,21 @@
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_bug_btn",
+            "label": "Report bug",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "bug",
+              "template": "Bug report",
+              "prefill": {
+                "release": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -432,6 +447,24 @@
               "do": "run_action",
               "action": "bug_start"
             }
+          },
+          {
+            "key": "open_link",
+            "label": "Open link",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -541,7 +574,8 @@
               "component": [
                 "API"
               ],
-              "duplicate_of": "bg-02"
+              "duplicate_of": "bg-02",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -560,7 +594,8 @@
                 "Web"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1206",
-              "release": "rl-2"
+              "release": "rl-2",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -578,7 +613,8 @@
                 "Web"
               ],
               "link": "https://code.quillpoint-apps.net/issues/1207",
-              "release": "rl-2"
+              "release": "rl-2",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -725,7 +761,8 @@
           {
             "name": "Bug report",
             "values": {
-              "status": "Reported"
+              "status": "Reported",
+              "title": "New bug"
             },
             "default": true,
             "body": {
@@ -1125,6 +1162,15 @@
             "relative": "this_month"
           }
         }
+      },
+      {
+        "token": "bug_assigned_me",
+        "name": "My assigned bugs",
+        "table": "bug",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1213,7 +1259,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1386,6 +1432,15 @@
                 "icon": "User",
                 "me": [
                   "filed_by"
+                ]
+              },
+              {
+                "id": "view-mine-bug",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
                 ]
               }
             ],

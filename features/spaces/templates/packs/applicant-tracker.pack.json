@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0252",
-  "version": 2,
+  "version": 3,
   "title": "Applicant Tracker",
   "description": "Roles, candidates and interviews with a drag-and-drop hiring pipeline.",
   "forWho": "Recruiters and hiring managers",
@@ -218,6 +218,21 @@
             "agg": "count",
             "filter": {
               "stage": "Hired"
+            }
+          },
+          {
+            "key": "add_candidate_btn",
+            "label": "Add candidate",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "candidate",
+              "template": "New candidate",
+              "prefill": {
+                "role": "@row"
+              }
             }
           }
         ],
@@ -525,6 +540,21 @@
               "do": "run_action",
               "action": "cand_reject"
             }
+          },
+          {
+            "key": "add_interview_btn",
+            "label": "Add interview",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "interview",
+              "template": "Interview scorecard",
+              "prefill": {
+                "candidate": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -715,7 +745,8 @@
           {
             "name": "New candidate",
             "values": {
-              "stage": "Applied"
+              "stage": "Applied",
+              "full_name": "New candidate"
             },
             "default": true,
             "body": {
@@ -1070,7 +1101,9 @@
         "rowTemplates": [
           {
             "name": "Interview scorecard",
-            "values": {},
+            "values": {
+              "interview_name": "New interview"
+            },
             "default": true,
             "body": {
               "v": 1,
@@ -1553,7 +1586,7 @@
         "Larkmoor Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

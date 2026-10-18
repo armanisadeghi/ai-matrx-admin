@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0207",
-  "version": 2,
+  "version": 3,
   "title": "PARA System",
   "description": "Projects, areas, resources and archive with an inbox and a weekly review.",
   "forWho": "People organising a second brain",
@@ -662,6 +662,17 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "open_link",
+            "label": "Open link",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
+            }
           }
         ],
         "rows": [
@@ -1317,7 +1328,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

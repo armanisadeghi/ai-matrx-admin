@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0212",
-  "version": 2,
+  "version": 3,
   "title": "Job Application Tracker",
   "description": "Pipeline board for roles, contacts and interviews with follow-up dates.",
   "forWho": "Job seekers",
@@ -104,15 +104,6 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
-          },
-          {
-            "key": "applications",
-            "label": "Applications",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "application",
-            "multi": true
           },
           {
             "key": "app_count",
@@ -513,6 +504,32 @@
             "button": {
               "do": "run_action",
               "action": "app_applied"
+            }
+          },
+          {
+            "key": "add_interview_btn",
+            "label": "Add interview",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "interview",
+              "template": "Interview prep",
+              "prefill": {
+                "application": "@row"
+              }
+            }
+          },
+          {
+            "key": "open_posting",
+            "label": "Open posting",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{posting}}"
             }
           }
         ],
@@ -1050,7 +1067,8 @@
           {
             "name": "Interview prep",
             "values": {
-              "outcome": "Pending"
+              "outcome": "Pending",
+              "interview_name": "New interview"
             },
             "default": true,
             "body": {
@@ -1191,7 +1209,7 @@
         "flavor": "referenced",
         "cardinality": "one",
         "onDelete": "set_null",
-        "inverseKey": "applications_via"
+        "inverseKey": "applications"
       },
       {
         "describes": "An interview belongs to one application.",
@@ -1202,16 +1220,6 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "interviews"
-      },
-      {
-        "describes": "A contact lists their applications.",
-        "fromTable": "contact",
-        "fromField": "applications",
-        "toTable": "application",
-        "flavor": "referenced",
-        "cardinality": "many",
-        "onDelete": "restrict",
-        "inverseKey": "contact_applications"
       }
     ],
     "sharedBlocks": [],
@@ -1467,7 +1475,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

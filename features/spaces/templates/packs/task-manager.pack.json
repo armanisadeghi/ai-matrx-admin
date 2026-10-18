@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 2,
+  "version": 3,
   "title": "Task Manager",
   "description": "Capture tasks, sort by status and priority, and work from smart lists and a calendar.",
   "forWho": "Anyone with too many things to do",
@@ -351,7 +351,8 @@
               "done": false,
               "repeats": "Never",
               "minutes": 15,
-              "notes": "Bring the old paperwork"
+              "notes": "Bring the old paperwork",
+              "assignee": "@installer"
             }
           },
           {
@@ -366,7 +367,8 @@
               "done": false,
               "repeats": "Never",
               "minutes": 10,
-              "notes": "Ask about the weekend slot"
+              "notes": "Ask about the weekend slot",
+              "assignee": "@installer"
             }
           },
           {
@@ -381,7 +383,8 @@
               "done": false,
               "repeats": "Monthly",
               "minutes": 20,
-              "notes": "Needs the receipt"
+              "notes": "Needs the receipt",
+              "assignee": "@installer"
             }
           },
           {
@@ -932,7 +935,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

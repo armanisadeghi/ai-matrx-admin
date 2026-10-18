@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 2,
+  "version": 3,
   "title": "Life OS",
   "description": "Tasks, projects, notes, goals and areas in one connected home with a daily view.",
   "forWho": "Anyone running their whole life from one place",
@@ -918,7 +918,8 @@
               "due_on": "@today-3d",
               "smart_list": "Do next",
               "my_day": true,
-              "estimate_min": 45
+              "estimate_min": 45,
+              "assignee": "@installer"
             }
           },
           {
@@ -931,7 +932,8 @@
               "due_on": "@today",
               "smart_list": "Do next",
               "my_day": false,
-              "estimate_min": 30
+              "estimate_min": 30,
+              "assignee": "@installer"
             }
           },
           {
@@ -944,7 +946,8 @@
               "due_on": "@today+12d",
               "smart_list": "Someday",
               "my_day": false,
-              "estimate_min": 60
+              "estimate_min": 60,
+              "assignee": "@installer"
             }
           },
           {
@@ -2076,7 +2079,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

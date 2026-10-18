@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
-  "version": 2,
+  "version": 3,
   "title": "Content Calendar",
   "description": "Plan posts, emails and videos on a calendar, board and timeline across channels.",
   "forWho": "Marketers, creators and small content teams",
@@ -162,6 +162,17 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Pieces} > 0, ROUND({Pieces live} / {Pieces} * 100, 0), 0)"
+          },
+          {
+            "key": "open_channel_url",
+            "label": "Open channel",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{channel_url}}"
+            }
           }
         ],
         "rows": [
@@ -428,6 +439,17 @@
             "button": {
               "do": "run_action",
               "action": "content_sched"
+            }
+          },
+          {
+            "key": "open_draft_link",
+            "label": "Open draft",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{draft_link}}"
             }
           }
         ],
@@ -1208,7 +1230,7 @@
         "Larkin Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0352",
-  "version": 2,
+  "version": 3,
   "title": "User Research Repository",
   "description": "Studies, sessions, participants and insights linked so every finding has evidence.",
   "forWho": "Product and research teams",
@@ -196,6 +196,21 @@
             "button": {
               "do": "run_action",
               "action": "study_done"
+            }
+          },
+          {
+            "key": "add_session_btn",
+            "label": "Schedule session",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "session",
+              "template": "Session notes",
+              "prefill": {
+                "study": "@row"
+              }
             }
           }
         ],
@@ -449,6 +464,17 @@
               "do": "run_action",
               "action": "session_noshow"
             }
+          },
+          {
+            "key": "open_recording",
+            "label": "Open recording",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{recording}}"
+            }
           }
         ],
         "rows": [
@@ -564,7 +590,8 @@
           {
             "name": "Session notes",
             "values": {
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "session_title": "New session"
             },
             "default": true,
             "body": {
@@ -1579,7 +1606,7 @@
         "Wren Hollow Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

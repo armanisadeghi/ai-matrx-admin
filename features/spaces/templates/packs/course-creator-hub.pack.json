@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0312",
-  "version": 2,
+  "version": 3,
   "title": "Course Creator Hub",
   "description": "Build, film, sell and launch an online course with modules, lessons and students.",
   "forWho": "Educators selling courses and cohorts",
@@ -199,6 +199,21 @@
             "parityType": "modified_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_module_btn",
+            "label": "Add module",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "module",
+              "template": "New module",
+              "prefill": {
+                "course": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -407,6 +422,21 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "IF({Lessons planned} > 0, ROUND({Lessons published} / {Lessons planned} * 100, 0), 0)"
+          },
+          {
+            "key": "add_lesson_btn",
+            "label": "Add lesson",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "lesson",
+              "template": "Lesson script",
+              "prefill": {
+                "module": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -457,7 +487,9 @@
         "rowTemplates": [
           {
             "name": "New module",
-            "values": {},
+            "values": {
+              "module_title": "New module"
+            },
             "default": true,
             "body": {
               "v": 1,
@@ -788,7 +820,8 @@
           {
             "name": "Lesson script",
             "values": {
-              "status": "Idea"
+              "status": "Idea",
+              "lesson_title": "New lesson"
             },
             "default": true,
             "body": {
@@ -1717,7 +1750,7 @@
         "Beckett Alley"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

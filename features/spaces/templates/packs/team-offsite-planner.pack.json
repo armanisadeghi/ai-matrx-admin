@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 2,
+  "version": 3,
   "title": "Team Offsite Planner",
   "description": "Agenda, logistics, budget, attendees and venues for a team retreat.",
   "forWho": "People teams and team leads planning retreats",
@@ -1153,6 +1153,17 @@
             "parityType": "url",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_link",
+            "label": "Open venue",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{link}}"
+            }
           }
         ],
         "rows": [
@@ -1684,7 +1695,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

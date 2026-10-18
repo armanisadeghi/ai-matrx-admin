@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0107",
-  "version": 2,
+  "version": 3,
   "title": "Ultimate Tasks",
   "description": "Inbox, focus lists and projects, with a daily journal, estimates and repeating tasks.",
   "forWho": "Individuals and tiny teams who run on tasks",
@@ -149,6 +149,21 @@
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "Task",
+              "prefill": {
+                "project": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -417,6 +432,13 @@
               "do": "run_action",
               "action": "task_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -469,7 +491,8 @@
               "minutes": 90,
               "assignee": "tm-mireille",
               "project": "pj-1",
-              "parent_task": "tk-02"
+              "parent_task": "tk-02",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -487,7 +510,8 @@
               "minutes": 30,
               "assignee": "tm-mireille",
               "project": "pj-1",
-              "parent_task": "tk-02"
+              "parent_task": "tk-02",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -505,7 +529,8 @@
               "recurrence": "None",
               "minutes": 120,
               "assignee": "tm-jasper",
-              "project": "pj-1"
+              "project": "pj-1",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -769,7 +794,10 @@
           {
             "name": "Task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task",
+              "focus": "Now",
+              "recurrence": "None"
             },
             "default": true,
             "body": {
@@ -1247,6 +1275,15 @@
             "Doing"
           ]
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1335,7 +1372,7 @@
         "Millbrook Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1494,6 +1531,15 @@
                   }
                 ],
                 "id": "view-4"
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

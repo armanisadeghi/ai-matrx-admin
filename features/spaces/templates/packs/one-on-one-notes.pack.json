@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0257",
-  "version": 2,
+  "version": 3,
   "title": "1:1 Meeting Notes",
   "description": "Recurring one to ones with mood, agenda and action items per person.",
   "forWho": "Managers and their direct reports",
@@ -138,6 +138,21 @@
             "via": "meeting_list",
             "pick": "meeting_name",
             "agg": "count"
+          },
+          {
+            "key": "add_meeting_btn",
+            "label": "New 1:1",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "meeting",
+              "template": "1:1",
+              "prefill": {
+                "report": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -415,7 +430,9 @@
         "rowTemplates": [
           {
             "name": "1:1",
-            "values": {},
+            "values": {
+              "meeting_name": "New meeting"
+            },
             "default": true,
             "body": {
               "v": 1,
@@ -1128,7 +1145,7 @@
         "Marrowby Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

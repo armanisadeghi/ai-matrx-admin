@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 2,
+  "version": 3,
   "title": "Release Notes & API Docs",
   "description": "Releases, changes and an API reference with a public changelog and writing guide.",
   "forWho": "Product and developer-experience teams",
@@ -145,6 +145,17 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_pull_request",
+            "label": "Open PR",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{pull_request}}"
+            }
           }
         ],
         "rows": [
@@ -1385,7 +1396,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

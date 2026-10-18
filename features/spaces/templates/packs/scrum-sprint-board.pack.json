@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 3,
+  "version": 4,
   "title": "Scrum Sprint Board",
   "description": "Epics, stories, sprints with points rollups, ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -150,6 +150,21 @@
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_story_btn",
+            "label": "Add story",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "story",
+              "template": "User story",
+              "prefill": {
+                "epic": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -624,6 +639,24 @@
               "do": "run_action",
               "action": "story_done"
             }
+          },
+          {
+            "key": "open_pull_request",
+            "label": "Open PR",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{pull_request}}"
+            }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -792,7 +825,8 @@
               "assignee": "tm-fatou",
               "pull_request": "https://git.lumenhaus-games.net/pull/311",
               "epic": "ep-3",
-              "sprint": "sp-3"
+              "sprint": "sp-3",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -806,7 +840,8 @@
               "assignee": "tm-nora",
               "pull_request": "https://git.lumenhaus-games.net/pull/312",
               "epic": "ep-3",
-              "sprint": "sp-3"
+              "sprint": "sp-3",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -820,7 +855,8 @@
               "assignee": "tm-sven",
               "pull_request": "https://git.lumenhaus-games.net/pull/313",
               "epic": "ep-3",
-              "sprint": "sp-3"
+              "sprint": "sp-3",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -933,7 +969,8 @@
           {
             "name": "User story",
             "values": {
-              "status": "Backlog"
+              "status": "Backlog",
+              "title": "New story"
             },
             "default": true,
             "body": {
@@ -1431,6 +1468,15 @@
             "relative": "this_month"
           }
         }
+      },
+      {
+        "token": "story_mine",
+        "name": "My stories",
+        "table": "story",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1519,7 +1565,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1666,6 +1712,15 @@
                     "n": 14
                   }
                 }
+              },
+              {
+                "id": "view-mine-story",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 2,
+  "version": 3,
   "title": "Sales CRM",
   "description": "Deals on a pipeline board, a contact book, and every call or email logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -234,6 +234,36 @@
             "button": {
               "do": "open_url",
               "url": "mailto:{{contact_email}}"
+            }
+          },
+          {
+            "key": "add_deal_btn",
+            "label": "New deal",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "deal",
+              "template": "New deal",
+              "prefill": {
+                "contact": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_interaction_btn",
+            "label": "Log interaction",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "interaction",
+              "template": "New interaction",
+              "prefill": {
+                "contact": "@row"
+              }
             }
           }
         ],
@@ -796,7 +826,8 @@
           {
             "name": "New deal",
             "values": {
-              "stage": "Lead"
+              "stage": "Lead",
+              "deal_name": "New deal"
             },
             "default": true,
             "body": {
@@ -1192,7 +1223,16 @@
             }
           }
         ],
-        "statusImplies": []
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New interaction",
+            "values": {
+              "summary": "New interaction",
+              "state": "Done"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1654,7 +1694,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 2,
+  "version": 3,
   "title": "Agency OS",
   "description": "Run a small service agency: clients, retainers, projects, capacity and proposals.",
   "forWho": "Small design, marketing and dev agencies",
@@ -206,6 +206,21 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_project_btn",
+            "label": "New project",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "project",
+              "template": "Project kickoff",
+              "prefill": {
+                "client": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -855,6 +870,21 @@
               "do": "run_action",
               "action": "project_done"
             }
+          },
+          {
+            "key": "add_task_btn",
+            "label": "Add task",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "task",
+              "template": "New task",
+              "prefill": {
+                "project": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -952,7 +982,8 @@
           {
             "name": "Project kickoff",
             "values": {
-              "status": "Proposed"
+              "status": "Proposed",
+              "project_name": "New project"
             },
             "default": true,
             "body": {
@@ -1176,6 +1207,13 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -1187,7 +1225,8 @@
               "status": "In progress",
               "assignee": "tm-felix",
               "due_on": "@today+2d",
-              "estimate": 12
+              "estimate": 12,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1198,7 +1237,8 @@
               "status": "To do",
               "assignee": "tm-amit",
               "due_on": "@today+5d",
-              "estimate": 8
+              "estimate": 8,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1209,7 +1249,8 @@
               "status": "To do",
               "assignee": "tm-felix",
               "due_on": "@today+10d",
-              "estimate": 6
+              "estimate": 6,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1321,7 +1362,8 @@
           {
             "name": "New task",
             "values": {
-              "status": "To do"
+              "status": "To do",
+              "task_name": "New task"
             },
             "default": true,
             "body": {
@@ -2483,6 +2525,15 @@
             "n": 30
           }
         }
+      },
+      {
+        "token": "task_mine",
+        "name": "My tasks",
+        "table": "task",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -2576,7 +2627,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2797,6 +2848,15 @@
                     "Review"
                   ]
                 }
+              },
+              {
+                "id": "view-mine-task",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-board"

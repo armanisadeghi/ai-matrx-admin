@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0255",
-  "version": 2,
+  "version": 3,
   "title": "Employee Directory",
   "description": "Find anyone: teams, managers, skills, time zones and anniversaries.",
   "forWho": "Teams of every size",
@@ -370,6 +370,17 @@
             "parityType": "created_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "open_chat",
+            "label": "Open chat",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{chat}}"
+            }
           }
         ],
         "rows": [
@@ -1043,7 +1054,7 @@
         "Emberglass Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

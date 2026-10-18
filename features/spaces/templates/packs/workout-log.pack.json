@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 2,
+  "version": 3,
   "title": "Workout Log",
   "description": "Log sessions, exercises and sets with totals, personal bests and body metrics.",
   "forWho": "Lifters and runners",
@@ -452,6 +452,21 @@
             "button": {
               "do": "run_action",
               "action": "wo_done"
+            }
+          },
+          {
+            "key": "add_set_entry_btn",
+            "label": "Log set",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "set_entry",
+              "template": "New set",
+              "prefill": {
+                "workout": "@row"
+              }
             }
           }
         ],
@@ -1126,6 +1141,14 @@
               "weight": 60
             }
           }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New set",
+            "values": {
+              "set_name": "New set"
+            }
+          }
         ]
       },
       {
@@ -1562,7 +1585,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

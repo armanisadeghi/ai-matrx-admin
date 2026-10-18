@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0108",
-  "version": 2,
+  "version": 3,
   "title": "Tech Spec & RFC Library",
   "description": "Write and review technical proposals with status, risk, reviewers and a decision log.",
   "forWho": "Engineering teams that review designs before building",
@@ -227,6 +227,17 @@
             "button": {
               "do": "run_action",
               "action": "spec_approve"
+            }
+          },
+          {
+            "key": "open_doc_link",
+            "label": "Open spec",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{doc_link}}"
             }
           }
         ],
@@ -1134,7 +1145,7 @@
         "Edgewater Quay"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

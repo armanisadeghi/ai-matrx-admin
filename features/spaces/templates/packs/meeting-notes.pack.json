@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0003",
-  "version": 2,
+  "version": 3,
   "title": "Meeting Notes",
   "description": "Every meeting's notes, decisions and action items, with agendas ready to copy.",
   "forWho": "Teams that meet every week and want nothing to slip",
@@ -215,6 +215,21 @@
             "parityType": "modified_time",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "add_action_item_btn",
+            "label": "Add action item",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "action_item",
+              "template": "New action item",
+              "prefill": {
+                "meeting": "@row"
+              }
+            }
           }
         ],
         "rows": [
@@ -624,6 +639,13 @@
               "do": "run_action",
               "action": "action_item_done"
             }
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           }
         ],
         "rows": [
@@ -712,7 +734,8 @@
               "owner": "tm-kwame",
               "status": "Open",
               "due_on": "@today",
-              "priority": "High"
+              "priority": "High",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -723,7 +746,8 @@
               "owner": "tm-lucia",
               "status": "Open",
               "due_on": "@today-4d",
-              "priority": "High"
+              "priority": "High",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -734,7 +758,8 @@
               "owner": "tm-owen",
               "status": "Open",
               "due_on": "@today-9d",
-              "priority": "Normal"
+              "priority": "Normal",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -812,6 +837,15 @@
               "status": "Done",
               "due_on": "@today-17d",
               "priority": "Normal"
+            }
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New action item",
+            "values": {
+              "item": "New action item",
+              "status": "Open"
             }
           }
         ]
@@ -1073,6 +1107,15 @@
         "filters": {
           "status": "Open"
         }
+      },
+      {
+        "token": "action_item_mine",
+        "name": "My action items",
+        "table": "action_item",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
       }
     ],
     "agent": {
@@ -1161,7 +1204,7 @@
         "Larkspur Bend"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1428,6 +1471,15 @@
                 "filters": {
                   "status": "Open"
                 }
+              },
+              {
+                "id": "view-mine-action_item",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-open"

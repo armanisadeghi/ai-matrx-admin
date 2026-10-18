@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0356",
-  "version": 2,
+  "version": 3,
   "title": "Subscription Tracker",
   "description": "Track recurring payments with monthly and yearly cost, renewal dates and reminders.",
   "forWho": "Individuals and small teams",
@@ -262,6 +262,17 @@
             "button": {
               "do": "run_action",
               "action": "sub_cancel"
+            }
+          },
+          {
+            "key": "open_login",
+            "label": "Open login",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{login}}"
             }
           }
         ],
@@ -796,7 +807,7 @@
         "Quillon Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
