@@ -36,6 +36,7 @@ import {
   Image as ImageIcon,
   Layers,
   PackageCheck,
+  PanelTop,
   StickyNote,
   Type,
   type LucideIcon,
@@ -458,6 +459,7 @@ const ADDED_ICON: Record<AddTileInput["kind"], LucideIcon> = {
   text: Type,
   html: Code2,
   image: ImageIcon,
+  cover: PanelTop,
 };
 
 function createAgentTile(
@@ -521,6 +523,11 @@ function createAgentTile(
         title: input.title ?? "Image",
         subtitle: "Image",
         content: { type: "image", src: input.url },
+      };
+    case "cover":
+      return {
+        ok: false,
+        error: "A workflow run board has no cover tiles. Use a markdown or html tile instead.",
       };
   }
 }

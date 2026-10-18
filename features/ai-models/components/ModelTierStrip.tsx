@@ -130,7 +130,7 @@ export default function ModelTierStrip({
               columns={HISTORY_COLUMNS}
               getRowId={(row) => `${row.version}-${row.occurred_at}`}
               defaultSort={{ id: "when", direction: "desc" }}
-              copy={{ label: "Rating change", listLabel: `Rating history · ${model.common_name || model.name}`, location: "AI models › Rating history" }}
+              copy={{ label: "Rating change", listLabel: `Rating history · ${model.common_name || model.name}`, location: "AI models › Rating history", rowKind: "model-rating-change", listKind: "model-rating-history", humanRow: (row) => `${row.occurred_at}: ${ratingText(row.from_rating)} → ${ratingText(row.to_rating)} (by ${row.actor_tier ?? "unknown"})` }}
             />
           )}
         </div>

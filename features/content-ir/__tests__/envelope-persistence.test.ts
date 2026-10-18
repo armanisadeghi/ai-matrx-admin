@@ -38,7 +38,7 @@ import {
   isIrEnvelopeCache,
   type IrEnvelopeCache,
 } from "@ai-matrx/content-ir";
-import { sanitizeInboundEnvelopeMetadata } from "@ai-matrx/rich-content/kinds/redux/render-block-envelope";
+import { sanitizeAndSeedInboundEnvelopeMetadata } from "@ai-matrx/rich-content/kinds/redux/render-block-envelope";
 import { fingerprintText } from "@ai-matrx/content-ir";
 import { chunkText } from "./seeded-random";
 
@@ -48,9 +48,9 @@ jest.mock("@ai-matrx/rich-content/host/diagnostics", () => {
   const actual = jest.requireActual("@ai-matrx/rich-content/host/diagnostics");
   return {
     ...actual,
-    captureError: (entry: { source: string; message: string }) => {
+    captureRichContentError: (entry: { source: string; message: string }) => {
       mockPackageDiagnostics.push(entry);
-      return actual.captureError(entry);
+      return actual.captureRichContentError(entry);
     },
   };
 });
@@ -353,7 +353,7 @@ describe("inbound py-block-detector envelopes", () => {
       [IR_ENVELOPE_KEY]: pyEnvelope,
       other_key: "kept",
     };
-    const out = sanitizeInboundEnvelopeMetadata(metadata, {
+    const out = sanitizeAndSeedInboundEnvelopeMetadata(metadata, {
       blockId: "srv-block-1",
     });
     expect(out).toBe(metadata); // reuse-by-reference — the idempotence law
@@ -366,7 +366,7 @@ describe("inbound py-block-detector envelopes", () => {
       [IR_ENVELOPE_KEY]: { v: 2, engine: "py-block-detector", junk: true },
       other_key: "kept",
     };
-    const out = sanitizeInboundEnvelopeMetadata(metadata, {
+    const out = sanitizeAndSeedInboundEnvelopeMetadata(metadata, {
       blockId: "srv-block-bad",
     });
     expect(out).not.toBe(metadata);
@@ -389,16 +389,16 @@ describe("inbound py-block-detector envelopes", () => {
   it("absent __ir passes through by reference", () => {
     const metadata: Record<string, unknown> = { anything: 1 };
     expect(
-      sanitizeInboundEnvelopeMetadata(metadata, { blockId: "b" }),
+      sanitizeAndSeedInboundEnvelopeMetadata(metadata, { blockId: "b" }),
     ).toBe(metadata);
     expect(
-      sanitizeInboundEnvelopeMetadata(undefined, { blockId: "b" }),
+      sanitizeAndSeedInboundEnvelopeMetadata(undefined, { blockId: "b" }),
     ).toBeUndefined();
   });
 
   it("a server render_block's envelope rides the part cache engine-agnostically and is reused on reload", () => {
     const pyEnvelope = makePyEnvelope(PY_SOURCE);
-    const metadata = sanitizeInboundEnvelopeMetadata(
+    const metadata = sanitizeAndSeedInboundEnvelopeMetadata(
       { [IR_ENVELOPE_KEY]: pyEnvelope },
       { blockId: "srv-1" },
     );

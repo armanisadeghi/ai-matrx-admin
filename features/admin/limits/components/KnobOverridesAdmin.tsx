@@ -462,7 +462,7 @@ export function KnobOverridesAdmin({
           data={rows}
           getRowId={(row) => row.id}
           rowVersion={(row) => busyRow === row.id}
-          copy={{ label: "Setting override", listLabel: `Overrides · ${knob.full_key}`, location: "Administration › Limits" }}
+          copy={{ label: "Setting override", listLabel: `Overrides · ${knob.full_key}`, location: "Administration › Limits", rowKind: "knob-override", listKind: "knob-overrides", humanRow: (row) => `${row.levelLabel} · ${row.who}: ${row.valueWords}` }}
           columns={[
             { id: "level", header: "Level", accessorFn: (row) => row.levelLabel },
             { id: "who", header: "For", accessorFn: (row) => row.who },

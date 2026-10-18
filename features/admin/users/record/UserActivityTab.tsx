@@ -13,6 +13,7 @@ import {
   Bell,
   Building2,
   CircleAlert,
+  Mail,
   History,
   LifeBuoy,
   LogIn,
@@ -57,6 +58,7 @@ const KIND_ICON: Record<ActivityKind, LucideIcon> = {
   feedback: MessageSquareWarning,
   notification: Bell,
   sms: Smartphone,
+  contact: Mail,
   billing: WalletCards,
   error: CircleAlert,
 };

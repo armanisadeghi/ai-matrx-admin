@@ -29,6 +29,7 @@ import {
   ListChecks,
   Mic,
   PanelRight,
+  PanelTop,
   RotateCcw,
   StickyNote,
   Type,
@@ -728,6 +729,7 @@ const AGENT_ICON: Record<AddTileInput["kind"], LucideIcon> = {
   text: Type,
   html: Code2,
   image: ImageIcon,
+  cover: PanelTop,
 };
 
 function createAgentTile(
@@ -798,6 +800,11 @@ function createAgentTile(
         title: input.title ?? "Image",
         subtitle: "Image",
         content: { type: "image", src: input.url },
+      };
+    case "cover":
+      return {
+        ok: false,
+        error: "The demo board has no cover tiles. Use a markdown or html tile instead.",
       };
   }
 }

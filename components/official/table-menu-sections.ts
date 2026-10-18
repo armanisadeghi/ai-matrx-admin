@@ -26,6 +26,7 @@ import {
   PanelRight,
   Pencil,
   Plus,
+  Printer,
   Scissors,
   Settings2,
   Sigma,
@@ -74,6 +75,7 @@ export const TABLE_MENU_ICONS: Record<MatrxTableMenuIconName, LucideIcon> = {
   link: Link,
   tag: Tag,
   filter: Filter,
+  printer: Printer,
 };
 
 function iconFor(name: MatrxTableMenuIconName | undefined): LucideIcon | undefined {
