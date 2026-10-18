@@ -101,13 +101,25 @@ def die(msg):
     sys.exit(1)
 
 
+INDEX_LOCK_WAIT_S = 180  # a `git commit` holds index.lock for its WHOLE pre-commit hook (several
+# node guards, often 10-60 s in this checkout); 10 s of retries lost the race (ship-all 2026-10-18
+# 16:14: "git add -A failed: index.lock: File exists", nothing pushed). Wait out a live holder.
+
+
 def git(*args, check=True, raw=False, stdin=None):
-    """Run git. Retries briefly when another process holds index.lock."""
-    for i in range(40):
+    """Run git. Waits (up to INDEX_LOCK_WAIT_S) while another git process holds index.lock."""
+    start = time.time()
+    announced = False
+    while True:
         r = subprocess.run(["git", *args], capture_output=True, input=stdin)
         err = r.stderr.decode("utf-8", "replace")
-        if r.returncode != 0 and "index.lock" in err and i < 39:
-            time.sleep(0.25)
+        waited = time.time() - start
+        if r.returncode != 0 and "index.lock" in err and waited < INDEX_LOCK_WAIT_S:
+            if not announced and waited >= 10:
+                announced = True
+                print("sync: another git process holds index.lock; waiting up to %ds (git %s)"
+                      % (INDEX_LOCK_WAIT_S, args[0] if args else ""), file=sys.stderr, flush=True)
+            time.sleep(0.25 if waited < 10 else 1.0)
             continue
         break
     out = r.stdout if raw else r.stdout.decode("utf-8", "replace")
