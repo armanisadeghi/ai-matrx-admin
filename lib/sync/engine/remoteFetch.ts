@@ -270,7 +270,9 @@ export function createStaleRefreshScheduler(
     const timers = new Map<string, ReturnType<typeof setTimeout>>();
     const lastRefreshAt = new Map<string, number>();
     const eligible = policies.filter(
-        (p) => typeof p.config.staleAfter === "number" && !!p.config.remote?.fetch,
+        (p) =>
+            !!p.config.remote?.fetch &&
+            (typeof p.config.staleAfter === "number" || p.config.remote?.revalidateOnFocus === true),
     );
     const bySlice = new Map(eligible.map((p) => [p.config.sliceName, p] as const));
 
@@ -300,18 +302,23 @@ export function createStaleRefreshScheduler(
         timers.set(sliceName, handle);
     }
 
-    // Arm initial timers.
+    // Arm initial timers (a slice with no `staleAfter` has none: it refreshes on focus only).
     for (const p of eligible) arm(p.config.sliceName);
 
     // --- Revalidate on focus (policy opt-in) ---
     const onFocusSlices = eligible
         .filter((p) => p.config.remote?.revalidateOnFocus === true)
         .map((p) => p.config.sliceName);
+    // A slice asking for a longer absence counts from when the scheduler started, not from 1970.
+    for (const sliceName of onFocusSlices) {
+        if (bySlice.get(sliceName)?.config.remote?.revalidateOnFocusAfterMs !== undefined) lastRefreshAt.set(sliceName, now());
+    }
     function onFocus(): void {
         const t = now();
         for (const sliceName of onFocusSlices) {
             const last = lastRefreshAt.get(sliceName) ?? 0;
-            if (t - last < REVALIDATE_ON_FOCUS_MIN_GAP_MS) continue;
+            const gap = bySlice.get(sliceName)?.config.remote?.revalidateOnFocusAfterMs ?? REVALIDATE_ON_FOCUS_MIN_GAP_MS;
+            if (t - last < gap) continue;
             logger.debug("fallback.focus.revalidate", { sliceName });
             refresh(sliceName);
         }

@@ -32,9 +32,7 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
-import { selectOrganizationIds } from "@/features/scopes/redux/selectors/tree";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import { recordToast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { lookupSystemRun } from "@/features/education/kits/systemRuns";
@@ -224,27 +222,18 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
   const defaultPosts = Number.isFinite(knob) && knob > 0 ? knob : null;
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  // Run records (crawls, tracked accounts, posts) belong to the brand's organization: row security shows them to its
-  // members and to platform admins. A viewer of a public brand from outside it reads none of them, so "To do / Not
-  // fetched" would be a lie; they get a plain notice and no reads. Organizations not loaded yet counts as unknown.
-  const isAdmin = useAppSelector(selectIsAdmin);
-  const memberOrgIds = useAppSelector(selectOrganizationIds);
-  const canReadRuns = canEdit || isAdmin || memberOrgIds.length === 0 || memberOrgIds.includes(brand.organization_id);
-
   const setup = useQuery({
     queryKey: ["marketing", "smart-add-setup", brand.id],
     queryFn: () => lookupSystemRun(dispatch, "smart_add_brand_setup", `brand:${brand.id}`, brand.organization_id, "Setup status could not be read."),
-    enabled: canReadRuns,
     staleTime: 10_000,
     refetchInterval: (q) => (q.state.data?.active ? 15_000 : false),
   });
   const sites = useQuery({
     queryKey: ["marketing", "brand-work-sites", brand.id],
     queryFn: () => loadSites(brand.id),
-    enabled: canReadRuns,
     refetchInterval: (q) => ((q.state.data ?? []).some((s) => s.crawl && ACTIVE.has(s.crawl.status)) ? 10_000 : false),
   });
-  const accounts = useQuery({ queryKey: ["marketing", "brand-work-accounts", brand.id], queryFn: () => loadAccounts(brand.id), enabled: canReadRuns });
+  const accounts = useQuery({ queryKey: ["marketing", "brand-work-accounts", brand.id], queryFn: () => loadAccounts(brand.id) });
   // The rows to come are the brand's sites plus its accounts: both lists are already loading for the page
   // (shared cache), so the loading box can be the height of the table that replaces it.
   const knownSites = useBrandSites(brand.id);
@@ -262,7 +251,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
         `ingest:${brand.id}`,
         ...(accounts.data ?? []).map((a) => `ingest:${a.propertyId}`),
       ]),
-    enabled: canReadRuns && accounts.isSuccess,
+    enabled: accounts.isSuccess,
     staleTime: 30_000,
   });
 
@@ -509,16 +498,6 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
 
   const costRows = canEdit && defaultPosts ? (accounts.data ?? []).map((a) => ({ a, points: spend.postsText(a.kind, defaultPosts) })) : [];
   const missingTotal = !accounts.isError && defaultPosts && missing.length > 1 ? spend.postsTotalText(missing.map((a) => a.kind), defaultPosts) : null;
-
-  if (!canReadRuns) {
-    return (
-      <SectionCard title="Background work" anchor="background-work">
-        <p className="px-3 py-3 text-sm text-muted-foreground" data-testid="brand-background-work-private">
-          Activity is visible to members of this brand&apos;s organization.
-        </p>
-      </SectionCard>
-    );
-  }
 
   const run = setup.data;
   const runState: WorkState | null = !run ? null : run.active ? (run.status === "interrupted" ? "todo" : "running") : run.status === "completed" ? "done" : "failed";
