@@ -228,6 +228,21 @@ export async function untagResearchImages(input: {
   );
 }
 
+/** Take images out of a brand (their brand-image categories stay). */
+export async function unlinkResearchImagesFromBrand(input: {
+  imageIds: string[];
+  brandId: string;
+}): Promise<void> {
+  edgesOrThrow(
+    await associationsHelpers.unlinkEdges(
+      input.imageIds.map((id) => ({
+        source: { type: "research_media" as const, id },
+        target: { type: "web_brand" as const, id: input.brandId },
+      })),
+    ),
+  );
+}
+
 // ============================================================================
 // Site media standards — persisted at web.site.settings.media_standards
 // ============================================================================

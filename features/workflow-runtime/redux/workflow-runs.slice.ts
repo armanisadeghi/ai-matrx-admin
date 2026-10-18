@@ -131,6 +131,8 @@ export interface NodeInvocationState {
     fraction: number | null;
     current: number | null;
     total: number | null;
+    /** When this progress arrived (the event's ts): how long ago the step last MOVED. */
+    ts: string | null;
   } | null;
   /** From `inputs.iteration` on node_started when it is a number. */
   iteration: number | null;
@@ -1099,6 +1101,7 @@ function applyEvent(
         fraction: typeof event.fraction === "number" ? event.fraction : null,
         current: typeof event.current === "number" ? event.current : null,
         total: typeof event.total === "number" ? event.total : null,
+        ts: typeof event.ts === "string" ? event.ts : null,
       };
       // The four real emitters ship human sentences ("ingesting Q3-report.pdf",
       // "structuring 47 chunks with the LLM") — exactly the truth this feed is

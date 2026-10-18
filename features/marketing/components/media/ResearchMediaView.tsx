@@ -36,6 +36,7 @@ import {
   useResearchImageOrganization,
   useResearchImages,
   useTagResearchImages,
+  useUnlinkResearchImagesFromBrand,
   useUntagResearchImages,
 } from "@/features/marketing/data/hooks";
 import {
@@ -103,6 +104,7 @@ export function ResearchMediaView({
   });
   const tagImages = useTagResearchImages();
   const untagImages = useUntagResearchImages();
+  const unlinkImages = useUnlinkResearchImagesFromBrand();
 
   const siteHosts = useMemo(
     () =>
@@ -260,6 +262,26 @@ export function ResearchMediaView({
     }
   };
 
+  const selectedLinkedToBrand = rows.some(
+    (row) =>
+      selected.has(row.id) &&
+      (links?.imageBrands[row.id] ?? []).includes(brandId),
+  );
+  const unlinkFromBrand = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      await unlinkImages.mutateAsync({
+        imageIds: selectedIds,
+        brandId,
+        organizationId,
+      });
+    } catch (error) {
+      toast.error("Could not unlink the images", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  };
+
   const removeCategory = async (categoryId: string) => {
     if (selectedIds.length === 0) return;
     try {
@@ -382,50 +404,60 @@ export function ResearchMediaView({
         />
       </div>
 
-      {selectedIds.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-2 py-1">
-          <span className="type-meta tabular-nums text-foreground">
-            {selectedIds.length} selected
-          </span>
-          <div className="w-[12rem]">
-            <CategorySelect
-              dimension={CATEGORY_DIMENSIONS.brandImage}
-              value={null}
-              onChange={(id) => void applyCategory(id)}
-              placeholder="Tag with category"
-              orgId={organizationId}
-              noun="category"
-              disabled={tagImages.isPending}
-            />
-          </div>
-          {selectedCategoryIds.length > 0 ? (
-            <ChipSet>
-              {selectedCategoryIds.map((categoryId) => (
-                <Chip
-                  key={categoryId}
-                  asChild
-                  label={categoryName.get(categoryId) ?? "Category"}
-                  icon={<X />}
-                  title="Remove from the selected images"
-                >
-                  <button
-                    type="button"
-                    disabled={untagImages.isPending}
-                    onClick={() => void removeCategory(categoryId)}
-                  />
-                </Chip>
-              ))}
-            </ChipSet>
-          ) : null}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-2 py-1">
+        <span className="type-meta tabular-nums text-foreground">
+          {selectedIds.length} selected
+        </span>
+        <div className="w-[12rem]">
+          <CategorySelect
+            dimension={CATEGORY_DIMENSIONS.brandImage}
+            value={null}
+            onChange={(id) => void applyCategory(id)}
+            placeholder="Tag with category"
+            orgId={organizationId}
+            noun="category"
+            allowNone={false}
+            disabled={selectedIds.length === 0 || tagImages.isPending}
+          />
+        </div>
+        {selectedCategoryIds.length > 0 ? (
+          <ChipSet>
+            {selectedCategoryIds.map((categoryId) => (
+              <Chip
+                key={categoryId}
+                asChild
+                label={categoryName.get(categoryId) ?? "Category"}
+                icon={<X />}
+                title="Remove from the selected images"
+              >
+                <button
+                  type="button"
+                  disabled={untagImages.isPending}
+                  onClick={() => void removeCategory(categoryId)}
+                />
+              </Chip>
+            ))}
+          </ChipSet>
+        ) : null}
+        {selectedLinkedToBrand ? (
           <Button
             variant="quiet"
-            className="ml-auto"
-            onClick={() => setSelected(new Set())}
+            disabled={unlinkImages.isPending}
+            title={`Take the selected images out of ${brandName}`}
+            onClick={() => void unlinkFromBrand()}
           >
-            Clear
+            Unlink brand
           </Button>
-        </div>
-      ) : null}
+        ) : null}
+        <Button
+          variant="quiet"
+          className="ml-auto"
+          disabled={selectedIds.length === 0}
+          onClick={() => setSelected(new Set())}
+        >
+          Clear
+        </Button>
+      </div>
 
       {filtered.length === 0 ? (
         <MediaEmptyState

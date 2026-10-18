@@ -3,13 +3,15 @@
  * arguments the model sent: the `records` tool takes an `action` + `args` envelope that is lifted
  * before it runs, and an argument says what was asked, not what happened).
  *
- * Three answers a person can see:
+ * Four answers a person can see:
  *  - ROWS: records the tool read (`records.record_read` with a table → `records[]`, one record →
  *    `record`; `dataset.get` / `dataset.search` → `rows[]` + `dataset_id`). Drawn as the table.
  *  - WRITE: records the tool added, changed or archived (`written` + `record_ids`, `record_id` +
  *    `created`, a batch's `updated[]`, `record_delete`). Drawn as one line + the doors.
  *  - LINE: everything else, as one honest sentence (a table made, a column added, a list of
  *    tables, a guide read). Never the JSON.
+ *  - BACKGROUND: a long copy running as a durable workflow run (`notion_sync` → `run_id`). Drawn
+ *    as the live card (`BackgroundRunCard`), which follows the run, not this answer.
  *
  * A held write (`applied: false` + `awaiting_approval`) is NOT read here: the shell mounts the one
  * approval card for every tool before any renderer is asked (`heldWriteOf`).
@@ -40,7 +42,18 @@ export type RecordsAnswer =
       recordId: string | null;
       notDone: string | null;
     }
-  | { kind: "line"; text: string; tableId: string | null };
+  | { kind: "line"; text: string; tableId: string | null }
+  | {
+      /**
+       * A long copy the tool started in the background (`notion_sync` with `import_root`, or a
+       * mapping with `background: true`), or that run's status read (`notion_sync` with `run_id`).
+       * Drawn as the live card, which reads the RUN by its id — the run outlives the turn.
+       */
+      kind: "background";
+      runId: string;
+      /** Which copy, when the answer says (an import names `import_root`; a status read does not). */
+      run: "import" | "copy" | null;
+    };
 
 function str(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
@@ -85,10 +98,34 @@ function rowsOf(list: unknown, idKey: string, valuesKey: string): AnswerRow[] | 
   return rows;
 }
 
+const RUN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * A `notion_sync` / `data_sync` answer that names a background run: the start
+ * (`report: {background: true, run_id, status, message, what_to_do}`) or the status read
+ * (`report: {run_id, status, running_for_seconds?, now_doing?, result?, error_detail?}`). The
+ * envelope is the tool's (`{action, applied, report}`); a bare report reads the same.
+ */
+function backgroundRunOf(result: Record<string, unknown>): Extract<RecordsAnswer, { kind: "background" }> | null {
+  const action = str(result.action);
+  if (action && action !== "notion_sync" && action !== "data_sync") return null;
+  const report = obj(result.report) ?? (action ? null : result);
+  const runId = str(report?.run_id);
+  if (!report || !runId || !RUN_ID.test(runId) || "error" in report) return null;
+  const started = report.background === true;
+  const statusRead = typeof report.status === "string" && !started;
+  if (!started && !statusRead) return null;
+  return { kind: "background", runId, run: action === "data_sync" ? "copy" : null };
+}
+
 export function readRecordsAnswer(result: Record<string, unknown> | null): RecordsAnswer | null {
   if (!result) return null;
   const action = str(result.action) ?? "";
   const notDone = str(result.not_done);
+
+  // ── BACKGROUND RUN ──────────────────────────────────────────────────────────
+  const background = backgroundRunOf(result);
+  if (background) return background;
 
   // ── ROWS ────────────────────────────────────────────────────────────────────
   const tableId = str(result.table_id) ?? str(result.dataset_id);

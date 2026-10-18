@@ -140,6 +140,8 @@ via `<Cost>`/`useCostDisplay` (`components/cost/`, points for everyone); never `
 
 ## Change log
 
+- `2026-10-17` — Topics link to brands (and projects, sites, rulebooks) from Settings → Links (`components/shared/ResearchTopicLinks.tsx`, plop-in `AssociationList`, topic as the edge source). `research_topic → web_brand` is a registered pair; `createTopic` writes it when the subject carries `brand_id` (loud, non-fatal `brandLink` result) and `linkTopicToBrand` is the one writer for code paths (topical map from existing research). The brand page's Relationships → Research and Media → Research's Brand filter read the same edge.
+
 - `2026-10-11` — Context and Outputs carry comments with visible counts and per-kind Comments / My notes switches; read pages (Sources) get highlights and comments; accepting a suggested edit saves into a synthesis or the document and keeps the old text as a version. Experts is deliberately left out: its extraction is deterministic code over page analyses, not an AI call.
 
 - `2026-10-11` — Research records get the study guide's reading set: Synthesis and Document open in the annotated reader (outline, highlight, private note, comment, suggest, link, find), the synthesis list moved into the reader's left column (filters kept), every inline research text is annotatable in place, agents read the open record and its comments, and open comments feed rewrites. Guard: `agent-context/__tests__/reading-record-scope.test.ts`.

@@ -10,9 +10,13 @@
 
 import {
   AssociationList,
-  PrimaryEntityProvider,
+  type PrimaryEntity,
 } from "@ai-matrx/associations/react";
+import type { EntityTypeToken } from "@ai-matrx/associations";
+import { useNeutralLinksAdapter } from "@/features/scopes/hooks/useNeutralLinksAdapter";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+
+const RESEARCH_TOKENS: readonly EntityTypeToken[] = ["research_topic"];
 
 export function BrandResearchCard({
   brandId,
@@ -23,6 +27,13 @@ export function BrandResearchCard({
   brandName: string;
   organizationId: string;
 }) {
+  const container: PrimaryEntity = {
+    type: "web_brand",
+    id: brandId,
+    orgId: organizationId,
+    label: brandName,
+  };
+  const adapter = useNeutralLinksAdapter(container, RESEARCH_TOKENS);
   return (
     <SectionCard
       title="Research"
@@ -30,16 +41,12 @@ export function BrandResearchCard({
       about="Research topics about this brand or what it covers. Linked research narrows Media → Research to its images."
     >
       <div className="p-3">
-        <PrimaryEntityProvider
-          value={{
-            type: "web_brand",
-            id: brandId,
-            orgId: organizationId,
-            label: brandName,
-          }}
-        >
-          <AssociationList tokens={["research_topic"]} variant="compact" />
-        </PrimaryEntityProvider>
+        <AssociationList
+          container={container}
+          adapter={adapter}
+          tokens={[...RESEARCH_TOKENS]}
+          variant="compact"
+        />
       </div>
     </SectionCard>
   );

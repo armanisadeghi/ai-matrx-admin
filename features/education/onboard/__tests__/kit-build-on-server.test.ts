@@ -146,7 +146,7 @@ describe("the board reads the server run", () => {
         },
       }),
       "quiz:0": node("quiz", { phase: "failed", error: { type: null, message: "usage limit reached" } }),
-      "notes:0": node("notes", { progress: { message: "Notes: section 2 of 5", fraction: null, current: 2, total: 5 } }),
+      "notes:0": node("notes", { progress: { message: "Notes: section 2 of 5", fraction: null, current: 2, total: 5, ts: null } }),
     },
   } as unknown as WorkflowRunState;
 

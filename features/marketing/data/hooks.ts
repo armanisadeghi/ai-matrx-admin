@@ -124,6 +124,7 @@ import {
   fetchResearchImages,
   saveSiteMediaStandards,
   tagResearchImages,
+  unlinkResearchImagesFromBrand,
   untagResearchImages,
 } from "@/features/marketing/data/media-library";
 import {
@@ -791,6 +792,21 @@ export function useUntagResearchImages() {
       categoryId: string;
       organizationId: string;
     }) => untagResearchImages(input),
+    onSettled: (_data, _error, input) =>
+      queryClient.invalidateQueries({
+        queryKey: marketingKeys.researchImageOrganization(input.organizationId),
+      }),
+  });
+}
+
+export function useUnlinkResearchImagesFromBrand() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      imageIds: string[];
+      brandId: string;
+      organizationId: string;
+    }) => unlinkResearchImagesFromBrand(input),
     onSettled: (_data, _error, input) =>
       queryClient.invalidateQueries({
         queryKey: marketingKeys.researchImageOrganization(input.organizationId),

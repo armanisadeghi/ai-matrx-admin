@@ -16,9 +16,10 @@
 
 import {
   AssociationList,
-  PrimaryEntityProvider,
+  type PrimaryEntity,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
+import { useNeutralLinksAdapter } from "@/features/scopes/hooks/useNeutralLinksAdapter";
 
 const TOPIC_LINK_TOKENS = [
   "web_brand",
@@ -36,20 +37,23 @@ export function ResearchTopicLinks({
   organizationId: string;
   topicName: string;
 }) {
+  const container: PrimaryEntity = {
+    type: "research_topic",
+    id: topicId,
+    orgId: organizationId,
+    label: topicName,
+    direction: "outgoing",
+  };
+  const adapter = useNeutralLinksAdapter(container, TOPIC_LINK_TOKENS);
   return (
     <section className="space-y-1.5">
       <h3 className="type-secondary font-semibold text-foreground">Links</h3>
-      <PrimaryEntityProvider
-        value={{
-          type: "research_topic",
-          id: topicId,
-          orgId: organizationId,
-          label: topicName,
-          direction: "outgoing",
-        }}
-      >
-        <AssociationList tokens={[...TOPIC_LINK_TOKENS]} variant="compact" />
-      </PrimaryEntityProvider>
+      <AssociationList
+        container={container}
+        adapter={adapter}
+        tokens={[...TOPIC_LINK_TOKENS]}
+        variant="compact"
+      />
     </section>
   );
 }
