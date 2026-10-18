@@ -22,6 +22,7 @@ import { filterUndecidedKeys } from "@/features/assists/service";
 import { emitAssistTracked } from "@/features/assists/redux/emitTracked";
 import { assistPriority } from "@/features/assists/types";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import type { HostValuesFor } from "@/features/mandates/host-values/host-values";
 
 const SOURCE_KEY = "notes.unorganized";
 
@@ -88,6 +89,10 @@ export async function produceNotesAssists(args: {
         mandateKey: NOTES_ORGANIZER_MANDATE,
         agentName: "Notes Organizer",
         draftText,
+        hostValues: {
+          provision: "notes.unorganized_pile",
+          values: notesPileValues(unorganized),
+        },
       },
       surfaceName: NOTES_ASSIST_SURFACE,
       dedupeKey,
@@ -97,4 +102,15 @@ export async function produceNotesAssists(args: {
     dispatch,
   );
   return true;
+}
+
+/** The chip's held values for provision `notes.unorganized_pile` (mapped-only). */
+export function notesPileValues(
+  unorganized: UnorganizedNote[],
+): HostValuesFor<"notes.unorganized_pile"> {
+  return {
+    unorganized_count: unorganized.length,
+    unorganized_note_ids: unorganized.map((n) => n.id),
+    unorganized_note_titles: unorganized.map((n) => n.label),
+  };
 }

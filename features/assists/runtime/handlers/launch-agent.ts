@@ -6,11 +6,16 @@
  */
 
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
+import type { ProvisionKey } from "@ai-matrx/agents/generated/provision-offers";
+import { provideHostValues } from "@/features/mandates/host-values/host-values";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type {
   AssistActionDefinition,
   AssistActionResult,
 } from "../assist-action-types";
+
+/** An unsent chip launch forgets its held values after this long. */
+const HOST_VALUES_TTL_MS = 30 * 60 * 1000;
 
 export const launchAgentAssistAction: AssistActionDefinition = {
   label: "Open agent",
@@ -21,7 +26,7 @@ export const launchAgentAssistAction: AssistActionDefinition = {
     if (assist.action.kind !== "launch_agent") {
       return { ok: false, error: "launch_agent: wrong action payload" };
     }
-    const { agentId, agentName, draftText, variableValues } = assist.action;
+    const { agentId, agentName, draftText, variableValues, hostValues } = assist.action;
     const mandateKey: AnyMandateKey | undefined = assist.action.mandateKey;
     let resolvedAgentId = agentId ?? null;
     if (!resolvedAgentId && mandateKey) {
@@ -49,11 +54,24 @@ export const launchAgentAssistAction: AssistActionDefinition = {
         error: "launch_agent: assist carries neither agentId nor mandateKey",
       };
     }
+    if (mandateKey && hostValues) {
+      // The chip's held values ride the run's first turn as the mandate's
+      // offered values (mandate door only — the run window below carries the key).
+      provideHostValues(
+        mandateKey,
+        hostValues.provision as ProvisionKey,
+        () => hostValues.values,
+        { once: true, ttlMs: HOST_VALUES_TTL_MS },
+      );
+    }
     ctx.openAgentRun({
       initialAgentId: resolvedAgentId,
       initialAgentName: agentName ?? null,
       initialDraftText: draftText ?? null,
       initialVariableValues: variableValues ?? null,
+      // THE MANDATE DOOR: turn 1 POSTs `/ai/mandates/{key}`, so the offered
+      // values reach the binding's consumption map (and never an agent by name).
+      mandateKey: mandateKey ?? null,
     });
     return { ok: true, result: { agentId: resolvedAgentId } };
   },
