@@ -51,6 +51,7 @@ import { useContainerLinks } from "@/features/scopes/hooks/useContainerLinks";
 import { useResearchApi } from "@/features/research/hooks/useResearchApi";
 import { useResearchStream } from "@/features/research/hooks/useResearchStream";
 import { addKeywords, createTopic } from "@/features/research/service";
+import { getSite } from "@/features/marketing/data/service";
 import {
   PAGE_RESEARCH_SURFACE_NAME,
   createPageResearchScope,
@@ -176,13 +177,26 @@ function PageResearchWindowInner({
     let topicId: string | null = null;
     let attachmentOutcome: PageResearchAttachmentStatus = "not_started";
     try {
-      const { topic } = await createTopic(organizationId, {
+      // The page's site knows its brand: the topic is research FOR that brand,
+      // so createTopic writes the same research_topic → web_brand edge.
+      const siteBrandId = siteId
+        ? await getSite(siteId)
+            .then((site) => site.brand_id)
+            .catch(() => null)
+        : null;
+      const { topic, brandLink } = await createTopic(organizationId, {
+        ...(siteBrandId ? { subject: { brand_id: siteBrandId } } : {}),
         name: name.trim(),
         description: `Research for the planned page “${(pageLabel ?? "").trim() || "(untitled)"}”${
           siteId ? ` on site ${siteId}` : ""
         }.`,
       });
       topicId = topic.id;
+      if (!brandLink.ok) {
+        toast.error(
+          `Topic created, but linking it to the brand failed: ${brandLink.error ?? "unknown error"}. Retry from Topic Settings.`,
+        );
+      }
       await addKeywords(topic.id, { keywords: cleanKeywords });
 
       // ATTACH FIRST, run second. The topic row and its edge are the durable

@@ -55,7 +55,7 @@ export interface ResearchImageRow {
   sourceTitle: string | null;
 }
 
-const RESEARCH_IMAGE_LIMIT = 600;
+export const RESEARCH_IMAGE_PAGE_SIZE = 600;
 
 interface ResearchMediaJoinedRow extends ResearchMediaRow {
   // `file_id` landed in migration 0434, newer than the checked-in generated
@@ -73,48 +73,70 @@ interface ResearchMediaJoinedRow extends ResearchMediaRow {
 
 /**
  * Every research-captured image visible to this organization, newest first,
- * with its source page and topic. Bounded (newest RESEARCH_IMAGE_LIMIT rows) —
- * the workspace filters client-side by topic / hostname / search. Images the
+ * with its source page and topic, read a page at a time (newest first) —
+ * the workspace loads more on demand and filters client-side. Images the
  * researcher explicitly marked irrelevant are excluded.
  */
-export async function fetchResearchImages(
+export interface ResearchImagePage {
+  rows: ResearchImageRow[];
+  /** Exact count of matching images in the organization (all pages). */
+  total: number;
+  offset: number;
+}
+
+export async function fetchResearchImagesPage(
   organizationId: string,
+  offset: number,
   signal?: AbortSignal,
-): Promise<ResearchImageRow[]> {
+): Promise<ResearchImagePage> {
   await requireAuthenticatedSupabaseSession(supabase);
   const query = supabase
     .schema("research")
     .from("rs_media")
     .select(
       "id, file_id, url, thumbnail_url, alt_text, caption, width, height, is_relevant, created_at, topic_id, source_id, rs_source(id, url, hostname, title), rs_topic(id, name)",
+      { count: "exact" },
     )
     .eq("organization_id", organizationId)
     .eq("media_type", "image")
     .not("url", "is", null)
     .or("is_relevant.is.null,is_relevant.eq.true")
     .order("created_at", { ascending: false })
-    .limit(RESEARCH_IMAGE_LIMIT);
+    .order("id", { ascending: false })
+    .range(offset, offset + RESEARCH_IMAGE_PAGE_SIZE - 1);
   const response = signal ? await query.abortSignal(signal) : await query;
   if (response.error) throw response.error;
   const rows = (response.data ?? []) as unknown as ResearchMediaJoinedRow[];
-  return rows.map((row) => ({
-    id: row.id,
-    fileId: row.file_id,
-    url: row.url,
-    thumbnailUrl: row.thumbnail_url,
-    alt: row.alt_text,
-    caption: row.caption,
-    width: row.width,
-    height: row.height,
-    isRelevant: row.is_relevant,
-    createdAt: row.created_at,
-    topicId: row.topic_id,
-    topicName: row.rs_topic?.name ?? null,
-    sourceId: row.source_id,
-    sourceUrl: row.rs_source?.url ?? null,
-    sourceHostname: row.rs_source?.hostname ?? null,
-    sourceTitle: row.rs_source?.title ?? null,
-  }));
+  return {
+    offset,
+    total: response.count ?? rows.length,
+    rows: rows.map((row) => ({
+      id: row.id,
+      fileId: row.file_id,
+      url: row.url,
+      thumbnailUrl: row.thumbnail_url,
+      alt: row.alt_text,
+      caption: row.caption,
+      width: row.width,
+      height: row.height,
+      isRelevant: row.is_relevant,
+      createdAt: row.created_at,
+      topicId: row.topic_id,
+      topicName: row.rs_topic?.name ?? null,
+      sourceId: row.source_id,
+      sourceUrl: row.rs_source?.url ?? null,
+      sourceHostname: row.rs_source?.hostname ?? null,
+      sourceTitle: row.rs_source?.title ?? null,
+    })),
+  };
+}
+
+/** First page only (newest RESEARCH_IMAGE_PAGE_SIZE) — callers that just need a sample. */
+export async function fetchResearchImages(
+  organizationId: string,
+  signal?: AbortSignal,
+): Promise<ResearchImageRow[]> {
+  return (await fetchResearchImagesPage(organizationId, 0, signal)).rows;
 }
 
 // ============================================================================

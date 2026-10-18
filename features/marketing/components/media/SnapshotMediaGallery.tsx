@@ -463,7 +463,7 @@ export function MediaEmptyState({
   action,
 }: {
   title: string;
-  detail: string;
+  detail?: string;
   /** Optional call to action (e.g. a fetch-now button) rendered under the copy. */
   action?: ReactNode;
 }) {
@@ -474,9 +474,11 @@ export function MediaEmptyState({
       </div>
       <div>
         <p className="text-xs font-medium text-foreground/70">{title}</p>
-        <p className="mx-auto mt-1 max-w-[320px] text-[10px] text-muted-foreground">
-          {detail}
-        </p>
+        {detail ? (
+          <p className="mx-auto mt-1 max-w-[320px] text-[10px] text-muted-foreground">
+            {detail}
+          </p>
+        ) : null}
       </div>
       {action}
     </div>

@@ -16,6 +16,11 @@ import {
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
+// The card title is the heading; the list's own fixed "Resources" label would
+// repeat it, so hide it and keep the Add / refresh controls right-aligned.
+const HIDE_LIST_HEADING =
+  "[&>div:first-child]:justify-end [&>div:first-child>h3]:hidden";
+
 const RESEARCH_TOKENS: readonly EntityTypeToken[] = ["research_topic"];
 
 export function BrandResearchCard({
@@ -46,6 +51,7 @@ export function BrandResearchCard({
           adapter={adapter}
           tokens={[...RESEARCH_TOKENS]}
           variant="compact"
+          className={HIDE_LIST_HEADING}
         />
       </div>
     </SectionCard>

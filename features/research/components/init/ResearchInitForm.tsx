@@ -1454,7 +1454,7 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
     startTransition(async () => {
       try {
         // A new topic is not safe to repeat: no Retry, only the honest wait.
-        const { topic, projectLink } = await guardedSave(
+        const { topic, projectLink, brandLink } = await guardedSave(
           () =>
             createTopic(
               activeOrgId,
@@ -1463,6 +1463,7 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
                 description: description.trim() || null,
                 autonomy_level: autonomyLevel,
                 template_id: selectedTemplate?.id ?? null,
+                ...subjectColumns(subject),
               },
               selectedProjectId ? { projectId: selectedProjectId } : undefined,
             ),
@@ -1472,6 +1473,11 @@ export default function ResearchInitForm({ onCreated }: ResearchInitFormProps = 
           // LOUD + RETRYABLE: topic exists; only the optional edge failed.
           toast.error(
             `Topic created, but linking it to the project failed: ${projectLink.error ?? "unknown error"}. Retry from Topic Settings.`,
+          );
+        }
+        if (!brandLink.ok) {
+          toast.error(
+            `Topic created, but linking it to the brand failed: ${brandLink.error ?? "unknown error"}. Retry from Topic Settings.`,
           );
         }
         clearDraft();
