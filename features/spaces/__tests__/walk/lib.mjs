@@ -5,13 +5,13 @@
 //   const { browser, page } = await open({ next: "/spaces" });
 //
 // assertOwnPage() refuses every click / type while the page is one of the two read-only
-// Traveling SMM OS samples (admin's and test@test.com's). Call act() for every input.
+// pages people already keep (admin's and test@test.com's; never walked, never trashed). Call act() for every input.
 import { execFileSync } from "node:child_process";
 import { chromium } from "playwright";
 
 export const REPO = new URL("../../../../", import.meta.url).pathname;
 export const SAMPLE_PAGES = [
-  "ba289103-9ef2-433a-ae94-0cd9a963ae29", // admin's sample — read only
+  "ba289103-9ef2-433a-ae94-0cd9a963ae29", // admin's page — read only
   "383c8ed6-f9aa-4a2a-9ee5-d25514e6003e", // test@test.com's copy — read only
 ];
 

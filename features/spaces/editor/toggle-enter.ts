@@ -12,8 +12,8 @@ type AnyBlock = { id: string; type: string; props?: Record<string, unknown>; chi
 
 const isToggle = (b: AnyBlock) => b.type === "toggleListItem" || (b.type === "heading" && b.props?.isToggleable === true);
 // A callout holds its lines inside the box (Notion): Enter at the end of its first line writes inside it.
-// BlockNote's own Enter on an EMPTY callout turned the box into plain text, so a box of links (the
-// Traveling SMM OS link boxes) could not be started by typing.
+// BlockNote's own Enter on an EMPTY callout turned the box into plain text, so a box of links could
+// not be started by typing.
 const isCallout = (b: AnyBlock) => b.type === "callout";
 
 /** Is the toggle open on screen? (BlockNote keeps it on the wrapper; closed when not drawn.) */

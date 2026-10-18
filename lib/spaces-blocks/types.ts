@@ -223,7 +223,7 @@ export interface DatabaseProps extends Record<string, unknown> {
   /** true = inline database in the page body; false = a full-page database shown as a row that opens it. */
   inline: boolean;
   title?: string;
-  /** The sample world the table lives in (the agency sample); absent = a real custom table. */
+  /** The in-memory preview world the table lives in (template gallery); absent = a real custom table. */
   sample?: string;
   /** Linked view of a database: shows the source's name with an arrow. */
   linked?: boolean;

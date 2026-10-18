@@ -30,7 +30,7 @@ const para = (text) => page.locator('.bn-block-content[data-content-type="paragr
 await act(page, async () => {
   await step("title", async () => {
     await page.locator(".spaces-title").click();
-    await type("Traveling SMM OS by hand");
+    await type("Studio home by hand");
   });
   await step("icon", async () => {
     await page.locator(".spaces-title").hover();
@@ -119,7 +119,7 @@ await act(page, async () => {
     await enter();
     await page.keyboard.press("Backspace"); // out of the toggle
     await enter();
-    await type("[] Post the reel");
+    await type("[] Post the update");
     await enter();
     await type("Send the report");
     await enter();
@@ -225,7 +225,7 @@ const m = await page.evaluate(() => {
 const points = {
   cover: m.cover,
   icon: m.icon,
-  title: m.title === "Traveling SMM OS by hand",
+  title: m.title === "Studio home by hand",
   columns: m.columns >= 5,
   linkColumn: m.leftHeadings >= 3 && m.leftPages >= 6 && m.leftGray >= 3,
   chartRow: m.charts >= 4 && m.chartsInRow,

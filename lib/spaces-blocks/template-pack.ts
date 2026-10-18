@@ -43,9 +43,10 @@ export const SPACE_TEMPLATE_CATEGORIES = [
 ] as const;
 export type SpaceTemplateCategory = (typeof SPACE_TEMPLATE_CATEGORIES)[number]["key"];
 
-/** A pack's catalogue id: "SP0002". The agency sample keeps the id its installs already carry. */
+/** A pack's catalogue id: "SP0002". */
 export const SPACE_PACK_ID = /^SP\d{4}$/;
-export const LEGACY_PACK_IDS: readonly string[] = ["T-SPACES-1"];
+/** Ids outside the SP pattern a pack file may still carry: none (the last one was retired 2026-10-18). */
+export const LEGACY_PACK_IDS: readonly string[] = [];
 
 /** One pack block: a stored block whose id may be left out and whose children are pack blocks. */
 export interface PackBlock {
@@ -102,8 +103,8 @@ export interface SpaceTemplatePack extends PackIdentity {
    */
   board?: PackBoard;
   /**
-   * Records-check findings the pack keeps on purpose, each with its reason (the agency sample's all-yellow
-   * win kinds match its reference). A waiver that no longer matches a finding is itself a finding.
+   * Records-check findings the pack keeps on purpose, each with its reason (e.g. a column whose
+   * choices share one colour on purpose). A waiver that no longer matches a finding is itself a finding.
    */
   waivers?: Array<{ at: string; because: string }>;
 }
