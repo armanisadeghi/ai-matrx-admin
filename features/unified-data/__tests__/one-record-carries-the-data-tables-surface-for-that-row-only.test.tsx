@@ -104,15 +104,22 @@ jest.mock("@ai-matrx/records/react", () => ({
 }));
 
 import { RecordStoreRecordSurface } from "../grid-agent-context/RecordStoreRecordSurface";
+import { withRecordsUi } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+
+// In the app this surface is drawn inside the table body's lazy RecordsMount (a records-ui screen);
+// the jest shim answers the module only inside a screen, as the app does, so the test draws it inside one.
+const InsideScreen = withRecordsUi<{ children: React.ReactNode }>("one-record test", ({ children }) => <>{children}</>);
 
 async function mount() {
   const host = document.createElement("div");
   const root = createRoot(host);
   await act(async () => {
     root.render(
-      <RecordStoreRecordSurface tableId={TABLE} recordId={MAPLE}>
-        <div data-testid="peek" />
-      </RecordStoreRecordSurface>,
+      <InsideScreen>
+        <RecordStoreRecordSurface tableId={TABLE} recordId={MAPLE}>
+          <div data-testid="peek" />
+        </RecordStoreRecordSurface>
+      </InsideScreen>,
     );
   });
   await act(async () => {
