@@ -118,7 +118,8 @@ export function livenessSentenceFor(liveness: NeedsYouLiveness): string | null {
 
 /**
  * `enabled: false` reads nothing, polls nothing and opens no channel. The always-mounted assist
- * producer passes the late tier (`useLateIdleReady`) so the queue is never a startup read; the
+ * producer opens it only on the engaged-late tier (the shell's settled count says some wait AND the
+ * person engaged the page — `NeedsYouAssistProducer`), so the queue is never a startup read; the
  * Needs You page reads at once.
  */
 export function useNeedsYou({ enabled = true }: { enabled?: boolean } = {}): UseNeedsYouResult {

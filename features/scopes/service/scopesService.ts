@@ -32,7 +32,12 @@
 
 import { mapThrownError } from "@ai-matrx/records/results";
 import { getOrganization } from "@/features/organizations/service";
-import { adoptProjectOrganization, listProjectSummariesInOrganizations } from "@/features/projects/service";
+import {
+  adoptProjectOrganization,
+  listMyOrganizationsProjectSummaries,
+  listProjectSummariesInOrganizations,
+} from "@/features/projects/service";
+import { readMyOrganizationsByIds } from "@/features/organizations/service/myOrganizationsPage";
 import { adoptTaskOrganization, listProjectTaskIds, listTaskSummaries } from "@/features/tasks/services/taskService";
 import { readScopeFileText, scopeDoors } from "@/features/scopes/service/scopeDoors";
 import { placeTableInRecordStore } from "@/features/data-tables/data-source/table-home";
@@ -205,8 +210,7 @@ export const scopesService = {
         if (!member.ok) {
           return { read: false as const, failed: { ok: false as const, error: mapThrownError(member.error, "scopesService") } };
         }
-        const roleByOrgId = member.roleByOrgId;
-        const orgIds = [...roleByOrgId.keys()];
+        const roleByOrgId = new Map(member.roleByOrgId);
         type OrgRow = {
           id: string;
           name: string;
@@ -217,13 +221,31 @@ export const scopesService = {
           created_by: string | null;
           archived_at: string | null;
         };
-        const orgsRes = { data: member.rows as unknown as OrgRow[] };
-        // Her organizations' projects, through the projects service (chunked by organization).
-        let projectsRes: { data: Awaited<ReturnType<typeof listProjectSummariesInOrganizations>> };
+        const orgsRes = { data: [...(member.rows as unknown as OrgRow[])] };
+        // Her organizations' projects — EVERY organization, scoped by the server
+        // (`projects.in_my_organizations`), never an id list built from the first page of her
+        // organizations (bounded organizations: that dropped every project past page 1).
+        let projectsRes: { data: Awaited<ReturnType<typeof listMyOrganizationsProjectSummaries>> };
         try {
-          projectsRes = { data: await listProjectSummariesInOrganizations(orgIds) };
+          projectsRes = { data: await listMyOrganizationsProjectSummaries() };
         } catch (e) {
           return { read: false as const, failed: { ok: false as const, error: mapThrownError(e, "scopesService") } };
+        }
+        // A project's organization past the first page gets its row by id (one
+        // `iam.my_organizations_by_ids` call), so the tree has a node to hang it on.
+        const beyondFirstPage = [
+          ...new Set((projectsRes.data ?? []).map((p) => p.organization_id).filter((id) => id && !roleByOrgId.has(id))),
+        ];
+        if (beyondFirstPage.length > 0) {
+          const named = await readMyOrganizationsByIds(beyondFirstPage);
+          if (!named.ok) {
+            return { read: false as const, failed: { ok: false as const, error: mapThrownError(named.error, "scopesService") } };
+          }
+          for (const entry of named.entries) {
+            if (entry.organization.archived_at) continue; // the tree holds live organizations only
+            roleByOrgId.set(entry.organization.id, entry.role);
+            orgsRes.data.push(entry.organization as unknown as OrgRow);
+          }
         }
         // The project -> scope edges ride the SAME shared read: the skeleton and the whole tree both
         // need them, and each asked `assoc_for_sources` again (the page-load repeat, 2026-10-13).

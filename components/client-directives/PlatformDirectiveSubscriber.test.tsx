@@ -14,7 +14,7 @@ const invalidate = jest.fn();
 
 jest.mock("react-redux", () => ({ useSelector: () => "u1" }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => null }));
-jest.mock("@/lib/boot/lateIdle", () => ({ useLateIdleReady: () => mockSettled }));
+jest.mock("@/lib/boot/engagedLate", () => ({ useEngagedLateReady: () => mockSettled }));
 jest.mock("@ai-matrx/data/realtime/react", () => ({ useChannel: jest.fn() }));
 jest.mock("@/lib/knobs/featureKnobs", () => ({ invalidateFeatureKnobs: () => invalidate() }));
 jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({ catchUpKnobsSinceBoot: () => catchUp() }));

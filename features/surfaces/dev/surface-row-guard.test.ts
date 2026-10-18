@@ -1,5 +1,5 @@
 jest.mock("@/utils/supabase/clientClaimsCache", () => ({ getClientClaimsUserCached: jest.fn() }));
-jest.mock("@/lib/boot/lateIdle", () => ({ whenLateIdle: jest.fn(async () => true) }));
+jest.mock("@/lib/boot/engagedLate", () => ({ whenEngagedLate: jest.fn(async () => true) }));
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({ getGlobalSurfaceRegistry: jest.fn() }));
 jest.mock("@ai-matrx/chat/surfaces/services/surfaces.service", () => ({ getSurfaceByName: jest.fn() }));
 import { findMissingSurfaceRows, makeSurfaceExists } from "./surface-row-guard";

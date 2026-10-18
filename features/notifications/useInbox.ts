@@ -32,7 +32,7 @@ import {
   useQueryClient,
   type InfiniteData,
 } from "@tanstack/react-query";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import {
   SHELL_COUNTS_QUERY_KEY,
   invalidateShellCounts,
@@ -137,7 +137,7 @@ export function useInboxCounts(): InboxCounts {
   const queryClient = useQueryClient();
   // The badge only needs the person-scoped share (`count - storeCount`); the record store's share
   // is counted by `custom.inbox_counts` (useWorkWaiting) — so skip the `custom.work_inbox` read.
-  const idleReady = useLateIdleReady();
+  const idleReady = useEngagedLateReady();
   const approvals = usePendingApprovalCount({ includeStore: false, ready: idleReady });
   const memory = useInboxMemory();
 

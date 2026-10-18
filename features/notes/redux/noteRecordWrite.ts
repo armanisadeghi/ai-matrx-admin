@@ -13,7 +13,7 @@
 
 import { createAsyncThunk, unwrapResult, type ThunkAction, type ThunkDispatch, type UnknownAction } from "@reduxjs/toolkit";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
 import { SessionUnavailableError } from "@/lib/supabase/authRetry";
 import type { RootState } from "@/lib/redux/store";
 import { materializeNote as materializePersistedNote, persistNoteUpdate } from "../service/notesService";
@@ -50,7 +50,7 @@ export async function assertCurrentNotesUser(expectedUserId: string): Promise<vo
   // The signed-in identity is the access token's VERIFIED claims — not
   // `getSession().user`, which is whatever the cookie deserialized to, and not
   // `auth.getUser()`, which is an auth-server round trip on every save.
-  const { data, error } = await getClaimsUser(supabase);
+  const { data, error } = await getClientClaimsUserCached();
   if (error || data.user?.id !== expectedUserId) {
     throw new SessionUnavailableError();
   }

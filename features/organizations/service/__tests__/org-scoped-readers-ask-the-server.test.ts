@@ -29,6 +29,7 @@ const READERS: Array<{ file: string; table: string; uses: "is" | "arm" }> = [
   { file: "features/crm/deals/service.ts", table: "crm.deal", uses: "arm" },
   { file: "features/crm/service.ts", table: "crm.merge_candidate", uses: "is" },
   { file: "features/crm/service.ts", table: "crm.party_merge", uses: "is" },
+  { file: "features/projects/service.ts", table: "projects.projects", uses: "is" },
 ];
 
 describe("org-scoped readers ask the server, never a first-page id list", () => {
@@ -75,5 +76,14 @@ describe("org-scoped readers ask the server, never a first-page id list", () => 
     expect(src).toContain("listed_in_my_organizations");
     expect(src).not.toMatch(/\.in\("organization_id"/);
     expect(src).not.toMatch(/shownToBlendedFilter\(shownTo, blendedOrgIds/);
+  });
+
+  it("the scope tree reads her projects scoped by the server, never from the first organization page", () => {
+    const src = read("features/scopes/service/scopesService.ts");
+    const boot = src.slice(src.indexOf("sharedScopeBootRead(async"), src.indexOf("THE SCOPE TYPES AND SCOPES, FROM THE STORE"));
+    expect(boot).toContain("listMyOrganizationsProjectSummaries()");
+    expect(boot).not.toMatch(/listProjectSummariesInOrganizations\(orgIds\)/);
+    // A project whose organization is past page 1 still gets a node: its row is asked by id.
+    expect(boot).toContain("readMyOrganizationsByIds(");
   });
 });

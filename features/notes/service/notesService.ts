@@ -2,7 +2,7 @@
 
 import { tryWriteOne } from "@/utils/supabase/writeOne";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { operationFailed } from "@/utils/errors";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
@@ -332,7 +332,7 @@ export async function assertInitiatingNotesUser(
     );
   }
   // Verified claims, not the cookie's deserialized `session.user`.
-  const { data, error } = await getClaimsUser(supabase);
+  const { data, error } = await getClientClaimsUserCached();
   if (error || data.user?.id !== expectedUserId) {
     throw new Error(
       "Your sign-in changed before this draft could be initialized.",

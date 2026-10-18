@@ -13,6 +13,7 @@
  */
 
 import { useEffect } from "react";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
@@ -43,6 +44,9 @@ export function NotesAssistStrip({ className }: { className?: string }) {
   const assignments = useAppSelector(selectNoteScopeAssignments);
   const scopesLoaded = useAppSelector(selectNoteScopesLoaded);
   const listStatus = useAppSelector(selectNotesListStatus);
+  // THE ENGAGED-LATE TIER: the sweep, its scope read, the assists list and every emit wait until
+  // the page settled AND the person engaged it — an untouched /notes makes none of these calls.
+  const engaged = useEngagedLateReady();
 
   // Self-hydrate scope assignments — the sidebar only fetches them in its
   // scope-grouping mode, and the sweep is gated on them (sweeping without
@@ -50,7 +54,7 @@ export function NotesAssistStrip({ className }: { className?: string }) {
   // Read for the notes the list already loaded (never a second id read), once
   // the page is idle — the sweep is background work, never part of first paint.
   useEffect(() => {
-    if (!userId || scopesLoaded || listStatus !== "loaded") return undefined;
+    if (!engaged || !userId || scopesLoaded || listStatus !== "loaded") return undefined;
     if (sweptUsers.has(userId)) return undefined;
     const run = () => void dispatch(fetchAllNoteScopes());
     if (typeof window.requestIdleCallback === "function") {
@@ -59,12 +63,12 @@ export function NotesAssistStrip({ className }: { className?: string }) {
     }
     const timer = window.setTimeout(run, 2000);
     return () => window.clearTimeout(timer);
-  }, [userId, scopesLoaded, listStatus, dispatch]);
+  }, [engaged, userId, scopesLoaded, listStatus, dispatch]);
 
   useEffect(() => {
     // Both halves must be loaded — sweeping before scope assignments arrive
     // would call every note unorganized (a false-positive factory).
-    if (!userId || listStatus !== "loaded" || !scopesLoaded) return;
+    if (!engaged || !userId || listStatus !== "loaded" || !scopesLoaded) return;
     if (sweptUsers.has(userId)) return;
 
     const assigned = new Set(assignments.map((a) => a.entity_id));
@@ -90,7 +94,9 @@ export function NotesAssistStrip({ className }: { className?: string }) {
         if (!thresholdMet) sweptUsers.delete(userId);
       },
     );
-  }, [userId, listStatus, scopesLoaded, notes, assignments, dispatch]);
+  }, [engaged, userId, listStatus, scopesLoaded, notes, assignments, dispatch]);
 
+  // The strip itself reads the assists list on mount, so it mounts on the same tier.
+  if (!engaged) return null;
   return <AssistStrip surfaceName={NOTES_ASSIST_SURFACE} className={className} />;
 }

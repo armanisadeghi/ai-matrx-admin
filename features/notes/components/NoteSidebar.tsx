@@ -148,6 +148,29 @@ import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganiza
 import { CONTEXT_MENU_HEADING_KEY } from "@ai-matrx/context-menu/engine";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
+const NO_ORGANIZATION_IDS: readonly string[] = [];
+
+/** How many "Shared with me" rows this person had last time — the rows held while it reads. */
+const SHARED_COUNT_HINT_KEY = "matrx:notes:shared-count:";
+const SHARED_COUNT_HINT_MAX = 12;
+function readSharedCountHint(userId: string | null): number {
+  if (!userId || typeof window === "undefined") return 0;
+  try {
+    const n = Number(window.localStorage.getItem(SHARED_COUNT_HINT_KEY + userId));
+    return Number.isFinite(n) ? Math.min(Math.max(0, Math.floor(n)), SHARED_COUNT_HINT_MAX) : 0;
+  } catch {
+    return 0; // storage refused (private mode): one placeholder row
+  }
+}
+function writeSharedCountHint(userId: string | null, count: number): void {
+  if (!userId || typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(SHARED_COUNT_HINT_KEY + userId, String(count));
+  } catch {
+    /* storage refused: the next open holds one row */
+  }
+}
+
 // ── Sort field labels ───────────────────────────────────────────────────────
 const SORT_FIELDS: { field: NoteSortField; label: string }[] = [
   { field: "updated_at", label: "Modified" },
@@ -217,8 +240,6 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   // organization (and in a General's label when her notes span several).
   // Names only: the organizations her notes NAME, resolved by id (never her whole list).
   const noteOrganizationIds = useAppSelector(selectNoteOrganizationIds);
-  const { organizations: memberOrgs } = useOrganizationsWith(noteOrganizationIds);
-  const orgNameById = new Map(memberOrgs.map((o) => [o.id, o.name]));
   const homes = useNoteHomeNames(activeOrgId);
   const [orgFilter, setOrgFilter] = useOrgFilterParam([]);
 
@@ -244,6 +265,12 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   const [groupBy, setGroupBy] = useState<NoteGroupBy | "recent" | "default">(
     "default",
   );
+  // The names are read only when the organization grouping shows them (load law: an untouched
+  // /notes asks `my_organizations_by_ids` nothing).
+  const { organizations: memberOrgs } = useOrganizationsWith(
+    groupBy === "organization" ? noteOrganizationIds : NO_ORGANIZATION_IDS,
+  );
+  const orgNameById = new Map(memberOrgs.map((o) => [o.id, o.name]));
   const [trashOpen, setTrashOpen] = useState(false);
   const trashFetchedRef = useRef(false);
   const deletedNotes = useAppSelector(selectDeletedNotesList);
@@ -263,6 +290,9 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
     if (sharedOpen) void dispatch(fetchSharedNotesList({ ifIdle: true }));
   }, [dispatch, sharedOpen]);
   const viewerId = useAppSelector(selectUserId);
+  useEffect(() => {
+    if (sharedStatus === "loaded") writeSharedCountHint(viewerId, sharedNotes.length);
+  }, [sharedStatus, sharedNotes.length, viewerId]);
   const activeNoteOwner = useAppSelector((state) =>
     activeTabId ? (state.notes.notes[activeTabId]?.created_by ?? null) : null,
   );
@@ -769,7 +799,7 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
 
   type SidebarItem = NoteSidebarListItem &
     (
-      | { kind: "recent-header" | "recent-more" | "recent-end" | "shared-header" | "shared-empty" | "shared-end" }
+      | { kind: "recent-header" | "recent-more" | "recent-end" | "shared-header" | "shared-empty" | "shared-end" | "shared-loading" }
       | { kind: "recent-note" | "shared-note" | "flat-note"; note: NoteRecord }
       | { kind: "folder" | "folder-empty"; groupKey: string }
       | { kind: "type-header"; label: string }
@@ -793,6 +823,12 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   if (listStatus === "loaded" || sharedNotes.length > 0) {
     items.push({ key: "shared-header", kind: "shared-header" });
     if (sharedOpen) {
+      // Opened before its read landed: hold the rows it last had (one when never read), so the
+      // arriving rows replace placeholders instead of pushing every section below them down.
+      if (sharedNotes.length === 0 && sharedStatus !== "loaded" && sharedStatus !== "error") {
+        const reserved = Math.max(1, readSharedCountHint(viewerId));
+        for (let n = 0; n < reserved; n++) items.push({ key: `shared-loading:${n}`, kind: "shared-loading" });
+      }
       for (const note of sharedNotes) {
         items.push({ key: `shared:${note.id}`, noteId: note.id, kind: "shared-note", note });
       }
@@ -1076,6 +1112,13 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
         return (
           <div className="ml-2 px-2 py-[3px] text-xs text-muted-foreground">
             Nothing shared with you
+          </div>
+        );
+      case "shared-loading":
+        return (
+          <div className="ml-2 flex h-[26px] items-center gap-1.5 px-2" aria-hidden="true">
+            <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+            <Skeleton className="h-3 flex-1" />
           </div>
         );
       case "shared-end":

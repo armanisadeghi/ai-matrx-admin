@@ -28,7 +28,7 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useChannel } from "@ai-matrx/data/realtime/react";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useLateIdleReady } from "@/lib/boot/lateIdle";
+import { useEngagedLateReady } from "@/lib/boot/engagedLate";
 import { invalidateFeatureKnobs } from "@/lib/knobs/featureKnobs";
 import { notifyRefreshRequired } from "@/components/errors/refresh-directive";
 import { serverBusChannelSpec } from "@/lib/client-directives/serverBusChannel";
@@ -79,10 +79,10 @@ export function PlatformDirectiveSubscriber() {
 
   // Two rooms, one sink. `useChannel(null)` is the package's documented
   // "not yet" — a signed-out tab joins nothing, and no tab joins before the
-  // page has settled (the load law: nothing first paint does not need leaves
+  // page has settled AND been engaged (engaged-late tier) (the load law: nothing first paint does not need leaves
   // before it). A directive sent in that window is caught up below, per kind, and
   // only where the page's own boot read holds a version to compare against.
-  const settled = useLateIdleReady();
+  const settled = useEngagedLateReady();
   const join = Boolean(userId) && settled;
 
   // CATCH-UP. Broadcast has no replay, so a directive sent before the rooms joined is missed.
