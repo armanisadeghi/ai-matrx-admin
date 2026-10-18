@@ -15,18 +15,22 @@
 import { useEffect, useRef, useState } from "react";
 import { Braces, Check, ChevronDown, ChevronRight, Copy, RefreshCw } from "lucide-react";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Badge, Button } from "@ai-matrx/design-system/controls";
+import { Badge, Button, Select } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { toast } from "@/lib/toast";
 import {
+  DEFAULT_PREVIEW_DOOR,
   blockLevelLabel,
   copyAllText,
   jsonText,
+  labeledAdditions,
   prettyBody,
   sectionsOf,
+  toolSourceByName,
+  type LabeledAddition,
   type ModelViewPreview,
   type RequestMessage,
   type RequestPart,
@@ -125,6 +129,8 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   });
   const [raw, setRaw] = useState(false);
   const [nonce, setNonce] = useState(0);
+  // The door previewed: what the model receives arriving through it (chat, a page, an agent call…).
+  const [door, setDoor] = useState(DEFAULT_PREVIEW_DOOR);
   // What the request reads. The capture effect re-runs on each change, and the
   // last SETTLED capture remembers which inputs it answered — so "Capturing…"
   // and a stale refusal are DERIVED in render, never set from the effect.
@@ -136,7 +142,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   // render, React counts each one as a nested update, and the 51st throws
   // "Maximum update depth exceeded" from the composer's onChange. State changes
   // here only from the capture's own async answer.
-  const inputs = [nonce, conversationId, agentId, draft, conversation, typed, variables, resources, context, ui, messages];
+  const inputs = [nonce, door, conversationId, agentId, draft, conversation, typed, variables, resources, context, ui, messages];
   const [settled, setSettled] = useState<SettledCapture | null>(null);
   const seq = useRef(0);
   const loadedOnce = useRef(false);
@@ -150,12 +156,12 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
   useEffect(() => {
     const mine = ++seq.current;
     // The same list, in the same order, as `inputs` above.
-    const answered = [nonce, conversationId, agentId, draft, conversation, typed, variables, resources, context, ui, messages];
+    const answered = [nonce, door, conversationId, agentId, draft, conversation, typed, variables, resources, context, ui, messages];
     const controller = new AbortController();
     const timer = setTimeout(
       () => {
         loadedOnce.current = true;
-        requestModelView(dispatch, store.getState as () => RootState, conversationId, agentId, controller.signal)
+        requestModelView(dispatch, store.getState as () => RootState, conversationId, agentId, controller.signal, door)
           .then((next) => {
             if (mine !== seq.current) return;
             setSettled({ inputs: answered, preview: next, error: null });
@@ -174,12 +180,15 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
       // A superseded capture stops waiting at once; the newer one is the only answer in flight.
       controller.abort();
     };
-  }, [dispatch, store, conversationId, agentId, nonce, draft, conversation, typed, variables, resources, context, ui, messages]);
+  }, [dispatch, store, conversationId, agentId, nonce, door, draft, conversation, typed, variables, resources, context, ui, messages]);
 
   const copy = (label: string, text: string) => void copyText(text, `${label} copied`);
   const request = preview?.request ?? null;
   const sections = request ? sectionsOf(request.body) : null;
   const variantLabels = useVariantLabels(preview?.prompt_blocks);
+  const additions = labeledAdditions(preview);
+  const toolSources = toolSourceByName(preview);
+  const doorOptions = (preview?.doors ?? []).map((d) => ({ value: d.id, label: d.label, meta: d.surface ?? undefined }));
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-textured p-3" data-testid="model-view">
@@ -201,6 +210,16 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
           )}
         </span>
         <div className="flex shrink-0 items-center gap-1">
+          {doorOptions.length > 0 ? (
+            <Select
+              variant="inline"
+              aria-label="Door"
+              value={door}
+              options={doorOptions}
+              onValueChange={setDoor}
+              align="end"
+            />
+          ) : null}
           <Button
             variant={raw ? "outline" : "quiet"}
             icon={<Braces />}
@@ -282,7 +301,7 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
             ))}
           </Section>
 
-          <ToolsSection tools={sections.tools} />
+          <ToolsSection tools={sections.tools} sources={toolSources} />
 
           <Section title="Parameters">
             <div className="flex flex-col gap-1" data-testid="model-view-params">
@@ -291,6 +310,14 @@ export function ModelViewPanel({ agentId, conversationId }: ModelViewPanelProps)
                   <span className="text-muted-foreground">{key}</span>
                   <pre className="whitespace-pre-wrap break-words text-foreground">{jsonText(value)}</pre>
                 </div>
+              ))}
+            </div>
+          </Section>
+
+          <Section title={`Added by platform (${additions.length})`} sub={preview?.door?.label ?? null}>
+            <div className="flex flex-col gap-1.5" data-testid="model-view-additions">
+              {additions.map((a) => (
+                <AddedPart key={a.key} addition={a} onCopy={copy} />
               ))}
             </div>
           </Section>
@@ -407,7 +434,23 @@ function Part({ part, onCopy }: { part: RequestPart; onCopy: (label: string, tex
   );
 }
 
-function ToolsSection({ tools }: { tools: RequestTool[] }) {
+/** One labeled platform addition: what it is, who added it, its exact text. */
+function AddedPart({ addition, onCopy }: { addition: LabeledAddition; onCopy: (label: string, text: string) => void }) {
+  return (
+    <div className="flex flex-col gap-1" data-testid="model-view-addition" data-source={addition.source}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-xs text-foreground">{addition.label}</span>
+          <Badge>{addition.source}</Badge>
+        </span>
+        <CopyButton onCopy={() => onCopy(addition.label, addition.text)} />
+      </div>
+      <Mono text={addition.text} />
+    </div>
+  );
+}
+
+function ToolsSection({ tools, sources }: { tools: RequestTool[]; sources: Record<string, string> }) {
   const [open, setOpen] = useState<Record<number, boolean>>({});
   const allOpen = tools.length > 0 && tools.every((_, i) => open[i]);
   return (
@@ -432,7 +475,10 @@ function ToolsSection({ tools }: { tools: RequestTool[] }) {
             onClick={() => setOpen((o) => ({ ...o, [i]: !o[i] }))}
           >
             {open[i] ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
-            {tool.name}
+            <span className="min-w-0 flex-1 truncate">{tool.name}</span>
+            {sources[tool.name] ? (
+              <Badge tone={sources[tool.name] === "unrecorded" ? "warning" : "neutral"}>{sources[tool.name]}</Badge>
+            ) : null}
           </button>
           {open[i] ? <Mono text={jsonText(tool.value)} /> : null}
         </div>

@@ -22,6 +22,8 @@ export async function requestModelView(
   conversationId: string,
   agentId?: string,
   signal?: AbortSignal,
+  /** The door to preview (server `preview_doors.py`); omitted = the request as this page sends it. */
+  door?: string,
 ): Promise<ModelViewPreview> {
   // A run refreshes the surface scope and loads the context rules before it
   // assembles; without them the context the person set never reaches the request.
@@ -55,6 +57,7 @@ export async function requestModelView(
         // The payload's own `stream` and `store` stay: the wire carries them. The
         // server makes a dry run ephemeral itself.
         dry_run: true,
+        ...(door ? { preview_door: door } : {}),
         source_app: "matrx-frontend",
         source_feature: "agent-builder",
         initiation: "user",
