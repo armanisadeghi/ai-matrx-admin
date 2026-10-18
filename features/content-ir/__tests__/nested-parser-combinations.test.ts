@@ -1,6 +1,7 @@
 import { splitContentIntoBlocksV2 } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/content-splitter-v2";
 import { StreamBlockAccumulator } from "@ai-matrx/chat/agents/redux/execution-system/utils/stream-block-accumulator";
 import type { RenderBlockPayload } from "@ai-matrx/agents/generated/stream-events";
+import { readEnvelope } from "@ai-matrx/rich-content/kinds/redux/render-block-envelope";
 import { chunkText } from "./seeded-random";
 import { renderBlockToContentBlock } from "@ai-matrx/rich-content/display/chat-markdown/render-block-to-content-block";
 import { expandTextBlocksInList } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/expand-text-blocks";
@@ -129,6 +130,17 @@ describe("nested parser combinations", () => {
         expect(expected).toHaveLength(1);
         expect(expected[0].type).toBe(expectedType);
         expect(expected[0].content).toContain(child);
+      } else if (childName === "registered kind" && parent === "thinking") {
+        // THE MODEL'S REASONING IS NEVER AN ANSWER (Arman, 2026-10-14; rich-content a17c1dce51,
+        // 2026-10-15): a `{"__kind":…}` inside a thinking region is the model drafting its answer, so
+        // the splitter reads the whole region as ONE island and lifts no kind out of it. (Before that
+        // change this case expected a lifted json kind block.) The stream must agree, frame for frame.
+        expect(expected).toHaveLength(1);
+        expect(expected[0].type).toBe(expectedType);
+        expect(expected[0].content).toContain(child);
+        expect(
+          staticBlocks.some((block) => readEnvelope(block.metadata)?.root.kind),
+        ).toBe(false);
       } else if (childName !== "registered kind") {
         expect(expected[0].type).toBe(expectedType);
         expect(expected.map((block) => block.content).join("\n")).toContain(

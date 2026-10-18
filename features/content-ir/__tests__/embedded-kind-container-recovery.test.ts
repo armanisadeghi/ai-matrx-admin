@@ -165,7 +165,7 @@ describe("embedded __kind recovery across every arrival container", () => {
   });
 
   it.each([
-    ["recognized XML", `<thinking>\nbefore\n${FLASHCARDS}\nafter\n</thinking>`],
+    // (`<thinking>` is not here: reasoning is never an answer — it lifts no kind; see the test below.)
     ["unrecognized XML", `<custom>\nbefore\n${FLASHCARDS}\nafter\n</custom>`],
     ["inline prose", `before ${FLASHCARDS} after`],
     [
@@ -194,6 +194,20 @@ describe("embedded __kind recovery across every arrival container", () => {
       } else {
         expect(streamed).toEqual(expected);
       }
+    }
+  });
+
+  it("a kind inside <thinking> is the model drafting, not an answer: one thinking island, no kind lifted, on both paths", () => {
+    // Arman 2026-10-14 "the model's reasoning is never an answer" (rich-content a17c1dce51, 2026-10-15).
+    // Before that change this source was expected to lift the flashcard set out of the thinking region.
+    const source = `<thinking>\nbefore\n${FLASHCARDS}\nafter\n</thinking>`;
+    const expected = splitterBlocks(source);
+    expect(expected).toHaveLength(1);
+    expect(expected[0].type).toBe("thinking");
+    expect(expected[0].content).toContain(FLASHCARDS);
+    expect(expected.filter((block) => block.kind)).toHaveLength(0);
+    for (let seed = 1; seed <= 8; seed++) {
+      expect(reduxBlocks(source, seed)).toEqual(expected);
     }
   });
 
