@@ -697,7 +697,7 @@ function RunRow({
           {run.ai_call_count} AI call{run.ai_call_count === 1 ? "" : "s"}
         </Badge>
       ) : null}
-      <RecordId value={run.execution_id} label="Execution" />
+      <RecordId value={run.execution_id} label="Execution" inert />
       <span className="ml-auto flex items-center gap-2 text-[10px] tabular-nums text-muted-foreground">
         {run.total_cost > 0 ? (
           <span className="flex items-center gap-0.5">

@@ -113,7 +113,7 @@ const relatedColumns: MatrxColumnDef<CxRelatedConversationCost>[] = [
     width: 280,
     cell: (r) => (
       <AppLink href={CONVERSATION_HREF(r.id)} className="hover:underline">
-        {r.title || <RecordId value={r.id} label="Conversation" />}
+        {r.title || <RecordId value={r.id} label="Conversation" inert />}
       </AppLink>
     ),
   },
@@ -253,7 +253,7 @@ export function ConversationErrorsView({
           <div className="space-y-1">
             {failedRequests.map((ur) => (
               <AppLink key={ur.id} href={REQUEST_HREF(ur.id)} className="flex items-start gap-3 rounded p-2 text-xs hover:bg-muted/50">
-                <RecordId value={ur.id} label="Request" />
+                <RecordId value={ur.id} label="Request" inert />
                 <Badge tone={statusTone(ur.status)}>{ur.status}</Badge>
                 {ur.finish_reason === "max_tokens" && <Badge tone="warning">max_tokens</Badge>}
                 <span className="min-w-0 flex-1 truncate text-destructive">{ur.error ?? ""}</span>
@@ -269,7 +269,7 @@ export function ConversationErrorsView({
           <div className="space-y-1">
             {truncatedCalls.map((r) => (
               <AppLink key={r.id} href={REQUEST_HREF(r.user_request_id)} className="flex items-center gap-3 rounded p-2 text-xs hover:bg-muted/50">
-                <RecordId value={r.user_request_id} label="Request" />
+                <RecordId value={r.user_request_id} label="Request" inert />
                 <span>iter {r.iteration}</span>
                 <span>{r.model_name ?? "—"}</span>
                 <span className="text-muted-foreground">{formatTokens(r.output_tokens)} out</span>

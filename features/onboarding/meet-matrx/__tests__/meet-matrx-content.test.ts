@@ -35,7 +35,7 @@ describe("Meet Matrx", () => {
   it("presents the three studios, then the six pieces, in the owner's order", () => {
     expect(MEET_MATRX_GROUPS.map((g) => g.items.map((i) => i.name))).toEqual([
       ["Agent Studio", "Orchestra Studio", "Workflow Studio"],
-      ["Mandates", "Applets", "Boards", "Custom data", "Knowledge", "Tools & Connectors"],
+      ["Knowledge", "Mandates", "Applets", "Boards", "Custom data", "Tools & Connectors"],
     ]);
   });
 
@@ -47,6 +47,13 @@ describe("Meet Matrx", () => {
 
   it.each(items.filter((i) => !i.external).map((i) => [i.name, i.href] as const))("%s links to a real page (%s)", (_name, href) => {
     expect(routeExists(href)).toBe(true);
+  });
+
+  it("Knowledge is the one hero card, and shows its real breadth ending at who draws on it", () => {
+    const featured = items.filter((i) => i.featured);
+    expect(featured.map((i) => i.name)).toEqual(["Knowledge"]);
+    expect(featured[0].flow).toEqual(["Notes", "Documents", "Chats", "Web pages", "Workbooks", "Research", "Tasks", "People"]);
+    expect(featured[0].flowTo).toBe("Every agent");
   });
 
   it("the routine route check can fail: a made-up path is not a page", () => {

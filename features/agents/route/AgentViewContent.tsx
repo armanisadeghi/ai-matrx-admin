@@ -1,7 +1,5 @@
 "use client";
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useState, useEffect, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "@ai-matrx/chat/store/hooks";
 import {
@@ -52,8 +50,6 @@ import {
   Layers,
   Settings,
   Tag,
-  Copy,
-  Check,
   Eye,
   Braces,
   Server,
@@ -76,7 +72,6 @@ import {
   AiModelRef,
   AiToolRef,
 } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
 import { CopyButtonsSlot } from "@ai-matrx/chat/host/ui-slots";
@@ -245,13 +240,9 @@ function MessageCard({ role, content }: { role?: string; content: string }) {
  * renders it after the stat strip and never knows what it is.
  */
 export function AgentViewContent({ agentId, recordSections }: { agentId: string; recordSections?: ReactNode }) {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("pretty");
-  const [copied, setCopied] = useState<string | null>(null);
   const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
   const [categoryLabel, setCategoryLabel] = useState<string | null>(null);
 
@@ -386,12 +377,6 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
   );
   const isAdmin = useAppSelector(selectIsSuperAdmin);
   const dataIssues = agent?.dataIssues ?? [];
-
-  const handleCopy = async (key: string, text: string, message: string) => {
-    if (!(await copyText(text, message))) return;
-    setCopied(key);
-    setTimeout(() => setCopied(null), 1500);
-  };
 
   if (!mounted || !agent) {
     return (
@@ -587,36 +572,23 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
                 {agent.name}
               </h1>
               <div className="inline-flex items-center gap-1.5 type-secondary min-w-0">
-                <span className="text-muted-foreground shrink-0">
-                  Agent ID:
-                </span>
-                <EntityRef
+                <RecordId
+                  value={liveAgentId}
+                  label="Agent"
+                  labelled
+                  show="full"
                   token="agent"
-                  id={liveAgentId}
-                  name={agent.name}
                   href={agentHref(
                     { id: liveAgentId, agent_type: agent.agentType },
                     "",
                     addressViewer,
                   )}
-                  showIcon={false}
-                  wrap
-                  className="font-mono text-foreground/90"
-                >
-                  {liveAgentId}
-                  {version != null && (
-                    <span className="ml-1 whitespace-nowrap text-muted-foreground/70">
-                      · v{version}
-                    </span>
-                  )}
-                </EntityRef>
-                <ControlButton variant="quiet" icon={copied === "agent-id" ? (
-                    <Check />
-                  ) : (
-                    <Copy />
-                  )} glyphTone="success" onClick={() =>
-                    handleCopy("agent-id", liveAgentId, "Agent ID copied")
-                  } title="Copy agent ID" aria-label="Copy agent ID" className="shrink-0" />
+                />
+                {version != null && (
+                  <span className="whitespace-nowrap text-muted-foreground/70">
+                    · v{version}
+                  </span>
+                )}
               </div>
               {agent.description && (
                 <RichContent level="full" imagePolicy="other"

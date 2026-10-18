@@ -205,7 +205,7 @@ export function FindingsTable() {
               }}
             >
               <p className="truncate font-mono text-[11px]">
-                {row.page_path || <RecordId value={row.page_id} label="Page" />}
+                {row.page_path || <RecordId value={row.page_id} label="Page" inert />}
               </p>
               {row.page_url ? (
                 <p className="truncate text-[10px] text-muted-foreground">

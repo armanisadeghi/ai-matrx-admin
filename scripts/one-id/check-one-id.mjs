@@ -66,8 +66,28 @@ const ID_NAME = String.raw`(?:id|\w+Id|\w+_id|uuid|\w*Uuid|\w+_uuid)`;
 const SLICE_RE = new RegExp(String.raw`\b(?:\w+(?:\?)?\.)*${ID_NAME}\??\.(?:slice|substring|substr)\(\s*0\s*,\s*\d+`);
 const SHORTENER_CALL_RE = /\b(?:truncateId|shortId|shortUuid|shortenId|shortenUuid|truncateUuid|formatShortId|abbreviateId)\s*\(/;
 const COPY_ARG = String.raw`\(\s*(?:[\w$]+\??\.)*${ID_NAME}\s*[,)]`;
-const COPY_CALL_RE = new RegExp(String.raw`\b(?:copyText|copyToClipboard|copyNotify|copy)\s*${COPY_ARG}|clipboard\??\.writeText\s*${COPY_ARG}`);
-const COPY_LABEL_RE = /(?:title|aria-label|label|tooltip)\s*=\s*\{?\s*["'`]Copy (?:record |row )?(?:ID|id|UUID|uuid)(?: to clipboard)?["'`]|>\s*Copy (?:ID|id|UUID)\s*<|["'`]Copy (?:ID|id|UUID|id to clipboard)["'`]/;
+const CLIPBOARD_RE = new RegExp(String.raw`clipboard\??\.writeText\s*${COPY_ARG}`);
+/** Any copy helper (`copyText`, `handleCopy`, `onCopyId`, `copy`) with an id-named argument in ANY position. */
+const COPY_FN_RE = /\b(?:copy|copyText|copyToClipboard|copyNotify|copyId|copyUuid|handleCopy|handleCopyId|handleCopyUuid|onCopy|onCopyId)\s*\(([^()]*)\)/g;
+const ID_ARG_RE = new RegExp(String.raw`^\s*(?:[\w$]+\??\.)*${ID_NAME}\s*$`);
+function copiesAnId(line) {
+  const clip = line.match(CLIPBOARD_RE);
+  if (clip) return clip[0];
+  // The id is the value copied when every argument before it is a string literal (a key or message):
+  // `handleCopy("agent-id", agentId, …)`. `onCopy(segment.text, segment.id)` copies text, id is only a key.
+  for (const m of line.matchAll(COPY_FN_RE)) {
+    const args = m[1].split(",");
+    for (let k = 0; k < args.length; k++) {
+      // handleCopy/onCopy take (key, text) as often as (text): an id there only counts after a literal key.
+      if (ID_ARG_RE.test(args[k]) && (k > 0 || /^(?:copy|copyText|copyToClipboard|copyNotify)\b/.test(m[0]))) return m[0];
+      if (!/^\s*["'`]/.test(args[k])) break;
+    }
+  }
+  return null;
+}
+/** "Copy ID", "Copy UUID", "Copy agent ID", "Copy Memory ID", "Copy conversation id" (up to three words before the id word) as a title/aria-label/label or button text. */
+const COPY_WORDS = String.raw`Copy (?:(?!and\b)[A-Za-z]+ ){0,3}?(?:ID|Id|id|UUID|uuid)(?: to clipboard)?`;
+const COPY_LABEL_RE = new RegExp(String.raw`(?:title|aria-label|label|tooltip)\s*=\s*\{?\s*["'\`]${COPY_WORDS}["'\`]|>\s*${COPY_WORDS}\s*<|["'\`]${COPY_WORDS}["'\`]`);
 const MENU_ITEM_LINE = /\blabel\s*:|MenuItem|DropdownItem|ContextItem|\bitems?\s*:|\bactions?\s*:/;
 const ID_COMPONENT = /^(?:CopyableUuid\w*|CopyableId\w*|\w*IdBadge|\w*IdCopy|ShortId|IdChip|UuidDisplay\w*|\w*UuidChip|\w*IdChip)$/;
 const DECLARE_RE =
@@ -84,19 +104,25 @@ export function scanSource(file, text) {
   if (OUT_OF_SCOPE.test(file)) return [];
   const lines = text.split("\n");
   const sites = [];
+  let lastLabelLine = -10;
   const add = (rule, i, what) =>
     sites.push(excepted(lines, i) ? { rule: "id-exception", line: i + 1, what: `${what} (${rule})` } : { rule, line: i + 1, what });
   lines.forEach((raw, i) => {
     const line = raw.trim();
     if (!line || /^(\/\/|\*|\/\*)/.test(line)) return;
+    const cl = line.match(COPY_LABEL_RE);
+    if (cl && !MENU_ITEM_LINE.test(line)) {
+      // One control often carries title= AND aria-label= on adjacent lines: one site, not two.
+      if (i - lastLabelLine > 2) add("hand-copied-id", i, cl[0].trim().slice(0, 48));
+      lastLabelLine = i;
+      return;
+    }
     if (SKIP_LINE.test(line)) return;
     if (LOCAL_SHORTENER_DECL.test(line)) { add("hand-shortened-id", i, "local id shortener"); return; }
     const sl = line.match(SLICE_RE) ?? line.match(SHORTENER_CALL_RE);
     if (sl) { add("hand-shortened-id", i, sl[0].slice(0, 48)); return; }
-    const cp = line.match(COPY_CALL_RE);
-    if (cp && !MENU_ITEM_LINE.test(line)) { add("hand-copied-id", i, cp[0].slice(0, 48)); return; }
-    const cl = line.match(COPY_LABEL_RE);
-    if (cl && !MENU_ITEM_LINE.test(line)) add("hand-copied-id", i, cl[0].trim().slice(0, 48));
+    const cp = copiesAnId(line);
+    if (cp && !MENU_ITEM_LINE.test(line)) add("hand-copied-id", i, cp.slice(0, 48));
   });
   const lineOf = (index) => text.slice(0, index).split("\n").length - 1;
   for (const m of text.matchAll(DECLARE_RE)) {
@@ -222,10 +248,15 @@ function selfTest() {
       "features/a/CopyCall.tsx": 'export const A = ({ t }) => <button onClick={() => copyText(t.id, "ID copied")}>x</button>;\n',
       "features/a/Clip.tsx": 'export const A = ({ id }) => <button onClick={() => navigator.clipboard.writeText(id)}>x</button>;\n',
       "features/a/Label.tsx": 'export const A = () => <button title="Copy ID">x</button>;\n',
+      "features/a/LabelWorded.tsx": 'export const A = () => <button title="Copy agent ID" aria-label="Copy Memory ID">x</button>;\n',
+      "features/a/LabelText.tsx": 'export const A = () => <button>Copy conversation id</button>;\n',
+      "features/a/CopyLater.tsx": 'export const A = ({ liveAgentId }) => <button onClick={() => handleCopy("agent-id", liveAgentId, "Agent ID copied")}>x</button>;\n',
+      "features/a/CopyLater2.tsx": 'export const A = ({ run }) => <button onClick={() => copyText("ID copied", run.execution_id)}>x</button>;\n',
       "features/a/Comp.tsx": "export function CopyableUuid() { return null; }\nexport const SkillIdBadge = () => null;\n",
       // Quiet: canonical, menu items, keys/hrefs/logs, exceptions, tests, non-ids.
       "features/ok/Ok.tsx":
         'import { RecordId } from "@ai-matrx/design-system";\nexport const A = ({ id, rows }) => (<div><RecordId value={id} />{rows.map((r) => <i key={r.id.slice(0, 4)} />)}<a href={`/x/${id.slice(0, 8)}`} /></div>);\nconsole.log(id.slice(0, 8));\nconst items = [{ label: "Copy ID", run: () => copyText(row.id) }];\nconst name = title.slice(0, 8);\n',
+      "features/ok/Menu.tsx": 'const items = [{ label: "Copy agent ID", run: () => handleCopy("agent-id", agentId) }];\nexport const B = () => <button title="Copy ids" tooltip="Copy name and id">x</button>;\nexport const C = () => <button onClick={() => copyText(name, "Copied")}>x</button>;\n',
       "features/ok/Exc.tsx": '// id-exception: git sha, not a record id\nexport const A = ({ shaId }) => <b>{shaId.slice(0, 7)}</b>;\nexport const B = ({ commitId }) => <b>{commitId.slice(0, 7)}</b>; // id-exception: git sha\n',
       "features/ok/Ok.test.tsx": "export const x = id.slice(0, 8);\n",
     };
@@ -238,7 +269,11 @@ function selfTest() {
       "hand-built-id-component|features/a/Comp.tsx=2",
       "hand-copied-id|features/a/Clip.tsx=1",
       "hand-copied-id|features/a/CopyCall.tsx=1",
+      "hand-copied-id|features/a/CopyLater.tsx=1",
+      "hand-copied-id|features/a/CopyLater2.tsx=1",
       "hand-copied-id|features/a/Label.tsx=1",
+      "hand-copied-id|features/a/LabelText.tsx=1",
+      "hand-copied-id|features/a/LabelWorded.tsx=1",
       "hand-shortened-id|features/a/Slice.tsx=1",
       "hand-shortened-id|features/a/Slice2.tsx=1",
       "hand-shortened-id|features/a/Trunc.tsx=1",

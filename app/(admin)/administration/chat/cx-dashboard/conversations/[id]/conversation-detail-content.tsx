@@ -222,6 +222,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
           <RecordId
             value={conv.parent_conversation_id}
             label="Parent conversation"
+            inert
           />
           <ExternalLink className="w-3 h-3 ml-auto" />
         </AppLink>
@@ -301,7 +302,7 @@ export function ConversationDetailContent({ detail }: { detail: Detail }) {
                   href={`/administration/chat/cx-dashboard/conversations/${child.id}`}
                   className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
                 >
-                  <RecordId value={child.id} label="Conversation" />
+                  <RecordId value={child.id} label="Conversation" inert />
                   <span className="flex-1 truncate">
                     {child.title || "Untitled"}
                   </span>
@@ -426,7 +427,7 @@ function UserRequestList({
               href={`/administration/chat/cx-dashboard/requests/${ur.id}`}
               className="flex items-center gap-3 text-xs p-2 rounded hover:bg-muted/50 transition-colors group"
             >
-              <RecordId value={ur.id} label="Request" />
+              <RecordId value={ur.id} label="Request" inert />
               <Badge variant={statusBadgeVariant(ur.status)} className="text-[10px]">
                 {ur.status}
               </Badge>

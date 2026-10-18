@@ -32,11 +32,11 @@
  * truthful description of what it does.
  */
 
+import { RecordId } from "@ai-matrx/design-system";
 import { TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
 import { useState } from "react";
 import { Download, ExternalLink, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { downloadBlob } from "@/lib/python-client";
 import { toast } from "@/lib/toast";
 import type { ExportEnvelope } from "../types";
@@ -109,14 +109,7 @@ export function ExportArtifactDownload({
 
         <dt className="text-muted-foreground">File ID</dt>
         <dd className="flex min-w-0 items-center gap-2">
-          <EntityRef
-            token="file"
-            id={envelope.file_id}
-            name={filenameHint ?? "Payroll export file"}
-            showIcon={false}
-            className="min-w-0 truncate font-mono text-foreground"
-          />
-          <TapTargetCopyButton value={envelope.file_id} variant="transparent" ariaLabel="Copy file ID" />
+          <RecordId value={envelope.file_id} label="File" token="file" show="full" className="min-w-0 truncate text-foreground" />
         </dd>
       </dl>
 

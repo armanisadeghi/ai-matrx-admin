@@ -1,6 +1,6 @@
 "use client";
 
-import { TapTargetCopyButton } from "@ai-matrx/design-system/tap-target";
+import { RecordId } from "@ai-matrx/design-system";
 import { useState } from "react";
 import {
   MatrxDataTable,
@@ -43,8 +43,7 @@ interface OfferingTableProps {
 function ProviderModelIdCell({ value }: { value: string }) {
   return (
     <span className="inline-flex min-w-0 items-center">
-      <code className="min-w-0 truncate font-mono text-xs">{value}</code>
-      <TapTargetCopyButton value={value} variant="transparent" ariaLabel="Copy provider model ID" />
+      <RecordId value={value} label="Provider model" show="full" className="min-w-0 truncate text-xs" />
     </span>
   );
 }
