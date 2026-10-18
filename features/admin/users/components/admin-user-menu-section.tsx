@@ -4,49 +4,46 @@
  * THE ADMIN USER ROW'S ACTIONS — shared by every Users & Access table whose
  * row names a user account (directly, or as the row's primary subject: a
  * per-user usage record, a per-user acquisition record, a per-user drift
- * record). Mirrors the destination set `AdminUserRef` already uses for the
- * inline name door (`features/admin/users/components/AdminUserRef.tsx`), so
- * the right-click menu and the name's own dropdown never drift apart.
+ * record). Its items are THE registry's doors (`userDoors` in
+ * `features/admin/users/record/userSurfaces.ts`) — the same list the name
+ * chip's menu and the roster's Manage menu render, so they never drift apart.
+ * Never declare a door here (`one-user-door-registry.test.ts`).
  *
  * Plain function, not a hook — same shape as `buildSiteMenuSection` /
  * `buildPageMenuSection`: the host keeps the clicked row in STATE and rebuilds
  * `extraSections` off it, e.g.
  * `extraSections={[buildAdminUserMenuSection(clickedRow)]}`.
  *
- * No entity ref: `platform.entity_types` has no token for a Supabase auth
- * user today, so Attach To / Copy-as act on the raw content only (same
- * documented gap as `AgentReviewQueueTable`'s review row).
+ * No entity ref here: Attach To / Copy-as act on the raw content only.
  *
  * 🚨 NO NEW WRITE PATH LIVES HERE, and nothing here promotes, revokes, or
  * edits an admin — "Admin level" only navigates to the existing admins page,
  * exactly like the dropdown door it mirrors.
  */
 
-import {
-  Building2,
-  Gauge,
-  Mail,
-  ShieldCheck,
-  SlidersHorizontal,
-  UserPlus,
-  UserRound,
-} from "lucide-react";
+import { UserRound } from "lucide-react";
 
 import type {
   ContextMenuExtraItem,
   ContextMenuExtraSection,
 } from "@ai-matrx/context-menu/engine";
 import {
+  unavailableHere,
   withAvailability,
   type AvailabilityMap,
 } from "@ai-matrx/context-menu/engine";
-import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
+import { userDoors } from "../record/userSurfaces";
 
 /** The one thing every Users & Access table can say about a right-clicked user. */
 export interface AdminUserMenuRow {
   id: string;
   email?: string | null;
   displayName?: string | null;
+}
+
+/** Every door of the section marked unavailable for one reason (a row that names no account). */
+export function adminUserMenuUnavailable(reason: string): AvailabilityMap {
+  return Object.fromEntries(userDoors("").map((door) => [`admin-user-${door.id}`, unavailableHere(reason)]));
 }
 
 export function buildAdminUserMenuSection(
@@ -57,66 +54,15 @@ export function buildAdminUserMenuSection(
     unavailable?: AvailabilityMap;
   },
 ): ContextMenuExtraSection {
-  const id = row ? encodeURIComponent(row.id) : "";
-
-  const items: ContextMenuExtraItem[] = [
-    {
-      kind: "link",
-      id: "admin-user-account",
-      label: "Open account",
-      icon: UserRound,
-      href: row ? `/administration/users?user=${id}` : "#",
-      disabled: !row,
-    },
-    {
-      kind: "link",
-      id: "admin-user-organizations",
-      label: "Organizations",
-      icon: Building2,
-      href: row ? `/administration/users/organizations?user=${id}` : "#",
-      disabled: !row,
-    },
-    {
-      kind: "link",
-      id: "admin-user-admin-level",
-      label: "Admin level",
-      icon: ShieldCheck,
-      href: row ? `/administration/users/admins?user=${id}` : "#",
-      disabled: !row,
-    },
-    {
-      kind: "link",
-      id: "admin-user-preferences",
-      label: "Preferences",
-      icon: SlidersHorizontal,
-      href: row ? `/administration/users/preferences?user=${id}` : "#",
-      disabled: !row,
-    },
-    {
-      kind: "link",
-      id: "admin-user-usage",
-      label: "Usage & cost",
-      icon: Gauge,
-      href: row ? usagePersonHref(id) : "#",
-      disabled: !row,
-    },
-    {
-      kind: "link",
-      id: "admin-user-acquisition",
-      label: "Acquisition",
-      icon: UserPlus,
-      href: row ? `/administration/users/acquisition?user=${id}` : "#",
-      disabled: !row,
-    },
-    {
-      kind: "link",
-      id: "admin-user-email",
-      label: "Email user",
-      icon: Mail,
-      href: row ? `/administration/users/email?userId=${id}` : "#",
-      disabled: !row,
-    },
-  ];
+  // With no row the menu still shows every door (disabled), so its shape never jumps.
+  const items: ContextMenuExtraItem[] = userDoors(row?.id ?? "").map((door) => ({
+    kind: "link",
+    id: `admin-user-${door.id}`,
+    label: door.label,
+    icon: door.icon,
+    href: row ? door.href : "#",
+    disabled: !row,
+  }));
 
   return withAvailability(
     {

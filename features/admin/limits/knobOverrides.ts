@@ -24,6 +24,7 @@ import {
   type PlatformKnobOverrideRow,
 } from "@/lib/scoped-config/service";
 import type { KnobScopeKindName, ScopedKnob } from "@/lib/scoped-config/types";
+import { loadAdminRoster } from "@/features/admin/users/adminRoster";
 
 /** A person as the admin roster knows them. */
 export type AdminPerson = {
@@ -249,16 +250,15 @@ let directoryPromise: Promise<AdminKnobDirectory> | null = null;
 export function loadAdminKnobDirectory(force = false): Promise<AdminKnobDirectory> {
   if (directoryPromise && !force) return directoryPromise;
   directoryPromise = (async () => {
-    const [usersResponse, orgsResponse] = await Promise.all([
-      fetch("/api/admin/users", { cache: "no-store" }),
+    // People from THE shared admin roster (one read per tab, features/admin/users/adminRoster.ts).
+    const [usersJson, orgsResponse] = await Promise.all([
+      loadAdminRoster({ refresh: force }) as Promise<{ users?: AdminPerson[] }>,
       fetch("/api/admin/users/organizations", { cache: "no-store" }),
     ]);
-    const usersJson = (await usersResponse.json()) as { users?: AdminPerson[]; error?: string };
     const orgsJson = (await orgsResponse.json()) as {
       directory?: { organizations: AdminOrganization[] };
       error?: string;
     };
-    if (!usersResponse.ok) throw new Error(usersJson.error ?? `The people roster could not be read (HTTP ${usersResponse.status}).`);
     if (!orgsResponse.ok) throw new Error(orgsJson.error ?? `The organization directory could not be read (HTTP ${orgsResponse.status}).`);
     return {
       people: (usersJson.users ?? []).map((user) => ({

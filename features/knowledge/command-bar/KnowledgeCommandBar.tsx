@@ -38,10 +38,14 @@ import {
   RotateCw,
   Search,
   Share2,
+  UserRound,
   WifiOff,
   X,
   type LucideIcon,
 } from "lucide-react";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import type { AdminPersonHit } from "@/features/admin/users/adminPeopleSearch";
+import { userRecordHref } from "@/features/admin/users/record/userSurfaces";
 import {
   Command,
   CommandDialog,
@@ -319,6 +323,29 @@ export default function KnowledgeCommandBar({
       clearTimeout(timer);
     };
   }, [wantsRecords, searchingText, recordsSearch]);
+  // PEOPLE (platform admins): jump to a person's admin page by email, name or id. Same pause as
+  // Records; the answer comes from THE shared admin roster (features/admin/users/adminRoster.ts).
+  const [people, setPeople] = useState<{ for: string; hits: AdminPersonHit[]; error: string | null } | null>(null);
+  const wantsPeople = isOpen && isAdmin && searchingText.length >= 2 && chips.length === 0;
+  useEffect(() => {
+    if (!wantsPeople) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      import("@/features/admin/users/adminPeopleSearch")
+        .then((mod) => mod.searchAdminPeople(searchingText))
+        .then(
+          (hits) => live && setPeople({ for: searchingText, hits, error: null }),
+          (error) => {
+            console.error("[command bar] people did not answer:", error);
+            if (live) setPeople({ for: searchingText, hits: [], error: error instanceof Error ? error.message : String(error) });
+          },
+        );
+    }, 250);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [wantsPeople, searchingText]);
   const matchedCommands = filterCommands(allCommands, searchingText);
 
   const close = () => onClose();
@@ -669,6 +696,54 @@ export default function KnowledgeCommandBar({
             </span>
           </CommandItem>
         ) : null}
+      </CommandGroup>
+    );
+  };
+
+  const renderPeople = () => {
+    if (!wantsPeople) return null;
+    const answered = people && people.for === searchingText ? people : null;
+    const hits = answered?.hits ?? [];
+    if (answered && !answered.error && hits.length === 0) return null;
+    return (
+      <CommandGroup
+        key="people"
+        heading={
+          <span className="flex items-center gap-1.5" data-testid="command-bar-people">
+            People
+            {answered && !answered.error ? <span className="tabular-nums">{hits.length}</span> : null}
+          </span>
+        }
+      >
+        {!answered ? (
+          <RegionSkeleton count={1} aria-label="Searching people" />
+        ) : null}
+        {answered?.error ? (
+          <div role="alert" className="flex items-center gap-1 px-2 py-1 text-xs text-destructive">
+            <span className="min-w-0 flex-1">{answered.error}</span>
+            <ErrorAlchemyMenu error={answered.error} operation="Search people" calls={["GET /api/admin/users"]} size="xs" />
+          </div>
+        ) : null}
+        {hits.map((hit) => (
+          <CommandItem
+            key={hit.id}
+            value={`person:${hit.id}`}
+            onSelect={() => {
+              close();
+              startTransition(() => router.push(userRecordHref(hit.id)));
+            }}
+            data-person-hit={hit.id}
+          >
+            <UserRound className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm text-foreground">{hit.label}</div>
+              {hit.email && hit.email !== hit.label ? (
+                <div className="truncate text-xs text-muted-foreground">{hit.email}</div>
+              ) : null}
+            </div>
+            <CommandShortcut>Open ↵</CommandShortcut>
+          </CommandItem>
+        ))}
       </CommandGroup>
     );
   };
@@ -1025,6 +1100,7 @@ export default function KnowledgeCommandBar({
             <>
               {online && orderedKeys.includes("top_hit") ? renderSection("top_hit", sections.top_hit) : null}
               {online && (filter === null || filter === "tables") ? renderTables() : null}
+              {online && filter === null ? renderPeople() : null}
               {online && filter === null ? renderRecords() : null}
               {online && filter !== "commands" && filter !== "tables"
                 ? orderedKeys.filter((k) => k !== "top_hit").map((k) => renderSection(k, sections[k]))

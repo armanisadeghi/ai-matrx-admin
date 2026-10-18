@@ -19,6 +19,7 @@ import { adminScheduleHref } from "@/features/scheduling/constants/routes";
 import { ciPauseOf, type CiPauseRecord } from "./ciPause";
 import { documentHref } from "@/features/scopes/registry/entityRegistry";
 import { knobHref } from "@/features/admin/limits/knobHref";
+import { userRecordHref } from "@/features/admin/users/record/userSurfaces";
 
 export type AlarmLevel = "critical" | "warning" | "info";
 export type AlarmStatus = "open" | "snoozed" | "resolved";
@@ -578,7 +579,7 @@ export function refHref(key: keyof AlarmRefs, value: string, refs: AlarmRefs = {
     case "mandate_key":
       return `/administration/intelligence/mandates/${encodeURIComponent(value)}`;
     case "user_id":
-      return `/administration/users/usage?user=${encodeURIComponent(value)}`;
+      return userRecordHref(value);
     case "organization_id":
       return `/administration/scopes-context/organizations/${value}`;
     case "approval_id":

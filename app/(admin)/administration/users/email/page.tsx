@@ -24,6 +24,7 @@ import {
 import { parseEmailDraftPatch } from "@/features/admin/shared/email-compose-draft";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
 import { AdminUserSearchResponseSchema } from "@/features/user-search/types";
+import { loadAdminRoster } from "@/features/admin/users/adminRoster";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Textarea } from "@/components/ui/textarea";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -104,12 +105,9 @@ export default function AdminEmailPage() {
   useEffect(() => {
     if (recipientMode === "selected" && users.length === 0) {
       setLoadingUsers(true);
-      fetch("/api/admin/users", { cache: "no-store" })
-        .then(async (response) => {
-          const payload: unknown = await response.json();
-          if (!response.ok) throw new Error("Failed to load users");
-          return AdminUserSearchResponseSchema.parse(payload);
-        })
+      // THE shared roster (one read per tab); a retry asks for a fresh one.
+      loadAdminRoster({ refresh: usersAttempt > 0 })
+        .then((payload) => AdminUserSearchResponseSchema.parse(payload))
         .then((data) => {
           setUsersError(null);
           setUsers(

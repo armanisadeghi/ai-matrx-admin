@@ -30,10 +30,10 @@ import { fmtAcquisitionDate as fmtDate } from "../lib/acquisitionFormat";
 import { AdminUserRef } from "./AdminUserRef";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
+  adminUserMenuUnavailable,
   buildAdminUserMenuSection,
   type AdminUserMenuRow,
 } from "./admin-user-menu-section";
-import { unavailableHere } from "@ai-matrx/context-menu/engine";
 import { USERS_ADMIN_LOCATION } from "../constants";
 import type {
   AdminUserAcquisitionRow,
@@ -634,29 +634,7 @@ export function UserAcquisitionTableClient() {
                 : null,
               {
                 unavailable: !clickedRow?.user_id
-                  ? {
-                      "admin-user-account": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                      "admin-user-organizations": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                      "admin-user-admin-level": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                      "admin-user-preferences": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                      "admin-user-usage": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                      "admin-user-acquisition": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                      "admin-user-email": unavailableHere(
-                        "an identity that has created an account",
-                      ),
-                    }
+                  ? adminUserMenuUnavailable("an identity that has created an account")
                   : undefined,
               },
             ),

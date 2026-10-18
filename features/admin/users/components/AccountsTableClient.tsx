@@ -13,23 +13,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   BadgeCheck,
   Building2,
-  Gauge,
   Gift,
-  GraduationCap,
-  Gem,
-  KeyRound,
-  LifeBuoy,
-  Mail,
-  MailPlus,
-  MessageSquare,
   MoreHorizontal,
-  ShieldCheck,
-  SlidersHorizontal,
-  UserCheck,
-  UserCog,
   UserRound,
-  UserX,
-  WalletCards,
   X,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -83,16 +69,24 @@ import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, type UserResearch } from "..
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
 import { useUserActions } from "../record/useUserActions";
-import { userRecordHref } from "../record/userSurfaces";
+import {
+  allUserActions,
+  userActionDisabled,
+  userActionLabel,
+  userDoors,
+  userEmailHref,
+  userRecordHref,
+  type UserActionId,
+} from "../record/userSurfaces";
 import { AI_REQUESTS_LABEL } from "../record/userOverview";
 import { pushAppHref } from "@/lib/deployment/navigate";
+import { invalidateAdminRoster, loadAdminRoster } from "../adminRoster";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { readOf } from "@ai-matrx/design-system";
 import { DrillExplorer } from "@/components/official/drill-explorer/DrillExplorer";
 import { DrillOrList } from "@/components/official/drill-explorer/DrillOrList";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { usageNameResolver } from "@/features/admin/usage-drill/useUsageDrill";
-import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
 import {
   PERSON_KIND_LABEL,
@@ -224,9 +218,8 @@ function AccountsRoster() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/admin/users", { cache: "no-store" });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Failed to load users");
+        // THE shared roster (one read per tab); Refresh asks for a fresh one.
+        const json = await loadAdminRoster({ refresh: refreshKey > 0 });
         if (!cancelled) {
           setRows(json.users as AdminUserRow[]);
           setPlansError(typeof json.plans_error === "string" ? json.plans_error : null);
@@ -255,14 +248,87 @@ function AccountsRoster() {
     toggleMcpFullAccess,
     toggleTopTierModels,
     openMessage,
+    signOutEverywhere,
     messageTarget,
     messageDraft,
     dialogs: userActionDialogs,
   } = useUserActions({
-    onPatched: (id, patch) =>
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r))),
+    onPatched: (id, patch) => {
+      // The held roster is now stale for every other page: the next reader fetches it fresh.
+      invalidateAdminRoster();
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    },
   });
   const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
+
+  // THE action registry (record/userSurfaces.ts USER_ACTIONS) drives the Manage menu: one entry per
+  // registered action, its label and "can't now" rule shared with the person's page.
+  const personLabel = (row: AdminUserRow) => row.display_name ?? row.email ?? row.id;
+  const actionLabelFor = (id: UserActionId, row: AdminUserRow): string | null => {
+    if (row.erased && (id === "close" || id === "reopen")) return id === "close" ? "Erased — cannot reopen" : null;
+    if (id === "close" && row.id === researchOwnerId) return "Your own account";
+    if (id === "mcp_access" && row.admin_level) return "MCP access inherited from admin";
+    return userActionLabel(id, row);
+  };
+  const actionDisabledFor = (id: UserActionId, row: AdminUserRow): boolean => {
+    if (id === "mcp_access") return Boolean(row.admin_level);
+    return userActionDisabled(id, row, {
+      myId: researchOwnerId,
+      closeBlocked: row.erased || (!row.banned && row.id === researchOwnerId),
+    });
+  };
+  const runAction = (id: UserActionId, row: AdminUserRow) => {
+    switch (id) {
+      case "support_session":
+        setSupportTarget({ id: row.id, email: row.email, displayName: row.display_name });
+        return;
+      case "message":
+        openMessage(row);
+        return;
+      case "email":
+        pushAppHref(router, userEmailHref(row.id));
+        return;
+      case "magic_link":
+        void sendAuthLink(row, "magiclink");
+        return;
+      case "password_reset":
+        void sendAuthLink(row, "recovery");
+        return;
+      case "change_plan":
+        setPlanTarget({
+          kind: "user",
+          id: row.id,
+          name: personLabel(row),
+          currentPlanKey: row.plan?.key ?? null,
+          grantActive: row.plan?.source === "grant",
+        });
+        return;
+      case "free_months":
+        setFreeMonthsPeople([{ id: row.id, label: personLabel(row) }]);
+        return;
+      case "tutorial":
+        setTutorialPerson({ id: row.id, label: personLabel(row), email: row.email });
+        return;
+      case "mcp_access":
+        void toggleMcpFullAccess(row);
+        return;
+      case "top_tier":
+        void toggleTopTierModels(row);
+        return;
+      case "onboarded":
+        void toggleOnboarding(row);
+        return;
+      case "close":
+        void setAccountClosed(row, true);
+        return;
+      case "reopen":
+        void setAccountClosed(row, false);
+        return;
+      case "sign_out_everywhere":
+        signOutEverywhere(row);
+        return;
+    }
+  };
 
   const columns = useMemo((): MatrxColumnDef<AdminUserRow>[] => {
     return [
@@ -571,8 +637,7 @@ function AccountsRoster() {
                 className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 onClick={(event) => {
                   event.stopPropagation();
-                  pushAppHref(router, `/administration/users/organizations?user=${row.id}`,
-                  );
+                  pushAppHref(router, userRecordHref(row.id, "organizations"));
                 }}
               >
                 <Building2 className="h-3.5 w-3.5" />
@@ -987,150 +1052,29 @@ function AccountsRoster() {
                 <DropdownMenuItem onClick={() => setResearchTarget(row)}>
                   <UserRound className="mr-2 h-4 w-4" /> Personal notes
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    pushAppHref(router, `/administration/users/organizations?user=${row.id}`,
-                    )
-                  }
-                >
-                  <Building2 className="mr-2 h-4 w-4" /> Organizations
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    setSupportTarget({
-                      id: row.id,
-                      email: row.email,
-                      displayName: row.display_name,
-                    })
-                  }
-                  disabled={!row.email || row.is_anonymous}
-                >
-                  <LifeBuoy className="mr-2 h-4 w-4" /> Start support session
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => void sendAuthLink(row, "magiclink")}
-                  disabled={!row.email}
-                >
-                  <MailPlus className="mr-2 h-4 w-4" /> Send magic link
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => void sendAuthLink(row, "recovery")}
-                  disabled={!row.email}
-                >
-                  <KeyRound className="mr-2 h-4 w-4" /> Send password reset
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    pushAppHref(router, `/administration/users/email?userId=${row.id}`)
-                  }
-                  disabled={!row.email}
-                >
-                  <Mail className="mr-2 h-4 w-4" /> Email user
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openMessage(row)}
-                  disabled={row.is_anonymous}
-                >
-                  <MessageSquare className="mr-2 h-4 w-4" /> Send in-app message
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() =>
-                    pushAppHref(router, `/administration/users/preferences?user=${row.id}`,
-                    )
-                  }
-                >
-                  <SlidersHorizontal className="mr-2 h-4 w-4" /> Preferences
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    pushAppHref(router, usagePersonHref(row.id))
-                  }
-                >
-                  <Gauge className="mr-2 h-4 w-4" /> Usage & cost
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    pushAppHref(router, `/administration/users/admins?user=${row.id}`)
-                  }
-                >
-                  <ShieldCheck className="mr-2 h-4 w-4" /> Admin level
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={row.is_anonymous}
-                  onClick={() =>
-                    setPlanTarget({
-                      kind: "user",
-                      id: row.id,
-                      name: row.display_name ?? row.email ?? row.id,
-                      currentPlanKey: row.plan?.key ?? null,
-                      grantActive: row.plan?.source === "grant",
-                    })
-                  }
-                >
-                  <WalletCards className="mr-2 h-4 w-4" /> Change plan…
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={row.is_anonymous}
-                  onClick={() =>
-                    setFreeMonthsPeople([{ id: row.id, label: row.display_name ?? row.email ?? row.id }])
-                  }
-                >
-                  <Gift className="mr-2 h-4 w-4" /> Give free months…
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={row.is_anonymous}
-                  onClick={() =>
-                    setTutorialPerson({ id: row.id, label: row.display_name ?? row.email ?? row.id, email: row.email })
-                  }
-                >
-                  <GraduationCap className="mr-2 h-4 w-4" /> Send a tutorial…
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => void toggleMcpFullAccess(row)}
-                  disabled={Boolean(row.admin_level)}
-                >
-                  <KeyRound className="mr-2 h-4 w-4" />
-                  {row.admin_level
-                    ? "MCP access inherited from admin"
-                    : row.mcp_full_access
-                      ? "Revoke full MCP access"
-                      : "Grant full MCP access"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={row.is_anonymous}
-                  onClick={() => void toggleTopTierModels(row)}
-                >
-                  <Gem className="mr-2 h-4 w-4" />
-                  {row.top_tier_models ? "Turn off top-tier models" : "Allow top-tier models"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => void toggleOnboarding(row)}>
-                  <UserCog className="mr-2 h-4 w-4" />
-                  {row.onboarding_completed
-                    ? "Mark as new"
-                    : "Mark as onboarded"}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  disabled={row.erased || row.id === researchOwnerId}
-                  onClick={() => void setAccountClosed(row, !row.banned)}
-                >
-                  {row.erased ? (
-                    <UserX className="mr-2 h-4 w-4" />
-                  ) : row.banned ? (
-                    <UserCheck className="mr-2 h-4 w-4" />
-                  ) : (
-                    <UserX className="mr-2 h-4 w-4" />
-                  )}
-                  {row.erased
-                    ? "Erased — cannot reopen"
-                    : row.id === researchOwnerId
-                      ? "Your own account"
-                      : row.banned
-                        ? "Reopen account"
-                        : "Close account…"}
-                </DropdownMenuItem>
+                {/* THE registry: the page's tabs, then the hub pages no tab replaces. */}
+                {userDoors(row.id, { withoutActions: true }).map(({ id, label, icon: Icon, href }) => (
+                  <DropdownMenuItem key={id} onClick={() => pushAppHref(router, href)}>
+                    <Icon className="mr-2 h-4 w-4" /> {label}
+                  </DropdownMenuItem>
+                ))}
+                {allUserActions().flatMap((def, index, list) => {
+                  const itemLabel = actionLabelFor(def.id, row);
+                  if (!itemLabel) return [];
+                  const Icon = def.icon;
+                  const startsGroup = index === 0 || list[index - 1]?.group !== def.group;
+                  return [
+                    ...(startsGroup ? [<DropdownMenuSeparator key={`sep-${def.id}`} />] : []),
+                    <DropdownMenuItem
+                      key={def.id}
+                      disabled={actionDisabledFor(def.id, row)}
+                      onClick={() => runAction(def.id, row)}
+                    >
+                      <Icon className="mr-2 h-4 w-4" /> {itemLabel}
+                    </DropdownMenuItem>,
+                  ];
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
           ) }]}

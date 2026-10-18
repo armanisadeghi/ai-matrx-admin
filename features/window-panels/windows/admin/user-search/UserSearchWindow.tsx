@@ -11,6 +11,7 @@ import {
   AdminUserSearchResponseSchema,
   type UserSearchCandidate,
 } from "@/features/user-search/types";
+import { loadAdminRoster } from "@/features/admin/users/adminRoster";
 import { emitUserSearchEvent } from "@/features/user-search/callbacks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -71,19 +72,9 @@ function UserSearchWindowInner({
   useEffect(() => {
     if (directory !== "admin") return;
     let cancelled = false;
-    fetch("/api/admin/users", { cache: "no-store" })
-      .then(async (response) => {
-        const payload: unknown = await response.json();
-        if (!response.ok) {
-          const message =
-            typeof payload === "object" &&
-            payload !== null &&
-            "error" in payload &&
-            typeof payload.error === "string"
-              ? payload.error
-              : "Failed to load the user directory";
-          throw new Error(message);
-        }
+    // THE shared admin roster (one read per tab, features/admin/users/adminRoster.ts).
+    loadAdminRoster()
+      .then((payload) => {
         const parsed = AdminUserSearchResponseSchema.safeParse(payload);
         if (!parsed.success) {
           throw new Error("The user directory returned an invalid response");

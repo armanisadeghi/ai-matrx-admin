@@ -6,6 +6,7 @@
 // and page is a DATABASE query (`chat.admin_explore_conversations`); nothing here filters rows the
 // browser happens to hold. Service + filter mapping: ./service.ts.
 
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useEffect, useRef, useState } from "react";
 import { GitBranch, MessageSquare } from "lucide-react";
 import { MatrxDataTable, useTableUrlState } from "@ai-matrx/design-system/data-table";
@@ -73,14 +74,13 @@ function columnsFor(facets: ExplorerFacets): MatrxColumnDef<ExplorerConversation
       filter: "select",
       filterOptions: options(facets.owners),
       width: 200,
-      cell: (r) => (
-        <div className="min-w-0 leading-tight">
-          <p className="truncate type-secondary">{r.owner_label ?? "—"}</p>
-          {r.owner_email && r.owner_email !== r.owner_label ? (
-            <p className="truncate type-meta text-muted-foreground">{r.owner_email}</p>
-          ) : null}
-        </div>
-      ),
+      // The person opens: THE admin door (their page, peek on hover, every admin surface for them).
+      cell: (r) =>
+        r.owner_id ? (
+          <AdminUserRef userId={r.owner_id} name={r.owner_label} email={r.owner_email} />
+        ) : (
+          <span className="truncate type-secondary text-muted-foreground">{r.owner_label ?? "—"}</span>
+        ),
     },
     {
       id: "organization",

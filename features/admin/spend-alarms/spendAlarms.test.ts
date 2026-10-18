@@ -42,7 +42,7 @@ describe("spend alarm record doors", () => {
     expect(by.task_id).toBe(`/administration/automation/scheduling/tasks/${T}`);
     expect(by.run_id).toBe(`/administration/automation/scheduling/tasks/${T}`);
     expect(by.source_id).toBe("/notes/n-5");
-    expect(by.user_id).toBe(`/administration/users/usage?user=${U}`);
+    expect(by.user_id).toBe(`/administration/users/${U}`);
     expect(links[0]!.key).toBe("task_id");
   });
 

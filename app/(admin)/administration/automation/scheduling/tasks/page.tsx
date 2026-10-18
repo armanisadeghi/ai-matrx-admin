@@ -21,6 +21,7 @@
 
 "use client";
 
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useMemo } from "react";
 import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -28,7 +29,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
@@ -146,18 +146,8 @@ export default function AdminTasksPage() {
         // the page is read, so there is nothing to sort by.
         filter: "text",
         sortable: false,
-        // No `user` entity token and no `/users/<id>` route exist — the id
-        // stays copyable rather than pointing at a route that isn't there.
-        cell: (r) => (
-          <span className="flex min-w-0 items-center gap-1.5">
-            {r.user_email ? (
-              <span className="min-w-0 truncate text-xs" title={r.user_email}>
-                {r.user_email}
-              </span>
-            ) : null}
-            <MatrxUuidCell value={r.user_id} label="Owner user id" />
-          </span>
-        ),
+        // The owner opens: their admin page, peek on hover, every admin door for them.
+        cell: (r) => <AdminUserRef userId={r.user_id} email={r.user_email} />,
         width: 240,
       },
       {

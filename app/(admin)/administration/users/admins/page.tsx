@@ -41,10 +41,8 @@ import {
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import {
-  AdminUserRef,
-  accountHrefFor,
-} from "@/features/admin/users/components/AdminUserRef";
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
+import { userRecordHref } from "@/features/admin/users/record/userSurfaces";
 import { DeepLinkMissNotice } from "@/components/official/deep-link/DeepLinkMissNotice";
 import { useDeepLinkParam } from "@/components/official/deep-link/useDeepLinkParam";
 import type { Database } from "@/types/database.types";
@@ -617,7 +615,7 @@ function AdminsManagementPageContent() {
             <DeepLinkMissNotice
               token="user"
               id={focusedUserId}
-              href={accountHrefFor(focusedUserId)}
+              href={userRecordHref(focusedUserId)}
               containerLabel="admin roster"
               onClear={clearUserFocus}
             />
@@ -655,7 +653,7 @@ function AdminsManagementPageContent() {
                       label: "Open account",
                       icon: ExternalLink,
                       href: clickedAdmin
-                        ? accountHrefFor(clickedAdmin.user_id)
+                        ? userRecordHref(clickedAdmin.user_id)
                         : "#",
                       disabled: !clickedAdmin,
                     },
@@ -796,7 +794,7 @@ function AdminsManagementPageContent() {
                       label: "Open target account",
                       icon: ExternalLink,
                       href: clickedAudit
-                        ? accountHrefFor(clickedAudit.target_user_id)
+                        ? userRecordHref(clickedAudit.target_user_id)
                         : "#",
                       disabled: !clickedAudit,
                     },
@@ -807,7 +805,7 @@ function AdminsManagementPageContent() {
                       icon: ExternalLink,
                       href:
                         clickedAudit?.actor_user_id
-                          ? accountHrefFor(clickedAudit.actor_user_id)
+                          ? userRecordHref(clickedAudit.actor_user_id)
                           : "#",
                       disabled: !clickedAudit?.actor_user_id,
                       description: "System / service-role change — no actor account",

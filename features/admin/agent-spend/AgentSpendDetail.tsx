@@ -22,6 +22,7 @@ import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { formatCount } from "@ai-matrx/kit/format";
 import { usageViewHref } from "@/features/admin/usage-drill/usageLinks";
 import { orgAdminMemberHref } from "@/features/organizations/admin/routes";
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { conversationHref } from "@/features/scheduling/service/automationCosts";
 import { humanizeRelative } from "@/features/scheduling/utils/triggerHumanize";
 import { SPEND_FLAG_LIMITS } from "@/features/scheduling/service/automationCosts";
@@ -181,13 +182,11 @@ function RunsTable({
       filter: "text",
       width: 200,
       cell: (r) => {
-        const personHref = r.person_id
-          ? seat === "admin"
-            ? usageViewHref("usage_by_person", { person: r.person_id })
-            : orgSlug
-              ? orgAdminMemberHref(orgSlug, r.person_id)
-              : null
-          : null;
+        // The admin seat names the person with THE admin door; the org seat keeps the member page.
+        if (seat === "admin" && r.person_id) {
+          return <AdminUserRef userId={r.person_id} email={r.person_email} hideEmail className="text-xs" />;
+        }
+        const personHref = r.person_id && seat !== "admin" && orgSlug ? orgAdminMemberHref(orgSlug, r.person_id) : null;
         return personHref ? (
           <Link href={personHref} className="block truncate text-xs text-primary hover:underline">{r.person_email ?? "Person"}</Link>
         ) : (

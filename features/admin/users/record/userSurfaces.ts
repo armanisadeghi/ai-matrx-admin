@@ -16,6 +16,8 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Building2,
+  Gauge,
+  ShieldCheck,
   Gem,
   Gift,
   GraduationCap,
@@ -34,6 +36,7 @@ import {
   UserX,
   WalletCards,
 } from "lucide-react";
+import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
 
 export const USERS_HUB_PATH = "/administration/users";
 
@@ -149,4 +152,119 @@ export function userActionDef(id: UserActionId): UserActionDef {
   const def = USER_ACTIONS.find((a) => a.id === id);
   if (!def) throw new Error(`userSurfaces: no action "${id}"`);
   return def;
+}
+
+// ── DOORS: every place a person's name can take an admin ────────────────────────────────────────
+//
+// THE one door list (lane C, 2026-10-17). The name chip's menu (AdminUserRef), the right-click
+// section (admin-user-menu-section) and the roster's Manage menu all render THIS. The tabs come
+// first (each one is a deep link into the person's page); a hub page appears only where no tab
+// replaces it: the usage explorer on this person, the admins page, the email composer.
+// A guard (`__tests__/one-user-door-registry.test.ts`) fails if any of those three files declares
+// its own door list again.
+
+export type UserDoorId = UserTabId | "usage" | "admin_level" | "email";
+
+export interface UserDoor {
+  id: UserDoorId;
+  label: string;
+  icon: LucideIcon;
+  href: string;
+  /** The same move exists as a registered action: a menu that renders actions leaves the door out. */
+  action?: UserActionId;
+}
+
+/** The email composer, addressed to one person. */
+export function userEmailHref(userId: string): string {
+  return `${USERS_HUB_PATH}/email?userId=${encodeURIComponent(userId)}`;
+}
+
+/** Every door for one person, in menu order: the page's tabs, then the hub pages no tab replaces. */
+export function userDoors(userId: string, options: { withoutActions?: boolean } = {}): UserDoor[] {
+  const tabs: UserDoor[] = visibleUserTabs().map((tab) => ({
+    id: tab.id,
+    label: tab.id === "overview" ? "Open page" : tab.label,
+    icon: tab.icon,
+    href: userRecordHref(userId, tab.id),
+  }));
+  const hubs: UserDoor[] = [
+    { id: "usage", label: "Usage explorer", icon: Gauge, href: usagePersonHref(userId) },
+    {
+      id: "admin_level",
+      label: "Admin level",
+      icon: ShieldCheck,
+      href: `${USERS_HUB_PATH}/admins?user=${encodeURIComponent(userId)}`,
+    },
+    { id: "email", label: "Email user", icon: Mail, href: userEmailHref(userId), action: "email" },
+  ];
+  const all = [...tabs, ...hubs];
+  return options.withoutActions ? all.filter((door) => !door.action) : all;
+}
+
+// ── ACTION STATE: the label and the "can't right now" rule for one person ───────────────────────
+//
+// Shared by every menu that lists USER_ACTIONS for a person (the roster's Manage menu; the record
+// page's Actions menu keeps an identical copy until its owner moves onto this).
+
+export interface UserActionState {
+  id: string;
+  email: string | null;
+  is_anonymous: boolean;
+  banned: boolean;
+  erased: boolean;
+  admin_level: string | null;
+  mcp_full_access: boolean;
+  top_tier_models: boolean;
+  onboarding_completed: boolean;
+}
+
+/** The label an action shows for this person right now, or null to leave it out. */
+export function userActionLabel(id: UserActionId, subject: UserActionState): string | null {
+  switch (id) {
+    case "mcp_access":
+      return subject.admin_level ? null : subject.mcp_full_access ? "Revoke full MCP access" : "Grant full MCP access";
+    case "top_tier":
+      return subject.top_tier_models ? "Turn off top-tier models" : "Allow top-tier models";
+    case "onboarded":
+      return subject.onboarding_completed ? "Mark as new" : "Mark as onboarded";
+    case "close":
+      return subject.banned ? null : "Close account…";
+    case "reopen":
+      return subject.banned && !subject.erased ? "Reopen account" : null;
+    default:
+      return userActionDef(id).label;
+  }
+}
+
+/** True when the action cannot run for this person now (shown, disabled). */
+export function userActionDisabled(
+  id: UserActionId,
+  subject: UserActionState,
+  context: { myId: string | null | undefined; closeBlocked: boolean },
+): boolean {
+  const contactable = Boolean(subject.email) && !subject.is_anonymous;
+  switch (id) {
+    case "support_session":
+    case "magic_link":
+    case "password_reset":
+    case "email":
+      return !contactable;
+    case "message":
+    case "change_plan":
+    case "free_months":
+    case "tutorial":
+    case "top_tier":
+      return subject.is_anonymous;
+    case "close":
+      return context.closeBlocked;
+    case "sign_out_everywhere":
+      return subject.id === context.myId;
+    default:
+      return false;
+  }
+}
+
+/** Every live action in menu order — header verbs first, then the Actions menu (danger last). */
+export function allUserActions(): UserActionDef[] {
+  return [...userActions("header"), ...userActions("menu")];
 }

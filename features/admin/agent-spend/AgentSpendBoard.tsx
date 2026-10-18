@@ -21,10 +21,10 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
-import { usageViewHref } from "@/features/admin/usage-drill/usageLinks";
 import { RunApprovalCell } from "@/features/admin/spend-approvals/RunApprovalCell";
 import { approvalStatusSync } from "@/features/admin/spend-approvals/spendApprovals";
 import { orgAdminMemberHref } from "@/features/organizations/admin/routes";
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { ProtectedAccountRunsButton } from "./ProtectedAccountRuns";
 import {
   agentSpendDetailHref,
@@ -165,13 +165,20 @@ export function PaidBy({ row, seat, orgSlug }: { row: AgentSpendRow; seat: Spend
       {top.map((p) => {
         const flagged = isTestAccount(p);
         const label = p.email ?? "Unknown person";
-        const href = p.person_id
-          ? seat === "admin"
-            ? usageViewHref("usage_by_person", { person: p.person_id })
-            : orgSlug
-              ? orgAdminMemberHref(orgSlug, p.person_id)
-              : null
-          : null;
+        // The admin seat names a person with THE admin door (their page + peek); the org seat
+        // keeps the org member page.
+        if (seat === "admin" && p.person_id) {
+          return (
+            <AdminUserRef
+              key={p.person_id}
+              userId={p.person_id}
+              email={p.email}
+              hideEmail
+              className={flagged ? "text-warning" : undefined}
+            />
+          );
+        }
+        const href = p.person_id && seat !== "admin" && orgSlug ? orgAdminMemberHref(orgSlug, p.person_id) : null;
         return href ? (
           <Link key={p.person_id ?? label} href={href} className={`truncate hover:underline ${flagged ? "text-amber-600" : "text-primary"}`} title={label}>
             {label}
@@ -248,14 +255,9 @@ export function AgentSpendBoard({
   const total = rows.reduce((s, r) => s + r.cost, 0);
   const unattributed = rows.reduce((s, r) => s + (r.unattributed_source ? r.cost : 0), 0);
 
+  // The org seat's door for a payer; the admin seat renders AdminUserRef instead.
   const payerHref = (personId: string | null) =>
-    personId
-      ? seat === "admin"
-        ? usageViewHref("usage_by_person", { person: personId })
-        : orgSlug
-          ? orgAdminMemberHref(orgSlug, personId)
-          : null
-      : null;
+    personId && seat !== "admin" && orgSlug ? orgAdminMemberHref(orgSlug, personId) : null;
   const hits = (r: AgentSpendRow) => agentFlagHits(r, format);
 
   const unordered: MatrxColumnDef<AgentSpendRow>[] = [
@@ -430,6 +432,16 @@ export function AgentSpendBoard({
           getKey={(p) => p.person_id ?? p.email ?? "?"}
           label="payers"
           render={(p) => {
+            if (seat === "admin" && p.person_id) {
+              return (
+                <AdminUserRef
+                  userId={p.person_id}
+                  email={p.email}
+                  hideEmail
+                  className={isTestAccount(p) ? "text-warning" : undefined}
+                />
+              );
+            }
             const href = payerHref(p.person_id);
             const label = p.email ?? "Unknown person";
             return href ? (

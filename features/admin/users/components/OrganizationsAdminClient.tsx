@@ -72,6 +72,7 @@ import { fetchOrgPlanAssignments, fetchPlans } from "@/features/admin/limits/ser
 import { audienceLabel, type OrgPlanAssignment, type Plan } from "@/features/admin/limits/types";
 import { EnterpriseCustomLimitsEditor } from "@/features/admin/limits/components/EnterpriseCustomLimitsEditor";
 import { mutateOrgMembership } from "@/features/admin/users/service/orgMembership";
+import { loadAdminRoster } from "@/features/admin/users/adminRoster";
 
 interface MemberDisplayRow extends AdminOrganizationMembershipRow {
   email: string | null;
@@ -128,19 +129,17 @@ export function OrganizationsAdminClient() {
       setLoading(true);
       setError(null);
       try {
-        const [directoryResponse, usersResponse] = await Promise.all([
+        // The people come from THE shared roster (one read per tab); after a membership change
+        // (refreshKey bumps) it is read fresh, since every person's organizations moved.
+        const [directoryResponse, usersJson] = await Promise.all([
           fetch("/api/admin/users/organizations", { cache: "no-store" }),
-          fetch("/api/admin/users", { cache: "no-store" }),
+          loadAdminRoster({ refresh: refreshKey > 0 }),
         ]);
         const directoryJson = await directoryResponse.json();
-        const usersJson = await usersResponse.json();
         if (!directoryResponse.ok) {
           throw new Error(
             directoryJson.error ?? "Failed to load organizations",
           );
-        }
-        if (!usersResponse.ok) {
-          throw new Error(usersJson.error ?? "Failed to load users");
         }
         if (!cancelled) {
           setDirectory(directoryJson.directory as AdminOrganizationDirectory);

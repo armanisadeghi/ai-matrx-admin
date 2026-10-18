@@ -73,8 +73,8 @@ describe("a person's record menu in a table", () => {
     const menu = hostEntityMenu("user", "6b1f3b52-6f0e-4f0a-9d0e-2a3b4c5d6e7f", "/administration/usage", (to) => went.push(to))!;
     const canonical = buildAdminUserMenuSection({ id: "6b1f3b52-6f0e-4f0a-9d0e-2a3b4c5d6e7f" }).items;
     expect(menu.map((m) => m.label)).toEqual(canonical.flatMap((m) => (m.kind === "link" ? [m.label] : [])));
-    menu.find((m) => m.id === "admin-user-account")!.onSelect!();
-    expect(went).toEqual(["/administration/users?user=6b1f3b52-6f0e-4f0a-9d0e-2a3b4c5d6e7f"]);
+    menu.find((m) => m.id === "admin-user-overview")!.onSelect!();
+    expect(went).toEqual(["/administration/users/6b1f3b52-6f0e-4f0a-9d0e-2a3b4c5d6e7f"]);
     expect(menu.some((m) => m.destructive)).toBe(false);
   });
 

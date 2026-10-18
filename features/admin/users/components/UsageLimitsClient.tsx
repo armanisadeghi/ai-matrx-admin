@@ -52,6 +52,7 @@ import {
   windowRatio,
 } from "../lib/usageLimits";
 import type { AdminUsageState, AdminUserRow } from "../types";
+import { loadAdminRoster } from "../adminRoster";
 
 const SEGMENTS: ReadonlyArray<{ id: AccountSegment; label: string }> = [
   { id: "people", label: "People" },
@@ -128,19 +129,13 @@ export function UsageLimitsClient() {
       setLoading(true);
       setError(null);
       try {
-        let res = await fetch("/api/admin/users", { cache: "no-store" });
-        let json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Failed to load accounts");
+        // THE shared roster (one read per tab); Refresh asks for a fresh one.
+        let json = await loadAdminRoster({ refresh: refreshKey > 0 });
         if (typeof json.plans_error === "string") {
           // The plans read is heavy; a transient failure usually clears. Retry once before showing the banner.
           await new Promise((r) => setTimeout(r, 1500));
           if (cancelled) return;
-          const again = await fetch("/api/admin/users", { cache: "no-store" });
-          const againJson = await again.json();
-          if (again.ok) {
-            res = again;
-            json = againJson;
-          }
+          json = await loadAdminRoster({ refresh: true }).catch(() => json);
         }
         if (!cancelled) {
           setRows(json.users as AdminUserRow[]);

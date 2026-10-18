@@ -7,6 +7,7 @@
 import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CopyForAiAction } from "@/features/admin/attention/CopyForAiAction";
@@ -457,9 +458,7 @@ export function SpendAlarmRecordPage({ id }: { id: string }) {
                 <dt className="text-muted-foreground">Whose</dt>
                 <dd>
                   {record.refs.user_id ? (
-                    <Link href={refHref("user_id", record.refs.user_id) ?? "#"} className="text-primary hover:underline">
-                      {names.get(record.refs.user_id) ?? "Owner not recorded"}
-                    </Link>
+                    <AdminUserRef userId={record.refs.user_id} name={names.get(record.refs.user_id) ?? null} />
                   ) : (
                     whose(record)
                   )}

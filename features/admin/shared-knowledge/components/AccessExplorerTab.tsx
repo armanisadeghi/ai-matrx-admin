@@ -21,6 +21,7 @@
 // /knowledge/data-stores?store_id= — and a pack opens in this console's own
 // Starter packs tab (`?tab=packs&pack=<id>`).
 
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
@@ -475,7 +476,8 @@ export function AccessExplorerTab({
           {lookedUpUser ? (
             <div className="space-y-3">
               <div className="group/entity-ref flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                <span>{lookedUpUser.email} · member of</span>
+                <AdminUserRef userId={lookedUpUser.id} email={lookedUpUser.email} hideEmail />
+                <span>· member of</span>
                 {/* read-gate-exempt: lookedUpUser is set only by a lookup that succeeded (a failed one shows ReadFailure above) and the memberships come from the server-read directory prop */}
                 {userOrgIds.length === 0 ? (
                   <span>no organizations</span>

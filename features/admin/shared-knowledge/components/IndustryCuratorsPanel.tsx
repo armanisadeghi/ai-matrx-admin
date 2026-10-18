@@ -9,6 +9,7 @@
 // (admin), grant/revoke via the existing RPC pair; people are found by email
 // through the canonical `searchUserByEmail`.
 
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { InfoHint } from "@/components/official/InfoHint";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -171,12 +172,7 @@ export function IndustryCuratorsPanel({ industry }: { industry: Industry }) {
               key={c.userId}
               className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
             >
-              <span className="min-w-0 truncate text-foreground">
-                {c.displayName ? `${c.displayName} · ` : ""}
-                <span className="text-muted-foreground">
-                  {c.email ?? c.userId}
-                </span>
-              </span>
+              <AdminUserRef userId={c.userId} name={c.displayName} email={c.email} className="min-w-0" />
               <Button
                 icon={<X />}
                 variant="quiet"

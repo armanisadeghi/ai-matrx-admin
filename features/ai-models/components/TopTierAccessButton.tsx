@@ -4,8 +4,8 @@
 // existing toolbar. Everyone is off; a super admin turns one person on from that person's
 // row on /administration/users (recorded: who, when). See features/ai-models/topTierAccess.ts.
 
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Gem } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
@@ -54,12 +54,7 @@ export default function TopTierAccessButton() {
           <ul className="divide-y">
             {holders.map((h) => (
               <li key={h.user_id} className="flex items-center gap-2 py-1">
-                <Link
-                  href={`/administration/users?user=${encodeURIComponent(h.user_id)}`}
-                  className="min-w-0 flex-1 truncate text-foreground hover:underline"
-                >
-                  {h.email ?? h.user_id}
-                </Link>
+                <AdminUserRef userId={h.user_id} email={h.email} hideEmail className="flex-1" />
                 <span className="shrink-0 text-muted-foreground" title={h.changed_by_email ? `Turned on by ${h.changed_by_email}` : "Turned on by the system"}>
                   {when(h.changed_at)}
                 </span>

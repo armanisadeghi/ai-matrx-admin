@@ -13,6 +13,7 @@
 // Source / application / operation are ordinary select column filters —
 // MatrxDataTable owns all filtering.
 
+import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useCallback, useMemo, useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { format, formatDistanceToNow } from "date-fns";
@@ -32,7 +33,6 @@ import {
   catalogEntryHref,
   catalogKindHref,
 } from "@/features/admin/applications/constants";
-import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { useAdminEmails } from "@/features/admin/shared/useAdminEmails";
 import { buildApplicationsTimeline } from "@/features/admin/applications/history/buildTimeline";
 import type { ApplicationsHistoryEntry } from "@/features/admin/applications/history/types";
@@ -189,24 +189,13 @@ export function ApplicationsHistoryClient({
         header: "Changed by",
         accessorFn: (row) => whoLabel(row.changedBy),
         filter: "select",
-        // No `user` entity token and no `/users/<id>` route exists — an admin
-        // id we cannot resolve to an email is rendered copyable instead of
-        // truncated into something the operator can do nothing with.
+        // The person opens (their admin page + peek); AdminUserRef looks the name up when the
+        // email is not loaded and falls back to a copyable id.
         cell: (row) => {
           if (!row.changedBy) {
             return <span className="text-xs text-muted-foreground">—</span>;
           }
-          const email = adminEmails[row.changedBy];
-          return email ? (
-            <span
-              className="block truncate text-xs text-muted-foreground"
-              title={row.changedBy}
-            >
-              {email}
-            </span>
-          ) : (
-            <MatrxUuidCell value={row.changedBy} label="Changed by user id" />
-          );
+          return <AdminUserRef userId={row.changedBy} email={adminEmails[row.changedBy] ?? null} />;
         },
         width: 200,
       },
