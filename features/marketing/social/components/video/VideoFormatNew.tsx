@@ -37,6 +37,7 @@ import {
 import { videoKeys } from "../../video/hooks";
 import { plainRenderMessage } from "../../video/render-errors";
 import { useSocials } from "../SocialsContext";
+import { useExpiredSessionGuard } from "../../video/session";
 import { MusicPicker } from "./MusicPicker";
 import { NO_MUSIC, musicCostLine, musicForBrief, type MusicChoice } from "../../video/music";
 import { CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
@@ -116,6 +117,7 @@ function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
 // ── page ────────────────────────────────────────────────────────────────────────────────────────────
 
 export function VideoFormatNew() {
+  useExpiredSessionGuard();
   const params = useSearchParams();
   const formatId = params.get("format") as FormatId | null;
   const { brandSeg, organizationId } = useSocials();
