@@ -193,7 +193,7 @@ export function UserOverviewTab({ overview: o, onReopen }: { overview: UserOverv
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]" data-testid="user-overview">
       <div className="flex min-w-0 flex-col gap-4">
-        <KpiGrid>
+        <KpiGrid className="lg:grid-cols-3 2xl:grid-cols-6">
           <KpiTile label="AI requests · 30d" value={ai ? formatCount(ai.requests_30d) : null} hint={ai ? `${formatCount(ai.requests_total)} all time` : undefined} href={usagePersonHref(o.identity.id)} />
           <KpiTile label="AI cost · 30d" value={ai ? formatAdminUsd(ai.cost_30d) : null} hint={ai ? `${formatAdminUsd(ai.cost_total)} all time` : undefined} href={usagePersonHref(o.identity.id)} />
           <KpiTile label="Active days · 30d" value={ai ? formatCount(ai.active_days_30d) : null} hint={ai?.last_ai_at ? `Last AI ${day(ai.last_ai_at)}` : undefined} />
@@ -231,19 +231,19 @@ export function UserOverviewTab({ overview: o, onReopen }: { overview: UserOverv
         <PropertyRow label="User ID">
           <MatrxUuidCell value={o.identity.id} label="User ID" />
         </PropertyRow>
-        <PropertyRow label="Sign-in methods" value={o.identity.providers.join(", ")} missing="None" />
+        <PropertyRow label="Sign-in methods" value={o.identity.providers.join(", ")} missing={o.identity.providers.length ? undefined : "None"} />
         <PropertyRow label="Email confirmed" value={o.identity.email_confirmed_at ? day(o.identity.email_confirmed_at) : "No"} />
         <PropertyRow label="Phone" missing={!o.identity.phone}>
           {o.identity.phone ? <PhoneValue phone={o.identity.phone} owner={personTitle(o)} /> : null}
         </PropertyRow>
         <PropertyRow label="Created" value={day(o.identity.created_at)} />
-        <PropertyRow label="Last sign-in" value={when(o.identity.last_sign_in_at)} missing="Never" />
+        <PropertyRow label="Last sign-in" value={when(o.identity.last_sign_in_at)} missing={o.identity.last_sign_in_at ? undefined : "Never"} />
         <PropertyRow
           label="Plan"
           value={o.plan?.name ?? o.usage?.plan_name ?? o.plan?.key}
           meta={o.plan ? PLAN_SOURCE_LABEL[o.plan.source] : undefined}
           help={o.plan?.grant_note ?? undefined}
-          missing="Unknown"
+          missing={o.plan?.name ?? o.usage?.plan_name ?? o.plan?.key ? undefined : "Unknown"}
         />
         {o.plan?.grant_expires_at ? <PropertyRow label="Plan ends" value={day(o.plan.grant_expires_at)} /> : null}
         <PropertyRow label="Admin level" value={o.admin_level ? (ADMIN_LEVEL_LABEL[o.admin_level] ?? o.admin_level) : "None"} />
@@ -258,7 +258,7 @@ export function UserOverviewTab({ overview: o, onReopen }: { overview: UserOverv
           value={closed ? (o.closure?.erased_at ? "Erased" : "Closed") : o.identity.is_anonymous ? "Guest" : "Open"}
           meta={closed ? day(o.closure?.closed_at) : undefined}
         />
-        <PropertyRow label="Acquisition" value={acquisition} missing="Not recorded" />
+        <PropertyRow label="Acquisition" value={acquisition} missing={acquisition ? undefined : "Not recorded"} />
       </aside>
     </div>
   );

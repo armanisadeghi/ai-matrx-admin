@@ -21,3 +21,19 @@ export function hasBrokenCharacter(text: string): boolean {
 export function oneLine(text: string | null | undefined): string {
   return (text ?? "").replace(/\s+/g, " ").trim();
 }
+
+/**
+ * A project name from a post caption: no emoji or hashtags, whitespace collapsed, and a cut that lands on a word
+ * boundary (never "Comment RECIPE and I'll send it to yo"). Empty when the caption has nothing readable.
+ */
+export function nameFromCaption(caption: string | null | undefined, max: number): string {
+  const plain = oneLine(
+    (caption ?? "")
+      .replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\u200d\ufe0f\u20e3]/gu, " ")
+      .replace(/[#@]\S+/g, " "),
+  );
+  if (cutText(plain, max) === plain) return plain;
+  const cut = cutText(plain, max);
+  const atWord = cut.lastIndexOf(" ");
+  return `${(atWord > max / 2 ? cut.slice(0, atWord) : cut).replace(/[\s,;:.\-–—]+$/, "")}…`;
+}

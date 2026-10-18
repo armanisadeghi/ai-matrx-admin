@@ -87,19 +87,15 @@ function RecordActionsMenu({ label, items }: { label: string; items: RecordPageM
           {label}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end">
         {items.map((item, i) => {
           const Icon = item.icon;
           const newGroup = i > 0 && item.group !== items[i - 1]!.group;
           return (
             <Fragment key={item.id}>
               {newGroup ? <DropdownMenuSeparator /> : null}
-              <DropdownMenuItem
-                disabled={item.disabled}
-                onClick={item.onPress}
-                className={item.destructive ? "text-destructive focus:text-destructive" : undefined}
-              >
-                <Icon className="mr-2 h-4 w-4" /> {item.label}
+              <DropdownMenuItem disabled={item.disabled} onClick={item.onPress}>
+                <Icon className={item.destructive ? "mr-2 h-4 w-4 text-destructive" : "mr-2 h-4 w-4"} /> {item.label}
               </DropdownMenuItem>
             </Fragment>
           );

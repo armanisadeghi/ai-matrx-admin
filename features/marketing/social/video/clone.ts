@@ -209,6 +209,9 @@ export interface TeleprompterAnswer {
   teleprompter: Array<{ beat: string; role: string; lines: string[] }>;
   notes: ClonePlanNote[];
   words: number;
+  /** The script the AI writer wrote for these lines (null when the person's own text was used). */
+  script?: string | null;
+  script_agent?: string;
 }
 
 export async function fetchTeleprompter(

@@ -44,11 +44,11 @@ import {
   type TeleprompterAnswer,
 } from "../../video/clone";
 import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
-import { createVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
+import { createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
 import { contentHashOf, useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
-import { cutText, oneLine } from "../../video/text";
+import { cutText, nameFromCaption } from "../../video/text";
 import { estimateLabel, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { CaptionLookPicker, CostLine, FailureLine, RunLog, closeSteps, pushStep, type RunStep } from "./StudioParts";
@@ -132,7 +132,6 @@ export function VideoCloneNew() {
           <Link href={base}>Videos</Link>
         </Button>
         <span className="type-title text-foreground">New clone</span>
-        {wantVariants ? <Badge tone="info">+ 3 variants</Badge> : null}
       </div>
       <CloneWorkspace postId={postId} projectId={projectId} onProject={setProjectId} wantVariants={wantVariants} base={base} />
     </div>
@@ -360,6 +359,9 @@ function BriefPanel({
   const [aboutText, setAboutText] = useState<string | null>(null);
   const [priceText, setPriceText] = useState<string | null>(null);
   const [presenter, setPresenter] = useState<PresenterMode>("voiceover");
+  const [presenterText, setPresenterText] = useState("");
+  // A project made by this page (the lines preview or Plan) and not yet planned: removed again if the person leaves or the plan fails.
+  const madeHere = useRef<string | null>(null);
   const [script, setScript] = useState<string | null>(null);
   const [hookLine, setHookLine] = useState("");
   const [hookTouched, setHookTouched] = useState(false);
@@ -391,6 +393,7 @@ function BriefPanel({
 
   const referenceScript = (words.data?.words ?? []).map((w) => w.text).join(" ").trim();
   const scriptText = script ?? referenceScript;
+  const noSpeech = words.data?.status === "no_speech";
   const offering = offerings.data?.find((o) => o.key === productKey) ?? null;
   const product = offering ? offering.name : productName.trim();
   // The saved details of the chosen product start the two labels; typing replaces them. Nothing typed = the saved text.
@@ -436,9 +439,10 @@ function BriefPanel({
 
   const ensureProject = async (): Promise<string> => {
     if (projectId) return projectId;
-    const caption = oneLine(post.data?.caption);
-    const name = `${cutText(product || brand.name, 60)} · ${cutText(caption, 40) || "clone"}`;
+    const caption = nameFromCaption(post.data?.caption, 40);
+    const name = `${cutText(product || brand.name, 60)} · ${caption || "clone"}`;
     const made = await createVideoProject({ post_id: postId, name, brand_id: brandId }, { organizationId });
+    madeHere.current = made.project_id;
     onProject(made.project_id);
     if (!onFinished) {
       const next = new URLSearchParams(window.location.search);
@@ -448,6 +452,28 @@ function BriefPanel({
     void queryClient.invalidateQueries({ queryKey: videoKeys.all });
     return made.project_id;
   };
+
+  // A plan that failed (or a lines preview the person walked away from) leaves no empty project behind.
+  const discardUnplanned = async () => {
+    const pid = madeHere.current;
+    if (!pid) return;
+    madeHere.current = null;
+    try {
+      await deleteVideoProject(pid, { organizationId });
+    } catch {
+      // The project stays listed (with a Delete button there); nothing else depends on it.
+    }
+    onProject("");
+    if (!onFinished) {
+      const next = new URLSearchParams(window.location.search);
+      next.delete("project");
+      replaceAddressWithoutNavigating(currentPathWithSearch(next));
+    }
+    void queryClient.invalidateQueries({ queryKey: videoKeys.all });
+  };
+  const discardRef = useRef(discardUnplanned);
+  discardRef.current = discardUnplanned;
+  useEffect(() => () => void discardRef.current(), []);
 
   const brief = (): ServerCloneBrief => ({
     brand: { id: brandId, name: brand.name },
@@ -464,6 +490,7 @@ function BriefPanel({
       : {}),
     presenter: {
       mode: presenter,
+      ...(presenter === "generated_presenter" && presenterText.trim() ? { prompt: cutText(presenterText.trim(), 400) } : {}),
       ...(presenter === "own_footage" ? { takes: takes.map((t) => ({ file: t.file })) } : {}),
     },
     script: aiRewrite ? { mode: "rewrite" } : scriptText ? { mode: "rewrite", text: scriptText } : { mode: "keep" },
@@ -475,7 +502,19 @@ function BriefPanel({
   const showLines = async () => {
     try {
       const pid = await ensureProject();
-      setTeleprompter(await fetchTeleprompter(pid, { brief: { script: { mode: "rewrite", text: scriptText } }, post_id: postId }, { organizationId }));
+      // AI rewrite chosen and nothing typed: the server writes the script and these are its lines; the page then keeps that
+      // script as the person's own so the plan uses exactly what they record.
+      const typed = !aiRewrite || script !== null;
+      const answer = await fetchTeleprompter(
+        pid,
+        { brief: { ...brief(), presenter: { mode: "voiceover" }, script: typed ? { mode: "rewrite", text: scriptText } : { mode: "rewrite" } }, post_id: postId },
+        { organizationId },
+      );
+      setTeleprompter(answer);
+      if (answer.script) {
+        setScript(answer.script);
+        setAiRewrite(false);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't build your lines");
     }
@@ -503,12 +542,14 @@ function BriefPanel({
     setPlan(null);
     setPhase("planning");
     setSteps([{ id: "project", label: projectId ? "Opening the project" : "Creating the project", state: "running" }]);
+    let pid: string | null = null;
     try {
-      const pid = await ensureProject();
+      pid = await ensureProject();
       const result = await runClonePlan(pid, { brief: brief(), post_id: postId }, { organizationId }, (s) =>
         setSteps((prev) => pushStep(prev, { id: s.stage || s.label, label: s.label, state: "running" })),
       );
       setSteps((prev) => closeSteps(prev));
+      madeHere.current = null;
       setPlan(result);
       setPhase("planned");
       void queryClient.invalidateQueries({ queryKey: videoKeys.project(pid) });
@@ -516,6 +557,7 @@ function BriefPanel({
       setSteps((prev) => closeSteps(prev, "failed"));
       setFailure(err);
       setPhase("brief");
+      await discardUnplanned();
     }
   };
 
@@ -652,6 +694,19 @@ function BriefPanel({
             </button>
           ))}
         </div>
+        {presenter === "generated_presenter" ? (
+          <>
+            <Field
+              aria-label="Who is the presenter"
+              placeholder="Who is on camera, e.g. a friendly woman in her 30s in a bright kitchen"
+              value={presenterText}
+              maxLength={400}
+              disabled={busy}
+              onChange={(e) => setPresenterText(e.target.value)}
+            />
+            <span className="type-meta text-muted-foreground">{`Empty uses ${brand.name}'s spokesperson photos when it has them`}</span>
+          </>
+        ) : null}
       </Row>
 
       <Row
@@ -668,7 +723,15 @@ function BriefPanel({
           )
         }
       >
-        {aiRewrite ? <span className="type-meta text-muted-foreground">The script is written for your product when you press Plan</span> : null}
+        {noSpeech ? (
+          <span className="type-meta text-warning">
+            {aiRewrite
+              ? "This reference has no speech. The AI writes your script from its on-screen text, its shots and your brief when you press Plan"
+              : "This reference has no speech. Press AI rewrite to have the script written from its on-screen text and shots, or write it yourself"}
+          </span>
+        ) : aiRewrite ? (
+          <span className="type-meta text-muted-foreground">The script is written for your product when you press Plan</span>
+        ) : null}
         <ProTextarea
           value={scriptText}
           onChange={(e) => setScript(e.target.value)}
@@ -715,6 +778,9 @@ function BriefPanel({
                   </li>
                 ))}
               </ol>
+            ) : null}
+            {takes.length === 1 && teleprompter && teleprompter.teleprompter.length > 1 ? (
+              <span className="type-meta text-muted-foreground">One recording covers every line: read them straight through. Your captions and cuts follow what you actually said.</span>
             ) : null}
             {takes.length ? (
               <ul className="flex flex-col gap-1">
@@ -786,6 +852,8 @@ function BriefPanel({
                 <CostLine label={estimateLabel(summarizeEstimate(est))} usd={est.total_usd} pts={est.total_points} />
               </span>
             </div>
+            {perSecondLine(est) ? <span className="type-meta text-muted-foreground">{perSecondLine(est)}</span> : null}
+            {confirmLine(est) ? <span className="type-meta text-muted-foreground">{confirmLine(est)}</span> : null}
             {plan.script_source === "fallback" ? <span className="type-meta text-warning">Kept the reference script</span> : null}
             {writerSkipped ? <span className="type-meta text-warning">The script writer didn't run, so the reference script was kept</span> : null}
             {plan.brand_facts && plan.brand_facts.facts ? (

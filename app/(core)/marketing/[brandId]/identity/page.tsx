@@ -23,8 +23,7 @@ import { createClient } from "@/utils/supabase/server";
 import { researchThisHref } from "@/features/research/utils/init-route";
 import { subjectFromBrandProperties } from "@/features/research/utils/subject";
 import { brandKindCopy, type BrandRoom } from "@/features/marketing/lib/brand-kind";
-import { BrandAnalysisInputs } from "@/features/provision-window/BrandAnalysisInputs";
-import { BrandGuideInputs } from "@/features/provision-window/BrandGuideInputs";
+import { BrandIdentityBuilderFeed } from "@/features/marketing/brand-guide/BrandIdentityBuilderFeed";
 import { BrandVisualSuggestions } from "@/features/marketing/brand-guide/BrandVisualSuggestions";
 
 /**
@@ -125,17 +124,7 @@ export default async function BrandIdentityPage({
   return (
     <div className="h-full overflow-y-auto bg-textured">
       <div className="mx-auto w-full max-w-6xl px-3 pb-10 pt-[calc(var(--shell-header-h)+1rem)] sm:px-4">
-        {/* One fixed line: the admin input chips arriving later sit beside the title and never grow the header. */}
-        <header className="mb-4 flex h-9 flex-nowrap items-center gap-x-4 overflow-x-auto">
-          <h1
-            className="text-base font-semibold text-foreground"
-            title="What every website, campaign and agent draws on"
-          >
-            {brand.name} · Identity
-          </h1>
-          <BrandAnalysisInputs brandId={brand.id} brandName={brand.name} />
-          <BrandGuideInputs brandId={brand.id} brandName={brand.name} organizationId={brand.organization_id} />
-        </header>
+        <BrandIdentityBuilderFeed brandId={brand.id} brandName={brand.name} organizationId={brand.organization_id} />
         <BrandVisualSuggestions brandId={brand.id} organizationId={brand.organization_id} />
         {/* Room cards: icon and name on one line, the room's line under both, full width. */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

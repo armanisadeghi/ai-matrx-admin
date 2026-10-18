@@ -143,9 +143,11 @@ function BuilderPanelInner({
       refsOf(entries, "record").map(({ ref }) => ref.id),
     ),
   ];
+  const [captureTick, setCaptureTick] = useState(0);
   const { truth, error: truthError } = useRunTruth(
     [...new Set(workflowRuns.map((r) => r.runId))],
     subjectIds,
+    captureTick,
   );
 
   const aiRuns = refsOf(entries, "ai_run");
@@ -166,6 +168,16 @@ function BuilderPanelInner({
       ...(truth?.snapshots ?? []).map((s) => s.pointKey),
     ]),
   ];
+
+  // Capture now: one button per provision point the page names, for the first record that carries an organization.
+  const captureSubject = refsOf(entries, "record").find(({ ref }) => ref.organizationId)?.ref ?? null;
+  const capturePoints = [
+    ...new Map(
+      mandateRefs
+        .filter((m) => m.ref.provisionKey)
+        .map((m) => [m.ref.provisionKey as string, m.ref.provisionLabel ?? null] as const),
+    ),
+  ].map(([pointKey, label]) => ({ pointKey, label }));
 
   const pageRows = pageRequestRows(requestLog, feed?.route ?? pathname);
   const serverRows = serverRequestRows(truth?.outcomes ?? []);
@@ -391,7 +403,19 @@ function BuilderPanelInner({
         />
       ) : null}
       {tab === "ai" ? <BuilderAiTab aiRuns={aiRuns} /> : null}
-      {tab === "provision" ? <BuilderProvisionTab snapshots={snapshots} focusId={snapshotFocus} /> : null}
+      {tab === "provision" ? (
+        <BuilderProvisionTab
+          snapshots={snapshots}
+          focusId={snapshotFocus}
+          capturePoints={capturePoints}
+          subject={
+            captureSubject?.organizationId
+              ? { id: captureSubject.id, organizationId: captureSubject.organizationId, label: captureSubject.label ?? captureSubject.id }
+              : null
+          }
+          onCaptured={() => setCaptureTick((n) => n + 1)}
+        />
+      ) : null}
     </WindowPanel>
   );
 }

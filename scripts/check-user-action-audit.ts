@@ -20,7 +20,6 @@
 import process from "node:process";
 import { existsSync } from "node:fs";
 import { connectDirect, loadDbEnv, type DbEnv } from "./lib/direct-db";
-// @ts-expect-error -- plain .mjs module without declarations (the one persona door)
 import { testTarget, withFixtureUser } from "./lib/persona.mjs";
 
 const HELPER = "admin._audit_user_action";

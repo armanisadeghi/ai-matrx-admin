@@ -13,9 +13,14 @@ platform shows the EXACT values available there and the expected output instead 
   `features/overlays/definitions/provisionWindow.overlay.tsx` (`useOpenProvisionWindow()(snapshotId, title)`), address
   `?panels=provision:<snapshot id>` (the window passes `urlSyncId={snapshotId}`).
 
-- `BrandGuideInputs.tsx` — the four brand-guide points (`brand_guide.voice` / `.messaging` / `.audience` / `.words`): Capture
-  (debug values on demand) opens the window, earlier captures beside it. Admin + debug only.
+- Capture now lives in the Builder (Provision tab, one "Capture <inputs>" button per provision point a page names), not on pages:
+  `features/builder-panel/components/BuilderRunsTabs.tsx`. The brand Identity page names its five points through
+  `features/marketing/brand-guide/BrandIdentityBuilderFeed.tsx` (`brand_guide.voice` / `.messaging` / `.audience` / `.words`,
+  `brand_intake.smart_add_create`).
 
-Used by: Smart Add (`features/marketing/smart-add/SmartAddBrand.tsx`) and the brand Identity page
-(`BrandAnalysisInputs.tsx` and `BrandGuideInputs.tsx` on `app/(core)/marketing/[brandId]/identity/page.tsx`). Server: aidream
+Used by: Smart Add (`features/marketing/smart-add/SmartAddBrand.tsx`) and the Builder's Provision tab (any page that publishes a `record` ref with `organizationId` and `mandate` refs with `provisionKey`). Server: aidream
 `aidream/services/provision_window/FEATURE.md`.
+
+## Change log
+
+- 2026-10-17 — Claude: `BrandGuideInputs` / `BrandAnalysisInputs` removed from the brand Identity page (Arman: ugly top row with a scrollbar). Their capability moved to the Builder Provision tab as Capture buttons + the subject's captures.

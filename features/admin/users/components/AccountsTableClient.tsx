@@ -83,6 +83,7 @@ import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, type UserResearch } from "..
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
 import { useUserActions } from "../record/useUserActions";
+import { userRecordHref } from "../record/userSurfaces";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { readOf } from "@ai-matrx/design-system";
@@ -288,6 +289,7 @@ function AccountsRoster() {
               }
               email={row.email}
               hideEmail
+              href={userRecordHref(row.id)}
             />
           </div>
         ),
@@ -757,7 +759,7 @@ function AccountsRoster() {
       variant: "destructive",
       confirm: (sel) => ({
         title: `Close ${sel.count} account${sel.count === 1 ? "" : "s"}?`,
-        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} cannot sign in again; open sessions can work for up to an hour. API keys are revoked; schedules and connections pause. Records stay. Reopen any time.`,
+        description: `${sel.count} ${sel.count === 1 ? "person" : "people"} can't sign in again (open sessions last up to an hour); API keys are revoked, schedules pause. Records stay; reopen any time.`,
         confirmLabel: "Close accounts",
         variant: "destructive",
       }),
@@ -1132,6 +1134,9 @@ function AccountsRoster() {
             </DropdownMenu>
           ) }]}
           getRowId={(r) => r.id}
+          // A row opens the person's own record page (the Name cell links there too).
+          getRowHref={(r) => userRecordHref(r.id)}
+          rowClick="page"
           isLoading={loading}
           pageSize={ROSTER_PAGE_SIZE}
           // Local filtering, caller-owned query — see `tableQuery` above.

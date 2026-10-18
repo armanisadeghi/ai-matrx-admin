@@ -77,6 +77,7 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
       .then((o) => {
         if (!alive) return;
         setOverview(o);
+        // access-errors: ok — admin.user_overview is SECURITY DEFINER over auth.users (no RLS), so null means no such account.
         setError(o ? null : "No account with this id");
       })
       .catch((e: unknown) => {
@@ -146,6 +147,7 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
         void actions.setAccountClosed(subject, false);
         return;
       case "sign_out_everywhere":
+        actions.signOutEverywhere(subject);
         return;
     }
   };
@@ -174,6 +176,7 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
     if (id === "support_session" || id === "magic_link" || id === "password_reset" || id === "email") return !contactable;
     if (id === "message" || id === "change_plan" || id === "free_months" || id === "tutorial" || id === "top_tier") return subject.is_anonymous;
     if (id === "close") return actions.closeBlockedReason(subject) !== null;
+    if (id === "sign_out_everywhere") return subject.id === actions.myId;
     return false;
   };
 
@@ -223,6 +226,7 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
       <RecordPageHeader
         backHref={USERS_HUB_PATH}
         parents={[{ label: "Users & Access", href: USERS_HUB_PATH }]}
+        // access-errors: ok — admin.user_overview reads auth.users as SECURITY DEFINER (no RLS): no row is no account.
         record={{ name: title ?? (loading ? "User" : "User not found") }}
         status={status}
         actions={headerActions}

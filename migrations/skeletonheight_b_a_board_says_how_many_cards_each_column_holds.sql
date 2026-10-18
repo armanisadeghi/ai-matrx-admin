@@ -10,7 +10,8 @@
 --   custom.where_id_opens(uuid): a Table's answer also carries `opening_view` (that shape);
 --   custom.table_page_bundle(uuid,uuid,uuid): one more part, door `opening_view_shape`.
 -- A gallery needs no more than the row count the previous step added; its shape carries the layout only.
--- A refusal while shaping never fails the door.
+-- The helper is a plain (invoker) function called from the definer door; the bundle reads the same answer
+-- from custom.where_id_opens, which has already decided who may open the Table. A refusal while shaping never fails the door.
 -- Inverse: migrations/inverse/skeletonheight_b_a_board_says_how_many_cards_each_column_holds_down.sql
 --
 set local lock_timeout = '2s';
@@ -18,7 +19,7 @@ set local lock_timeout = '2s';
 CREATE OR REPLACE FUNCTION custom.opening_view_shape(p_organization_id uuid, p_table_id uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
- STABLE SECURITY DEFINER
+ STABLE
  SET search_path TO 'pg_catalog'
 AS $function$
 declare
@@ -27,15 +28,6 @@ declare
   v_group  text;
   v_counts jsonb;
 begin
-  -- A definer that counts rows answers only a caller who may open the Table (the ladder's own question).
-  begin
-    perform custom.assert_client_may_reach(p_organization_id, 'custom.opening_view_shape');
-    perform custom.assert_client_may_open(p_organization_id, p_table_id, 'custom.opening_view_shape',
-                                          'viewer'::public.permission_level, 'record');
-  exception
-    when others then
-      return null;
-  end;
   begin
     select v.definition into v_def
       from custom.views(p_organization_id, p_table_id) with ordinality as v(view_id, name, table_id, filters, definition, created_at, n)
@@ -377,7 +369,7 @@ BEGIN
   BEGIN
     v_parts := v_parts || jsonb_build_array(jsonb_build_object('door', 'opening_view_shape',
       'args', jsonb_build_object('p_organization_id', v_org, 'p_table_id', v_tbl),
-      'data', custom.opening_view_shape(p_organization_id, p_table_id)));
+      'data', custom.where_id_opens(p_table_id) -> 'opening_view'));
   EXCEPTION WHEN OTHERS THEN
     v_parts := v_parts || jsonb_build_array(jsonb_build_object('door', 'opening_view_shape',
       'args', jsonb_build_object('p_organization_id', v_org, 'p_table_id', v_tbl), 'error', SQLSTATE));

@@ -9,6 +9,10 @@
  */
 
 import { useState } from "react";
+import { extractErrorMessage } from "@/utils/errors";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { captureProvision } from "@/features/provision-window/data";
 import { Eye, PanelTopOpen } from "lucide-react";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { Button, Select, type SelectOption } from "@ai-matrx/design-system/controls";
@@ -60,26 +64,111 @@ export interface BuilderSnapshotRef {
   at: number;
 }
 
+export interface BuilderCapturePoint {
+  pointKey: string;
+  /** Plain name of the inputs ("voice"); falls back to the point key. */
+  label: string | null;
+}
+
+export interface BuilderCaptureSubject {
+  id: string;
+  organizationId: string;
+  label: string;
+}
+
+/**
+ * Capture now — one button per provision point the page names (a `mandate` ref with `provisionKey`),
+ * for the record the page published (a `record` ref with `organizationId`). Builds the exact values the
+ * step would receive, saves the snapshot and opens it in the Provision window.
+ */
+function CaptureBar({
+  points,
+  subject,
+  onCaptured,
+}: {
+  points: BuilderCapturePoint[];
+  subject: BuilderCaptureSubject;
+  onCaptured: (snapshotId: string) => void;
+}) {
+  const dispatch = useAppDispatch();
+  const openProvision = useOpenProvisionWindow();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const capture = async (p: BuilderCapturePoint) => {
+    setBusy(p.pointKey);
+    setError(null);
+    try {
+      const snap = await captureProvision(dispatch, p.pointKey, subject.id, subject.organizationId, "manual");
+      onCaptured(snap.id);
+      openProvision(snap.id, `${p.label ?? p.pointKey}: ${subject.label}`);
+    } catch (e) {
+      setError(extractErrorMessage(e));
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2" data-testid="builder-capture-bar">
+      {points.map((p) => (
+        <Button key={p.pointKey} variant="outline" disabled={busy !== null} onClick={() => capture(p)} title={p.pointKey}>
+          {busy === p.pointKey ? "Capturing" : `Capture ${p.label ?? p.pointKey}`}
+        </Button>
+      ))}
+      {error ? (
+        <span className="flex min-w-0 items-center gap-1">
+          <span className="truncate text-xs text-destructive" title={error}>{error}</span>
+          <ErrorAlchemyMenu error={error} />
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 export function BuilderProvisionTab({
   snapshots,
   focusId,
+  capturePoints = [],
+  subject = null,
+  onCaptured,
 }: {
   /** Every snapshot for this page's runs and records, from the database. */
   snapshots: BuilderSnapshotRef[];
   focusId: string | null;
+  capturePoints?: BuilderCapturePoint[];
+  subject?: BuilderCaptureSubject | null;
+  onCaptured?: () => void;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
   const openProvision = useOpenProvisionWindow();
   const ordered = [...snapshots].sort((a, b) => b.at - a.at);
   const wanted = picked ?? focusId;
   const current = ordered.find((s) => s.id === wanted) ?? ordered[0] ?? null;
-  if (!current) return <p className="p-3 text-xs text-muted-foreground">No provision snapshot for this page yet</p>;
+  const bar =
+    subject && capturePoints.length ? (
+      <CaptureBar
+        points={capturePoints}
+        subject={subject}
+        onCaptured={(id) => {
+          setPicked(id);
+          onCaptured?.();
+        }}
+      />
+    ) : null;
+  if (!current) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        {bar}
+        <p className="p-3 text-xs text-muted-foreground">No provision snapshot for this page yet</p>
+      </div>
+    );
+  }
   const options: SelectOption<string>[] = ordered.map((s) => ({
     value: s.id,
     label: `${s.label} · ${new Date(s.at).toLocaleTimeString()}`,
   }));
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {bar}
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <Select aria-label="Snapshot" value={current.id} onValueChange={setPicked} options={options} />
         <span className="truncate font-mono text-[11px] text-muted-foreground">{current.id}</span>

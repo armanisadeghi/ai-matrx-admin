@@ -28,9 +28,12 @@ export type BuilderRef =
   | { type: "workflow_run"; id: string; label?: string | null }
   | { type: "ai_run"; requestId?: string | null; userRequestId?: string | null; workflowRunId?: string | null; conversationId?: string | null }
   | { type: "provision_snapshot"; id: string }
-  | { type: "mandate"; mandateKey?: AnyMandateKey | null; provisionKey?: string | null }
-  /** A record this page saved: the Provision tab also reads snapshots captured for it. */
-  | { type: "record"; id: string; table?: string | null };
+  | { type: "mandate"; mandateKey?: AnyMandateKey | null; provisionKey?: string | null; provisionLabel?: string | null }
+  /**
+   * A record this page saved or shows: the Provision tab reads snapshots captured for it (subject id) and,
+   * with `organizationId`, offers a Capture button for every provision point the page names.
+   */
+  | { type: "record"; id: string; table?: string | null; organizationId?: string | null; label?: string | null };
 
 /** What a page passes to `publish`. */
 export interface BuilderPublishInput {

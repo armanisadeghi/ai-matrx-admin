@@ -114,7 +114,7 @@ export interface UserActionDef {
   danger?: boolean;
   /**
    * False when the action's server door is not live yet: it is left out everywhere (never a dead
-   * button). `sign_out_everywhere` waits on iam.sign_out_everywhere (lane A, not live 2026-10-17).
+   * button).
    */
   live: boolean;
 }
@@ -131,7 +131,7 @@ export const USER_ACTIONS: readonly UserActionDef[] = [
   { id: "mcp_access", label: "Full MCP access", icon: KeyRound, placement: "menu", group: "access", live: true },
   { id: "top_tier", label: "Top-tier models", icon: Gem, placement: "menu", group: "access", live: true },
   { id: "onboarded", label: "Onboarding", icon: UserCog, placement: "menu", group: "access", live: true },
-  { id: "sign_out_everywhere", label: "Sign out everywhere…", icon: LogOut, placement: "menu", group: "danger", danger: true, live: false },
+  { id: "sign_out_everywhere", label: "Sign out everywhere…", icon: LogOut, placement: "menu", group: "danger", danger: true, live: true },
   { id: "close", label: "Close account…", icon: UserX, placement: "menu", group: "danger", danger: true, live: true },
   { id: "reopen", label: "Reopen account", icon: UserCheck, placement: "menu", group: "danger", live: true },
 ];

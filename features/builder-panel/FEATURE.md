@@ -50,7 +50,7 @@ useEffect(() => {
   `request_ledger.py`) and provision snapshots need no publishing: the panel reads them from the
   database for every `workflow_run` ref (and `record` ref for snapshots of a saved record).
 - `ref` drives the tabs: `workflow_run` → Workflow, Requests, Activity, Provision; `record` →
-  Provision; `ai_run` → AI calls (a workflow run is never counted as an AI call);
+  Provision (with `organizationId`: Capture buttons for the page's `provisionKey` refs); `ai_run` → AI calls (a workflow run is never counted as an AI call);
   `provision_snapshot` → Provision; `mandate` (`mandateKey` / `provisionKey`) → Mandates.
 
 ## Layout (round 3: step first)
@@ -83,6 +83,7 @@ explicit `organization_id`; nothing in code holds a proposal.
 
 ## Change log
 
+- `2026-10-17` — Claude: Provision tab **Capture now** (admin tool moved off the brand Identity page). A page publishes a `record` ref with `organizationId` (+`label`) and `mandate` refs with `provisionKey` (+`provisionLabel`); the tab shows one "Capture <inputs>" button per point (`captureProvision`, opens the Provision window) and lists the record's earlier captures. Consumer: `features/marketing/brand-guide/BrandIdentityBuilderFeed.tsx`.
 - `2026-10-14` — Claude: Builder records only while debug mode is on (Arman). Requests and page values stop and are dropped when debug turns off; the panel says so with a Turn on button. Guard: `__tests__/recording.test.ts`.
 - 2026-10-13 — round 3 (Arman: "more intuitive, don't lose any data"): the sidebar is the run as a
   numbered story; a row shows Sent · Received · What we took from it; Data → Values (group icons),

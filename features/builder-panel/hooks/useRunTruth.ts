@@ -10,7 +10,7 @@ const REFRESH_MS = 3_000;
  * The stored rows of these runs (run, node outcomes, provision snapshots), re-read every few
  * seconds while any run is still going, then left alone.
  */
-export function useRunTruth(runIds: string[], subjectIds: string[]): { truth: RunTruth | null; error: string | null } {
+export function useRunTruth(runIds: string[], subjectIds: string[], refreshKey = 0): { truth: RunTruth | null; error: string | null } {
   const [truth, setTruth] = useState<RunTruth | null>(null);
   const [error, setError] = useState<string | null>(null);
   const sig = `${runIds.join(",")}|${subjectIds.join(",")}`;
@@ -41,7 +41,7 @@ export function useRunTruth(runIds: string[], subjectIds: string[]): { truth: Ru
       live = false;
       if (timer) clearTimeout(timer);
     };
-  }, [sig]);
+  }, [sig, refreshKey]);
 
   return { truth, error };
 }

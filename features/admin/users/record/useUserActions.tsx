@@ -11,7 +11,7 @@
 // (close reason, message) come back as `dialogs` for the caller to render once.
 
 import { useState, type ReactNode } from "react";
-import { Loader2, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { toast } from "@/lib/toast";
+import { isJsonObject } from "@/types/json";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
@@ -70,6 +71,8 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
 
   const [closeTarget, setCloseTarget] = useState<UserActionSubject | null>(null);
   const [closing, setClosing] = useState(false);
+  const [signOutTarget, setSignOutTarget] = useState<UserActionSubject | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
   const [messageTarget, setMessageTarget] = useState<UserActionSubject | null>(null);
   const [messageDraft, setMessageDraft] = useState("");
   const [messageSending, setMessageSending] = useState(false);
@@ -216,6 +219,29 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     }
   };
 
+  /** Ends every sign-in this person has (iam.sign_out_everywhere); asks for the reason first. */
+  const signOutEverywhere = (subject: UserActionSubject) => setSignOutTarget(subject);
+
+  const confirmSignOut = async (reason: string) => {
+    if (!signOutTarget) return;
+    const who = whoOf(signOutTarget);
+    setSigningOut(true);
+    try {
+      const { data, error } = await createClient()
+        .schema("iam")
+        .rpc("sign_out_everywhere", { p_user: signOutTarget.id, p_reason: reason.trim() });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      const ended = isJsonObject(data) && typeof data.sessions === "number" ? data.sessions : null;
+      toast.success(ended === null ? `Signed ${who} out everywhere` : `Ended ${ended} sign-in${ended === 1 ? "" : "s"} for ${who}`);
+      setSignOutTarget(null);
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
   const openMessage = (subject: UserActionSubject) => {
     setMessageTarget(subject);
     setMessageDraft("");
@@ -257,11 +283,23 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
           if (!open && !closing) setCloseTarget(null);
         }}
         title={`Close ${closeTarget ? whoOf(closeTarget) : "account"}?`}
-        description="They cannot sign in again; an open session can work up to an hour. API keys are revoked; schedules and connections pause. Records stay theirs. Reopen any time."
+        description="They can't sign in again (open sessions last up to an hour); API keys are revoked, schedules pause. Records stay; reopen any time."
         placeholder="Reason (recorded with the closure)"
         confirmLabel="Close account"
         busy={closing}
         onConfirm={confirmClose}
+      />
+      <TextInputDialog
+        open={signOutTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !signingOut) setSignOutTarget(null);
+        }}
+        title={`Sign ${signOutTarget ? whoOf(signOutTarget) : "this person"} out everywhere?`}
+        description="Ends every sign-in on every device; a page already open can work up to an hour. They can sign in again."
+        placeholder="Reason (recorded in the admin history)"
+        confirmLabel="Sign out everywhere"
+        busy={signingOut}
+        onConfirm={confirmSignOut}
       />
       <Dialog
         open={messageTarget !== null}
@@ -293,12 +331,12 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
               Cancel
             </Button>
             <Button
-              icon={messageSending ? <Loader2 className="animate-spin" /> : <MessageSquare />}
+              icon={<MessageSquare />}
               variant="primary"
               onClick={() => void sendMessage()}
               disabled={messageSending || !messageDraft.trim()}
             >
-              Send message
+              {messageSending ? "Sending…" : "Send message"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -314,6 +352,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     toggleTopTierModels,
     setAccountClosed,
     closeBlockedReason,
+    signOutEverywhere,
     openMessage,
     /** The person the message dialog is open for (surface context). */
     messageTarget,

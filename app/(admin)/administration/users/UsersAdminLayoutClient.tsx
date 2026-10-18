@@ -114,7 +114,7 @@ export function UsersAdminLayoutClient({
   const pathname = usePathname() ?? "";
   const segment = pathname.split("/")[3] ?? "";
   if (isUuidShape(segment)) {
-    return <div className="flex h-[calc(100dvh-2.5rem)] flex-col overflow-hidden bg-textured">{children}</div>;
+    return <div className="flex h-[calc(100dvh-2.5rem)] flex-col overflow-y-auto bg-textured">{children}</div>;
   }
   return (
     <AdminSectionShell

@@ -5,7 +5,7 @@
 
 import { BackendApiError } from "@ai-matrx/api";
 
-import { getJson, postJson } from "@/lib/python-client";
+import { del, getJson, postJson } from "@/lib/python-client";
 
 import type {
   EstimateAnswer,
@@ -32,6 +32,11 @@ export async function createVideoProject(
   o: CallOptions,
 ): Promise<VideoProjectAnswer> {
   return (await postJson<VideoProjectAnswer>(BASE, body, opts(o))).data;
+}
+
+/** Archive a project (its owner or an admin). It leaves every list; the server keeps the history. */
+export async function deleteVideoProject(projectId: string, o: CallOptions): Promise<void> {
+  await del(`${BASE}/${projectId}`, opts(o));
 }
 
 export async function getVideoProject(projectId: string, o: CallOptions): Promise<VideoProjectAnswer> {
