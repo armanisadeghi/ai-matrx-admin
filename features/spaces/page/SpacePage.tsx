@@ -7,7 +7,6 @@ import { ChevronsRight, CloudOff, FileInput, FileQuestion, ImageIcon, Lock, Menu
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Backlinks } from "./Backlinks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
@@ -188,7 +187,6 @@ export function SpacePage({
 function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?: SpaceDoc }) {
   const spaces = useSpaces();
   const { store, pathTo, favorites, toggleFavorite, markVisited, openQuickFind, sidebarCollapsed, setSidebarCollapsed, setMobileSidebarOpen, patchSummary } = spaces;
-  const isMobile = useIsMobile();
   const [doc, setDoc] = useState<SpaceDoc | null | undefined>(initialDoc);
   const [now, setNow] = useState(() => Date.now());
   const [saveState, setSaveState] = useState<SaveState>("saved");
@@ -883,12 +881,13 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
   return (
     <div className="spaces-page" data-full-width={doc.settings.fullWidth ? "true" : undefined} data-small-text={doc.settings.smallText ? "true" : undefined}>
       <header className="spaces-topbar">
-        {isMobile ? (
-          <button type="button" className="spaces-topbar-button" aria-label="Open sidebar" onClick={() => setMobileSidebarOpen(true)}>
-            <Menu size={18} />
-          </button>
-        ) : sidebarCollapsed ? (
-          <button type="button" className="spaces-topbar-button" aria-label="Open sidebar" onClick={() => setSidebarCollapsed(false)}>
+        {/* Both buttons are always in the tree and the width picks one with CSS (spaces.css data-width):
+            the phone check answers only after hydration, and a button added then pushed the bar sideways. */}
+        <button type="button" className="spaces-topbar-button" data-width="phone" aria-label="Open sidebar" onClick={() => setMobileSidebarOpen(true)}>
+          <Menu size={18} />
+        </button>
+        {sidebarCollapsed ? (
+          <button type="button" className="spaces-topbar-button" data-width="wide" aria-label="Open sidebar" onClick={() => setSidebarCollapsed(false)}>
             <ChevronsRight size={18} />
           </button>
         ) : null}

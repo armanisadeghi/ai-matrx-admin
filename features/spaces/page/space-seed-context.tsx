@@ -36,14 +36,29 @@ export type SpaceBlockSeeds = Record<string, Promise<BlockSeed | null>>;
 /** How long the editor waits for the blocks' seeds before it is built anyway. */
 const EDITOR_WAIT_MS = 2_500;
 
-interface SeedState {
-  seeds: SpaceBlockSeeds | null;
+/**
+ * TWO CONTEXTS, ON PURPOSE (SPACES-REDRAW, 2026-10-17). The first pass's database blocks sit inside their own
+ * Suspense boundaries, and the browser hydrates each one only once its seed and its chunk are there. A context a
+ * still-dehydrated boundary reads must NOT change before then: React cannot hydrate that boundary yet, so it
+ * throws the server's HTML away and draws the block again from its loading box (the ~2 s redraw — every
+ * database block collapsing to its loading height and growing back). So the promises the first pass reads are
+ * their own context, and their value is the route's prop — it never changes for a page. What has LANDED (and
+ * whether the editor may be built) changes as seeds answer; only the editor's own blocks, mounted after the
+ * first pass, and the page read it. And the provider's first state is set while rendering — never by an
+ * effect right after hydration.
+ */
+const SeedPromisesContext = createContext<SpaceBlockSeeds | null>(null);
+
+interface SeedLanded {
   landed: Record<string, BlockSeed | null>;
   /** Every block's seed has answered (or there are none, or the wait is over): blocks mounted now start from what landed. */
   settled: boolean;
 }
 
-const SpaceSeedContext = createContext<SeedState>({ seeds: null, landed: {}, settled: true });
+const SeedLandedContext = createContext<SeedLanded>({ landed: {}, settled: true });
+
+/** A first-pass block's own resolved seed, for the reads inside it (`useSeededWhere`); undefined outside one. */
+const ResolvedSeedContext = createContext<BlockSeed | null | undefined>(undefined);
 
 /**
  * THIS block's seed: its answers, read synchronously by Spaces' own first reads (`useEntityRows`,
@@ -67,35 +82,43 @@ export function BlockRecordsSeed({ children }: { children: ReactNode }) {
 }
 
 export function SpaceSeedProvider({ seeds, children }: { seeds?: SpaceBlockSeeds; children: ReactNode }) {
-  const [state, setState] = useState<{ seeds: SpaceBlockSeeds; landed: Record<string, BlockSeed | null>; waited: boolean } | null>(null);
+  // The first state is this page's, from the first render: nothing is set by the effect on mount.
+  const [state, setState] = useState<{ seeds: SpaceBlockSeeds | undefined; landed: Record<string, BlockSeed | null>; waited: boolean }>(() => ({ seeds, landed: {}, waited: false }));
   useEffect(() => {
+    // Another page's seeds (or none): start over — a no-op for the seeds the first state already holds.
+    setState((s) => (s.seeds === seeds ? s : { seeds, landed: {}, waited: false }));
     if (!seeds) return;
     let live = true;
-    setState({ seeds, landed: {}, waited: false });
     for (const [id, promise] of Object.entries(seeds)) {
-      const settle = (value: BlockSeed | null) => live && setState((s) => (s && s.seeds === seeds ? { ...s, landed: { ...s.landed, [id]: value } } : s));
+      const settle = (value: BlockSeed | null) => live && setState((s) => (s.seeds === seeds ? { ...s, landed: { ...s.landed, [id]: value } } : s));
       void promise.then(settle, () => settle(null));
     }
-    const wait = window.setTimeout(() => live && setState((s) => (s && s.seeds === seeds ? { ...s, waited: true } : s)), EDITOR_WAIT_MS);
+    const wait = window.setTimeout(() => live && setState((s) => (s.seeds === seeds ? { ...s, waited: true } : s)), EDITOR_WAIT_MS);
     return () => {
       live = false;
       window.clearTimeout(wait);
     };
   }, [seeds]);
-  const mine = state && state.seeds === seeds ? state : null;
+  const mine = state.seeds === seeds ? state : null;
   const ids = seeds ? Object.keys(seeds) : [];
   const settled = !seeds || ids.length === 0 || (!!mine && (mine.waited || ids.every((id) => id in mine.landed)));
-  return <SpaceSeedContext value={{ seeds: seeds ?? null, landed: mine?.landed ?? {}, settled }}>{children}</SpaceSeedContext>;
+  return (
+    <SeedPromisesContext value={seeds ?? null}>
+      <SeedLandedContext value={{ landed: mine?.landed ?? NOTHING_LANDED, settled }}>{children}</SeedLandedContext>
+    </SeedPromisesContext>
+  );
 }
+
+const NOTHING_LANDED: Record<string, BlockSeed | null> = {};
 
 /** Whether the page's seeds have answered (true when there are none, or the editor's wait is over). */
 export function useSpaceSeedSettled(): boolean {
-  return useContext(SpaceSeedContext).settled;
+  return useContext(SeedLandedContext).settled;
 }
 
 /** Suspends until this block's seed answers (a first-pass block inside its own Suspense). */
 export function useAwaitedBlockSeed(blockId: string): BlockSeed | null {
-  const promise = useContext(SpaceSeedContext).seeds?.[blockId];
+  const promise = useContext(SeedPromisesContext)?.[blockId];
   // Always through use() when there is a promise: a render that suspended must call use() again when it
   // retries, and the "landed" state can arrive while it is suspended (React: "called use() to suspend in a
   // previous render but did not call use() when it finished"). A settled promise answers synchronously
@@ -156,7 +179,8 @@ function AwaitLateSeed({ promise, children }: { promise: Promise<BlockSeed | nul
  * (and close its store) while it does.
  */
 export function LateSeedRecords({ blockId, fallback, children }: { blockId: string; fallback: ReactNode; children: ReactNode }) {
-  const { seeds, landed } = useContext(SpaceSeedContext);
+  const seeds = useContext(SeedPromisesContext);
+  const { landed } = useContext(SeedLandedContext);
   const promise = seeds?.[blockId];
   if (blockId in landed) {
     if (!landed[blockId]?.records) return <>{children}</>;
@@ -176,17 +200,20 @@ export function LateSeedRecords({ blockId, fallback, children }: { blockId: stri
 
 /** Where one table opens, from the page's seeds (null when the server did not ask it). */
 export function useSeededWhere(tableId: string): SeededWhere | null {
-  const { landed } = useContext(SpaceSeedContext);
+  // A first-pass block reads only its own seed — never the page's landed list, which changes while the block
+  // may still be waiting to hydrate (`use` reads that context only on this branch, so the block never subscribes).
+  const own = useContext(ResolvedSeedContext);
+  if (own !== undefined) return own?.tableId === tableId && own.where ? own.where : null;
+  const { landed } = use(SeedLandedContext);
   for (const seed of Object.values(landed)) if (seed?.tableId === tableId && seed.where) return seed.where;
   return null;
 }
 
 /** For a first-pass block: its seed handed down already resolved (the block awaited it). */
-export function ResolvedBlockSeed({ blockId, seed, children }: { blockId: string; seed: BlockSeed | null; children: ReactNode }) {
-  const outer = useContext(SpaceSeedContext);
+export function ResolvedBlockSeed({ seed, children }: { blockId: string; seed: BlockSeed | null; children: ReactNode }) {
   return (
-    <SpaceSeedContext value={{ seeds: outer.seeds, landed: { ...outer.landed, [blockId]: seed }, settled: outer.settled }}>
+    <ResolvedSeedContext value={seed}>
       <SeedRecords seed={seed}>{children}</SeedRecords>
-    </SpaceSeedContext>
+    </ResolvedSeedContext>
   );
 }
