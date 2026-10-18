@@ -72,19 +72,27 @@ function QuietText({
 
 /** The record, re-read while the assistant is working; `refresh` after the person's own edit. */
 export function useStudioWorkspace(conversationId: string | null) {
-  const [ws, setWs] = useState<StudioWorkspace | null>(null);
+  // The record is held WITH the conversation it belongs to, so a closed or switched conversation shows
+  // nothing without a synchronous reset in the effect.
+  const [held, setHeld] = useState<{ id: string; ws: StudioWorkspace } | null>(null);
+  const ws = held && held.id === conversationId ? held.ws : null;
+  const setWs = (update: StudioWorkspace | null | ((w: StudioWorkspace | null) => StudioWorkspace | null)) => {
+    if (!conversationId) return;
+    setHeld((current) => {
+      const prev = current && current.id === conversationId ? current.ws : null;
+      const next = typeof update === "function" ? update(prev) : update;
+      return next ? { id: conversationId, ws: next } : null;
+    });
+  };
   const edits = useRef(0);
   useEffect(() => {
-    if (!conversationId) {
-      setWs(null);
-      return;
-    }
+    if (!conversationId) return;
     let live = true;
     const read = async () => {
       if (edits.current > 0) return; // never overwrite the screen under a pending edit
       try {
         const next = await loadWorkspace(conversationId);
-        if (live) setWs(next);
+        if (live) setHeld(next ? { id: conversationId, ws: next } : null);
       } catch {
         /* the next poll tries again; a failed read never blanks what is on screen */
       }
