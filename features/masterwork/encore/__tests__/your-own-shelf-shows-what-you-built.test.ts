@@ -143,7 +143,8 @@ function definitionRow(overrides: {
 }
 
 const MINE = `eq:created_by:${USER_ID}`;
-const FROM_ORGS = `in:organization_id:${ORG_ID}`;
+// "From your organizations" asks the server (in_my_organizations), never a first-page id list.
+const FROM_ORGS = "is:in_my_organizations:true";
 const PUBLIC = "eq:published_to_web:true";
 const RELEASE_GATE = "not:metadata->>released_at:is:null";
 

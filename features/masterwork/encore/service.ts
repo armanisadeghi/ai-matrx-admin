@@ -1,7 +1,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { operationFailed } from "@/utils/errors";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { IN_MY_ORGANIZATIONS } from "@/features/organizations/service/inMyOrganizations";
 import {
   listRecentRunsForMasterworks,
   MASTERWORK_SELECT_COLUMNS,
@@ -15,7 +15,6 @@ import {
 import type { Masterwork, RulebookSource } from "../types";
 import { defaultListFilter, type ListScopeWord } from "@/lib/list-scope";
 import { MASTERWORK_RESULT_KIND } from "@/features/content-ir/kinds/masterwork-result";
-import { readInChunks } from "@/features/scopes/service/inChunks";
 
 /**
  * Encore — the Operator-facing invocation surface. Direct supabase-js per
@@ -167,14 +166,12 @@ async function withRulebooks(
  */
 export async function listEncoreShelves(): Promise<EncoreShelf[]> {
   const userId = requireUserId();
-  const orgs = await getUserOrganizations();
-  const orgIds = orgs.map((o) => o.id);
 
   const [mineRes, orgsRes, publicRes] = await Promise.all([
     // YOUR shelf shows everything you built, draft or released.
     builtBase().eq("created_by", userId),
-    // ~100 ids per url, never every membership in one.
-    readInChunks(orgIds, (chunk) => releasedBase().in("organization_id", chunk)),
+    // Released in ANY of my organizations — asked on the server, never a first-page id list.
+    releasedBase().is(IN_MY_ORGANIZATIONS, true),
     releasedBase().eq("published_to_web", true),
   ]);
   for (const res of [mineRes, orgsRes, publicRes]) {

@@ -94,6 +94,7 @@ import { announceRecordChange } from "@/lib/records/recordChanges";
 import { postgrestError } from "@/lib/failure/postgrestError";
 import { resolvePartiesBatchDoor, resolvePartyDoor } from "@ai-matrx/api/crm";
 import { serverApi } from "@/lib/api/server-api";
+import { IN_MY_ORGANIZATIONS, IN_MY_ORGANIZATIONS_ARM } from "@/features/organizations/service/inMyOrganizations";
 export { normalizeMediumValue };
 
 // ── List page ───────────────────────────────────────────────────────────────
@@ -180,13 +181,13 @@ export function applyPartyListPredicates<Q extends PartyPredicateBuilder<Q>>(
   if (orgId) q = q.eq("organization_id", orgId);
   if (scope.kind === "all") {
     // ALL = Mine ∪ My Orgs (CRM has no Shared lane; My team is inside My Orgs).
-    q = ctx.orgIds.length
-      ? q.or(`created_by.eq.${ctx.userId},organization_id.in.(${ctx.orgIds.join(",")})`)
-      : q.eq("created_by", ctx.userId);
+    // "My Orgs" = ANY of her organizations, asked on the server (`in_my_organizations`) —
+    // never an id list built from the first page of her organizations (2026-10-17).
+    q = q.or(`created_by.eq.${ctx.userId},${IN_MY_ORGANIZATIONS_ARM}`);
   } else if (scope.kind === "mine") {
     q = q.eq("created_by", ctx.userId);
   } else if (scope.kind === "orgs") {
-    if (!orgId) q = q.in("organization_id", ctx.orgIds);
+    if (!orgId) q = q.is(IN_MY_ORGANIZATIONS, true);
   } else if (scope.kind === "team") {
     if (ctx.teamReachUnread) {
       throw new Error(

@@ -20,7 +20,7 @@ import { callApi } from "@/lib/api/call-api";
 import { isJsonObject } from "@/types/json";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { components } from "@ai-matrx/api/types";
-import { getUserOrganizations } from "@/features/organizations/service";
+import { IN_MY_ORGANIZATIONS } from "@/features/organizations/service/inMyOrganizations";
 import {
   DECISION_SUBJECT_KIND,
   decisionJudgeKey,
@@ -30,7 +30,7 @@ import {
   type JudgeVerdictRow,
   type ReviewItem,
 } from "./queue";
-import { idChunks, readInChunks } from "@/features/scopes/service/inChunks";
+import { readInChunks } from "@/features/scopes/service/inChunks";
 import { openStream, type ApiStream, type NdjsonEvent, type OperationDescriptor } from "@ai-matrx/api";
 import { serverApi } from "@/lib/api/server-api";
 import {
@@ -117,32 +117,24 @@ export const DEFAULT_FILTERS: QueueFilters = {
   version: null,
 };
 
-/** The organization ids the combined queue reads — the person's own memberships. */
-async function myOrganizationIds(): Promise<string[]> {
-  const organizations = await getUserOrganizations();
-  return organizations.map((organization) => organization.id);
-}
-
 export async function loadQueue(
   scope: QueueScope,
   filters: QueueFilters,
 ): Promise<ReviewItem[]> {
-  const organizationIds = scope.agentId ? null : await myOrganizationIds();
   const client = createClient();
-  // "My organizations" can be hundreds: ~100 ids per url, never every id in one. Each chunk
-  // is its own page; the merged rows are ordered and cut to one page below.
-  const scopes: Array<string[] | null> = scope.agentId ? [null] : idChunks(organizationIds ?? []);
+  // The combined queue = verdicts in ANY of her organizations, asked on the server
+  // (`in_my_organizations`) — never an id list built from the first page of her organizations.
   const answers = await Promise.all(
-    scopes.map((chunk) => {
+    [scope.agentId ?? null].map((agentId) => {
       const base = client
         .schema("platform")
         .from("judge_verdict")
         .select(ITEM_COLUMNS)
         .eq("subject_kind", DECISION_SUBJECT_KIND)
         .is("deleted_at", null);
-      let query = chunk === null
-        ? base.eq("judge_key", decisionJudgeKey(scope.agentId as string))
-        : base.in("organization_id", chunk);
+      let query = agentId !== null
+        ? base.eq("judge_key", decisionJudgeKey(agentId))
+        : base.is(IN_MY_ORGANIZATIONS, true);
       if (filters.source === "model") query = query.like("judge_key", "model:%");
       if (filters.source === "workflow") {
         query = query.or("judge_key.like.workflow_node:*,metadata->>workflow_run_id.not.is.null");
@@ -165,8 +157,7 @@ export async function loadQueue(
   const failed = answers.find((a) => a.error);
   if (failed?.error) throw failed.error;
   const data = answers.flatMap((a) => a.data ?? []);
-  const ordered = orderQueue((data as JudgeVerdictRow[]).map(readReviewItem));
-  return scopes.length > 1 ? ordered.slice(0, QUEUE_PAGE_SIZE) : ordered;
+  return orderQueue((data as JudgeVerdictRow[]).map(readReviewItem));
 }
 
 export interface QueueFacets {
@@ -183,12 +174,9 @@ export interface QueueFacets {
 /** Every value each filter can take, and the labeled/total counts. */
 export async function loadFacets(scope: QueueScope): Promise<QueueFacets> {
   const client = createClient();
-  const organizationIds = scope.agentId ? null : await myOrganizationIds();
-  // "My organizations" can be hundreds: ~100 ids per url, never every id in one.
-  const scopes: Array<string[] | null> = scope.agentId ? [null] : idChunks(organizationIds ?? []);
   const rows = (
     await Promise.all(
-      scopes.map((chunk) =>
+      [scope.agentId ?? null].map((agentId) =>
         readAllRows(
           ({ from, to }) => {
             const base = client
@@ -197,9 +185,9 @@ export async function loadFacets(scope: QueueScope): Promise<QueueFacets> {
               .select("id, question, model, judge_version, authority_verdict, metadata", {
                 count: "exact",
               });
-            const scoped = chunk === null
-              ? base.eq("judge_key", decisionJudgeKey(scope.agentId as string))
-              : base.in("organization_id", chunk);
+            const scoped = agentId !== null
+              ? base.eq("judge_key", decisionJudgeKey(agentId))
+              : base.is(IN_MY_ORGANIZATIONS, true);
             return scoped
               .eq("subject_kind", DECISION_SUBJECT_KIND)
               .is("deleted_at", null)
