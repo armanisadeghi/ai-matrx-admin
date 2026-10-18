@@ -80,3 +80,25 @@ it("a read that throws is 'failed', never 'absent'", async () => {
   await flush();
   expect(kindRegistry.schemaState("unreadable_kind")).toBe("failed");
 });
+
+// FIRST PAINT (2026-10-17): this app registers its kindDataClient through the LAZY rich-content host
+// loader (providers/richContentHost). Until that loader settles there is no client YET — the screen
+// must say "checking", never "no loaded schema". The state is planted the way the loader registers it.
+it("is pending, never absent, while the lazy host has not landed", () => {
+  const key = Symbol.for("ai-matrx.rich-content.host.loader");
+  const g = globalThis as unknown as Record<symbol, unknown>;
+  const clientKey = Symbol.for("ai-matrx.rich-content.host");
+  const store = g[clientKey] as { host: Record<string, unknown> };
+  const savedHost = store.host;
+  const savedLoader = g[key];
+  store.host = {};
+  g[key] = { load: () => new Promise(() => {}), promise: null, settled: false };
+  try {
+    expect(kindRegistry.schemaState("never_asked_kind")).toBe("pending");
+    g[key] = { load: async () => {}, promise: null, settled: true };
+    expect(kindRegistry.schemaState("never_asked_kind")).toBe("absent");
+  } finally {
+    store.host = savedHost;
+    g[key] = savedLoader;
+  }
+});
