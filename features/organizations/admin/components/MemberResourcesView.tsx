@@ -78,11 +78,10 @@ export function MemberResourcesView({ orgId, organization, userId }: Props) {
           <ArrowLeft className="h-3.5 w-3.5" />
           {label}
         </Link>
+        {/* Org-scoped only: personal-organization resources are never counted here or affected. */}
         <p className="shrink-0 text-sm text-muted-foreground">
           <UntrustedCount read={membersRead} value={total} label="Resources" /> resource
-          {total === 1 ? "" : "s"} owned by {label} within{" "}
-          {organization.name}. Personal-org resources are not shown and are
-          never affected.
+          {total === 1 ? "" : "s"} in {organization.name}
         </p>
         {/* A failed refresh is said once, by the table's stale notice (read=). */}
         <div className="min-h-0 flex-1">

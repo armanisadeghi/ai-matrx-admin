@@ -155,7 +155,7 @@ function toConfirmation(raw: string): RecordConfirmation {
 type RecordQueryShape = {
   eq: (column: string, value: string | number | boolean) => RecordQueryShape;
   in: (column: string, values: readonly string[]) => RecordQueryShape;
-  is: (column: string, value: null) => RecordQueryShape;
+  is: (column: string, value: boolean | null) => RecordQueryShape;
   not: (column: string, op: string, value: null) => RecordQueryShape;
   or: (filters: string) => RecordQueryShape;
   ilike: (column: string, pattern: string) => RecordQueryShape;

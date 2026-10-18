@@ -26,6 +26,7 @@ import { assistPriority } from "@/features/assists/types";
 import type { TaskWithProject } from "@/features/tasks/types";
 import { UNASSIGNED_PROJECT_ID } from "@/features/tasks/redux/selectors";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import type { HostValuesFor } from "@/features/mandates/host-values/host-values";
 
 const SOURCE_KEY = "tasks.overdue_pileup";
 
@@ -96,6 +97,10 @@ export async function produceTaskAssists(args: {
         mandateKey: TASK_TRIAGE_MANDATE,
         agentName: "Task Triage Assistant",
         draftText,
+        hostValues: {
+          provision: "tasks.overdue_pileup",
+          values: overduePileValues(overdue),
+        },
       },
       surfaceName: TASKS_ASSIST_SURFACE,
       dedupeKey,
@@ -105,4 +110,25 @@ export async function produceTaskAssists(args: {
     dispatch,
   );
   return true;
+}
+
+/** The chip's held values for provision `tasks.overdue_pileup` (mapped-only), in one order. */
+export function overduePileValues(
+  overdue: TaskWithProject[],
+  today: Date = new Date(),
+): HostValuesFor<"tasks.overdue_pileup"> {
+  const projectName = (t: TaskWithProject) =>
+    t.projectId && t.projectId !== UNASSIGNED_PROJECT_ID ? t.projectName : "";
+  return {
+    overdue_count: overdue.length,
+    overdue_task_ids: overdue.map((t) => t.id),
+    overdue_task_titles: overdue.map((t) => t.title),
+    overdue_task_descriptions: overdue.map((t) => t.description ?? ""),
+    overdue_task_due_dates: overdue.map((t) => t.dueDate ?? ""),
+    overdue_task_priorities: overdue.map((t) => t.priority ?? ""),
+    overdue_task_statuses: overdue.map((t) => t.status ?? ""),
+    overdue_task_project_names: overdue.map(projectName),
+    overdue_task_assignee_names: overdue.map((t) => t.assigneeName ?? ""),
+    today: today.toISOString().slice(0, 10),
+  };
 }

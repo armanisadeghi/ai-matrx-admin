@@ -89,7 +89,7 @@ export const OWNED_RESOURCE_COLUMNS: MatrxColumnDef<OwnedResourceRow>[] = [
     width: 110,
     cell: (row) =>
       row.count === null ? (
-        <Badge variant="warning" title={row.unread ?? undefined}>
+        <Badge tone="warning" title={row.unread ?? undefined}>
           {UNREAD_WORDS[row.unread ?? ""] ?? "Not read"}
         </Badge>
       ) : (
