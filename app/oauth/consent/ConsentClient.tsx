@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser, type ApiClaimsUser } from "@ai-matrx/auth";
+import type { ApiClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
 import { Logo } from "@/components/branding/MatrixLogo";
 import { Button } from "@/components/ui/button";

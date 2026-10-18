@@ -11,7 +11,7 @@ import {
 } from "@ai-matrx/chat/agents/services/mcp-oauth/discovery";
 import { isValidOAuthState } from "@ai-matrx/chat/agents/services/mcp-oauth/state";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { buildMatrxRequestUrl } from "@ai-matrx/api";
 
 interface OAuthSession {

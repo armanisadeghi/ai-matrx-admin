@@ -59,7 +59,7 @@ import {
 } from "./kind-record-home";
 import type { Json } from "@/types/database.types";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }

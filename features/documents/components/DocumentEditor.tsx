@@ -160,7 +160,7 @@ import type { CommandServiceLike, DocsOtNotice } from "@ai-matrx/office/univer/c
 import { getLatestDocumentSnapshot } from "@ai-matrx/office/docs";
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { WorkingCopyAlert } from "@/lib/working-copy/WorkingCopyAlert";
 import { formatCount } from "@ai-matrx/kit/format";

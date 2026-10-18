@@ -7,7 +7,7 @@ import {
   getAdminStatus,
   type AdminLevel,
 } from '@/utils/supabase/userSessionData';
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { requireAdminLane } from "@/utils/auth/adminLaneServer";
 
 /**

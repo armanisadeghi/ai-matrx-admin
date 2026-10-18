@@ -10,7 +10,7 @@
 // the conversation is denied, deleted, missing, or the session is signed out.
 // Without this the client island rendered a blank new tutor chat (missing) or
 // an empty "Shared conversation — read-only" transcript (denied).
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

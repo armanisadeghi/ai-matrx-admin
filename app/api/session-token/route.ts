@@ -23,7 +23,7 @@
 // the reason non-browser callers are still served live in
 // `lib/api/credential-door.ts`, and the guard is `route.test.ts`.
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import {

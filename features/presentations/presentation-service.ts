@@ -10,7 +10,7 @@
  * from `user_id`) work unchanged with workbooks, documents and presentations.
  */
 import { readAllRows } from "@ai-matrx/data/db";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { supabase } from "@/utils/supabase/client";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { requireOrganizationContext } from "@/lib/api/organization-context";

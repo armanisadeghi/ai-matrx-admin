@@ -23,7 +23,7 @@ import {
   SMS_PRIVACY_PATH,
   SMS_TERMS_PATH,
 } from "@/features/sms/compliance";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 export async function POST(request: NextRequest) {
   try {

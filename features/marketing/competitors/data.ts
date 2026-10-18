@@ -1,6 +1,6 @@
 import type { Database } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { writeOne } from "@/utils/supabase/writeOne";
 import { callApi } from "@/lib/api/call-api";
 import { readAllRows } from "@ai-matrx/data/db";

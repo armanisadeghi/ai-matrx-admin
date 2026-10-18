@@ -23,7 +23,7 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { operationFailed } from "@/utils/errors";
 import { readAllRows } from "@ai-matrx/data/db";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";

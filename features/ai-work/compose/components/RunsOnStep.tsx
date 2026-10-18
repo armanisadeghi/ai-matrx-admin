@@ -10,7 +10,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CircleDot, Lock, Monitor } from "lucide-react";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { DesktopProtocolError } from "@ai-matrx/desktop-protocol";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
 import { ErrorNotice } from "@ai-matrx/design-system";

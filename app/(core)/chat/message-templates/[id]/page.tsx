@@ -1,7 +1,7 @@
 // record-view: message_template
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { TemplateReadFailure } from "@/features/message-templates/components/TemplateReadFailure";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

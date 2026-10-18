@@ -13,7 +13,7 @@ import { resolveSystemOrgId } from '@/lib/organizations/systemOrg';
 import { sendAndLogSms } from '@/lib/sms/send';
 import { sendAdminMessageSms } from '@/lib/sms/notificationService';
 import { updateAllWebhookUrls } from '@/lib/sms/numbers';
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { getCurrentUserAdminStatus } from '@/utils/auth/adminUtils';
 
 export async function POST(request: NextRequest) {

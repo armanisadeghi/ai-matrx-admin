@@ -26,7 +26,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import type { SandboxTier } from "@/types/sandbox";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 const LOG = "[sandbox-orchestrator-env]";
 

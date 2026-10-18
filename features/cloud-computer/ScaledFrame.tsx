@@ -20,6 +20,9 @@ const PERSON_ACT_MS = 600;
 /** A focus move into an open dialog or menu is that surface's own (a focus trap), never theft. */
 const OWNS_FOCUS = "[aria-modal='true'], [role$='dialog'], [role='menu'], [role='listbox']";
 
+/** An open modal, menu or popup the press just opened: it owns the keyboard until it closes. */
+const OPEN_SURFACE = "[aria-modal='true'], [role='menu'][data-state='open'], [role='listbox']";
+
 /**
  * What the stream page says about its connection. THE STREAM PAGE CONTRACT
  * (2026-10-17): the page posts `{type:"matrx-stream", state}` to the origin
@@ -61,13 +64,6 @@ export function streamSrc(src: string, parentOrigin: string | null): string {
   }
 }
 
-/**
- * A stream page that never speaks (before the page that posts state ships)
- * is revealed this long after its `load` — its own loading screen stays hidden
- * behind ours for that time.
- */
-export const SILENT_STREAM_REVEAL_MS = 8000;
-
 const STATUS_WORDS: Record<Exclude<StreamState, "connected">, string> = {
   connecting: "Connecting…",
   reconnecting: "Reconnecting…",
@@ -105,6 +101,7 @@ export function ScaledFrame({
   connectWithinMs,
   onConnectTimeout,
   onConnected,
+  onStateChange,
 }: {
   src: string;
   width: number;
@@ -121,6 +118,8 @@ export function ScaledFrame({
   connectWithinMs?: number;
   onConnectTimeout?: () => void;
   onConnected?: () => void;
+  /** Every state the stream page reports (the tab checks a lost picture's claim). */
+  onStateChange?: (state: StreamState) => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
@@ -131,10 +130,11 @@ export function ScaledFrame({
     [src],
   );
 
-  // OUR status over the frame until the stream says it is connected.
+  // OUR status over the frame until the stream says it is connected. Only
+  // the page's own "connected" (a decoded frame) drops it: a page that never
+  // speaks stays covered until the connect deadline, never revealed onto its
+  // black loader (2026-10-18: the old 8 s "silent reveal" could do exactly that).
   const [state, setState] = useState<StreamState>("connecting");
-  const heard = useRef(false);
-  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     if (!origin) return;
     const onMessage = (event: MessageEvent) => {
@@ -142,28 +142,23 @@ export function ScaledFrame({
       if (frame.current && event.source !== frame.current.contentWindow) return;
       const next = readStreamState(event.data);
       if (!next) return;
-      heard.current = true;
       setState(next);
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [origin]);
-  useEffect(() => {
-    if (!loaded) return;
-    const timer = window.setTimeout(() => {
-      if (!heard.current) setState("connected");
-    }, SILENT_STREAM_REVEAL_MS);
-    return () => window.clearTimeout(timer);
-  }, [loaded]);
 
   // The deadline for the picture: re-armed each time it goes away.
   const timeoutRef = useRef(onConnectTimeout);
   const connectedRef = useRef(onConnected);
+  const stateRef = useRef(onStateChange);
   useEffect(() => {
     timeoutRef.current = onConnectTimeout;
     connectedRef.current = onConnected;
-  }, [onConnectTimeout, onConnected]);
+    stateRef.current = onStateChange;
+  }, [onConnectTimeout, onConnected, onStateChange]);
   useEffect(() => {
+    stateRef.current?.(state);
     if (state === "connected") {
       connectedRef.current?.();
       return;
@@ -252,6 +247,23 @@ export function ScaledFrame({
     const onVisibility = () => {
       if (document.visibilityState === "visible") takeKeyboard();
     };
+    // A press on a page control (maximize, shrink, the Keyboard button, a tab)
+    // is the person's, but it is not a place to type: once the press is over,
+    // the keyboard goes back to the machine (2026-10-18: keys went nowhere
+    // after any panel button). A press that lands focus in a typing field, or
+    // opens a dialog or menu, keeps it there.
+    let handback = 0;
+    const afterPress = () => {
+      window.clearTimeout(handback);
+      handback = window.setTimeout(() => {
+        const active = document.activeElement;
+        if (active === iframe || !iframe.isConnected) return;
+        if (isTypingField(active)) return;
+        if (active instanceof Element && active.closest(OWNS_FOCUS)) return;
+        if (document.querySelector(OPEN_SURFACE)) return;
+        takeKeyboard();
+      }, 0);
+    };
     // A press inside the stream moves focus into the frame (the page sees only
     // its own window blurring): tell the stream page to take the keyboard.
     const onWindowBlur = () => {
@@ -261,13 +273,16 @@ export function ScaledFrame({
     };
     document.addEventListener("pointerdown", personActed, true);
     document.addEventListener("keydown", personActed, true);
+    document.addEventListener("click", afterPress);
     document.addEventListener("focusin", onFocusIn, true);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("focus", onWindowFocus);
     window.addEventListener("blur", onWindowBlur);
     return () => {
+      window.clearTimeout(handback);
       document.removeEventListener("pointerdown", personActed, true);
       document.removeEventListener("keydown", personActed, true);
+      document.removeEventListener("click", afterPress);
       document.removeEventListener("focusin", onFocusIn, true);
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("focus", onWindowFocus);
@@ -302,7 +317,6 @@ export function ScaledFrame({
         onLoad={() => {
           // The page inside loaded after control began: focus it now.
           if (interactive) frame.current?.focus({ preventScroll: true });
-          setLoaded(true);
           onLoad?.();
         }}
         className="absolute left-1/2 top-1/2 border-0"

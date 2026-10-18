@@ -17,7 +17,7 @@ import { Fact } from "@/features/ai-work/components/connections/Fact";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Gauge, Info, Monitor, RotateCw } from "lucide-react";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { isDesktopProtocolError, type AppAccount, type AppInstance } from "@ai-matrx/desktop-protocol";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
 import { useDesktopAction, useDesktopRequest, type DesktopActionState } from "@ai-matrx/desktop-protocol/react";

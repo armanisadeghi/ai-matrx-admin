@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { requestBaseUrl } from "@/app/api/github/oauth/session";
 import { SLACK_OAUTH_COOKIE, parseSlackOAuthSession } from "../session";

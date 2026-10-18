@@ -10,7 +10,7 @@
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { ScaledFrame, SILENT_STREAM_REVEAL_MS, type ScaledFrameHandle } from "../ScaledFrame";
+import { ScaledFrame, type ScaledFrameHandle } from "../ScaledFrame";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
@@ -91,15 +91,13 @@ describe("C: our own loading and status", () => {
     expect(cover()?.textContent).toBe("Connecting…");
   });
 
-  it("a silent stream page is revealed 8 s after load", () => {
+  it("a stream page that never says connected stays covered (never revealed onto its black loader)", () => {
     jest.useFakeTimers();
     act(() => {
       iframe().dispatchEvent(new Event("load"));
     });
-    act(() => jest.advanceTimersByTime(SILENT_STREAM_REVEAL_MS - 100));
-    expect(cover()).not.toBeNull();
-    act(() => jest.advanceTimersByTime(200));
-    expect(cover()).toBeNull();
+    act(() => jest.advanceTimersByTime(60_000));
+    expect(cover()?.textContent).toBe("Connecting…");
   });
 });
 
@@ -142,5 +140,65 @@ describe("B: the keyboard comes back", () => {
     await act(async () => root.render(ui(true)));
     act(() => ok.focus());
     expect(document.activeElement).toBe(ok);
+  });
+
+  it("after a press on a page button, the keyboard goes back to the machine", async () => {
+    jest.useFakeTimers();
+    const maximize = document.createElement("button");
+    document.body.appendChild(maximize);
+    await act(async () => root.render(ui(true)));
+    act(() => {
+      maximize.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      maximize.focus();
+      maximize.click();
+    });
+    expect(document.activeElement).toBe(maximize);
+    act(() => jest.advanceTimersByTime(1));
+    expect(document.activeElement).toBe(iframe());
+  });
+
+  it("a press that lands in a text field keeps the keyboard there", async () => {
+    jest.useFakeTimers();
+    const field = document.createElement("textarea");
+    document.body.appendChild(field);
+    await act(async () => root.render(ui(true)));
+    act(() => {
+      field.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      field.focus();
+      field.click();
+    });
+    act(() => jest.advanceTimersByTime(1));
+    expect(document.activeElement).toBe(field);
+  });
+
+  it("a press that opens a dialog leaves the keyboard with the dialog", async () => {
+    jest.useFakeTimers();
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    await act(async () => root.render(ui(true)));
+    act(() => {
+      opener.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      opener.focus();
+      opener.click();
+      const dialog = document.createElement("div");
+      dialog.setAttribute("aria-modal", "true");
+      document.body.appendChild(dialog);
+    });
+    act(() => jest.advanceTimersByTime(1));
+    expect(document.activeElement).toBe(opener);
+  });
+});
+
+describe("D: every stream state reaches the tab", () => {
+  it("reports reconnecting so the tab can check whether the picture opened elsewhere", async () => {
+    const seen: string[] = [];
+    await act(async () =>
+      root.render(
+        <ScaledFrame src={SRC} width={1280} height={720} title="t" interactive={false} onStateChange={(s) => seen.push(s)} />,
+      ),
+    );
+    streamSays("connected");
+    streamSays("reconnecting");
+    expect(seen).toEqual(["connected", "reconnecting"]);
   });
 });

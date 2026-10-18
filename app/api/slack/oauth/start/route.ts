@@ -9,7 +9,7 @@ import {
   requireOrganizationContext,
 } from "@/lib/api/organization-context";
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
 import { requestBaseUrl } from "@/app/api/github/oauth/session";
 import { SLACK_OAUTH_COOKIE, refusalWords, type SlackOAuthSession } from "../session";

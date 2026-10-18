@@ -11,7 +11,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { createGuestHandover, type GuestStore } from "@ai-matrx/auth/guest";
 
 import { createAdminClient } from "@/utils/supabase/adminClient";

@@ -7,7 +7,7 @@
  * workbook import.
  */
 import { configureUniverHost } from "@ai-matrx/office/univer";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { mediaClient } from "@/features/files/media-client/client";
 import { toast } from "@/lib/toast";
 import { toast as uiToast } from "@/components/ui/use-toast";

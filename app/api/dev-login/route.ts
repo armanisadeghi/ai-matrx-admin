@@ -6,7 +6,7 @@ import { readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@/utils/supabase/server";
 import { safeRelativePath } from "@/utils/auth/safe-redirect";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import {
   describeFailure,
   formatAttempts,

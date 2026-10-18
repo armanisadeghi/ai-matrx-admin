@@ -53,18 +53,23 @@ describe("the scope tree's projects read (projects service)", () => {
   });
 });
 
-describe("every read over ALL of a person's memberships goes in chunks", () => {
-  // The same class as the scopes boot read: a membership list put whole into one GET url.
+describe("no read puts a person's whole membership list in one url", () => {
+  // Org-scoped readers no longer hold her org ids at all: the server filters with the
+  // `in_my_organizations` computed field (docs/perf/org-scoped-readers.md).
   const root = join(__dirname, "..", "..", "..");
-  const sites = [
-    "features/organizations/service.ts",
+  const filtered = [
     "features/knowledge/hub/tags/tagApi.ts",
     "features/agents/decision-review/service.ts",
     "features/masterwork/encore/service.ts",
   ];
-  it.each(sites)("%s never sends the whole org id list in one .in()", (rel) => {
+  it.each(filtered)("%s filters server-side and never sends an org id list", (rel) => {
     const src = readFileSync(join(root, rel), "utf8");
-    expect(src).toMatch(/readInChunks\(|idChunks\(/);
+    expect(src).toContain("IN_MY_ORGANIZATIONS");
+    expect(src).not.toMatch(/\.in\(\s*"(id|organization_id)",\s*(orgIds|organizationIds)(\s*\?\?\s*\[\])?\s*\)/);
+  });
+  it("features/organizations/service.ts pages her organizations through fixed-URL RPCs, not an id list", () => {
+    const src = readFileSync(join(root, "features/organizations/service.ts"), "utf8");
+    expect(src).toContain("my_organizations_page");
     expect(src).not.toMatch(/\.in\(\s*"(id|organization_id)",\s*(orgIds|organizationIds)(\s*\?\?\s*\[\])?\s*\)/);
   });
 });

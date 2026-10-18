@@ -24,7 +24,7 @@ import {
 } from "@/features/ai-work/lib/codingSessionPresentation";
 import type { Json } from "@/types/database.types";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 /**
  * How stale a delivery can be before it stops meaning "sync is working".
  *

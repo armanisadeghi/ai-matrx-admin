@@ -11,7 +11,7 @@ import {
   type SandboxConfig,
 } from "@/types/sandbox";
 import type { Database } from "@/types/database.types";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
 import type { LaneRow } from "@/lib/entity-list/laneRows";
 import { readAllRows } from "@ai-matrx/data/db";
