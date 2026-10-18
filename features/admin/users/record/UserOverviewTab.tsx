@@ -115,8 +115,8 @@ function attentionOf(o: UserOverview, onReopen: () => void): AttentionItem[] {
       href: approvalSubjectHref(r.subject_kind, r.subject_id),
     });
   }
-  if (a.held_runs.length) {
-    const newest = a.held_runs[0]!;
+  const newest = a.held_runs[0];
+  if (newest) {
     items.push({
       key: "held",
       icon: PauseCircle,

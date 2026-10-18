@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 import { useRecordLoad } from "./useRecordLoad";
 import { Building2, Plus, Trash2 } from "lucide-react";
-import { readOf } from "@ai-matrx/design-system";
+import { ErrorNotice, readOf } from "@ai-matrx/design-system";
 import { Badge, Button, SearchField, Select } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";

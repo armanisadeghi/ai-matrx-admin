@@ -6,6 +6,7 @@
 // menu), a Copy-for-AI of the whole record, and the tab bodies the registry (userSurfaces.ts) says
 // are built. Data: admin.user_overview, one call.
 
+import { useRecordLoad } from "./useRecordLoad";
 import { useEffect, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
@@ -65,10 +66,16 @@ const TAB_BODIES: Partial<Record<UserTabId, ComponentType<UserTabBodyProps>>> = 
 export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }) {
   const router = useRouter();
   const validId = isUuidShape(userId);
-  const [overview, setOverview] = useState<UserOverview | null>(null);
-  const [loading, setLoading] = useState(validId);
-  const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const { data: overview, loading, error: loadError } = useRecordLoad(fetchUserOverview, userId, version, validId);
+  // access-errors: ok — admin.user_overview is SECURITY DEFINER over auth.users (no RLS), so null means no such account.
+  const error: string | null = loadError
+    ? loadError instanceof Error
+      ? loadError.message
+      : String(loadError)
+    : !loading && validId && !overview
+      ? "No account with this id"
+      : null;
   const [planTarget, setPlanTarget] = useState<ChangePlanSubject | null>(null);
   const [freeMonthsPeople, setFreeMonthsPeople] = useState<FreeMonthsPerson[] | null>(null);
   const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
@@ -82,28 +89,6 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
   useEffect(() => {
     if (tab && !isVisibleUserTab(tab)) router.replace(userRecordHref(userId));
   }, [tab, userId, router]);
-
-  useEffect(() => {
-    if (!validId) return;
-    let alive = true;
-    setLoading(true);
-    fetchUserOverview(userId)
-      .then((o) => {
-        if (!alive) return;
-        setOverview(o);
-        // access-errors: ok — admin.user_overview is SECURITY DEFINER over auth.users (no RLS), so null means no such account.
-        setError(o ? null : "No account with this id");
-      })
-      .catch((e: unknown) => {
-        if (alive) setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [userId, validId, version]);
 
   const title = overview ? personTitle(overview) : null;
   useRecordTitle(title);
