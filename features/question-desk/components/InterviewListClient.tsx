@@ -174,7 +174,9 @@ export function InterviewListClient() {
     {
       accessorKey: "opened_at",
       header: "Opened",
-      sortable: true,
+      format: { id: "datetime" },
+      // The whole corpus is loaded here (listInterviews / readAllRows) and the table filters it in memory.
+      filter: "date",
       format: { id: "datetime" },
       cell: (row) => (
         <span className="font-mono text-[11px] text-muted-foreground">
