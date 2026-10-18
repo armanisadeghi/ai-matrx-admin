@@ -1,48 +1,37 @@
 "use client";
 
 // A person's Notes tab — the ONE home for notes about a person: platform Notes
-// (workbench.notes) linked by a `note -> user` association edge (pair registered in
-// migrations/note_about_user_association_pair.sql). Shared with every platform admin by
-// default (shown_to 'my_team'); "Only me" = shown_to 'only_me', which other admins' tabs do
-// not list (shown_to is a list filter, never a lock). Pin = note metadata.pinned.
-// Read-only beside it, each with its source named: my earlier personal research
-// (crm.party_research — still read by the Accounts "My notes" column, so not migrated),
-// organization member notes (iam.org_member_controls.notes) and the plan note
-// (billing.user_plan.note).
+// (workbench.notes) linked by a `note -> user` association edge, read and written through
+// service/userNotes.ts (admin.user_notes / admin.add_user_note — every platform admin reads every
+// shared note; note + edge are written in one transaction, in the admin organization).
+// Shared with every platform admin by default (shown_to 'my_team'); "Only me" = shown_to
+// 'only_me', which other admins' reads leave out. Pin = note metadata.pinned.
+// The Accounts "Personal notes" (crm.party_research) text moved here as "only me" notes
+// (20261018190000); its category stays there. Read-only beside it, each with its source named:
+// organization member notes (iam.org_member_controls.notes) and the plan note (billing.user_plan.note).
 
 import { useState } from "react";
 import { Lock, Pin, PinOff, StickyNote } from "lucide-react";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Badge, Button, EmptyState, PropertyRow, RegionSkeleton, SegmentedControl } from "@ai-matrx/design-system/controls";
-import type { AssociationTargetType } from "@/features/scopes/types";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import AppLink from "@/components/navigation/AppLink";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { recordToast, toast } from "@/lib/toast";
+import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { getUserId } from "@/utils/auth/getUserId";
 import { createClient } from "@/utils/supabase/client";
-import { associationsService } from "@/features/scopes/service/associationsService";
 import * as NotesAPI from "@/features/notes/service/notesApi";
 import { isJsonObject } from "@/types/json";
-import type { Database } from "@/types/database.types";
 import { AdminUserRef } from "../components/AdminUserRef";
-import { readUserResearchAbout } from "../service/userResearch";
-import type { UserResearch } from "../lib/userResearch";
+import { addUserNote, readUserNotes, type NoteShownTo } from "../service/userNotes";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import { personTitle } from "./userOverview";
 import { useRecordLoad } from "./useRecordLoad";
 import type { UserTabBodyProps } from "./UserRecordPage";
 
-type ShownTo = Database["platform"]["Enums"]["shown_to"];
-
-// `user` is a registered entity token and the note -> user pair is registered in the DB; the
-// package's container list (ASSOCIATION_TARGET_TYPES) does not name it yet. The service checks
-// the token at run time, the database checks the pair.
-const USER_TARGET = "user" as AssociationTargetType;
+type ShownTo = NoteShownTo;
 
 interface PersonNote {
   id: string;
@@ -70,31 +59,15 @@ interface PlanNote {
 
 interface NotesLoad {
   notes: PersonNote[];
-  research: UserResearch | null;
-  researchError: unknown;
   memberNotes: MemberNote[];
   planNote: PlanNote | null;
 }
 
-const isPinned = (metadata: unknown): boolean => isJsonObject(metadata) && metadata.pinned === true;
-
 async function loadPersonNotes(userId: string): Promise<NotesLoad> {
   const supabase = createClient();
-  const me = getUserId();
 
-  const edges = await associationsService.listForTargets(USER_TARGET, [userId]);
-  if (!edges.ok) throw new Error(`Could not read the notes about this person: ${edges.error.message}`);
-  const noteIds = [...new Set(edges.data.edges.filter((e) => e.sourceType === "note").map((e) => e.sourceId))];
-
-  const [notesRes, membersRes, planRes, research] = await Promise.all([
-    noteIds.length
-      ? supabase
-          .schema("workbench")
-          .from("notes")
-          .select("id, content, created_by, created_at, updated_at, shown_to, metadata")
-          .in("id", noteIds)
-          .is("deleted_at", null)
-      : Promise.resolve({ data: [], error: null }),
+  const [notesRows, membersRes, planRes] = await Promise.all([
+    readUserNotes(userId),
     supabase
       .schema("iam")
       .from("org_member_controls")
@@ -103,14 +76,7 @@ async function loadPersonNotes(userId: string): Promise<NotesLoad> {
       .is("deleted_at", null)
       .not("notes", "is", null),
     supabase.schema("billing").from("user_plan").select("note, source, updated_at").eq("user_id", userId).maybeSingle(),
-    me
-      ? readUserResearchAbout(me, userId).then(
-          (r) => ({ ok: true as const, r }),
-          (e: unknown) => ({ ok: false as const, e }),
-        )
-      : Promise.resolve({ ok: true as const, r: null }),
   ]);
-  if (notesRes.error) throw notesRes.error;
   if (membersRes.error) throw membersRes.error;
   if (planRes.error) throw planRes.error;
 
@@ -126,16 +92,20 @@ async function loadPersonNotes(userId: string): Promise<NotesLoad> {
     for (const o of orgs ?? []) orgNames.set(o.id, o.name);
   }
 
-  const notes: PersonNote[] = (notesRes.data ?? [])
-    .map((n) => ({ ...n, content: n.content ?? "", pinned: isPinned(n.metadata) }))
-    // Another admin's "Only me" note is theirs alone in this list.
-    .filter((n) => n.created_by === me || n.shown_to !== "only_me")
-    .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.created_at.localeCompare(a.created_at));
+  // admin.user_notes already leaves out other authors' only-me notes and orders pinned, then newest.
+  const notes: PersonNote[] = notesRows.map((n) => ({
+    id: n.id,
+    content: n.content,
+    created_by: n.created_by,
+    created_at: n.created_at,
+    updated_at: n.updated_at,
+    shown_to: n.shown_to,
+    pinned: n.pinned,
+    metadata: n.metadata,
+  }));
 
   return {
     notes,
-    research: research.ok ? research.r : null,
-    researchError: research.ok ? null : research.e,
     memberNotes: memberRows.map((m) => ({
       organization_id: m.organization_id,
       organization_name: orgNames.get(m.organization_id) ?? null,
@@ -167,25 +137,9 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
     if (!text) return;
     setSaving(true);
     try {
-      const organizationId = await ensureOrgId(null);
-      const note = await NotesAPI.create({
-        label: `About ${personName}`,
-        content: text,
-        organization_id: organizationId,
-        shown_to: shownTo,
-      });
-      const linked = await associationsService.add({
-        sourceType: "note",
-        sourceId: note.id,
-        targetType: USER_TARGET,
-        targetId: userId,
-        orgId: organizationId,
-      });
-      if (!linked.ok) {
-        recordToast.error({ type: "note", id: note.id, title: note.label }, `Saved in Notes, not linked to this person: ${linked.error.message}`);
-      } else {
-        setDraft("");
-      }
+      // Note + edge in one transaction (admin.add_user_note): saved whole or not at all.
+      await addUserNote({ userId, content: text, shownTo, label: `About ${personName}` });
+      setDraft("");
       reload();
     } catch (e) {
       toast.error(`Note not saved: ${e instanceof Error ? e.message : String(e)}`);
@@ -253,11 +207,11 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h3 className="type-title">Notes{notes.length ? ` (${notes.length})` : ""}</h3>
+        <h3 className="type-title">Notes{data && !error && notes.length ? ` (${notes.length})` : ""}</h3>
         {loading && !data ? (
           <RegionSkeleton shape="rows" count={3} twoLine aria-label="Loading notes" />
         ) : error ? (
-          <ErrorNotice size="inline" message="Notes could not load" error={error} operation="Read notes about this person" calls={["platform.associations", "workbench.notes"]} />
+          <ErrorNotice size="inline" message="Notes could not load" error={error} operation="Read notes about this person" calls={["admin.user_notes"]} />
         ) : notes.length === 0 ? (
           <EmptyState icon={<StickyNote />} title="No notes yet" line="Notes you add here are shared with admins" />
         ) : (
@@ -323,19 +277,9 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
         )}
       </section>
 
-      {data ? (
+      {data && !error ? (
         <section className="flex flex-col gap-3">
           <h3 className="type-title">Other notes</h3>
-          {data.researchError ? (
-            <ErrorNotice size="inline" message="Your earlier notes could not load" error={data.researchError} operation="Read my research about this person" calls={["crm.party_research"]} />
-          ) : null}
-          {data.research ? (
-            <PropertyRow
-              label="Your earlier notes · Accounts"
-              value={data.research.notes || null}
-              meta={<Badge tone="neutral">{data.research.category.replace(/_/g, " ")}</Badge>}
-            />
-          ) : null}
           {data.memberNotes.map((m) => (
             <PropertyRow
               key={m.organization_id}
@@ -355,7 +299,7 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
               meta={`${data.planNote.source.replace(/_/g, " ")} · ${formatRelativeTime(data.planNote.updated_at)}`}
             />
           ) : null}
-          {!data.research && !data.researchError && data.memberNotes.length === 0 && !data.planNote ? (
+          {data.memberNotes.length === 0 && !data.planNote ? (
             <p className="type-secondary text-muted-foreground">No other notes</p>
           ) : null}
         </section>

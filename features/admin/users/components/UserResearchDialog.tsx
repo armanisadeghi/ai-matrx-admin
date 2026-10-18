@@ -12,18 +12,24 @@ import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import type { AdminUserRow } from "../types";
 import { saveUserResearch } from "../service/userResearch";
+import { addUserNote, type MyUserNoteRow } from "../service/userNotes";
+import * as NotesAPI from "@/features/notes/service/notesApi";
 import { CONTACT_STATE_LABELS, RELATIONSHIP_LABELS, OUTREACH_FEATURE_LABELS, feedbackInvitation, type UserResearch, type Relationship, type ContactState } from "../lib/userResearch";
 
-export function UserResearchDialog({ row, ownerId, existing, sharedOrganizations, onClose, onSaved }: {
-  row: AdminUserRow; ownerId: string; existing: UserResearch | null; sharedOrganizations: string[];
-  onClose: () => void; onSaved: (record: UserResearch) => void;
+// Category, contact status and the invitation draft live in crm.party_research; "My notes" is the
+// ONE home for notes about a person (service/userNotes.ts) — my newest own note about them, written
+// as an "only me" note (shared ones are added on the person's Notes tab).
+export function UserResearchDialog({ row, ownerId, existing, myNotes, sharedOrganizations, onClose, onSaved, onNotesSaved }: {
+  row: AdminUserRow; ownerId: string; existing: UserResearch | null; myNotes: MyUserNoteRow[]; sharedOrganizations: string[];
+  onClose: () => void; onSaved: (record: UserResearch) => void; onNotesSaved: () => void;
 }) {
   const { copyText } = useClipboard({
     notify: copyNotify,
   });
   const [category, setCategory] = useState<Relationship>(existing?.category ?? "unknown");
   const [contactState, setContactState] = useState<ContactState>(existing?.contact_state ?? (row.banned ? "hold" : "not_contacted"));
-  const [notes, setNotes] = useState(existing?.notes ?? "");
+  const myNote = myNotes[0] ?? null;
+  const [notes, setNotes] = useState(myNote?.content ?? "");
   const [saving, setSaving] = useState(false);
   const [plans, setPlans] = useState<{ name: string; plan_key: string }[]>([]);
   const savedDraft = existing?.outreach.draft;
@@ -40,8 +46,14 @@ export function UserResearchDialog({ row, ownerId, existing, sharedOrganizations
     setSaving(true);
     try {
       const saved = await saveUserResearch({ ownerId, subjectId: row.id, partyId: row.party_id,
-        label: row.display_name ?? row.email ?? row.id, category, notes, contactState, existing, draft: draft ? { text: draft, plan, feature } : null });
-      onSaved(saved); toast.success("Personal notes saved"); onClose();
+        label: row.display_name ?? row.email ?? row.id, category, contactState, existing, draft: draft ? { text: draft, plan, feature } : null });
+      onSaved(saved);
+      if (notes !== (myNote?.content ?? "")) {
+        if (myNote) await NotesAPI.update(myNote.note_id, { content: notes });
+        else if (notes.trim()) await addUserNote({ userId: row.id, content: notes, shownTo: "only_me", label: `About ${row.display_name ?? row.email ?? "a person"}` });
+        onNotesSaved();
+      }
+      toast.success("Personal notes saved"); onClose();
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save notes"); }
     finally { setSaving(false); }
   }

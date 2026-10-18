@@ -7,7 +7,7 @@ import { AI_MATRX_CRM_ORG, researchContactState, UserResearchSchema, type UserRe
 // The declaration is projected by the DB artifact train. Keep this local boundary
 // typed until that projection arrives; runtime ingress is independently parsed.
 type ResearchRow = Omit<UserResearch, "outreach"> & { outreach: Json; deleted_at: string | null; created_at: string; updated_by: string | null; metadata: Json };
-type ResearchInsert = Pick<ResearchRow, "subject_id" | "party_id" | "organization_id" | "label" | "category" | "notes" | "contact_state" | "outreach">;
+type ResearchInsert = Pick<ResearchRow, "subject_id" | "party_id" | "organization_id" | "label" | "category" | "contact_state" | "outreach">;
 type ResearchDatabase = Omit<Database, "crm"> & { crm: Omit<Database["crm"], "Tables"> & { Tables: Database["crm"]["Tables"] & { party_research: { Row: ResearchRow; Insert: ResearchInsert; Update: Partial<ResearchInsert>; Relationships: [] } } } };
 const client = supabase as unknown as SupabaseClient<ResearchDatabase>;
 
@@ -20,18 +20,13 @@ export async function readUserResearch(ownerId: string): Promise<UserResearch[]>
   return rows.map(row => UserResearchSchema.parse(row));
 }
 
-/** My own earlier research about one person (owner-scoped; index created_by, subject_id). */
-export async function readUserResearchAbout(ownerId: string, subjectId: string): Promise<UserResearch | null> {
-  const { data, error } = await client.schema("crm").from("party_research").select("*")
-    .eq("created_by", ownerId).eq("subject_id", subjectId).is("deleted_at", null).maybeSingle();
-  // access-errors: ok — owner-scoped read of my own rows; the Notes tab shows the failure with its source named.
-  if (error) throw new Error(error.message);
-  return data ? UserResearchSchema.parse(data) : null;
-}
+// Notes about a person are not stored here any more: the ONE home is service/userNotes.ts
+// (20261018190000 moved the 8 notes; the notes column stays empty). This row keeps category,
+// contact state and outreach.
 
 export async function saveUserResearch(input: {
   ownerId: string; subjectId: string; partyId: string; label: string;
-  category: Relationship; notes: string; contactState: ContactState; existing: UserResearch | null; draft?: { text: string; plan: string; feature: string } | null;
+  category: Relationship; contactState: ContactState; existing: UserResearch | null; draft?: { text: string; plan: string; feature: string } | null;
 }): Promise<UserResearch> {
   const outreach = { ...(input.existing?.outreach as Record<string, Json> ?? {}) };
   if (input.draft !== undefined) {
@@ -40,7 +35,7 @@ export async function saveUserResearch(input: {
     if (input.draft) outreach.approval = "pending";
   }
   const values: ResearchInsert = { organization_id: AI_MATRX_CRM_ORG, subject_id: input.subjectId,
-    party_id: input.partyId, label: input.label, category: input.category, notes: input.notes, contact_state: researchContactState(input.contactState, Boolean(outreach.draft)), outreach };
+    party_id: input.partyId, label: input.label, category: input.category, contact_state: researchContactState(input.contactState, Boolean(outreach.draft)), outreach };
   const table = client.schema("crm").from("party_research");
   const result = input.existing
     ? await table.update(values).eq("id", input.existing.id).eq("created_by", input.ownerId).eq("version", input.existing.version).select().maybeSingle()

@@ -65,6 +65,7 @@ import {
 import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "./GiveFreeMonthsDialog";
 import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
 import { readUserResearch } from "../service/userResearch";
+import { readMyUserNotes, type MyUserNoteRow } from "../service/userNotes";
 import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, type UserResearch } from "../lib/userResearch";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
@@ -222,6 +223,16 @@ function AccountsRoster() {
       .catch(error => { if (!cancelled) setResearchError(error instanceof Error ? error.message : "Could not load personal notes"); });
     return () => { cancelled = true; };
   }, [researchOwnerId, refreshKey]);
+  // "My notes": my own notes about people, from the ONE home (admin.my_user_notes).
+  const [myNotes, setMyNotes] = useState<Map<string, MyUserNoteRow[]>>(new Map());
+  const [myNotesError, setMyNotesError] = useState<string | null>(null);
+  const [myNotesVersion, setMyNotesVersion] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    void readMyUserNotes().then(byUser => { if (!cancelled) { setMyNotes(byUser); setMyNotesError(null); } })
+      .catch(error => { if (!cancelled) setMyNotesError(error instanceof Error ? error.message : "Could not load my notes"); });
+    return () => { cancelled = true; };
+  }, [refreshKey, myNotesVersion]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clickedRow, setClickedRow] = useState<AdminUserRow | null>(null);
@@ -413,7 +424,7 @@ function AccountsRoster() {
       { id: "my_category", header: "My category", accessorFn: row => researchError ? "—" : RELATIONSHIP_LABELS[researchByUser.get(row.id)?.category ?? "unknown"], filter: "select", width: 150,
         cell: row => <Button variant="quiet" onClick={() => setResearchTarget(row)}>{researchError ? "—" : RELATIONSHIP_LABELS[researchByUser.get(row.id)?.category ?? "unknown"]}</Button> },
       { id: "contact_status", header: "Contact status", accessorFn: row => researchError ? "—" : CONTACT_STATE_LABELS[researchByUser.get(row.id)?.contact_state ?? (row.banned ? "hold" : "not_contacted")], filter: "select", width: 130 },
-      { id: "my_notes", header: "My notes", accessorFn: row => researchByUser.get(row.id)?.notes ?? "", hidden: true, width: 240 },
+      { id: "my_notes", header: "My notes", accessorFn: row => myNotesError ? "—" : (myNotes.get(row.id)?.map(note => note.content).join(" · ") ?? ""), hidden: true, width: 240 },
       {
         id: "kind",
         header: "Who",
@@ -1346,12 +1357,15 @@ function AccountsRoster() {
         onChanged={() => setRefreshKey((key) => key + 1)}
       />
       {researchError && <ErrorNotice size="inline" message="Personal notes could not load. Refresh to retry." error={researchError} operation="Load personal user notes" calls={["crm.party_research"]} />}
+      {myNotesError && <ErrorNotice size="inline" message="My notes could not load. Refresh to retry." error={myNotesError} operation="Load my notes about people" calls={["admin.my_user_notes"]} />}
       {researchTarget && researchOwnerId && <UserResearchDialog
         key={researchTarget.id} row={researchTarget} ownerId={researchOwnerId}
         existing={researchByUser.get(researchTarget.id) ?? null}
+        myNotes={myNotes.get(researchTarget.id) ?? []}
         sharedOrganizations={researchTarget.id === researchOwnerId ? [] : researchTarget.organizations.filter(org => ownerOrganizations.has(org.id)).map(org => org.name)}
         onClose={() => setResearchTarget(null)}
         onSaved={record => setResearch(records => [...records.filter(current => current.subject_id !== record.subject_id), record])}
+        onNotesSaved={() => setMyNotesVersion(v => v + 1)}
       />}
       {userActionDialogs}
     </div>
