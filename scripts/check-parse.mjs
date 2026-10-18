@@ -123,6 +123,51 @@ export function nulByteFinding(file, source) {
   };
 }
 
+/**
+ * A name imported twice at module scope — `import { readOf } from "a"` beside
+ * `import { readOf } from "b"`. The TS parser accepts it (it is a binder error,
+ * TS2300, which only the advisory `type-check` reports), but Turbopack refuses
+ * the module ("the name `readOf` is defined multiple times"), so the whole
+ * production build fails. That shipped on 2026-10-18 (MeaningPanel.tsx) and
+ * failed every ai-matrx Vercel build of v0.4.3333-v0.4.3334.
+ */
+export function duplicateImportFindings(file, source) {
+  const sf = ts.createSourceFile(
+    file,
+    source,
+    ts.ScriptTarget.Latest,
+    false,
+    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const seen = new Set();
+  const findings = [];
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || !st.importClause) continue;
+    const clause = st.importClause;
+    const idents = [];
+    if (clause.name) idents.push(clause.name);
+    const b = clause.namedBindings;
+    if (b) {
+      if (ts.isNamespaceImport(b)) idents.push(b.name);
+      else for (const el of b.elements) idents.push(el.name);
+    }
+    for (const id of idents) {
+      if (!seen.has(id.text)) {
+        seen.add(id.text);
+        continue;
+      }
+      const { line, character } = sf.getLineAndCharacterOfPosition(id.getStart(sf));
+      findings.push({
+        code: "DUP-IMPORT",
+        line: line + 1,
+        column: character + 1,
+        message: `\`${id.text}\` is imported more than once; Turbopack refuses the module and the production build fails — keep one import`,
+      });
+    }
+  }
+  return findings;
+}
+
 /* ── the repair (`--fix`) ─────────────────────────────────────────────────── */
 
 /** The line that opens a multi-line import — the one the codemod split. */
@@ -269,6 +314,21 @@ function selfTest() {
     nulByteFinding("clean.ts", "export const A = 1;\n") === null,
   );
 
+  // The 2026-10-18 class: one name imported twice parses, but Turbopack refuses it.
+  const dupFixture =
+    'import { RecordList, readOf } from "@ai-matrx/design-system/record-list";\n' +
+    'import { useQuery } from "@tanstack/react-query";\n' +
+    'import { readOf } from "@ai-matrx/design-system";\n';
+  check("a duplicate import PARSES (parseErrors alone is blind)", parseErrors("planted.tsx", dupFixture).length === 0);
+  const dup = duplicateImportFindings("planted.tsx", dupFixture);
+  check("the guard REPORTS a name imported twice", dup.length === 1 && dup[0].message.includes("readOf"));
+  check("it locates the second import's line", dup.length === 1 && dup[0].line === 3);
+  check(
+    "distinct names (and a type import beside a value import of another name) report nothing",
+    duplicateImportFindings("clean.ts", 'import a, { b } from "x";\nimport type { C } from "y";\nimport * as d from "z";\n')
+      .length === 0,
+  );
+
   for (const r of results) {
     console.log(`  ${r.ok ? "✓" : "✗"} ${r.name}`);
   }
@@ -302,7 +362,8 @@ function main() {
       }
       const errors = parseErrors(file, source);
       const nul = nulByteFinding(file, source);
-      const allErrors = nul ? [...errors, nul] : errors;
+      const dups = errors.length ? [] : duplicateImportFindings(file, source);
+      const allErrors = [...errors, ...(nul ? [nul] : []), ...dups];
       return allErrors.length ? { file, errors: allErrors } : null;
     })
     .filter(Boolean);
@@ -342,7 +403,7 @@ function main() {
     console.error(`  ${file}`);
     for (const e of errors.slice(0, 5)) {
       console.error(
-        e.code === "NUL"
+        e.code === "NUL" || e.code === "DUP-IMPORT"
           ? `    ${file}:${e.line}:${e.column} — ${e.message}`
           : `    ${file}:${e.line}:${e.column}  TS${e.code}: ${e.message}`,
       );
