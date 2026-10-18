@@ -171,6 +171,7 @@ export const EDUCATION_LIBRARY_COLUMNS: EntityColumnSpec<EducationLibraryRow>[] 
         id: "last_studied",
         accessorKey: "last_studied_at",
         header: "Last studied",
+        filter: "date",
         cell: (row) => {
           const { lastStudiedAt } = libraryRowStats(row);
           return lastStudiedAt ? timeCell(lastStudiedAt) : <Muted>Never</Muted>;
