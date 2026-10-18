@@ -28096,6 +28096,7 @@ export type Database = {
         Args: { p_event_key: string; p_organization_id: string; p_user: string }
         Returns: boolean
       }
+      notification_still_due: { Args: { p_id: string }; Returns: Json }
       notification_submission_status: {
         Args: {
           p_organization_id: string
@@ -28460,6 +28461,10 @@ export type Database = {
           p_worker_id: string
         }
         Returns: boolean
+      }
+      still_due_booking: {
+        Args: { p_args: Json; p_organization_id: string }
+        Returns: Json
       }
       task_sms_person_timing_gate: {
         Args: {
@@ -39105,6 +39110,10 @@ export type Database = {
         Args: { p_organization_id: string; p_raw: Json }
         Returns: Json
       }
+      _booking_end_reminders: {
+        Args: { p_organization_id: string; p_ref: string }
+        Returns: number
+      }
       _booking_fill: {
         Args: { p_text: string; p_tokens: Json }
         Returns: string
@@ -39146,6 +39155,15 @@ export type Database = {
           slot_at: string
           slot_key: string
         }[]
+      }
+      _booking_sms_reminders: {
+        Args: {
+          p_form_id: string
+          p_organization_id: string
+          p_record_id: string
+          p_submission_id: string
+        }
+        Returns: number
       }
       _booking_urlenc: { Args: { p: string }; Returns: string }
       _bulk_rows_skip_trigger_work: {
@@ -41079,6 +41097,10 @@ export type Database = {
         Args: { p_organization_id: string; p_pairs: Json }
         Returns: Json
       }
+      base_move: {
+        Args: { p_home_id: string; p_to_organization_id: string }
+        Returns: Json
+      }
       booking_cancel: {
         Args: { p_booking_ref: string; p_origin?: string }
         Returns: {
@@ -41210,6 +41232,15 @@ export type Database = {
           slot_key: string
           state: string
         }[]
+      }
+      booking_sms_consent: {
+        Args: {
+          p_booking_ref: string
+          p_origin?: string
+          p_phone: string
+          p_text_shown: string
+        }
+        Returns: Json
       }
       bookings: {
         Args: { p_organization_id: string; p_table_id?: string }
@@ -83003,6 +83034,150 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_domain: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          host: string
+          id: string
+          last_check_at: string | null
+          last_error: string | null
+          metadata: Json
+          organization_id: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          verification: Json
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          host: string
+          id?: string
+          last_check_at?: string | null
+          last_error?: string | null
+          metadata?: Json
+          organization_id: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          verification?: Json
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          host?: string
+          id?: string
+          last_check_at?: string | null
+          last_error?: string | null
+          metadata?: Json
+          organization_id?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          verification?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_domain_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_domain_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_domain_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_domain_route: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          domain_id: string
+          id: string
+          metadata: Json
+          organization_id: string
+          path_prefix: string
+          target_id: string
+          target_kind: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          domain_id: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          path_prefix?: string
+          target_id: string
+          target_kind: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          domain_id?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          path_prefix?: string
+          target_id?: string
+          target_kind?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_domain_route_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_domain_route_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "org_domain"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_domain_route_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_domain_route_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -143516,6 +143691,7 @@ export type Database = {
           situation: string | null
           sort_order: number
           supports_dictionary: boolean
+          system_notes: string[] | null
           taxonomy_node_slug: string | null
           updated_at: string
           updated_by: string | null
@@ -143554,6 +143730,7 @@ export type Database = {
           situation?: string | null
           sort_order?: number
           supports_dictionary?: boolean
+          system_notes?: string[] | null
           taxonomy_node_slug?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -143592,6 +143769,7 @@ export type Database = {
           situation?: string | null
           sort_order?: number
           supports_dictionary?: boolean
+          system_notes?: string[] | null
           taxonomy_node_slug?: string | null
           updated_at?: string
           updated_by?: string | null

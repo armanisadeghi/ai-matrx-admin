@@ -794,7 +794,6 @@
 ["agents.context","earlier_turns_scan_rows"],
 ["agents.context","inline_cap"],
 ["agents.context","interactive_blocks_note"],
-["agents.context","interactive_blocks_surfaces"],
 ["agents.context","org_catalog_budget_chars"],
 ["agents.context","org_catalog_other_orgs_cap"],
 ["agents.context","record_scope_budget_chars"],
