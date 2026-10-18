@@ -45,7 +45,7 @@ import {
 } from "../../video/clone";
 import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hooks";
 import { createVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
-import { contentHashOf, useBrandOfferings, useFileUrls, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
+import { contentHashOf, useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
 import { cutText, oneLine } from "../../video/text";
@@ -134,10 +134,34 @@ export function VideoCloneNew() {
         <span className="type-title text-foreground">New clone</span>
         {wantVariants ? <Badge tone="info">+ 3 variants</Badge> : null}
       </div>
-      <div className="grid min-h-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        <ReferencePanel postId={postId} />
-        <BriefPanel postId={postId} projectId={projectId} onProject={setProjectId} wantVariants={wantVariants} base={base} />
-      </div>
+      <CloneWorkspace postId={postId} projectId={projectId} onProject={setProjectId} wantVariants={wantVariants} base={base} />
+    </div>
+  );
+}
+
+/**
+ * The reference + brief panels, address-free: a Board tile mounts this with the post it names; the page above adds
+ * its header. `onFinished` replaces the page's move to the project page (the tile swaps itself to the studio).
+ */
+export function CloneWorkspace({
+  postId,
+  projectId,
+  onProject,
+  wantVariants = false,
+  base,
+  onFinished,
+}: {
+  postId: string;
+  projectId: string | null;
+  onProject: (id: string) => void;
+  wantVariants?: boolean;
+  base: string;
+  onFinished?: (projectId: string) => void;
+}) {
+  return (
+    <div className="grid min-h-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <ReferencePanel postId={postId} />
+      <BriefPanel postId={postId} projectId={projectId} onProject={onProject} wantVariants={wantVariants} base={base} onFinished={onFinished} />
     </div>
   );
 }
@@ -303,12 +327,14 @@ function BriefPanel({
   onProject,
   wantVariants,
   base,
+  onFinished,
 }: {
   postId: string;
   projectId: string | null;
   onProject: (id: string) => void;
   wantVariants: boolean;
   base: string;
+  onFinished?: (projectId: string) => void;
 }) {
   const brand = useMarketingBrand();
   const { brandId, organizationId } = useSocials();
@@ -331,6 +357,8 @@ function BriefPanel({
   const [productKey, setProductKey] = useState<string>("");
   const [productName, setProductName] = useState("");
   const [productImage, setProductImage] = useState<BriefFile | null>(null);
+  const [aboutText, setAboutText] = useState<string | null>(null);
+  const [priceText, setPriceText] = useState<string | null>(null);
   const [presenter, setPresenter] = useState<PresenterMode>("voiceover");
   const [script, setScript] = useState<string | null>(null);
   const [hookLine, setHookLine] = useState("");
@@ -365,6 +393,10 @@ function BriefPanel({
   const scriptText = script ?? referenceScript;
   const offering = offerings.data?.find((o) => o.key === productKey) ?? null;
   const product = offering ? offering.name : productName.trim();
+  // The saved details of the chosen product start the two labels; typing replaces them. Nothing typed = the saved text.
+  const facts = useOfferingFacts(offering?.offeringId ?? null);
+  const aboutValue = aboutText ?? facts?.description ?? "";
+  const priceValue = priceText ?? facts?.price ?? offering?.priceText ?? "";
   const busy = phase === "planning" || phase === "generating" || uploading !== null;
 
   // A reload of `...&project=<id>` brings back the saved plan: its version, its price and the Generate / Open project actions.
@@ -408,9 +440,11 @@ function BriefPanel({
     const name = `${cutText(product || brand.name, 60)} · ${cutText(caption, 40) || "clone"}`;
     const made = await createVideoProject({ post_id: postId, name, brand_id: brandId }, { organizationId });
     onProject(made.project_id);
-    const next = new URLSearchParams(window.location.search);
-    next.set("project", made.project_id);
-    replaceAddressWithoutNavigating(currentPathWithSearch(next));
+    if (!onFinished) {
+      const next = new URLSearchParams(window.location.search);
+      next.set("project", made.project_id);
+      replaceAddressWithoutNavigating(currentPathWithSearch(next));
+    }
     void queryClient.invalidateQueries({ queryKey: videoKeys.all });
     return made.project_id;
   };
@@ -422,7 +456,8 @@ function BriefPanel({
           product: {
             name: cutText(product, 60),
             ...(offering?.offeringId ? { offeringId: offering.offeringId } : {}),
-            ...(offering?.priceText ? { price: offering.priceText } : {}),
+            ...(aboutValue.trim() ? { description: cutText(aboutValue.trim(), 600) } : {}),
+            ...(priceValue.trim() ? { price: cutText(priceValue.trim(), 60) } : {}),
             ...(productImage ? { images: [productImage] } : {}),
           },
         }
@@ -539,7 +574,8 @@ function BriefPanel({
       setSteps((p) => closeSteps(p));
       setPhase("done");
       await queryClient.invalidateQueries({ queryKey: videoKeys.project(plan.project_id) });
-      router.push(`${base}/${plan.project_id}${wantVariants ? "?variants=3" : ""}`);
+      if (onFinished) onFinished(plan.project_id);
+      else router.push(`${base}/${plan.project_id}${wantVariants ? "?variants=3" : ""}`);
     } catch (err) {
       setSteps((p) => closeSteps(p, "failed"));
       setFailure(err);
@@ -560,7 +596,11 @@ function BriefPanel({
           <Select
             aria-label="Product"
             value={productKey}
-            onValueChange={(v) => setProductKey(v)}
+            onValueChange={(v) => {
+              setProductKey(v);
+              setAboutText(null);
+              setPriceText(null);
+            }}
             options={[
               { value: "", label: offerings.isPending ? "Loading products…" : "Name it myself" },
               ...(offerings.data ?? []).map((o) => ({ value: o.key, label: o.name })),
@@ -569,6 +609,15 @@ function BriefPanel({
           {!offering ? (
             <Field placeholder="Product name" value={productName} maxLength={60} onChange={(e) => setProductName(e.target.value)} />
           ) : null}
+          <Field
+            aria-label="About the product"
+            placeholder="About the product"
+            value={aboutValue}
+            maxLength={600}
+            disabled={busy}
+            onChange={(e) => setAboutText(e.target.value)}
+          />
+          <Field aria-label="Price" placeholder="Price" value={priceValue} maxLength={60} disabled={busy} onChange={(e) => setPriceText(e.target.value)} />
           <div className="flex items-center gap-2">
             <FilePickButton accept="image/*" icon={<ImagePlus />} disabled={busy} onFiles={(f) => void upload(f, "product")}>
               {productImage ? "Replace photo" : "Product photo"}
@@ -739,6 +788,11 @@ function BriefPanel({
             </div>
             {plan.script_source === "fallback" ? <span className="type-meta text-warning">Kept the reference script</span> : null}
             {writerSkipped ? <span className="type-meta text-warning">The script writer didn't run, so the reference script was kept</span> : null}
+            {plan.brand_facts && plan.brand_facts.facts ? (
+              <span className="type-meta text-muted-foreground">
+                {`From ${brand.name}: ${plan.brand_facts.facts} facts${plan.brand_facts.has_voice ? ", its voice" : ""}${plan.brand_facts.product_images ? ", the product photo" : ""}${plan.brand_facts.spokesperson_images ? ", the spokesperson" : ""}`}
+              </span>
+            ) : null}
             {notes.length ? (
               <ul className="flex flex-col gap-0.5">
                 {notes.map((n, i) => (
