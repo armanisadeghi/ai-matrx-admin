@@ -47,7 +47,7 @@ export function MeetMatrxIntroMount() {
       if (!settled) {
         // The account knows whether the age question was answered, whatever browser they answered it in.
         const gate = await coppaService.getGate();
-        settled = !gate.error && gate.data.ageBand !== null;
+        settled = !gate.error && gate.data != null && gate.data.ageBand !== null;
       }
       if (
         shouldShowMeetMatrxIntro({
