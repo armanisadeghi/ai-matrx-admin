@@ -320,7 +320,10 @@ interface VersionRow {
 function VersionsTab({ agentId }: { agentId: string }) {
   useModelOptions();
   const modelRecords = useModelRecords(selectActiveModels);
-  const modelName = (id: string) => modelRecords.find((m) => m.id === id)?.name;
+  const modelName = (id: string) => {
+    const m = modelRecords.find((r) => r.id === id);
+    return m ? (m.common_name ?? m.name) : undefined; // the pretty name, never the provider id
+  };
   const [rows, setRows] = useState<VersionRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {

@@ -48,5 +48,6 @@ describe("wiring", () => {
     const c = require("fs").readFileSync(require("path").join(__dirname, "../components/StudioControls.tsx"), "utf8");
     expect(c).toContain("allowedModelIds={debriefIds.length > 0 ? debriefIds : undefined}");
     expect(c).toContain("describeVersionNote(r.change_note");
+    expect(c).toContain("m.common_name ?? m.name");
   });
 });
