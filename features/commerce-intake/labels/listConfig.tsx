@@ -84,6 +84,9 @@ export function buildLabelBatchListConfig(): EntityListConfig<LabelBatchListRow>
           pageSize: 1,
           sort: "created_at",
           ascending: false,
+          // The lane count is the list: the same state and date filters as the page.
+          states: stateFilterValues(query) ?? undefined,
+          dates: dateWindows(query),
         });
         return { byKind: { orgs: page.total }, narrow: {} };
       },

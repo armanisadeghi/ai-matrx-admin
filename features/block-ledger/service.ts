@@ -141,12 +141,9 @@ export const blockLedgerService: EntityListService<AcquisitionBlock> = {
    * meant to see the same list. So "mine", "shared with me" and "public" would
    * be three tabs that can never differ, and the honest declaration is one.
    */
-  async fetchCounts(): Promise<EntityScopeCounts> {
-    const { count, error } = await supabase
-      .schema(SCHEMA)
-      .from(TABLE)
-      .select("id", { count: "exact", head: true })
-      .is("deleted_at", null);
+  async fetchCounts(query: EntityListQuery): Promise<EntityScopeCounts> {
+    // The count is the list: the same filters, search and date range as the page.
+    const { count, error } = await applyFilters(baseQuery("id", { count: "exact", head: true }), query);
     if (error) throw error;
     return { byKind: { mine: Number(count ?? 0) }, narrow: {} };
   },
