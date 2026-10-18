@@ -12,7 +12,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { SpaceTemplateIcon } from "@/features/spaces/public/SpaceTemplateIcon";
+
 import { footprintLine, footprintParts, wordFor, type GalleryCard } from "./catalogue";
+import { spaceCategoryLabel } from "./publicGallery";
 import { TemplateThumb } from "./TemplateShowcase";
 
 export function TemplateCardGrid({
@@ -51,6 +54,43 @@ export function TemplateCardGrid({
           </Link>
         </li>
       ))}
+    </ul>
+  );
+}
+
+/** Space templates (card.space): the template's own icon, title, one line, and how many pages it makes. */
+export function SpaceTemplateCardGrid({
+  cards,
+  hrefFor,
+  attr,
+}: {
+  cards: readonly GalleryCard[];
+  hrefFor: (card: GalleryCard) => string;
+  attr: string;
+}) {
+  return (
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-3" {...{ [attr]: "" }}>
+      {cards.map((card) =>
+        card.space ? (
+          <li key={card.id} className="min-w-0">
+            <Link
+              href={hrefFor(card)}
+              data-make-gallery-card={card.catalogue_id}
+              data-space-category={card.space.category}
+              className="flex h-full min-h-[9.5rem] min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-card p-3 shadow-sm transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="flex h-9 w-9 items-center justify-center" aria-hidden="true">
+                <SpaceTemplateIcon media={card.space.icon} size={28} />
+              </span>
+              <span className="truncate text-sm font-medium text-foreground">{card.space.title}</span>
+              <span className="line-clamp-2 text-xs text-muted-foreground">{card.space.description}</span>
+              <span className="mt-auto truncate text-xs text-muted-foreground tabular-nums">
+                {card.space.pages === 1 ? "1 page" : `${card.space.pages} pages`} · {spaceCategoryLabel(card.space.category)}
+              </span>
+            </Link>
+          </li>
+        ) : null,
+      )}
     </ul>
   );
 }

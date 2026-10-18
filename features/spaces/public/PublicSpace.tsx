@@ -28,6 +28,7 @@ import { SpaceEditor } from "../editor/SpaceEditor";
 import { Cover } from "../page/Cover";
 import { PublishedMediaProvider } from "../page/media";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
+import { readOnlySpacesValue } from "../state/read-only-value";
 import {
   StaticSpacesProvider,
   type SpacesContextValue,
@@ -64,42 +65,13 @@ function useStaticValue(
     ...view.links,
     { id: view.id, slug: view.slug, title: view.title, icon: view.icon },
   ];
-  const byId = new Map(pages.map((p) => [p.id, summary(p)]));
-  const href = (id: SpaceId) =>
-    `/site/${pages.find((p) => p.id === id)?.slug ?? id}`;
-  const noop = () => {};
-  const refuse = READ_ONLY("This");
-  return {
-    store: new Proxy({} as SpacesContextValue["store"], { get: () => refuse }),
+  return readOnlySpacesValue({
+    pages: pages.map(summary),
+    open: go,
+    pageHref: (id) => `/site/${pages.find((p) => p.id === id)?.slug ?? id}`,
+    missingPageLabel: "Not published",
+    refusal: "This is not available on a published page.",
     publicSite: true,
-    ready: true,
-    loadError: null,
-    access: null,
-    retryLoad: noop,
-    patchSummary: noop,
-    takeFocusTitle: () => false,
-    openToName: () => undefined,
-    takeFresh: () => null,
-    pageEpoch: () => 0,
-    reopenPage: noop,
-    sample: { adding: false, progress: null, add: async () => refuse() },
-    templates: {
-      ids: [],
-      error: null,
-      refresh: noop,
-      setTemplate: async () => refuse(),
-      use: async () => refuse(),
-    },
-    packs: { stage: null, use: async () => refuse() },
-    summaries: [...byId.values()],
-    archived: [],
-    loadTrash: noop,
-    trashLoaded: true,
-    // The published page carries its own children; nothing loads lazily here.
-    childrenLoaded: () => true,
-    loadChildren: async () => {},
-    reveal: noop,
-    byId,
     childrenOf: (parentId) =>
       parentId === view.id ? view.children.map(summary) : [],
     pathTo: () => [
@@ -111,26 +83,7 @@ function useStaticValue(
         icon: view.icon,
       }),
     ],
-    favorites: [],
-    toggleFavorite: noop,
-    recent: [],
-    markVisited: noop,
-    createSpace: async () => refuse(),
-    archiveSpace: async () => refuse(),
-    restoreSpace: async () => refuse(),
-    duplicateSpace: async () => refuse(),
-    moveSpace: async () => refuse(),
-    open: (id) => (byId.has(id) ? go(id) : undefined),
-    quickFind: { open: false, mode: "jump" },
-    openQuickFind: noop,
-    closeQuickFind: noop,
-    sidebarCollapsed: true,
-    setSidebarCollapsed: noop,
-    mobileSidebarOpen: false,
-    setMobileSidebarOpen: noop,
-    pageHref: href,
-    missingPageLabel: "Not published",
-  };
+  });
 }
 
 function DuplicateButton({ view }: { view: PublicSpaceView }) {
