@@ -10,8 +10,28 @@
     "macos": 0.062
   },
   "prices_source": "GitHub billing API pricePerUnit (Actions Linux / Windows / macOS 3-core), read 2026-10-11",
-  "total_usd_per_week": 126.47,
+  "total_usd_per_week": 126.95,
   "workflows": {
+    "hosted-release.yml": {
+      "triggers": [
+        "push"
+      ],
+      "crons": [],
+      "benefit": "Release the extension privacy policy and hosted release-path fixes from GitHub, then verify the Vercel rollout with the existing release script.",
+      "owner_reason": "The frontend release policy is committed but has no eligible local owner; production is still serving the previous release.",
+      "basis": "Path-filtered extension policy and release-path changes only, estimated two eligible runs/week at 40 minutes including rollout watch. Public standard Ubuntu minutes are unbilled.",
+      "usd_per_week": 0.48,
+      "legs": {
+        "linux": {
+          "jobs": [
+            "release"
+          ],
+          "runs_per_week": 2,
+          "minutes_per_run": 40,
+          "usd_per_week": 0.48
+        }
+      }
+    },
     "ci.yml": {
       "triggers": [
         "pull_request",

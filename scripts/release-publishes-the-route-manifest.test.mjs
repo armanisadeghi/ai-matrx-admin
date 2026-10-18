@@ -63,7 +63,7 @@ test("it publishes ONLY on a proven-green rollout", () => {
   // `release_outcome_report` returning 0 is the one statement that the build is
   // READY on every targeted project AND serving on the live domain. Publishing
   // anywhere else would tell the spine a route answers before it does.
-  const greenBranch = RELEASE.match(/^\s*0\)\s*(.+)$/m);
+  const greenBranch = shellFunction("after_watch_rollout").match(/^\s*0\)\s*(.+)$/m);
   assert.ok(greenBranch, "release.sh no longer has a rollout rc==0 branch");
   assert.match(
     greenBranch[1],

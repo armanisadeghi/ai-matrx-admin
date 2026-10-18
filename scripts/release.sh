@@ -355,6 +355,16 @@ ship_print_findings() {
 # no worktree, no branch, no stash; the shared checkout's files are never touched.
 ship_base_tree() {   # sets SHIP_BASE, SHIP_BASE_TREE, SHIP_PARENTS
     SHIP_BASE=$(git rev-parse "$REMOTE/$BRANCH")
+    # A hosted --no-migrate run has already checked one exact main commit for
+    # migration changes. Never absorb a later push during fetch or a push-race
+    # retry; the later push gets its own guarded run. Ordinary releases remain
+    # fail-forward and keep merging every available commit.
+    if [[ -n "${RELEASE_EXPECTED_SOURCE_SHA:-}" ]]; then
+        [[ "$RELEASE_EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] \
+            || fail "RELEASE_EXPECTED_SOURCE_SHA must be a full commit SHA — nothing was released."
+        [[ "$SHIP_BASE" == "$RELEASE_EXPECTED_SOURCE_SHA" && "$SHIP_LOCAL_HEAD" == "$RELEASE_EXPECTED_SOURCE_SHA" ]] \
+            || fail "main moved beyond guarded source ${RELEASE_EXPECTED_SOURCE_SHA:0:10} — nothing was released; the newer push needs its own migration census."
+    fi
     if [[ -n "$WHILE_PAUSED_SHA" ]]; then
         # Pinned: the release carries <SHA> and nothing else, even if HEAD moves now.
         SHIP_LOCAL_HEAD="$WHILE_PAUSED_SHA"

@@ -179,6 +179,12 @@ export interface PackBoardTile {
   title: string;
   /** kind "table": the spec table's token. */
   table?: string;
+  /**
+   * kind "table", instead of `table`: a registered platform entity token (a real schema table made with
+   * `platform.create_entity_table`, e.g. "web_brand_choice"). Nothing is installed for it; the tile reads and
+   * writes the platform's own rows through the entity doors.
+   */
+  entity?: string;
   /** kind "table": "section" draws the table as a titled, grouped, edit-in-place section (records-ui SectionCard). Default "table". */
   layout?: "section" | "table";
   /** kind "note": the words the new Note starts with (its first line names it); kind "writeUp" and "cover": the markdown. */
