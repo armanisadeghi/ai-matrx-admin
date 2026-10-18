@@ -127,16 +127,11 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
       await c.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ role: "service_role" })]);
       await c.query("set local role service_role");
     };
-    const count = async (): Promise<number> => {
-      const r = await c.query("select count(*)::int n from admin.admin_audit_log where target_user_id = $1", [target]);
-      return r.rows[0].n;
-    };
-    const lastAction = async (): Promise<string | null> => {
-      const r = await c.query(
-        "select action from admin.admin_audit_log where target_user_id = $1 order by created_at desc, id desc limit 1",
-        [target],
-      );
-      return r.rows[0]?.action ?? null;
+    // Every row for the person, as the owner. created_at is now() and so the same for every row in
+    // one transaction: new rows are found by id, never by time.
+    const rows = async (): Promise<Array<{ id: string; action: string }>> => {
+      const r = await c.query("select id, action from admin.admin_audit_log where target_user_id = $1", [target]);
+      return r.rows;
     };
 
     let sessionId: string | null = null;
@@ -185,13 +180,14 @@ async function liveHalf(c: Client, target: string): Promise<string[]> {
     for (const s of steps) {
       await c.query("savepoint step");
       try {
+        await c.query("reset role"); // count as the owner: the caller's RLS hides audit rows
+        const seen = new Set((await rows()).map((r) => r.id));
         await s.as();
-        const before = await count();
         await s.run();
         await c.query("reset role");
-        const after = await count();
-        const act = await lastAction();
-        const delta = after - before;
+        const fresh = (await rows()).filter((r) => !seen.has(r.id));
+        const delta = fresh.length;
+        const act = fresh.map((r) => r.action).join(",") || null;
         if (delta !== 1 || act !== s.action) {
           failures.push(`${s.name}: ${delta} new audit row(s), last action ${act ?? "none"} (expected 1 × ${s.action})`);
           console.log(`FAIL  ${s.name}: +${delta} (${act ?? "none"})`);

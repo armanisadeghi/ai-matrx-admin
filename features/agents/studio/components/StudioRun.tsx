@@ -20,10 +20,12 @@ import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner"
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { registerConversationHooks } from "@ai-matrx/chat/host";
+import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import { selectOrderedMessageIds } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { StudioTurnModel } from "./StudioTurnModel";
+import { PaneBar } from "./PaneBar";
 
 /**
  * Which conversation each launched run (agent/mandate + runKey) opened, kept ABOVE the component. A mount
@@ -64,6 +66,8 @@ interface StudioRunProps {
    */
   mandateKey?: AnyMandateKey | null;
   mandateVariables?: () => Record<string, unknown>;
+  /** What the mandate's agent does HERE, for the top Agents menu (the run declares the job it runs). */
+  mandateDoes?: string;
   /** The surface the server resolves this chat's tool defaults from. */
   surfaceName?: string;
   conversationId?: string | null;
@@ -71,6 +75,8 @@ interface StudioRunProps {
   seed?: StudioRunSeed | null;
   showVariables?: boolean;
   runKey?: number;
+  /** The "Next reply on" bar above an agent's run; off when the host draws it in its own bar (the compare). */
+  turnModelBar?: boolean;
   /** Per-conversation context entries (`runtime.context`), sent with the first launch. */
   context?: Record<string, unknown>;
   onConversation?: (conversationId: string) => void;
@@ -80,16 +86,19 @@ export function StudioRun({
   agentId = null,
   mandateKey = null,
   mandateVariables,
+  mandateDoes,
   surfaceName,
   conversationId = null,
   surfaceKey,
   seed = null,
   showVariables = false,
   runKey = 0,
+  turnModelBar = true,
   context,
   onConversation,
 }: StudioRunProps) {
   const { launchAgent, launchMandate } = useAgentLauncher();
+  useDeclaredSurfaceMandates(mandateKey && mandateDoes ? [{ mandateKey, does: mandateDoes }] : []);
   const variablesRef = useRef(mandateVariables);
   useEffect(() => {
     variablesRef.current = mandateVariables;
@@ -192,7 +201,11 @@ export function StudioRun({
   if ((!agentId && !mandateKey) || !shown) return <RegionSkeleton />;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {mandateKey ? null : <StudioTurnModel conversationId={shown} />}
+      {mandateKey || !turnModelBar ? null : (
+        <PaneBar>
+          <StudioTurnModel conversationId={shown} />
+        </PaneBar>
+      )}
       <AgentRunner conversationId={shown} surfaceKey={surfaceKey} className="min-h-0 flex-1" />
     </div>
   );

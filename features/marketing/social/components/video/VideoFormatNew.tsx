@@ -63,6 +63,23 @@ function mediaName(id: string): string {
 
 // ── the format played by the engine ─────────────────────────────────────────────────────────────────
 
+/** Muted gradient pairs painted where a picture would be (video content, not interface colour). */
+const STAND_IN_TONES: ReadonlyArray<readonly [string, string]> = [
+  ["#2b3a55", "#52678f"],
+  ["#3d2f4f", "#7a5a9e"],
+  ["#2f4a45", "#5a9e8f"],
+  ["#4f3a2f", "#9e7a5a"],
+  ["#3a3a4f", "#6a6a9e"],
+  ["#2f3f4f", "#5a8a9e"],
+];
+
+/** The preview's pictures are not made yet: each gets a soft stand-in so the layout, boards and captions read cleanly. */
+function standInUrl(i: number): string {
+  const [a, b] = STAND_IN_TONES[i % STAND_IN_TONES.length]!;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 160" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="90" height="160" fill="url(#g)"/><circle cx="45" cy="64" r="20" fill="#ffffff" fill-opacity="0.12"/><rect x="20" y="92" width="50" height="36" rx="8" fill="#ffffff" fill-opacity="0.08"/></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
   useVideoFonts();
   const { organizationId } = useSocials();
@@ -70,7 +87,7 @@ function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
     queryKey: [...videoKeys.all, "format-preview", id],
     queryFn: () => fetchFormatPreview(id, { organizationId }),
     enabled: Boolean(organizationId),
-    staleTime: Infinity,
+    staleTime: 10 * 60_000,
   });
   if (preview.isPending) return <div className={cn("animate-pulse rounded-lg bg-muted", className)} style={{ aspectRatio: "9 / 16" }} aria-label="Loading preview" />;
   if (preview.isError) return <ErrorAlchemyMenu error={preview.error} operation="load the format preview" />;
@@ -83,9 +100,13 @@ function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
       </div>
     );
   }
+  const mediaUrls: Record<string, string> = {};
+  Object.entries(doc.media).forEach(([mid, m], i) => {
+    if (m.kind === "image") mediaUrls[mid] = standInUrl(i);
+  });
   return (
     <div className={className}>
-      <VideoPlayer input={programInputFromComposition(doc, resolved.timeline)} mediaUrls={{}} initialFrame={Math.floor(resolved.timeline.frameCount * 0.62)} hideTranscript />
+      <VideoPlayer input={programInputFromComposition(doc, resolved.timeline)} mediaUrls={mediaUrls} initialFrame={Math.floor(resolved.timeline.frameCount * 0.62)} hideTranscript />
     </div>
   );
 }
@@ -101,7 +122,7 @@ export function VideoFormatNew() {
     queryKey: [...videoKeys.all, "formats"],
     queryFn: () => listFormats({ organizationId }),
     enabled: Boolean(organizationId),
-    staleTime: Infinity,
+    staleTime: 10 * 60_000,
   });
 
   if (formats.isPending) return <RegionSkeleton shape="cards" count={6} aria-label="Loading formats" />;

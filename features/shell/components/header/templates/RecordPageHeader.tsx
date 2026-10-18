@@ -19,7 +19,16 @@
 // § Page-top templates. The system page specimen renders THIS component inside
 // <HeaderSpecimen>, never a mock.
 
-import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
+import { Fragment } from "react";
+import { ChevronDown, type LucideIcon } from "lucide-react";
+import { Badge, Button, type BadgeTone } from "@ai-matrx/design-system/controls";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { RouteNavItem } from "@/features/shell/components/header/RouteModeNav";
 import {
   EntityModeHeader,
@@ -29,6 +38,18 @@ import type { Crumb, CrumbOption } from "@/features/shell/components/header/temp
 
 export type { EntityHeaderAction as RecordPageAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 export type { Crumb as RecordPageParent } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+
+/** One item of the record's Actions menu. */
+export interface RecordPageMenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  onPress: () => void;
+  destructive?: boolean;
+  disabled?: boolean;
+  /** Items with the same group sit together; a separator falls between groups. */
+  group?: string;
+}
 
 export interface RecordPageHeaderProps {
   /** Omit on a top-level page (module home, queue, inbox): no back button, just the name. Back fallback when nothing is behind this tab (opened from a link). Usually the module home. */
@@ -50,6 +71,42 @@ export interface RecordPageHeaderProps {
   onModeSelect?: (href: string) => void;
   /** Declarative actions, lowest priority first; `primary` marks the one main action. */
   actions?: EntityHeaderAction[];
+  /**
+   * ONE "Actions" menu for every verb the header does not show (the Stripe record pattern: one or
+   * two header verbs + one menu, danger items last). Desktop: a menu button on the line; phone:
+   * its items join the ⋮ sheet.
+   */
+  menu?: { label?: string; items: RecordPageMenuItem[] };
+}
+
+function RecordActionsMenu({ label, items }: { label: string; items: RecordPageMenuItem[] }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="quiet" iconEnd={<ChevronDown />}>
+          {label}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {items.map((item, i) => {
+          const Icon = item.icon;
+          const newGroup = i > 0 && item.group !== items[i - 1]!.group;
+          return (
+            <Fragment key={item.id}>
+              {newGroup ? <DropdownMenuSeparator /> : null}
+              <DropdownMenuItem
+                disabled={item.disabled}
+                onClick={item.onPress}
+                className={item.destructive ? "text-destructive focus:text-destructive" : undefined}
+              >
+                <Icon className="mr-2 h-4 w-4" /> {item.label}
+              </DropdownMenuItem>
+            </Fragment>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 export function RecordPageHeader({
@@ -61,7 +118,18 @@ export function RecordPageHeader({
   activeModeHref,
   onModeSelect,
   actions,
+  menu,
 }: RecordPageHeaderProps) {
+  const menuItems = menu?.items ?? [];
+  // Phone: the menu's items are rows of the ⋮ sheet (the desktop menu button is hidden below sm).
+  const phoneMenuActions: EntityHeaderAction[] = menuItems.map((item) => ({
+    label: item.label,
+    icon: item.icon,
+    onPress: item.onPress,
+    disabled: item.disabled,
+    destructive: item.destructive,
+    phoneOnly: true,
+  }));
   return (
     <EntityModeHeader
       backHref={backHref}
@@ -74,7 +142,8 @@ export function RecordPageHeader({
       modes={modes}
       activeModeHref={activeModeHref}
       onModeSelect={onModeSelect}
-      actions={actions}
+      actions={menuItems.length ? [...(actions ?? []), ...phoneMenuActions] : actions}
+      right={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : undefined}
     />
   );
 }

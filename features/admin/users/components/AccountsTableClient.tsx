@@ -8,9 +8,7 @@
 // flag) plus cross-links to this user's preferences / usage / admin level via
 // ?user=<id>. An admin surface hides nothing.
 
-import { useClipboard } from "@ai-matrx/kit/clipboard";
-import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   BadgeCheck,
@@ -21,7 +19,6 @@ import {
   Gem,
   KeyRound,
   LifeBuoy,
-  Loader2,
   Mail,
   MailPlus,
   MessageSquare,
@@ -40,23 +37,14 @@ import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { Lock, Unlock } from "lucide-react";
-import { setTopTierAccess } from "@/features/ai-models/topTierAccess";
 import { formatCount } from "@ai-matrx/kit/format";
 import { Cost } from "@/components/cost/Cost";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,7 +53,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { filterAndSortRows } from "@ai-matrx/design-system/data-table/filter-engine";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -92,11 +79,10 @@ import {
 import { GiveFreeMonthsDialog, type FreeMonthsPerson } from "./GiveFreeMonthsDialog";
 import { SendTutorialDialog, type TutorialRecipient } from "@/features/guided-tutorials/admin/SendTutorialDialog";
 import { readUserResearch } from "../service/userResearch";
-import { sendDirectMessage } from "../service/coupons";
-import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, feedbackDmKey, type UserResearch } from "../lib/userResearch";
-import { ProTextarea } from "@/components/official/ProTextarea";
+import { RELATIONSHIP_LABELS, CONTACT_STATE_LABELS, type UserResearch } from "../lib/userResearch";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildAdminUserMenuSection } from "./admin-user-menu-section";
+import { useUserActions } from "../record/useUserActions";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { readOf } from "@ai-matrx/design-system";
@@ -119,7 +105,6 @@ import {
   rowInSegment,
   type AccountSegment,
 } from "../lib/accountSegments";
-import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
 const ROSTER_PAGE_SIZE = 50;
 
@@ -181,9 +166,6 @@ function levelBadge(level: string | null) {
 const ORG_CELL_VISIBLE = 3;
 
 function AccountsRoster() {
-  const { copyText } = useClipboard({
-    notify: copyNotify,
-  });
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -262,196 +244,23 @@ function AccountsRoster() {
     };
   }, [refreshKey]);
 
-  const sendAuthLink = useCallback(
-    async (row: AdminUserRow, type: "magiclink" | "recovery") => {
-      const noun =
-        type === "magiclink" ? "magic sign-in link" : "password reset link";
-      const ok = await confirm({
-        title: `Send ${noun}?`,
-        description: `Email a ${noun} to ${row.email}. This is a single-use link that lets them sign in / reset without their current password.`,
-        confirmLabel: "Send",
-      });
-      if (!ok) return;
-      try {
-        const res = await fetch("/api/admin/users/auth-link", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: row.id,
-            email: row.email,
-            type,
-            send: true,
-          }),
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error ?? "Failed");
-        toast.success(`Sent ${noun} to ${row.email}`, {
-          action: json.action_link
-            ? {
-                label: "Copy link",
-                onClick: () =>
-                  void copyText(json.action_link),
-              }
-            : undefined,
-        });
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Failed to send");
-      }
-    },
-    [],
-  );
-
-  const toggleOnboarding = useCallback(async (row: AdminUserRow) => {
-    const next = !row.onboarding_completed;
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: row.id, onboardingCompleted: next }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === row.id ? { ...r, onboarding_completed: next } : r,
-        ),
-      );
-      toast.success(next ? "Marked as onboarded" : "Marked as new");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    }
-  }, []);
-
-  // Closing an account is the only way to "delete" one: the person row is permanent.
-  // iam.close_account / iam.reopen_account check the platform-admin seat themselves.
-  const setAccountClosed = useCallback(async (row: AdminUserRow, close: boolean) => {
-    const who = row.email ?? row.display_name ?? row.id;
-    if (close && row.id === researchOwnerId) {
-      toast.error("You cannot close your own account from the roster. Use your account settings.");
-      return;
-    }
-    if (!close && row.erased) {
-      toast.error("This account was erased and cannot be reopened.");
-      return;
-    }
-    const ok = await confirm(
-      close
-        ? {
-            title: "Close account?",
-            description: `${who} cannot sign in again; an open session can work for up to an hour. API keys are revoked; schedules and connections pause. Records stay, still theirs. Billing is not changed. Reopen any time.`,
-            confirmLabel: "Close account",
-            variant: "destructive",
-          }
-        : {
-            title: "Reopen account?",
-            description: `${who} can sign in again; paused schedules and connections resume. Revoked API keys stay revoked.`,
-            confirmLabel: "Reopen",
-          },
-    );
-    if (!ok) return;
-    const { error } = await createClient()
-      .schema("iam")
-      .rpc(close ? "close_account" : "reopen_account", {
-        p_user: row.id,
-        p_reason: close ? "closed by a platform admin" : "reopened by a platform admin",
-      });
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, banned: close } : r)));
-    toast.success(close ? `Closed ${who}` : `Reopened ${who}`);
-  }, [researchOwnerId]);
-
-  const toggleMcpFullAccess = useCallback(async (row: AdminUserRow) => {
-    const next = !row.mcp_full_access;
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: row.id, mcpFullAccess: next }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
-      setRows((prev) =>
-        prev.map((current) =>
-          current.id === row.id
-            ? { ...current, mcp_full_access: next }
-            : current,
-        ),
-      );
-      toast.success(
-        next
-          ? `Granted full MCP access to ${row.email ?? row.id}`
-          : `Revoked full MCP access from ${row.email ?? row.id}`,
-      );
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    }
-  }, []);
-
-  // Top-tier models (cost rating 6): off for everyone; a super admin turns one person on.
-  // The RPC refuses anyone else and records who changed it and when.
-  const toggleTopTierModels = useCallback(async (row: AdminUserRow) => {
-    const next = !row.top_tier_models;
-    const who = row.email ?? row.id;
-    if (next) {
-      const ok = await confirm({
-        title: "Allow top-tier models?",
-        description: `${who} will be able to run Mythos, Fable, GPT-6 Astra and every -max model, billed at top-tier prices. Recorded under your name.`,
-        confirmLabel: "Allow",
-      });
-      if (!ok) return;
-    }
-    try {
-      await setTopTierAccess(row.id, next);
-      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, top_tier_models: next } : r)));
-      toast.success(next ? `Top-tier models on for ${who}` : `Top-tier models off for ${who}`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    }
-  }, []);
-
-  // In-app DM: create/find the direct conversation with the user, then send.
-  const selectedOrganizationId = useAppSelector(selectOrganizationId);
-  const [dmTarget, setDmTarget] = useState<AdminUserRow | null>(null);
+  // The per-person actions are THE shared hook (the person's record page runs the same code);
+  // each accepted change patches this roster's row.
+  const {
+    sendAuthLink,
+    toggleOnboarding,
+    setAccountClosed,
+    toggleMcpFullAccess,
+    toggleTopTierModels,
+    openMessage,
+    messageTarget,
+    messageDraft,
+    dialogs: userActionDialogs,
+  } = useUserActions({
+    onPatched: (id, patch) =>
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r))),
+  });
   const [supportTarget, setSupportTarget] = useState<SupportSessionTarget | null>(null);
-  const [dmContent, setDmContent] = useState("");
-  const [dmSending, setDmSending] = useState(false);
-
-  const sendDm = useCallback(async () => {
-    if (!dmTarget || !dmContent.trim() || !researchOwnerId || dmSending) return;
-    if (!selectedOrganizationId) {
-      // The conversation route files the DM in the admitted organization and
-      // refuses without one; say so here instead of sending a request that 400s.
-      toast.error(
-        "Select an organization from the avatar menu, then try again.",
-      );
-      return;
-    }
-    setDmSending(true);
-    try {
-      await sendDirectMessage({
-        userId: dmTarget.id,
-        content: dmContent,
-        organizationId: selectedOrganizationId,
-        replayKey: (conversationId, content) => feedbackDmKey(researchOwnerId, conversationId, content),
-      });
-      toast.success(
-        `Message sent to ${dmTarget.display_name ?? dmTarget.email}`,
-        {
-          action: {
-            label: "Open thread",
-            onClick: () => openFromNotice("/messages"),
-          },
-        },
-      );
-      setDmTarget(null);
-      setDmContent("");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to send message");
-    } finally {
-      setDmSending(false);
-    }
-  }, [dmTarget, dmContent, dmSending, researchOwnerId, selectedOrganizationId, setDmTarget, setDmContent]);
 
   const columns = useMemo((): MatrxColumnDef<AdminUserRow>[] => {
     return [
@@ -1079,8 +888,8 @@ function AccountsRoster() {
           sort: tableQuery.state.sort,
           page: tableQuery.state.page,
           pageSize: tableQuery.state.pageSize,
-          dmRecipientId: dmTarget?.id ?? null,
-          dmDraft: dmContent,
+          dmRecipientId: messageTarget?.id ?? null,
+          dmDraft: messageDraft,
         })
       }
     >
@@ -1216,10 +1025,7 @@ function AccountsRoster() {
                   <Mail className="mr-2 h-4 w-4" /> Email user
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
-                    setDmTarget(row);
-                    setDmContent("");
-                  }}
+                  onClick={() => openMessage(row)}
                   disabled={row.is_anonymous}
                 >
                   <MessageSquare className="mr-2 h-4 w-4" /> Send in-app message
@@ -1491,50 +1297,7 @@ function AccountsRoster() {
         onClose={() => setResearchTarget(null)}
         onSaved={record => setResearch(records => [...records.filter(current => current.subject_id !== record.subject_id), record])}
       />}
-      <Dialog
-        open={dmTarget !== null}
-        onOpenChange={(o) => {
-          if (!o) setDmTarget(null);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              In-app message to {dmTarget?.display_name ?? dmTarget?.email}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-muted-foreground">
-            Sends a direct message from you into the user&apos;s in-app inbox
-            (the DM system). They see it in Messages.
-          </p>
-          <ProTextarea
-            data-surface-value="dm_draft"
-            value={dmContent}
-            onChange={(e) => setDmContent(e.target.value)}
-            placeholder="Write your message…"
-            rows={5}
-            className="resize-none"
-            autoFocus
-          />
-          <DialogFooter>
-            <Button variant="quiet" onClick={() => setDmTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              icon={dmSending ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <MessageSquare />
-              )}
-              variant="primary"
-              onClick={() => void sendDm()}
-              disabled={dmSending || !dmContent.trim()}
-            >
-              Send message
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {userActionDialogs}
     </div>
     </SurfaceRuntimeProvider>
   );

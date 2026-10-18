@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1470,
+  "routeCount": 1471,
   "routes": [
     {
       "pattern": "/",
@@ -4948,6 +4948,11 @@
       "pattern": "/marketing/[brandId]/socials/videos/[projectId]",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/socials/videos/[projectId]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/socials/videos/formats",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/socials/videos/formats/page.tsx"
     },
     {
       "pattern": "/marketing/[brandId]/socials/videos/new",

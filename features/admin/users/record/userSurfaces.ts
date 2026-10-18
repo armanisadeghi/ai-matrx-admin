@@ -1,0 +1,152 @@
+// THE ONE REGISTRY of a person's admin surfaces (users one-roof, 2026-10-17; plan attack F8):
+// the tabs of /administration/users/<id> and the actions on that person. The record page reads it;
+// the roster's Manage menu, the name chip's door menu and the right-click section move onto it in
+// lane C — never a fourth hand-copied list.
+//
+// TABS. Every tab is registered here with its deep link (/administration/users/<id> for Overview,
+// /administration/users/<id>/<tab> for the rest). A tab whose body is not built yet carries
+// `built: false`: it is hidden everywhere (the tab row, the route — an unbuilt /<tab> address shows
+// Overview's "not a tab" state, never an empty tab). Lane B2 flips `built` in the same commit that
+// adds the body to `UserRecordPage`'s TAB_BODIES. Never ship an empty tab.
+//
+// ACTIONS. Header verbs (`placement: "header"`) are the page's one or two main moves; everything
+// else is the one Actions menu, in `group` order, `danger` last. The handlers live in
+// `useUserActions` (shared with the roster) and the existing dialogs.
+
+import type { LucideIcon } from "lucide-react";
+import {
+  Building2,
+  Gem,
+  Gift,
+  GraduationCap,
+  History,
+  KeyRound,
+  LayoutDashboard,
+  LifeBuoy,
+  LogOut,
+  Mail,
+  MailPlus,
+  MessageSquare,
+  SlidersHorizontal,
+  UserCheck,
+  UserCog,
+  UserPlus,
+  UserX,
+  WalletCards,
+} from "lucide-react";
+
+export const USERS_HUB_PATH = "/administration/users";
+
+export type UserTabId =
+  | "overview"
+  | "organizations"
+  | "billing"
+  | "preferences"
+  | "acquisition"
+  | "support"
+  | "history";
+
+export interface UserTab {
+  id: UserTabId;
+  label: string;
+  icon: LucideIcon;
+  /** False until the tab's body exists; unbuilt tabs are hidden (see the header). */
+  built: boolean;
+}
+
+export const USER_TABS: readonly UserTab[] = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard, built: true },
+  { id: "organizations", label: "Organizations", icon: Building2, built: false },
+  { id: "billing", label: "Billing & usage", icon: WalletCards, built: false },
+  { id: "preferences", label: "Preferences", icon: SlidersHorizontal, built: false },
+  { id: "acquisition", label: "Acquisition", icon: UserPlus, built: false },
+  { id: "support", label: "Support sessions", icon: LifeBuoy, built: false },
+  { id: "history", label: "Admin history", icon: History, built: false },
+];
+
+const TAB_IDS = new Set<string>(USER_TABS.map((t) => t.id));
+
+export function isUserTabId(value: string | null | undefined): value is UserTabId {
+  return value != null && TAB_IDS.has(value);
+}
+
+/** The tabs a person sees, in order — only built ones. */
+export function visibleUserTabs(): UserTab[] {
+  return USER_TABS.filter((t) => t.built);
+}
+
+/** True when `tab` names a registered tab whose body exists. */
+export function isVisibleUserTab(tab: string | null | undefined): tab is UserTabId {
+  return isUserTabId(tab) && USER_TABS.some((t) => t.id === tab && t.built);
+}
+
+/** THE address of one person's admin record (Overview when no tab). */
+export function userRecordHref(userId: string, tab: UserTabId = "overview"): string {
+  const base = `${USERS_HUB_PATH}/${encodeURIComponent(userId)}`;
+  return tab === "overview" ? base : `${base}/${tab}`;
+}
+
+export type UserActionId =
+  | "support_session"
+  | "message"
+  | "email"
+  | "magic_link"
+  | "password_reset"
+  | "change_plan"
+  | "free_months"
+  | "tutorial"
+  | "mcp_access"
+  | "top_tier"
+  | "onboarded"
+  | "sign_out_everywhere"
+  | "close"
+  | "reopen";
+
+export type UserActionGroup = "contact" | "plan" | "access" | "danger";
+
+export interface UserActionDef {
+  id: UserActionId;
+  label: string;
+  icon: LucideIcon;
+  /** `header`: a visible header verb; `menu`: inside the one Actions menu. */
+  placement: "header" | "menu";
+  group: UserActionGroup;
+  danger?: boolean;
+  /**
+   * False when the action's server door is not live yet: it is left out everywhere (never a dead
+   * button). `sign_out_everywhere` waits on iam.sign_out_everywhere (lane A, not live 2026-10-17).
+   */
+  live: boolean;
+}
+
+export const USER_ACTIONS: readonly UserActionDef[] = [
+  { id: "support_session", label: "Start support session", icon: LifeBuoy, placement: "header", group: "contact", live: true },
+  { id: "message", label: "Message", icon: MessageSquare, placement: "header", group: "contact", live: true },
+  { id: "email", label: "Email user", icon: Mail, placement: "menu", group: "contact", live: true },
+  { id: "magic_link", label: "Send magic link", icon: MailPlus, placement: "menu", group: "contact", live: true },
+  { id: "password_reset", label: "Send password reset", icon: KeyRound, placement: "menu", group: "contact", live: true },
+  { id: "change_plan", label: "Change plan…", icon: WalletCards, placement: "menu", group: "plan", live: true },
+  { id: "free_months", label: "Give free months…", icon: Gift, placement: "menu", group: "plan", live: true },
+  { id: "tutorial", label: "Send a tutorial…", icon: GraduationCap, placement: "menu", group: "plan", live: true },
+  { id: "mcp_access", label: "Full MCP access", icon: KeyRound, placement: "menu", group: "access", live: true },
+  { id: "top_tier", label: "Top-tier models", icon: Gem, placement: "menu", group: "access", live: true },
+  { id: "onboarded", label: "Onboarding", icon: UserCog, placement: "menu", group: "access", live: true },
+  { id: "sign_out_everywhere", label: "Sign out everywhere…", icon: LogOut, placement: "menu", group: "danger", danger: true, live: false },
+  { id: "close", label: "Close account…", icon: UserX, placement: "menu", group: "danger", danger: true, live: true },
+  { id: "reopen", label: "Reopen account", icon: UserCheck, placement: "menu", group: "danger", live: true },
+];
+
+const GROUP_ORDER: readonly UserActionGroup[] = ["contact", "plan", "access", "danger"];
+
+/** Live actions for one placement, in menu order (danger last). */
+export function userActions(placement: UserActionDef["placement"]): UserActionDef[] {
+  return USER_ACTIONS.filter((a) => a.live && a.placement === placement).sort(
+    (a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group),
+  );
+}
+
+export function userActionDef(id: UserActionId): UserActionDef {
+  const def = USER_ACTIONS.find((a) => a.id === id);
+  if (!def) throw new Error(`userSurfaces: no action "${id}"`);
+  return def;
+}
