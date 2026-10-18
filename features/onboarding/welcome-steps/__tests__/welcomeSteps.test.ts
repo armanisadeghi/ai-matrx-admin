@@ -1,9 +1,11 @@
 import { firstStep, nextStep, meetMatrxSeen, MEET_MATRX_SEEN_KEY } from "../welcomeSteps";
 
 describe("the sign-up welcome is one sequence", () => {
-  it("a new account starts with who they are, whether or not it has met Matrx", () => {
-    expect(firstStep({ newUser: true, meetSeen: false })).toBe("identity");
-    expect(firstStep({ newUser: true, meetSeen: true })).toBe("identity");
+  it("nothing waits on the found search: a new account never starts on identity unless it asked for it", () => {
+    expect(firstStep({ newUser: true, meetSeen: false })).toBe("age");
+    expect(firstStep({ newUser: true, meetSeen: true })).toBe("age");
+    expect(firstStep({ newUser: false, meetSeen: true, foundAsked: true })).toBe("identity");
+    expect(firstStep({ newUser: true, meetSeen: false, foundAsked: true })).toBe("identity");
   });
 
   it("a returning person who has not met Matrx meets it once; one who has goes straight to the tiles", () => {

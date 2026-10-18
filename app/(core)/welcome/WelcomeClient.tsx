@@ -108,15 +108,18 @@ const OPTIONS: WelcomeOption[] = [
 export function WelcomeClient({
   firstName,
   newUser,
+  foundAsked = false,
   meetSeen,
 }: {
   firstName: string | null;
   newUser: boolean;
+  /** `/welcome?found=1`: the "here's what we found" step, only when asked for (it never blocks the way in). */
+  foundAsked?: boolean;
   meetSeen: boolean;
 }) {
   const router = useRouter();
   // One step on screen at a time. The server already knows the start (new account / met Matrx), so there is no flash.
-  const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen }));
+  const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen, foundAsked }));
   const [met, setMet] = useState(meetSeen);
   // Whether the age question is still owed: read while the identity step is on screen, so the age step is already
   // decided when it is reached. Only a new account is ever walked through it here.
