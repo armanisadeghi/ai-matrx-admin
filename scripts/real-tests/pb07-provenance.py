@@ -2,14 +2,9 @@
 # matrx-agent-traffic: exempt reads the database only (direct Postgres, read-only SELECTs); sends nothing to the server
 """Grader helper for real test PB-07 (core-chain, nothing undeclared reaches the model).
 
-<<<<<<< HEAD
 It is NOT a test and prints no pass or fail. It reads the stored wire requests and prints every finding,
 one line each (`door | where | kind | segment`), and nothing else. The grader judges. It never prints
 nothing for a state it could not read: a request shape it cannot parse prints `unparsed payload shape`.
-=======
-It is NOT a test and prints no pass or fail. It reads the stored wire requests and prints every text
-segment it cannot attribute, with its door and where it sits, and nothing else. The grader judges.
->>>>>>> origin/main
 Spec: common-docs/operations/real-tests/core-chain/PB-07-nothing-undeclared.md (allow-list, rules).
 
 Usage:
@@ -19,7 +14,6 @@ Usage:
   --model-view FILE                            the Builder Model view capture to check the allow-list
                                                against (default: DIR/builder-run.dry.json)
   --typed TEXT                                 the person's typed text (default: the sender's)
-<<<<<<< HEAD
   --self-test                                  feed one planted request per blind spot through the checks
                                                (no database); prints caught/MISSED per case, exit 1 on a miss
 
@@ -41,19 +35,6 @@ string is counted: absent prints `missing …`, more than once prints `duplicate
 The titler side job is graded on its own lines (`<door> side job: conversation titler`), never mixed with
 the agent under test: it must carry nothing the person did not type or fill in.
 Model output (assistant text, thinking, tool calls) is skipped.
-=======
-
-What it reads, per conversation: chat.request_snapshot.request_payload (the provider request as sent)
-and unified_payload (the platform's request before translation), every iteration; chat.conversation
-(to find a child started by agent_call, or the canary run started by a workflow or /try).
-
-A segment is attributed when it is (a) the canary's authored text, (b) a declared value (variable,
-context value, prompt block, the context policy's own label and description), (c) the person's typed
-text, byte-identical, alone in its content part, or (d) a block on the PLATFORM ALLOW-LIST whose text
-(after normalising timestamps, dates and the client surface name) also appears in the Builder Model
-view capture. A tool definition is attributed when the canary declares it or the same definition is in
-the Model view capture. Model output (assistant text, thinking, tool calls) and tool results are skipped.
->>>>>>> origin/main
 Database access: the five SUPABASE_MATRIX_* values in ../aidream/.env (read-only SELECTs).
 """
 from __future__ import annotations
@@ -62,24 +43,16 @@ import argparse
 import json
 import re
 import sys
-<<<<<<< HEAD
 from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-=======
-from datetime import datetime, timedelta
-from pathlib import Path
->>>>>>> origin/main
 
 CANARY_IDS = {"40379907-a685-4d59-93db-6533c5fdcb75", "76c1f930-3c08-40db-b156-6eeab958725d"}
 CALLER = "a9cf243e-90b3-435d-96e2-f21e56fe08f5"
 TYPED = "PB7-TYPED-5R1C Please send the canary line."
-<<<<<<< HEAD
 PERSON_EMAIL = "admin@admin.com"
 VARIABLE_VALUES = {"canary_code": "PB7-VAR-7Q2K"}  # what the person filled in (the sender's variables)
-=======
->>>>>>> origin/main
 
 # (a) authored text: the system template split at its placeholders; (b) declared values.
 AUTHORED = [
@@ -101,7 +74,6 @@ DECLARED_WRAPPERS = [
                r"(?:Canary context marker PB7-CTX-8W5N\.)?\s*</object>"),
 ]
 
-<<<<<<< HEAD
 # Frame sentences the platform writes around its blocks, pinned word for word (whitespace-normalised).
 # A changed sentence prints as unattributed: the grader decides whether it is a product change or an injection.
 FRAME_AL03 = (
@@ -142,30 +114,16 @@ UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 # EXACT rows count only when the block's normalised text also appears in the Builder Model view capture;
 # KIND rows (content varies per call by design) count when the Model view carries a block of the same
 # kind AND every value inside the block is attributed (KIND_CHECKS below).
-=======
-# (d) PLATFORM ALLOW-LIST — the pattern of each platform block; id = row in the playbook's allow-list.
-# EXACT rows count only when the block's normalised text also appears in the Builder Model view capture;
-# KIND rows (content varies per call by design: dates, the catalog cache, live values) count when the
-# Model view carries a block of the same kind.
->>>>>>> origin/main
 KIND_ROWS = ("AL-01", "AL-02", "AL-04", "AL-05", "AL-07", "AL-08")
 ALLOW = [
     ("AL-01 date block", re.compile(r"<!--matrx:current_date-->.*?<!--matrx:/current_date-->", re.S)),
     ("AL-02 organization catalog", re.compile(r"<org_catalog\b.*?</org_catalog>", re.S)),
-<<<<<<< HEAD
     ("AL-03 turn-context frame note", re.compile(re.escape(FRAME_AL03))),
     ("AL-03 turn-context frame close", re.compile(r"</turn_context>")),
     ("AL-04 live time line", re.compile(r"The current moment is .*?(?=\n\n|\n<|$)", re.S)),
     ("AL-05 active context", re.compile(r"<active_context>.*?</active_context>", re.S)),
     ("AL-06 available-context frame", re.compile(
         r'<available_context>\s*<inline note="' + re.escape(INLINE_NOTE) + r'">|</inline>\s*</available_context>', re.S)),
-=======
-    ("AL-03 turn-context frame note", re.compile(r'<turn_context source="platform">\s*Reference material the AI Matrx platform.*?(?=\n\n)', re.S)),
-    ("AL-03 turn-context frame close", re.compile(r"</turn_context>")),
-    ("AL-04 live time line", re.compile(r"The current moment is .*?(?=\n\n|\n<|$)", re.S)),
-    ("AL-05 active context", re.compile(r"<active_context>.*?</active_context>", re.S)),
-    ("AL-06 available-context frame", re.compile(r'<available_context>\s*<inline note="[^"]*">|</inline>\s*</available_context>', re.S)),
->>>>>>> origin/main
     ("AL-07 ambient value user", re.compile(r'<object key="user" label="User" format="json">.*?</object>', re.S)),
     ("AL-07 ambient value client", re.compile(r'<object key="client" label="Client" format="json">.*?</object>', re.S)),
     ("AL-08 earlier-turn context", re.compile(r"<earlier_turn_context>.*?</earlier_turn_context>", re.S)),
@@ -191,7 +149,6 @@ def norm(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-<<<<<<< HEAD
 def ws(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
@@ -385,8 +342,6 @@ def kind_inner(label: str, block: str, typed: str) -> List[str]:
     return [block]
 
 
-=======
->>>>>>> origin/main
 # ── database ────────────────────────────────────────────────────────────────────────────────────────
 def connect():
     import psycopg  # aidream's environment has it: run with ../aidream/.venv/bin/python if python3 lacks it
@@ -401,31 +356,19 @@ def connect():
                            password=env["SUPABASE_MATRIX_PASSWORD"], sslmode="require")
 
 
-<<<<<<< HEAD
 def q(conn, sql: str, args: tuple) -> List[dict]:
-=======
-def q(conn, sql: str, args: tuple) -> list[dict]:
->>>>>>> origin/main
     with conn.cursor() as c:
         c.execute(sql, args)
         cols = [d.name for d in c.description]
         return [dict(zip(cols, r)) for r in c.fetchall()]
 
 
-<<<<<<< HEAD
 def snapshots(conn, cid: str) -> List[dict]:
-=======
-def snapshots(conn, cid: str) -> list[dict]:
->>>>>>> origin/main
     return q(conn, "select iteration, provider, created_at, request_payload, unified_payload from chat.request_snapshot "
                    "where conversation_id = %s and deleted_at is null order by created_at, iteration", (cid,))
 
 
-<<<<<<< HEAD
 def find_canary_conversation(conn, agent_id: str, after: str, exclude: set) -> Optional[str]:
-=======
-def find_canary_conversation(conn, agent_id: str, after: str, exclude: set[str]) -> str | None:
->>>>>>> origin/main
     t = datetime.fromisoformat(after) - timedelta(seconds=5)
     rows = q(conn, "select id::text from chat.conversation where initial_agent_id = %s and created_at >= %s "
                    "order by created_at", (agent_id, t))
@@ -435,7 +378,6 @@ def find_canary_conversation(conn, agent_id: str, after: str, exclude: set[str])
     return None
 
 
-<<<<<<< HEAD
 def child_conversation(conn, parent: str) -> Optional[str]:
     """The canary conversation the caller started. Only a child whose agent IS a canary: the parent's
     titler side job is a child too, and is created first."""
@@ -608,38 +550,6 @@ def units(body: Any) -> Units:
         u.problems.append(("unparsed payload shape", f"no system text and no user message found | keys: {sorted(body)}"))
         u.unparsed = True
     return u
-=======
-def child_conversation(conn, parent: str) -> str | None:
-    rows = q(conn, "select id::text from chat.conversation where parent_conversation_id = %s order by created_at", (parent,))
-    return rows[0]["id"] if rows else None
-
-
-# ── the wire request, as text units ────────────────────────────────────────────────────────────────
-def units(body: dict) -> tuple[list[tuple[str, str]], list[tuple[str, list]], list[dict]]:
-    """(system units [(where, text)], user messages [(where, parts)], tools [dict])."""
-    system: list[tuple[str, str]] = []
-    users: list[tuple[str, list]] = []
-    sysv = body.get("system")
-    if isinstance(sysv, str):
-        system.append(("system", sysv))
-    elif isinstance(sysv, list):
-        for i, p in enumerate(sysv):
-            if isinstance(p, dict) and p.get("type") == "text":
-                system.append((f"system[{i}]", p.get("text", "")))
-    for i, m in enumerate(body.get("messages") or body.get("contents") or []):
-        role = m.get("role")
-        content = m.get("content", m.get("parts"))
-        parts = content if isinstance(content, list) else [{"type": "text", "text": content or ""}]
-        texts = [p.get("text", "") if isinstance(p, dict) else str(p) for p in parts
-                 if not isinstance(p, dict) or p.get("type") in (None, "text", "input_text")]
-        if role in ("system", "developer"):
-            system += [(f"messages[{i}] ({role})", t) for t in texts]
-        elif role == "user":
-            users.append((f"messages[{i}] (user)", texts))
-        # assistant text/thinking/tool calls = the model's own output; tool results = what tools returned
-    tools = body.get("tools") or []
-    return system, users, tools
->>>>>>> origin/main
 
 
 def tool_name(t: dict) -> str:
@@ -651,11 +561,7 @@ def tool_text(t: dict) -> str:
     inside its parameter schema (schema dialects differ per provider; their prose must not)."""
     f = t.get("function") or t
     schema = f.get("input_schema") or f.get("parameters") or {}
-<<<<<<< HEAD
     found: List[str] = []
-=======
-    found: list[str] = []
->>>>>>> origin/main
 
     def walk(node):
         if isinstance(node, dict):
@@ -672,7 +578,6 @@ def tool_text(t: dict) -> str:
     return norm(json.dumps({"name": tool_name(t), "description": f.get("description", ""), "params": sorted(found)}))
 
 
-<<<<<<< HEAD
 # ── the checks ─────────────────────────────────────────────────────────────────────────────────────
 def consume(text: str, model_view: Optional[str], report: List[str], where: str, door: str, typed: str = "") -> None:
     """Remove every attributable span from ``text``; print what is left, and what is left inside blocks."""
@@ -689,23 +594,6 @@ def consume(text: str, model_view: Optional[str], report: List[str], where: str,
             if label.startswith(KIND_ROWS):
                 for piece in kind_inner(label, block, typed):
                     report.append(f"{door} | {where} | unattributed inside {label} | {piece}")
-=======
-def consume(text: str, model_view: str | None, report: list[str], where: str, door: str) -> None:
-    """Remove every attributable span from ``text``; print what is left."""
-    rest = text
-    for label, pat in ALLOW:
-        for m in list(pat.finditer(rest)):
-            block = m.group(0)
-            if label.startswith("AL-10"):
-                continue  # whole manifest is only a frame; its parts are judged one by one below
-            if model_view is not None:
-                if label.startswith(KIND_ROWS):
-                    shown = label in MV_LABELS
-                else:
-                    shown = norm(block) in model_view
-                if not shown:
-                    report.append(f"{door} | {where} | {label} not in the Builder Model view | {block.strip()}")
->>>>>>> origin/main
             rest = rest.replace(block, "\n", 1)
     for pat in DECLARED_WRAPPERS:
         rest = pat.sub("\n", rest)
@@ -713,7 +601,6 @@ def consume(text: str, model_view: str | None, report: list[str], where: str, do
         rest = rest.replace(value, "\n")
     for frag in AUTHORED:
         rest = rest.replace(frag, "\n")
-<<<<<<< HEAD
     for seg in [s.strip() for s in re.split(r"\n\s*\n", rest) if s.strip()]:
         report.append(f"{door} | {where} | unattributed | {seg}")
 
@@ -754,20 +641,6 @@ def check_request(door: str, body: Any, typed: str, model_view: Optional[str], m
         consume(text, model_view, report, where, door, typed)
     found_typed = False
     for where, parts in u.users:
-=======
-    leftover = [seg.strip() for seg in re.split(r"\n\s*\n", rest) if seg.strip()]
-    for seg in leftover:
-        report.append(f"{door} | {where} | unattributed | {seg}")
-
-
-def check_request(door: str, body: dict, typed: str, model_view: str | None, mv_tools: dict[str, str] | None,
-                  report: list[str]) -> None:
-    system, users, tools = units(body)
-    for where, text in system:
-        consume(text, model_view, report, where, door)
-    found_typed = False
-    for where, parts in users:
->>>>>>> origin/main
         for j, part in enumerate(parts):
             loc = f"{where} part {j}"
             if part == typed:
@@ -779,16 +652,11 @@ def check_request(door: str, body: dict, typed: str, model_view: str | None, mv_
                 report.append(f"{door} | {loc} | appended to the person's turn | {extra}")
                 continue
             if part.lstrip().startswith('<turn_context source="platform">'):
-<<<<<<< HEAD
                 consume(part, model_view, report, loc, door, typed)
-=======
-                consume(part, model_view, report, loc, door)
->>>>>>> origin/main
             else:
                 report.append(f"{door} | {loc} | user-role text the person did not type | {part.strip()}")
     if typed and not found_typed:
         report.append(f"{door} | messages | the person's typed text is missing or altered | expected: {typed}")
-<<<<<<< HEAD
     for where, kind, text in u.others:
         if kind == "tool_result":
             report.append(f"{door} | {where} | tool result (what a tool returned; not attributable here) | {text}")
@@ -798,9 +666,6 @@ def check_request(door: str, body: dict, typed: str, model_view: str | None, mv_
             report.append(f"{door} | {where} | non-text part ({kind[6:] if kind.startswith('other:') else kind}) | {text}")
     count_check(door, [t for _, t in u.system] + [p for _, ps in u.users for p in ps], typed, report)
     for t in u.tools:
-=======
-    for t in tools:
->>>>>>> origin/main
         name = tool_name(t)
         if mv_tools is None:
             report.append(f"{door} | tools | tool not declared by the canary (no Model view to compare) | {name}")
@@ -810,7 +675,6 @@ def check_request(door: str, body: dict, typed: str, model_view: str | None, mv_
             report.append(f"{door} | tools | tool definition differs from the Builder Model view | {name}")
 
 
-<<<<<<< HEAD
 def check_unified(door: str, unified: Any, typed: str, report: List[str]) -> None:
     if not isinstance(unified, dict):
         report.append(f"{door} | unified_payload | unparsed payload shape | {type(unified).__name__} | {repr(unified)[:300]}")
@@ -890,51 +754,10 @@ def model_view_of(path: Optional[Path]) -> Tuple[Optional[str], Optional[Dict[st
     body = json.loads(json.loads(path.read_text())["raw_response"])["request"]["body"]
     u = units(body)
     raw = [t for _, t in u.system] + [p for _, ps in u.users for p in ps]
-=======
-def check_unified(door: str, unified: dict, typed: str, report: list[str]) -> None:
-    config = (unified or {}).get("config") or {}
-    for i, m in enumerate(config.get("messages") or []):
-        if m.get("role") != "user":
-            continue
-        for j, p in enumerate(m.get("content") or []):
-            text = p.get("text") if isinstance(p, dict) else None
-            if text is not None and text != typed:
-                report.append(f"{door} | unified_payload.config.messages[{i}] part {j} | user-role text the person did not type | {text.strip()}")
-
-
-def first_parity(door: str, real: dict, dry: dict, report: list[str]) -> None:
-    """The preview and the real first request, compared text unit by text unit (normalised)."""
-    def bag(body: dict) -> list[str]:
-        system, users, tools = units(body)
-        out = [norm(t) for _, t in system]
-        for _, parts in users:
-            out += [norm(p) for p in parts]
-        out += ["tool " + tool_name(t) for t in tools]
-        return out
-    a, b = bag(real), bag(dry)
-    for seg in a:
-        if seg not in b:
-            report.append(f"{door} | parity | in the real request, not in its dry run | {seg}")
-    for seg in b:
-        if seg not in a:
-            report.append(f"{door} | parity | in the dry run, not in the real request | {seg}")
-
-
-MV_LABELS: set[str] = set()
-
-
-def model_view_of(path: Path | None) -> tuple[str | None, dict[str, str] | None, dict | None]:
-    if not path or not path.exists():
-        return None, None, None
-    body = json.loads(json.loads(path.read_text())["raw_response"])["request"]["body"]
-    system, users, tools = units(body)
-    raw = [t for _, t in system] + [p for _, ps in users for p in ps]
->>>>>>> origin/main
     for label, pat in ALLOW:
         if any(pat.search(t) for t in raw):
             MV_LABELS.add(label)
     text = " ".join(norm(t) for t in raw)
-<<<<<<< HEAD
     return text, {tool_name(t): tool_text(t) for t in u.tools}, body
 
 
@@ -967,18 +790,10 @@ def print_report(report: List[str]) -> None:
 def main() -> None:
     global WORLD
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
-=======
-    return text, {tool_name(t): tool_text(t) for t in tools}, body
-
-
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
->>>>>>> origin/main
     ap.add_argument("conversations", nargs="*")
     ap.add_argument("--run")
     ap.add_argument("--model-view")
     ap.add_argument("--typed", default=TYPED)
-<<<<<<< HEAD
     ap.add_argument("--self-test", action="store_true", help="planted payloads through the checks; no database")
     args = ap.parse_args()
     if args.self_test:
@@ -998,19 +813,6 @@ def main() -> None:
     todo: List[Tuple[str, str, str]] = [("conversation", c, args.typed) for c in args.conversations]
     side: List[Tuple[str, str, str]] = []  # (door, parent conversation, typed) whose titler runs are graded
     dries: Dict[str, Path] = {}
-=======
-    args = ap.parse_args()
-    run = Path(args.run) if args.run else None
-    mv_path = Path(args.model_view) if args.model_view else (run / "builder-run.dry.json" if run else None)
-    model_view, mv_tools, _ = model_view_of(mv_path)
-    report: list[str] = []
-    if model_view is None:
-        report.append(f"(no Builder Model view capture at {mv_path}: platform blocks are matched by pattern only)")
-    conn = connect()
-
-    todo: list[tuple[str, str, str]] = [("conversation", c, args.typed) for c in args.conversations]
-    dries: dict[str, Path] = {}
->>>>>>> origin/main
     if run:
         manifest = json.loads((run / "manifest.json").read_text())
         claimed = {e["conversation_id"] for e in manifest.values() if e.get("conversation_id")}
@@ -1022,10 +824,7 @@ def main() -> None:
             if e["door"] in ("mandate-try", "workflow"):
                 cid = find_canary_conversation(conn, e["agent_id"], e["sent_at"], claimed)
             elif e["door"] == "agent-call" and cid:
-<<<<<<< HEAD
                 side.append((e["door"] + " (caller)", cid, e.get("typed") or args.typed))
-=======
->>>>>>> origin/main
                 cid = child_conversation(conn, cid)
             if not cid:
                 report.append(f"{e['door']} | - | no conversation found for this door (HTTP {e['status']})")
@@ -1042,18 +841,13 @@ def main() -> None:
             typed = None  # the child's turn is the caller model's agent_call user_input, read below
             parent = q(conn, "select parent_conversation_id::text p from chat.conversation where id = %s", (cid,))
             for s in snapshots(conn, parent[0]["p"]) if parent and parent[0]["p"] else []:
-<<<<<<< HEAD
                 for m in (s["request_payload"] or {}).get("messages") or [] if isinstance(s["request_payload"], dict) else []:
-=======
-                for m in (s["request_payload"] or {}).get("messages") or []:
->>>>>>> origin/main
                     for p in m.get("content") or [] if isinstance(m.get("content"), list) else []:
                         if isinstance(p, dict) and p.get("type") == "tool_use" and p.get("name") == "agent_call":
                             typed = (p.get("input") or {}).get("user_input")
             if typed is None:
                 report.append(f"{door} | {cid} | the caller's agent_call user_input was not found in the caller's snapshots")
                 typed = ""
-<<<<<<< HEAD
         side.append((door, cid, typed))
         for s in snaps:
             label = f"{door} [{cid[:8]} it{s['iteration']} {s['provider']}]"
@@ -1068,15 +862,6 @@ def main() -> None:
             for s in snapshots(conn, sid):
                 check_side_job(f"{door} [{sid[:8]} it{s['iteration']} {s['provider']}]", s["request_payload"], typed,
                                VARIABLE_VALUES, report)
-=======
-        for s in snaps:
-            label = f"{door} [{cid[:8]} it{s['iteration']} {s['provider']}]"
-            check_request(label, s["request_payload"] or {}, typed, model_view, mv_tools, report)
-            check_unified(label, s["unified_payload"] or {}, typed, report)
-        if door in dries:
-            dry_body = json.loads(json.loads(dries[door].read_text())["raw_response"])["request"]["body"]
-            first_parity(door, snaps[0]["request_payload"] or {}, dry_body, report)
->>>>>>> origin/main
 
     for door, path in dries.items():
         rec = json.loads(path.read_text())
@@ -1086,7 +871,6 @@ def main() -> None:
         body = json.loads(rec["raw_response"])["request"]["body"]
         check_request(f"{door} (dry run)", body, args.typed, model_view, mv_tools, report)
 
-<<<<<<< HEAD
     print_report(report)
 
 
@@ -1283,14 +1067,6 @@ def self_test() -> int:
         missed += 0 if ok else 1
     print(f"self-test: {missed} missed")
     return missed
-=======
-    seen: set[str] = set()
-    for line in report:
-        if line not in seen:
-            seen.add(line)
-            print(line)
-    sys.stdout.flush()
->>>>>>> origin/main
 
 
 if __name__ == "__main__":

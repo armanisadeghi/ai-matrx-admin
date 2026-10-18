@@ -3,13 +3,8 @@
 """Send real test PB-07 (core-chain, nothing undeclared reaches the model) to the LIVE server as admin@admin.com.
 
 It only SENDS. It asserts nothing and prints no pass or fail: a runner executes it, a grader runs
-<<<<<<< HEAD
 pb07-provenance.py over the output directory. Before it sends it prints and saves (run-identity.json) the
 live server's commit, the UTC start time and the fixture ids it uses.
-=======
-pb07-provenance.py over the output directory. Spec: common-docs/operations/real-tests/core-chain/
-PB-07-nothing-undeclared.md; fixture ids: core-chain LEDGER.md "PB-07 fixtures".
->>>>>>> origin/main
 
 The same typed message and the same variable value go through every door, one call per door. For each
 door that has a dry run, the same body is also sent with `dry_run: true` (no model call, nothing stored)
@@ -35,15 +30,6 @@ Usage:
   pb07-send.py                      every door, real call then dry run
   pb07-send.py --only chat          one door
   pb07-send.py --dry-only           dry runs only (no model call, nothing stored): install check
-<<<<<<< HEAD
-=======
-  pb07-send.py --fault              FAULT RUN: turns ON the system note render_environment_note for the canary
-                                    (its agent-level knob agents.context.system_notes_disabled goes from
-                                    ["render_environment_note"] to []), waits 70 s (the knob cache is 60 s),
-                                    sends the chat door (real + dry, saved as "chat-fault"), then RESTORES the
-                                    knob and prints the value it holds again
-  pb07-send.py --restore            write the canary's knob back to ["render_environment_note"] and print it
->>>>>>> origin/main
   pb07-send.py --out DIR            write the files to DIR (default: a new temp dir)
 
 Writes one JSON file per call (<door>.json, <door>.dry.json) and manifest.json (door -> conversation id,
@@ -54,25 +40,17 @@ from __future__ import annotations
 
 import argparse
 import json
-<<<<<<< HEAD
 import sys
 import tempfile
-=======
-import tempfile
-import time
->>>>>>> origin/main
 import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-<<<<<<< HEAD
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
 
-=======
->>>>>>> origin/main
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests
 CANARY = "40379907-a685-4d59-93db-6533c5fdcb75"  # "PB-07 Canary" — Claude Haiku 5.5
@@ -174,11 +152,6 @@ def build(door: str) -> tuple[str, dict, str, str | None]:
         return f"/ai/agents/{CANARY}", agent_body(cid, None), CANARY, cid
     if door == "builder-run":
         return "/ai/manual", manual_body(cid, "matrx-user/agent-builder"), CANARY, cid
-<<<<<<< HEAD
-=======
-    if door == "chat-fault":
-        return f"/ai/agents/{CANARY}", agent_body(cid, "matrx-user/chat"), CANARY, cid
->>>>>>> origin/main
     if door == "mandate-client":
         return f"/ai/mandates/{MANDATE}", agent_body(cid, None), CANARY, cid
     if door == "mandate-try":
@@ -195,29 +168,6 @@ def build(door: str) -> tuple[str, dict, str, str | None]:
     raise SystemExit(f"unknown door {door}")
 
 
-<<<<<<< HEAD
-=======
-BASELINE_NOTES_OFF = ["render_environment_note"]
-
-
-def set_notes_off(token: str, value: list[str]) -> str:
-    """Write the canary's agent-level knob agents.context.system_notes_disabled (platform.knob_override_set)."""
-    env = _env()
-    req = urllib.request.Request(
-        env["NEXT_PUBLIC_SUPABASE_URL"] + "/rest/v1/rpc/knob_override_set", method="POST",
-        data=json.dumps({"p_feature": "agents.context", "p_key": "system_notes_disabled", "p_scope_kind": "agent",
-                         "p_scope_id": CANARY, "p_organization_id": ORG, "p_value": value,
-                         "p_note": "Real-tests PB-07: baseline render_environment_note off; the fault turns it on"}).encode(),
-        headers={"Authorization": "Bearer " + token, "apikey": env["NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"],
-                 "Content-Type": "application/json", "Content-Profile": "platform", "Accept-Profile": "platform"},
-    )
-    try:
-        return urllib.request.urlopen(req).read().decode()
-    except urllib.error.HTTPError as e:
-        return f"HTTP {e.code} {e.read().decode()}"
-
-
->>>>>>> origin/main
 def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
     path, body, agent, cid = build(door)
     if kind == "dry":
@@ -239,23 +189,14 @@ def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
 
 
 def main() -> None:
-<<<<<<< HEAD
     ap = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     ap.add_argument("--only", choices=DOORS, help="send one door")
     ap.add_argument("--dry-only", action="store_true", help="dry runs only (no model call, nothing stored)")
-=======
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--only", choices=DOORS, help="send one door")
-    ap.add_argument("--dry-only", action="store_true", help="dry runs only (no model call, nothing stored)")
-    ap.add_argument("--fault", action="store_true", help="fault run: system note on for the canary, chat door, restore")
-    ap.add_argument("--restore", action="store_true", help="restore the canary's system-note knob")
->>>>>>> origin/main
     ap.add_argument("--out", help="directory for the files (default: a new temp dir)")
     args = ap.parse_args()
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb07-"))
     out.mkdir(parents=True, exist_ok=True)
     manifest = json.loads((out / "manifest.json").read_text()) if (out / "manifest.json").exists() else {}
-<<<<<<< HEAD
     record_run_identity("pb07-send", SERVER, {"organization": ORG, "canary": CANARY, "canary_together": CANARY_T,
                                               "caller": CALLER, "workflow": WORKFLOW, "mandate": MANDATE, "scope": SCOPE,
                                               "model": HAIKU}, out)
@@ -265,27 +206,6 @@ def main() -> None:
             record(out, manifest, door, "real", token)
         if door in HAS_DRY:
             record(out, manifest, door, "dry", token)
-=======
-    token = admin_token()
-    if args.restore:
-        print(set_notes_off(token, BASELINE_NOTES_OFF))
-        return
-    if args.fault:
-        print("fault planted:", set_notes_off(token, []), flush=True)
-        try:
-            time.sleep(70)
-            if not args.dry_only:
-                record(out, manifest, "chat-fault", "real", token)
-            record(out, manifest, "chat-fault", "dry", token)
-        finally:
-            print("restored:", set_notes_off(token, BASELINE_NOTES_OFF))
-    else:
-        for door in [args.only] if args.only else DOORS:
-            if not args.dry_only:
-                record(out, manifest, door, "real", token)
-            if door in HAS_DRY:
-                record(out, manifest, door, "dry", token)
->>>>>>> origin/main
     print(f"files in {out}")
 
 
