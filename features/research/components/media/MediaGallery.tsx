@@ -157,7 +157,9 @@ export default function MediaGallery() {
   return (
     <div className="p-3 sm:p-4 space-y-4">
       <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
-        <span className="type-secondary font-medium text-foreground/80">Media</span>
+        <span className="type-secondary font-medium text-foreground/80">
+          Media
+        </span>
         <span className="type-meta text-muted-foreground tabular-nums">
           <UntrustedCount
             read={readOf({ isLoading: mediaLoading, error: mediaError })}
@@ -203,7 +205,10 @@ export default function MediaGallery() {
           />
         </div>
         <Select value={relevanceFilter} onValueChange={setRelevanceFilter}>
-          <SelectTrigger variant="bare" className="w-[4.75rem] matrx-glass-card shrink-0">
+          <SelectTrigger
+            variant="bare"
+            className="w-[4.75rem] matrx-glass-card shrink-0"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
@@ -219,7 +224,10 @@ export default function MediaGallery() {
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger variant="bare" className="w-[6.25rem] matrx-glass-card shrink-0">
+          <SelectTrigger
+            variant="bare"
+            className="w-[6.25rem] matrx-glass-card shrink-0"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="text-[11px]">
@@ -715,7 +723,8 @@ function ResourceCard({
   const Icon = TYPE_ICONS[item.media_type as keyof typeof TYPE_ICONS] ?? File;
   const kind = resourceKind(item);
   const owned = isOwnedMedia(item);
-  const label = item.alt_text || item.caption || (owned ? "Uploaded artifact" : item.url);
+  const label =
+    item.alt_text || item.caption || (owned ? "Uploaded artifact" : item.url);
 
   return (
     <div
@@ -826,11 +835,15 @@ function YouTubeVideoCard({
   // the tab a player per card.
   const [playing, setPlaying] = useState(false);
   const title =
-    identity?.title || item.alt_text || item.caption || hostLabel(item.url) || item.url;
-  const poster = identity?.thumbnail_url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    identity?.title || item.alt_text || item.caption || "YouTube video";
+  const poster =
+    identity?.thumbnail_url ||
+    `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
   const meta = [
     identity?.channel_title,
-    identity?.view_count != null ? `${formatYouTubeCount(identity.view_count)} views` : null,
+    identity?.view_count != null
+      ? `${formatYouTubeCount(identity.view_count)} views`
+      : null,
     identity?.duration ? formatYouTubeDuration(identity.duration) : null,
   ].filter(Boolean);
 
@@ -857,17 +870,24 @@ function YouTubeVideoCard({
             className="absolute inset-0"
             aria-label={`Play ${title}`}
           >
-            <img src={poster} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <img
+              src={poster}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
             <span className="absolute inset-0 flex items-center justify-center">
               {/* ui-exception: play glyph sits on a photo — fixed white on a dark scrim. */}
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 transition-colors group-hover:bg-black/75">
                 <Play className="h-5 w-5 text-white" />
               </span>
             </span>
-            <VideoPublishDate
-              publishedAt={identity?.published_at}
-              className="pointer-events-none absolute bottom-1.5 left-1.5 z-10 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
-            />
+            {identity?.published_at && (
+              <VideoPublishDate
+                publishedAt={identity.published_at}
+                className="pointer-events-none absolute bottom-1.5 left-1.5 z-10 rounded bg-black/75 px-1 py-0.5 text-white shadow-sm"
+              />
+            )}
           </button>
         )}
       </div>
@@ -877,7 +897,9 @@ function YouTubeVideoCard({
             {title}
           </p>
           {meta.length > 0 && (
-            <p className="mt-0.5 truncate type-meta text-muted-foreground">{meta.join(" · ")}</p>
+            <p className="mt-0.5 truncate type-meta text-muted-foreground">
+              {meta.join(" · ")}
+            </p>
           )}
         </div>
         <OutboundLink
@@ -895,7 +917,11 @@ function YouTubeVideoCard({
         className="absolute right-1.5 top-1.5 z-10 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100"
         onClick={() => onToggleRelevance(item)}
       >
-        {item.is_relevant ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+        {item.is_relevant ? (
+          <Check className="h-3 w-3" />
+        ) : (
+          <X className="h-3 w-3" />
+        )}
       </Button>
     </div>
   );
@@ -1153,26 +1179,42 @@ function VideoSection({
         description="Press a video to play it here"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-        {items.map((item) => {
-          const videoId = parseYouTubeUrl(item.url)?.videoId;
-          return (
-            <VideoCard
-              key={item.id}
-              item={item}
-              videoIdentity={videoId ? identityForId(videoId) : undefined}
-              onToggleRelevance={onToggleRelevance}
-            />
-          );
-        })}
+        {/* Videos we know (a library row: title, channel, views) lead; bare embeds follow. */}
+        {[...items]
+          .sort((a, b) => {
+            const known = (item: ResearchMedia) => {
+              const id = parseYouTubeUrl(item.url)?.videoId;
+              return id && identityForId(id) ? 0 : 1;
+            };
+            return known(a) - known(b);
+          })
+          .map((item) => {
+            const videoId = parseYouTubeUrl(item.url)?.videoId;
+            return (
+              <VideoCard
+                key={item.id}
+                item={item}
+                videoIdentity={videoId ? identityForId(videoId) : undefined}
+                onToggleRelevance={onToggleRelevance}
+              />
+            );
+          })}
       </div>
     </section>
   );
 }
 
-function DocIcon({ item, className }: { item: ResearchMedia; className?: string }) {
+function DocIcon({
+  item,
+  className,
+}: {
+  item: ResearchMedia;
+  className?: string;
+}) {
   const ext = fileExt(item.url);
   const kind = resourceKind(item);
-  if (ext === "pdf" || kind === "pdf") return <FileText className={className} />;
+  if (ext === "pdf" || kind === "pdf")
+    return <FileText className={className} />;
   if (["csv", "tsv", "xls", "xlsx", "ods"].includes(ext) || kind === "csv")
     return <FileSpreadsheet className={className} />;
   if (["doc", "docx", "ppt", "pptx", "odt", "rtf", "txt"].includes(ext))
