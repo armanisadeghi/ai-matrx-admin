@@ -49,6 +49,11 @@ describe("the name follows from the goal", () => {
   it("reads the goal's first clause (same rule as the server)", () => {
     expect(nameFromGoal(goal)).toBe("Draft short, friendly replies to customer repair inquiries");
     expect(nameFromGoal("  ")).toBeNull();
+    expect(
+      nameFromGoal(
+        "Write a short, warm reply to an Etsy buyer's question about a Willow Creek Leather Co product (here: monogramming a bifold wallet).",
+      ),
+    ).toBe("Write a short, warm reply to an Etsy buyer's question");
   });
 
   it("fills an empty name when the person writes the goal, and never replaces their own name", () => {
