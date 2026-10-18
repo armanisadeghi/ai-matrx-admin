@@ -697,7 +697,9 @@ export function PipelineGraph() {
   return (
     <div className="p-2 space-y-3 min-w-0">
       {/* ── Control strip ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 p-1.5 pl-3 rounded-xl matrx-glass-thin-border">
+      {/* nowrap + wrap: on a phone the controls move to a second line whole,
+          never breaking "Auto" or "Run pipeline" mid-word. */}
+      <div className="flex flex-wrap items-center gap-2 whitespace-nowrap p-1.5 pl-3 rounded-xl matrx-glass-thin-border">
         {/* status dot */}
         <span
           className={cn(
