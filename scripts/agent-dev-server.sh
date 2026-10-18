@@ -173,6 +173,10 @@ MONITOR_REV=2
 MONITOR_FILE="$BASE.monitor"
 
 log() { printf '[preview] %s\n' "$1"; }
+# THE ONE pending-import checker (replaced the per-file loader, 2026-10-18): judges changed files for
+# @ai-matrx imports the installed package does not ship; next.config.js rescues only those files.
+# Single instance; `ensure` is idempotent and waits for its first scan. docs/perf/preview-import-checker.md
+ensure_pending_checker() { MATRX_PREVIEW_LOG="${LOG:-}" node "$REPO_ROOT/scripts/matrx-pending-checker.mjs" ensure >/dev/null 2>&1 || true; }
 fail() { printf '[preview] ERROR: %s\n' "$1" >&2; exit 1; }
 alive() { [[ "${1:-}" =~ ^[0-9]+$ ]] && kill -0 "$1" 2>/dev/null; }
 meta_value() { sed -n "s/^$1=//p" "$META" 2>/dev/null | head -1; }
@@ -752,6 +756,7 @@ resolve_next_bin() {
 cmd_start() {
   mkdir -p "$STATE_DIR"
   ensure_machine_guard
+  ensure_pending_checker
   clear_stale_state
   report_previous_failure
   # The other mode was asked for: switch an idle server, refuse a busy one.
@@ -1254,6 +1259,7 @@ cmd_monitor() {
       prune_holds
       sweep_orphan_browsers >/dev/null
       ensure_machine_guard
+      ensure_pending_checker
     fi
     is_held=0; held && is_held=1
     was_used=0; [[ -f "$TOUCHED" ]] && was_used=1
@@ -1355,6 +1361,7 @@ PY
     log "watchdog: an OLDER watchdog (or none) runs this server, so no memory reading and no stale cleanup — run: pnpm preview:monitor-repair"
   fi
   /usr/bin/python3 "$MACHINE_GUARD_PY" status --brief --prefix '[preview] ' 2>/dev/null || true
+  node "$REPO_ROOT/scripts/matrx-pending-checker.mjs" status 2>/dev/null | sed 's/^/[preview] /' || true
   local orphans
   orphans="$(sweep_orphan_browsers --dry-run 2>/dev/null)"
   [[ -z "$orphans" ]] || log "stale browsers the watchdog will close: $(printf '%s' "$orphans" | tr '\n' ';')"
@@ -1370,6 +1377,7 @@ PY
 
 cmd_status_one() {
   ensure_machine_guard
+  ensure_pending_checker
   clear_stale_state
   prune_holds
   if [[ -f "$META" ]]; then

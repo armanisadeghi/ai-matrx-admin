@@ -82,7 +82,7 @@ function loadRescueForDevServer(root) {
     console.error(`[matrx-pending] could not read the pending-import list; no rescue this boot: ${err?.message ?? err}`);
   }
   for (const f of files) console.error(`[matrx-pending] rescue active for ${f} (an @ai-matrx import its installed package does not ship)`);
-  return { files, rules: rescueRules(files, require.resolve(join(root, LOADER_REL))) };
+  return { files, rules: rescueRules(files, join(root, LOADER_REL)) };
 }
 
 const alive = (pid) => {
