@@ -71,6 +71,8 @@ function triageSources(
     const { live } = partitionItems(source.items, localMutes, now);
     live.forEach((item, i) => {
       if (triage === "unavailable") {
+        // A failed triage read must not turn the card into a dump: an info item is never an owner decision.
+        if (item.severity === "info") return;
         candidates.push({ source, item, rank: RANK[item.severity] * 10_000 + sourceIndex * 1_000 + i });
         return;
       }
