@@ -88,3 +88,38 @@ in the census timed out at 180 s. Rerun: `MATRX_PREVIEW_SESSION=speed-test-censu
      rpc `user_usage_state` · rpc `iam.core_boot_seed` · rpc `knob_snapshot_delta`.
   4. `check:route-metadata` flags `/speed-test` (no favicon entry) and `/administration/speed-test`
      (no letter). These were left on purpose: the shared favicon registry would add bytes to every route.
+
+## Shell calls on the empty signed-in page — before/after (2026-10-18, shell-calls lane)
+
+Measured on the shared preview (`MATRX_PREVIEW_SESSION=speed-test-census`, dev server: timings inflated,
+counts are what matter), `/speed-test` and `/chat/speed-test`, admin + member, 5 s idle after settle.
+`--caller-frames <n>` (new flag) shows the deeper initiator stack; it is how each opener below was found.
+
+| route | who | DB before settle | DB after settle |
+|---|---|---|---|
+| /speed-test | admin | 1 → **0** | 8 → 7 (requests incl. preflights) |
+| /speed-test | member | 1 → **0** | 8 → 7 |
+| /chat/speed-test | admin | 3 → 2 | 12 → 11 |
+| /chat/speed-test | member | 3 → 2 | 10 → 9 |
+
+`/chat` before-settle rows left are `route_seed` (chat layout lane) and the chat realtime opener (`onRealtimeManagerChange`), not shell.
+
+Empty `/speed-test`, every call, BEFORE → AFTER (preflights folded):
+
+| call | before | after | why / what changed |
+|---|---|---|---|
+| realtime WebSocket | before settle | after settle | Opened at boot by `PreferencesLiveSync` (`useChannel` on the person's `user_preferences` row). Now joins on `useLateIdleReady`, the same tier `PlatformDirectiveSubscriber` already used, so the one socket opens after settle. Kept: directives (refresh required, settings changed) and cross-tab preference edits need it. |
+| `/.well-known/jwks.json` | after | **gone** | The dev surface-row guard called raw `getClaimsUser(supabase)`, which fetched JWKS. It now uses `getClientClaimsUserCached` (pinned signing keys, no fetch). |
+| `/api/person/timezone` | after | **gone, route deleted** | It duplicated `PersonTimeZoneCapture`, which already writes the browser's `Intl` zone straight to the person's `user_preferences.display.timeZone` (the field `record_person_timezone` and the SMS gate read), only when it differs while following the device. The sign-in POST and the SMS-enrolment POST are both removed. |
+| `user_surface_state` | after (×1) | after (×1) | Kept: the summon persistence boot read (`OverlayServices` → `loadAll`) restores the windows a person left open (and seeds a new tab from their workspace). One read, deduped, minimum fields (`surface_key,state,version`). Making it lazy would need a "nothing saved" marker that breaks cross-device restore. |
+| `ui_surface ?name=eq.matrx-user/canvas` | after | after, **dev only** | `SurfaceRowGuard` returns at once when `NODE_ENV === "production"` and is now also not mounted in production; on dev it waits for the late tier. Never runs in a production build. |
+| rpc `shell_counts` | after | after | Kept: THE one lazy after-paint function (late tier, ~6 s after idle). Nothing else was left to fold into it: timezone needed no call at all. |
+| `/api/acquisition/first-touch` | after | after | Unchanged: already once per browser ever (`acquisition.first-touch-filed.browser` in localStorage, checked before the late tier). The census shows it because every census run is a brand-new browser. |
+
+Remaining on empty `/speed-test` in production after settle: socket, `user_surface_state`, `shell_counts`,
+and first-touch on a browser's first visit only. That is one over the ≤2 target: `user_surface_state` is the
+window-restore read. Observed once (admin run): a second WebSocket 1.4 s after the first with no app frames
+(looks like a reconnect); not reproduced for member.
+
+Guard: `app/__tests__/empty-page-shell-calls.test.ts` (fails 3/4 on the pre-change tree via
+`SHELL_CALLS_ROOT=<old tree>`, passes 4/4 now).
