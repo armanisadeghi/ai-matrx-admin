@@ -183,7 +183,7 @@ if ((await manage.count()) || (await cancelBtn.count())) {
   }
   await cp.screenshot({ path: shotPath("builders-17-ironclad-cancelled") });
   notes.push(
-    `after cancelling: ${(await cp.evaluate(() => document.body.innerText)).replace(/\n+/g, " | ").slice(0, 240)}`,
+    `after canceling: ${(await cp.evaluate(() => document.body.innerText)).replace(/\n+/g, " | ").slice(0, 240)}`,
   );
 } else {
   notes.push("after booking there was NO way to move or cancel on the visitor's page");
