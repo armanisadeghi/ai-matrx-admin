@@ -38,6 +38,7 @@ import { isPortalAccent, type PortalStyle as RecordsPortalStyle } from "@ai-matr
 import { prefillFromLink, publicForm, publicFormOptions, type PublicForm } from "@/features/forms/service";
 
 import { PublicFormRunner } from "./PublicFormRunner";
+import { paymentNoticeFor } from "@/features/payments/notice";
 
 function recordsFormLook(
   style: NonNullable<PublicForm["presentation"]["look"]> | null,
@@ -136,6 +137,7 @@ export default async function PublicFormPage({
           prefill={prefillFromLink(form, query).answers}
           linkQuery={query}
           autoAdvance={options.choice_auto_advance}
+          paymentNotice={await paymentNoticeFor(form.form_id, query, `/f/${formId}`)}
         />
       </FormLookFrame>
     </main>

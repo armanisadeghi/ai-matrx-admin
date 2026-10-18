@@ -37,6 +37,8 @@ import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
 import { publicBooking } from "@/features/booking/service";
 
 import { BookingPicker } from "@/features/booking/BookingPicker";
+import { PaymentNotice } from "@/features/payments/PaymentNotice";
+import { paymentNoticeFor } from "@/features/payments/notice";
 
 // What is free moves minute by minute, and nothing here is cacheable across people.
 export const dynamic = "force-dynamic";
@@ -62,27 +64,25 @@ export async function generateMetadata({
   };
 }
 
-// PAYMENTS-CONNECT: /api/payments/return sends the booker back here with ?payment=paid|cancelled|open,
-// settled from Stripe on the server first — the address bar is never what decides it was paid.
-const PAYMENT_NOTICE: Record<string, string> = {
-  cancelled: "Payment was not completed. Your time is booked but unpaid.",
-  open: "Your payment is still processing.",
-};
+// PAYMENTS-CONNECT: /api/payments/return sends the booker back here with ?payment=…&pid=<payment>.
+// What the page says is read from that payment on the server (features/payments/notice.ts,
+// REVIEW-PAYMENTS I4) — a hand-typed ?payment=paid shows nothing.
 
 export default async function PublicBookingPage({
   params,
   searchParams,
 }: {
   params: Promise<{ bookingId: string }>;
-  searchParams: Promise<{ payment?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { bookingId } = await params;
-  const { payment } = await searchParams;
+  const query = await searchParams;
   const page = await publicBooking(bookingId);
   if (!page) notFound();
+  const payment = await paymentNoticeFor(bookingId, query, `/b/${bookingId}`);
 
   // PAID IS THE END OF THE VISIT: say it is confirmed, not a fresh picker that reads as "book again".
-  if (payment === "paid") {
+  if (payment?.outcome === "paid") {
     return (
       <PublicLinkNotice title={page.title} message="Payment received. Your booking is confirmed.">
         <a href={`/b/${bookingId}`} className="text-sm text-muted-foreground underline underline-offset-4">
@@ -91,7 +91,6 @@ export default async function PublicBookingPage({
       </PublicLinkNotice>
     );
   }
-  const paymentNotice = typeof payment === "string" ? PAYMENT_NOTICE[payment] : undefined;
 
   // CLOSED, FULL AND SWITCHED OFF ARE NOT ERRORS, and they are not 404s either:
   // the link is real and the person following it deserves a sentence rather than
@@ -108,9 +107,9 @@ export default async function PublicBookingPage({
     // centre theirs, with the page's own name said once, here.
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col justify-center px-5 pb-safe pt-8 matrx-touch-targets">
       <h1 className="text-xl font-medium">{page.title}</h1>
-      {paymentNotice ? (
-        <div className="mt-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground" role="status">
-          {paymentNotice}
+      {payment ? (
+        <div className="mt-3">
+          <PaymentNotice {...payment} note="Your time is booked but unpaid." />
         </div>
       ) : null}
       {page.presentation?.intro ? (
