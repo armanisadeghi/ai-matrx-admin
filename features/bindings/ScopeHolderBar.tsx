@@ -612,7 +612,7 @@ export function ScopeHolderBar({
           <PropertyRow
             label="Organization"
             value={<StatusToken status="caution" label="Required" />}
-            help="Choose an organization before saving its binding."
+            help="An organization is needed to save its binding."
           />
         ) : null}
         {defaultHolderOffer && !pinnedList && !onDefaultHolderRung ? (

@@ -563,8 +563,7 @@ export function YouTubeDiscovery({
           {orgRequired && (
             <div className="mb-7">
               <OrganizationRequiredNotice
-                title="Choose an organization to search YouTube"
-                description="YouTube discovery saves every search to an organization. Pick one below and this screen picks up automatically."
+                what="YouTube discovery"
               />
             </div>
           )}

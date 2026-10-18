@@ -150,7 +150,7 @@ export function PartyCreateForm({
       // Fail closed and NAME the remedy — "try again in a moment" told somebody to
       // retry an action that would never start working on its own.
       toast.error(
-        "Choose an organization first — use the picker above the form.",
+        "Create an organization first.",
       );
       return;
     }
@@ -379,7 +379,7 @@ export function PartyCreateForm({
                   <span className="truncate">
                     {orgId
                       ? `Filing into ${activeOrgName ?? "the selected organization"}`
-                      : "Choose an organization"}
+                      : "Filing organization"}
                   </span>
                 </Button>
               }

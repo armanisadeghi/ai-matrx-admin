@@ -106,7 +106,7 @@ export function ScopesSettingsPanel() {
         <div className="text-sm font-medium">Per-org settings</div>
         <p className="text-[11px] text-muted-foreground">
           Privacy, sharing rules, and admin-level controls live on each org's
-          settings page. Pick an organization to jump in.
+          settings page. Open an organization to jump in.
         </p>
         <div className="space-y-1">
           {error && organizations.length === 0 ? (

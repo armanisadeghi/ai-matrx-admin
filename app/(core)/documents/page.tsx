@@ -80,7 +80,7 @@ export default function DocumentsLandingPage() {
       setCreating(false);
       toast({
         title: "Could not create document",
-        description: err instanceof Error ? err.message : "Select an organization before creating a document.",
+        description: err instanceof Error ? err.message : "Create an organization first.",
         variant: "destructive",
       });
       return;

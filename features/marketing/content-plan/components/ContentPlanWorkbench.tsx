@@ -825,8 +825,7 @@ export function ContentPlanWorkbench({
         {isOrganizationRequiredError(reality.error) ? (
           <div className="border-b border-border px-3 py-2">
             <OrganizationRequiredNotice
-              title="Choose an organization to run the reality check"
-              description="The plan-vs-reality comparison needs to know which organization to work in. Pick one below and it runs automatically."
+              what="The reality check"
             />
           </div>
         ) : null}

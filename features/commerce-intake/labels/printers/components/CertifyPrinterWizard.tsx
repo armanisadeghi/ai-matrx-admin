@@ -169,7 +169,7 @@ export function CertifyPrinterWizard({
   const save = useCallback(async () => {
     if (!organizationId) {
       toast.error(
-        "No organization is selected — pick an organization before certifying a printer.",
+        "No active organization — create one before certifying a printer.",
       );
       return;
     }

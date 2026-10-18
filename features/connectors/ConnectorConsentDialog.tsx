@@ -823,7 +823,7 @@ export function ConnectorConsentBody({
           >
             {activeOrganizationId
               ? `We could not reach ${provider.name}'s availability list, so no new row can be switched on right now.`
-              : `Choose an organization above to check which ${provider.name} products can be connected.`}
+              : `Create an organization to check which ${provider.name} products can be connected.`}
             {" "}Nothing you have connected is affected.
             <ErrorAlchemyMenu />
           </div>

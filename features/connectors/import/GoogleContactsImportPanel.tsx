@@ -608,8 +608,6 @@ export function GoogleContactsImportPanel({
       <OrganizationContextNotice
         state={organizationGate.organizationState}
         what="Imported people"
-        title="Choose an organization"
-        description="Choose the organization these people belong to first — the import writes them into it, and nothing here picks one for you."
         className="flex h-full items-center justify-center"
       />
     );

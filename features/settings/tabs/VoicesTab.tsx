@@ -94,9 +94,8 @@ export default function VoicesTab() {
         </SettingsCallout>
       )}
       {noOrganizationYet && (
-        <SettingsCallout tone="info" title="Choose an organization to see your voice choices">
-          Your voice choices sit on your organization&apos;s settings ladder. Pick
-          an organization from the header and they appear here.
+        <SettingsCallout tone="info" title="An organization is needed for voices">
+          Your voice choices sit on your organization&apos;s settings ladder.
         </SettingsCallout>
       )}
       {missing.length > 0 && (

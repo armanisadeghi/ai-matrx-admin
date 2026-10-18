@@ -87,13 +87,13 @@ export function ComposerPlayground({ initialMode }: { initialMode: ComposerMode 
           />
         ) : chat.conversation.state === "needs-organization" ? (
           <div className="m-auto flex max-w-sm flex-col items-start gap-2 p-6">
-            <p className="text-sm text-foreground">Choose the organization this chat belongs to.</p>
+            <p className="text-sm text-foreground">A chat needs an organization.</p>
             <button
               type="button"
               onClick={chat.conversation.choose}
               className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-sm hover:bg-accent"
             >
-              <Building2 className="h-3.5 w-3.5" /> Choose organization
+              <Building2 className="h-3.5 w-3.5" /> Create an organization
             </button>
           </div>
         ) : !conversationId ? (

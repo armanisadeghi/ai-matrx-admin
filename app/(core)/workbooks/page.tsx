@@ -97,7 +97,7 @@ export default function WorkbooksLandingPage() {
           description:
             error instanceof Error
               ? error.message
-              : "Select an organization before creating a workbook.",
+              : "Create an organization first.",
           variant: "destructive",
         });
       return;

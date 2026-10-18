@@ -856,8 +856,7 @@ export function GeneratorForm({
           <CollapsibleContent className="pt-3">
             {castPreview.orgRequired ? (
               <OrganizationRequiredNotice
-                title="Choose an organization to pick the cast"
-                description="The server picks the voice cast per organization. Pick one below and the hosts load automatically."
+                what="The cast"
               />
             ) : (
               <SpeakerCastEditor

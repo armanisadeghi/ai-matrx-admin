@@ -158,7 +158,7 @@ function McpDetail({
     setActionError(null);
     if (route === "github") {
       if (!organizationId) {
-        setActionError("Select an organization before connecting GitHub.");
+        setActionError("Create an organization before connecting GitHub.");
         return;
       }
       window.location.assign(

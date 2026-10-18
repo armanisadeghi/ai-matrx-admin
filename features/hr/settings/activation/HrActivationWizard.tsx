@@ -668,7 +668,7 @@ export function HrActivationWizard({
                     onValueChange={(v) => set("nomineeUserId", v)}
                   >
                     <SelectTrigger id="nominee">
-                      <SelectValue placeholder="Choose an organization member" />
+                      <SelectValue placeholder="Choose a member" />
                     </SelectTrigger>
                     <SelectContent>
                       {members.map((member) => (

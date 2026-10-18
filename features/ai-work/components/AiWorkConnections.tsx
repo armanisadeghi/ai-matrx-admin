@@ -162,7 +162,7 @@ export function AiWorkConnections() {
               label="Hosted Claude Code"
               line={
                 capability.organizationRequired
-                  ? "Choose an organization first"
+                  ? "Create an organization first"
                   : capability.state === "loading"
                     ? "Checking whether a sandbox can start for you…"
                     : hostedStart.selectable

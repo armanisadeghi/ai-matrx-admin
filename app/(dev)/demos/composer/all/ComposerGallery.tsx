@@ -105,7 +105,7 @@ function StyleSection({ spec, mode }: { spec: StyleSpec; mode: ComposerMode }) {
     );
   } else if (chat.conversation.state === "needs-organization") {
     body = (
-      <Button variant="outline" icon={<Building2 />} onClick={chat.conversation.choose} className="m-auto"> Choose organization
+      <Button variant="outline" icon={<Building2 />} onClick={chat.conversation.choose} className="m-auto"> Create an organization
       </Button>
     );
   } else if (!conversationId) {

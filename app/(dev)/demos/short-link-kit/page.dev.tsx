@@ -45,7 +45,7 @@ export default function ShortLinkKitDemo() {
             onCopied={setLastUrl}
           />
         ) : (
-          <span className="text-sm text-muted-foreground">Pick an organization first</span>
+          <span className="text-sm text-muted-foreground">Create an organization first</span>
         )}
       </div>
       {lastUrl ? (

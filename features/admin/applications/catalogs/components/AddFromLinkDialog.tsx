@@ -103,7 +103,7 @@ function FillFromLink({
     const trimmed = link.trim();
     if (!trimmed) return;
     if (!auth.baseUrl || !auth.accessToken || !auth.organizationId) {
-      setError("Sign in and choose an organization first.");
+      setError("Sign in and create an organization first.");
       return;
     }
     setBusy(true);

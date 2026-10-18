@@ -297,8 +297,6 @@ export function GoogleTasksImportPanel({
       <OrganizationContextNotice
         state={organizationGate.organizationState}
         what="Imported tasks"
-        title="Choose an organization"
-        description="Choose the organization these tasks belong to first — the import writes them into it, and nothing here picks one for you."
         className="flex h-full items-center justify-center"
       />
     );

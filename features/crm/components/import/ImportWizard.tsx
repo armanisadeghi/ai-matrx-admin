@@ -11,6 +11,7 @@
 // existing record), and what cannot be imported.
 
 import { ReadFailure } from "@ai-matrx/design-system";
+import { LiteTable } from "@ai-matrx/design-system/lite-table";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -422,7 +423,7 @@ export function ImportWizard() {
                   onValueChange={(v) => setOrgId(v)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Pick an organization" />
+                    <SelectValue placeholder="Organization" />
                   </SelectTrigger>
                   <SelectContent>
                     {orgs.map((o) => (
@@ -493,7 +494,7 @@ export function ImportWizard() {
             />
             {!resolvedOrgId && (
               <p className="text-xs text-muted-foreground">
-                Pick an organization first — imported records belong to it.
+                Imported records belong to an organization.
               </p>
             )}
 
@@ -577,86 +578,79 @@ export function ImportWizard() {
                 ))}
               </div>
             )}
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50 text-left text-muted-foreground">
-                    <th className="px-2.5 py-1.5 font-medium">
-                      Imported column
-                    </th>
-                    <th className="px-2.5 py-1.5 font-medium">Sample values</th>
-                    <th className="px-2.5 py-1.5 font-medium">Imports as</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {parsed.headers.map((header) => {
-                    const samples = parsed.rows
-                      .map((r) => r[header])
-                      .filter(Boolean)
-                      .slice(0, 2);
+            <LiteTable
+              data={parsed.headers.map((header) => ({ header }))}
+              getRowId={(r) => r.header}
+              density="condensed"
+              copyRows={false}
+              ariaLabel="Column mapping"
+              columns={[
+                { accessorKey: "header", header: "Imported column", className: "font-medium" },
+                {
+                  id: "samples",
+                  header: "Sample values",
+                  accessorFn: ({ header }) => parsed.rows.map((r) => r[header]).filter(Boolean).slice(0, 2).join(" · "),
+                  cell: ({ header }) => parsed.rows.map((r) => r[header]).filter(Boolean).slice(0, 2).join(" · ") || "—",
+                  className: "max-w-64 truncate text-muted-foreground",
+                },
+                {
+                  id: "importsAs",
+                  header: "Imports as",
+                  accessorFn: ({ header }) => {
+                    const field = mapping[header] ?? null;
+                    return field ? IMPORT_FIELD_LABELS[field] : "Ignore";
+                  },
+                  cell: ({ header }) => {
                     const current = mapping[header] ?? null;
                     return (
-                      <tr
-                        key={header}
-                        className="border-b border-border last:border-0"
-                      >
-                        <td className="px-2.5 py-1.5 font-medium text-foreground">
-                          {header}
-                        </td>
-                        <td className="max-w-64 truncate px-2.5 py-1.5 text-muted-foreground">
-                          {samples.join(" · ") || "—"}
-                        </td>
-                        <td className="px-2.5 py-1.5">
-                          <Select
-                            value={current ?? "__ignore__"}
-                            onValueChange={(v) =>
-                              setMapping((prev) => {
-                                const next: ImportMapping = { ...prev };
-                                const field =
-                                  v === "__ignore__"
-                                    ? null
-                                    : (v as ImportField);
-                                // A field feeds one column — take it from any
-                                // other header that held it.
-                                if (field) {
-                                  for (const h of Object.keys(next)) {
-                                    if (h !== header && next[h] === field)
-                                      next[h] = null;
-                                  }
-                                }
-                                next[header] = field;
-                                return next;
-                              })
+                      <Select
+                        value={current ?? "__ignore__"}
+                        onValueChange={(v) =>
+                          setMapping((prev) => {
+                            const next: ImportMapping = { ...prev };
+                            const field =
+                              v === "__ignore__"
+                                ? null
+                                : (v as ImportField);
+                            // A field feeds one column — take it from any
+                            // other header that held it.
+                            if (field) {
+                              for (const h of Object.keys(next)) {
+                                if (h !== header && next[h] === field)
+                                  next[h] = null;
+                              }
                             }
+                            next[header] = field;
+                            return next;
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            value="__ignore__"
+                            className="text-xs text-muted-foreground"
                           >
-                            <SelectTrigger className="w-48">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem
-                                value="__ignore__"
-                                className="text-xs text-muted-foreground"
-                              >
-                                Ignore
-                              </SelectItem>
-                              {fieldsForKind(kind).map((f) => (
-                                <SelectItem
-                                  key={f}
-                                  value={f}
-                                  className="text-xs"
-                                >
-                                  {IMPORT_FIELD_LABELS[f]}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      </tr>
+                            Ignore
+                          </SelectItem>
+                          {fieldsForKind(kind).map((f) => (
+                            <SelectItem
+                              key={f}
+                              value={f}
+                              className="text-xs"
+                            >
+                              {IMPORT_FIELD_LABELS[f]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                    </Select>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  },
+                },
+              ]}
+            />
           </div>
         )}
 

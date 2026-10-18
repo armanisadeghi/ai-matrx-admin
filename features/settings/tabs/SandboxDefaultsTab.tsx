@@ -61,7 +61,7 @@ export default function SandboxDefaultsTab() {
         </SettingsCallout>
       )}
       {!settings.isLoading && !settings.error && !settings.organizationId && (
-        <SettingsCallout tone="info" title="Choose an organization first">
+        <SettingsCallout tone="info" title="An organization is needed">
           Sandbox defaults are kept per organization.
         </SettingsCallout>
       )}

@@ -267,8 +267,7 @@ export function FilePreview({
     return (
       <div className={cn("h-full w-full overflow-auto", className)}>
         <OrganizationRequiredNotice
-          title="Choose an organization to preview this file"
-          description="File previews are served per organization. Pick one below and the preview loads automatically."
+          what="File previews"
         />
       </div>
     );

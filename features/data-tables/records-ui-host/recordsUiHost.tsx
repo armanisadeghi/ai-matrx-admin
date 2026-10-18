@@ -64,7 +64,7 @@ import { organizationArchiveState, restoreArchivedOrganizationById } from "@/fea
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { selectUserRequestResult } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
-import { selectActiveUserAvatarUrl, selectDisplayName, selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createRecordsPresencePort } from "@ai-matrx/records/realtime";
 import { createRecordsRealtimePort } from "@ai-matrx/records/realtime";
 import type { DataBuildOrAskOffer } from "@ai-matrx/agents/generated/provision-offers";
@@ -187,7 +187,7 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{
       writeSyncedCell: async (cell: { tableId: string; recordId: string; fieldKey: string; value: unknown; force: boolean }) => {
-        if (!ports.organizationId) return { ok: false as const, message: "Pick an organization to save this change." };
+        if (!ports.organizationId) return { ok: false as const, message: "Create an organization to save this change." };
         try {
           const done = await writeSyncedCell(ports.organizationId, cell);
           return done.status === "conflict"
@@ -459,8 +459,11 @@ export function useRecordsUiPorts({
         self: () => {
           const state = store.getState();
           const id = selectUserId(state);
-          return id ? { userId: id, name: selectDisplayName(state), avatarUrl: selectActiveUserAvatarUrl(state) ?? null } : null;
+          // The id only: the name and picture are the reader's to resolve from the members roster (ADV-1 F10).
+          return id ? { userId: id } : null;
         },
+        // A viewer whose user lands after the page mounted joins once it does (ADV-1 F10).
+        onSelfChange: (listener) => store.subscribe(listener),
       }),
     [store],
   );

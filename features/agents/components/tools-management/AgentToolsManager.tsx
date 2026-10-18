@@ -2553,7 +2553,7 @@ function McpToolsTab({
         if (!organizationId) {
           setOauthFeedback({
             type: "error",
-            message: "Select an organization before connecting GitHub.",
+            message: "Create an organization before connecting GitHub.",
           });
           return;
         }

@@ -434,7 +434,7 @@ async function runServerScenario(args: {
       return {
         ok: false,
         error:
-          "Not run — no organization is selected for this session, so the request was refused before it left the browser. Choose an organization from the avatar menu and run it again.",
+          "Not run — there is no active organization for this session, so the request was refused before it left the browser. Create an organization and run it again.",
       };
     }
     const message = extractErrorMessage(err);

@@ -87,7 +87,7 @@ export function ProjectPicker({
 
   const handleCreateProject = () => {
     if (organizationId === null) {
-      toast.info("Select an organization before creating a project.");
+      toast.info("Create an organization before creating a project.");
       return;
     }
     setOpen(false);
@@ -167,7 +167,7 @@ export function ProjectPicker({
             ) : filtered.length === 0 ? (
               <p className="px-3 py-2 text-xs text-muted-foreground">
                 {organizationId === null
-                  ? "Select an organization first."
+                  ? "Create an organization first."
                   : availableProjects.length === 0
                     ? "No projects yet."
                     : "No match."}

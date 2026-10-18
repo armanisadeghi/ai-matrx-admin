@@ -30,6 +30,8 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
+import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
@@ -63,6 +65,19 @@ interface SpendBudgetCardProps {
   className?: string;
 }
 
+
+function NoOrganizationNotice({ className }: { className?: string }) {
+  const { organizationState } = useOrganizationRequired();
+  return (
+    <OrganizationContextNotice
+      compact
+      state={organizationState}
+      what="This AI budget"
+      className={cn("rounded-lg border border-border bg-card", className)}
+    />
+  );
+}
+
 export function SpendBudgetCard({
   organizationId,
   mode,
@@ -74,20 +89,7 @@ export function SpendBudgetCard({
 
   if (!organizationId) {
     return (
-      <div
-        className={cn(
-          "rounded-lg border border-border bg-card p-4 text-sm",
-          className,
-        )}
-      >
-        <p className="text-foreground">
-          Pick an organization to see its AI budget.
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          A budget belongs to an account, so we need to know which one you are
-          looking at.
-        </p>
-      </div>
+      <NoOrganizationNotice className={className} />
     );
   }
 

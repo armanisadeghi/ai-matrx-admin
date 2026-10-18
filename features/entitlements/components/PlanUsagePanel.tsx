@@ -26,6 +26,8 @@ import {
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OrganizationContextNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
+import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { cn } from "@/lib/utils";
 import { formatFileSize, pointsToUsd, type CostUnit } from "@ai-matrx/kit/format";
 import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
@@ -188,6 +190,18 @@ function DimensionRow({ d }: { d: PlanDimension }) {
   );
 }
 
+function NoOrganizationNotice({ className }: { className?: string }) {
+  const { organizationState } = useOrganizationRequired();
+  return (
+    <OrganizationContextNotice
+      compact
+      state={organizationState}
+      what="This plan"
+      className={cn("rounded-lg border border-border bg-card", className)}
+    />
+  );
+}
+
 export function PlanUsagePanel({
   organizationId,
   className,
@@ -214,20 +228,7 @@ export function PlanUsagePanel({
   // this doctrine exists to kill. Say what's missing and how to fix it.
   if (!organizationId) {
     return (
-      <div
-        className={cn("rounded-lg border border-border bg-card p-4", className)}
-      >
-        <p className="text-sm text-foreground">
-          Pick an organization to see its plan.
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          A plan belongs to an account, so we need to know which one you&apos;re
-          looking at.
-        </p>
-        <Button variant="outline" className="mt-2" asChild>
-          <a href="/user-settings/organizations">Choose an organization</a>
-        </Button>
-      </div>
+      <NoOrganizationNotice className={className} />
     );
   }
 

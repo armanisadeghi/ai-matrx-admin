@@ -96,7 +96,7 @@ function TikTokConnectionContents() {
     {(callbackFailure ?? failure) && <ErrorNotice error={callbackFailure ?? failure} size="compact" />}
     <Button disabled={busy || !userId || !organizationId} onClick={() => void act(async () => {
       setCallbackFailure(null);
-      if (!userId || !organizationId) throw new Error("Choose an organization to connect TikTok.");
+      if (!userId || !organizationId) throw new Error("Create an organization to connect TikTok.");
       const started = await startTikTokAuthorization(userId, organizationId);
       window.location.assign(started.authorization_url);
     })}>Connect TikTok</Button>

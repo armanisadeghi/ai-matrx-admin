@@ -99,7 +99,7 @@ export function PromptBlockEditor({ blockId }: { blockId: string | "new" }) {
       const bound_tool = tool === NONE ? null : tool;
       if (isNew) {
         const home = level === "system" ? SYSTEM_ORG_ID : orgId;
-        if (!home) throw new Error("Choose an organization first");
+        if (!home) throw new Error("Create an organization first");
         const created = await createBlock({
           name,
           label: label || name,

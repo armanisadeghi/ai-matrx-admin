@@ -81,7 +81,7 @@ export function InitiativeEditorDialog({
       brandOptions.data?.find((b) => b.id === brandId)?.organization_id ?? null;
     const filingOrganizationId = brandOrganizationId ?? organizationId;
     if (!initiative && !filingOrganizationId) {
-      toast.error("Choose an organization before creating an initiative.");
+      toast.error("Create an organization before creating an initiative.");
       return;
     }
     if (startsOn && endsOn && endsOn < startsOn) {

@@ -950,7 +950,7 @@ function BindingDraft({
         payload.modelId,
       );
       if ((rung === "org" || rung === "user") && !inheritanceOrganizationId) {
-        throw new Error("Select an organization to read inherited model settings");
+        throw new Error("An organization is needed to read inherited model settings");
       }
       const ladder = rung === "org" || rung === "user"
         ? await fetchMandateLadder(storedMandateKey(data.mandate.mandate_key), inheritanceOrganizationId)
@@ -1185,7 +1185,7 @@ function BindingDraft({
             : !rungReady
               ? "Pick the organization this answer is for."
               : rung === "org" && !canBindThisOrg
-                ? `Deciding for everyone in ${selectedOrgName} takes an owner or admin of it, and you are ${selectedOrgSeat} there. Ask an owner to set it, or pick an organization you administer — your own answer above always works.`
+                ? `Deciding for everyone in ${selectedOrgName} takes an owner or admin of it, and you are ${selectedOrgSeat} there. Ask an owner to set it, or use an organization you administer — your own answer above always works.`
                 : // A contract mismatch is RED, never a refusal (Arman,
                   // 2026-09-25) — see `ContractMismatchNotice` below.
                   mapRefusal);
@@ -1209,12 +1209,12 @@ function BindingDraft({
     writeReport?.contractCheck ??
     (holderChanged ? null : persistedContractCheck);
   const contractNotice = isUnmet(serverContractCheck) ? (
-    <ContractMismatchNotice check={serverContractCheck} />
+    <ContractMismatchNotice check={serverContractCheck} fix={agentId ? { mandateKey: data.mandate.mandate_key, agentId } : null} />
   ) : holder.kind === "agent" &&
     agentId !== null &&
     !verdict.checking &&
     !verdict.passed ? (
-    <ContractMismatchNotice problems={verdict.problems} />
+    <ContractMismatchNotice problems={verdict.problems} fix={agentId ? { mandateKey: data.mandate.mandate_key, agentId } : null} />
   ) : null;
 
   /**

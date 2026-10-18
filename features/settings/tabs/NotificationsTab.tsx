@@ -499,7 +499,7 @@ export default function NotificationsTab() {
                                   className="matrx-tap-area flex items-center justify-center gap-1.5"
                                   title={
                                     !scopeId
-                                      ? "Choose an organization above to change this."
+                                      ? "An organization is needed to change this."
                                       : lastRequired
                                         ? "Required notice: turn another channel on first."
                                         : needsMessage

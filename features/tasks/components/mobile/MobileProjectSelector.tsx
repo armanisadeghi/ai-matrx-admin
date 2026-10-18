@@ -20,7 +20,7 @@ export default function MobileProjectSelector({
           Select Project
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Choose an organization and project to view its tasks
+          Choose a project to view its tasks
         </p>
       </div>
 

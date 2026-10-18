@@ -100,7 +100,7 @@ export function SocialConnectionsPanel({
   }, [userId, params, load]);
   const act = async (action: (org: string) => Promise<unknown>) => {
     if (!organizationId) {
-      setFailure("Choose an organization.");
+      setFailure("Create an organization first.");
       return;
     }
     setBusy(true);
@@ -117,7 +117,7 @@ export function SocialConnectionsPanel({
   };
   const connect = () => {
     if (!organizationId) {
-      setFailure("Choose an organization.");
+      setFailure("Create an organization first.");
       return;
     }
     if (!backendOrigin) {

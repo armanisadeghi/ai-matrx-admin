@@ -205,7 +205,7 @@ export function AgentCard({
       // The route files the template in the admitted organization and refuses
       // without one — say so rather than send a request that 400s.
       toast.error(
-        "Select an organization from the avatar menu, then try again.",
+        "Create an organization first.",
       );
       return;
     }

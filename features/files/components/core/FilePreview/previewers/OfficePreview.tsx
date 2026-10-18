@@ -338,8 +338,7 @@ export function OfficePreview({
     return (
       <div className={cn("h-full w-full overflow-auto", className)}>
         <OrganizationRequiredNotice
-          title="Choose an organization to open this document"
-          description="Document conversion runs per organization. Pick one below and this document opens automatically."
+          what="Opening this document"
           compact
         />
       </div>

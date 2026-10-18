@@ -346,7 +346,7 @@ export function AgentVariableEditor({
     }
     if (!organizationId || organizationState !== "ready") {
       toast.error(
-        "Choose an organization before creating a pick list. A list has to live in one.",
+        "Create an organization before creating a pick list.",
       );
       return;
     }

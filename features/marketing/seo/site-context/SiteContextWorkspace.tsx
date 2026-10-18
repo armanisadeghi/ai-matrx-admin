@@ -152,7 +152,7 @@ export function ExpertiseSection() {
       headerExtra={origin ? <Badge data-testid="expertise-origin">{ORIGIN_LABEL[origin] ?? origin}</Badge> : null}
     >
       {!organizationId || !userId ? (
-        <p className="text-xs text-muted-foreground">Choose an organization to set this.</p>
+        <p className="text-xs text-muted-foreground">Create an organization to set this.</p>
       ) : knob.error ? (
         <InlineQueryError what="your expertise" error={knob.error} />
       ) : knob.isLoading ? (

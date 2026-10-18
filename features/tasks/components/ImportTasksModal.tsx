@@ -183,7 +183,7 @@ export default function ImportTasksModal({
       // forever — so it is named, with the remedy.
       toast.error(
         isOrganizationRequiredError(error)
-          ? "Select an organization from the avatar menu, then import again."
+          ? "Create an organization first."
           : "Failed to import tasks. Please try again.",
       );
       setIsImporting(false);

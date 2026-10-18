@@ -390,7 +390,7 @@ export function DirectoryReview({
   if (!organizationId) {
     return (
       <div className="flex h-full items-center justify-center p-6 type-body text-muted-foreground">
-        Choose an organization to review Directory people.
+        Create an organization to review Directory people.
       </div>
     );
   }

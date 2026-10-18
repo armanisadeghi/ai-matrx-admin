@@ -484,7 +484,7 @@ export function CompetitorClassificationEditor({
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Pick an organization label or type your own. Personal labels never
+          Pick a shared label or type your own. Personal labels never
           rewrite the underlying evidence.
         </p>
         {labelsReadFailed ? (

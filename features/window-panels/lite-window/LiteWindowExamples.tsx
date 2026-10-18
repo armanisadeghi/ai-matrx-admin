@@ -107,7 +107,6 @@ export function LiteWindowExamples() {
       <OrganizationContextNotice
         state={organizationState}
         what="These window examples"
-        description="Pick an organization in the header — every example below writes into the organization you have active, and nothing here guesses one for you."
         compact
         className="rounded-md border border-border bg-muted/40"
       />

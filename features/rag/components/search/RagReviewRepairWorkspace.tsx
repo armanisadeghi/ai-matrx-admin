@@ -310,7 +310,7 @@ function RepairPane({
       // spend behind it — landed in a workspace the person never chose, with
       // nothing on screen saying so.
       toast.error(
-        "Select an organization in the header, then run the repair again.",
+        "Create an organization, then run the repair again.",
       );
       return;
     }

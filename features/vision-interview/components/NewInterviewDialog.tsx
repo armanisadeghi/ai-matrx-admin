@@ -59,7 +59,7 @@ export function NewInterviewDialog({
       // organization is selected (features/vision-interview/service.ts).
       toast.error(
         isOrganizationRequiredError(err)
-          ? "Select an organization from the avatar menu, then start the interview."
+          ? "Create an organization first."
           : err instanceof Error
             ? err.message
             : "Could not create the interview.",

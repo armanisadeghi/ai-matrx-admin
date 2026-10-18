@@ -125,7 +125,7 @@ export function FileRagStatusChip({
       >
         Needs an organization
         <InfoHint
-          text="Choose an organization in the header to see this file's Knowledge status."
+          text="Create an organization to see this file's Knowledge status."
           label="About this status"
         />
       </span>

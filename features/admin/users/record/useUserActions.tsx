@@ -293,7 +293,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     if (!selectedOrganizationId) {
       // The conversation route files the DM in the admitted organization and
       // refuses without one; say so here instead of sending a request that 400s.
-      toast.error("Select an organization from the avatar menu, then try again.");
+      toast.error("Create an organization first.");
       return;
     }
     setMessageSending(true);

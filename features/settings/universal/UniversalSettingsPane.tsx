@@ -307,8 +307,6 @@ export default function UniversalSettingsPane() {
           <OrganizationContextNotice
             state={organizationState}
             what="Your own settings"
-            title="Pick an organization to see your settings"
-            description="Settings are kept per organization. Choose one at the top."
             compact
           />
         ) : (

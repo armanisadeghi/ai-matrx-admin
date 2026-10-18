@@ -78,6 +78,8 @@ import { GitHubConnectionCard } from "@/features/github-integration/GitHubConnec
 import { useGitHubConnection } from "@/features/github-integration/useGitHubConnection";
 import { HuggingFaceConnectionCard } from "@/features/huggingface-integration/HuggingFaceConnectionCard";
 import { useHuggingFaceConnection } from "@/features/huggingface-integration/useHuggingFaceConnection";
+import { NotionConnectionCard } from "@/features/notion-integration/NotionConnectionCard";
+import { useNotionConnection } from "@/features/notion-integration/useNotionConnection";
 import { SlackConnectionCard } from "@/features/slack-integration/SlackConnectionCard";
 import { useSlackConnection } from "@/features/slack-integration/useSlackConnection";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
@@ -285,6 +287,7 @@ export function IntegrationsWorkspace({
   const github = useGitHubConnection();
   const huggingFace = useHuggingFaceConnection();
   const slack = useSlackConnection();
+  const notion = useNotionConnection();
   const googleInventory = useGoogleConnectionInventory();
   const githubStatus = github.loading
     ? undefined
@@ -541,6 +544,14 @@ export function IntegrationsWorkspace({
     slack.loading,
     Boolean(slack.error && !slack.connection),
   );
+  const notionSummary = savedAccountSummary(
+    (notion.connection?.workspaces ?? []).map((workspace) => ({
+      identity: workspace.workspace_name ?? "Notion workspace",
+      status: workspace.status,
+    })),
+    notion.loading,
+    Boolean(notion.error && !notion.connection),
+  );
   const microsoft = savedAccountSummary(
     microsoftConnections.map((account) => ({
       identity:
@@ -687,6 +698,16 @@ export function IntegrationsWorkspace({
       "https://a.slack-edge.com/80588/marketing/img/meta/favicon-32.png",
       slackSummary,
       "slack channel message workspace chat post",
+    ),
+    nativeItem(
+      "notion",
+      "Notion",
+      "Bring formula values and text into Notion imports.",
+      "Notion",
+      "productivity",
+      "https://www.notion.so/images/favicon.ico",
+      notionSummary,
+      "notion workspace import formula pages database",
     ),
     nativeItem(
       "api-keys",
@@ -1067,7 +1088,7 @@ export function IntegrationsWorkspace({
           {organizationId ? <>
             <CustomerAccountsPanel organizationId={organizationId} />
             <WhatsAppBusinessPanel organizationId={organizationId} />
-          </> : <p className="p-4 text-sm text-muted-foreground">Choose an organization to connect a business account.</p>}
+          </> : <p className="p-4 text-sm text-muted-foreground">Create an organization to connect a business account.</p>}
           <PersonalWhatsAppPanel />
         </div>
       );
@@ -1075,6 +1096,7 @@ export function IntegrationsWorkspace({
     if (item.id === "native:github") return <GitHubConnectionCard />;
     if (item.id === "native:huggingface") return <HuggingFaceConnectionCard />;
     if (item.id === "native:slack") return <SlackConnectionCard />;
+    if (item.id === "native:notion") return <NotionConnectionCard />;
     if (item.id === "native:microsoft") return <MicrosoftConnectPanel />;
     if (item.id === "native:x")
       return <SocialConnectionsPanel onChanged={refresh} />;

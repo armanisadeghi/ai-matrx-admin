@@ -218,8 +218,7 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
   if (isOrganizationRequiredError(status.error)) {
     return (
       <OrganizationRequiredNotice
-        title="Choose an organization to run business discovery"
-        description="The discovery ladder reads and rules results inside an organization. Pick one below and the ladder loads automatically."
+        what="Business discovery"
       />
     );
   }

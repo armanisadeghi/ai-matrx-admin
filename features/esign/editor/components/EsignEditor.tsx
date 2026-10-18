@@ -175,7 +175,7 @@ export function EsignEditor(props: EsignEditorProps) {
     if (!creating.current) {
       creating.current = (async () => {
         const organizationId = givenOrganizationId ?? (await resolveOrganizationId?.());
-        if (!organizationId) throw new DraftRefusal("no_organization", "Choose an organization first.");
+        if (!organizationId) throw new DraftRefusal("no_organization", "Create an organization first.");
         return api.createDraft({ organizationId, title: draft.title || "Untitled" });
       })()
         .then((made) => {
@@ -464,7 +464,7 @@ export function EsignEditor(props: EsignEditorProps) {
 
   async function saveTemplateNow(name: string, description: string) {
     const organizationId = givenOrganizationId ?? (await resolveOrganizationId?.());
-    if (!organizationId) throw new DraftRefusal("no_organization", "Choose an organization first.");
+    if (!organizationId) throw new DraftRefusal("no_organization", "Create an organization first.");
     return api.saveTemplate({
       organizationId,
       templateId: templateState?.id ?? null,

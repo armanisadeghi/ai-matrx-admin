@@ -191,9 +191,9 @@ export function AgentFormItemBody({ tileId, source, title, onSource }: ItemBodyP
       <div className="flex h-full items-center justify-center bg-card p-4">
         <EmptyState
           icon={<Building2 />}
-          title="Choose an organization"
+          title="An organization is needed"
           line="The run is billed to an organization."
-          action={<Button onClick={state.choose}>Choose</Button>}
+          action={<Button asChild><a href="/organizations">Create an organization</a></Button>}
         />
       </div>
     );

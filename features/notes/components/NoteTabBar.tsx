@@ -318,8 +318,7 @@ export function NoteTabBar({ instanceId, syncUrl = true }: NoteTabBarProps) {
       <div className="shrink-0 max-h-[50%] overflow-y-auto border-b border-border">
         <OrganizationRequiredNotice
           compact
-          title="Choose an organization for this note"
-          description="Notes are filed under an organization, and none is selected right now. Pick one and press + again."
+          what="A new note"
         />
       </div>
     )}

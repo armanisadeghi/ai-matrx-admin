@@ -191,7 +191,7 @@ function ReadOnlySweepWorkspaceInner({ reviewMode }: { reviewMode: boolean }) {
       }
       if (reviewMode) {
         if (!activeOrganizationId) {
-          throw new Error("Choose an organization before connecting Google.");
+          throw new Error("Create an organization before connecting Google.");
         }
         await googleAuth.openAuthorizationRedirect(
           [...GOOGLE_READ_ONLY_SWEEP_SCOPES],

@@ -534,7 +534,7 @@ function ScopeColumns({
             }
           >
             {activeOrgs.length === 0 && (
-              <EmptyPane text="Pick an organization" />
+              <EmptyPane text="No organizations yet." />
             )}
             {activeOrgs.length > 0 && typeEntries.length === 0 && (
               <EmptyPane text="No scope types here yet." />
@@ -608,7 +608,7 @@ function ScopeColumns({
               <EmptyPane
                 text={
                   activeOrgs.length === 0
-                    ? "Pick an organization"
+                    ? "No organizations yet."
                     : "Pick a scope type"
                 }
               />
@@ -702,7 +702,7 @@ function ScopeColumns({
               <EmptyPane
                 text={
                   activeOrgs.length === 0
-                    ? "Pick an organization"
+                    ? "No organizations yet."
                     : activeTypeEntries.length === 0
                       ? "Pick a scope type"
                       : "Pick a scope to see its items."
@@ -1113,7 +1113,7 @@ function EngagementColumns({
               condensed={false}
               search={{ value: typeQuery, onChange: setTypeQuery, total: types.length }}
             >
-              {!activeOrg && <EmptyPane text="Pick an organization to tag with its scopes." />}
+              {!activeOrg && <EmptyPane text="No organization to tag with yet." />}
               {activeOrg && types.length === 0 && (
                 <EmptyPane text="This organization has no scope types yet." />
               )}

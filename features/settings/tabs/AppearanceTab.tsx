@@ -46,7 +46,7 @@ function TableDensitySettings() {
         </SettingsCallout>
       )}
       {!settings.isLoading && !settings.error && !settings.organizationId && (
-        <SettingsCallout tone="info" title="Choose an organization first">
+        <SettingsCallout tone="info" title="An organization is needed">
           Table density is set for the organization selected in the app header.
         </SettingsCallout>
       )}
