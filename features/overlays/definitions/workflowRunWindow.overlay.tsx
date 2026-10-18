@@ -18,8 +18,8 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "workflowRunWindow" as const;
@@ -99,7 +99,7 @@ export function useCloseWorkflowRunWindow() {
 
 export type WorkflowRunWindowDefinitionData = OpenWorkflowRunWindowOptions;
 
-export const workflowRunWindowOverlay = defineOverlay<WorkflowRunWindowDefinitionData>()({
+export const workflowRunWindowOverlay = /* @__PURE__ */ defineOverlay<WorkflowRunWindowDefinitionData>()({
   id: "workflowRunWindow",
   label: "Workflow Run",
   instance: "multi",

@@ -13,7 +13,7 @@ import { Blocks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
-import { selectIsOverlayOpen } from "@ai-matrx/summon";
+import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
 import { selectBuilderFeedList, feedsForRoute } from "@/features/builder-panel/selectors";
 import { useBuilderRecording } from "@/features/builder-panel/hooks/useBuilderRecording";
 import { BUILDER_PANEL_OVERLAY_ID, useToggleBuilderPanel } from "@/features/overlays/definitions/builderPanelWindow.overlay";

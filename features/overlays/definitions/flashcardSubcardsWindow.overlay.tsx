@@ -6,9 +6,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { FlashcardSubcard } from "@/components/mardown-display/blocks/flashcards/flashcard-subcards";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "flashcardSubcardsWindow" as const;
@@ -62,7 +62,7 @@ export function FlashcardSubcardsWindowController(
 
 export type FlashcardSubcardsWindowDefinitionData = OpenFlashcardSubcardsWindowOptions;
 
-export const flashcardSubcardsWindowOverlay = defineOverlay<FlashcardSubcardsWindowDefinitionData>()({
+export const flashcardSubcardsWindowOverlay = /* @__PURE__ */ defineOverlay<FlashcardSubcardsWindowDefinitionData>()({
   id: "flashcardSubcardsWindow",
   label: "Flashcard Subcards Window",
   instance: "single",

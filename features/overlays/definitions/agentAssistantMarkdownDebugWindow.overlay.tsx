@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentAssistantMarkdownDebugWindow" as const;
@@ -57,7 +57,7 @@ export function AgentAssistantMarkdownDebugWindowController(props: OpenAgentAssi
 
 export type AgentAssistantMarkdownDebugWindowDefinitionData = OpenAgentAssistantMarkdownDebugWindowOptions;
 
-export const agentAssistantMarkdownDebugWindowOverlay = defineOverlay<AgentAssistantMarkdownDebugWindowDefinitionData>()({
+export const agentAssistantMarkdownDebugWindowOverlay = /* @__PURE__ */ defineOverlay<AgentAssistantMarkdownDebugWindowDefinitionData>()({
   id: "agentAssistantMarkdownDebugWindow",
   label: "Agent Assistant Markdown Debug Window",
   instance: "single",

@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "saveToNotes" as const;
@@ -78,7 +78,7 @@ export function QuickNoteSaveOverlayController(props: OpenQuickNoteSaveOverlayOp
 
 export type SaveToNotesDefinitionData = OpenQuickNoteSaveOverlayOptions;
 
-export const saveToNotesOverlay = defineOverlay<SaveToNotesDefinitionData>()({
+export const saveToNotesOverlay = /* @__PURE__ */ defineOverlay<SaveToNotesDefinitionData>()({
   id: "saveToNotes",
   label: "Save To Notes",
   instance: "multi",

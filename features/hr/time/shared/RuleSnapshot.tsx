@@ -25,7 +25,7 @@ import { DataRowWindow } from "@ai-matrx/design-system/data-table/data-row-windo
 import { ErrorBoundaryWithCapture } from "@/lib/error-boundary/ErrorBoundaryWithCapture";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { revealWindow } from "@ai-matrx/summon";
+import { revealWindow } from "@ai-matrx/summon/open";
 import { cn } from "@/lib/utils";
 import { viewerTimeZone } from "../clock/stampedTime";
 
@@ -91,7 +91,7 @@ export function RuleSnapshotProvider({ children }: { children: ReactNode }) {
   const [request, setRequest] = useState<RuleSnapshotRequest | null>(null);
   const dispatch = useAppDispatch();
   const windowRegistered = useAppSelector(
-    (state) => state.windowManager.windows[WINDOW_ID] !== undefined,
+    (state) => state.windowManager?.windows[WINDOW_ID] !== undefined,
   );
 
   /**

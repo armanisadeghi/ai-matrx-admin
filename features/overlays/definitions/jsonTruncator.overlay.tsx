@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "jsonTruncator" as const;
@@ -70,7 +70,7 @@ export function JsonTruncatorDialogController(props: OpenJsonTruncatorDialogOpti
 
 export type JsonTruncatorDefinitionData = OpenJsonTruncatorDialogOptions;
 
-export const jsonTruncatorOverlay = defineOverlay<JsonTruncatorDefinitionData>()({
+export const jsonTruncatorOverlay = /* @__PURE__ */ defineOverlay<JsonTruncatorDefinitionData>()({
   id: "jsonTruncator",
   label: "Json Truncator",
   instance: "single",

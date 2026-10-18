@@ -9,7 +9,7 @@ import { createElement } from "react";
 import { configureRichContent } from "@ai-matrx/rich-content/host";
 import { registerJsonAnswerRenderer } from "@ai-matrx/rich-content/display/block-interaction";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { selectIsAdminDebugger, selectIsAuthenticated, selectIsSuperAdmin, selectUser } from "@/lib/redux/selectors/userSelectors";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { selectDismissedPromptFixes, selectMermaidPreferences } from "@/lib/redux/preferences/userPreferenceSelectors";

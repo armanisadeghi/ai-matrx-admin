@@ -14,7 +14,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import { recordToast } from "@/lib/toast";
-import { overlaysReducer as overlays, selectOverlay } from "@ai-matrx/summon";
+import { selectOverlay } from "@ai-matrx/summon/open";
+import { overlaysReducer as overlays } from "@ai-matrx/summon";
 import { canvasReducer } from "@ai-matrx/canvas";
 import { linkHydrator } from "@/features/overlays/definitions/__tests__/linkKit";
 

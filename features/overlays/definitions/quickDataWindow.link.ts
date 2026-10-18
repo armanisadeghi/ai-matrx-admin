@@ -1,7 +1,7 @@
 import { getRestorableUuid } from "./link-helpers";
 import type { QuickDataWindowDefinitionData } from "./quickDataWindow.overlay";
-import { openOverlay } from "@ai-matrx/summon";
-import type { LinkHydrateContext } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
+import type { LinkHydrateContext } from "@ai-matrx/summon/open";
 
 export function hydrate({ dispatch, id, open }: LinkHydrateContext<QuickDataWindowDefinitionData>) {
     const tableId = getRestorableUuid(id, "quickDataWindow");

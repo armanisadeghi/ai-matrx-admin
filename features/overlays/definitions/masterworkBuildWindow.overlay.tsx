@@ -9,13 +9,13 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createBuildCallbackGroup,
   type BuildWindowData,
   type BuildWindowHandlers,
 } from "@/features/masterwork/build/callbacks";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "masterworkBuildWindow" as const;
@@ -78,7 +78,7 @@ export function BuildWindowController(props: OpenBuildWindowOptions): null {
 
 export type MasterworkBuildWindowDefinitionData = OpenBuildWindowOptions;
 
-export const masterworkBuildWindowOverlay = defineOverlay<MasterworkBuildWindowDefinitionData>()({
+export const masterworkBuildWindowOverlay = /* @__PURE__ */ defineOverlay<MasterworkBuildWindowDefinitionData>()({
   id: "masterworkBuildWindow",
   label: "Build a Masterwork",
   instance: "single",

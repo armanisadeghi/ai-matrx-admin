@@ -10,8 +10,8 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteDiscoveryWindow" as const;
@@ -49,7 +49,7 @@ export function useOpenSiteDiscoveryWindow() {
 
 export type SiteDiscoveryWindowDefinitionData = OpenSiteDiscoveryWindowOptions;
 
-export const siteDiscoveryWindowOverlay = defineOverlay<SiteDiscoveryWindowDefinitionData>()({
+export const siteDiscoveryWindowOverlay = /* @__PURE__ */ defineOverlay<SiteDiscoveryWindowDefinitionData>()({
   id: "siteDiscoveryWindow",
   label: "Business discovery",
   instance: "single",

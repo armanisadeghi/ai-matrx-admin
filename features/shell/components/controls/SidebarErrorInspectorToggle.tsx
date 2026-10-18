@@ -16,7 +16,7 @@ import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/slices/userSlice";
-import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon";
+import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
 import { useCapturedErrorStats } from "@/lib/diagnostics/useCapturedErrors";
 import { ERROR_INSPECTOR_OVERLAY_ID } from "@/features/admin/error-inspector/useOpenErrorInspector";
 

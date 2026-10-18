@@ -13,8 +13,8 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentInlineOverlay" as const;
@@ -71,7 +71,7 @@ export function AgentInlineOverlayController(props: OpenAgentInlineOverlayOption
 
 export type AgentInlineOverlayDefinitionData = OpenAgentInlineOverlayOptions;
 
-export const agentInlineOverlayOverlay = defineOverlay<AgentInlineOverlayDefinitionData>()({
+export const agentInlineOverlayOverlay = /* @__PURE__ */ defineOverlay<AgentInlineOverlayDefinitionData>()({
   id: "agentInlineOverlay",
   label: "Agent Inline Overlay",
   instance: "multi",

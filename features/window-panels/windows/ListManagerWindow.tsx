@@ -5,7 +5,7 @@
 
 import React, { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon";
+import { closeOverlay } from "@ai-matrx/summon/open";
 import { WindowPanel, type WindowPanelBaseProps } from "@ai-matrx/summon/window";
 import { ListFilter } from "lucide-react";
 import { ListManagerFloatingWorkspace } from "@/features/data-tables/pick-lists/components/ListManagerFloatingWorkspace";

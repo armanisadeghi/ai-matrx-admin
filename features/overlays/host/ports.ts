@@ -5,7 +5,7 @@
  * the app's @ai-matrx/data doors.
  */
 import { createDb } from "@ai-matrx/data/db";
-import type { DebugPort, ErrorSinkPort, IdentityPort, NotifyOptions, NotifyPort, OverlayPersistencePort } from "@ai-matrx/summon";
+import type { DebugPort, ErrorSinkPort, IdentityPort, NotifyOptions, NotifyPort, OverlayPersistencePort } from "@ai-matrx/summon/open";
 import type { DataOverlayPersistence } from "@ai-matrx/summon/persistence/data";
 import { toast } from "@/lib/toast";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";

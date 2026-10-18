@@ -1,11 +1,11 @@
 "use client";
 
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 export type ErrorInspectorWindowDefinitionData = Record<string, unknown>;
 
-export const errorInspectorWindowOverlay = defineOverlay<ErrorInspectorWindowDefinitionData>()({
+export const errorInspectorWindowOverlay = /* @__PURE__ */ defineOverlay<ErrorInspectorWindowDefinitionData>()({
   id: "errorInspectorWindow",
   label: "Error Inspector",
   instance: "single",

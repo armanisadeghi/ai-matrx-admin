@@ -17,13 +17,13 @@
 
 import { useContext, useEffect, useState } from "react";
 import { ReactReduxContext } from "react-redux";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   registerCopySubsetSession,
   releaseCopySubsetSession,
 } from "@/components/agent-copy/copy-subset/session";
 import type { CopySubsetSource } from "@/components/agent-copy/copy-subset/types";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "copySubsetWindow" as const;
@@ -103,7 +103,7 @@ export function CopySubsetWindowController<T>(
 
 export type CopySubsetWindowDefinitionData = OpenCopySubsetWindowOptions<unknown>;
 
-export const copySubsetWindowOverlay = defineOverlay<CopySubsetWindowDefinitionData>()({
+export const copySubsetWindowOverlay = /* @__PURE__ */ defineOverlay<CopySubsetWindowDefinitionData>()({
   id: "copySubsetWindow",
   label: "Copy subset",
   instance: "multi",

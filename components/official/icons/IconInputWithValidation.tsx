@@ -15,7 +15,7 @@ import { IconResolver,
   isRegisteredOrLucideIconName,
 } from "@ai-matrx/icons";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { useOpenCuratedIconPickerWindow } from "@/features/overlays/definitions/curatedIconPickerWindow.overlay";
 import type { CuratedIconPickerHandle } from "@/features/overlays/definitions/curatedIconPickerWindow.overlay";
 import { cn } from "@/lib/utils";

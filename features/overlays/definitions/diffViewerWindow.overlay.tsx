@@ -12,9 +12,9 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { DiffEngine, DiffView } from "@ai-matrx/diff/react";
-import { defineOverlay } from "@ai-matrx/summon/react";
+import { defineOverlay } from "@ai-matrx/summon/root";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "diffViewerWindow" as const;
@@ -85,7 +85,7 @@ export function DiffViewerWindowController(
 
 export type DiffViewerWindowDefinitionData = OpenDiffViewerWindowOptions;
 
-export const diffViewerWindowOverlay = defineOverlay<DiffViewerWindowDefinitionData>()({
+export const diffViewerWindowOverlay = /* @__PURE__ */ defineOverlay<DiffViewerWindowDefinitionData>()({
   id: "diffViewerWindow",
   label: "Diff Viewer Window",
   instance: "multi",
