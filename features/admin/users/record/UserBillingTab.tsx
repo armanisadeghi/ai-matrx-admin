@@ -71,7 +71,7 @@ export async function listBillingEvents(userId: string): Promise<BillingEvent[]>
       .limit(200),
   ]);
   const failed = grants.error ?? redemptions.error ?? resets.error;
-  if (failed) throw new Error(failed.message);
+  if (failed) throw failed;
   const out: BillingEvent[] = [];
   for (const g of grants.data ?? []) {
     out.push({

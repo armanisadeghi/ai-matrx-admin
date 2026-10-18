@@ -18,10 +18,10 @@ import {
   listSupportSessions,
   listSupportSessionsForTarget,
   type SupportSessionEvent,
-  type SupportSessionRow,
+  type SupportSessionListRow,
 } from "./service";
 
-type Row = SupportSessionRow & {
+type Row = SupportSessionListRow & {
   trail: SupportSessionEvent[];
   also_signed_in: number;
 };
@@ -45,7 +45,7 @@ function time(value: string | null): string {
   return value ? new Date(value).toLocaleString() : "—";
 }
 
-function toRow(row: SupportSessionRow): Row {
+function toRow(row: SupportSessionListRow): Row {
   const trail = Array.isArray(row.events) ? (row.events as unknown as SupportSessionEvent[]) : [];
   return {
     ...row,
@@ -73,7 +73,7 @@ const COLUMNS: MatrxColumnDef<Row>[] = [
     accessorKey: "admin_email",
     header: "Admin",
     width: 180,
-    cell: (r) => <AdminUserRef userId={r.admin_user_id} />,
+    cell: (r) => (r.admin_user_id ? <AdminUserRef userId={r.admin_user_id} /> : <span className="text-muted-foreground">—</span>),
   },
   { id: "reason", accessorKey: "reason", header: "Reason", width: 220 },
   {

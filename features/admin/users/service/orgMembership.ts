@@ -49,7 +49,7 @@ export async function listPersonMemberships(userId: string): Promise<PersonMembe
     .eq("container_type", "organization")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return (data ?? []).map((row) => {
     const org = (Array.isArray(row.organization) ? row.organization[0] : row.organization) as
       | { name: string | null; slug: string | null; is_system: boolean | null; archived_at: string | null }

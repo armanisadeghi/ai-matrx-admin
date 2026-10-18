@@ -12,7 +12,8 @@ import { readOf } from "@ai-matrx/design-system";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { createClient } from "@/utils/supabase/client";
-import { isJsonObject, type Json } from "@/types/json";
+import { isJsonObject } from "@/types/json";
+import type { Json } from "@/types/database.types";
 import { AdminUserRef } from "../components/AdminUserRef";
 import { resolveAdminUserLabels } from "../useAdminUserLabel";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
@@ -64,7 +65,7 @@ export async function listUserAdminHistory(userId: string, limit = 500): Promise
       .limit(limit),
   ]);
   const failed = platform.error ?? org.error;
-  if (failed) throw new Error(failed.message);
+  if (failed) throw failed;
   const rows: HistoryRow[] = [
     ...(platform.data ?? []).map((r) => ({
       id: `p:${r.id}`,

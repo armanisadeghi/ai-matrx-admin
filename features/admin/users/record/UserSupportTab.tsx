@@ -37,7 +37,7 @@ async function listFeedbackBy(userId: string): Promise<FeedbackRow[]> {
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(200);
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return (data ?? []).map((r) => ({ ...r, priority: r.priority === null ? null : String(r.priority) }));
 }
 

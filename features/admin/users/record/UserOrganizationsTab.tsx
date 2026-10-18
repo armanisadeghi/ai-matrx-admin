@@ -14,7 +14,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import AppLink from "@/components/navigation/AppLink";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { toast } from "@/lib/toast";
+import { recordToast, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { getRoleLabel, isOrgRole, type OrgRole } from "@/features/organizations/types";
 import { listPersonMemberships, mutateOrgMembership, type PersonMembership } from "../service/orgMembership";
@@ -90,7 +90,7 @@ function AddToOrganizationDialog({
     setSaving(true);
     try {
       await mutateOrgMembership("POST", { organizationId: picked.id, userId, role });
-      toast.success(`Added to ${picked.name}`);
+      recordToast.success({ type: "organization", id: picked.id, title: picked.name }, `Added to ${picked.name}`);
       onAdded();
       close();
     } catch (e) {
@@ -110,23 +110,23 @@ function AddToOrganizationDialog({
         <div className="space-y-3">
           <SearchField value={query} placeholder="Search organizations…" onChange={(e) => setQuery(e.target.value)} aria-label="Search organizations" />
           {searchError ? <p className="type-secondary text-destructive">{searchError}</p> : null}
-          <div className="max-h-56 overflow-y-auto">
-            {query.trim().length >= 2 && results.length === 0 && !searchError ? (
-              <p className="type-secondary text-muted-foreground">No organization matches</p>
-            ) : null}
-            {results.map((o) => (
-              <button
-                key={o.id}
-                type="button"
-                data-clickable=""
-                onClick={() => setPicked({ id: o.id, name: o.name })}
-                className={`flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left type-body ${picked?.id === o.id ? "bg-accent" : "hover:bg-accent/60"}`}
-              >
-                <span className="truncate">{o.name}</span>
-                <span className="type-meta text-muted-foreground">{o.slug}</span>
-              </button>
-            ))}
-          </div>
+          {query.trim().length >= 2 && results.length === 0 && !searchError ? (
+            <p className="type-secondary text-muted-foreground">No organization matches</p>
+          ) : null}
+          {results.length > 0 ? (
+            <Select<string>
+              aria-label="Organization"
+              value={picked?.id ?? ""}
+              options={[
+                { value: "", label: `Pick one of ${results.length}`, disabled: true },
+                ...results.map((o) => ({ value: o.id, label: `${o.name} · ${o.slug}` })),
+              ]}
+              onValueChange={(id) => {
+                const o = results.find((r) => r.id === id);
+                setPicked(o ? { id: o.id, name: o.name } : null);
+              }}
+            />
+          ) : null}
           <Select<OrgRole> aria-label="Role" value={role} options={ROLE_OPTIONS} onValueChange={setRole} />
         </div>
         <DialogFooter>

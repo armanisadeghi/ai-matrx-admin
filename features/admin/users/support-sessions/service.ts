@@ -9,6 +9,15 @@ import type { Database } from "@/types/database.types";
 
 type AdminFns = Database["admin"]["Functions"];
 export type SupportSessionRow = AdminFns["support_session_list"]["Returns"][number];
+/**
+ * A support session as a table shows it. The generator renders RETURNS TABLE columns non-null, but
+ * ended_at / started_at / emails / ip are null for many rows; the direct per-person read says so.
+ */
+export type SupportSessionListRow = {
+  [K in keyof SupportSessionRow]: K extends "id" | "status" | "target_user_id" | "minutes_granted" | "created_at"
+    ? SupportSessionRow[K]
+    : SupportSessionRow[K] | null;
+};
 export type CurrentSupportSession = AdminFns["support_session_current"]["Returns"][number];
 
 export interface SupportSessionEvent {
@@ -63,7 +72,7 @@ export async function listSupportSessions(limit = 200): Promise<SupportSessionRo
  * read; index (target_user_id, created_at DESC)) in the same row shape support_session_list returns.
  * Emails are null here: the table names people by id (AdminUserRef resolves them).
  */
-export async function listSupportSessionsForTarget(targetUserId: string, limit = 200): Promise<SupportSessionRow[]> {
+export async function listSupportSessionsForTarget(targetUserId: string, limit = 200): Promise<SupportSessionListRow[]> {
   const supabase = createClient().schema("admin");
   const swept = await supabase.rpc("support_session_close_expired");
   if (swept.error) throw swept.error;
