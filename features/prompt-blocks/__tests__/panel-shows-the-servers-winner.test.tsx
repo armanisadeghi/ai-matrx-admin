@@ -25,8 +25,9 @@ const BLOCK = {
 
 const resolveCalls: unknown[] = [];
 
+const stableDispatch = () => undefined;
 jest.mock("@/lib/redux/hooks", () => ({
-  useAppDispatch: () => jest.fn(),
+  useAppDispatch: () => stableDispatch,
   useAppSelector: () => "me-1",
 }));
 jest.mock("@/lib/toast", () => ({ toast: { warning: () => {}, error: () => {}, success: () => {}, info: () => {} } }));
