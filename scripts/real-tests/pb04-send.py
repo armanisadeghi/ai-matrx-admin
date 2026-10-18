@@ -71,7 +71,7 @@ TURN_2_SHORT_LINE = (
     "The driver called again. Send the line once more, now with the door and the yard contact added, and quote "
     "this back to me exactly: {{carrier}} / {{hold_code}}"
 )
-SHORT_LINE_VERSION = None  # the agent version number whose recipe is the short line; None until it is built
+SHORT_LINE_VERSION = 2  # Kestrel Dock Desk v2 (1f6dcd51-…, built 2026-10-18) is the short-line recipe
 
 # The pick list's items, rewritten whole by custom.pick_list_update (it gives every item a new id).
 ITEMS_START = [
