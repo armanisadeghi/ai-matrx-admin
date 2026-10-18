@@ -5,7 +5,7 @@
 
 import type { EntityFilters } from "@/lib/entity-list/types";
 import { dataHomeKindWord } from "./dataHomeRows";
-import { normalize, parseTokens } from "./dataHomeSearch";
+import { normalize, parseTokens, UPDATED_BUCKET_MS } from "./dataHomeSearch";
 
 /** The group header's bucket for a date (Updated grouped). */
 export function updatedBucket(iso: string | null, now = Date.now()): string {
@@ -24,6 +24,7 @@ export function updatedBucket(iso: string | null, now = Date.now()): string {
 export function tokensToFilters(
   search: string,
   known: { kinds: readonly string[]; organizations: ReadonlyArray<{ id: string; name: string }> },
+  now = Date.now(),
 ): { search: string; filters: EntityFilters } | null {
   const { text, tokens } = parseTokens(search);
   if (text === search.replace(/\s+/g, " ").trim()) return null;
@@ -47,7 +48,10 @@ export function tokensToFilters(
     filters.owner = { kind: "select", values: ["You"] };
   }
   if (tokens.starred) filters.favorite = { kind: "boolean", value: true };
-  if (tokens.updated) filters.updated = { kind: "select", values: [tokens.updated] };
+  if (tokens.updated) {
+    // `updated:7d` is the table's date range "since 7 days ago" on the Updated column.
+    filters.updated = { kind: "date", since: new Date(now - (UPDATED_BUCKET_MS[tokens.updated] ?? 0)).toISOString() };
+  }
   if (tokens.titleOnly) filters.title_only = { kind: "boolean", value: true };
   return { search: text ? `${text} ` : "", filters };
 }

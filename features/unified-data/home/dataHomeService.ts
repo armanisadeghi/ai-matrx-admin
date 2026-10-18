@@ -21,7 +21,7 @@ import {
 } from "@/lib/entity-list/types";
 import { inDataHomeScope, isDataHomeScope, type DataHomeScope } from "@/features/unified-data/hub/dataHomeScope";
 import type { DataHomeRow } from "./dataHomeRows";
-import { matchesTokens, parseTokens, scoreRow, UPDATED_BUCKET_MS } from "./dataHomeSearch";
+import { matchesTokens, parseTokens, scoreRow } from "./dataHomeSearch";
 
 /** The most rows the home holds in hand (a stated bound, not a silent one). */
 
@@ -135,22 +135,10 @@ function passesFilters(
   row: DataHomeRow,
   filters: EntityFilters,
   opts: DataHomeServiceOptions,
-  now: number,
   skip?: string,
 ): boolean {
   for (const [id, filter] of Object.entries(filters)) {
     if (id === skip || id === "title_only") continue;
-    if (id === "updated" && filter.kind === "select") {
-      if (filter.values.length === 0) continue;
-      const at = row.updatedAt ? Date.parse(row.updatedAt) : Number.NaN;
-      const ok = filter.values.some((bucket) => {
-        if (bucket === NONE_VALUE) return !Number.isFinite(at);
-        const span = UPDATED_BUCKET_MS[bucket];
-        return span !== undefined && Number.isFinite(at) && now - at <= span;
-      });
-      if (!ok) return false;
-      continue;
-    }
     const raw = fieldValue(row, id, opts);
     if (filter.kind === "select") {
       if (filter.values.length === 0) continue;
@@ -160,6 +148,12 @@ function passesFilters(
       if (!text(raw).toLowerCase().includes(filter.value.toLowerCase())) return false;
     } else if (filter.kind === "boolean") {
       if (Boolean(raw) !== filter.value) return false;
+    } else if (filter.kind === "date") {
+      // since inclusive, until exclusive; a row with no moment is out of any range.
+      const at = typeof raw === "string" ? Date.parse(raw) : Number.NaN;
+      if (!Number.isFinite(at)) return false;
+      if (filter.since && at < Date.parse(filter.since)) return false;
+      if (filter.until && at >= Date.parse(filter.until)) return false;
     }
   }
   return true;
@@ -219,7 +213,7 @@ export function createDataHomeService(opts: DataHomeServiceOptions): EntityListS
     for (const row of rows) {
       if (o.lane && !inDataHomeScope(row, o.lane)) continue;
       if (o.org !== false && query.orgId && row.organizationId !== query.orgId) continue;
-      if (!passesFilters(row, query.filters, opts, t, o.skip)) continue;
+      if (!passesFilters(row, query.filters, opts, o.skip)) continue;
       if (!matchesTokens(row, tokens, opts.isStarred(row), opts.ownerLabel, t)) continue;
       const score = scoreRow(row, words, { titleOnly: Boolean(titleOnly), ownerLabel: opts.ownerLabel });
       if (score === null) continue;

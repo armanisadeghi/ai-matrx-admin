@@ -33,7 +33,7 @@ import {
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SyncedBadge } from "@/features/unified-data/connect-database/SyncedBadge";
-import { DATE_FILTER_OPTIONS, Muted, TextCell, timeCell, type EntityColumnSpec } from "@/lib/entity-list/columns";
+import { Muted, TextCell, timeCell, type EntityColumnSpec } from "@/lib/entity-list/columns";
 import type { RecordCountStore } from "./dataHomeRecordCounts";
 import { ACCESS_WHY, ACCESS_WORD, dataHomeKindWord, type DataHomeAccess, type DataHomeRow } from "./dataHomeRows";
 
@@ -315,8 +315,7 @@ export function dataHomeColumns(ctx: DataHomeColumnContext): EntityColumnSpec<Da
         id: "updated",
         accessorKey: "updatedAt",
         header: "Updated",
-        filter: "select",
-        filterOptions: DATE_FILTER_OPTIONS,
+        filter: "date",
         width: 90,
         cell: (row) => timeCell(row.updatedAt),
       },
