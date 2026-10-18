@@ -86,3 +86,21 @@ export function blockBoundary(
   const newline = text.lastIndexOf("\n", from - 1);
   return newline === -1 ? 0 : newline + 1;
 }
+
+/**
+ * Insert `block` as its own paragraph under ("after") or over ("before") the
+ * LINE that holds [from, to] — the plain-text "Insert below / above" (Q-06 real
+ * test, 2026-10-17: splicing at the selection's characters split the line).
+ */
+export function insertBlockAtLine(
+  text: string,
+  from: number,
+  to: number,
+  block: string,
+  where: "before" | "after",
+): string {
+  const at = blockBoundary(text, from, to, where);
+  return where === "before"
+    ? text.slice(0, at) + block + "\n\n" + text.slice(at)
+    : text.slice(0, at) + "\n\n" + block + text.slice(at);
+}

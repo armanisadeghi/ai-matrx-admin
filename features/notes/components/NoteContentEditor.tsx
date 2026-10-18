@@ -97,6 +97,8 @@ import { insertAtRichCaret } from "@ai-matrx/rich-content/editor/editor/caretIns
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { insertBlockAtLine } from "@/utils/text-insertion";
+
 interface NoteContentEditorProps {
   noteId: string;
   /**
@@ -513,12 +515,9 @@ export function NoteContentEditor({
         );
         return;
       }
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
+      // Under / over the selection's LINE, never inside it (Q-06).
       handleChangeFlush(
-        position === "before"
-          ? base.slice(0, start) + text + "\n\n" + base.slice(start)
-          : base.slice(0, end) + "\n\n" + text + base.slice(end),
+        insertBlockAtLine(base, ta.selectionStart, ta.selectionEnd, text, position),
       );
     },
     [localContent, handleChangeFlush, richMode],
