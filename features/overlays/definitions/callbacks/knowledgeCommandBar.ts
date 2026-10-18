@@ -8,7 +8,8 @@
  * overlay resolves it, and the group is disposed when the bar closes.
  */
 
-import { callbackManager } from "@ai-matrx/summon/handles";
+// The light path on `./open`: registering and reading a payload never loads the registry.
+import { peekHandle, registerHandleEntry, unregisterHandleEntry } from "@ai-matrx/summon/open";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
 
@@ -24,12 +25,10 @@ export function createKnowledgeCommandBarCallbackGroup(
 ): { callbackGroupId: string; dispose: () => void } {
   // MATRX-EXCEPTION: stored as a non-callable payload, retrieved via `get`,
   // never `trigger`ed — the same convention as `createReferencePickerCallbackGroup`.
-  const callbackGroupId = callbackManager.register(
-    group as unknown as () => void,
-  );
+  const callbackGroupId = registerHandleEntry(group);
   return {
     callbackGroupId,
-    dispose: () => callbackManager.unregister(callbackGroupId),
+    dispose: () => unregisterHandleEntry(callbackGroupId),
   };
 }
 
@@ -38,12 +37,12 @@ export function getKnowledgeCommandBarCallbackGroup(
 ): KnowledgeCommandBarCallbackGroup | null {
   if (!callbackGroupId) return null;
   return (
-    callbackManager.get<KnowledgeCommandBarCallbackGroup>(callbackGroupId) ?? null
+    peekHandle<KnowledgeCommandBarCallbackGroup>(callbackGroupId) ?? null
   );
 }
 
 export function disposeKnowledgeCommandBarCallbackGroup(
   callbackGroupId: string | null | undefined,
 ): void {
-  if (callbackGroupId) callbackManager.unregister(callbackGroupId);
+  if (callbackGroupId) unregisterHandleEntry(callbackGroupId);
 }

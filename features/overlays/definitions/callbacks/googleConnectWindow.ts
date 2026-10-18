@@ -1,4 +1,6 @@
-import { callbackManager } from "@ai-matrx/summon/handles";
+// Registration is the light path on `./open` (no registry in first load); the emit loads it.
+import { newHandleId, registerHandleEntry, removeHandleGroup } from "@ai-matrx/summon/open";
+
 import type { CanonicalStorageImport } from "@/features/files/storage-sources/types";
 
 export interface GoogleDriveImportedEvent {
@@ -30,16 +32,16 @@ export function disposeGoogleConnectCallbackGroup(
 ): void {
   if (!callbackGroupId) return;
   activeGoogleConnectCallbackGroups.delete(callbackGroupId);
-  callbackManager.removeGroup(callbackGroupId);
+  removeHandleGroup(callbackGroupId);
 }
 
 export function createGoogleConnectCallbackGroup(
   handlers: GoogleConnectWindowHandlers,
 ): { callbackGroupId: string; dispose: () => void } {
-  const callbackGroupId = callbackManager.createGroup();
+  const callbackGroupId = newHandleId();
   activeGoogleConnectCallbackGroups.add(callbackGroupId);
-  callbackManager.registerWithContext<GoogleConnectWindowEvent>(
-    async (event) => {
+  registerHandleEntry(
+    async (event: GoogleConnectWindowEvent) => {
       if (event.type === "drive-imported") {
         await handlers.onDriveImported?.(event);
       }
@@ -65,6 +67,7 @@ export async function emitGoogleConnectEvent(
   ) {
     return;
   }
+  const { callbackManager } = await import("@ai-matrx/summon/handles");
   await callbackManager.triggerGroupCommand(callbackGroupId, event, {
     removeAfterSuccess: false,
   });

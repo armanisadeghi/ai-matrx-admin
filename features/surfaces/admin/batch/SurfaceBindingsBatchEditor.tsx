@@ -1,5 +1,6 @@
 "use client";
 
+import { announceBindingsChanged } from "../../utils/bindings-changed";
 import { readOf } from "@ai-matrx/design-system";
 import {
   UntrustedCount,
@@ -356,6 +357,7 @@ export function SurfaceBindingsBatchEditor({
         else created += 1;
       }
       setResult({ created, updated, failed: res.failed });
+      announceBindingsChanged();
 
       if (res.failed.length === 0) {
         toast.success(

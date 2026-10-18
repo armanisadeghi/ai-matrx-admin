@@ -9,8 +9,9 @@
  *   unmount to close.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -20,14 +21,20 @@ export interface AgentMemoryWindowHandle {
   close: () => void;
 }
 
-export function useOpenAgentMemoryWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback((): AgentMemoryWindowHandle => {
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createAgentMemoryWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (): AgentMemoryWindowHandle => {
     dispatch(openOverlay({ overlayId: OVERLAY_ID, data: {} }));
     return {
       close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
     };
-  }, [dispatch]);
+  };
+}
+
+export function useOpenAgentMemoryWindow() {
+  const store = useAppStore();
+  return useMemo(() => createAgentMemoryWindowOpener(store), [store]);
 }
 
 /**

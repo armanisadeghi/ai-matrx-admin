@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -14,26 +15,29 @@ export interface OpenSurfaceContextWindowOptions {
   initialSection?: "values" | "actions" | "agents";
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createSurfaceContextWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (options: OpenSurfaceContextWindowOptions) => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          surfaceName: options.surfaceName,
+          isEditable: options.isEditable === true,
+          initialSection: options.initialSection ?? "values",
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenSurfaceContextWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenSurfaceContextWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            surfaceName: options.surfaceName,
-            isEditable: options.isEditable === true,
-            initialSection: options.initialSection ?? "values",
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createSurfaceContextWindowOpener(store), [store]);
 }
 
 export function SurfaceContextWindowController(

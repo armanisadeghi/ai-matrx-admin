@@ -17,6 +17,8 @@ import {
   type AgentScope,
 } from "@/features/agent-shortcuts/constants";
 import { BindingTargetPicker } from "@/features/scopes/components/active-context/binding-target/BindingTargetPicker";
+import { bindingTier } from "../../utils/binding-tier";
+import { announceBindingsChanged } from "../../utils/bindings-changed";
 import { SurfaceVariableBindingList } from "./SurfaceVariableBinding";
 import { buildBindingTargets } from "@ai-matrx/chat/surfaces/utils/buildBindingTargets";
 import { BASELINE_VALUES } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
@@ -140,7 +142,9 @@ export function BindingColumn({ agent }: { agent: AgentDefinition }) {
 
   return (
     <BindingForm
-      key={`${surfaceName}::${bindingId ?? "new"}`}
+      // existing?.id in the key: bindings load after first render, and a form that
+      // mounted before its binding arrived must remount on its own tier (L6c).
+      key={`${surfaceName}::${bindingId ?? "new"}::${existing?.id ?? "none"}`}
       agent={agent}
       surfaceName={surfaceName}
       existing={existing}
@@ -220,23 +224,11 @@ function BindingForm({
 }: BindingFormProps) {
   const dispatch = onDispatch;
 
-  const initialScope: AgentScope = existing
-    ? existing.userId
-      ? AGENT_SCOPES.USER
-      : existing.organizationId
-        ? AGENT_SCOPES.ORGANIZATION
-        : existing.projectId
-          ? AGENT_SCOPES.PROJECT
-          : existing.taskId
-            ? AGENT_SCOPES.TASK
-            : AGENT_SCOPES.GLOBAL
-    : AGENT_SCOPES.USER;
-  const initialScopeId = existing
-    ? (existing.userId ??
-      existing.organizationId ??
-      existing.projectId ??
-      existing.taskId ??
-      undefined)
+  // The binding's OWN tier (L6c) — never the user tier by default.
+  const ownTier = existing ? bindingTier(existing) : null;
+  const initialScope: AgentScope = ownTier?.scope ?? AGENT_SCOPES.USER;
+  const initialScopeId = ownTier
+    ? ownTier.scopeId
     : (defaultUserId ?? undefined);
 
   const [scope, setScope] = useState<AgentScope>(initialScope);
@@ -352,6 +344,7 @@ function BindingForm({
         })),
       ).unwrap();
       toast.success(existing ? "Binding updated" : "Binding created");
+      announceBindingsChanged(surfaceName);
       onSaved(saved.id);
     } catch (e) {
       (isCapturedSurfaceRegistrationError(e)
@@ -382,6 +375,7 @@ function BindingForm({
         deleteAgentSurfaceBindingThunk({ bindingId: existing.id }),
       ).unwrap();
       toast.success("Binding removed");
+      announceBindingsChanged(surfaceName);
       onDeleted();
     } catch (e) {
       (isCapturedSurfaceRegistrationError(e)

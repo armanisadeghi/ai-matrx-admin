@@ -7,8 +7,9 @@
  * is the hook.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -34,14 +35,17 @@ export function shortcutEditorWindowAction(args: OpenShortcutEditorWindowArgs) {
   });
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createShortcutEditorWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (args: OpenShortcutEditorWindowArgs) => {
+    dispatch(shortcutEditorWindowAction(args));
+  };
+}
+
 export function useOpenShortcutEditorWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (args: OpenShortcutEditorWindowArgs) => {
-      dispatch(shortcutEditorWindowAction(args));
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createShortcutEditorWindowOpener(store), [store]);
 }
 
 export type ShortcutEditorWindowDefinitionData = OpenShortcutEditorWindowArgs;

@@ -27,7 +27,7 @@ import {
   mandateOutputUnusableSentence,
   runHeadlessAgentJson,
 } from "@ai-matrx/chat/agents/redux/execution-system/thunks/run-headless-agent-json";
-import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.overlay";
+import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
 import { studyService } from "@/features/education/study/service/studyService";
 import {
   REVIEW_RUN_LABEL,

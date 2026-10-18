@@ -1,0 +1,33 @@
+/**
+ * The tier a stored surface binding lives on, as the editors' scope picker
+ * understands it. L6c (2026-10-18): every editor that takes an existing
+ * binding opens it on the binding's OWN tier (user / org / project / task /
+ * global as stored) and saves back to that same row.
+ *
+ * `AgentSurfaceBinding.userId/organizationId/projectId/taskId` are derived
+ * from the tier-encoded edge role by the binding service (exactly one is
+ * non-null; all null = global), so the first non-null id IS the tier.
+ */
+import {
+  AGENT_SCOPES,
+  type AgentScope,
+} from "@/features/agent-shortcuts/constants";
+
+export interface BindingTierFields {
+  userId: string | null;
+  organizationId: string | null;
+  projectId: string | null;
+  taskId: string | null;
+}
+
+export function bindingTier(b: BindingTierFields): {
+  scope: AgentScope;
+  scopeId: string | undefined;
+} {
+  if (b.userId) return { scope: AGENT_SCOPES.USER, scopeId: b.userId };
+  if (b.organizationId)
+    return { scope: AGENT_SCOPES.ORGANIZATION, scopeId: b.organizationId };
+  if (b.projectId) return { scope: AGENT_SCOPES.PROJECT, scopeId: b.projectId };
+  if (b.taskId) return { scope: AGENT_SCOPES.TASK, scopeId: b.taskId };
+  return { scope: AGENT_SCOPES.GLOBAL, scopeId: undefined };
+}

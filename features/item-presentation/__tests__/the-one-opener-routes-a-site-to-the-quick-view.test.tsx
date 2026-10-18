@@ -29,20 +29,14 @@ jest.mock("@ai-matrx/detail/react", () => ({
   ...jest.requireActual("@ai-matrx/detail/react"),
   useOpenDetail: () => openDetail,
 }));
-jest.mock("@/features/overlays/definitions/agentRunWindow.overlay", () => ({
+jest.mock("@ai-matrx/chat/host/window-openers", () => ({
   useOpenAgentRunWindow: () => jest.fn(),
-}));
-jest.mock("@/features/overlays/definitions/notesWindow.overlay", () => ({
   useOpenNotesWindow: () => jest.fn(),
+  useOpenTaskEditorWindow: () => jest.fn(),
+  useOpenPickListManagerWindow: () => jest.fn(),
 }));
 jest.mock("@/features/overlays/definitions/filePreviewWindow.overlay", () => ({
   useOpenFilePreviewWindow: () => jest.fn(),
-}));
-jest.mock("@/features/overlays/definitions/taskEditorWindow.overlay", () => ({
-  useOpenTaskEditorWindow: () => jest.fn(),
-}));
-jest.mock("@/features/overlays/definitions/pickListManagerWindow.overlay", () => ({
-  useOpenPickListManagerWindow: () => jest.fn(),
 }));
 
 import { useOpenItemPresentation } from "../useOpenItemPresentation";

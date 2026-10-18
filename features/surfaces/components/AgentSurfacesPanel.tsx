@@ -1,4 +1,5 @@
 "use client";
+import { announceBindingsChanged } from "../utils/bindings-changed";
 import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
@@ -329,6 +330,7 @@ export function AgentSurfacesPanel({ agent }: Props) {
         deleteAgentSurfaceBindingThunk({ bindingId: binding.id }),
       ).unwrap();
       toast.success("Binding removed");
+      announceBindingsChanged(binding.surfaceName);
     } catch (e) {
       (isCapturedSurfaceRegistrationError(e)
         ? toastErrorAlreadyCaptured
@@ -963,6 +965,7 @@ function BindingEditorDialog({
       }
 
       toast.success(existing ? "Binding updated" : "Binding created");
+      announceBindingsChanged(surfaceName);
       onSaved();
     } catch (e) {
       (isCapturedSurfaceRegistrationError(e)

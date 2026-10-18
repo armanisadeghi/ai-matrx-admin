@@ -9,7 +9,7 @@ jest.mock("@ai-matrx/chat/agents/redux/execution-system/thunks/run-headless-agen
   ...jest.requireActual("@ai-matrx/chat/agents/redux/execution-system/thunks/run-headless-agent-json"),
   runHeadlessAgentJson: jest.fn(),
 }));
-jest.mock("@/features/overlays/definitions/liveRunWindow.overlay", () => ({
+jest.mock("@/features/overlays/definitions/liveRunWindow.action", () => ({
   openLiveRunWindowAction: jest.fn(() => ({ type: "noop" })),
 }));
 jest.mock("@/features/education/study/reviewRun", () => ({

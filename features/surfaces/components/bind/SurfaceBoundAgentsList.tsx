@@ -9,6 +9,7 @@
  * Compact single-line rows: Play · name · Settings · Detach (when bound here).
  */
 
+import { announceBindingsChanged, useOnBindingsChanged } from "../../utils/bindings-changed";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Loader2, Play, Plus, Settings, Unlink } from "lucide-react";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
@@ -117,6 +118,9 @@ export function SurfaceBoundAgentsList({
   useEffect(() => {
     void refresh();
   }, [refresh]);
+  // A binding saved or removed anywhere (another window, the Agents settings)
+  // refreshes this list without a reload.
+  useOnBindingsChanged(() => void refresh());
 
   // Both reads settled: the list has its final rows. Remember that height for the next open of this surface.
   const rolesSettled = rolesStatus === "ready" || rolesStatus === "error";
@@ -393,6 +397,7 @@ export function SurfaceBoundAgentsList({
           try {
             await deleteAgentSurfaceBinding(detachTarget.bindingId);
             toast.success(`Removed from ${surfaceLabel}`);
+            announceBindingsChanged(surfaceName);
             setDetachTarget(null);
             void refresh();
           } catch (e) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { announceBindingsChanged } from "../utils/bindings-changed";
 import React, {
   useCallback,
   useEffect,
@@ -1917,6 +1918,7 @@ function RolesSection({
           ? `${roleName} runs immediately on this surface`
           : `${roleName} waits for Run on this surface`,
       );
+      announceBindingsChanged(surfaceName);
       onChanged();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Auto-run save failed");

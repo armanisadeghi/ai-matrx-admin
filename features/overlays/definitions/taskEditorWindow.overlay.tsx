@@ -8,10 +8,12 @@
  * existing window instead of stacking duplicates.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { taskEditorInstanceId } from "./opener-instance-ids";
 
 const OVERLAY_ID = "taskEditorWindow" as const;
 
@@ -26,30 +28,30 @@ export interface TaskEditorWindowHandle {
   close: () => void;
 }
 
-export function taskEditorInstanceId(taskId: string): string {
-  return `task-${taskId}`;
+
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createTaskEditorWindowOpener(store: AppStore) {
+  const dispatch = store.dispatch;
+  return (opts: OpenTaskEditorWindowOptions): TaskEditorWindowHandle => {
+    const instanceId = opts.instanceId ?? taskEditorInstanceId(opts.taskId);
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        instanceId,
+        data: { taskId: opts.taskId },
+      }),
+    );
+    return {
+      instanceId,
+      close: () =>
+        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+    };
+  };
 }
 
 export function useOpenTaskEditorWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenTaskEditorWindowOptions): TaskEditorWindowHandle => {
-      const instanceId = opts.instanceId ?? taskEditorInstanceId(opts.taskId);
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: { taskId: opts.taskId },
-        }),
-      );
-      return {
-        instanceId,
-        close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createTaskEditorWindowOpener(store), [store]);
 }
 
 export type TaskEditorWindowDefinitionData = OpenTaskEditorWindowOptions;
