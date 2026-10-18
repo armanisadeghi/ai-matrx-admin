@@ -1,0 +1,3610 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0464",
+  "version": 1,
+  "title": "Catering Business Desk",
+  "description": "Clients, catered events, menu items, prep lists and event staffing for a caterer.",
+  "forWho": "Caterers and event food companies",
+  "icon": {
+    "emoji": "🥘"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "catering",
+    "events",
+    "prep list",
+    "staffing"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-catering-business-desk",
+    "catalogueId": "SP0464",
+    "useCase": "Corinne Abernathy-Reyes runs a catering company and uses this to see which events are close, what has to be prepped, who is staffed and which deposits are still unpaid.",
+    "industry": "hospitality_food",
+    "vertical": "Catering business",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Saffron & Sage Catering",
+      "describes": "A twelve-person catering company serving weddings, office lunches and private dinners, with a commissary kitchen and a small event staff.",
+      "address": {
+        "line1": "44 Millrace Drive",
+        "city": "Greenville",
+        "region": "SC",
+        "postalCode": "29601",
+        "country": "US"
+      },
+      "phone": "(864) 555-0133",
+      "website": "saffronsagecatering.net",
+      "email": "events@saffronsagecatering.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-catering-business-desk",
+    "tables": [
+      {
+        "token": "client",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "client_name",
+        "describes": "The people and companies the caterer serves.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "client_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Current",
+              "Past"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Current": "blue",
+              "Past": "amber"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Current": "in_progress",
+              "Past": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Client type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Couple",
+              "Company",
+              "Family",
+              "Nonprofit"
+            ],
+            "choiceColors": {
+              "Couple": "slate",
+              "Company": "blue",
+              "Family": "amber",
+              "Nonprofit": "violet"
+            }
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "first_contact",
+            "label": "First contact",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Looked after by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "event_count",
+            "label": "Events",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "events",
+            "pick": "event_name",
+            "agg": "count"
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "add_event",
+            "label": "New event",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "event",
+              "template": "New event",
+              "prefill": {
+                "client": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_mail",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "client_name": "New client",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "About them"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Occasion, guests and the style they love."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Dietary and access needs"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Allergies, religious needs and venue access limits."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Payment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Deposit, balance and who signs the contract."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "client-1",
+            "values": {
+              "client_name": "Kessler & Adeyemi wedding party",
+              "status": "Current",
+              "kind": "Couple",
+              "email": "kessler.adeyemi@mailpost.net",
+              "phone": "(864) 555-0151",
+              "first_contact": "@today-180d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-2",
+            "values": {
+              "client_name": "Cobalt Biosciences",
+              "status": "Current",
+              "kind": "Company",
+              "email": "office@cobaltbio.net",
+              "phone": "(864) 555-0152",
+              "first_contact": "@today-300d",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "client-3",
+            "values": {
+              "client_name": "The Ramsay-Okoye family",
+              "status": "Current",
+              "kind": "Family",
+              "email": "ramsay.okoye@mailpost.net",
+              "phone": "(864) 555-0153",
+              "first_contact": "@today-50d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-4",
+            "values": {
+              "client_name": "Upstate Foodways Alliance",
+              "status": "Past",
+              "kind": "Nonprofit",
+              "email": "events@upstatefoodways.net",
+              "phone": "(864) 555-0154",
+              "first_contact": "@today-600d",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "client-5",
+            "values": {
+              "client_name": "Greenville Chamber Young Professionals",
+              "status": "Current",
+              "kind": "Nonprofit",
+              "email": "yp@greenvillechamber.net",
+              "phone": "(864) 555-0155",
+              "first_contact": "@today-120d",
+              "owner": "tm-5",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "client-6",
+            "values": {
+              "client_name": "Perrin & Valdez rehearsal dinner",
+              "status": "Inquiry",
+              "kind": "Couple",
+              "email": "perrin.valdez@mailpost.net",
+              "phone": "(864) 555-0156",
+              "first_contact": "@today-5d",
+              "owner": "tm-5"
+            }
+          }
+        ]
+      },
+      {
+        "token": "event",
+        "name": "Events",
+        "labelSingular": "Event",
+        "labelPlural": "Events",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-days",
+        "titleField": "event_name",
+        "describes": "Each catered event from inquiry to served, with money tracked.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "event_name",
+            "label": "Event",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Proposal sent",
+              "Booked",
+              "Prep week",
+              "Served"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Proposal sent": "blue",
+              "Booked": "green",
+              "Prep week": "amber",
+              "Served": "violet"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Proposal sent": "in_progress",
+              "Booked": "in_progress",
+              "Prep week": "in_progress",
+              "Served": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wedding",
+              "Office lunch",
+              "Private dinner",
+              "Cocktail reception",
+              "Fundraiser"
+            ],
+            "choiceColors": {
+              "Wedding": "slate",
+              "Office lunch": "blue",
+              "Private dinner": "amber",
+              "Cocktail reception": "violet",
+              "Fundraiser": "teal"
+            }
+          },
+          {
+            "key": "event_on",
+            "label": "Event date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "venue",
+            "label": "Venue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "per_head",
+            "label": "Price per head (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Event total (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Guests} * {Price per head (USD)}"
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit received (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "balance",
+            "label": "Balance due (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Event total (USD)} - {Deposit received (USD)}"
+          },
+          {
+            "key": "days_to_go",
+            "label": "Days to go",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Event date}, 'days')"
+          },
+          {
+            "key": "prep_total",
+            "label": "Prep items",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count"
+          },
+          {
+            "key": "prep_ready",
+            "label": "Prep items packed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count",
+            "filter": {
+              "status": "Packed"
+            }
+          },
+          {
+            "key": "prep_pct",
+            "label": "Prep packed (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Prep items} > 0, ROUND({Prep items packed} / {Prep items} * 100, 0), 0)"
+          },
+          {
+            "key": "staff_ok",
+            "label": "Staff confirmed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "shifts",
+            "pick": "shift_name",
+            "agg": "count",
+            "filter": {
+              "status": "Confirmed"
+            }
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "captain",
+            "label": "Event captain",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close_out",
+            "label": "Close out",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "event_close_out"
+            }
+          },
+          {
+            "key": "add_item",
+            "label": "Add prep item",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "item",
+              "template": "New prep item",
+              "prefill": {
+                "event": "@row"
+              }
+            }
+          },
+          {
+            "key": "add_shift",
+            "label": "Add staffing shift",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "shift",
+              "template": "New staffing shift",
+              "prefill": {
+                "event": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other.",
+          "captain": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New event",
+            "values": {
+              "event_name": "New event",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Service style, timeline and the menu agreed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Logistics"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Load-in time, kitchen access, power, water and parking."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contacts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "On-site contact and the client's day-of number."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "event-1",
+            "values": {
+              "event_name": "Kessler-Adeyemi wedding dinner",
+              "status": "Booked",
+              "kind": "Wedding",
+              "event_on": "@today+48d",
+              "venue": "Bellmont Estate",
+              "guests": 120,
+              "per_head": 95,
+              "deposit": 4500,
+              "client": "client-1",
+              "captain": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-2",
+            "values": {
+              "event_name": "Cobalt quarterly all-hands lunch",
+              "status": "Prep week",
+              "kind": "Office lunch",
+              "event_on": "@today+3d",
+              "venue": "Cobalt campus",
+              "guests": 85,
+              "per_head": 28,
+              "deposit": 0,
+              "client": "client-2",
+              "captain": "tm-3"
+            }
+          },
+          {
+            "key": "event-3",
+            "values": {
+              "event_name": "Ramsay-Okoye anniversary dinner",
+              "status": "Booked",
+              "kind": "Private dinner",
+              "event_on": "@today+18d",
+              "venue": "Client home",
+              "guests": 24,
+              "per_head": 110,
+              "deposit": 1300,
+              "client": "client-3",
+              "captain": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-4",
+            "values": {
+              "event_name": "Chamber young professionals mixer",
+              "status": "Proposal sent",
+              "kind": "Cocktail reception",
+              "event_on": "@today+33d",
+              "venue": "Union Mill loft",
+              "guests": 90,
+              "per_head": 52,
+              "deposit": 0,
+              "client": "client-5",
+              "captain": "tm-3"
+            }
+          },
+          {
+            "key": "event-5",
+            "values": {
+              "event_name": "Perrin-Valdez rehearsal dinner",
+              "status": "Inquiry",
+              "kind": "Private dinner",
+              "event_on": "@today+95d",
+              "venue": "To be decided",
+              "guests": 40,
+              "per_head": 85,
+              "deposit": 0,
+              "client": "client-6",
+              "captain": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-6",
+            "values": {
+              "event_name": "Cobalt summer picnic",
+              "status": "Served",
+              "kind": "Office lunch",
+              "event_on": "@today-40d",
+              "venue": "Cobalt campus",
+              "guests": 150,
+              "per_head": 24,
+              "deposit": 0,
+              "client": "client-2",
+              "captain": "tm-3"
+            }
+          },
+          {
+            "key": "event-7",
+            "values": {
+              "event_name": "Foodways annual fundraiser",
+              "status": "Served",
+              "kind": "Fundraiser",
+              "event_on": "@today-330d",
+              "venue": "Hampton Hall",
+              "guests": 200,
+              "per_head": 62,
+              "deposit": 5000,
+              "client": "client-4",
+              "captain": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "event-8",
+            "values": {
+              "event_name": "Cobalt board dinner",
+              "status": "Booked",
+              "kind": "Private dinner",
+              "event_on": "@today+11d",
+              "venue": "Cobalt boardroom",
+              "guests": 16,
+              "per_head": 120,
+              "deposit": 900,
+              "client": "client-2",
+              "captain": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "menu_item",
+        "name": "Menu",
+        "labelSingular": "Menu item",
+        "labelPlural": "Menu",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "book-open",
+        "titleField": "dish_name",
+        "describes": "The dishes the caterer offers, with dietary tags and cost per head.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "dish_name",
+            "label": "Dish",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "course",
+            "label": "Course",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Appetizer",
+              "Main",
+              "Side",
+              "Dessert",
+              "Station"
+            ],
+            "choiceColors": {
+              "Appetizer": "slate",
+              "Main": "blue",
+              "Side": "amber",
+              "Dessert": "violet",
+              "Station": "teal"
+            }
+          },
+          {
+            "key": "diet",
+            "label": "Dietary",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Vegan",
+              "Vegetarian",
+              "Gluten free",
+              "Contains nuts",
+              "Contains dairy",
+              "Contains shellfish"
+            ],
+            "choiceColors": {
+              "Vegan": "slate",
+              "Vegetarian": "blue",
+              "Gluten free": "amber",
+              "Contains nuts": "violet",
+              "Contains dairy": "teal",
+              "Contains shellfish": "orange"
+            }
+          },
+          {
+            "key": "cost_head",
+            "label": "Food cost per head (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "uses",
+            "label": "Times served",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "items",
+            "pick": "item_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New menu item",
+            "values": {
+              "dish_name": "New menu item"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recipe"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Quantities per 100 guests and the method."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Service"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Holding, plating and transport notes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "menu_item-1",
+            "values": {
+              "dish_name": "Whipped feta crostini",
+              "course": "Appetizer",
+              "diet": "Vegetarian",
+              "cost_head": 2.1,
+              "notes": "Assemble onsite"
+            }
+          },
+          {
+            "key": "menu_item-2",
+            "values": {
+              "dish_name": "Smoked trout rillettes",
+              "course": "Appetizer",
+              "diet": "Contains dairy",
+              "cost_head": 2.9,
+              "notes": "Make two days ahead"
+            }
+          },
+          {
+            "key": "menu_item-3",
+            "values": {
+              "dish_name": "Herb-crusted lamb loin",
+              "course": "Main",
+              "diet": "Gluten free",
+              "cost_head": 14.5,
+              "notes": "Rest ten minutes before slicing"
+            }
+          },
+          {
+            "key": "menu_item-4",
+            "values": {
+              "dish_name": "Roasted chicken thighs, lemon and thyme",
+              "course": "Main",
+              "diet": "Gluten free",
+              "cost_head": 6.8,
+              "notes": "Holds well in transit"
+            }
+          },
+          {
+            "key": "menu_item-5",
+            "values": {
+              "dish_name": "Wild mushroom risotto cakes",
+              "course": "Main",
+              "diet": "Vegetarian",
+              "cost_head": 5.2,
+              "notes": "Fry onsite"
+            }
+          },
+          {
+            "key": "menu_item-6",
+            "values": {
+              "dish_name": "Charred broccolini",
+              "course": "Side",
+              "diet": "Vegan",
+              "cost_head": 1.4,
+              "notes": "Finish onsite"
+            }
+          },
+          {
+            "key": "menu_item-7",
+            "values": {
+              "dish_name": "Farro salad with roasted squash",
+              "course": "Side",
+              "diet": "Vegan",
+              "cost_head": 2.2,
+              "notes": "Dress at the last moment"
+            }
+          },
+          {
+            "key": "menu_item-8",
+            "values": {
+              "dish_name": "Olive oil cake with citrus",
+              "course": "Dessert",
+              "diet": "Vegetarian",
+              "cost_head": 2.6,
+              "notes": "Contains eggs"
+            }
+          },
+          {
+            "key": "menu_item-9",
+            "values": {
+              "dish_name": "Pistachio shortbread",
+              "course": "Dessert",
+              "diet": "Contains nuts",
+              "cost_head": 1.2,
+              "notes": "Pack in sealed tins"
+            }
+          },
+          {
+            "key": "menu_item-10",
+            "values": {
+              "dish_name": "Taco station",
+              "course": "Station",
+              "diet": "Gluten free",
+              "cost_head": 7.4,
+              "notes": "Needs two staff"
+            }
+          }
+        ]
+      },
+      {
+        "token": "item",
+        "name": "Prep list",
+        "labelSingular": "Prep item",
+        "labelPlural": "Prep list",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "list-checks",
+        "titleField": "item_name",
+        "describes": "What must be cooked, packed and loaded for each event.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "item_name",
+            "label": "Prep item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "Prepped",
+              "Packed"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "Prepped": "blue",
+              "Packed": "amber"
+            },
+            "required": true,
+            "default": "Not started",
+            "statusGroups": {
+              "Not started": "todo",
+              "Prepped": "in_progress",
+              "Packed": "done"
+            }
+          },
+          {
+            "key": "portions",
+            "label": "Portions",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3000
+              }
+            ]
+          },
+          {
+            "key": "prep_on",
+            "label": "Prep day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "event",
+            "label": "Event",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "event",
+            "relationMax": 1
+          },
+          {
+            "key": "dish",
+            "label": "Dish",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "menu_item",
+            "relationMax": 1
+          },
+          {
+            "key": "cook",
+            "label": "Cook",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_pack_it",
+            "label": "Pack it",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "item_pack_it"
+            }
+          }
+        ],
+        "independentOf": {
+          "event": "Either record can be created or change status before the other.",
+          "dish": "Either record can be created or change status before the other.",
+          "cook": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New prep item",
+            "values": {
+              "item_name": "New prep item",
+              "status": "Not started"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Method"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Amounts, timing and holding instructions."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "item-1",
+            "values": {
+              "item_name": "Cobalt lunch: roasted chicken thighs",
+              "status": "Prepped",
+              "portions": 90,
+              "prep_on": "@today+1d",
+              "event": "event-2",
+              "dish": "menu_item-4",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "item-2",
+            "values": {
+              "item_name": "Cobalt lunch: farro salad",
+              "status": "Not started",
+              "portions": 90,
+              "prep_on": "@today+2d",
+              "event": "event-2",
+              "dish": "menu_item-7",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "item-3",
+            "values": {
+              "item_name": "Cobalt lunch: olive oil cake",
+              "status": "Packed",
+              "portions": 90,
+              "prep_on": "@today+0d",
+              "event": "event-2",
+              "dish": "menu_item-8",
+              "cook": "tm-1"
+            }
+          },
+          {
+            "key": "item-4",
+            "values": {
+              "item_name": "Cobalt lunch: charred broccolini",
+              "status": "Not started",
+              "portions": 90,
+              "prep_on": "@today+2d",
+              "event": "event-2",
+              "dish": "menu_item-6",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "item-5",
+            "values": {
+              "item_name": "Board dinner: lamb loin",
+              "status": "Not started",
+              "portions": 16,
+              "prep_on": "@today+10d",
+              "event": "event-8",
+              "dish": "menu_item-3",
+              "cook": "tm-1"
+            }
+          },
+          {
+            "key": "item-6",
+            "values": {
+              "item_name": "Board dinner: crostini",
+              "status": "Not started",
+              "portions": 32,
+              "prep_on": "@today+10d",
+              "event": "event-8",
+              "dish": "menu_item-1",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "item-7",
+            "values": {
+              "item_name": "Anniversary dinner: mushroom risotto cakes",
+              "status": "Not started",
+              "portions": 24,
+              "prep_on": "@today+17d",
+              "event": "event-3",
+              "dish": "menu_item-5",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "item-8",
+            "values": {
+              "item_name": "Wedding: smoked trout rillettes",
+              "status": "Not started",
+              "portions": 240,
+              "prep_on": "@today+46d",
+              "event": "event-1",
+              "dish": "menu_item-2",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "item-9",
+            "values": {
+              "item_name": "Wedding: pistachio shortbread favors",
+              "status": "Not started",
+              "portions": 130,
+              "prep_on": "@today+45d",
+              "event": "event-1",
+              "dish": "menu_item-9",
+              "cook": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "shift",
+        "name": "Event staffing",
+        "labelSingular": "Staffing shift",
+        "labelPlural": "Event staffing",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "shift_name",
+        "describes": "Who is working each event, in what role.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "shift_name",
+            "label": "Shift",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Confirmed"
+            ],
+            "choiceColors": {
+              "Requested": "slate",
+              "Confirmed": "green"
+            },
+            "required": true,
+            "default": "Requested",
+            "statusGroups": {
+              "Requested": "todo",
+              "Confirmed": "done"
+            }
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Captain",
+              "Server",
+              "Bartender",
+              "Cook",
+              "Driver"
+            ],
+            "choiceColors": {
+              "Captain": "slate",
+              "Server": "blue",
+              "Bartender": "amber",
+              "Cook": "violet",
+              "Driver": "teal"
+            }
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "key": "event",
+            "label": "Event",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "event",
+            "relationMax": 1
+          },
+          {
+            "key": "person",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_lock_in",
+            "label": "Lock in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "shift_lock_in"
+            }
+          }
+        ],
+        "independentOf": {
+          "event": "Either record can be created or change status before the other.",
+          "person": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New staffing shift",
+            "values": {
+              "shift_name": "New staffing shift",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Brief"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Arrival time, uniform and where to park."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "shift-1",
+            "values": {
+              "shift_name": "Cobalt lunch captain",
+              "status": "Confirmed",
+              "role": "Captain",
+              "hours": 6,
+              "event": "event-2",
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-2",
+            "values": {
+              "shift_name": "Cobalt lunch driver",
+              "status": "Confirmed",
+              "role": "Driver",
+              "hours": 5,
+              "event": "event-2",
+              "person": "tm-4"
+            }
+          },
+          {
+            "key": "shift-3",
+            "values": {
+              "shift_name": "Cobalt lunch cook",
+              "status": "Confirmed",
+              "role": "Cook",
+              "hours": 6,
+              "event": "event-2",
+              "person": "tm-2"
+            }
+          },
+          {
+            "key": "shift-4",
+            "values": {
+              "shift_name": "Board dinner captain",
+              "status": "Confirmed",
+              "role": "Captain",
+              "hours": 6,
+              "event": "event-8",
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-5",
+            "values": {
+              "shift_name": "Board dinner server",
+              "status": "Requested",
+              "role": "Server",
+              "hours": 5,
+              "event": "event-8"
+            }
+          },
+          {
+            "key": "shift-6",
+            "values": {
+              "shift_name": "Anniversary dinner cook",
+              "status": "Requested",
+              "role": "Cook",
+              "hours": 7,
+              "event": "event-3",
+              "person": "tm-2"
+            }
+          },
+          {
+            "key": "shift-7",
+            "values": {
+              "shift_name": "Wedding captain",
+              "status": "Requested",
+              "role": "Captain",
+              "hours": 10,
+              "event": "event-1",
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-8",
+            "values": {
+              "shift_name": "Wedding driver",
+              "status": "Requested",
+              "role": "Driver",
+              "hours": 8,
+              "event": "event-1",
+              "person": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each client belongs to one looked after by.",
+        "fromTable": "client",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "client_by_owner"
+      },
+      {
+        "describes": "Each event belongs to one client.",
+        "fromTable": "event",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "events"
+      },
+      {
+        "describes": "Each event belongs to one event captain.",
+        "fromTable": "event",
+        "fromField": "captain",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "event_by_captain"
+      },
+      {
+        "describes": "Each prep item belongs to one event.",
+        "fromTable": "item",
+        "fromField": "event",
+        "toTable": "event",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "items"
+      },
+      {
+        "describes": "Each prep item belongs to one dish.",
+        "fromTable": "item",
+        "fromField": "dish",
+        "toTable": "menu_item",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "items"
+      },
+      {
+        "describes": "Each prep item belongs to one cook.",
+        "fromTable": "item",
+        "fromField": "cook",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "item_by_cook"
+      },
+      {
+        "describes": "Each staffing shift belongs to one event.",
+        "fromTable": "shift",
+        "fromField": "event",
+        "toTable": "event",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "shifts"
+      },
+      {
+        "describes": "Each staffing shift belongs to one person.",
+        "fromTable": "shift",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "shift_by_person"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Corinne Abernathy-Reyes",
+              "role": "Owner and head chef",
+              "work_email": "corinne@saffronsagecatering.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-10y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Lucian Moreau-Chen",
+              "role": "Sous chef",
+              "work_email": "lucian@saffronsagecatering.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Temperance Oyelaran",
+              "role": "Event captain",
+              "work_email": "temperance@saffronsagecatering.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Bartholomew Nkemelu",
+              "role": "Driver and setup",
+              "work_email": "bartholomew@saffronsagecatering.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Giulia Fontaine",
+              "role": "Sales and bookings",
+              "work_email": "giulia@saffronsagecatering.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "event_intake",
+        "name": "Request a quote",
+        "describes": "Take in an event inquiry.",
+        "audience": "staff",
+        "table": "event",
+        "fields": [
+          {
+            "fieldKey": "event_name",
+            "ask": "What is the event?",
+            "required": true
+          },
+          {
+            "fieldKey": "client",
+            "ask": "Who is it for?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "What type of event?"
+          },
+          {
+            "fieldKey": "event_on",
+            "ask": "When is it?"
+          },
+          {
+            "fieldKey": "guests",
+            "ask": "How many guests?"
+          }
+        ],
+        "submitLabel": "Send the inquiry",
+        "confirmation": "Thanks. The inquiry is saved at the Inquiry stage."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "event_close_out",
+        "table": "event",
+        "name": "Close out",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Served"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "item_pack_it",
+        "table": "item",
+        "name": "Pack it",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Packed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "shift_lock_in",
+        "table": "shift",
+        "name": "Lock in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Confirmed"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_client",
+        "name": "All clients",
+        "table": "client",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "client_board",
+        "name": "Clients board",
+        "table": "client",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "client_mine",
+        "name": "My clients",
+        "table": "client",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_event",
+        "name": "All events",
+        "table": "event",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "event_board",
+        "name": "Events board",
+        "table": "event",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "event_cal",
+        "name": "Events calendar",
+        "table": "event",
+        "kind": "calendar",
+        "dateField": "event_on",
+        "allDay": true
+      },
+      {
+        "token": "event_over",
+        "name": "Overdue",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Proposal sent",
+            "Booked",
+            "Prep week"
+          ]
+        }
+      },
+      {
+        "token": "event_week",
+        "name": "Due this week",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Proposal sent",
+            "Booked",
+            "Prep week"
+          ]
+        }
+      },
+      {
+        "token": "event_next7",
+        "name": "Next 7 days",
+        "table": "event",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Proposal sent",
+            "Booked",
+            "Prep week"
+          ]
+        }
+      },
+      {
+        "token": "event_mine",
+        "name": "My events",
+        "table": "event",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ]
+      },
+      {
+        "token": "all_menu_item",
+        "name": "All menu",
+        "table": "menu_item",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "menu_item_board",
+        "name": "Menu board",
+        "table": "menu_item",
+        "kind": "kanban",
+        "groupBy": "course"
+      },
+      {
+        "token": "all_item",
+        "name": "All prep list",
+        "table": "item",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "item_board",
+        "name": "Prep list board",
+        "table": "item",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "item_cal",
+        "name": "Prep list calendar",
+        "table": "item",
+        "kind": "calendar",
+        "dateField": "prep_on",
+        "allDay": true
+      },
+      {
+        "token": "item_over",
+        "name": "Overdue",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Prepped"
+          ]
+        }
+      },
+      {
+        "token": "item_week",
+        "name": "Due this week",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Prepped"
+          ]
+        }
+      },
+      {
+        "token": "item_next7",
+        "name": "Next 7 days",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Not started",
+            "Prepped"
+          ]
+        }
+      },
+      {
+        "token": "item_prepwk",
+        "name": "Prepping this week",
+        "table": "item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "all_shift",
+        "name": "All event staffing",
+        "table": "shift",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shift_board",
+        "name": "Event staffing board",
+        "table": "shift",
+        "kind": "kanban",
+        "groupBy": "status"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Catering Business Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "event",
+          "describes": "Each catered event from inquiry to served, with money tracked."
+        },
+        {
+          "name": "related_tables",
+          "table": "client",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many events are booked?",
+        "whyItMatters": "The owner plans purchasing around booked events.",
+        "expect": {
+          "table": "event",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Booked"
+          },
+          "answer": 3,
+          "unit": "events"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "client_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "client_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open events.",
+        "action": {
+          "kind": "open",
+          "surface": "event_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "event_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open menu.",
+        "action": {
+          "kind": "open",
+          "surface": "menu_item_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "menu_item_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "saffronsagecatering.net"
+      ],
+      "fictionalStreets": [
+        "Millrace Drive"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "catering-business-desk",
+      "parent": null,
+      "title": "Catering Business Desk",
+      "icon": {
+        "emoji": "🥘"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Everything the kitchen and the office need for each event: clients, events with balance due and prep progress, a menu with cost per head, the prep list by day, and the staff who are confirmed. Start on the Dashboard, then check Prepping this week and any event with an unpaid balance."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:quote-to-contract"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:prep-and-pack"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:event-day-runbook"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:dietary-and-safety"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The people and companies the caterer serves."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "client_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cli-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cli-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cli-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cli-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each catered event from inquiry to served, with money tracked."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "event_board"
+            },
+            "inline": true,
+            "title": "Events",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "eve-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "eve-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "event_on"
+              },
+              {
+                "id": "eve-t",
+                "name": "All events",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "eve-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "event_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Proposal sent",
+                    "Booked",
+                    "Prep week"
+                  ]
+                }
+              },
+              {
+                "id": "eve-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "event_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Proposal sent",
+                    "Booked",
+                    "Prep week"
+                  ]
+                }
+              },
+              {
+                "id": "eve-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Proposal sent",
+                    "Booked",
+                    "Prep week"
+                  ]
+                }
+              },
+              {
+                "id": "eve-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "eve-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Menu"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The dishes the caterer offers, with dietary tags and cost per head."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "menu_item",
+              "view": "menu_item_board"
+            },
+            "inline": true,
+            "title": "Menu",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "men-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "course"
+              },
+              {
+                "id": "men-t",
+                "name": "All menu",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "men-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prep list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What must be cooked, packed and loaded for each event."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "item_board"
+            },
+            "inline": true,
+            "title": "Prep list",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ite-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ite-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "prep_on"
+              },
+              {
+                "id": "ite-t",
+                "name": "All prep list",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ite-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "prep_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Prepped"
+                  ]
+                }
+              },
+              {
+                "id": "ite-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "prep_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Prepped"
+                  ]
+                }
+              },
+              {
+                "id": "ite-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "prep_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Prepped"
+                  ]
+                }
+              },
+              {
+                "id": "ite-prepwk",
+                "name": "Prepping this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "prep_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "ite-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Event staffing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who is working each event, in what role."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "shift_board"
+            },
+            "inline": true,
+            "title": "Event staffing",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "shi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "shi-t",
+                "name": "All event staffing",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "shi-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "catering-business-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Events, prep and staffing at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Events by stage",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Events by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "event",
+                      "view": "all_event"
+                    },
+                    "inline": true,
+                    "title": "Guests by event type",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Guests by event type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "guests"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "item",
+                      "view": "all_item"
+                    },
+                    "inline": true,
+                    "title": "Prep items by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Prep items by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shift",
+                      "view": "all_shift"
+                    },
+                    "inline": true,
+                    "title": "Staffing by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Staffing by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Events in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "event",
+              "view": "all_event"
+            },
+            "inline": true,
+            "title": "Events in the next 14 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Events in the next 14 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Prep week"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prep due this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "item",
+              "view": "all_item"
+            },
+            "inline": true,
+            "title": "Prep due this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Prep due this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "prep_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Prepped"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shifts still to confirm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "all_shift"
+            },
+            "inline": true,
+            "title": "Shifts still to confirm",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Shifts still to confirm",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Requested"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Balance due (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Event total minus the deposit received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Collect the balance a week before the event or per the contract"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prep packed (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Prep items packed over all prep items"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Below 100 the day before means all hands on prep"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days to go"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Event date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 10 with staffing not confirmed means start calling"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Event total (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Guests multiplied by the price per head"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check against the signed proposal"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "quote-to-contract",
+      "parent": "catering-business-desk",
+      "title": "From inquiry to contract",
+      "icon": {
+        "emoji": "📝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A fast, clear proposal wins the booking. Aim to send one within a working day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The inquiry call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Date, venue, guest count, budget range and service style."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Dietary needs and any cultural or religious requirements."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Kitchen access at the venue and load-in time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The proposal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose dishes from the Menu and check cost per head."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the price per head and add staffing, rentals and travel."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "State the deposit, the balance date and the cancellation terms."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send it and set the event to Proposal sent."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the contract is signed and the deposit received, move the event to Booked and record the deposit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "prep-and-pack",
+      "parent": "catering-business-desk",
+      "title": "Prep week and packing",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Seven days out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Final headcount and dietary list confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prep items created for every dish"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Purchasing list sent to suppliers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prep days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Work the Prepping this week view each morning."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cook the longest-lasting items first; assemble delicate items last."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Label every container with the event, dish, date and allergens."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pack against the prep list, not memory."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pack hot and cold items separately, and keep a temperature log."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Pack it for each item as it goes in the van."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A forgotten sauce is a small thing until it is the one thing the client remembers."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "event-day-runbook",
+      "parent": "catering-business-desk",
+      "title": "Event day runbook",
+      "icon": {
+        "emoji": "🚐"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the kitchen"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Load the van using the loading list and confirm the count with the driver."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the staff list and phone numbers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Meet the on-site contact and confirm the timeline."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set up the station and check power, water and holding."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Brief the staff on dietary tags and service order."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Photograph the setup for the portfolio, with permission."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count rentals, clear waste and leave the space cleaner than you found it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect the balance if due and close the event with Close out."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dietary-and-safety",
+      "parent": "catering-business-desk",
+      "title": "Dietary needs and food safety",
+      "icon": {
+        "emoji": "🛡️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Capturing needs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for dietary needs at booking and again ten days out."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record allergies as specific as possible; avoid \"no nuts\" when it should be \"tree nuts and peanuts\"."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the menu"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tag"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Handling"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vegan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No animal products"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Separate utensils and surfaces"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Gluten free"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No wheat, barley or rye"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check sauces and shared fryers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Contains nuts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tree nuts or peanuts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep separate; label in bold"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Food safety"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hold hot food above 135 degrees Fahrenheit and cold food below 41."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep a thermometer and a log on every job."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When in doubt, throw it out."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

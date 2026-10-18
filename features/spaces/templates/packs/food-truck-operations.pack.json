@@ -1,0 +1,3332 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0468",
+  "version": 1,
+  "title": "Food Truck Operations",
+  "description": "Service stops and sales, permits, commissary prep and private bookings for a food truck.",
+  "forWho": "Food trucks, mobile kitchens and pop-up vendors",
+  "icon": {
+    "emoji": "🚚"
+  },
+  "cover": {
+    "url": "gallery:photo-desert-dunes",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "food truck",
+    "permits",
+    "locations",
+    "prep"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-food-truck-operations",
+    "catalogueId": "SP0468",
+    "useCase": "Alejandro Pruitt-Nakamura runs a food truck and uses this to see which stops are coming, how each stop performed, which permits expire soon and what has to be prepped and loaded.",
+    "industry": "hospitality_food",
+    "vertical": "Food truck",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Rolling Ember Kitchen",
+      "describes": "A one-truck taco and grill kitchen working markets, breweries and private events, with a shared commissary for prep and storage.",
+      "address": {
+        "line1": "515 Depot Street",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78701",
+        "country": "US"
+      },
+      "phone": "(512) 555-0127",
+      "website": "rollingember.net",
+      "email": "book@rollingember.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-food-truck-operations",
+    "tables": [
+      {
+        "token": "stop",
+        "name": "Service stops",
+        "labelSingular": "Service stop",
+        "labelPlural": "Service stops",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map-pin",
+        "titleField": "stop_name",
+        "describes": "Every scheduled service, from planned to served, with sales and spot fees.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "stop_name",
+            "label": "Stop",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Confirmed",
+              "Served",
+              "Rained out"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Confirmed": "green",
+              "Served": "blue",
+              "Rained out": "amber"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Confirmed": "in_progress",
+              "Served": "done",
+              "Rained out": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Street spot",
+              "Brewery",
+              "Market",
+              "Private event",
+              "Festival"
+            ],
+            "choiceColors": {
+              "Street spot": "slate",
+              "Brewery": "blue",
+              "Market": "amber",
+              "Private event": "violet",
+              "Festival": "teal"
+            }
+          },
+          {
+            "key": "address",
+            "label": "Address",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "stop_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "target",
+            "label": "Sales target (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "sales",
+            "label": "Sales (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "spot_fee",
+            "label": "Spot fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "net",
+            "label": "Sales after spot fee (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Sales (USD)} - {Spot fee (USD)}"
+          },
+          {
+            "key": "hours",
+            "label": "Hours served",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "key": "prep_total",
+            "label": "Prep items",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "prep_items",
+            "pick": "prep_name",
+            "agg": "count"
+          },
+          {
+            "key": "prep_loaded",
+            "label": "Prep loaded",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "prep_items",
+            "pick": "prep_name",
+            "agg": "count",
+            "filter": {
+              "status": "Loaded"
+            }
+          },
+          {
+            "key": "lead",
+            "label": "On the truck",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_close_out_the_day",
+            "label": "Close out the day",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "stop_close_out_the_day"
+            }
+          },
+          {
+            "key": "add_prep_item",
+            "label": "Add prep item",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "prep_item",
+              "template": "New prep item",
+              "prefill": {
+                "stop": "@row"
+              }
+            }
+          }
+        ],
+        "independentOf": {
+          "lead": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New service stop",
+            "values": {
+              "stop_name": "New service stop",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where to park, power, water and the contact on site."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Menu and prep"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we are bringing and expected counts."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After the stop"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Sales, what sold out and what to change."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "stop-1",
+            "values": {
+              "stop_name": "Tuesday brewery night, Hopscotch",
+              "status": "Confirmed",
+              "kind": "Brewery",
+              "address": "812 Rainey Street",
+              "stop_on": "@mon+1d",
+              "target": 1400,
+              "spot_fee": 0,
+              "hours": 5,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-2",
+            "values": {
+              "stop_name": "Wednesday office park lunch",
+              "status": "Planned",
+              "kind": "Street spot",
+              "address": "1200 Barton Springs Road",
+              "stop_on": "@mon+2d",
+              "target": 900,
+              "spot_fee": 60,
+              "hours": 3,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "stop-3",
+            "values": {
+              "stop_name": "Saturday farmers market",
+              "status": "Confirmed",
+              "kind": "Market",
+              "address": "Republic Square",
+              "stop_on": "@mon+5d",
+              "target": 2200,
+              "spot_fee": 120,
+              "hours": 6,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-4",
+            "values": {
+              "stop_name": "Graduation party, Okonkwo family",
+              "status": "Confirmed",
+              "kind": "Private event",
+              "address": "Eastwood Park pavilion",
+              "stop_on": "@today+12d",
+              "target": 2800,
+              "spot_fee": 0,
+              "hours": 4,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-5",
+            "values": {
+              "stop_name": "Eastside food truck festival",
+              "status": "Planned",
+              "kind": "Festival",
+              "address": "Mueller Lake Park",
+              "stop_on": "@today+26d",
+              "target": 5200,
+              "spot_fee": 350,
+              "hours": 9,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-6",
+            "values": {
+              "stop_name": "Hopscotch brewery night, last week",
+              "status": "Served",
+              "kind": "Brewery",
+              "address": "812 Rainey Street",
+              "stop_on": "@today-6d",
+              "target": 1400,
+              "sales": 1620,
+              "spot_fee": 0,
+              "hours": 5,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-7",
+            "values": {
+              "stop_name": "Saturday market, last week",
+              "status": "Served",
+              "kind": "Market",
+              "address": "Republic Square",
+              "stop_on": "@today-2d",
+              "target": 2200,
+              "sales": 2480,
+              "spot_fee": 120,
+              "hours": 6,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "stop-8",
+            "values": {
+              "stop_name": "Thursday office park lunch",
+              "status": "Served",
+              "kind": "Street spot",
+              "address": "1200 Barton Springs Road",
+              "stop_on": "@today-5d",
+              "target": 900,
+              "sales": 760,
+              "spot_fee": 60,
+              "hours": 3,
+              "lead": "tm-2"
+            }
+          },
+          {
+            "key": "stop-9",
+            "values": {
+              "stop_name": "Downtown street party",
+              "status": "Rained out",
+              "kind": "Festival",
+              "address": "Congress Avenue",
+              "stop_on": "@today-12d",
+              "target": 4000,
+              "sales": 0,
+              "spot_fee": 0,
+              "hours": 0,
+              "lead": "tm-1"
+            }
+          },
+          {
+            "key": "stop-10",
+            "values": {
+              "stop_name": "Sunday brewery patio",
+              "status": "Served",
+              "kind": "Brewery",
+              "address": "2400 Manor Road",
+              "stop_on": "@today-9d",
+              "target": 1500,
+              "sales": 1710,
+              "spot_fee": 0,
+              "hours": 5,
+              "lead": "tm-1"
+            }
+          }
+        ]
+      },
+      {
+        "token": "permit",
+        "name": "Permits and licences",
+        "labelSingular": "Permit",
+        "labelPlural": "Permits and licences",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "permit_name",
+        "describes": "Everything the truck must keep valid, with expiry dates and fees.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "permit_name",
+            "label": "Permit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Valid",
+              "Renewal due",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Expired": "red",
+              "Valid": "slate",
+              "Renewal due": "blue"
+            },
+            "required": true,
+            "default": "Valid",
+            "statusGroups": {
+              "Valid": "todo",
+              "Renewal due": "in_progress",
+              "Expired": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Health permit",
+              "Business licence",
+              "Fire inspection",
+              "Commissary agreement",
+              "Event permit",
+              "Insurance"
+            ],
+            "choiceColors": {
+              "Health permit": "slate",
+              "Business licence": "blue",
+              "Fire inspection": "amber",
+              "Commissary agreement": "violet",
+              "Event permit": "teal",
+              "Insurance": "orange"
+            }
+          },
+          {
+            "key": "issued_on",
+            "label": "Issued",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days_left",
+            "label": "Days left",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "DATEDIFF(TODAY(), {Expires}, 'days')"
+          },
+          {
+            "key": "fee",
+            "label": "Fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "office",
+            "label": "Issued by",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_renewed",
+            "label": "Renewed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "permit_renewed"
+            }
+          }
+        ],
+        "statusImplies": [],
+        "before": [
+          [
+            "issued_on",
+            "expires_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New permit",
+            "values": {
+              "permit_name": "New permit",
+              "status": "Valid"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What it covers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Rules and limits that apply."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What to send, who to call, and how long it takes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "permit-1",
+            "values": {
+              "permit_name": "Mobile food unit health permit",
+              "status": "Valid",
+              "kind": "Health permit",
+              "issued_on": "@today-200d",
+              "expires_on": "@today+165d",
+              "fee": 410,
+              "office": "City health department"
+            }
+          },
+          {
+            "key": "permit-2",
+            "values": {
+              "permit_name": "City vending licence",
+              "status": "Renewal due",
+              "kind": "Business licence",
+              "issued_on": "@today-340d",
+              "expires_on": "@today+25d",
+              "fee": 215,
+              "office": "City clerk"
+            }
+          },
+          {
+            "key": "permit-3",
+            "values": {
+              "permit_name": "Fire safety inspection",
+              "status": "Valid",
+              "kind": "Fire inspection",
+              "issued_on": "@today-100d",
+              "expires_on": "@today+265d",
+              "fee": 90,
+              "office": "Fire marshal"
+            }
+          },
+          {
+            "key": "permit-4",
+            "values": {
+              "permit_name": "Commissary kitchen agreement",
+              "status": "Valid",
+              "kind": "Commissary agreement",
+              "issued_on": "@today-30d",
+              "expires_on": "@today+335d",
+              "fee": 650,
+              "office": "Eastside Commissary"
+            }
+          },
+          {
+            "key": "permit-5",
+            "values": {
+              "permit_name": "Brewery event permit, Hopscotch",
+              "status": "Valid",
+              "kind": "Event permit",
+              "issued_on": "@today-60d",
+              "expires_on": "@today+120d",
+              "fee": 0,
+              "office": "Hopscotch Brewing"
+            }
+          },
+          {
+            "key": "permit-6",
+            "values": {
+              "permit_name": "Liability insurance",
+              "status": "Renewal due",
+              "kind": "Insurance",
+              "issued_on": "@today-350d",
+              "expires_on": "@today+15d",
+              "fee": 1240,
+              "office": "Pinnacle Mutual"
+            }
+          },
+          {
+            "key": "permit-7",
+            "values": {
+              "permit_name": "Festival vendor permit, last year",
+              "status": "Expired",
+              "kind": "Event permit",
+              "issued_on": "@today-420d",
+              "expires_on": "@today-55d",
+              "fee": 300,
+              "office": "Festival committee"
+            }
+          }
+        ]
+      },
+      {
+        "token": "prep_item",
+        "name": "Commissary prep",
+        "labelSingular": "Prep item",
+        "labelPlural": "Commissary prep",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chef-hat",
+        "titleField": "prep_name",
+        "describes": "The prep list for each stop, from commissary to loaded on the truck.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "prep_name",
+            "label": "Prep item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To prep",
+              "Prepped",
+              "Loaded"
+            ],
+            "choiceColors": {
+              "To prep": "slate",
+              "Prepped": "blue",
+              "Loaded": "amber"
+            },
+            "required": true,
+            "default": "To prep",
+            "statusGroups": {
+              "To prep": "todo",
+              "Prepped": "in_progress",
+              "Loaded": "done"
+            }
+          },
+          {
+            "key": "portions",
+            "label": "Portions",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "prep_on",
+            "label": "Prep day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "stop",
+            "label": "Stop",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "stop",
+            "relationMax": 1
+          },
+          {
+            "key": "cook",
+            "label": "Cook",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_load_it",
+            "label": "Load it",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "prep_item_load_it"
+            }
+          }
+        ],
+        "independentOf": {
+          "stop": "Either record can be created or change status before the other.",
+          "cook": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New prep item",
+            "values": {
+              "prep_name": "New prep item",
+              "status": "To prep"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Method"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Quantities, temperatures and holding instructions."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "prep_item-1",
+            "values": {
+              "prep_name": "Marinated pork for tacos",
+              "status": "To prep",
+              "portions": 160,
+              "prep_on": "@mon+0d",
+              "stop": "stop-1",
+              "cook": "tm-1"
+            }
+          },
+          {
+            "key": "prep_item-2",
+            "values": {
+              "prep_name": "Pickled onions and slaw",
+              "status": "Prepped",
+              "portions": 200,
+              "prep_on": "@mon+0d",
+              "stop": "stop-1",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "prep_item-3",
+            "values": {
+              "prep_name": "Chipotle crema",
+              "status": "Prepped",
+              "portions": 3,
+              "prep_on": "@mon+0d",
+              "stop": "stop-1",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "prep_item-4",
+            "values": {
+              "prep_name": "Chicken thighs, adobo",
+              "status": "To prep",
+              "portions": 120,
+              "prep_on": "@mon+1d",
+              "stop": "stop-2",
+              "cook": "tm-1"
+            }
+          },
+          {
+            "key": "prep_item-5",
+            "values": {
+              "prep_name": "Rice and black beans",
+              "status": "To prep",
+              "portions": 150,
+              "prep_on": "@mon+1d",
+              "stop": "stop-2",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "prep_item-6",
+            "values": {
+              "prep_name": "Tortillas and cups, packed",
+              "status": "To prep",
+              "portions": 400,
+              "prep_on": "@mon+4d",
+              "stop": "stop-3",
+              "cook": "tm-3"
+            }
+          },
+          {
+            "key": "prep_item-7",
+            "values": {
+              "prep_name": "Brisket, smoked",
+              "status": "To prep",
+              "portions": 140,
+              "prep_on": "@mon+3d",
+              "stop": "stop-3",
+              "cook": "tm-1"
+            }
+          },
+          {
+            "key": "prep_item-8",
+            "values": {
+              "prep_name": "Graduation party salsa trio",
+              "status": "To prep",
+              "portions": 60,
+              "prep_on": "@today+10d",
+              "stop": "stop-4",
+              "cook": "tm-2"
+            }
+          },
+          {
+            "key": "prep_item-9",
+            "values": {
+              "prep_name": "Last market: leftover check",
+              "status": "Loaded",
+              "portions": 0,
+              "prep_on": "@today-3d",
+              "stop": "stop-7",
+              "cook": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "booking",
+        "name": "Private bookings",
+        "labelSingular": "Private booking",
+        "labelPlural": "Private bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-heart",
+        "titleField": "booking_name",
+        "describes": "Private events and catering requests for the truck.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Quoted",
+              "Booked",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Declined": "red",
+              "Inquiry": "slate",
+              "Quoted": "blue",
+              "Booked": "green"
+            },
+            "required": true,
+            "default": "Inquiry",
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Quoted": "in_progress",
+              "Booked": "done",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "event_on",
+            "label": "Event date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Handled by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_lock_it_in",
+            "label": "Lock it in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_lock_it_in"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New private booking",
+            "values": {
+              "booking_name": "New private booking",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they want"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Guests, menu preferences and service style."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quote"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the quote includes and the deposit."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "booking-1",
+            "values": {
+              "booking_name": "Okonkwo family graduation party",
+              "status": "Booked",
+              "event_on": "@today+12d",
+              "guests": 60,
+              "quote": 2800,
+              "email": "okonkwo.fam@mailpost.net",
+              "phone": "(512) 555-0181",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-2",
+            "values": {
+              "booking_name": "Greene Valley Elementary field day",
+              "status": "Quoted",
+              "event_on": "@today+35d",
+              "guests": 220,
+              "quote": 3600,
+              "email": "pta@greenevalley.net",
+              "phone": "(512) 555-0182",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-3",
+            "values": {
+              "booking_name": "Bellamy company picnic",
+              "status": "Inquiry",
+              "event_on": "@today+60d",
+              "guests": 90,
+              "email": "events@bellamyco.net",
+              "phone": "(512) 555-0183",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-4",
+            "values": {
+              "booking_name": "Torres engagement party",
+              "status": "Quoted",
+              "event_on": "@today+40d",
+              "guests": 45,
+              "quote": 1900,
+              "email": "torres.party@mailpost.net",
+              "phone": "(512) 555-0184",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-5",
+            "values": {
+              "booking_name": "Ridgeline office launch lunch",
+              "status": "Declined",
+              "event_on": "@today+8d",
+              "guests": 150,
+              "quote": 4200,
+              "email": "ops@ridgelinestudio.net",
+              "phone": "(512) 555-0185",
+              "owner": "tm-4"
+            }
+          },
+          {
+            "key": "booking-6",
+            "values": {
+              "booking_name": "Pecan Street block party",
+              "status": "Inquiry",
+              "event_on": "@today+75d",
+              "guests": 200,
+              "email": "blockparty@pecanstreetnb.net",
+              "phone": "(512) 555-0186",
+              "owner": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each service stop belongs to one on the truck.",
+        "fromTable": "stop",
+        "fromField": "lead",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "stop_by_lead"
+      },
+      {
+        "describes": "Each prep item belongs to one stop.",
+        "fromTable": "prep_item",
+        "fromField": "stop",
+        "toTable": "stop",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "prep_items"
+      },
+      {
+        "describes": "Each prep item belongs to one cook.",
+        "fromTable": "prep_item",
+        "fromField": "cook",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "prep_by_cook"
+      },
+      {
+        "describes": "Each private booking belongs to one handled by.",
+        "fromTable": "booking",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "booking_by_owner"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Alejandro Pruitt-Nakamura",
+              "role": "Owner and cook",
+              "work_email": "alejandro@rollingember.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Fiona Oyelaran",
+              "role": "Cook",
+              "work_email": "fiona@rollingember.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Kwabena Dryden",
+              "role": "Driver and service",
+              "work_email": "kwabena@rollingember.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Rosalind Baptiste",
+              "role": "Bookings and social",
+              "work_email": "rosalind@rollingember.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "booking_intake",
+        "name": "Book the truck",
+        "describes": "Take in a private event request.",
+        "audience": "staff",
+        "table": "booking",
+        "fields": [
+          {
+            "fieldKey": "booking_name",
+            "ask": "What is the event?",
+            "required": true
+          },
+          {
+            "fieldKey": "event_on",
+            "ask": "Which date?",
+            "required": true
+          },
+          {
+            "fieldKey": "guests",
+            "ask": "How many guests?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Your phone"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The request is saved as an Inquiry."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "stop_close_out_the_day",
+        "table": "stop",
+        "name": "Close out the day",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Served"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "permit_renewed",
+        "table": "permit",
+        "name": "Renewed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Valid"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "prep_item_load_it",
+        "table": "prep_item",
+        "name": "Load it",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Loaded"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_lock_it_in",
+        "table": "booking",
+        "name": "Lock it in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Booked"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_stop",
+        "name": "All service stops",
+        "table": "stop",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "stop_board",
+        "name": "Service stops board",
+        "table": "stop",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "stop_cal",
+        "name": "Service stops calendar",
+        "table": "stop",
+        "kind": "calendar",
+        "dateField": "stop_on",
+        "allDay": true
+      },
+      {
+        "token": "stop_over",
+        "name": "Overdue",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "stop_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "stop_week",
+        "name": "Due this week",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "stop_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "stop_next7",
+        "name": "Next 7 days",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "stop_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Confirmed"
+          ]
+        }
+      },
+      {
+        "token": "stop_wk",
+        "name": "Stops this week",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "stop_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "stop_mo",
+        "name": "Stops this month",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "stop_on": {
+            "relative": "this_month"
+          }
+        }
+      },
+      {
+        "token": "all_permit",
+        "name": "All permits and licences",
+        "table": "permit",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "permit_board",
+        "name": "Permits and licences board",
+        "table": "permit",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "permit_cal",
+        "name": "Permits and licences calendar",
+        "table": "permit",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true
+      },
+      {
+        "token": "permit_over",
+        "name": "Overdue",
+        "table": "permit",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Valid",
+            "Renewal due"
+          ]
+        }
+      },
+      {
+        "token": "permit_week",
+        "name": "Due this week",
+        "table": "permit",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Valid",
+            "Renewal due"
+          ]
+        }
+      },
+      {
+        "token": "permit_next7",
+        "name": "Next 7 days",
+        "table": "permit",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Valid",
+            "Renewal due"
+          ]
+        }
+      },
+      {
+        "token": "all_prep_item",
+        "name": "All commissary prep",
+        "table": "prep_item",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "prep_item_board",
+        "name": "Commissary prep board",
+        "table": "prep_item",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "prep_item_cal",
+        "name": "Commissary prep calendar",
+        "table": "prep_item",
+        "kind": "calendar",
+        "dateField": "prep_on",
+        "allDay": true
+      },
+      {
+        "token": "prep_item_over",
+        "name": "Overdue",
+        "table": "prep_item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To prep",
+            "Prepped"
+          ]
+        }
+      },
+      {
+        "token": "prep_item_week",
+        "name": "Due this week",
+        "table": "prep_item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To prep",
+            "Prepped"
+          ]
+        }
+      },
+      {
+        "token": "prep_item_next7",
+        "name": "Next 7 days",
+        "table": "prep_item",
+        "kind": "grid",
+        "within": {
+          "prep_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "To prep",
+            "Prepped"
+          ]
+        }
+      },
+      {
+        "token": "all_booking",
+        "name": "All private bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Private bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Private bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "event_on",
+        "allDay": true
+      },
+      {
+        "token": "booking_over",
+        "name": "Overdue",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Quoted"
+          ]
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "Due this week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Quoted"
+          ]
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "event_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Quoted"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Food Truck Operations assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "stop",
+          "describes": "Every scheduled service, from planned to served, with sales and spot fees."
+        },
+        {
+          "name": "related_tables",
+          "table": "permit",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many stops are confirmed?",
+        "whyItMatters": "The cook plans prep around confirmed stops.",
+        "expect": {
+          "table": "stop",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Confirmed"
+          },
+          "answer": 3,
+          "unit": "service stops"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open service stops.",
+        "action": {
+          "kind": "open",
+          "surface": "stop_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "stop_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open permits and licences.",
+        "action": {
+          "kind": "open",
+          "surface": "permit_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "permit_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open commissary prep.",
+        "action": {
+          "kind": "open",
+          "surface": "prep_item_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "prep_item_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "rollingember.net"
+      ],
+      "fictionalStreets": [
+        "Depot Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "food-truck-operations",
+      "parent": null,
+      "title": "Food Truck Operations",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "cover": {
+        "url": "gallery:photo-desert-dunes",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The truck's whole business in one page: service stops with sales, permits that must never lapse, the commissary prep list for each stop and private booking requests. Check the Dashboard before every service, load the truck from the prep list and look at permits expiring in the next 30 days every Monday."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:pre-service-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:picking-locations"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:permit-calendar"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:end-of-day-close"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service stops"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every scheduled service, from planned to served, with sales and spot fees."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stop",
+              "view": "stop_board"
+            },
+            "inline": true,
+            "title": "Service stops",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sto-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sto-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "stop_on"
+              },
+              {
+                "id": "sto-t",
+                "name": "All service stops",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sto-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "stop_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sto-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "stop_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sto-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "stop_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "sto-wk",
+                "name": "Stops this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "stop_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "sto-mo",
+                "name": "Stops this month",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "stop_on": {
+                    "relative": "this_month"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "sto-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Permits and licences"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything the truck must keep valid, with expiry dates and fees."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "permit",
+              "view": "permit_board"
+            },
+            "inline": true,
+            "title": "Permits and licences",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "per-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "per-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "per-t",
+                "name": "All permits and licences",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "per-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Renewal due"
+                  ]
+                }
+              },
+              {
+                "id": "per-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Renewal due"
+                  ]
+                }
+              },
+              {
+                "id": "per-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Renewal due"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "per-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Commissary prep"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The prep list for each stop, from commissary to loaded on the truck."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "prep_item",
+              "view": "prep_item_board"
+            },
+            "inline": true,
+            "title": "Commissary prep",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pre-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pre-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "prep_on"
+              },
+              {
+                "id": "pre-t",
+                "name": "All commissary prep",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pre-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "prep_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To prep",
+                    "Prepped"
+                  ]
+                }
+              },
+              {
+                "id": "pre-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "prep_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To prep",
+                    "Prepped"
+                  ]
+                }
+              },
+              {
+                "id": "pre-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "prep_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To prep",
+                    "Prepped"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "pre-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Private bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Private events and catering requests for the truck."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Private bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "boo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "boo-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "event_on"
+              },
+              {
+                "id": "boo-t",
+                "name": "All private bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "boo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "event_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Quoted"
+                  ]
+                }
+              },
+              {
+                "id": "boo-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "event_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Quoted"
+                  ]
+                }
+              },
+              {
+                "id": "boo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "event_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Quoted"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "boo-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "food-truck-operations",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Stops, money, permits and prep at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stop",
+                      "view": "all_stop"
+                    },
+                    "inline": true,
+                    "title": "Stops by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Stops by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stop",
+                      "view": "all_stop"
+                    },
+                    "inline": true,
+                    "title": "Sales by stop kind (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Sales by stop kind (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "sum",
+                          "field": "sales"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "permit",
+                      "view": "all_permit"
+                    },
+                    "inline": true,
+                    "title": "Permits by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Permits by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "prep_item",
+                      "view": "all_prep_item"
+                    },
+                    "inline": true,
+                    "title": "Prep by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Prep by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Stops this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stop",
+              "view": "all_stop"
+            },
+            "inline": true,
+            "title": "Stops this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Stops this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "stop_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Permits expiring in 45 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "permit",
+              "view": "all_permit"
+            },
+            "inline": true,
+            "title": "Permits expiring in 45 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Permits expiring in 45 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 45
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Valid",
+                    "Renewal due"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Prep due this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "prep_item",
+              "view": "all_prep_item"
+            },
+            "inline": true,
+            "title": "Prep due this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Prep due this week",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "prep_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "To prep",
+                    "Prepped"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sales after spot fee (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sales minus the fee paid for the spot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compare by kind of stop to find the best places to be"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sales target (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The sales we hoped for at the stop"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A stop under target three times in a row gets dropped"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Permit expiry date minus today"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Start renewals at 45 days; negative means stop serving until renewed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prep loaded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Prep items loaded for the stop"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "All loaded before the truck leaves the commissary"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "pre-service-routine",
+      "parent": "food-truck-operations",
+      "title": "Pre-service routine",
+      "icon": {
+        "emoji": "🧰"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The night before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prep list read and divided between cooks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Propane, water and ice checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cash float and card reader charged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Morning at the commissary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Cook and cool items in the order on the prep list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Label every container with the item, date and time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load the truck coldest and heaviest first; press Load it as items go on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before leaving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the truck lights, tires and fire extinguisher."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm the stop address and arrival time with the contact."
+            }
+          ]
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The best stop in the world fails if the truck leaves without the tortillas."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    },
+    {
+      "key": "picking-locations",
+      "parent": "food-truck-operations",
+      "title": "Choosing where to park",
+      "icon": {
+        "emoji": "📍"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to compare"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Factor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Question to ask"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Foot traffic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How many people walk past during our hours?"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Competition"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who else sells similar food nearby?"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Spot fee, parking and permits"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rules"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Is vending allowed, and for how long?"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learning from results"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each stop, enter sales and hours."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Compare Sales after spot fee by kind of stop each month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Keep the top three places, test one new place a week, and drop what misses its target."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "permit-calendar",
+      "parent": "food-truck-operations",
+      "title": "Keeping permits current",
+      "icon": {
+        "emoji": "🗂️"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every permit sits in the Permits table with an expiry date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "On the first of each month, open Permits expiring in 45 days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start at 45 days; gather the forms and the fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the application and note the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the new document arrives, press Renewed and update the dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Serve with an expired permit or insurance. One inspection can cost a season."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "end-of-day-close",
+      "parent": "food-truck-operations",
+      "title": "End of day close",
+      "icon": {
+        "emoji": "🌙"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the stop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count the cash, run the card report and note what sold out."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wipe down surfaces, empty grease and greywater into approved containers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Back at the commissary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Unload leftovers and log what must be thrown away."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clean the truck, restock cups and napkins."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter sales and hours on the stop and press Close out the day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The next morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Read the notes from the last stop before writing the prep list."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

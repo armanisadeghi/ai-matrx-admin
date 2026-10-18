@@ -1,0 +1,3517 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0463",
+  "version": 1,
+  "title": "Restaurant Operations Hub",
+  "description": "Dishes with food cost, inventory with par levels, suppliers, orders and shifts.",
+  "forWho": "Independent restaurants and small restaurant groups",
+  "icon": {
+    "emoji": "🍽️"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "operations",
+  "tags": [
+    "restaurant",
+    "food cost",
+    "inventory",
+    "suppliers"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-restaurant-operations-hub",
+    "catalogueId": "SP0463",
+    "useCase": "Anselmo Guerrero-Whitfield owns a restaurant and uses this to see which dishes have a high food cost, what is below par and needs ordering, which orders are on the way and who is working this week.",
+    "industry": "hospitality_food",
+    "vertical": "Restaurant operations",
+    "job": "inventory",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "The Copper Ladle",
+      "describes": "A 70-seat neighborhood restaurant serving seasonal American dishes for dinner six nights a week and weekend brunch.",
+      "address": {
+        "line1": "118 Foundry Street",
+        "city": "Providence",
+        "region": "RI",
+        "postalCode": "02903",
+        "country": "US"
+      },
+      "phone": "(401) 555-0148",
+      "website": "copperladle.net",
+      "email": "info@copperladle.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-restaurant-operations-hub",
+    "tables": [
+      {
+        "token": "supplier",
+        "name": "Suppliers",
+        "labelSingular": "Supplier",
+        "labelPlural": "Suppliers",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "supplier_name",
+        "describes": "The vendors the restaurant orders from, with order days and lead times.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "supplier_name",
+            "label": "Supplier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Supplies",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Produce",
+              "Meat and fish",
+              "Dairy and eggs",
+              "Dry goods",
+              "Bar",
+              "Paper and cleaning"
+            ],
+            "choiceColors": {
+              "Produce": "slate",
+              "Meat and fish": "blue",
+              "Dairy and eggs": "amber",
+              "Dry goods": "violet",
+              "Bar": "teal",
+              "Paper and cleaning": "orange"
+            }
+          },
+          {
+            "key": "order_day",
+            "label": "Order by",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday"
+            ],
+            "choiceColors": {
+              "Monday": "slate",
+              "Tuesday": "blue",
+              "Wednesday": "amber",
+              "Thursday": "violet",
+              "Friday": "teal"
+            }
+          },
+          {
+            "key": "lead_days",
+            "label": "Lead time (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 14
+              }
+            ]
+          },
+          {
+            "key": "floor",
+            "label": "Delivery floor (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ingredient_count",
+            "label": "Ingredients supplied",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "ingredients",
+            "pick": "ingredient_name",
+            "agg": "count"
+          },
+          {
+            "key": "orders_count",
+            "label": "Orders placed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "orders",
+            "pick": "order_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New supplier",
+            "values": {
+              "supplier_name": "New supplier"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Account"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Account number, rep name, delivery window and credit terms."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quality notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Short-deliveries, substitutions and quality problems."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "supplier-1",
+            "values": {
+              "supplier_name": "Greenledge Farms",
+              "category": "Produce",
+              "order_day": "Tuesday",
+              "lead_days": 1,
+              "floor": 150,
+              "email": "orders@greenledgefarms.net",
+              "phone": "(401) 555-0181"
+            }
+          },
+          {
+            "key": "supplier-2",
+            "values": {
+              "supplier_name": "Narragansett Fish Co.",
+              "category": "Meat and fish",
+              "order_day": "Wednesday",
+              "lead_days": 1,
+              "floor": 300,
+              "email": "sales@narrfish.net",
+              "phone": "(401) 555-0182"
+            }
+          },
+          {
+            "key": "supplier-3",
+            "values": {
+              "supplier_name": "Hollis Ridge Butchers",
+              "category": "Meat and fish",
+              "order_day": "Monday",
+              "lead_days": 2,
+              "floor": 250,
+              "email": "orders@hollisridge.net",
+              "phone": "(401) 555-0183"
+            }
+          },
+          {
+            "key": "supplier-4",
+            "values": {
+              "supplier_name": "Blue Pasture Dairy",
+              "category": "Dairy and eggs",
+              "order_day": "Thursday",
+              "lead_days": 2,
+              "floor": 120,
+              "email": "route@bluepasture.net",
+              "phone": "(401) 555-0184"
+            }
+          },
+          {
+            "key": "supplier-5",
+            "values": {
+              "supplier_name": "Anchor Dry Goods",
+              "category": "Dry goods",
+              "order_day": "Friday",
+              "lead_days": 3,
+              "floor": 400,
+              "email": "orders@anchordry.net",
+              "phone": "(401) 555-0185"
+            }
+          },
+          {
+            "key": "supplier-6",
+            "values": {
+              "supplier_name": "Lantern Beverage",
+              "category": "Bar",
+              "order_day": "Thursday",
+              "lead_days": 2,
+              "floor": 500,
+              "email": "bar@lanternbev.net",
+              "phone": "(401) 555-0186"
+            }
+          },
+          {
+            "key": "supplier-7",
+            "values": {
+              "supplier_name": "Tidy Supply Co.",
+              "category": "Paper and cleaning",
+              "order_day": "Monday",
+              "lead_days": 3,
+              "floor": 200,
+              "email": "hello@tidysupply.net",
+              "phone": "(401) 555-0187"
+            }
+          }
+        ]
+      },
+      {
+        "token": "ingredient",
+        "name": "Inventory",
+        "labelSingular": "Ingredient",
+        "labelPlural": "Inventory",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "ingredient_name",
+        "describes": "Everything counted in the walk-in and storeroom, with par levels.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "ingredient_name",
+            "label": "Ingredient",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Produce",
+              "Protein",
+              "Dairy",
+              "Dry goods",
+              "Bar",
+              "Paper"
+            ],
+            "choiceColors": {
+              "Produce": "slate",
+              "Protein": "blue",
+              "Dairy": "amber",
+              "Dry goods": "violet",
+              "Bar": "teal",
+              "Paper": "orange"
+            }
+          },
+          {
+            "key": "unit",
+            "label": "Counted in",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "par",
+            "label": "Par level",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per unit (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "counted_on",
+            "label": "Last counted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "order_flag",
+            "label": "Order?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} < {Par level}, \"Order\", \"OK\")"
+          },
+          {
+            "key": "to_order",
+            "label": "Quantity to order",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Par level} > {On hand}, {Par level} - {On hand}, 0)"
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "counter",
+            "label": "Counted by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "supplier": "Either record can be created or change status before the other.",
+          "counter": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New ingredient",
+            "values": {
+              "ingredient_name": "New ingredient"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Storage"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where it is kept, shelf life and rotation notes."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Cost notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Price history and substitutes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "ingredient-1",
+            "values": {
+              "ingredient_name": "Heirloom tomatoes",
+              "category": "Produce",
+              "unit": "lb",
+              "on_hand": 14,
+              "par": 20,
+              "unit_cost": 4.2,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-1",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-2",
+            "values": {
+              "ingredient_name": "Baby kale",
+              "category": "Produce",
+              "unit": "lb",
+              "on_hand": 6,
+              "par": 10,
+              "unit_cost": 5.5,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-1",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-3",
+            "values": {
+              "ingredient_name": "Lemons",
+              "category": "Produce",
+              "unit": "case",
+              "on_hand": 2,
+              "par": 3,
+              "unit_cost": 38,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-1",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-4",
+            "values": {
+              "ingredient_name": "Striped bass fillet",
+              "category": "Protein",
+              "unit": "lb",
+              "on_hand": 9,
+              "par": 18,
+              "unit_cost": 17.5,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-2",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-5",
+            "values": {
+              "ingredient_name": "Littleneck clams",
+              "category": "Protein",
+              "unit": "dozen",
+              "on_hand": 6,
+              "par": 10,
+              "unit_cost": 9,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-2",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-6",
+            "values": {
+              "ingredient_name": "Pork shoulder",
+              "category": "Protein",
+              "unit": "lb",
+              "on_hand": 30,
+              "par": 30,
+              "unit_cost": 4.8,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-3",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-7",
+            "values": {
+              "ingredient_name": "Hanger steak",
+              "category": "Protein",
+              "unit": "lb",
+              "on_hand": 12,
+              "par": 16,
+              "unit_cost": 13.5,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-3",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-8",
+            "values": {
+              "ingredient_name": "Butter, unsalted",
+              "category": "Dairy",
+              "unit": "lb",
+              "on_hand": 20,
+              "par": 24,
+              "unit_cost": 4.1,
+              "counted_on": "@today-2d",
+              "supplier": "supplier-4",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-9",
+            "values": {
+              "ingredient_name": "Heavy cream",
+              "category": "Dairy",
+              "unit": "quart",
+              "on_hand": 8,
+              "par": 12,
+              "unit_cost": 3.6,
+              "counted_on": "@today-2d",
+              "supplier": "supplier-4",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-10",
+            "values": {
+              "ingredient_name": "Eggs",
+              "category": "Dairy",
+              "unit": "flat",
+              "on_hand": 5,
+              "par": 6,
+              "unit_cost": 5.9,
+              "counted_on": "@today-2d",
+              "supplier": "supplier-4",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-11",
+            "values": {
+              "ingredient_name": "Arborio rice",
+              "category": "Dry goods",
+              "unit": "lb",
+              "on_hand": 22,
+              "par": 20,
+              "unit_cost": 2.3,
+              "counted_on": "@today-2d",
+              "supplier": "supplier-5",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-12",
+            "values": {
+              "ingredient_name": "Olive oil",
+              "category": "Dry goods",
+              "unit": "gallon",
+              "on_hand": 3,
+              "par": 4,
+              "unit_cost": 41,
+              "counted_on": "@today-2d",
+              "supplier": "supplier-5",
+              "counter": "tm-3"
+            }
+          },
+          {
+            "key": "ingredient-13",
+            "values": {
+              "ingredient_name": "Rye whiskey",
+              "category": "Bar",
+              "unit": "bottle",
+              "on_hand": 7,
+              "par": 10,
+              "unit_cost": 28,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-6",
+              "counter": "tm-5"
+            }
+          },
+          {
+            "key": "ingredient-14",
+            "values": {
+              "ingredient_name": "Dry vermouth",
+              "category": "Bar",
+              "unit": "bottle",
+              "on_hand": 3,
+              "par": 4,
+              "unit_cost": 12,
+              "counted_on": "@today-1d",
+              "supplier": "supplier-6",
+              "counter": "tm-5"
+            }
+          },
+          {
+            "key": "ingredient-15",
+            "values": {
+              "ingredient_name": "Napkins, dinner",
+              "category": "Paper",
+              "unit": "case",
+              "on_hand": 4,
+              "par": 5,
+              "unit_cost": 46,
+              "counted_on": "@today-3d",
+              "supplier": "supplier-7",
+              "counter": "tm-2"
+            }
+          }
+        ]
+      },
+      {
+        "token": "dish",
+        "name": "Dishes",
+        "labelSingular": "Dish",
+        "labelPlural": "Dishes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chef-hat",
+        "titleField": "dish_name",
+        "describes": "Every dish with its price, plate cost and food cost percentage.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "dish_name",
+            "label": "Dish",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Testing",
+              "On menu",
+              "Retired"
+            ],
+            "choiceColors": {
+              "Testing": "slate",
+              "On menu": "blue",
+              "Retired": "amber"
+            },
+            "required": true,
+            "default": "Testing",
+            "statusGroups": {
+              "Testing": "todo",
+              "On menu": "in_progress",
+              "Retired": "done"
+            }
+          },
+          {
+            "key": "course",
+            "label": "Course",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Starter",
+              "Main",
+              "Side",
+              "Dessert",
+              "Brunch"
+            ],
+            "choiceColors": {
+              "Starter": "slate",
+              "Main": "blue",
+              "Side": "amber",
+              "Dessert": "violet",
+              "Brunch": "teal"
+            }
+          },
+          {
+            "key": "price",
+            "label": "Menu price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "plate_cost",
+            "label": "Plate cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "food_cost_pct",
+            "label": "Food cost (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Menu price (USD)} > 0, ROUND({Plate cost (USD)} / {Menu price (USD)} * 100, 1), 0)"
+          },
+          {
+            "key": "margin",
+            "label": "Margin per plate (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Menu price (USD)} - {Plate cost (USD)}"
+          },
+          {
+            "key": "cost_flag",
+            "label": "Cost check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Food cost (%)} > 35, \"High\", IF({Food cost (%)} > 30, \"Watch\", \"Good\"))"
+          },
+          {
+            "key": "sold_week",
+            "label": "Sold last week",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "costed_on",
+            "label": "Last costed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "chef",
+            "label": "Recipe owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "chef": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New dish",
+            "values": {
+              "dish_name": "New dish",
+              "status": "Testing"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Recipe card"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Ingredients, quantities, method and plating."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Costing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Ingredient costs behind the plate cost and the date they were checked."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "dish-1",
+            "values": {
+              "dish_name": "Heirloom tomato salad",
+              "status": "On menu",
+              "course": "Starter",
+              "price": 14,
+              "plate_cost": 3.4,
+              "sold_week": 85,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-2",
+            "values": {
+              "dish_name": "Littleneck clams, white wine",
+              "status": "On menu",
+              "course": "Starter",
+              "price": 17,
+              "plate_cost": 5.9,
+              "sold_week": 64,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-3",
+            "values": {
+              "dish_name": "Pan-roasted striped bass",
+              "status": "On menu",
+              "course": "Main",
+              "price": 34,
+              "plate_cost": 12.9,
+              "sold_week": 92,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-4",
+            "values": {
+              "dish_name": "Hanger steak, herb butter",
+              "status": "On menu",
+              "course": "Main",
+              "price": 32,
+              "plate_cost": 12.4,
+              "sold_week": 118,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-5",
+            "values": {
+              "dish_name": "Slow pork shoulder",
+              "status": "On menu",
+              "course": "Main",
+              "price": 26,
+              "plate_cost": 7.7,
+              "sold_week": 74,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-6",
+            "values": {
+              "dish_name": "Mushroom arborio",
+              "status": "On menu",
+              "course": "Main",
+              "price": 24,
+              "plate_cost": 5.6,
+              "sold_week": 61,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-7",
+            "values": {
+              "dish_name": "Lemon pot de creme",
+              "status": "On menu",
+              "course": "Dessert",
+              "price": 11,
+              "plate_cost": 2.5,
+              "sold_week": 70,
+              "costed_on": "@today-30d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-8",
+            "values": {
+              "dish_name": "Charred greens",
+              "status": "On menu",
+              "course": "Side",
+              "price": 9,
+              "plate_cost": 2.9,
+              "sold_week": 88,
+              "costed_on": "@today-14d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-9",
+            "values": {
+              "dish_name": "Fried egg brunch plate",
+              "status": "On menu",
+              "course": "Brunch",
+              "price": 16,
+              "plate_cost": 4.4,
+              "sold_week": 58,
+              "costed_on": "@today-30d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-10",
+            "values": {
+              "dish_name": "Smoked trout toast",
+              "status": "Testing",
+              "course": "Starter",
+              "price": 15,
+              "plate_cost": 6.1,
+              "costed_on": "@today-3d",
+              "chef": "tm-3"
+            }
+          },
+          {
+            "key": "dish-11",
+            "values": {
+              "dish_name": "Duck breast, cherry jus",
+              "status": "Retired",
+              "course": "Main",
+              "price": 36,
+              "plate_cost": 16.5,
+              "costed_on": "@today-120d",
+              "chef": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "order",
+        "name": "Orders",
+        "labelSingular": "Order",
+        "labelPlural": "Orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-cart",
+        "titleField": "order_name",
+        "describes": "Purchase orders sent to suppliers, with expected delivery.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "order_name",
+            "label": "Order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Received"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "green",
+              "Received": "blue"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Received": "done"
+            }
+          },
+          {
+            "key": "ordered_on",
+            "label": "Ordered",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "delivery_on",
+            "label": "Delivery expected",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "total",
+            "label": "Order total (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "placed_by",
+            "label": "Placed by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_log_delivery",
+            "label": "Log delivery",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "order_log_delivery"
+            }
+          }
+        ],
+        "independentOf": {
+          "supplier": "Either record can be created or change status before the other.",
+          "placed_by": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Sent",
+              "Received"
+            ],
+            "filled": [
+              "ordered_on"
+            ]
+          }
+        ],
+        "before": [
+          [
+            "ordered_on",
+            "delivery_on"
+          ]
+        ],
+        "rowTemplates": [
+          {
+            "name": "New order",
+            "values": {
+              "order_name": "New order",
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What to order"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Lines, quantities and any substitutions allowed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "order-1",
+            "values": {
+              "order_name": "Produce for midweek",
+              "status": "Sent",
+              "ordered_on": "@today-1d",
+              "delivery_on": "@today+1d",
+              "total": 385,
+              "supplier": "supplier-1",
+              "placed_by": "tm-3"
+            }
+          },
+          {
+            "key": "order-2",
+            "values": {
+              "order_name": "Fish for the weekend",
+              "status": "Draft",
+              "delivery_on": "@mon+4d",
+              "total": 690,
+              "supplier": "supplier-2",
+              "placed_by": "tm-3"
+            }
+          },
+          {
+            "key": "order-3",
+            "values": {
+              "order_name": "Meat for the week",
+              "status": "Received",
+              "ordered_on": "@today-4d",
+              "delivery_on": "@today-2d",
+              "total": 840,
+              "supplier": "supplier-3",
+              "placed_by": "tm-3"
+            }
+          },
+          {
+            "key": "order-4",
+            "values": {
+              "order_name": "Dairy and eggs",
+              "status": "Sent",
+              "ordered_on": "@today-2d",
+              "delivery_on": "@today+0d",
+              "total": 410,
+              "supplier": "supplier-4",
+              "placed_by": "tm-3"
+            }
+          },
+          {
+            "key": "order-5",
+            "values": {
+              "order_name": "Dry goods restock",
+              "status": "Draft",
+              "delivery_on": "@today+5d",
+              "total": 1120,
+              "supplier": "supplier-5",
+              "placed_by": "tm-2"
+            }
+          },
+          {
+            "key": "order-6",
+            "values": {
+              "order_name": "Bar order, spirits",
+              "status": "Sent",
+              "ordered_on": "@today-2d",
+              "delivery_on": "@today+2d",
+              "total": 1680,
+              "supplier": "supplier-6",
+              "placed_by": "tm-5"
+            }
+          },
+          {
+            "key": "order-7",
+            "values": {
+              "order_name": "Paper and cleaning",
+              "status": "Received",
+              "ordered_on": "@today-7d",
+              "delivery_on": "@today-4d",
+              "total": 320,
+              "supplier": "supplier-7",
+              "placed_by": "tm-2"
+            }
+          },
+          {
+            "key": "order-8",
+            "values": {
+              "order_name": "Produce for brunch",
+              "status": "Received",
+              "ordered_on": "@today-6d",
+              "delivery_on": "@today-5d",
+              "total": 275,
+              "supplier": "supplier-1",
+              "placed_by": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "shift",
+        "name": "Shifts",
+        "labelSingular": "Shift",
+        "labelPlural": "Shifts",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "shift_name",
+        "describes": "Who is working when, by role.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "shift_name",
+            "label": "Shift",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Worked"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Worked": "blue"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Worked": "done"
+            }
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Line",
+              "Server",
+              "Host",
+              "Bar",
+              "Dish",
+              "Prep"
+            ],
+            "choiceColors": {
+              "Line": "slate",
+              "Server": "blue",
+              "Host": "amber",
+              "Bar": "violet",
+              "Dish": "teal",
+              "Prep": "orange"
+            }
+          },
+          {
+            "key": "shift_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "key": "person",
+            "label": "Person",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "independentOf": {
+          "person": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New shift",
+            "values": {
+              "shift_name": "New shift",
+              "status": "Scheduled"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Handover notes and anything the next shift should know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "shift-1",
+            "values": {
+              "shift_name": "Friday dinner line",
+              "status": "Scheduled",
+              "role": "Line",
+              "shift_on": "@mon+4d",
+              "hours": 9,
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-2",
+            "values": {
+              "shift_name": "Friday dinner floor lead",
+              "status": "Scheduled",
+              "role": "Server",
+              "shift_on": "@mon+4d",
+              "hours": 8,
+              "person": "tm-4"
+            }
+          },
+          {
+            "key": "shift-3",
+            "values": {
+              "shift_name": "Friday bar",
+              "status": "Scheduled",
+              "role": "Bar",
+              "shift_on": "@mon+4d",
+              "hours": 8,
+              "person": "tm-5"
+            }
+          },
+          {
+            "key": "shift-4",
+            "values": {
+              "shift_name": "Saturday brunch line",
+              "status": "Scheduled",
+              "role": "Line",
+              "shift_on": "@mon+5d",
+              "hours": 7,
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-5",
+            "values": {
+              "shift_name": "Saturday dinner floor lead",
+              "status": "Scheduled",
+              "role": "Server",
+              "shift_on": "@mon+5d",
+              "hours": 8,
+              "person": "tm-4"
+            }
+          },
+          {
+            "key": "shift-6",
+            "values": {
+              "shift_name": "Tuesday prep and ordering",
+              "status": "Scheduled",
+              "role": "Prep",
+              "shift_on": "@mon+1d",
+              "hours": 8,
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-7",
+            "values": {
+              "shift_name": "Thursday close and counts",
+              "status": "Scheduled",
+              "role": "Server",
+              "shift_on": "@mon+3d",
+              "hours": 7,
+              "person": "tm-2"
+            }
+          },
+          {
+            "key": "shift-8",
+            "values": {
+              "shift_name": "Last Friday dinner line",
+              "status": "Worked",
+              "role": "Line",
+              "shift_on": "@today-5d",
+              "hours": 9,
+              "person": "tm-3"
+            }
+          },
+          {
+            "key": "shift-9",
+            "values": {
+              "shift_name": "Last Saturday bar",
+              "status": "Worked",
+              "role": "Bar",
+              "shift_on": "@today-4d",
+              "hours": 8,
+              "person": "tm-5"
+            }
+          },
+          {
+            "key": "shift-10",
+            "values": {
+              "shift_name": "Last Sunday brunch floor",
+              "status": "Worked",
+              "role": "Server",
+              "shift_on": "@today-3d",
+              "hours": 7,
+              "person": "tm-4"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each ingredient belongs to one supplier.",
+        "fromTable": "ingredient",
+        "fromField": "supplier",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "ingredients"
+      },
+      {
+        "describes": "Each ingredient belongs to one counted by.",
+        "fromTable": "ingredient",
+        "fromField": "counter",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "ingredient_by_counter"
+      },
+      {
+        "describes": "Each dish belongs to one recipe owner.",
+        "fromTable": "dish",
+        "fromField": "chef",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "dish_by_chef"
+      },
+      {
+        "describes": "Each order belongs to one supplier.",
+        "fromTable": "order",
+        "fromField": "supplier",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "orders"
+      },
+      {
+        "describes": "Each order belongs to one placed by.",
+        "fromTable": "order",
+        "fromField": "placed_by",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "order_by_placer"
+      },
+      {
+        "describes": "Each shift belongs to one person.",
+        "fromTable": "shift",
+        "fromField": "person",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "shift_by_person"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Anselmo Guerrero-Whitfield",
+              "role": "Owner",
+              "work_email": "anselmo@copperladle.net",
+              "mobile": "(415) 555-0141",
+              "start_date": "@today-12y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Ottilie Brennan",
+              "role": "General manager",
+              "work_email": "ottilie@copperladle.net",
+              "mobile": "(415) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Rashid Okafor",
+              "role": "Executive chef",
+              "work_email": "rashid@copperladle.net",
+              "mobile": "(415) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Mirabel Santos",
+              "role": "Front of house lead",
+              "work_email": "mirabel@copperladle.net",
+              "mobile": "(415) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Gunnar Lindahl",
+              "role": "Bar manager",
+              "work_email": "gunnar@copperladle.net",
+              "mobile": "(415) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "order_intake",
+        "name": "Request an order",
+        "describes": "Ask for stock to be ordered from a supplier.",
+        "audience": "staff",
+        "table": "order",
+        "fields": [
+          {
+            "fieldKey": "order_name",
+            "ask": "What is needed?",
+            "required": true
+          },
+          {
+            "fieldKey": "supplier",
+            "ask": "Which supplier?",
+            "required": true
+          },
+          {
+            "fieldKey": "delivery_on",
+            "ask": "When is it needed?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The order is saved as a draft."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "order_log_delivery",
+        "table": "order",
+        "name": "Log delivery",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Received"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_supplier",
+        "name": "All suppliers",
+        "table": "supplier",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "supplier_board",
+        "name": "Suppliers board",
+        "table": "supplier",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_ingredient",
+        "name": "All inventory",
+        "table": "ingredient",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "ingredient_board",
+        "name": "Inventory board",
+        "table": "ingredient",
+        "kind": "kanban",
+        "groupBy": "category"
+      },
+      {
+        "token": "all_dish",
+        "name": "All dishes",
+        "table": "dish",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "dish_board",
+        "name": "Dishes board",
+        "table": "dish",
+        "kind": "kanban",
+        "groupBy": "course"
+      },
+      {
+        "token": "all_order",
+        "name": "All orders",
+        "table": "order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "order_board",
+        "name": "Orders board",
+        "table": "order",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "order_cal",
+        "name": "Orders calendar",
+        "table": "order",
+        "kind": "calendar",
+        "dateField": "delivery_on",
+        "allDay": true
+      },
+      {
+        "token": "order_over",
+        "name": "Overdue",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent"
+          ]
+        }
+      },
+      {
+        "token": "order_week",
+        "name": "Due this week",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent"
+          ]
+        }
+      },
+      {
+        "token": "order_next7",
+        "name": "Next 7 days",
+        "table": "order",
+        "kind": "grid",
+        "within": {
+          "delivery_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Draft",
+            "Sent"
+          ]
+        }
+      },
+      {
+        "token": "all_shift",
+        "name": "All shifts",
+        "table": "shift",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shift_board",
+        "name": "Shifts board",
+        "table": "shift",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "shift_cal",
+        "name": "Shifts calendar",
+        "table": "shift",
+        "kind": "calendar",
+        "dateField": "shift_on",
+        "allDay": true
+      },
+      {
+        "token": "shift_week",
+        "name": "This week",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "shift_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "shift_next",
+        "name": "Next week",
+        "table": "shift",
+        "kind": "grid",
+        "within": {
+          "shift_on": {
+            "relative": "next_week"
+          }
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Restaurant Operations Hub assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "dish",
+          "describes": "Every dish with its price, plate cost and food cost percentage."
+        },
+        {
+          "name": "related_tables",
+          "table": "supplier",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many dishes are being tested?",
+        "whyItMatters": "The chef decides each Monday which tested dishes reach the menu.",
+        "expect": {
+          "table": "dish",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Testing"
+          },
+          "answer": 1,
+          "unit": "dishes"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open suppliers.",
+        "action": {
+          "kind": "open",
+          "surface": "supplier_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "supplier_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open inventory.",
+        "action": {
+          "kind": "open",
+          "surface": "ingredient_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "ingredient_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open dishes.",
+        "action": {
+          "kind": "open",
+          "surface": "dish_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "dish_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "copperladle.net"
+      ],
+      "fictionalStreets": [
+        "Foundry Street"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "restaurant-operations-hub",
+      "parent": null,
+      "title": "Restaurant Operations Hub",
+      "icon": {
+        "emoji": "🍽️"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Run the restaurant from one page: every dish with its food cost, the inventory counted against par, suppliers and their order days, purchase orders on the way, and the shifts this week. Start with the Dashboard, order whatever the Order? column flags, and review any dish marked High cost."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:menu-costing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:inventory-count"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:ordering-routine"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:opening-and-closing"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Suppliers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The vendors the restaurant orders from, with order days and lead times."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "supplier_board"
+            },
+            "inline": true,
+            "title": "Suppliers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "sup-t",
+                "name": "All suppliers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "sup-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inventory"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything counted in the walk-in and storeroom, with par levels."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ingredient",
+              "view": "ingredient_board"
+            },
+            "inline": true,
+            "title": "Inventory",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ing-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "ing-t",
+                "name": "All inventory",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "ing-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dishes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every dish with its price, plate cost and food cost percentage."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dish",
+              "view": "dish_board"
+            },
+            "inline": true,
+            "title": "Dishes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dis-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "course"
+              },
+              {
+                "id": "dis-t",
+                "name": "All dishes",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "dis-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Purchase orders sent to suppliers, with expected delivery."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "order_board"
+            },
+            "inline": true,
+            "title": "Orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ord-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ord-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "delivery_on"
+              },
+              {
+                "id": "ord-t",
+                "name": "All orders",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ord-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "delivery_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent"
+                  ]
+                }
+              },
+              {
+                "id": "ord-w",
+                "name": "Due this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "delivery_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent"
+                  ]
+                }
+              },
+              {
+                "id": "ord-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "ord-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shifts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Who is working when, by role."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "shift_board"
+            },
+            "inline": true,
+            "title": "Shifts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "shi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "shi-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "shift_on"
+              },
+              {
+                "id": "shi-t",
+                "name": "All shifts",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "shi-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "shift_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "shi-next",
+                "name": "Next week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "shift_on": {
+                    "relative": "next_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "shi-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "restaurant-operations-hub",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Costs, stock and supply at a glance."
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "dish",
+                      "view": "all_dish"
+                    },
+                    "inline": true,
+                    "title": "Dishes by status",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc0",
+                        "name": "Dishes by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc0"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "dish",
+                      "view": "all_dish"
+                    },
+                    "inline": true,
+                    "title": "Sold last week by course",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Sold last week by course",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "course",
+                          "op": "sum",
+                          "field": "sold_week"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ingredient",
+                      "view": "all_ingredient"
+                    },
+                    "inline": true,
+                    "title": "Ingredients by category",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Ingredients by category",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "category",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "order",
+                      "view": "all_order"
+                    },
+                    "inline": true,
+                    "title": "Order value by status (USD)",
+                    "linked": true,
+                    "showTitle": true,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Order value by status (USD)",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "total"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Counted in the last 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ingredient",
+              "view": "all_ingredient"
+            },
+            "inline": true,
+            "title": "Counted in the last 7 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl0",
+                "name": "Counted in the last 7 days",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "counted_on": {
+                    "relative": "past_days",
+                    "n": 7
+                  }
+                }
+              }
+            ],
+            "activeViewId": "vl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliveries due soon"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "order",
+              "view": "all_order"
+            },
+            "inline": true,
+            "title": "Deliveries due soon",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl1",
+                "name": "Deliveries due soon",
+                "layout": "list",
+                "icon": "List",
+                "within": {
+                  "delivery_on": {
+                    "relative": "next_days",
+                    "n": 3
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Draft",
+                    "Sent"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dishes on the menu"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dish",
+              "view": "all_dish"
+            },
+            "inline": true,
+            "title": "Dishes on the menu",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vl2",
+                "name": "Dishes on the menu",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "On menu"
+                }
+              }
+            ],
+            "activeViewId": "vl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Food cost (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plate cost divided by menu price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Aim for about 28 to 32 percent; over 35 means rework the plate or the price"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Order?"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Compares what is on hand to the par level"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order the Quantity to order, rounded to the supplier's pack size"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Margin per plate (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Menu price minus plate cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Push dishes with a high margin and good sales"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sold last week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plates sold from the point of sale report"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retire dishes that sell little and cost a lot"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "menu-costing",
+      "parent": "restaurant-operations-hub",
+      "title": "Costing a dish",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A plate cost is a number you keep current. Prices move; costs drift."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Steps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List every ingredient in the recipe, including oil, salt, garnish and cooking loss."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Multiply each by its cost per unit from Inventory."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add them up; enter the total as the plate cost."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read Food cost (%) and the Cost check."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the result"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Food cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reading"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Good"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep an eye on supplier changes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30 to 35"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Watch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Trim the portion or add a cheaper component"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Over 35"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "High"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Raise the price or rework the dish"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it current"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Recost every dish when a supplier raises a price, and at least once a quarter. Update the Last costed date."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "inventory-count",
+      "parent": "restaurant-operations-hub",
+      "title": "Weekly inventory count",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count at the same time each week, after close."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count by location: walk-in, dry storage, bar, then paper goods."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter On hand and Last counted for each ingredient."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at the Order? column; anything marked Order goes on the next supplier list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "First in, first out: label dates, rotate stock."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record waste and spills during service, not only at the count."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Par levels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set par from actual use plus a small buffer for the delivery lead time. Adjust after holidays and seasonal changes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ordering-routine",
+      "parent": "restaurant-operations-hub",
+      "title": "Ordering routine",
+      "icon": {
+        "emoji": "📦"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meat; paper and cleaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Produce"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wednesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fish"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dairy; bar"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dry goods"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Placing an order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Inventory table, read the Order? column and group the flagged items by supplier."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create an order for each supplier with the lines and a delivery date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the delivery floor on the supplier row before sending."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the delivery, check against the invoice and press Log delivery."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Short deliveries"
+            }
+          ],
+          "props": {
+            "level": 3
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Note any shortage on the order and on the supplier's notes. Three problems in a month is a reason to change suppliers."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "opening-and-closing",
+      "parent": "restaurant-operations-hub",
+      "title": "Opening and closing checklists",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Opening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Walk-in temperatures logged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prep list read at line-up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Stations stocked and sanitizer buckets set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reservations and allergy notes reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leftovers labelled and dated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prep list for tomorrow written"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Stock counts updated for anything low"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Equipment off, doors locked, alarm set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Small checklists done every day prevent the large problems you cannot afford."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
