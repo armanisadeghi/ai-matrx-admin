@@ -114,7 +114,7 @@ export async function makePersona({ useCase, seed } = {}) {
 }
 
 /** The `app_metadata.test_fixture` object. `ttlHours: null` is for a NAMED permanent demo persona only. */
-export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = new Date() }) {
+export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = new Date(), skipFoundSearch = false }) {
   if (!suite?.trim() || !purpose?.trim()) {
     throw new PersonaFactoryRefusal("a fixture account needs a suite name and a purpose; both are stamped on it.");
   }
@@ -123,6 +123,9 @@ export function buildTag({ suite, purpose, ttlHours = DEFAULT_TTL_HOURS, now = n
     purpose,
     created_at: now.toISOString(),
     expires_at: ttlHours === null ? null : new Date(now.getTime() + ttlHours * 3600_000).toISOString(),
+    // The sign-up welcome's background found search leaves this persona alone (a real, paid search otherwise runs
+    // on its first load: features/marketing/smart-add/welcome/foundSearchState.ts).
+    ...(skipFoundSearch ? { skip_found_search: true } : {}),
   };
 }
 
@@ -147,11 +150,11 @@ async function gotrue(target, method, path, body) {
 /**
  * Create a tagged, passwordless auth user through the GoTrue admin API.
  * @param {FixtureTarget} target
- * @param {{ suite?: string, purpose?: string, ttlHours?: number, persona?: Awaited<ReturnType<typeof makePersona>>, useCase?: string }} [options]
+ * @param {{ suite?: string, purpose?: string, ttlHours?: number, persona?: Awaited<ReturnType<typeof makePersona>>, useCase?: string, skipFoundSearch?: boolean }} [options]
  */
-export async function createFixtureUser(target, { suite, purpose, ttlHours = DEFAULT_TTL_HOURS, persona, useCase } = {}) {
+export async function createFixtureUser(target, { suite, purpose, ttlHours = DEFAULT_TTL_HOURS, persona, useCase, skipFoundSearch = false } = {}) {
   const who = persona ?? (await makePersona({ useCase }));
-  const tag = buildTag({ suite, purpose, ttlHours });
+  const tag = buildTag({ suite, purpose, ttlHours, skipFoundSearch });
   const created = await gotrue(target, "POST", "users", {
     email: who.email,
     email_confirm: true,
