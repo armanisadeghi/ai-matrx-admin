@@ -1,0 +1,108 @@
+name: Hosted frontend release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/(public)/privacy-policy/extension/page.tsx'
+      - '.github/workflows/hosted-release.yml'
+      - 'scripts/hosted-release-guard.sh'
+      - 'scripts/hosted-release-guard.test.py'
+      - 'scripts/hosted-release-source-race.test.py'
+      - 'scripts/release.sh'
+
+# One running eligible release and one latest pending eligible push. Never cancel a rollout watch.
+concurrency:
+  group: hosted-frontend-release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ !startsWith(github.event.head_commit.message, 'release:') && !startsWith(github.event.head_commit.message, 'release-admin:') && !startsWith(github.event.head_commit.message, 'release-demos:') && !startsWith(github.event.head_commit.message, 'release-all:') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Skip a release head or stale checkout before installing dependencies
+        id: initial_source
+        run: bash scripts/hosted-release-guard.sh
+      - name: Check existing release credentials
+        if: steps.initial_source.outputs.proceed == 'true'
+        env:
+          AIDREAM_REPO_TOKEN: ${{ secrets.AIDREAM_REPO_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          for name in AIDREAM_REPO_TOKEN VERCEL_TOKEN NEXT_PUBLIC_SUPABASE_URL SUPABASE_SECRET_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing existing repository secret: $name"
+              exit 1
+            fi
+          done
+      - uses: pnpm/action-setup@v4
+        if: steps.initial_source.outputs.proceed == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.initial_source.outputs.proceed == 'true'
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - uses: astral-sh/setup-uv@v5
+        if: steps.initial_source.outputs.proceed == 'true'
+      - name: Check out the existing private release companion
+        if: steps.initial_source.outputs.proceed == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: AI-Matrix-Engine/aidream
+          path: aidream
+          token: ${{ secrets.AIDREAM_REPO_TOKEN }}
+          persist-credentials: false
+      - name: Install the committed frontend dependency graph
+        if: steps.initial_source.outputs.proceed == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Prove the migration and push-race guards still refuse unsafe candidates
+        if: steps.initial_source.outputs.proceed == 'true'
+        run: |
+          python3 scripts/hosted-release-guard.test.py
+          python3 scripts/hosted-release-source-race.test.py
+      - name: Recheck current main and migration census
+        id: source
+        if: steps.initial_source.outputs.proceed == 'true'
+        run: bash scripts/hosted-release-guard.sh
+      - name: Release and wait for every existing after-phase check and rollout verdict
+        if: steps.source.outputs.proceed == 'true'
+        env:
+          AIDREAM_DIR: ${{ github.workspace }}/aidream
+          RELEASE_EXPECTED_SOURCE_SHA: ${{ steps.source.outputs.source_sha }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          set -o pipefail
+          bash scripts/release.sh --no-migrate --with-checks | tee "$RUNNER_TEMP/hosted-release.stdout"
+          tag="$(sed -n 's/^\(v[0-9][0-9.]*\)  pushed, build started.*/\1/p' "$RUNNER_TEMP/hosted-release.stdout" | tail -1)"
+          if [ -z "$tag" ]; then
+            echo '::error::Release script did not report a pushed release'
+            exit 1
+          fi
+          findings="tmp/release-logs/findings-${tag}.jsonl"
+          if [ ! -f "$findings" ]; then
+            echo "::error::Release ${tag} has no after-phase findings file; rollout/checks were not verified"
+            exit 1
+          fi
+          node - "$findings" <<'NODE'
+          const fs = require('node:fs');
+          const rows = fs.readFileSync(process.argv[2], 'utf8').split('\n').filter(Boolean).map(JSON.parse);
+          const errors = rows.filter(row => row.level === 'error');
+          for (const row of errors) console.error(`::error title=${row.category}::${row.title}`);
+          if (errors.length) process.exit(1);
+          console.log('Release after-phase checks and rollout completed without error findings.');
+          NODE
