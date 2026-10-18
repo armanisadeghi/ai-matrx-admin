@@ -28,7 +28,7 @@ import { createClient } from "@/utils/supabase/client";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import * as NotesAPI from "@/features/notes/service/notesApi";
 import { isJsonObject } from "@/types/json";
-import type { Database, Json } from "@/types/database.types";
+import type { Database } from "@/types/database.types";
 import { AdminUserRef } from "../components/AdminUserRef";
 import { readUserResearchAbout } from "../service/userResearch";
 import type { UserResearch } from "../lib/userResearch";
@@ -47,12 +47,12 @@ const USER_TARGET = "user" as AssociationTargetType;
 interface PersonNote {
   id: string;
   content: string;
-  created_by: string;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
   shown_to: ShownTo | null;
   pinned: boolean;
-  metadata: Json;
+  metadata: unknown;
 }
 
 interface MemberNote {
@@ -76,7 +76,7 @@ interface NotesLoad {
   planNote: PlanNote | null;
 }
 
-const isPinned = (metadata: Json): boolean => isJsonObject(metadata) && metadata.pinned === true;
+const isPinned = (metadata: unknown): boolean => isJsonObject(metadata) && metadata.pinned === true;
 
 async function loadPersonNotes(userId: string): Promise<NotesLoad> {
   const supabase = createClient();
@@ -245,7 +245,7 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
           surfaceName="admin-user-notes"
         />
         <div className="flex items-center justify-end gap-2">
-          <SegmentedControl value={shownTo} onValueChange={(v) => setShownTo(v === "only_me" ? "only_me" : "my_team")} data={SHARE_OPTIONS} />
+          <SegmentedControl aria-label="Who sees this note" value={shownTo} onValueChange={(v) => setShownTo(v === "only_me" ? "only_me" : "my_team")} data={SHARE_OPTIONS} />
           <Button variant="primary" icon={<StickyNote />} disabled={saving || !draft.trim()} onClick={() => void addNote()}>
             {saving ? "Saving…" : "Add note"}
           </Button>
@@ -268,7 +268,7 @@ export function UserNotesTab({ userId, overview }: UserTabBodyProps) {
               return (
                 <li key={n.id} className="flex flex-col gap-1.5 py-3">
                   <div className="flex items-center gap-2">
-                    <AdminUserRef userId={n.created_by} hideEmail />
+                    {n.created_by ? <AdminUserRef userId={n.created_by} hideEmail /> : <span className="type-secondary text-muted-foreground">Unknown author</span>}
                     <span className="type-secondary text-muted-foreground" title={new Date(n.created_at).toLocaleString()}>
                       {formatRelativeTime(n.created_at)}
                       {n.updated_at !== n.created_at ? " · edited" : ""}
