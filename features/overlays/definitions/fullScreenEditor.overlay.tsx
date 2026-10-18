@@ -31,7 +31,7 @@ import {
   type FullScreenEditorHandlers,
 } from "./callbacks/fullScreenEditor";
 import type { EditorPrimaryAction } from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "fullScreenEditor" as const;

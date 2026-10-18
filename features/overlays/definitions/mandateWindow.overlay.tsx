@@ -17,7 +17,7 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 const OVERLAY_ID = "mandateWindow" as const;
 

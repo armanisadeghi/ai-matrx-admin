@@ -18,7 +18,7 @@ import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentRunWindow" as const;

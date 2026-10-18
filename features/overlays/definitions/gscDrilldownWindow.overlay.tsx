@@ -21,7 +21,7 @@ import type {
   GscFilters,
   GscRangeKey,
 } from "@/features/marketing/search-console/types";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gscDrilldownWindow" as const;

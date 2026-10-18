@@ -18,7 +18,7 @@ import type {
   TaskPrePopulate,
   TaskSourceInput,
 } from "@/features/tasks/widgets/quick-create/TaskQuickCreateCore";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "taskQuickCreateWindow" as const;

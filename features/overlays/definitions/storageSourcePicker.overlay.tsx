@@ -7,7 +7,7 @@ import {
   createStorageSourcePickerCallbackGroup,
   type StorageSourcePickerHandlers,
 } from "./callbacks/storageSourcePicker";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "storageSourcePicker" as const;

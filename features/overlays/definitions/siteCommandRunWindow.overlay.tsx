@@ -23,7 +23,7 @@ import {
   siteCommandKey,
   type SiteCommandMode,
 } from "@/features/marketing/crawler/site-commands";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteCommandRunWindow" as const;

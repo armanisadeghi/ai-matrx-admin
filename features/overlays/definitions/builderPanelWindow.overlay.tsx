@@ -7,7 +7,7 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay, toggleOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export const BUILDER_PANEL_OVERLAY_ID = "builderPanelWindow" as const;

@@ -15,7 +15,7 @@ import {
   type ResourcePickerWindowCallbackGroup,
 } from "./callbacks/resourcePickerWindow";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 export interface OpenResourcePickerWindowOptions extends ResourcePickerWindowCallbackGroup {

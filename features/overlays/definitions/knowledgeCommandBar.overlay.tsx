@@ -19,7 +19,7 @@ import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createKnowledgeCommandBarCallbackGroup } from "./callbacks/knowledgeCommandBar";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "knowledgeCommandBar" as const;

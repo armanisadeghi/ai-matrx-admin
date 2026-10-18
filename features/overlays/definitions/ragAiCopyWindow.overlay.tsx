@@ -7,7 +7,7 @@ import type {
   RagAiCopyBundle,
   RagAiSectionKey,
 } from "@/features/rag/components/search/ragAiCopy";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "ragAiCopyWindow" as const;

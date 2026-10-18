@@ -22,7 +22,7 @@ import {
   type AgentPickerHandlers,
   type AgentPickerWindowData,
 } from "@/features/window-panels/windows/agents/agent-picker-callbacks";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentPickerWindow" as const;

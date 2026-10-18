@@ -13,7 +13,7 @@ import {
   type OpenSmartCodeEditorWindowOptions,
   type SmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/smart-code-editor/useOpenSmartCodeEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export {

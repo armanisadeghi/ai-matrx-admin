@@ -17,7 +17,7 @@ import { dispatchThunk, useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay } from "@ai-matrx/summon/open";
 import type { DetailInstanceData } from "@ai-matrx/detail";
 import { openDetailSingleton } from "@/features/window-panels/detail/openDetailSingleton";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "detailWindow" as const;

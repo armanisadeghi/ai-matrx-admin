@@ -19,7 +19,7 @@ import {
   registerCustomAgentSession,
   type CustomAgentSession,
 } from "@ai-matrx/chat/agents/components/custom-agent/session";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "customAgentWindow" as const;

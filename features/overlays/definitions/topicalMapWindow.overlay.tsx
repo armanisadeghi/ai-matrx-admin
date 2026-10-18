@@ -21,7 +21,7 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "topicalMapWindow" as const;

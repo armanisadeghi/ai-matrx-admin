@@ -4,7 +4,7 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickMessageTemplateSaveWindow" as const;

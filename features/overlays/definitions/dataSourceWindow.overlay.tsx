@@ -11,7 +11,7 @@ import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "dataSourceWindow" as const;

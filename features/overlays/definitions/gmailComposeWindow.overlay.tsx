@@ -20,7 +20,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { callbackManager } from "@ai-matrx/summon/handles";
 import type { GmailDraftedBy } from "@/features/crm/gmail/types";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gmailComposeWindow" as const;

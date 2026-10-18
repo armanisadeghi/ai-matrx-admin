@@ -16,7 +16,7 @@ import {
   type SourceReviewOptions,
   type SourceReviewOutcome,
 } from "@/features/resource-manager/source-input/review/openSourceReview";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export { openSourceReview, type SourceReviewOptions, type SourceReviewOutcome };

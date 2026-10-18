@@ -9,7 +9,7 @@ import {
   type DirectiveReferencePickerWindowData,
 } from "@/features/window-panels/windows/admin/directive-reference-picker/callbacks";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "directiveReferencePickerWindow";

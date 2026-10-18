@@ -15,7 +15,7 @@ import {
   type OpenCreateProjectWindowOptions,
   type CreateProjectWindowHandle,
 } from "@/features/window-panels/windows/projects/useOpenCreateProjectWindow";
-import { defineOverlay } from "@ai-matrx/summon/root";
+import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
 
 export {
