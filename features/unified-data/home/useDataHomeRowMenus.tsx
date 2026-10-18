@@ -402,7 +402,9 @@ export function useDataHomeRowMenus({
                   onSelect: restore,
                   toast: { loading: "Restoring…", success: `${row.name} restored`, error: (e) => (e instanceof Error ? e.message : "Couldn’t restore") },
                 }
-              : row.kind === "form" || row.kind === "booking"
+              : (row.kind === "form" || row.kind === "booking") && row.restoreBlockedReason
+                ? { id: "restore", label: "Restore", icon: ArchiveRestore, disabled: true, disabledReason: row.restoreBlockedReason, onSelect: () => {} }
+                : row.kind === "form" || row.kind === "booking"
                 ? {
                     id: "restore",
                     label: "Restore",
@@ -413,6 +415,10 @@ export function useDataHomeRowMenus({
                 : { id: "restore", kind: "link", label: "Restore from its table", icon: ArchiveRestore, href: row.href },
           ],
         },
+        // The one action that unblocks a form whose table is archived: open that table, where it is restored.
+        ...(row.restoreBlockedReason && row.tableId
+          ? [{ id: "unblock", items: [{ id: "open-its-table", kind: "link" as const, label: "Open its table", icon: ExternalLink, href: `/data/${row.tableId}` }] }]
+          : []),
       ],
     };
   };

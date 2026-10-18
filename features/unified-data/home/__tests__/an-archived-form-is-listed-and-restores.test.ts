@@ -30,3 +30,13 @@ it("the archived read lists archived forms after tables and portals, newest firs
   expect(page.ended).toBe(true);
   expect(page.rows.map((r) => r.itemId)).toEqual(["new", "old"]);
 });
+
+import { formRestoreBlockedReason } from "../dataHomeRows";
+
+it("a form the store will not restore says why instead of offering a Restore that refuses", () => {
+  expect(formRestoreBlockedReason(form())).toBeNull();
+  expect(formRestoreBlockedReason(form({ can_restore: false, table_archived: true }))).toBe("Restore its table first");
+  expect(formRestoreBlockedReason(form({ can_restore: false, table_archived: false }))).toBe("Only an admin of its table can restore it");
+  expect(archivedFormRow(form({ can_restore: false, table_archived: true })).restoreBlockedReason).toBe("Restore its table first");
+  expect(archivedFormRow(form()).restoreBlockedReason).toBeUndefined();
+});
