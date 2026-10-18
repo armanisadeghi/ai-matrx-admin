@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1604 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1609 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "9be462776692";
+export const KIND_REGISTRY_FINGERPRINT = "b4a1a9b86370";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1076,6 +1076,28 @@ export interface AppletSource {
   table_id?: string | null;
   new_table?: NewTableDeclaration | null;
   organization_id?: string | null;
+}
+
+/**
+ * The judge's comparative view of one arm it saw. Rank 1 is best.
+ *  *
+ *  * From kind `arm_resolution`.
+ */
+export interface ArmAssessmentKind {
+  /**
+   * Rank among the arms present; 1 is best.
+   */
+  rank: number;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * The arm's run position (0-based).
+   */
+  arm_index: number;
+  strengths?: string[];
+  weaknesses?: string[];
 }
 
 /**
@@ -4923,7 +4945,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 126 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 127 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
  */
 export type JsonValue = unknown;
 
@@ -6310,6 +6332,34 @@ export interface Metrics {
   shares?: number | null;
   comments?: number | null;
   downloads?: number | null;
+}
+
+/**
+ * An arm that produced nothing — named, never silently dropped.
+ *  *
+ *  * From kind `arm_resolution`.
+ */
+export interface MissingArmKind {
+  error?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * 'skipped', 'pruned', 'failed', or 'missing'.
+   */
+  status: string;
+  /**
+   * The arm's run position (0-based).
+   */
+  arm_index: number;
 }
 
 /**
@@ -11940,7 +11990,7 @@ export interface ActionItem {
  * One ad from an ad library (Meta, TikTok, Google, LinkedIn): copy, call to action, landing page,
  * how long it ran, and its media. ``library`` is the source.
  *  *
- *  * Kind `ad_creative` (registry v3).
+ *  * Kind `ad_creative` (registry v4).
  */
 export interface AdCreative {
   cta?: string | null;
@@ -12130,7 +12180,7 @@ export interface AgentAssignmentBatchResult {
 }
 
 /**
- * Kind `agent_build_result` (registry v4).
+ * Kind `agent_build_result` (registry v5).
  */
 export interface AgentBuildResult {
   /**
@@ -12148,7 +12198,7 @@ export interface AgentBuildResult {
 /**
  * What went wrong in an agent's run, in its own words, and the changes that would fix it.
  *  *
- *  * Kind `agent_debrief` (registry v1).
+ *  * Kind `agent_debrief` (registry v2).
  */
 export interface AgentDebrief {
   /**
@@ -13377,7 +13427,7 @@ export interface AgentFactoryToolStepOffer {
  * code saves it through the one guarded writer, so a build creates exactly one
  * agent row.
  *  *
- *  * Kind `agent_factory_build` (registry v5).
+ *  * Kind `agent_factory_build` (registry v6).
  */
 export interface AgentFactoryBuild {
   /**
@@ -13421,7 +13471,7 @@ export interface AgentFactoryBuild {
  * A Mandate-backed build skips this step: its Provision and output kind ARE
  * the contract, and the factory never re-decides them.
  *  *
- *  * Kind `agent_factory_contract` (registry v5).
+ *  * Kind `agent_factory_contract` (registry v6).
  */
 export interface AgentFactoryContract {
   fit: AgentFactoryFit;
@@ -13440,7 +13490,7 @@ export interface AgentFactoryContract {
 /**
  * The new agent's two messages.
  *  *
- *  * Kind `agent_factory_instructions` (registry v3).
+ *  * Kind `agent_factory_instructions` (registry v4).
  */
 export interface AgentFactoryInstructions {
   /**
@@ -13466,7 +13516,7 @@ export interface AgentFactoryInstructions {
  * the goal spec's gated criteria and the blind pairwise comparison. Code
  * un-blinds A/B afterwards.
  *  *
- *  * Kind `agent_factory_proof_review` (registry v5).
+ *  * Kind `agent_factory_proof_review` (registry v6).
  */
 export interface AgentFactoryProofReview {
   cases: AgentFactoryCaseVerdict[];
@@ -13486,7 +13536,7 @@ export interface AgentFactoryProofReview {
 /**
  * The tools the new agent gets, and the profile class its model is chosen by.
  *  *
- *  * Kind `agent_factory_tool_choice` (registry v5).
+ *  * Kind `agent_factory_tool_choice` (registry v6).
  */
 export interface AgentFactoryToolChoice {
   tools?: AgentFactoryToolPick[];
@@ -13502,7 +13552,7 @@ export interface AgentFactoryToolChoice {
 }
 
 /**
- * Kind `agent_foundry_report` (registry v4).
+ * Kind `agent_foundry_report` (registry v5).
  */
 export interface AgentFoundryReport {
   kind?: string;
@@ -13603,7 +13653,7 @@ export interface AgentGoal {
 }
 
 /**
- * Kind `agent_input_agent_config_41eec0` (registry v6).
+ * Kind `agent_input_agent_config_41eec0` (registry v7).
  */
 export interface AgentInputAgentConfig41eec0 {
   /**
@@ -13617,7 +13667,7 @@ export interface AgentInputAgentConfig41eec0 {
 }
 
 /**
- * Kind `agent_input_audio_style_content_speaker_1_profile_speaker_2_profile` (registry v6).
+ * Kind `agent_input_audio_style_content_speaker_1_profile_speaker_2_profile` (registry v7).
  */
 export interface AgentInputAudioStyleContentSpeaker1ProfileSpeaker2Profile {
   scene?: string;
@@ -13643,7 +13693,7 @@ export interface AgentInputAudioStyleContentSpeaker1ProfileSpeaker2Profile {
 }
 
 /**
- * Kind `agent_input_brief` (registry v6).
+ * Kind `agent_input_brief` (registry v7).
  */
 export interface AgentInputBrief {
   /**
@@ -13657,7 +13707,7 @@ export interface AgentInputBrief {
 }
 
 /**
- * Kind `agent_input_cleaned_window_prior_tasks_session_title` (registry v6).
+ * Kind `agent_input_cleaned_window_prior_tasks_session_title` (registry v7).
  */
 export interface AgentInputCleanedWindowPriorTasksSessionTitle {
   /**
@@ -13679,7 +13729,7 @@ export interface AgentInputCleanedWindowPriorTasksSessionTitle {
 }
 
 /**
- * Kind `agent_input_company_name_employee_info` (registry v6).
+ * Kind `agent_input_company_name_employee_info` (registry v7).
  */
 export interface AgentInputCompanyNameEmployeeInfo {
   /**
@@ -13702,7 +13752,7 @@ export interface AgentInputCompanyNameEmployeeInfo {
 }
 
 /**
- * Kind `agent_input_concept_content_format_idea_count` (registry v6).
+ * Kind `agent_input_concept_content_format_idea_count` (registry v7).
  */
 export interface AgentInputConceptContentFormatIdeaCount {
   /**
@@ -13724,7 +13774,7 @@ export interface AgentInputConceptContentFormatIdeaCount {
 }
 
 /**
- * Kind `agent_input_content_goal_existing_content` (registry v6).
+ * Kind `agent_input_content_goal_existing_content` (registry v7).
  */
 export interface AgentInputContentGoalExistingContent {
   /**
@@ -13742,7 +13792,7 @@ export interface AgentInputContentGoalExistingContent {
 }
 
 /**
- * Kind `agent_input_context_a58621` (registry v6).
+ * Kind `agent_input_context_a58621` (registry v7).
  */
 export interface AgentInputContextA58621 {
   /**
@@ -13756,7 +13806,7 @@ export interface AgentInputContextA58621 {
 }
 
 /**
- * Kind `agent_input_context_transcribed_text` (registry v6).
+ * Kind `agent_input_context_transcribed_text` (registry v7).
  */
 export interface AgentInputContextTranscribedText {
   /**
@@ -13774,7 +13824,7 @@ export interface AgentInputContextTranscribedText {
 }
 
 /**
- * Kind `agent_input_conversation_id_fa282d` (registry v6).
+ * Kind `agent_input_conversation_id_fa282d` (registry v7).
  */
 export interface AgentInputConversationIdFa282d {
   /**
@@ -13788,7 +13838,7 @@ export interface AgentInputConversationIdFa282d {
 }
 
 /**
- * Kind `agent_input_current_code_161b4f` (registry v6).
+ * Kind `agent_input_current_code_161b4f` (registry v7).
  */
 export interface AgentInputCurrentCode161b4f {
   /**
@@ -13799,7 +13849,7 @@ export interface AgentInputCurrentCode161b4f {
 }
 
 /**
- * Kind `agent_input_current_code_d03087` (registry v6).
+ * Kind `agent_input_current_code_d03087` (registry v7).
  */
 export interface AgentInputCurrentCodeD03087 {
   /**
@@ -13810,7 +13860,7 @@ export interface AgentInputCurrentCodeD03087 {
 }
 
 /**
- * Kind `agent_input_current_system_message_additional_guidance` (registry v6).
+ * Kind `agent_input_current_system_message_additional_guidance` (registry v7).
  */
 export interface AgentInputCurrentSystemMessageAdditionalGuidance {
   /**
@@ -13825,7 +13875,7 @@ export interface AgentInputCurrentSystemMessageAdditionalGuidance {
 }
 
 /**
- * Kind `agent_input_document_audits_c_audits_u_audits_w_440610` (registry v6).
+ * Kind `agent_input_document_audits_c_audits_u_audits_w_440610` (registry v7).
  */
 export interface AgentInputDocumentAuditsCAuditsUAuditsW440610 {
   /**
@@ -13851,7 +13901,7 @@ export interface AgentInputDocumentAuditsCAuditsUAuditsW440610 {
 }
 
 /**
- * Kind `agent_input_document_audits_c_audits_u_audits_w_954fce` (registry v7).
+ * Kind `agent_input_document_audits_c_audits_u_audits_w_954fce` (registry v8).
  */
 export interface AgentInputDocumentAuditsCAuditsUAuditsW954fce {
   /**
@@ -13881,7 +13931,7 @@ export interface AgentInputDocumentAuditsCAuditsUAuditsW954fce {
 }
 
 /**
- * Kind `agent_input_document_name_page_content` (registry v6).
+ * Kind `agent_input_document_name_page_content` (registry v7).
  */
 export interface AgentInputDocumentNamePageContent {
   /**
@@ -13899,7 +13949,7 @@ export interface AgentInputDocumentNamePageContent {
 }
 
 /**
- * Kind `agent_input_dynamic_context` (registry v6).
+ * Kind `agent_input_dynamic_context` (registry v7).
  */
 export interface AgentInputDynamicContext {
   /**
@@ -13910,7 +13960,7 @@ export interface AgentInputDynamicContext {
 }
 
 /**
- * Kind `agent_input_extraction_unit` (registry v6).
+ * Kind `agent_input_extraction_unit` (registry v7).
  */
 export interface AgentInputExtractionUnit {
   /**
@@ -13924,7 +13974,7 @@ export interface AgentInputExtractionUnit {
 }
 
 /**
- * Kind `agent_input_front_back_card_history_learner_context` (registry v6).
+ * Kind `agent_input_front_back_card_history_learner_context` (registry v7).
  */
 export interface AgentInputFrontBackCardHistoryLearnerContext {
   /**
@@ -13954,7 +14004,7 @@ export interface AgentInputFrontBackCardHistoryLearnerContext {
 }
 
 /**
- * Kind `agent_input_front_back_rubric_seconds_allowed_22f70d` (registry v6).
+ * Kind `agent_input_front_back_rubric_seconds_allowed_22f70d` (registry v7).
  */
 export interface AgentInputFrontBackRubricSecondsAllowed22f70d {
   /**
@@ -13980,7 +14030,7 @@ export interface AgentInputFrontBackRubricSecondsAllowed22f70d {
 }
 
 /**
- * Kind `agent_input_front_back_topic_difficulty_56526b` (registry v6).
+ * Kind `agent_input_front_back_topic_difficulty_56526b` (registry v7).
  */
 export interface AgentInputFrontBackTopicDifficulty56526b {
   /**
@@ -14014,7 +14064,7 @@ export interface AgentInputFrontBackTopicDifficulty56526b {
 }
 
 /**
- * Kind `agent_input_image_description_1497da` (registry v6).
+ * Kind `agent_input_image_description_1497da` (registry v7).
  */
 export interface AgentInputImageDescription1497da {
   /**
@@ -14028,7 +14078,7 @@ export interface AgentInputImageDescription1497da {
 }
 
 /**
- * Kind `agent_input_instructions_scraped_content_queries_search_results` (registry v7).
+ * Kind `agent_input_instructions_scraped_content_queries_search_results` (registry v8).
  */
 export interface AgentInputInstructionsScrapedContentQueriesSearchResults {
   /**
@@ -14054,7 +14104,7 @@ export interface AgentInputInstructionsScrapedContentQueriesSearchResults {
 }
 
 /**
- * Kind `agent_input_intent_or_content_style` (registry v6).
+ * Kind `agent_input_intent_or_content_style` (registry v7).
  */
 export interface AgentInputIntentOrContentStyle {
   /**
@@ -14072,7 +14122,7 @@ export interface AgentInputIntentOrContentStyle {
 }
 
 /**
- * Kind `agent_input_intent_or_content_style_count` (registry v6).
+ * Kind `agent_input_intent_or_content_style_count` (registry v7).
  */
 export interface AgentInputIntentOrContentStyleCount {
   /**
@@ -14094,7 +14144,7 @@ export interface AgentInputIntentOrContentStyleCount {
 }
 
 /**
- * Kind `agent_input_job_brief_ground_truth_584bd5` (registry v7).
+ * Kind `agent_input_job_brief_ground_truth_584bd5` (registry v8).
  */
 export interface AgentInputJobBriefGroundTruth584bd5 {
   /**
@@ -14112,7 +14162,7 @@ export interface AgentInputJobBriefGroundTruth584bd5 {
 }
 
 /**
- * Kind `agent_input_json_data_fields_data_data_description_current_schema` (registry v6).
+ * Kind `agent_input_json_data_fields_data_data_description_current_schema` (registry v7).
  */
 export interface AgentInputJsonDataFieldsDataDataDescriptionCurrentSchema {
   /**
@@ -14142,7 +14192,7 @@ export interface AgentInputJsonDataFieldsDataDataDescriptionCurrentSchema {
 }
 
 /**
- * Kind `agent_input_keywords_search_results` (registry v6).
+ * Kind `agent_input_keywords_search_results` (registry v7).
  */
 export interface AgentInputKeywordsSearchResults {
   /**
@@ -14160,7 +14210,7 @@ export interface AgentInputKeywordsSearchResults {
 }
 
 /**
- * Kind `agent_input_legal_area_transcript` (registry v6).
+ * Kind `agent_input_legal_area_transcript` (registry v7).
  */
 export interface AgentInputLegalAreaTranscript {
   /**
@@ -14178,7 +14228,7 @@ export interface AgentInputLegalAreaTranscript {
 }
 
 /**
- * Kind `agent_input_overall_agent_goal_tone_and_tyle_response_format_constra_63058a` (registry v6).
+ * Kind `agent_input_overall_agent_goal_tone_and_tyle_response_format_constra_63058a` (registry v7).
  */
 export interface AgentInputOverallAgentGoalToneAndTyleResponseFormatConstra63058a {
   /**
@@ -14195,7 +14245,7 @@ export interface AgentInputOverallAgentGoalToneAndTyleResponseFormatConstra63058
 }
 
 /**
- * Kind `agent_input_page_content_45ae23` (registry v6).
+ * Kind `agent_input_page_content_45ae23` (registry v7).
  */
 export interface AgentInputPageContent45ae23 {
   /**
@@ -14209,7 +14259,7 @@ export interface AgentInputPageContent45ae23 {
 }
 
 /**
- * Kind `agent_input_page_content_800869` (registry v6).
+ * Kind `agent_input_page_content_800869` (registry v7).
  */
 export interface AgentInputPageContent800869 {
   /**
@@ -14220,7 +14270,7 @@ export interface AgentInputPageContent800869 {
 }
 
 /**
- * Kind `agent_input_page_context` (registry v6).
+ * Kind `agent_input_page_context` (registry v7).
  */
 export interface AgentInputPageContext {
   /**
@@ -14234,7 +14284,7 @@ export interface AgentInputPageContext {
 }
 
 /**
- * Kind `agent_input_podcast_content` (registry v6).
+ * Kind `agent_input_podcast_content` (registry v7).
  */
 export interface AgentInputPodcastContent {
   /**
@@ -14245,7 +14295,7 @@ export interface AgentInputPodcastContent {
 }
 
 /**
- * Kind `agent_input_podcast_topic_or_content_17ec37` (registry v6).
+ * Kind `agent_input_podcast_topic_or_content_17ec37` (registry v7).
  */
 export interface AgentInputPodcastTopicOrContent17ec37 {
   /**
@@ -14259,7 +14309,7 @@ export interface AgentInputPodcastTopicOrContent17ec37 {
 }
 
 /**
- * Kind `agent_input_prior_cleaned_suffix_raw_window_session_title_module_id` (registry v6).
+ * Kind `agent_input_prior_cleaned_suffix_raw_window_session_title_module_id` (registry v7).
  */
 export interface AgentInputPriorCleanedSuffixRawWindowSessionTitleModuleId {
   /**
@@ -14285,7 +14335,7 @@ export interface AgentInputPriorCleanedSuffixRawWindowSessionTitleModuleId {
 }
 
 /**
- * Kind `agent_input_project_overview_victory_condition_first_step` (registry v6).
+ * Kind `agent_input_project_overview_victory_condition_first_step` (registry v7).
  */
 export interface AgentInputProjectOverviewVictoryConditionFirstStep {
   /**
@@ -14307,7 +14357,7 @@ export interface AgentInputProjectOverviewVictoryConditionFirstStep {
 }
 
 /**
- * Kind `agent_input_prompt_config` (registry v6).
+ * Kind `agent_input_prompt_config` (registry v7).
  */
 export interface AgentInputPromptConfig {
   /**
@@ -14318,7 +14368,7 @@ export interface AgentInputPromptConfig {
 }
 
 /**
- * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_3f4ca3` (registry v6).
+ * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_3f4ca3` (registry v7).
  */
 export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePa3f4ca3 {
   /**
@@ -14335,7 +14385,7 @@ export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePa3f4ca
 }
 
 /**
- * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_f4ceb8` (registry v6).
+ * Kind `agent_input_prompt_object_sample_response_input_fields_to_include_pa_f4ceb8` (registry v7).
  */
 export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePaF4ceb8 {
   /**
@@ -14352,7 +14402,7 @@ export interface AgentInputPromptObjectSampleResponseInputFieldsToIncludePaF4ceb
 }
 
 /**
- * Kind `agent_input_prompt_purpose` (registry v6).
+ * Kind `agent_input_prompt_purpose` (registry v7).
  */
 export interface AgentInputPromptPurpose {
   /**
@@ -14377,7 +14427,7 @@ export interface AgentInputQmeReport {
 }
 
 /**
- * Kind `agent_input_query` (registry v6).
+ * Kind `agent_input_query` (registry v7).
  */
 export interface AgentInputQuery {
   /**
@@ -14391,7 +14441,7 @@ export interface AgentInputQuery {
 }
 
 /**
- * Kind `agent_input_raw_window_module_id_prior_concepts_session_title` (registry v6).
+ * Kind `agent_input_raw_window_module_id_prior_concepts_session_title` (registry v7).
  */
 export interface AgentInputRawWindowModuleIdPriorConceptsSessionTitle {
   /**
@@ -14417,7 +14467,7 @@ export interface AgentInputRawWindowModuleIdPriorConceptsSessionTitle {
 }
 
 /**
- * Kind `agent_input_rulebook_document_brief` (registry v6).
+ * Kind `agent_input_rulebook_document_brief` (registry v7).
  */
 export interface AgentInputRulebookDocumentBrief {
   /**
@@ -14435,7 +14485,7 @@ export interface AgentInputRulebookDocumentBrief {
 }
 
 /**
- * Kind `agent_input_scraped_content_focus_area` (registry v6).
+ * Kind `agent_input_scraped_content_focus_area` (registry v7).
  */
 export interface AgentInputScrapedContentFocusArea {
   /**
@@ -14447,7 +14497,7 @@ export interface AgentInputScrapedContentFocusArea {
 }
 
 /**
- * Kind `agent_input_selection_content_current_message_role_context` (registry v6).
+ * Kind `agent_input_selection_content_current_message_role_context` (registry v7).
  */
 export interface AgentInputSelectionContentCurrentMessageRoleContext {
   /**
@@ -14462,7 +14512,7 @@ export interface AgentInputSelectionContentCurrentMessageRoleContext {
 }
 
 /**
- * Kind `agent_input_service_name_region_name_state_name_intro_section_data` (registry v6).
+ * Kind `agent_input_service_name_region_name_state_name_intro_section_data` (registry v7).
  */
 export interface AgentInputServiceNameRegionNameStateNameIntroSectionData {
   /**
@@ -14500,7 +14550,7 @@ export interface AgentInputServiceNameRegionNameStateNameIntroSectionData {
 }
 
 /**
- * Kind `agent_input_since_iso_environment_label` (registry v6).
+ * Kind `agent_input_since_iso_environment_label` (registry v7).
  */
 export interface AgentInputSinceIsoEnvironmentLabel {
   /**
@@ -14518,7 +14568,7 @@ export interface AgentInputSinceIsoEnvironmentLabel {
 }
 
 /**
- * Kind `agent_input_site_name_site_domain_site_brand_site_vertical_cb3911` (registry v6).
+ * Kind `agent_input_site_name_site_domain_site_brand_site_vertical_cb3911` (registry v7).
  */
 export interface AgentInputSiteNameSiteDomainSiteBrandSiteVerticalCb3911 {
   /**
@@ -14596,7 +14646,7 @@ export interface AgentInputSiteNameSiteDomainSiteBrandSiteVerticalCb3911 {
 }
 
 /**
- * Kind `agent_input_task_additional_context` (registry v8).
+ * Kind `agent_input_task_additional_context` (registry v9).
  */
 export interface AgentInputTaskAdditionalContext {
   /**
@@ -14614,7 +14664,7 @@ export interface AgentInputTaskAdditionalContext {
 }
 
 /**
- * Kind `agent_input_text` (registry v6).
+ * Kind `agent_input_text` (registry v7).
  */
 export interface AgentInputText {
   text?: string;
@@ -14625,7 +14675,7 @@ export interface AgentInputText {
 }
 
 /**
- * Kind `agent_input_topic_1e50f4` (registry v6).
+ * Kind `agent_input_topic_1e50f4` (registry v7).
  */
 export interface AgentInputTopic1e50f4 {
   topic?: string;
@@ -14636,7 +14686,7 @@ export interface AgentInputTopic1e50f4 {
 }
 
 /**
- * Kind `agent_input_topic_count_difficulty_grade_level_8dffc3` (registry v6).
+ * Kind `agent_input_topic_count_difficulty_grade_level_8dffc3` (registry v7).
  */
 export interface AgentInputTopicCountDifficultyGradeLevel8dffc3 {
   /**
@@ -14666,7 +14716,7 @@ export interface AgentInputTopicCountDifficultyGradeLevel8dffc3 {
 }
 
 /**
- * Kind `agent_input_topic_front_back_struggle_signal_9481fb` (registry v6).
+ * Kind `agent_input_topic_front_back_struggle_signal_9481fb` (registry v7).
  */
 export interface AgentInputTopicFrontBackStruggleSignal9481fb {
   /**
@@ -14692,7 +14742,7 @@ export interface AgentInputTopicFrontBackStruggleSignal9481fb {
 }
 
 /**
- * Kind `agent_input_topic_grade_level_difficulty` (registry v6).
+ * Kind `agent_input_topic_grade_level_difficulty` (registry v7).
  */
 export interface AgentInputTopicGradeLevelDifficulty {
   /**
@@ -14714,7 +14764,7 @@ export interface AgentInputTopicGradeLevelDifficulty {
 }
 
 /**
- * Kind `agent_input_topic_page_content_page_url_page_title_0c274b` (registry v6).
+ * Kind `agent_input_topic_page_content_page_url_page_title_0c274b` (registry v7).
  */
 export interface AgentInputTopicPageContentPageUrlPageTitle0c274b {
   topic?: string;
@@ -14728,7 +14778,7 @@ export interface AgentInputTopicPageContentPageUrlPageTitle0c274b {
 }
 
 /**
- * Kind `agent_input_topic_sources` (registry v6).
+ * Kind `agent_input_topic_sources` (registry v7).
  */
 export interface AgentInputTopicSources {
   /**
@@ -14746,7 +14796,7 @@ export interface AgentInputTopicSources {
 }
 
 /**
- * Kind `agent_input_transcript_087e8c` (registry v6).
+ * Kind `agent_input_transcript_087e8c` (registry v7).
  */
 export interface AgentInputTranscript087e8c {
   /**
@@ -14757,7 +14807,7 @@ export interface AgentInputTranscript087e8c {
 }
 
 /**
- * Kind `agent_input_transcript_attempts_aggregate_remaining_cards_8ab902` (registry v6).
+ * Kind `agent_input_transcript_attempts_aggregate_remaining_cards_8ab902` (registry v7).
  */
 export interface AgentInputTranscriptAttemptsAggregateRemainingCards8ab902 {
   /**
@@ -14783,7 +14833,7 @@ export interface AgentInputTranscriptAttemptsAggregateRemainingCards8ab902 {
 }
 
 /**
- * Kind `agent_input_transcript_delta_round_directive_stage_goal_held_note_2c4562` (registry v6).
+ * Kind `agent_input_transcript_delta_round_directive_stage_goal_held_note_2c4562` (registry v7).
  */
 export interface AgentInputTranscriptDeltaRoundDirectiveStageGoalHeldNote2c4562 {
   /**
@@ -14821,7 +14871,7 @@ export interface AgentInputTranscriptDeltaRoundDirectiveStageGoalHeldNote2c4562 
 }
 
 /**
- * Kind `agent_input_user_input_page_url_page_metadata_list_root_hint` (registry v6).
+ * Kind `agent_input_user_input_page_url_page_metadata_list_root_hint` (registry v7).
  */
 export interface AgentInputUserInputPageUrlPageMetadataListRootHint {
   /**
@@ -14855,7 +14905,7 @@ export interface AgentInputUserInputPageUrlPageMetadataListRootHint {
 }
 
 /**
- * Kind `agent_input_user_input_page_url_page_text_page_metadata` (registry v6).
+ * Kind `agent_input_user_input_page_url_page_text_page_metadata` (registry v7).
  */
 export interface AgentInputUserInputPageUrlPageTextPageMetadata {
   /**
@@ -14885,7 +14935,7 @@ export interface AgentInputUserInputPageUrlPageTextPageMetadata {
 }
 
 /**
- * Kind `agent_input_video_description` (registry v7).
+ * Kind `agent_input_video_description` (registry v8).
  */
 export interface AgentInputVideoDescription {
   /**
@@ -14899,7 +14949,7 @@ export interface AgentInputVideoDescription {
 }
 
 /**
- * Kind `agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of` (registry v6).
+ * Kind `agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of` (registry v7).
  */
 export interface AgentInputWhoIsGoingOnTheTripEventOrPurposeAgeRangesOf {
   /**
@@ -14915,7 +14965,7 @@ export interface AgentInputWhoIsGoingOnTheTripEventOrPurposeAgeRangesOf {
 /**
  * What went wrong with an agent, why, and the configuration that should replace it.
  *  *
- *  * Kind `agent_iteration_plan` (registry v3).
+ *  * Kind `agent_iteration_plan` (registry v4).
  */
 export interface AgentIterationPlan {
   /**
@@ -15047,7 +15097,7 @@ export interface AgentStudioChatBriefOffer {
 }
 
 /**
- * Kind `agent_task_list` (registry v4).
+ * Kind `agent_task_list` (registry v5).
  */
 export interface AgentTaskList {
   ok?: boolean;
@@ -15065,7 +15115,7 @@ export interface AgentTaskList {
 /**
  * One test case under one setup and repeat, ready to run.
  *  *
- *  * Kind `agent_test_case_ref` (registry v2).
+ *  * Kind `agent_test_case_ref` (registry v3).
  */
 export interface AgentTestCaseRef {
   door?: "manual" | "manual_chat" | "agents" | "mandates" | "mcp_agent_run" | "agent_call" | "parity" | null;
@@ -15083,7 +15133,7 @@ export interface AgentTestCaseRef {
 /**
  * Everything a test case accumulates as it moves through the agent_test Steps.
  *  *
- *  * Kind `agent_test_case_state` (registry v2).
+ *  * Kind `agent_test_case_state` (registry v3).
  */
 export interface AgentTestCaseState {
   ref: AgentTestCaseRef;
@@ -15103,7 +15153,7 @@ export interface AgentTestCaseState {
 }
 
 /**
- * Kind `agent_test_notice` (registry v1).
+ * Kind `agent_test_notice` (registry v2).
  */
 export interface AgentTestNotice {
   /**
@@ -15123,7 +15173,7 @@ export interface AgentTestNotice {
 }
 
 /**
- * Kind `agent_test_run_ref` (registry v1).
+ * Kind `agent_test_run_ref` (registry v2).
  */
 export interface AgentTestRunRef {
   /**
@@ -15136,7 +15186,7 @@ export interface AgentTestRunRef {
 /**
  * A settled test run as the next Step reads it: status, verdict counts, pass rate, spend.
  *  *
- *  * Kind `agent_test_run_summary` (registry v1).
+ *  * Kind `agent_test_run_summary` (registry v2).
  */
 export interface AgentTestRunSummary {
   link?: string;
@@ -15336,7 +15386,7 @@ export interface AiExtractResult {
 /**
  * What an AI assistant answered to one question, which brands it named and which sites it cited.
  *  *
- *  * Kind `ai_visibility_mentions` (registry v1).
+ *  * Kind `ai_visibility_mentions` (registry v2).
  */
 export interface AiVisibilityMentions {
   brand?: string | null;
@@ -15655,7 +15705,7 @@ export interface AmbientPageGuidanceOffer {
 }
 
 /**
- * Kind `analogy` (registry v6).
+ * Kind `analogy` (registry v7).
  */
 export interface Analogy {
   /**
@@ -15677,7 +15727,7 @@ export interface Analogy {
 }
 
 /**
- * Kind `analytics_insight` (registry v5).
+ * Kind `analytics_insight` (registry v6).
  */
 export interface AnalyticsInsight {
   /**
@@ -15699,7 +15749,7 @@ export interface AnalyticsInsight {
  * The accounts and pages the name searches found that could be this person, in rank order, each with the
  * rules' score and reasons and, when it was looked up, its privacy-safe profile basics.
  *  *
- *  * Kind `anchor_candidate_list` (registry v3).
+ *  * Kind `anchor_candidate_list` (registry v4).
  */
 export interface AnchorCandidateList {
   items?: AnchorCandidate[];
@@ -15792,6 +15842,33 @@ export interface AppletsBuildRequestOffer {
    * {file, message} from the previous version's compile or runtime error; empty when none.
    */
   last_check: unknown;
+}
+
+/**
+ * Output of ``ai.judge.resolve``: the best arm, a merge, or none — with reasons.
+ *  *
+ *  * Kind `arm_resolution` (registry v1).
+ */
+export interface ArmResolution {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "arm_resolution";
+  reasons?: string[];
+  /**
+   * 'pick', 'merge' or 'none'.
+   */
+  verdict: string;
+  arm_count?: number;
+  ledger_id?: string | null;
+  confidence?: number;
+  judged_count?: number;
+  missing_arms?: MissingArmKind[];
+  winner_label?: string;
+  merged_result?: JsonValue;
+  winner_result?: JsonValue;
+  arm_assessments?: ArmAssessmentKind[];
+  winner_arm_index?: number | null;
 }
 
 /**
@@ -16020,7 +16097,7 @@ export interface AssetGrading {
 /**
  * One rendered flavour of an asset — its file, its dimensions, its URLs.
  *  *
- *  * Kind `asset_variant` (registry v7).
+ *  * Kind `asset_variant` (registry v8).
  */
 export interface AssetVariant {
   key: string;
@@ -16177,7 +16254,7 @@ export interface AuthorityNewsjackingArticle {
  * How strong one website's links are, scored 0 to 100 by one source. A comparison shows one per source:
  * an industry leader by name, our own sources as "Matrx" (the call's display source, not a field here).
  *  *
- *  * Kind `authority_score` (registry v1).
+ *  * Kind `authority_score` (registry v2).
  */
 export interface AuthorityScore {
   score?: number | null;
@@ -16193,7 +16270,7 @@ export interface AuthorityScore {
 /**
  * The individual links from other websites to one site.
  *  *
- *  * Kind `backlink_rows` (registry v1).
+ *  * Kind `backlink_rows` (registry v2).
  */
 export interface BacklinkRows {
   items?: BacklinkRow[];
@@ -16206,7 +16283,7 @@ export interface BacklinkRows {
 /**
  * How many links point at one website and from how many different websites.
  *  *
- *  * Kind `backlinks_summary` (registry v2).
+ *  * Kind `backlinks_summary` (registry v3).
  */
 export interface BacklinksSummary {
   rank?: number | null;
@@ -16234,7 +16311,7 @@ export interface BacklinksSummary {
 }
 
 /**
- * Kind `basic_card` (registry v7).
+ * Kind `basic_card` (registry v8).
  */
 export interface BasicCard {
   back: string;
@@ -16411,7 +16488,7 @@ export interface BrandVoiceRewriteOffer {
 /**
  * Per standard asset slot: filled by which image group, or missing.
  *  *
- *  * Kind `brand_asset_gaps` (registry v3).
+ *  * Kind `brand_asset_gaps` (registry v4).
  */
 export interface BrandAssetGaps {
   slots?: AssetGap[];
@@ -16425,7 +16502,7 @@ export interface BrandAssetGaps {
  * The standard brand asset set: favicons, touch and app icons, social avatar, share image, square and wide
  * logos, dark and light versions.
  *  *
- *  * Kind `brand_asset_slots` (registry v3).
+ *  * Kind `brand_asset_slots` (registry v4).
  */
 export interface BrandAssetSlots {
   items?: AssetSlot[];
@@ -16436,7 +16513,7 @@ export interface BrandAssetSlots {
 }
 
 /**
- * Kind `brand_basics` (registry v5).
+ * Kind `brand_basics` (registry v6).
  */
 export interface BrandBasics {
   /**
@@ -16458,7 +16535,7 @@ export interface BrandBasics {
 }
 
 /**
- * Kind `brand_basics_fact` (registry v5).
+ * Kind `brand_basics_fact` (registry v6).
  */
 export interface BrandBasicsFact {
   /**
@@ -16519,9 +16596,77 @@ export interface BrandCard {
 }
 
 /**
+ * Kind `brand_claim` (registry v2).
+ */
+export interface BrandClaim {
+  /**
+   * One standalone statement about the brand.
+   */
+  claim: string;
+  /**
+   * Verbatim words from the source.
+   */
+  quote: string;
+  /**
+   * Fixed topic bucket.
+   */
+  topic: "offering" | "audience" | "place" | "proof" | "story" | "promise" | "value" | "voice" | "people" | "competitor" | "price" | "other";
+  __kind: "brand_claim";
+  /**
+   * True when the claim can be independently verified.
+   */
+  checkable: boolean;
+  /**
+   * True when the speaker says it of themselves or their own experience.
+   */
+  firsthand: boolean;
+  /**
+   * URL of the source page, or null.
+   */
+  source_url?: string | null;
+  /**
+   * How to verify the claim, or null.
+   */
+  how_to_check?: string | null;
+  /**
+   * Name of the provision value the claim came from.
+   */
+  source_value: string;
+}
+
+/**
+ * Kind `brand_claim_set` (registry v2).
+ */
+export interface BrandClaimSet {
+  /**
+   * brand_room slug: self_description, outside_world, or another room.
+   */
+  room: string;
+  __kind: "brand_claim_set";
+  /**
+   * Separate, sourced claims from this room.
+   */
+  claims: ({
+    claim: string;
+    quote: string;
+    topic: "offering" | "audience" | "place" | "proof" | "story" | "promise" | "value" | "voice" | "people" | "competitor" | "price" | "other";
+    __kind: "brand_claim";
+    checkable: boolean;
+    firsthand: boolean;
+    source_url?: string | null;
+    how_to_check?: string | null;
+    source_value: string;
+  })[];
+  /**
+   * Topics this room could not speak to.
+   */
+  not_found?: string[];
+}
+
+/**
  * What the person has confirmed about the brand so far in Smart Add (empty until they confirm).
  *  *
- *  * Kind `brand_confirmed_facts` (registry v3).
+ *  * Kind `brand_confirmed_facts` (registry v4).
  */
 export interface BrandConfirmedFacts {
   name?: string | null;
@@ -16658,7 +16803,7 @@ export interface BrandEvidenceItem {
 /**
  * One brand fact that is a single structured record (the measured voice, the competitive landscape brief…).
  *  *
- *  * Kind `brand_fact_object` (registry v3).
+ *  * Kind `brand_fact_object` (registry v4).
  */
 export interface BrandFactObject {
   /**
@@ -16671,7 +16816,7 @@ export interface BrandFactObject {
  * One brand fact that is a list of records (offerings, personas, locations, competitors, people, assets…),
  * each row as its canonical home stores it.
  *  *
- *  * Kind `brand_fact_rows` (registry v3).
+ *  * Kind `brand_fact_rows` (registry v4).
  */
 export interface BrandFactRows {
   items?: BrandFactRow[];
@@ -16684,7 +16829,7 @@ export interface BrandFactRows {
 /**
  * The findings one source of a Smart Add identify round produced (site, accounts or web).
  *  *
- *  * Kind `brand_identify_findings` (registry v3).
+ *  * Kind `brand_identify_findings` (registry v4).
  */
 export interface BrandIdentifyFindings {
   items?: BrandFinding[];
@@ -16697,7 +16842,7 @@ export interface BrandIdentifyFindings {
 /**
  * Every raw web result an identify round read, from every search engine, in rank order.
  *  *
- *  * Kind `brand_identify_web_results` (registry v3).
+ *  * Kind `brand_identify_web_results` (registry v4).
  */
 export interface BrandIdentifyWebResults {
   items?: WebSearchResultRow[];
@@ -16711,7 +16856,7 @@ export interface BrandIdentifyWebResults {
  * The cheap fingerprint of each image (sha256, format, size, transparency, dHash, pHash, shape), keyed by
  * the image's evidence key (``image_groups.fingerprint_bytes``).
  *  *
- *  * Kind `brand_image_fingerprint_list` (registry v3).
+ *  * Kind `brand_image_fingerprint_list` (registry v4).
  */
 export interface BrandImageFingerprintList {
   items?: BrandImageFingerprint[];
@@ -16725,7 +16870,7 @@ export interface BrandImageFingerprintList {
  * Near-identical images grouped (every source kept): group id, representative, every key, distances
  * (``image_groups.group_fingerprints``).
  *  *
- *  * Kind `brand_image_group_list` (registry v3).
+ *  * Kind `brand_image_group_list` (registry v4).
  */
 export interface BrandImageGroupList {
   items?: BrandImageGroup[];
@@ -16739,7 +16884,7 @@ export interface BrandImageGroupList {
  * Images collected for a brand (logos, profile photos, site icons, og images): key, file reference or
  * address, source, page, platform and where on the page it was found.
  *  *
- *  * Kind `brand_image_list` (registry v3).
+ *  * Kind `brand_image_list` (registry v4).
  */
 export interface BrandImageList {
   items?: BrandImageRow[];
@@ -16753,7 +16898,7 @@ export interface BrandImageList {
  * Per image: ok, or one flag (low res, blurry, cropped, a screenshot, not ours, stock, not a logo), with
  * how sure.
  *  *
- *  * Kind `brand_image_quality` (registry v3).
+ *  * Kind `brand_image_quality` (registry v4).
  */
 export interface BrandImageQuality {
   /**
@@ -19370,7 +19515,7 @@ export interface BrandIntakeKeyPeopleFinderOffer {
  * The early facts investigator's answer: the brand's basics, each with certainty and evidence.
  * A proposal: nothing is saved until a person confirms it; unsupported facts are omitted.
  *  *
- *  * Kind `brand_intake_facts` (registry v3).
+ *  * Kind `brand_intake_facts` (registry v4).
  */
 export interface BrandIntakeFacts {
   facts?: BrandFact[];
@@ -19387,7 +19532,7 @@ export interface BrandIntakeFacts {
  * The output kind of mandate ``brand_intake.key_people_finder``. Its own slug on purpose: the slug
  * ``brand_key_people`` is Arman's hand-made kind (his organization, his schema), never this model.
  *  *
- *  * Kind `brand_intake_key_people` (registry v2).
+ *  * Kind `brand_intake_key_people` (registry v3).
  */
 export interface BrandIntakeKeyPeople {
   /**
@@ -19401,7 +19546,7 @@ export interface BrandIntakeKeyPeople {
  * The brand-intake agent's answer: search keywords plus a draft Brand Profile (Foundations 1-16),
  * every item with its sources, confidence and basis. A proposal: nothing is stored until confirmed.
  *  *
- *  * Kind `brand_intake_profile` (registry v3).
+ *  * Kind `brand_intake_profile` (registry v4).
  */
 export interface BrandIntakeProfile {
   notes?: TextItem[];
@@ -19479,7 +19624,7 @@ export interface BrandKeyPerson {
 /**
  * The best logo group per variant (wordmark, icon, square, wide), best first.
  *  *
- *  * Kind `brand_logo_ranking` (registry v3).
+ *  * Kind `brand_logo_ranking` (registry v4).
  */
 export interface BrandLogoRanking {
   /**
@@ -19493,7 +19638,7 @@ export interface BrandLogoRanking {
  * Products and services one text says the brand sells (mandates ``brand_offerings.read_page``,
  * ``read_voices``, ``read_account``). Proposals: a person keeps or rejects each.
  *  *
- *  * Kind `brand_offering_candidates` (registry v2).
+ *  * Kind `brand_offering_candidates` (registry v3).
  */
 export interface BrandOfferingCandidates {
   items?: BrandOfferingCandidate[];
@@ -19504,9 +19649,81 @@ export interface BrandOfferingCandidates {
 }
 
 /**
+ * Kind `brand_offering_role` (registry v2).
+ */
+export interface BrandOfferingRole {
+  __kind: "brand_offering_role";
+  /**
+   * Short text of what was actually seen that supports the role.
+   */
+  evidence: string;
+  /**
+   * Offering name exactly as found in the brand's materials.
+   */
+  offering: string;
+  /**
+   * Strength of the role claim. Without owner numbers it is always unproven.
+   */
+  confidence: "unproven" | "supported" | "proven";
+  /**
+   * Primary business role, a snake_case string from the researched role list (e.g. feeder, profit_engine, routine_staple).
+   */
+  primary_role: string;
+  /**
+   * Additional role strings from the same role list; may be empty.
+   */
+  secondary_roles: string[];
+  /**
+   * One question the owner can answer by voice in about 30 seconds that would settle the role.
+   */
+  settling_question: string;
+}
+
+/**
+ * Kind `brand_offering_roles` (registry v2).
+ */
+export interface BrandOfferingRoles {
+  __kind: "brand_offering_roles";
+  /**
+   * One entry per offering the brand sells, in the order found.
+   */
+  offerings: ({
+    __kind: "brand_offering_role";
+    /**
+     * Short text of what was actually seen that supports the role.
+     */
+    evidence: string;
+    /**
+     * Offering name exactly as found in the brand's materials.
+     */
+    offering: string;
+    /**
+     * Strength of the role claim. Without owner numbers it is always unproven.
+     */
+    confidence: "unproven" | "supported" | "proven";
+    /**
+     * Primary business role, a snake_case string from the researched role list (e.g. feeder, profit_engine, routine_staple).
+     */
+    primary_role: string;
+    /**
+     * Additional role strings from the same role list; may be empty.
+     */
+    secondary_roles: string[];
+    /**
+     * One question the owner can answer by voice in about 30 seconds that would settle the role.
+     */
+    settling_question: string;
+  })[];
+  /**
+   * Places where the owner's or the sources' stated belief may not match the evidence. Empty array when none.
+   */
+  pet_theory_flags: string[];
+}
+
+/**
  * Size or breadth claims (mandate ``brand_offerings.scope_claims``): they feed the coverage verdict only.
  *  *
- *  * Kind `brand_offering_scope_claims` (registry v2).
+ *  * Kind `brand_offering_scope_claims` (registry v3).
  */
 export interface BrandOfferingScopeClaims {
   /**
@@ -19519,7 +19736,7 @@ export interface BrandOfferingScopeClaims {
 /**
  * The found offerings arranged into the sources' own groups (mandate ``brand_offerings.structure``).
  *  *
- *  * Kind `brand_offering_tree` (registry v2).
+ *  * Kind `brand_offering_tree` (registry v3).
  */
 export interface BrandOfferingTree {
   /**
@@ -19533,7 +19750,7 @@ export interface BrandOfferingTree {
  * Every account, website, name and logo a Smart Add round found that nobody has decided yet, each once,
  * with what is known of it (profile basics when it was looked up, where it was found, the fixed rules' read).
  *  *
- *  * Kind `brand_open_candidates` (registry v3).
+ *  * Kind `brand_open_candidates` (registry v4).
  */
 export interface BrandOpenCandidates {
   items?: OpenCandidate[];
@@ -19547,7 +19764,7 @@ export interface BrandOpenCandidates {
  * The ways a found page or account can relate to a brand (``web.brand_relation_kind``): the shared list plus
  * the organization's own.
  *  *
- *  * Kind `brand_relation_kinds` (registry v3).
+ *  * Kind `brand_relation_kinds` (registry v4).
  */
 export interface BrandRelationKinds {
   items?: RelationKind[];
@@ -19562,7 +19779,7 @@ export interface BrandRelationKinds {
  * to the brand, with a probability and hover-only grounding. Shown as a glow on that option; it is never
  * chosen for the person.
  *  *
- *  * Kind `brand_we_think` (registry v2).
+ *  * Kind `brand_we_think` (registry v3).
  */
 export interface BrandWeThink {
   /**
@@ -19573,7 +19790,7 @@ export interface BrandWeThink {
 }
 
 /**
- * Kind `brand_we_think_suggestion` (registry v3).
+ * Kind `brand_we_think_suggestion` (registry v4).
  */
 export interface BrandWeThinkSuggestion {
   /**
@@ -19611,7 +19828,7 @@ export interface BrandWeThinkSuggestion {
  * relation to the brand with a probability and grounding. A proposal shown as the 'we think' glow in the
  * Review search results window; it never answers for the person.
  *  *
- *  * Kind `brand_web_result_classification` (registry v3).
+ *  * Kind `brand_web_result_classification` (registry v4).
  */
 export interface BrandWebResultClassification {
   /**
@@ -19629,7 +19846,7 @@ export interface BrandWebResultClassification {
  * The what's-new agent's answer (mandate ``brand_intake.whats_new``): from one new clean source, ONLY the facts
  * not already known, plus values that contradict a known fact. A proposal for the validation queue.
  *  *
- *  * Kind `brand_whats_new` (registry v3).
+ *  * Kind `brand_whats_new` (registry v4).
  */
 export interface BrandWhatsNew {
   facts?: BrandWhatsNewFact_BrandWhatsNew[];
@@ -19641,7 +19858,7 @@ export interface BrandWhatsNew {
 }
 
 /**
- * Kind `brand_whats_new_fact` (registry v3).
+ * Kind `brand_whats_new_fact` (registry v4).
  */
 export interface BrandWhatsNewFact {
   /**
@@ -19867,7 +20084,7 @@ export interface BuyerJobsResult {
  * tool has always returned the string form; declaring it wider would invent
  * structure the implementation does not produce.
  *  *
- *  * Kind `calculation_result` (registry v4).
+ *  * Kind `calculation_result` (registry v5).
  */
 export interface CalculationResult {
   /**
@@ -19895,7 +20112,7 @@ export interface CaptionSet {
 /**
  * One media file captured against a product item — by durable id, never URL.
  *  *
- *  * Kind `capture_file_ref` (registry v4).
+ *  * Kind `capture_file_ref` (registry v5).
  */
 export interface CaptureFileRef {
   /**
@@ -19915,7 +20132,7 @@ export interface CaptureFileRef {
 /**
  * One ``workbench.product_capture_item`` row as a run sees it.
  *  *
- *  * Kind `captured_product_item` (registry v4).
+ *  * Kind `captured_product_item` (registry v5).
  */
 export interface CapturedProductItem {
   /**
@@ -19951,7 +20168,7 @@ export interface CapturedProductItem {
 /**
  * A fired capture item and its media, as the opening step of a run resolved them.
  *  *
- *  * Kind `captured_product_load_result` (registry v5).
+ *  * Kind `captured_product_load_result` (registry v6).
  */
 export interface CapturedProductLoadResult {
   item?: CapturedProductItem | null;
@@ -19980,7 +20197,7 @@ export interface CapturedProductLoadResult {
 /**
  * What settling a capture item produced — did THIS run flip it, and to what.
  *  *
- *  * Kind `captured_product_settle_result` (registry v4).
+ *  * Kind `captured_product_settle_result` (registry v5).
  */
 export interface CapturedProductSettleResult {
   /**
@@ -20137,7 +20354,7 @@ export interface Carousel {
 /**
  * What the desk is allowed to know right now, and what it cost to know it.
  *  *
- *  * Kind `case_disclosure` (registry v4).
+ *  * Kind `case_disclosure` (registry v5).
  */
 export interface CaseDisclosure {
   /**
@@ -20170,7 +20387,7 @@ export interface CaseDisclosure {
 /**
  * The running cost of finding out. This is what the Audition scores.
  *  *
- *  * Kind `case_disclosure_ledger` (registry v4).
+ *  * Kind `case_disclosure_ledger` (registry v5).
  */
 export interface CaseDisclosureLedger {
   /**
@@ -20195,7 +20412,7 @@ export interface CaseDisclosureLedger {
 /**
  * One line of the ledger: what was asked, and who answered it.
  *  *
- *  * Kind `case_disclosure_request` (registry v4).
+ *  * Kind `case_disclosure_request` (registry v5).
  */
 export interface CaseDisclosureRequest {
   /**
@@ -20247,7 +20464,7 @@ export interface CategorizationResult {
 }
 
 /**
- * Kind `chart` (registry v6).
+ * Kind `chart` (registry v8).
  */
 export interface Chart {
   /**
@@ -20585,7 +20802,7 @@ export interface ChecksFindingDispositionReviewOffer {
  * ``load_chrome_tools`` receipt — what was loaded for the category, and
  * exactly why each filtered candidate was skipped.
  *  *
- *  * Kind `chrome_tools_load_result` (registry v4).
+ *  * Kind `chrome_tools_load_result` (registry v5).
  */
 export interface ChromeToolsLoadResult {
   count?: number;
@@ -20670,7 +20887,7 @@ export interface ClientSiteAudit {
 }
 
 /**
- * Kind `cms_align_item` (registry v8).
+ * Kind `cms_align_item` (registry v9).
  */
 export interface CmsAlignItem {
   ok?: boolean;
@@ -20710,7 +20927,7 @@ export interface CmsAlignResult {
 }
 
 /**
- * Kind `cms_asset_result` (registry v5).
+ * Kind `cms_asset_result` (registry v6).
  */
 export interface CmsAssetResult {
   note?: string | null;
@@ -20792,7 +21009,7 @@ export interface CmsAssetResult {
 }
 
 /**
- * Kind `cms_collection_result` (registry v4).
+ * Kind `cms_collection_result` (registry v5).
  */
 export interface CmsCollectionResult {
   site?: Record<string, unknown> | null;
@@ -20830,7 +21047,7 @@ export interface CmsCollectionResult {
 }
 
 /**
- * Kind `cms_component_result` (registry v5).
+ * Kind `cms_component_result` (registry v6).
  */
 export interface CmsComponentResult {
   name?: string | null;
@@ -20911,7 +21128,7 @@ export interface CmsComponentResult {
 }
 
 /**
- * Kind `cms_data_result` (registry v4).
+ * Kind `cms_data_result` (registry v5).
  */
 export interface CmsDataResult {
   item?: Record<string, unknown> | null;
@@ -21030,7 +21247,7 @@ export interface CmsHtmlPageResult {
 }
 
 /**
- * Kind `cms_inspect_report` (registry v4).
+ * Kind `cms_inspect_report` (registry v5).
  */
 export interface CmsInspectReport {
   site?: Record<string, unknown> | null;
@@ -21046,7 +21263,7 @@ export interface CmsInspectReport {
 }
 
 /**
- * Kind `cms_nav_link` (registry v8).
+ * Kind `cms_nav_link` (registry v9).
  */
 export interface CmsNavLink {
   href: string;
@@ -21096,7 +21313,7 @@ export interface CmsPageBuild {
 }
 
 /**
- * Kind `cms_page_candidates` (registry v4).
+ * Kind `cms_page_candidates` (registry v5).
  */
 export interface CmsPageCandidates {
   count?: number;
@@ -21108,7 +21325,7 @@ export interface CmsPageCandidates {
 }
 
 /**
- * Kind `cms_page_result` (registry v5).
+ * Kind `cms_page_result` (registry v6).
  */
 export interface CmsPageResult {
   note?: string | null;
@@ -21221,7 +21438,7 @@ export interface CmsPageResult {
 }
 
 /**
- * Kind `cms_publish_batch_item` (registry v8).
+ * Kind `cms_publish_batch_item` (registry v9).
  */
 export interface CmsPublishBatchItem {
   slug: string;
@@ -22240,7 +22457,7 @@ export interface ComparisonFactsV1 {
 }
 
 /**
- * Kind `comparison_set` (registry v9).
+ * Kind `comparison_set` (registry v11).
  */
 export interface ComparisonSet {
   items: string[];
@@ -25525,7 +25742,7 @@ export interface DecisionQuestions {
 }
 
 /**
- * Kind `decision_tree` (registry v9).
+ * Kind `decision_tree` (registry v11).
  */
 export interface DecisionTree {
   root: DecisionNode;
@@ -25668,7 +25885,7 @@ export interface DiagramNode {
 }
 
 /**
- * Kind `diagram_spec` (registry v9).
+ * Kind `diagram_spec` (registry v10).
  */
 export interface DiagramSpec {
   type?: string;
@@ -28223,7 +28440,7 @@ export interface FlashcardDeckCardsV1 {
 }
 
 /**
- * Kind `flashcard_set` (registry v13).
+ * Kind `flashcard_set` (registry v15).
  */
 export interface FlashcardSet {
   cards: (Flashcard | EnhancedFlashcard | TieredFlashcard)[];
@@ -36132,7 +36349,7 @@ export interface MasterworksVanillaArmOffer {
 }
 
 /**
- * Kind `math_problem` (registry v9).
+ * Kind `math_problem` (registry v11).
  */
 export interface MathProblem {
   hint?: string | null;
@@ -43378,7 +43595,7 @@ export interface PracticePrompt {
 }
 
 /**
- * Kind `presentation_deck` (registry v9).
+ * Kind `presentation_deck` (registry v11).
  */
 export interface PresentationDeck {
   theme?: {
@@ -44510,7 +44727,7 @@ export interface QuizQuestion {
 }
 
 /**
- * Kind `quiz_set` (registry v10).
+ * Kind `quiz_set` (registry v12).
  */
 export interface QuizSet {
   title: string;
@@ -54724,7 +54941,7 @@ export interface TaskItem {
 }
 
 /**
- * Kind `task_list` (registry v8).
+ * Kind `task_list` (registry v9).
  */
 export interface TaskList {
   items: TaskItem[];
@@ -55149,7 +55366,7 @@ export interface TieredFlashcard {
 }
 
 /**
- * Kind `timeline` (registry v8).
+ * Kind `timeline` (registry v10).
  */
 export interface Timeline {
   title: string;
@@ -62707,6 +62924,7 @@ export type GeneratedKindSlug =
   | "answer_grade"
   | "applet_build_result"
   | "applets.build_request.offer"
+  | "arm_resolution"
   | "arman_video_prompt"
   | "article_contextual_link"
   | "article_expert_profile"
@@ -62738,6 +62956,8 @@ export type GeneratedKindSlug =
   | "brand_basics"
   | "brand_basics_fact"
   | "brand_card"
+  | "brand_claim"
+  | "brand_claim_set"
   | "brand_confirmed_facts"
   | "brand_early_fact"
   | "brand_early_facts"
@@ -62762,6 +62982,8 @@ export type GeneratedKindSlug =
   | "brand_key_person"
   | "brand_logo_ranking"
   | "brand_offering_candidates"
+  | "brand_offering_role"
+  | "brand_offering_roles"
   | "brand_offering_scope_claims"
   | "brand_offering_tree"
   | "brand_open_candidates"
@@ -64314,6 +64536,7 @@ export interface KindPayloadBySlug {
   "answer_grade": AnswerGrade;
   "applet_build_result": AppletBuildResult;
   "applets.build_request.offer": AppletsBuildRequestOffer;
+  "arm_resolution": ArmResolution;
   "arman_video_prompt": ArmanVideoPrompt;
   "article_contextual_link": ArticleContextualLink;
   "article_expert_profile": ArticleExpertProfile;
@@ -64345,6 +64568,8 @@ export interface KindPayloadBySlug {
   "brand_basics": BrandBasics;
   "brand_basics_fact": BrandBasicsFact;
   "brand_card": BrandCard;
+  "brand_claim": BrandClaim;
+  "brand_claim_set": BrandClaimSet;
   "brand_confirmed_facts": BrandConfirmedFacts;
   "brand_early_fact": BrandEarlyFact;
   "brand_early_facts": BrandEarlyFacts;
@@ -64369,6 +64594,8 @@ export interface KindPayloadBySlug {
   "brand_key_person": BrandKeyPerson;
   "brand_logo_ranking": BrandLogoRanking;
   "brand_offering_candidates": BrandOfferingCandidates;
+  "brand_offering_role": BrandOfferingRole;
+  "brand_offering_roles": BrandOfferingRoles;
   "brand_offering_scope_claims": BrandOfferingScopeClaims;
   "brand_offering_tree": BrandOfferingTree;
   "brand_open_candidates": BrandOpenCandidates;
@@ -65925,6 +66152,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "answer_grade",
   "applet_build_result",
   "applets.build_request.offer",
+  "arm_resolution",
   "arman_video_prompt",
   "article_contextual_link",
   "article_expert_profile",
@@ -65956,6 +66184,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_basics",
   "brand_basics_fact",
   "brand_card",
+  "brand_claim",
+  "brand_claim_set",
   "brand_confirmed_facts",
   "brand_early_fact",
   "brand_early_facts",
@@ -65980,6 +66210,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_key_person",
   "brand_logo_ranking",
   "brand_offering_candidates",
+  "brand_offering_role",
+  "brand_offering_roles",
   "brand_offering_scope_claims",
   "brand_offering_tree",
   "brand_open_candidates",
