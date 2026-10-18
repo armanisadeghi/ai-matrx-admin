@@ -22,7 +22,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { usePhoneWidth } from "../usePhoneWidth";
 import { MoreVertical, Star } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { dateFilterBounds } from "@ai-matrx/design-system/data-table/date-filter";
+import { dateFilterBounds, dateFilterDayBounds } from "@ai-matrx/design-system/data-table/date-filter";
 import type {
   ColumnFiltersState,
   MatrxColumnDef,
@@ -241,7 +241,7 @@ function toTableFilters(filters: EntityFilters): ColumnFiltersState {
  * space then reaches the RPC verbatim, which is correct: `ILIKE '%New %'` is
  * exactly what "New " was asked to mean.
  */
-function fromTableFilters(state: ColumnFiltersState): EntityFilters {
+function fromTableFilters(state: ColumnFiltersState, dayColumns: ReadonlySet<string>): EntityFilters {
   const out: EntityFilters = {};
   for (const [id, f] of Object.entries(state)) {
     if (!f) continue;
@@ -253,8 +253,11 @@ function fromTableFilters(state: ColumnFiltersState): EntityFilters {
     } else if (f.kind === "boolean") {
       out[id] = { kind: "boolean", value: f.value };
     } else if (f.kind === "date") {
-      // The bag carries the RESOLVED window beside the preset, so the list RPC reads instants.
-      const { since, until } = dateFilterBounds(f);
+      // The bag carries the RESOLVED window beside the preset, so the list RPC reads instants — or,
+      // for a column that holds a calendar DAY (`format: { id: "date" }`), the person's own days
+      // ("2026-10-10"), which the RPC compares as `day_col::timestamptz` against the same cast.
+      const bounds = dateFilterBounds(f);
+      const { since, until } = dayColumns.has(id) ? dateFilterDayBounds(bounds) : bounds;
       if (since || until) {
         out[id] = {
           kind: "date",
@@ -649,7 +652,10 @@ export function EntityListTable<TRow>({
             pageSize: next.pageSize,
             sort: next.sort?.id ?? sort,
             direction: next.sort?.direction ?? direction,
-            filters: fromTableFilters(next.columnFilters),
+            filters: fromTableFilters(
+              next.columnFilters,
+              new Set(config.columns.filter((c) => c.column.format?.id === "date").map((c) => c.id)),
+            ),
             ...(tableToolbar ? { search: next.search } : {}),
           });
         },

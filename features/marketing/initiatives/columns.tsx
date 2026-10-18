@@ -2,7 +2,6 @@
 import { Badge } from "@/components/ui/badge";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {
-  DATE_FILTER_OPTIONS,
   Muted,
   timeCell,
   type EntityColumnSpec,
@@ -125,9 +124,9 @@ export const INITIATIVE_COLUMNS: EntityColumnSpec<InitiativeListRow>[] = [
       id: "starts_on",
       accessorKey: "starts_on",
       header: "Starts",
-      // Day column: stays on day buckets; the date filter sends instants with no time zone to read a calendar day by.
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      // A calendar day: the table sends day bounds for `format: date` columns (EntityListTable).
+      format: { id: "date" },
+      filter: "date",
       cell: (r) =>
         r.starts_on ? (
           new Date(`${r.starts_on}T00:00:00`).toLocaleDateString()
@@ -143,9 +142,9 @@ export const INITIATIVE_COLUMNS: EntityColumnSpec<InitiativeListRow>[] = [
       id: "ends_on",
       accessorKey: "ends_on",
       header: "Ends",
-      // Day column: stays on day buckets; the date filter sends instants with no time zone to read a calendar day by.
-      filter: "select",
-      filterOptions: DATE_FILTER_OPTIONS,
+      // A calendar day: the table sends day bounds for `format: date` columns (EntityListTable).
+      format: { id: "date" },
+      filter: "date",
       cell: (r) =>
         r.ends_on ? (
           new Date(`${r.ends_on}T00:00:00`).toLocaleDateString()
