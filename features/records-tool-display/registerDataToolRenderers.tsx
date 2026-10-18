@@ -18,8 +18,7 @@ import {
   toolRendererRegistry,
 } from "@ai-matrx/chat/tool-call-visualization/registry/registry";
 import type { ToolRenderer } from "@ai-matrx/chat/tool-call-visualization/types";
-import { GenericRenderer } from "@ai-matrx/chat/tool-call-visualization/registry/GenericRenderer";
-import { answerRenderer, isBackgroundRunCall, workflowRunRenderer, workflowRunRunId } from "./answerRenderer";
+import { answerRenderer, isBackgroundRunCall } from "./answerRenderer";
 
 /** A background copy's live card stays in the turn: it is the progress, not a log line. */
 const BACKGROUND_RUN_PINNED = {
@@ -61,25 +60,6 @@ export function registerDataToolRenderers(registry: Record<string, ToolRenderer>
     registered.add(next);
     if (registry === toolRendererRegistry) registerToolRenderer(toolName, next);
     else registry[toolName] = next;
-  }
-  // `workflow_run`: a run that outlives the call is drawn as the same live card (it wakes the chat when it ends).
-  const workflowRun: ToolRenderer = registry.workflow_run ?? {
-    toolName: "workflow_run",
-    displayName: "Workflow run",
-    InlineComponent: GenericRenderer,
-  };
-  if (!registered.has(workflowRun)) {
-    const next: ToolRenderer = {
-      ...workflowRun,
-      InlineComponent: workflowRunRenderer(workflowRun.InlineComponent),
-      OverlayComponent: workflowRunRenderer(workflowRun.OverlayComponent ?? workflowRun.InlineComponent),
-      getInlineVisibility: (entry) =>
-        workflowRunRunId(entry) ? BACKGROUND_RUN_PINNED : workflowRun.getInlineVisibility?.(entry) ?? null,
-      getDisplayMode: (entry) => (workflowRunRunId(entry) ? "stay-open" : workflowRun.getDisplayMode?.(entry) ?? null),
-    };
-    registered.add(next);
-    if (registry === toolRendererRegistry) registerToolRenderer("workflow_run", next);
-    else registry.workflow_run = next;
   }
   const records = registry.records;
   if (!records) return;

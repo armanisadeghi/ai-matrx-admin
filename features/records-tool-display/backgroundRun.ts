@@ -20,7 +20,7 @@
 import type { NodeInvocationState, WorkflowRunState } from "@/features/workflow-runtime/redux/workflow-runs.slice";
 import { runIsOver } from "@/features/workflow-runtime/types";
 
-export type BackgroundRunKind = "import" | "copy" | "workflow";
+export type BackgroundRunKind = "import" | "copy";
 
 /** The import's stages, in the order the importer walks them (aidream `notion_import.progress`). */
 export const IMPORT_STAGES = [
@@ -33,7 +33,7 @@ export const IMPORT_STAGES = [
 ] as const;
 
 /** The node each system workflow runs its one step on. */
-const NODE_OF: Record<Exclude<BackgroundRunKind, "workflow">, string> = { import: "import", copy: "sync" };
+const NODE_OF: Record<BackgroundRunKind, string> = { import: "import", copy: "sync" };
 
 function str(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -209,63 +209,6 @@ export function readCopyReport(output: Record<string, unknown> | null): CopyRepo
 
 export type BackgroundRunPhase = "opening" | "waiting" | "working" | "finished" | "stopped";
 
-/** A workflow run with no named stage list: how far through its steps it is. */
-export interface WorkflowReport {
-  kind: "workflow";
-  /** Steps that finished (completed or skipped). */
-  steps: number;
-  /** The top-level keys of the run's output, for the one-line summary. */
-  outputKeys: string[];
-}
-
-/** One generic stage per step, in the order the run started them. */
-export interface WorkflowStage {
-  id: string;
-  label: string;
-}
-
-/** "data.mapped_sync" → "Mapped sync"; a bare node id when the step names no type. */
-export function stepLabel(specType: string | null, nodeId: string): string {
-  const raw = (specType ? specType.split(".").pop() : null) || nodeId;
-  const words = raw.replace(/[_-]+/g, " ").trim();
-  return words ? words.charAt(0).toUpperCase() + words.slice(1) : nodeId;
-}
-
-export function workflowStages(run: Pick<WorkflowRunState, "nodeOrder" | "nodeAggregates"> | null): WorkflowStage[] {
-  if (!run) return [];
-  return run.nodeOrder.map((nodeId) => ({ id: nodeId, label: stepLabel(run.nodeAggregates[nodeId]?.specType ?? null, nodeId) }));
-}
-
-const STEP_DONE: ReadonlySet<NodeInvocationState["phase"]> = new Set(["settled", "skipped"]);
-
-/** Where a workflow run is: the furthest step started, how many steps are done, the live step's words. */
-export function workflowSample(run: WorkflowRunState): { sample: ProgressSample | null; done: number; latest: NodeInvocationState | null } {
-  let done = 0;
-  let furthest = -1;
-  let latest: NodeInvocationState | null = null;
-  run.nodeOrder.forEach((nodeId, index) => {
-    const invocation = nodeInvocation(run, nodeId);
-    if (!invocation) return;
-    if (STEP_DONE.has(invocation.phase)) done += 1;
-    furthest = index;
-    if (!latest || (invocation.startedAt ?? "") >= (latest.startedAt ?? "")) latest = invocation;
-  });
-  if (furthest < 0) return { sample: null, done, latest: null };
-  const live = latest as NodeInvocationState | null;
-  const progress = live?.progress ?? null;
-  const label = live ? stepLabel(live.specType, live.nodeId) : null;
-  return {
-    sample: {
-      stageIndex: furthest,
-      detail: str(progress?.message) ?? label,
-      current: progress?.current ?? null,
-      total: progress?.total ?? null,
-    },
-    done,
-    latest: live,
-  };
-}
-
 export interface BackgroundRunView {
   kind: BackgroundRunKind;
   phase: BackgroundRunPhase;
@@ -277,7 +220,7 @@ export interface BackgroundRunView {
   startedAt: string | null;
   /** The run's end, once it is over. */
   endedAt: string | null;
-  report: ImportReport | CopyReport | WorkflowReport | null;
+  report: ImportReport | CopyReport | null;
   /** The server's own sentence for a stopped run. */
   stoppedBecause: string | null;
   /** Why the run cannot be read right now (never the run's own failure). */
@@ -286,7 +229,6 @@ export interface BackgroundRunView {
 
 /** Which copy this run is, from what it was started with, else its node. */
 export function runKindOf(run: Pick<WorkflowRunState, "input" | "nodeOrder"> | null, hint: BackgroundRunKind | null): BackgroundRunKind {
-  if (hint === "workflow") return "workflow";
   const input = run?.input ?? null;
   if (input && ("root" in input)) return "import";
   if (input && ("map" in input)) return "copy";
@@ -316,7 +258,6 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
     report: null, stoppedBecause: null, readFailure: null,
   };
   if (!run) return empty;
-  if (kind === "workflow") return readWorkflowRun(run, empty);
   const input = run.input ?? {};
   const name = kind === "import" ? str(input.name) : str(obj(input.map)?.name);
   const node = nodeInvocation(run, NODE_OF[kind]);
@@ -351,31 +292,6 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
   };
 }
 
-function phaseOf(run: WorkflowRunState, progressed: boolean, stepFailed: boolean): BackgroundRunPhase {
-  if (!run.statusKnown) return "opening";
-  if (runIsOver(run.status)) return run.status !== "completed" || stepFailed ? "stopped" : "finished";
-  return run.status === "pending" && !progressed ? "waiting" : "working";
-}
-
-/** Any agent-started workflow run: generic stages from its steps, the run's own end. */
-function readWorkflowRun(run: WorkflowRunState, empty: BackgroundRunView): BackgroundRunView {
-  const { sample, done, latest } = workflowSample(run);
-  const over = runIsOver(run.status);
-  const phase = phaseOf(run, sample != null, false);
-  const output = obj(latest?.output);
-  return {
-    ...empty,
-    phase,
-    sample,
-    lastMovedAt: latest?.progress?.ts ?? latest?.startedAt ?? run.startedAtTs,
-    startedAt: run.startedAtTs,
-    endedAt: over ? run.statusTs : null,
-    report: over ? { kind: "workflow", steps: Math.max(done, run.stepsExecuted ?? 0), outputKeys: Object.keys(output ?? {}) } : null,
-    stoppedBecause: phase === "stopped" ? (str(latest?.error?.message) ?? errorSentence(run.error)) : null,
-    readFailure: run.readFailure,
-  };
-}
-
 // ── words ──────────────────────────────────────────────────────────────────────
 
 /** "Last moved" only says something once the quiet is long enough to wonder about. */
@@ -390,7 +306,6 @@ export const STATUS_WORD: Record<BackgroundRunPhase, string> = {
 };
 
 export function whatToDoWhenStopped(kind: BackgroundRunKind): string {
-  if (kind === "workflow") return "Open the run to see the step and continue it.";
   return kind === "import"
     ? "Run it again; nothing is copied twice."
     : "Run it again to continue; finished rows are kept.";

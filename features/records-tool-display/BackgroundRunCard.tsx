@@ -2,11 +2,9 @@
 "use client";
 
 /**
- * BackgroundRunCard — the live card for a long run an agent started in the background: a Notion
- * page or database brought in as new tables (`notion_import`), a mapping copied into tables that
- * already exist (`mapped_sync`), or ANY workflow the `workflow_run` tool started (generic stages,
- * one per step, from the run's own node progress). The run wakes the chat when it ends; this card
- * is what the person watches meanwhile.
+ * BackgroundRunCard — the live card for a long copy the `records` tool started in the background:
+ * a Notion page or database brought in as new tables (`notion_import`), or a mapping copied into
+ * tables that already exist (`mapped_sync`).
  *
  * It follows the RUN (`useWorkflowRun` → the `workflowRuns` slice), never the tool answer: the run
  * outlives the turn, so the same card rejoins by `run_id` when the conversation is reopened, and a
@@ -21,7 +19,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowRightLeft, ArrowUpRight, CircleCheck, Download, Eye, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, ArrowUpRight, CircleCheck, Download, Eye } from "lucide-react";
 import { Card, CardContent, Progress, Skeleton, type ProgressTone } from "@ai-matrx/design-system";
 import { Badge, Button, DisclosureHeader, StageSteps, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -45,17 +43,12 @@ import {
   advanceRatchet,
   readBackgroundRun,
   whatToDoWhenStopped,
-  workflowStages,
   type BackgroundRunKind,
   type BackgroundRunPhase,
   type CopyReport,
   type ImportLoss,
   type ImportReport,
-  type WorkflowReport,
 } from "./backgroundRun";
-
-/** More steps than this and the strip would crowd the card: the bar and the live step say it alone. */
-const STAGE_STRIP_MAX = 8;
 import { tableHref } from "./readRecordsAnswer";
 
 const BADGE_TONE: Record<BackgroundRunPhase, BadgeTone> = {
@@ -95,25 +88,18 @@ function DoorLink({ href, children }: { href: string; children: React.ReactNode 
   );
 }
 
-export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: BackgroundRunKind | null; name?: string | null }) {
+export function BackgroundRunCard({ runId, hint }: { runId: string; hint: BackgroundRunKind | null }) {
   useWorkflowRun(runId);
   const run = useAppSelector(selectRunState(runId));
   const openRunWindow = useOpenWorkflowRunWindow();
   const view = readBackgroundRun(run, hint);
   const isImport = view.kind === "import";
-  const isWorkflow = view.kind === "workflow";
   const over = view.phase === "finished" || view.phase === "stopped";
-  // Generic stages for a workflow with no named stage list: one per step it has started.
-  const steps = isWorkflow ? workflowStages(run) : [];
-  const stages = isImport ? IMPORT_STAGES : steps;
-  const staged = stages.length > 0 && stages.length <= (isImport ? IMPORT_STAGES.length : STAGE_STRIP_MAX);
-  const metered = isImport || isWorkflow;
 
   // THE RATCHET: the stage never steps back and the fill never shrinks (adjusted during render,
-  // so a new sample and its bar land in the same paint). A workflow's step count grows as steps
-  // start, so its fill is measured against the steps seen so far and still only moves forward.
+  // so a new sample and its bar land in the same paint).
   const [ratchet, setRatchet] = useState(RATCHET_START);
-  const next = advanceRatchet(ratchet, metered ? view.sample : null, view.phase === "finished", Math.max(1, stages.length));
+  const next = advanceRatchet(ratchet, isImport ? view.sample : null, view.phase === "finished");
   if (next !== ratchet) setRatchet(next);
 
   const startedMs = isoMs(view.startedAt);
@@ -122,16 +108,14 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
   const elapsedMs = over ? (startedMs != null && endedMs != null ? endedMs - startedMs : null) : startedMs != null ? liveMs : null;
   const quietMs = useElapsedSince(view.phase === "working" ? isoMs(view.lastMovedAt) : null);
 
-  const title = isWorkflow
-    ? name ? `Workflow · ${name}` : "Workflow run"
-    : isImport
-      ? view.name ? `Notion import · ${view.name}` : "Notion import"
-      : view.name ? `Copy · ${view.name}` : "Copy into tables";
-  const Icon = isWorkflow ? Workflow : isImport ? Download : ArrowRightLeft;
+  const title = isImport
+    ? view.name ? `Notion import · ${view.name}` : "Notion import"
+    : view.name ? `Copy · ${view.name}` : "Copy into tables";
+  const Icon = isImport ? Download : ArrowRightLeft;
   const counted = view.sample?.current != null && view.sample.total != null && view.sample.total > 0;
   const barValue = view.phase === "finished"
     ? 100
-    : metered && ratchet.stageIndex >= 0
+    : isImport && ratchet.stageIndex >= 0
       ? Math.round(ratchet.fraction * 100)
       : view.phase === "stopped" ? 0 : null;
   const detail = view.sample?.detail ?? null;
@@ -155,17 +139,13 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
         </Button>
       </header>
 
-      {isImport || isWorkflow ? (
-        <div className="min-h-6">
-          {staged ? (
-            <StageSteps
-              steps={stages}
-              current={view.phase === "finished" ? stages.length : Math.max(0, ratchet.stageIndex)}
-              aria-label={isImport ? "Import stages" : "Workflow steps"}
-              className="overflow-hidden"
-            />
-          ) : null}
-        </div>
+      {isImport ? (
+        <StageSteps
+          steps={IMPORT_STAGES}
+          current={view.phase === "finished" ? IMPORT_STAGES.length : Math.max(0, ratchet.stageIndex)}
+          aria-label="Import stages"
+          className="overflow-hidden"
+        />
       ) : null}
 
       <div className="flex flex-col gap-1.5">
@@ -198,7 +178,6 @@ export function BackgroundRunCard({ runId, hint, name }: { runId: string; hint: 
       {view.phase === "stopped" ? <StoppedNote kind={view.kind} sentence={view.stoppedBecause} /> : null}
       {view.report?.kind === "import" && view.phase === "finished" ? <ImportReportView report={view.report} /> : null}
       {view.report?.kind === "copy" && over ? <CopyReportView report={view.report} /> : null}
-      {view.report?.kind === "workflow" && view.phase === "finished" ? <WorkflowReportView report={view.report} /> : null}
       </CardContent>
     </Card>
   );
@@ -212,23 +191,7 @@ function StoppedNote({ kind, sentence }: { kind: BackgroundRunKind; sentence: st
         <p className="type-secondary text-foreground">{sentence ?? "It stopped before it finished."}</p>
         <p className="type-secondary text-muted-foreground">{whatToDoWhenStopped(kind)}</p>
       </div>
-      <ErrorAlchemyMenu error={sentence ?? (kind === "workflow" ? "The workflow run stopped." : "The background copy stopped.")} />
-    </div>
-  );
-}
-
-// ── workflow report ─────────────────────────────────────────────────────────────
-
-function WorkflowReportView({ report }: { report: WorkflowReport }) {
-  return (
-    <div className="flex items-center gap-2">
-      <CircleCheck className="size-3.5 shrink-0 text-success" aria-hidden />
-      <p className="type-secondary min-w-0 flex-1 truncate text-foreground">
-        {report.steps === 1 ? "1 step done" : `${formatCount(report.steps)} steps done`}
-        {report.outputKeys.length > 0 ? (
-          <span className="text-muted-foreground"> · {report.outputKeys.slice(0, 4).join(", ")}</span>
-        ) : null}
-      </p>
+      <ErrorAlchemyMenu error={sentence ?? "The background copy stopped."} />
     </div>
   );
 }

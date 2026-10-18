@@ -23,8 +23,6 @@ import {
   advanceRatchet,
   readBackgroundRun,
   readProgressMessage,
-  stepLabel,
-  workflowStages,
   type ProgressRatchet,
   type ProgressSample,
 } from "../backgroundRun";
@@ -239,44 +237,5 @@ describe("the card's view of a real run", () => {
 
   it("before the server says anything, the card says it is opening — never 'queued'", () => {
     expect(readBackgroundRun(runOf([]), "import").phase).toBe("opening");
-  });
-});
-
-// ── any agent-started workflow run (workflow_run, 2026-10-18) ───────────────────
-
-describe("a generic workflow run: stages from its steps", () => {
-  const steps = [
-    event(1, { event: "run_started", ts: "2026-10-18T10:00:00Z" }),
-    event(2, { event: "node_started", node_id: "fetch", spec_type: "http.request", ts: "2026-10-18T10:00:01Z" }),
-    event(3, { event: "node_completed", node_id: "fetch", output: { body: "x" }, ts: "2026-10-18T10:00:02Z" }),
-    event(4, { event: "node_started", node_id: "sum", spec_type: "data.sum_values", ts: "2026-10-18T10:00:03Z" }),
-  ];
-
-  it("working: one stage per step started, the live step named, and the bar only moves forward", () => {
-    const run = runOf([...steps, event(5, { event: "node_progress", node_id: "sum", message: "adding 3 of 9", current: 3, total: 9, ts: "2026-10-18T10:00:04Z" })]);
-    const view = readBackgroundRun(run, "workflow");
-    expect(view.kind).toBe("workflow");
-    expect(view.phase).toBe("working");
-    expect(workflowStages(run)).toEqual([{ id: "fetch", label: "Request" }, { id: "sum", label: "Sum values" }]);
-    expect(view.sample).toEqual({ stageIndex: 1, detail: "adding 3 of 9", current: 3, total: 9 });
-    const forward = advanceRatchet(RATCHET_START, view.sample, false, 2);
-    // a third step appears: the bar is measured against more steps but never shrinks
-    expect(advanceRatchet(forward, { ...view.sample!, current: 3 }, false, 3)).toBe(forward);
-  });
-
-  it("finished: the steps done and the output's keys", () => {
-    const run = runOf([
-      ...steps,
-      event(5, { event: "node_completed", node_id: "sum", output: { total: 42 }, ts: "2026-10-18T10:00:05Z" }),
-      event(6, { event: "run_completed", ts: "2026-10-18T10:00:06Z" }),
-    ]);
-    const view = readBackgroundRun(run, "workflow");
-    expect(view.phase).toBe("finished");
-    expect(view.report).toEqual({ kind: "workflow", steps: 2, outputKeys: ["total"] });
-  });
-
-  it("a step's label reads as words", () => {
-    expect(stepLabel("data.mapped_sync", "sync")).toBe("Mapped sync");
-    expect(stepLabel(null, "my-step")).toBe("My step");
   });
 });
