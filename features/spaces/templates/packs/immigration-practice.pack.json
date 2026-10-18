@@ -131,8 +131,13 @@
             ],
             "choiceColors": {
               "Open": "blue",
+<<<<<<< HEAD
               "In progress": "amber",
               "Done": "green"
+=======
+              "In progress": "green",
+              "Done": "amber"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Open": "todo",
@@ -467,6 +472,7 @@
               "Closed"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "Denied": "red",
               "Intake": "blue",
               "Preparing": "amber",
@@ -474,6 +480,15 @@
               "Request for evidence": "teal",
               "Approved": "slate",
               "Closed": "green"
+=======
+              "Intake": "blue",
+              "Preparing": "green",
+              "Filed": "amber",
+              "Request for evidence": "violet",
+              "Approved": "teal",
+              "Denied": "red",
+              "Closed": "orange"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Intake": "todo",
@@ -947,9 +962,15 @@
             ],
             "choiceColors": {
               "Needed": "blue",
+<<<<<<< HEAD
               "Requested": "amber",
               "Received": "violet",
               "Verified": "green"
+=======
+              "Requested": "green",
+              "Received": "amber",
+              "Verified": "violet"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Needed": "todo",

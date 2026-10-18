@@ -134,12 +134,21 @@
               "Cancelled"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "No-show": "red",
               "Cancelled": "orange",
               "Booked": "blue",
               "Checked in": "amber",
               "In exam": "violet",
               "Completed": "green"
+=======
+              "Booked": "blue",
+              "Checked in": "green",
+              "In exam": "amber",
+              "Completed": "violet",
+              "No-show": "teal",
+              "Cancelled": "red"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Booked": "todo",
@@ -547,8 +556,13 @@
               "Lapsed"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "Current": "green",
               "Reminder sent": "blue",
+=======
+              "Current": "blue",
+              "Reminder sent": "green",
+>>>>>>> origin/main
               "Booked": "amber",
               "Lapsed": "violet"
             },

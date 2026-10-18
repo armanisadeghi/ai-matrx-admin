@@ -132,12 +132,21 @@
               "Cancelled"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "No-show": "red",
               "Cancelled": "orange",
               "Booked": "blue",
               "Checked in": "amber",
               "In exam": "violet",
               "Completed": "green"
+=======
+              "Booked": "blue",
+              "Checked in": "green",
+              "In exam": "amber",
+              "Completed": "violet",
+              "No-show": "teal",
+              "Cancelled": "red"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Booked": "todo",
@@ -507,9 +516,15 @@
             ],
             "choiceColors": {
               "Ordered": "blue",
+<<<<<<< HEAD
               "At lab": "amber",
               "Ready for pickup": "violet",
               "Picked up": "green"
+=======
+              "At lab": "green",
+              "Ready for pickup": "amber",
+              "Picked up": "violet"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Ordered": "todo",

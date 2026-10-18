@@ -115,12 +115,21 @@
             ],
             "choiceColors": {
               "Consultation": "blue",
+<<<<<<< HEAD
               "Gathering information": "amber",
               "Drafting": "violet",
               "Attorney review": "teal",
               "Signing": "slate",
               "Funding": "yellow",
               "Complete": "green"
+=======
+              "Gathering information": "green",
+              "Drafting": "amber",
+              "Attorney review": "violet",
+              "Signing": "teal",
+              "Funding": "red",
+              "Complete": "orange"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Consultation": "todo",
@@ -663,6 +672,7 @@
             }
           },
           {
+<<<<<<< HEAD
             "key": "s07",
             "values": {
               "signing_title": "Signing - Delacroix-Hunt will",
@@ -674,6 +684,8 @@
             }
           },
           {
+=======
+>>>>>>> origin/main
             "key": "s03",
             "values": {
               "signing_title": "Signing - Okoye family",
@@ -913,11 +925,19 @@
             ],
             "choiceColors": {
               "Not started": "blue",
+<<<<<<< HEAD
               "Drafting": "amber",
               "Client review": "violet",
               "Ready to sign": "teal",
               "Signed": "green",
               "Filed": "slate"
+=======
+              "Drafting": "green",
+              "Client review": "amber",
+              "Ready to sign": "violet",
+              "Signed": "teal",
+              "Filed": "red"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Not started": "todo",
@@ -969,7 +989,11 @@
               "matter": "m01",
               "kind": "Revocable trust",
               "status": "Drafting",
+<<<<<<< HEAD
               "due_on": "@today"
+=======
+              "due_on": "@mon+3d"
+>>>>>>> origin/main
             }
           },
           {
@@ -979,7 +1003,11 @@
               "matter": "m01",
               "kind": "Will",
               "status": "Not started",
+<<<<<<< HEAD
               "due_on": "@today-3d"
+=======
+              "due_on": "@today+10d"
+>>>>>>> origin/main
             }
           },
           {
@@ -1266,8 +1294,13 @@
             ],
             "choiceColors": {
               "To transfer": "blue",
+<<<<<<< HEAD
               "In progress": "amber",
               "Done": "green"
+=======
+              "In progress": "green",
+              "Done": "amber"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "To transfer": "todo",
@@ -1602,7 +1635,11 @@
               "phone": "(303) 555-0134",
               "email": "leopold.a@mailbox-demo.net",
               "plan_signed": "@today-90d",
+<<<<<<< HEAD
               "review_due": "@today+20d"
+=======
+              "review_due": "@today+640d"
+>>>>>>> origin/main
             }
           },
           {
@@ -1636,7 +1673,11 @@
               "phone": "(303) 555-0137",
               "email": "sebastian.or@mailbox-demo.net",
               "plan_signed": "@today-200d",
+<<<<<<< HEAD
               "review_due": "@mon+5d"
+=======
+              "review_due": "@today+530d"
+>>>>>>> origin/main
             }
           }
         ],

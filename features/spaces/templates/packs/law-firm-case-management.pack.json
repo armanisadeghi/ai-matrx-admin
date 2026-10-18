@@ -117,10 +117,17 @@
             ],
             "choiceColors": {
               "Intake": "blue",
+<<<<<<< HEAD
               "Open": "amber",
               "Pending": "violet",
               "On hold": "teal",
               "Closed": "green"
+=======
+              "Open": "green",
+              "Pending": "amber",
+              "On hold": "violet",
+              "Closed": "teal"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Intake": "todo",
@@ -577,9 +584,15 @@
               "Missed"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "Missed": "red",
               "Open": "blue",
               "Done": "green"
+=======
+              "Open": "blue",
+              "Done": "green",
+              "Missed": "amber"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Open": "todo",

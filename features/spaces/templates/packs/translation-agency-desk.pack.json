@@ -1,7 +1,11 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
+<<<<<<< HEAD
   "version": 2,
+=======
+  "version": 1,
+>>>>>>> origin/main
   "title": "Translation Agency Desk",
   "description": "Clients, linguists, translation jobs, glossaries and quality checks for a language agency.",
   "forWho": "Translation and localization agencies",
@@ -12,7 +16,11 @@
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
   },
+<<<<<<< HEAD
   "category": "services",
+=======
+  "category": "operations",
+>>>>>>> origin/main
   "tags": [
     "translation",
     "linguists",
@@ -2052,7 +2060,11 @@
         "Cormorant Way"
       ]
     },
+<<<<<<< HEAD
     "version": 2
+=======
+    "version": 1
+>>>>>>> origin/main
   },
   "pages": [
     {
@@ -3438,4 +3450,8 @@
     }
   ],
   "waivers": []
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

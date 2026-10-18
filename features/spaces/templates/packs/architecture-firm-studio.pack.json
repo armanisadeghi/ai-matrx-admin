@@ -1,7 +1,11 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
+<<<<<<< HEAD
   "version": 2,
+=======
+  "version": 1,
+>>>>>>> origin/main
   "title": "Architecture Firm Studio",
   "description": "Clients, design phases, drawing sets, RFIs and submittals for an architecture firm.",
   "forWho": "Small and mid-sized architecture practices",
@@ -12,7 +16,11 @@
     "url": "gallery:photo-pine-forest",
     "offsetY": 50
   },
+<<<<<<< HEAD
   "category": "services",
+=======
+  "category": "operations",
+>>>>>>> origin/main
   "tags": [
     "architecture",
     "phases",
@@ -2579,7 +2587,11 @@
         "Quarry Lane"
       ]
     },
+<<<<<<< HEAD
     "version": 2
+=======
+    "version": 1
+>>>>>>> origin/main
   },
   "pages": [
     {
@@ -4285,4 +4297,8 @@
     }
   ],
   "waivers": []
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

@@ -136,12 +136,21 @@
               "Cancelled"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "No-show": "red",
               "Cancelled": "orange",
               "Scheduled": "blue",
               "Confirmed": "amber",
               "Checked in": "violet",
               "Completed": "green"
+=======
+              "Scheduled": "blue",
+              "Confirmed": "green",
+              "Checked in": "amber",
+              "Completed": "violet",
+              "No-show": "teal",
+              "Cancelled": "red"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -788,7 +797,11 @@
               "email": "willa.p@mailbox-demo.net",
               "insurance": "Self-pay",
               "last_visit": "@today-100d",
+<<<<<<< HEAD
               "next_recall": "@mon+5d",
+=======
+              "next_recall": "@today+80d",
+>>>>>>> origin/main
               "hygienist": "tm-marcus"
             }
           },
@@ -814,7 +827,11 @@
               "email": "yuki.nf@mailbox-demo.net",
               "insurance": "Summit Dental PPO",
               "last_visit": "@today-45d",
+<<<<<<< HEAD
               "next_recall": "@today+4d",
+=======
+              "next_recall": "@today+135d",
+>>>>>>> origin/main
               "hygienist": "tm-priya"
             }
           },
@@ -1020,12 +1037,21 @@
               "Declined"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "Declined": "red",
               "Proposed": "blue",
               "Accepted": "amber",
               "Scheduled": "violet",
               "In progress": "teal",
               "Completed": "green"
+=======
+              "Proposed": "blue",
+              "Accepted": "green",
+              "Scheduled": "amber",
+              "In progress": "violet",
+              "Completed": "teal",
+              "Declined": "red"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Proposed": "todo",
@@ -1473,10 +1499,17 @@
               "Denied"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "Denied": "red",
               "Draft": "blue",
               "Submitted": "amber",
               "Paid": "green"
+=======
+              "Draft": "blue",
+              "Submitted": "green",
+              "Paid": "amber",
+              "Denied": "violet"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Draft": "todo",

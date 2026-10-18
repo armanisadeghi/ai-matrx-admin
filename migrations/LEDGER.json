@@ -1,6 +1,10 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
+<<<<<<< HEAD
   "generated_at": "2026-10-18T07:13:17.257Z",
+=======
+  "generated_at": "2026-10-18T06:56:45.520Z",
+>>>>>>> origin/main
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -902,12 +906,15 @@
       "checksum": "af0404714987cb1e6f9479fd92931b2abffdb748abbf62063175ed31092354ac",
       "applied_at": "2026-10-18 06:56:39.628079+00"
     },
+<<<<<<< HEAD
     "migrations/campaign/button_stamps_c_a_rollup_reads_its_columns_look_never_copies_it.sql": {
       "source": "matrx-frontend",
       "filename": "button_stamps_c_a_rollup_reads_its_columns_look_never_copies_it.sql",
       "checksum": "af84cd21f37a4a8c550f8036f8fd89eab7109087260bb0f023e302b04fbaed2e",
       "applied_at": "2026-10-18 07:13:11.530141+00"
     },
+=======
+>>>>>>> origin/main
     "migrations/campaign/calfeed_a_a_view_can_be_a_chart.sql": {
       "source": "matrx-frontend",
       "filename": "calfeed_a_a_view_can_be_a_chart.sql",

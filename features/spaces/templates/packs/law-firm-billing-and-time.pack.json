@@ -153,8 +153,13 @@
             ],
             "choiceColors": {
               "Unbilled": "blue",
+<<<<<<< HEAD
               "On draft invoice": "amber",
               "Billed": "green"
+=======
+              "On draft invoice": "green",
+              "Billed": "amber"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Unbilled": "todo",
@@ -507,11 +512,19 @@
               "Overdue"
             ],
             "choiceColors": {
+<<<<<<< HEAD
               "Overdue": "red",
               "Draft": "blue",
               "Sent": "amber",
               "Part paid": "violet",
               "Paid": "green"
+=======
+              "Draft": "blue",
+              "Sent": "green",
+              "Part paid": "amber",
+              "Paid": "violet",
+              "Overdue": "teal"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Draft": "todo",
@@ -833,8 +846,13 @@
             ],
             "choiceColors": {
               "Open": "blue",
+<<<<<<< HEAD
               "Closing": "amber",
               "Closed": "green"
+=======
+              "Closing": "green",
+              "Closed": "amber"
+>>>>>>> origin/main
             },
             "statusGroups": {
               "Open": "in_progress",

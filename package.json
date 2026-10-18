@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3324",
+  "version": "0.4.3325",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -1016,7 +1016,9 @@
     "check:relation-halves-agree": "./scripts/check-relation-halves-agree.sh",
     "check:rich-content-packaged": "node scripts/check-rich-content-packaged.mjs && node scripts/check-rich-content-packaged.mjs --self-test",
     "check:ai-watch": "node scripts/check-ai-watch.mjs",
-    "check:ai-watch:self-test": "node scripts/check-ai-watch.mjs --self-test"
+    "check:ai-watch:self-test": "node scripts/check-ai-watch.mjs --self-test",
+    "check:mandate-start-by-id": "tsx scripts/check-mandate-start-by-id.ts",
+    "check:mandate-start-by-id:self-test": "tsx scripts/check-mandate-start-by-id.ts --self-test"
   },
   "dependencies": {
     "@ai-matrx/agents": "latest",

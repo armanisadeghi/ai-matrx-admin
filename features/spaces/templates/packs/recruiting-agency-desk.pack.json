@@ -1,7 +1,11 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0452",
+<<<<<<< HEAD
   "version": 2,
+=======
+  "version": 1,
+>>>>>>> origin/main
   "title": "Recruiting Agency Desk",
   "description": "Employer clients, job orders, candidates and submissions for a staffing and search firm.",
   "forWho": "Recruiting, staffing and executive search firms",
@@ -12,7 +16,11 @@
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
   },
+<<<<<<< HEAD
   "category": "agencies",
+=======
+  "category": "clients",
+>>>>>>> origin/main
   "tags": [
     "recruiting",
     "staffing",
@@ -2089,7 +2097,11 @@
         "Morrow Street"
       ]
     },
+<<<<<<< HEAD
     "version": 2
+=======
+    "version": 1
+>>>>>>> origin/main
   },
   "pages": [
     {
@@ -3398,4 +3410,8 @@
     }
   ],
   "waivers": []
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main

@@ -1,7 +1,11 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0455",
+<<<<<<< HEAD
   "version": 2,
+=======
+  "version": 1,
+>>>>>>> origin/main
   "title": "Photography Studio Desk",
   "description": "Clients, packages, shoots and the editing-to-delivery checklist for a photo studio.",
   "forWho": "Portrait, wedding and brand photographers",
@@ -12,7 +16,11 @@
     "url": "gallery:photo-golden-palms",
     "offsetY": 50
   },
+<<<<<<< HEAD
   "category": "agencies",
+=======
+  "category": "clients",
+>>>>>>> origin/main
   "tags": [
     "photography",
     "bookings",
@@ -1955,7 +1963,11 @@
         "Weaver Close"
       ]
     },
+<<<<<<< HEAD
     "version": 2
+=======
+    "version": 1
+>>>>>>> origin/main
   },
   "pages": [
     {
@@ -3370,4 +3382,8 @@
     }
   ],
   "waivers": []
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main
