@@ -377,6 +377,8 @@
     "check:unbounded-reads": "tsx scripts/check-unbounded-reads.ts",
     "check:one-table-law": "tsx scripts/check-one-table-law.ts",
     "check:one-table-law:self-test": "tsx scripts/check-one-table-law.ts --self-test",
+    "check:hand-built-lists": "tsx scripts/check-hand-built-lists.ts",
+    "check:hand-built-lists:self-test": "tsx scripts/check-hand-built-lists.ts --self-test",
     "check:table-field-types": "tsx scripts/check-table-field-types.ts",
     "check:table-field-types:self-test": "tsx scripts/check-table-field-types.ts --self-test",
     "check:headless-ui-flags": "tsx scripts/check-headless-ui-flags.ts",

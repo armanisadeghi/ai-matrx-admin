@@ -159,6 +159,9 @@ if $STRICT; then
         # Copy/Alchemy is never switched off on a table; no new hand-built tables (baseline shrinks only).
         "Tables keep copy/Alchemy; no new hand-built table|pnpm check:one-table-law"
         "The one-table-law guard can still fail (fixtures in a temp dir)|pnpm check:one-table-law:self-test"
+        # No new hand-built record lists (div rows with border+hover); baseline shrinks only (canonical-table-usage rule 16).
+        "No new hand-built record list (use the ladder)|pnpm check:hand-built-lists"
+        "The hand-built-lists guard can still fail (fixtures in a temp dir)|pnpm check:hand-built-lists:self-test"
         # Known field types decide the filter (Arman 2026-10-17): a DB date/enum column declares its type.
         "Table columns over DB dates/enums declare their field type|pnpm check:table-field-types --strict"
         "The table-field-types guard can still fail (fixtures)|pnpm check:table-field-types:self-test"
