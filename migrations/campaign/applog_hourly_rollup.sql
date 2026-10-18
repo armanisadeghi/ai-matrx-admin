@@ -153,7 +153,7 @@ comment on function ops.app_log_hourly_refresh(timestamptz, timestamptz) is
 
 insert into platform.client_callable_door
   (schema_name, function_name, identity_args, identity_argtypes, reason, declared_by, signed_in_callers, non_client_lane, anonymous_callers)
-values ('ops', 'app_log_hourly_refresh', 'p_from timestamp with time zone, p_to timestamp with time zone', array['1184', '1184'],
+values ('ops', 'app_log_hourly_refresh', 'p_from timestamp with time zone, p_to timestamp with time zone', '{1184,1184}'::oid[],
   'Takes no entity id; rebuilds hours of the derived structured-log summary from ops.app_log.',
   'migrations/campaign/applog_hourly_rollup.sql (lane APPLOG-ROLLUP)', false,
   'server_only: called only by the pg_cron jobs ops-app-log-hourly-recent and ops-app-log-hourly-nightly; it takes no entity id and rewrites only the derived summary ops._app_log_hourly.', false)
@@ -177,3 +177,31 @@ commit;
 --     $$SET statement_timeout = '5min'; SET lock_timeout = '2min'; SELECT ops.app_log_hourly_refresh(now() - interval '48 hours', now());$$);
 --   select cron.schedule('ops-app-log-hourly-nightly', '40 9 * * *',
 --     $$SET statement_timeout = '20min'; SET lock_timeout = '2min'; SELECT ops.app_log_hourly_refresh(now() - interval '35 days', now());$$);
+
+-- THE RECORDS RELATION (applied right after the file above, 2026-10-18 03:5xZ): the drill door requires the records
+-- to carry every column a Measure reads (`lines`), so the records are a server-only projection of ops.app_log with
+-- lines = 1. The definition's key is structured_logs: "app_log" is the raw table's registry token, and a definition
+-- keyed by a token may only override that table, so the old override platform.drill_def__app_log() is dropped by
+-- the drill-sync file that declares structured_logs.
+create view ops._app_log_lines with (security_invoker = true) as
+  select l.id, l.created_at, l.level, l.feature, l.route, l.logger_name, l.message, l.exc_type, l.request_id, l.user_id,
+         l.host_role, l.classified, 1::bigint as lines
+    from ops.app_log l;
+revoke all on ops._app_log_lines from public, anon, authenticated;
+grant select on ops._app_log_lines to service_role;
+insert into platform.entity_types (
+  token, schema_name, table_name, label, base_tier, is_versioned, has_soft_delete, is_active,
+  notes, is_listed, is_component, is_module, rls_variant, reference_pickable, audit_class,
+  audit_class_reason, relation_kind, projects_token, data_class, data_class_reason, default_list_scope,
+  origin, type, type_reason, agent_writable, allow_preview, table_ref
+) values (
+  'app_log_lines', 'ops', '_app_log_lines', 'Structured log lines', 1, false, false, true,
+  'ops.app_log one row per line; the records behind the declared drill definition structured_logs.',
+  false, false, false, 'system', false, 'machinery',
+  'Projection: a server-only view over ops.app_log that the drill door reads records from. It owns no rows.',
+  'projection', 'app_log', 'organization',
+  'System machinery with no client lane; read only through the drill door''s definer step with each lane''s rule compiled in.',
+  'organization', 'standard', 'system',
+  'Lane APPLOG-ROLLUP: the records relation of structured_logs.',
+  false, false, 'ops._app_log_lines'::regclass
+) on conflict (token) do nothing;
