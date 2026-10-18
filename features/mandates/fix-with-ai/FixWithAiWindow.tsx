@@ -13,6 +13,7 @@ import { CheckCircle2, ChevronDown, TriangleAlert } from "lucide-react";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { Badge, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
+import { AnswerValueView } from "@/components/official/structured-value/AnswerValueView";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +47,7 @@ function Block({ label, before, after }: { label: string; before: string; after:
         <Badge tone={same ? "neutral" : "info"}>{same ? "Unchanged" : "Changed"}</Badge>
       </div>
       {same ? null : (
-        <div className="grid min-w-0 gap-2 md:grid-cols-2">
+        <div className="grid min-w-0 gap-2 md:grid-cols-2" data-kind-source="explicit">
           <pre className="max-h-56 min-w-0 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/40 p-2 type-meta text-muted-foreground">
             {before || "None"}
           </pre>
@@ -163,13 +164,14 @@ export default function FixWithAiWindow({
                     </span>
                   ) : null}
                 </div>
+                {/* Answers render through the ONE answer renderer (a kind shows as its shape). */}
                 <div className="grid min-w-0 gap-2 md:grid-cols-2">
-                  <pre className="max-h-56 min-w-0 overflow-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/40 p-2 type-meta text-muted-foreground">
-                    {draft.failed_output || "No output"}
-                  </pre>
-                  <pre className="max-h-56 min-w-0 overflow-auto whitespace-pre-wrap rounded-lg border border-primary/40 bg-card p-2 type-meta text-foreground">
-                    {draft.rerun.output || draft.rerun.error || "No output"}
-                  </pre>
+                  <div className="max-h-56 min-w-0 overflow-auto rounded-lg border border-border bg-muted/40 p-2">
+                    <AnswerValueView text={draft.failed_output || "No output"} density="inline" />
+                  </div>
+                  <div className="max-h-56 min-w-0 overflow-auto rounded-lg border border-primary/40 bg-card p-2">
+                    <AnswerValueView text={draft.rerun.output || draft.rerun.error || "No output"} density="inline" />
+                  </div>
                 </div>
               </section>
             ) : null}

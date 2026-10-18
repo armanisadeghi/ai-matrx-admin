@@ -97,7 +97,12 @@ export async function latestRunOf(mandateKey: string, agentId: string | null): P
     view: "mine",
     limit: 25,
   });
-  const runs = page.rows.filter((r) => r.runKind === "conversation" && (!agentId || r.holderId === agentId));
-  const warned = runs.find((r) => r.outputWarned || r.outputMissingKeys.length > 0 || r.status === "failed");
-  return (warned ?? runs[0])?.runId ?? null;
+  // A run that kept a conversation can be re-run (a workflow run cannot): prefer this agent's
+  // runs, then the ones that warned or failed, newest first.
+  const runs = page.rows.filter((r) => r.runKind !== "workflow" && r.conversationId);
+  const warned = (r: (typeof runs)[number]) =>
+    r.outputWarned || r.outputMissingKeys.length > 0 || r.status === "failed";
+  const mine = agentId ? runs.filter((r) => r.holderId === agentId) : runs;
+  const pick = mine.find(warned) ?? mine[0] ?? runs.find(warned) ?? runs[0];
+  return pick?.conversationId ?? null;
 }
