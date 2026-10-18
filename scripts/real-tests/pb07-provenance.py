@@ -1124,7 +1124,8 @@ def _lk_call(table: List[dict], **want) -> Any:
 
 def _lookup_cases() -> list:
     def grandchild(rep):
-        table = [_lk_row("700ee1bd", None, _LK_CALLER, "2026-10-18T07:37:26+00:00", "agent", "req-a"),
+        table = [_lk_row("decoy", None, _LK_CANARY, "2026-10-18T07:37:23+00:00", "mandate:x"),  # another door's canary
+                 _lk_row("700ee1bd", None, _LK_CALLER, "2026-10-18T07:37:26+00:00", "agent", "req-a"),
                  _lk_row("41d5bdc8", "700ee1bd", _LK_CALLER, "2026-10-18T07:37:33+00:00"),
                  _lk_row("20244368", "41d5bdc8", _LK_CANARY, "2026-10-18T07:37:37+00:00")]
         got = _lk_call(table, root="700ee1bd", request_ids=("req-a",))
