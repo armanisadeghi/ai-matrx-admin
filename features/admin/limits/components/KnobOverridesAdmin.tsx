@@ -48,12 +48,13 @@ import { cn } from "@/lib/utils";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
 import { knobChoices, knobIsClosedChoice } from "@/lib/scoped-config/choices";
-import { fetchPlatformKnobOverrides } from "@/lib/scoped-config/service";
+import { fetchPlatformKnobOverrides, type PlatformKnobOverrideRow } from "@/lib/scoped-config/service";
 import type { KnobScopeKindName, ScopedKnob } from "@/lib/scoped-config/types";
 import {
   effectiveAnswer,
   knobValueWords,
-  loadAdminKnobDirectory,
+  loadAdminOrganizations,
+  loadAdminPeople,
   overrideCountWords,
   overrideTableRows,
   parseAdminDraft,
@@ -309,8 +310,12 @@ export function KnobOverridesAdmin({
   /** Called after any write so the register's counts and rows refresh. */
   onChanged: () => void;
 }) {
-  const [directory, setDirectory] = useState<AdminKnobDirectory | null>(null);
-  const [rows, setRows] = useState<OverrideTableRow[] | null>(null);
+  // The override rows show as soon as THEY arrive. Names come in two halves with very different costs:
+  // organizations (fast) and people (the full account roster, seconds) — each fills in when it lands,
+  // and a name still on its way reads "Loading name…" rather than blocking the table.
+  const [organizations, setOrganizations] = useState<AdminOrganization[] | null>(null);
+  const [people, setPeople] = useState<AdminPerson[] | null>(null);
+  const [raw, setRaw] = useState<PlatformKnobOverrideRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
   const [busyRow, setBusyRow] = useState<string | null>(null);
@@ -331,31 +336,35 @@ export function KnobOverridesAdmin({
 
   useEffect(() => {
     let current = true;
-    void Promise.all([loadAdminKnobDirectory(), fetchPlatformKnobOverrides({ feature: knob.feature, key: knob.key })]).then(
-      ([dir, raw]) => {
-        if (!current) return;
-        setDirectory(dir);
-        setRows(overrideTableRows(knob, raw, dir));
-        setError(null);
-      },
-      (cause: unknown) => {
-        if (current) setError(extractErrorMessage(cause));
-      },
-    );
+    const fail = (cause: unknown) => {
+      if (current) setError(extractErrorMessage(cause));
+    };
+    void fetchPlatformKnobOverrides({ feature: knob.feature, key: knob.key }).then((next) => {
+      if (!current) return;
+      setRaw(next);
+      setError(null);
+    }, fail);
+    void loadAdminOrganizations().then((next) => current && setOrganizations(next), fail);
+    void loadAdminPeople().then((next) => current && setPeople(next), fail);
     return () => {
       current = false;
     };
   }, [knob, reload]);
 
+  const directory: AdminKnobDirectory = { organizations: organizations ?? [], people: people ?? [] };
+  const rows = raw
+    ? overrideTableRows(knob, raw, directory, { organizations: organizations === null, people: people === null })
+    : null;
+
   useEffect(() => {
-    if (!probeOrg || !directory) return;
+    if (!probeOrg || !organizations) return;
     let current = true;
     setProbe({ answer: null, error: null, loading: true });
     void resolveKnobFor({ knob, organizationId: probeOrg, userId: probePerson }).then(
       (resolved) => {
         if (!current) return;
-        const org = directory.organizations.find((item) => item.id === probeOrg);
-        const person = probePerson ? directory.people.find((item) => item.id === probePerson) ?? null : null;
+        const org = organizations.find((item) => item.id === probeOrg);
+        const person = probePerson ? people?.find((item) => item.id === probePerson) ?? null : null;
         setProbe({ answer: effectiveAnswer(resolved, { organizationName: org?.name ?? "this organization", person }), error: null, loading: false });
       },
       (cause: unknown) => {
@@ -365,7 +374,7 @@ export function KnobOverridesAdmin({
     return () => {
       current = false;
     };
-  }, [knob, probeOrg, probePerson, directory, reload]);
+  }, [knob, probeOrg, probePerson, organizations, people, reload]);
 
   const afterWrite = () => {
     setReload((value) => value + 1);
@@ -402,7 +411,7 @@ export function KnobOverridesAdmin({
   };
 
   const add = async () => {
-    if (!directory || !addOrg || addValue === undefined) return;
+    if (!addOrg || addValue === undefined) return;
     if (addKind === "user" && !addPerson) return;
     const scopeId = addKind === "user" ? addPerson! : addOrg;
     const who =
@@ -426,7 +435,7 @@ export function KnobOverridesAdmin({
       </p>
     );
   }
-  if (!rows || !directory) {
+  if (!rows) {
     return (
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Loader2 className="h-3 w-3 animate-spin" /> Reading every override for {knob.full_key}…
@@ -515,18 +524,19 @@ export function KnobOverridesAdmin({
           />
           <NamePicker
             ariaLabel="Organization for the new override"
-            placeholder={`Organization (${orgChoices.length})…`}
+            placeholder={organizations === null ? "Loading organizations…" : `Organization (${orgChoices.length})…`}
             options={orgChoices}
             value={addOrg}
+            disabled={organizations === null}
             onChange={(id) => { setAddOrg(id); setAddPerson(null); }}
           />
           {addKind === "user" ? (
             <NamePicker
               ariaLabel="Person for the new override"
-              placeholder={addOrg ? `Person in it (${membersOf(directory, addOrg).length})…` : "Pick the organization first"}
+              placeholder={people === null ? "Loading people…" : addOrg ? `Person in it (${membersOf(directory, addOrg).length})…` : "Pick the organization first"}
               options={peopleOptions(membersOf(directory, addOrg))}
               value={addPerson}
-              disabled={!addOrg}
+              disabled={!addOrg || people === null}
               onChange={setAddPerson}
             />
           ) : (
@@ -549,8 +559,8 @@ export function KnobOverridesAdmin({
 
       <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-2">
         <span className="text-muted-foreground">What does someone get?</span>
-        <div className="w-56"><NamePicker ariaLabel="Organization to check" placeholder="Organization…" options={orgChoices} value={probeOrg} onChange={(id) => { setProbeOrg(id); setProbePerson(null); }} /></div>
-        <div className="w-56"><NamePicker ariaLabel="Person to check" placeholder={probeOrg ? "Any person in it (optional)…" : "Pick the organization first"} options={peopleOptions(membersOf(directory, probeOrg))} value={probePerson} disabled={!probeOrg} onChange={setProbePerson} /></div>
+        <div className="w-56"><NamePicker ariaLabel="Organization to check" placeholder={organizations === null ? "Loading organizations…" : "Organization…"} options={orgChoices} value={probeOrg} disabled={organizations === null} onChange={(id) => { setProbeOrg(id); setProbePerson(null); }} /></div>
+        <div className="w-56"><NamePicker ariaLabel="Person to check" placeholder={people === null && probeOrg ? "Loading people…" : probeOrg ? "Any person in it (optional)…" : "Pick the organization first"} options={peopleOptions(membersOf(directory, probeOrg))} value={probePerson} disabled={!probeOrg || people === null} onChange={setProbePerson} /></div>
         {probe.loading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
         {probe.answer && (
           <span data-testid="knob-effective-answer">

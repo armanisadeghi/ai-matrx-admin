@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Plus, Swords } from "lucide-react";
 import { Badge, EmptyState } from "@ai-matrx/design-system/controls";
-import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
+import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatAbsoluteDate } from "@ai-matrx/kit/format";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { formatOf } from "../derive";
@@ -31,16 +32,18 @@ const COLUMNS: MatrxColumnDef<BattleView>[] = [
     cell: (b) => <span className="font-medium">{b.blind ? "Blind battle" : b.title}</span>,
   },
   { accessorKey: "jobKey", header: "Job", className: "text-muted-foreground" },
-  { id: "sources", header: "Sources", accessorFn: (b) => b.lanes.length, className: "tabular-nums" },
-  { id: "subjects", header: "Subjects", accessorFn: (b) => b.subjects.length, className: "tabular-nums" },
+  { id: "sources", header: "Sources", accessorFn: (b) => b.lanes.length, format: { id: "integer" }, className: "tabular-nums" },
+  { id: "subjects", header: "Subjects", accessorFn: (b) => b.subjects.length, format: { id: "integer" }, className: "tabular-nums" },
   { id: "best", header: "Best", accessorFn: best, cell: (b) => best(b) || "—", className: "tabular-nums text-muted-foreground" },
-  { id: "status", header: "Status", accessorFn: (b) => LABEL[b.status], cell: (b) => <Badge tone={TONE[b.status]}>{LABEL[b.status]}</Badge> },
+  { id: "status", header: "Status", format: { id: "choice" }, accessorFn: (b) => LABEL[b.status], cell: (b) => <Badge tone={TONE[b.status]}>{LABEL[b.status]}</Badge> },
   {
     id: "started",
     header: "Started",
     defaultSortDirection: "desc",
+    format: { id: "datetime" },
     sortValue: (b) => b.startedAt ?? b.createdAt,
-    accessorFn: (b) => formatAbsoluteDate(b.startedAt ?? b.createdAt, { dateStyle: "medium", timeStyle: "short" }),
+    accessorFn: (b) => b.startedAt ?? b.createdAt,
+    cell: (b) => formatAbsoluteDate(b.startedAt ?? b.createdAt, { dateStyle: "medium", timeStyle: "short" }),
     className: "text-muted-foreground",
   },
 ];
@@ -64,8 +67,10 @@ export function ToolBattleListPage() {
         record={{ name: "Tool Battle" }}
         actions={[{ label: "New battle", icon: Plus, href: `${BATTLE_HOME}/new`, primary: true, showLabel: true }]}
       />
-      <div className="h-full min-h-0 overflow-y-auto px-[var(--matrx-page-gutter)] pb-8 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
-        <LiteTable
+      <div className="h-full min-h-0 px-[var(--matrx-page-gutter)] pb-8 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
+        <MatrxDataTable
+          urlState={{ id: "tool-battles", defaultSort: { id: "started", direction: "desc" } }}
+          toolbar={{ search: true, searchPlaceholder: "Search battles…" }}
           data={read.state === "ready" ? read.battles : []}
           columns={COLUMNS}
           getRowId={(b) => b.id}
@@ -76,7 +81,6 @@ export function ToolBattleListPage() {
             what: "battles",
           }}
           emptyState={<EmptyState icon={<Swords />} title="No battles yet" />}
-          ariaLabel="Battles"
         />
       </div>
     </>

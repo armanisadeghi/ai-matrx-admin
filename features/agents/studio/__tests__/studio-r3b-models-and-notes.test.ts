@@ -1,4 +1,4 @@
-import { isDebriefModel, debriefModelIds } from "../debrief-models";
+import { isDebriefModel, debriefModelIds, curatedDebriefModelIds, type DebriefModelRow } from "../debrief-models";
 import { describeVersionNote, SYSTEM_NOTE_LABEL } from "../version-notes";
 
 const ok = { contextWindow: 200_000, interaction: "turn", input: ["text", "image"], output: ["text"] };
@@ -46,8 +46,54 @@ describe("Versions notes are for people", () => {
 describe("wiring", () => {
   it("StudioControls uses both helpers", () => {
     const c = require("fs").readFileSync(require("path").join(__dirname, "../components/StudioControls.tsx"), "utf8");
-    expect(c).toContain("allowedModelIds={debriefIds.length > 0 ? debriefIds : undefined}");
+    expect(c).toContain("allowedModelIds={menuIds.length > 0 ? menuIds : undefined}");
+    expect(c).toContain("studio-debrief-more-models");
     expect(c).toContain("describeVersionNote(r.change_note");
     expect(c).toContain("m.common_name ?? m.name");
+  });
+});
+
+describe("Debrief opens on a short curated list, rule-based from the catalog", () => {
+  const m = (name: string, maker: string, costRating: number | null, releaseDate: string | null, isPrimary = false, isPremium = false): DebriefModelRow => ({
+    id: name, name, maker, costRating, releaseDate, isPrimary, isPremium, ...ok,
+  });
+  const catalog: DebriefModelRow[] = [
+    m("Claude Haiku 5.5", "Anthropic", 1, "2026-10-07", true),
+    m("Claude Sonnet 5.5", "Anthropic", 5, "2026-09-28", true),
+    m("Claude Sonnet 5.5 Max", "Anthropic", 6, "2026-09-28", false, true),
+    m("Claude Opus 5.5", "Anthropic", 4, "2026-09-22", true, true),
+    m("Claude Fable 5.1", "Anthropic", 6, "2026-08-28", true, true),
+    m("GPT-6.1 Sol", "OpenAI", 4, "2026-09-27", false, true),
+    m("GPT-5.6 Terra", "OpenAI", 5, "2026-07-09"),
+    m("GPT-6 Astra", "OpenAI", 6, "2026-08-27", true, true),
+    m("GPT 5 Mini", "OpenAI", 3, null, true),
+    m("GPT OSS 120B", "OpenAI", 2, null, true),
+    m("Gemini 4 Argon", "Google", 5, "2026-10-13", true, true),
+    m("Gemini Pro Latest", "Google", 4, null, true, true),
+    m("Gemini Robotics ER 2", "Google", 4, "2026-07-30"),
+    m("Gemini Deep Research Max", "Google", 6, "2026-04-01", false, true),
+    m("Gemma 4 31B", "Google", null, null),
+    m("Llama 4 Scout 17B", "Meta", null, null),
+  ];
+  const names = (ids: string[]) => new Set(ids);
+  it("keeps the strongest per maker and their top band, and drops small, specialist and unrated models", () => {
+    const picked = names(curatedDebriefModelIds(catalog));
+    for (const n of ["Claude Sonnet 5.5", "Claude Opus 5.5", "Claude Fable 5.1", "GPT-6.1 Sol", "GPT-5.6 Terra", "GPT-6 Astra", "Gemini 4 Argon", "Gemini Pro Latest"]) {
+      expect(picked.has(n)).toBe(true);
+    }
+    for (const n of ["Claude Haiku 5.5", "Claude Sonnet 5.5 Max", "GPT 5 Mini", "GPT OSS 120B", "Gemini Robotics ER 2", "Gemini Deep Research Max", "Gemma 4 31B", "Llama 4 Scout 17B"]) {
+      expect(picked.has(n)).toBe(false);
+    }
+  });
+  it("is short, and a subset of what Debrief may read with", () => {
+    const curated = curatedDebriefModelIds(catalog);
+    expect(curated.length).toBeLessThan(debriefModelIds(catalog).length);
+    expect(curated.every((id) => debriefModelIds(catalog).includes(id))).toBe(true);
+  });
+  it("follows the catalog: a newer rated model takes the place, no ids are named", () => {
+    const next = [...catalog, m("Claude Opus 6", "Anthropic", 5, "2026-11-01", true, true)];
+    expect(names(curatedDebriefModelIds(next)).has("Claude Opus 6")).toBe(true);
+    const src = require("fs").readFileSync(require("path").join(__dirname, "../debrief-models.ts"), "utf8");
+    expect(src).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-/);
   });
 });
