@@ -34,6 +34,7 @@ import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { setTopTierAccess } from "@/features/ai-models/topTierAccess";
 import { sendDirectMessage } from "../service/coupons";
 import { feedbackDmKey } from "../lib/userResearch";
+import { invalidateAdminRoster } from "../adminRoster";
 
 /** What an action needs to know about the person it acts on. `AdminUserRow` satisfies it. */
 export interface UserActionSubject {
@@ -112,6 +113,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
       body: JSON.stringify({ userId: subject.id, ...body }),
     });
     if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
+    invalidateAdminRoster();
   };
 
   const toggleOnboarding = async (subject: UserActionSubject) => {
@@ -155,6 +157,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
     }
     try {
       await setTopTierAccess(subject.id, next);
+      invalidateAdminRoster();
       onPatched?.(subject.id, { top_tier_models: next });
       toast.success(next ? `Top-tier models on for ${who}` : `Top-tier models off for ${who}`);
     } catch (e) {
@@ -198,6 +201,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
         toast.error(error.message);
         return;
       }
+      invalidateAdminRoster();
       onPatched?.(reopenTarget.id, { banned: false });
       toast.success(`Reopened ${who}`);
       setReopenTarget(null);
@@ -218,6 +222,7 @@ export function useUserActions({ onPatched }: UseUserActionsOptions = {}) {
         toast.error(error.message);
         return;
       }
+      invalidateAdminRoster();
       onPatched?.(closeTarget.id, { banned: true });
       toast.success(`Closed ${who}`);
       setCloseTarget(null);

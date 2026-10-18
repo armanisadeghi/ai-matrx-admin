@@ -37,7 +37,8 @@ import { UserHistoryTab } from "./UserHistoryTab";
 import {
   USERS_HUB_PATH,
   isVisibleUserTab,
-  userActionDef,
+  userActionDisabled,
+  userActionLabel,
   userActions,
   userRecordHref,
   visibleUserTabs,
@@ -95,7 +96,6 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
 
   const subject = overview ? actionSubjectOf(overview) : null;
   const label = title ?? "this person";
-  const contactable = Boolean(subject?.email) && !subject?.is_anonymous;
 
   const run = (id: UserActionId) => {
     if (!subject || !overview) return;
@@ -151,33 +151,15 @@ export function UserRecordPage({ userId, tab }: { userId: string; tab?: string }
     }
   };
 
-  /** The label an action shows for this person's current state, or null to leave it out. */
-  const labelFor = (id: UserActionId): string | null => {
-    if (!subject) return null;
-    switch (id) {
-      case "mcp_access":
-        return subject.admin_level ? null : subject.mcp_full_access ? "Revoke full MCP access" : "Grant full MCP access";
-      case "top_tier":
-        return subject.top_tier_models ? "Turn off top-tier models" : "Allow top-tier models";
-      case "onboarded":
-        return subject.onboarding_completed ? "Mark as new" : "Mark as onboarded";
-      case "close":
-        return subject.banned ? null : "Close account…";
-      case "reopen":
-        return subject.banned && !subject.erased ? "Reopen account" : null;
-      default:
-        return userActionDef(id).label;
-    }
-  };
-
-  const disabledFor = (id: UserActionId): boolean => {
-    if (!subject) return true;
-    if (id === "support_session" || id === "magic_link" || id === "password_reset" || id === "email") return !contactable;
-    if (id === "message" || id === "change_plan" || id === "free_months" || id === "tutorial" || id === "top_tier") return subject.is_anonymous;
-    if (id === "close") return actions.closeBlockedReason(subject) !== null;
-    if (id === "sign_out_everywhere") return subject.id === actions.myId;
-    return false;
-  };
+  // Label and disabled rules live in the registry (userSurfaces.ts) so the page, the chip menu
+  // and the Accounts "Manage" menu never disagree.
+  const labelFor = (id: UserActionId): string | null => (subject ? userActionLabel(id, subject) : null);
+  const disabledFor = (id: UserActionId): boolean =>
+    !subject ||
+    userActionDisabled(id, subject, {
+      myId: actions.myId,
+      closeBlocked: actions.closeBlockedReason(subject) !== null,
+    });
 
   const headerActions: RecordPageAction[] = subject
     ? userActions("header").map((def) => ({
