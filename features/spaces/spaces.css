@@ -527,6 +527,13 @@
   border-radius: 6px;
   color: var(--spaces-ink);
 }
+/* One bar at every width (SPACES-REDRAW): the phone's sidebar button and the wide screen's are both drawn; the
+   width shows one, so the first paint already has the right one and nothing is added after hydration. */
+.spaces-topbar-button[data-width="phone"] { display: none; }
+@media (max-width: 767px) {
+  .spaces-topbar-button[data-width="phone"] { display: inline-flex; }
+  .spaces-topbar-button[data-width="wide"] { display: none; }
+}
 .spaces-topbar-button:hover,
 .spaces-topbar-text-button:hover,
 .spaces-breadcrumb-item:hover {
