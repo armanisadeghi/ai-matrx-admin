@@ -199,6 +199,12 @@ export function OrgManage({
       show: canManageSettings,
     },
     {
+      id: "system-context",
+      label: "System context",
+      icon: SlidersHorizontal,
+      show: true,
+    },
+    {
       id: "dictionary",
       label: "Dictionary",
       icon: BookA,
@@ -699,6 +705,22 @@ export function OrgManage({
               </div>
             </SectionCard>
           )}
+
+          {/* System context — this organization's own value for a curated System item */}
+          <SectionCard
+            id="system-context"
+            icon={SlidersHorizontal}
+            title="System context"
+          >
+            <div className="flex justify-end">
+              <Button asChild variant="outline">
+                <Link href={`/organizations/${slug}/settings/system-context`}>
+                  Open system context
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </SectionCard>
 
           {/* Custom Dictionary — org-wide terminology + pronunciation */}
           {canManageSettings && (

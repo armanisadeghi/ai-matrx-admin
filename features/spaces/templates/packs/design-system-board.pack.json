@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0363",
-  "version": 3,
-  "title": "Design system board",
-  "description": "Colours, type, spacing, corners and shadows as editable sections of one board.",
+  "version": 4,
+  "title": "Design Tokens Board",
+  "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
   "icon": {
     "icon": "Palette"
@@ -15,7 +15,8 @@
     "tokens",
     "colors",
     "typography",
-    "board"
+    "board",
+    "ui"
   ],
   "spec": {
     "specVersion": 1,
@@ -923,7 +924,7 @@
         "Quillan Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [],
   "board": {

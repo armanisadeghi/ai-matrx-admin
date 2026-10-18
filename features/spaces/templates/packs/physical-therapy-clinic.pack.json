@@ -124,11 +124,11 @@
               "Lost"
             ],
             "choiceColors": {
+              "Lost": "red",
               "New": "blue",
-              "Contacted": "green",
-              "Intake sent": "amber",
-              "Scheduled": "violet",
-              "Lost": "teal"
+              "Contacted": "amber",
+              "Intake sent": "violet",
+              "Scheduled": "green"
             },
             "statusGroups": {
               "New": "todo",
@@ -453,9 +453,9 @@
             ],
             "choiceColors": {
               "Evaluation booked": "blue",
-              "Active": "green",
-              "Recert due": "amber",
-              "Discharged": "violet"
+              "Active": "amber",
+              "Recert due": "violet",
+              "Discharged": "green"
             },
             "statusGroups": {
               "Evaluation booked": "todo",
@@ -868,11 +868,11 @@
               "Cancelled"
             ],
             "choiceColors": {
+              "No-show": "red",
+              "Cancelled": "orange",
               "Scheduled": "blue",
-              "Checked in": "green",
-              "Completed": "amber",
-              "No-show": "violet",
-              "Cancelled": "teal"
+              "Checked in": "amber",
+              "Completed": "green"
             },
             "statusGroups": {
               "Scheduled": "todo",

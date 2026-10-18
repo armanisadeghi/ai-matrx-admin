@@ -20,10 +20,30 @@ import type { AppDispatch } from "@/lib/redux/store";
 import { errorSentence, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 
-import type { SpaceDoc, SpaceId, SpacesStore } from "../contract";
+import type { SpaceBlock, SpaceDoc, SpaceId, SpacesStore } from "../contract";
+import type { PaintedSize } from "../editor/database-host";
 import { runHostSteps, upgradeCountsText } from "../data/install-host";
 import { registerSampleWorld } from "../data/sources";
 import { saveOnCurrent } from "../store/save-on-current";
+
+/**
+ * WHERE "USE TEMPLATE" SPENDS ITS TIME: each phase is a `performance.measure` named `spaces:use-template:<phase>`
+ * (read them with `performance.getEntriesByType("measure")`), so a slow run is measured, never guessed.
+ */
+export async function timed<T>(phase: string, work: () => Promise<T>): Promise<T> {
+  const t0 = typeof performance === "undefined" ? 0 : performance.now();
+  try {
+    return await work();
+  } finally {
+    if (typeof performance !== "undefined" && typeof performance.measure === "function") {
+      try {
+        performance.measure(`spaces:use-template:${phase}`, { start: t0, end: performance.now() });
+      } catch {
+        // A measure the browser refuses (old engine) is not a failure of the run.
+      }
+    }
+  }
+}
 
 /** One card of `custom.space_templates`. */
 export interface SpaceTemplateCard {
@@ -116,12 +136,43 @@ export function previewTables(t: SpaceTemplateFull): Record<string, ResolvedTabl
 export function previewPages(t: SpaceTemplateFull): Array<{ key: string; title: string; doc: Pick<SpaceDoc, "title" | "icon" | "cover" | "blocks" | "settings"> }> {
   const tables = previewTables(t);
   const pages = Object.fromEntries(t.pack.pages.map((p) => [p.key, `preview-${p.key}`]));
-  let n = 0;
-  return packPagesInOrder(t.pack.pages).map((p) => ({
-    key: p.key,
-    title: p.title,
-    doc: { title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, settings: packPageSettings(p), blocks: resolvePackBlocks(p.blocks, { tables, pages, newId: () => `preview-${p.key}-${++n}` }) },
-  }));
+  return packPagesInOrder(t.pack.pages).map((p) => {
+    // The k-th id of each page is `preview-<key>-<k>`: the made page's k-th block is the same block (PreviewSizes).
+    let n = 0;
+    return {
+      key: p.key,
+      title: p.title,
+      doc: { title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, settings: packPageSettings(p), blocks: resolvePackBlocks(p.blocks, { tables, pages, newId: () => previewBlockId(p.key, ++n) }) },
+    };
+  });
+}
+
+/** The preview id of a page's k-th block (1-based, in resolvePackBlocks order). */
+export const previewBlockId = (pageKey: string, k: number) => `preview-${pageKey}-${k}`;
+
+/**
+ * The sizes a template page's database blocks were drawn at in the gallery preview, by the block's place k
+ * (previewBlockId): the made page's blocks hold them from the first frame (`paintedSize`, marked `any`), so the
+ * page opened by "Use template" does not move when its rows arrive (ADVERSARIAL-1 #2).
+ */
+export interface PreviewSizes {
+  page: string;
+  vw: number;
+  blocks: Record<number, { w: number; h: number }>;
+}
+
+/** The made page's blocks with the preview's sizes on its database blocks; `ids` = the fresh ids in newId order. */
+export function withPreviewSizes(blocks: SpaceBlock[], ids: string[], sizes: PreviewSizes): SpaceBlock[] {
+  const place = new Map(ids.map((id, i) => [id, i + 1]));
+  const walk = (list: SpaceBlock[]): SpaceBlock[] =>
+    list.map((b) => {
+      const size = b.type === "database" ? sizes.blocks[place.get(b.id) ?? 0] : undefined;
+      const children = b.children?.length ? walk(b.children) : b.children;
+      if (!size) return children === b.children ? b : { ...b, children };
+      const painted: PaintedSize = { w: size.w, h: size.h, vw: sizes.vw, nr: 1, any: 1 };
+      return { ...b, props: { ...b.props, paintedSize: [painted] }, ...(children ? { children } : {}) };
+    });
+  return walk(blocks);
 }
 
 /** The installed tables an install answer made, by spec token (tables, shared blocks) with their views. Throws, by name, on a missing table. */
@@ -168,7 +219,7 @@ async function withInstalledKeys(tables: Record<string, ResolvedTable>, spec: Te
 export async function installTemplateTables(t: SpaceTemplateFull, organizationId: string, dispatch: AppDispatch, onStage?: (stage: string) => void): Promise<Record<string, ResolvedTable>> {
   const client = createClient();
   onStage?.("Making tables…");
-  const done = await runTemplateDoor(supabaseDataSource(client), "template_install", organizationId, t.id, { maxCalls: 400 });
+  const done = await timed("install-door", () => runTemplateDoor(supabaseDataSource(client), "template_install", organizationId, t.id, { maxCalls: 400 }));
   if (!done.ok || !done.answer?.done) {
     const refusal = done.answer?.refusal as { message?: string } | null | undefined;
     throw new Error(`The template's tables were not made: ${refusal?.message ?? done.error?.message ?? "the install stopped before it finished."}`);
@@ -185,9 +236,9 @@ export async function installTemplateTables(t: SpaceTemplateFull, organizationId
     if (up.answer.upgraded !== false) toast.success(`Tables upgraded to version ${up.answer.version ?? hint.to_version}: ${upgradeCountsText(up.answer.counts)}.`);
     answer = up.answer;
   }
-  const tables = await withInstalledKeys(tablesFrom(answer, t.spec), t.spec, organizationId);
+  const tables = await timed("field-keys", () => withInstalledKeys(tablesFrom(answer, t.spec), t.spec, organizationId));
   onStage?.("Adding the assistant…");
-  await runHostSteps(answer, organizationId, dispatch, "The template's assistant");
+  await timed("host-steps", () => runHostSteps(answer, organizationId, dispatch, "The template's assistant"));
   return tables;
 }
 
@@ -214,20 +265,32 @@ export function packRunJournal(organizationId: string, templateId: string): Pack
 
 const reasonOf = (err: unknown) => (err instanceof Error && err.message ? err.message : errorSentence(err));
 
+/** What makeTemplatePages can also do: hold preview sizes, and say the moment the root is ready to open. */
+export interface MakePagesOptions {
+  sizes?: PreviewSizes | null;
+  /** Called once the root page holds its finished content — before the sub-pages are written. */
+  onRootReady?: (root: SpaceDoc) => void;
+}
+
 /**
  * Makes the template's pages in `organizationId`: the root at the top level (through `createRoot`), every
  * sub-page under its parent in order, then each page's content with the tokens swapped for the made
  * tables and pages (each write lands on the page's current version). Answers the root.
- * ALL OR NOTHING: a failure part-way moves the pages already made to Trash (the root takes its sub-pages)
- * and throws the reason; an earlier run that never finished (closed tab, reload) is moved to Trash first.
+ * FAST (ADVERSARIAL-1 #2): the page tree is made WHILE the tables install (`tables` may be a promise; only the
+ * content needs them); sub-pages under different parents are made at once (siblings in order); the root's
+ * content is written first and `onRootReady` opens it while the sub-pages are filled six at a time.
+ * ALL OR NOTHING: a failure part-way (the tables' install included) moves the pages already made to Trash
+ * (the root takes its sub-pages) and throws the reason; an earlier run that never finished (closed tab,
+ * reload) is moved to Trash first.
  */
 export async function makeTemplatePages(
   store: SpacesStore,
   createRoot: (title: string) => Promise<SpaceDoc>,
   t: SpaceTemplateFull,
-  tables: Record<string, ResolvedTable>,
+  tables: Record<string, ResolvedTable> | Promise<Record<string, ResolvedTable>>,
   onProgress?: (done: number, total: number) => void,
   journal?: PackRunJournal,
+  options: MakePagesOptions = {},
 ): Promise<SpaceDoc> {
   const unfinished = journal?.read();
   if (unfinished) {
@@ -242,7 +305,7 @@ export async function makeTemplatePages(
   const root = await createRoot(ordered[0].title);
   journal?.write(root.id);
   try {
-    const made = await fillTemplatePages(store, root, ordered, tables, onProgress);
+    const made = await fillTemplatePages(store, root, ordered, Promise.resolve(tables), onProgress, options);
     journal?.write(null);
     return made;
   } catch (err) {
@@ -261,37 +324,72 @@ export async function makeTemplatePages(
   }
 }
 
+/** Makes every sub-page under its parent: parents in parallel, each parent's children in their order. */
+async function makePageTree(store: SpacesStore, root: SpaceDoc, ordered: ReturnType<typeof packPagesInOrder>, onMade: () => void): Promise<Record<string, SpaceId>> {
+  const ids: Record<string, SpaceId> = { [ordered[0].key]: root.id };
+  const childrenOf = new Map<string, typeof ordered>();
+  for (const p of ordered.slice(1)) {
+    const parent = p.parent ?? ordered[0].key;
+    childrenOf.set(parent, [...(childrenOf.get(parent) ?? []), p]);
+  }
+  const under = async (parentKey: string): Promise<void> => {
+    let after: SpaceId | undefined;
+    const kids = childrenOf.get(parentKey) ?? [];
+    for (const p of kids) {
+      const made = await store.create({ parentId: ids[parentKey], title: p.title, afterId: after });
+      ids[p.key] = made.id;
+      after = made.id;
+      onMade();
+    }
+    await Promise.all(kids.map((p) => under(p.key)));
+  };
+  await under(ordered[0].key);
+  return ids;
+}
+
 async function fillTemplatePages(
   store: SpacesStore,
   root: SpaceDoc,
   ordered: ReturnType<typeof packPagesInOrder>,
-  tables: Record<string, ResolvedTable>,
-  onProgress?: (done: number, total: number) => void,
+  tablesReady: Promise<Record<string, ResolvedTable>>,
+  onProgress: ((done: number, total: number) => void) | undefined,
+  options: MakePagesOptions,
 ): Promise<SpaceDoc> {
-  const ids: Record<string, SpaceId> = {};
-  const lastChild = new Map<string, SpaceId>();
-  ids[ordered[0].key] = root.id;
-  onProgress?.(1, ordered.length);
-  for (const [i, p] of ordered.slice(1).entries()) {
-    const parent = ids[p.parent ?? ordered[0].key];
-    const made = await store.create({ parentId: parent, title: p.title, afterId: lastChild.get(parent) });
-    ids[p.key] = made.id;
-    lastChild.set(parent, made.id);
-    onProgress?.(i + 2, ordered.length);
-  }
-  const newId = () => crypto.randomUUID();
-  const write = (p: (typeof ordered)[number]) =>
-    saveOnCurrent(store, ids[p.key], (cur) => ({
+  // Both the tree and the content count: 2 steps a sub-page, 1 for the root's content.
+  const total = ordered.length * 2 - 1;
+  let done = 0;
+  const step = () => onProgress?.(++done, total);
+  // The tree is made while the tables install; a failed install still waits for the tree, so Trash takes it all.
+  const [treeResult, tablesResult] = await Promise.allSettled([timed("page-tree", () => makePageTree(store, root, ordered, step)), tablesReady]);
+  if (treeResult.status === "rejected") throw treeResult.reason;
+  if (tablesResult.status === "rejected") throw tablesResult.reason;
+  const ids = treeResult.value;
+  const tables = tablesResult.value;
+  const write = (p: (typeof ordered)[number]) => {
+    const fresh: string[] = [];
+    const newId = () => {
+      const id = crypto.randomUUID();
+      fresh.push(id);
+      return id;
+    };
+    const resolved = resolvePackBlocks(p.blocks, { tables, pages: ids, newId });
+    const blocks = options.sizes?.page === p.key ? withPreviewSizes(resolved, fresh, options.sizes) : resolved;
+    return saveOnCurrent(store, ids[p.key], (cur) => ({
       ...cur,
       title: p.title,
       icon: p.icon ?? null,
       cover: p.cover ?? null,
       settings: packPageSettings(p),
       ...(p.properties ? { properties: p.properties } : {}),
-      blocks: resolvePackBlocks(p.blocks, { tables, pages: ids, newId }),
-    }));
-  // Sub-pages first, six at a time; the root last, so an early open of the root shows the finished page.
-  const kids = ordered.slice(1);
-  for (let i = 0; i < kids.length; i += 6) await Promise.all(kids.slice(i, i + 6).map(write));
-  return write(ordered[0]);
+      blocks,
+    })).then((doc) => (step(), doc));
+  };
+  return timed("page-content", async () => {
+    // The root first: it opens finished while its sub-pages are written behind it.
+    const madeRoot = await write(ordered[0]);
+    options.onRootReady?.(madeRoot);
+    const kids = ordered.slice(1);
+    for (let i = 0; i < kids.length; i += 6) await Promise.all(kids.slice(i, i + 6).map(write));
+    return madeRoot;
+  });
 }

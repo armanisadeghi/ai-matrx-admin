@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0002",
-  "version": 3,
+  "version": 4,
   "title": "Projects & Tasks",
-  "description": "Projects, tasks, owners and due dates on a board, a calendar and a timeline.",
+  "description": "Small teams: run projects and tasks on a board, calendar and timeline.",
   "forWho": "Small teams running client or internal projects",
   "icon": {
     "emoji": "🗂️"
@@ -17,6 +17,7 @@
     "projects",
     "tasks",
     "kanban",
+    "to do",
     "timeline",
     "team"
   ],
@@ -1511,7 +1512,7 @@
         "Quillmoss Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

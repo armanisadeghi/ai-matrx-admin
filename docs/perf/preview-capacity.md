@@ -94,6 +94,9 @@ watched memory across the whole machine, so nothing slowed new work as memory ra
 
 ## Still open (outside this change)
 
+Items 1 and 4 are answered by the machine guard (2026-10-17, [machine-guard.md](./machine-guard.md));
+item 3 is measured there and needs a ruling.
+
 1. **Nothing watches the runaway jobs that dominate every jetsam event.** These are single
    node/Python processes at 28–112 GB outside the preview: local builds and batch jobs. The new
    memory reading would let a machine-wide sentinel name the top runaway and stop it. That needs an

@@ -17,6 +17,30 @@ import { readRecordsAnswer, type RecordsAnswer } from "./readRecordsAnswer";
 
 const RecordsAnswerBody = lazyToolRenderer("RecordsAnswerBody");
 const RefusalLine = lazyToolRenderer("RefusalLine");
+const BackgroundRunCard = lazyToolRenderer("BackgroundRunCard");
+
+/**
+ * The `workflow_run` tool's `run` answer for a run that outlived the call (`background: true`, the
+ * server's `run_end_wake` stamp): the live card, by the run id. Every other answer (a run that
+ * settled inside the wait, status, cancel) keeps the tool's existing body.
+ */
+export function workflowRunRunId(entry: ToolRendererProps["entry"]): string | null {
+  if (entry.status === "error") return null;
+  const result = resultAsObject(entry);
+  const output = result && typeof result.output === "object" && result.output ? (result.output as Record<string, unknown>) : result;
+  const runId = output?.run_id;
+  return output?.background === true && typeof runId === "string" && runId ? runId : null;
+}
+
+export function workflowRunRenderer(Fallback: ComponentType<ToolRendererProps>) {
+  function WorkflowRunAnswer(props: ToolRendererProps) {
+    const runId = workflowRunRunId(props.entry);
+    if (!runId) return <Fallback {...props} />;
+    return <BackgroundRunCard runId={runId} hint="workflow" name={null} />;
+  }
+  WorkflowRunAnswer.displayName = `WorkflowRunAnswer(${Fallback.displayName ?? Fallback.name ?? "Renderer"})`;
+  return WorkflowRunAnswer;
+}
 
 export function answerRenderer(Fallback: ComponentType<ToolRendererProps>) {
   function DataToolAnswer(props: ToolRendererProps) {

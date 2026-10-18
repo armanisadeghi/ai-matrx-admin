@@ -15,7 +15,7 @@
 
 import type { SurfaceClientTool } from "@ai-matrx/chat/surfaces/types";
 
-export const BOARD_TILE_KINDS = ["note", "markdown", "text", "html", "image"] as const;
+export const BOARD_TILE_KINDS = ["note", "markdown", "text", "html", "image", "cover"] as const;
 export type BoardTileKindInput = (typeof BOARD_TILE_KINDS)[number];
 
 /**
@@ -97,14 +97,15 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
     name: "board_add_tile",
     label: "Add tile",
     description:
-      "Adds a tile to the board. Kinds: `note` (a real Note saved in the person's Notes, editable and commentable — use for thoughts, summaries, to-dos), `markdown` (rendered markdown: headings, lists, tables, code — use for reports and structured write-ups), `text` (plain text right on the canvas, no box — a heading or caption; it is a canvas object, edited and styled with board_shape), `html` (a self-contained HTML page you wrote, shown sandboxed — use for visual explainers, mockups, charts), `image` (an image by URL). Placement: give `x`/`y` for an exact spot, or `near_tile_id` to place it beside that tile, or nothing to land in the nearest free space to what the person is looking at. Tiles never land on top of each other. Returns the new tile's id and rect. Not every board supports every kind; the result says so if not.",
+      "Adds a tile to the board. Kinds: `note` (a real Note saved in the person's Notes, editable and commentable — use for thoughts, summaries, to-dos), `markdown` (rendered markdown: headings, lists, tables, code — use for reports and structured write-ups), `text` (plain text right on the canvas, no box — a heading or caption; it is a canvas object, edited and styled with board_shape), `html` (a self-contained HTML page you wrote, shown sandboxed — use for visual explainers, mockups, charts), `image` (an image by URL), `cover` (a board's opening: a rendered `hero` you write in HTML — a wordmark, a tagline, a graphic — above markdown prose in `text`). Placement: give `x`/`y` for an exact spot, or `near_tile_id` to place it beside that tile, or nothing to land in the nearest free space to what the person is looking at. Tiles never land on top of each other. Returns the new tile's id and rect. Not every board supports every kind; the result says so if not.",
     inputSchema: {
       type: "object",
       properties: {
         kind: { type: "string", enum: [...BOARD_TILE_KINDS], description: "What the tile holds." },
         title: { type: "string", description: "Short title shown in the tile header." },
-        text: { type: "string", description: "Content for note / markdown / text tiles." },
+        text: { type: "string", description: "Content for note / markdown / text tiles; a cover's prose (markdown)." },
         html: { type: "string", description: "Complete HTML document for an html tile (scripts allowed; it runs sandboxed)." },
+        hero: { type: "string", description: "A cover's hero: an HTML snippet drawn seamlessly above its prose." },
         url: { type: "string", description: "Image URL for an image tile, or a page URL for an html tile." },
         width: { type: "number", description: "Tile width in board pixels (default depends on kind)." },
         height: { type: "number", description: "Tile height in board pixels." },
@@ -170,14 +171,15 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
     name: "board_update_tile",
     label: "Edit tile",
     description:
-      "Changes a tile: its `title`, and for note / markdown / text / html tiles its content (`text` or `html` replaces the content entirely), and optionally its size. Live results (streams, records) keep their content; only their title and size can change. Returns the tile's id and rect.",
+      "Changes a tile: its `title`, and for note / markdown / text / html / cover tiles its content (`text`, `html` or a cover's `hero` replaces that part entirely), and optionally its size. Live results (streams, records) keep their content; only their title and size can change. Returns the tile's id and rect.",
     inputSchema: {
       type: "object",
       properties: {
         id: { type: "string", description: "Tile id from board_read." },
         title: { type: "string" },
-        text: { type: "string", description: "New full content for note / markdown / text tiles." },
+        text: { type: "string", description: "New full content for note / markdown / text tiles; a cover's prose." },
         html: { type: "string", description: "New full HTML for an html tile." },
+        hero: { type: "string", description: "New hero HTML for a cover tile." },
         width: { type: "number" },
         height: { type: "number" },
       },

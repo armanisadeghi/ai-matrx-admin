@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 3,
+  "version": 4,
   "title": "Event Planner",
-  "description": "Plan an event end to end: guests and RSVPs, vendors, tasks, budget and run-of-show.",
+  "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
   "icon": {
     "emoji": "🎉"
@@ -17,7 +17,9 @@
     "events",
     "guests",
     "vendors",
-    "budget"
+    "budget",
+    "rsvp",
+    "planning"
   ],
   "spec": {
     "specVersion": 1,
@@ -2348,7 +2350,7 @@
         "Starling Passage"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

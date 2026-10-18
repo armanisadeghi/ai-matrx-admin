@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0101",
-  "version": 2,
+  "version": 3,
   "title": "Team Wiki & Company Home",
-  "description": "A company home with news, teams and a wiki whose pages expire until an owner reviews them.",
+  "description": "Companies of 10 to 200: a company home with news, team pages and a wiki that stays fresh.",
   "forWho": "Companies of 10 to 200 people",
   "icon": {
     "emoji": "🏠"
@@ -17,7 +17,9 @@
     "wiki",
     "handbook",
     "intranet",
-    "policies"
+    "knowledge base",
+    "policies",
+    "docs"
   ],
   "spec": {
     "specVersion": 1,
@@ -1099,7 +1101,7 @@
         "Alderkeep Wharf"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

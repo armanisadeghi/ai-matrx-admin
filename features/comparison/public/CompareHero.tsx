@@ -30,7 +30,7 @@ export function CompareHero({ runRequiresAccount }: { runRequiresAccount: boolea
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); go(); }}
-      className="w-full rounded-2xl border border-border bg-card p-3 shadow-[var(--elevation-2)] focus-within:border-primary"
+      className="w-full rounded-2xl border border-border bg-card p-3 shadow-md focus-within:border-primary"
     >
       <label htmlFor="compare-hero-input" className="sr-only">What to compare</label>
       <textarea

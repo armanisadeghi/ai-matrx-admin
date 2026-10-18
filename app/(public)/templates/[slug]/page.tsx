@@ -25,6 +25,7 @@ import {
   templateSignUpHref,
 } from "@/features/make/gallery/publicGallery";
 import { readPublicCatalogue, readTemplatePage } from "@/features/make/gallery/publicCatalogue.server";
+import { SpaceTemplatePublicBody } from "@/features/make/gallery/SpaceTemplatePublicBody";
 
 export const revalidate = 3600;
 
@@ -38,15 +39,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "Template", robots: { index: false, follow: true } };
   const { card, spec } = page;
   const path = publicTemplateHref(card);
-  // Card names repeat across businesses ("Accounting firm"); the business makes each title unique.
-  const title = spec.business?.name ? `${card.name}: ${spec.business.name}` : card.name;
+  const space = page.pack ? card.space : null;
+  // Card names repeat across businesses ("Accounting firm"); the business makes each title unique. A Space
+  // template's title is its own (one per catalogue id).
+  const title = space ? space.title : spec.business?.name ? `${card.name}: ${spec.business.name}` : card.name;
   const image = { url: `${path}/social-image`, width: 1200, height: 630, alt: title };
   const meta = createRouteMetadata(path, {
     title,
     titlePrefix: "Template",
     description: templateDescription(card),
     canonicalPath: path,
-    keywords: [card.vertical, wordFor("industry", card.industry ?? ""), wordFor("job", card.job ?? ""), ...spec.tables.map((t) => t.name), "template"].filter(
+    keywords: [
+      card.vertical,
+      wordFor("industry", card.industry ?? ""),
+      wordFor("job", card.job ?? ""),
+      ...(space?.tags ?? []),
+      ...spec.tables.map((t) => t.name),
+      space ? "workspace template" : "template",
+    ].filter(
       (k): k is string => Boolean(k),
     ),
   });
@@ -93,6 +103,9 @@ export default async function PublicTemplatePage({ params, searchParams }: Props
   }
 
   const read = await readPublicCatalogue();
+  if (page.pack && card.space) {
+    return <SpaceTemplatePublicBody card={card} space={card.space} spec={spec} pack={page.pack} updatedAt={page.updatedAt} all={read.state === "open" ? read.cards : []} />;
+  }
   const related = relatedTo(card, read.state === "open" ? read.cards : []);
   const url = `${siteConfig.url}${publicTemplateHref(card)}`;
   const today = new Date().toISOString().slice(0, 10);

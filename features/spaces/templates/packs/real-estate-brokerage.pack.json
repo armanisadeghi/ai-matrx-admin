@@ -1,0 +1,3443 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0413",
+  "version": 1,
+  "title": "Real Estate Brokerage",
+  "description": "Leads, listings, transactions and closing milestones for a small brokerage.",
+  "forWho": "Real estate brokerages and teams",
+  "icon": {
+    "emoji": "🏠"
+  },
+  "cover": {
+    "url": "gallery:photo-golden-palms",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "real estate",
+    "leads",
+    "listings",
+    "transactions"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-real-estate-brokerage",
+    "catalogueId": "SP0413",
+    "useCase": "Bertrand Quimby coordinates transactions at a small brokerage and uses this to see today's lead follow-ups, which listings are active, and which closing milestones are due this week on every deal under contract.",
+    "industry": "real_estate_property",
+    "vertical": "Real estate brokerage",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Harborstone Realty",
+      "describes": "A small independent brokerage with a broker owner, two agents and a transaction coordinator.",
+      "address": {
+        "line1": "144 Seabright Avenue",
+        "city": "San Diego",
+        "region": "CA",
+        "postalCode": "92101",
+        "country": "US"
+      },
+      "phone": "(619) 555-0120",
+      "website": "harborstonerealty.net",
+      "email": "hello@harborstonerealty.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-real-estate-brokerage",
+    "tables": [
+      {
+        "token": "lead",
+        "name": "Leads",
+        "labelSingular": "Lead",
+        "labelPlural": "Leads",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-plus",
+        "titleField": "lead_name",
+        "describes": "Buyers and sellers from first contact to under contract.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "lead_name",
+            "label": "Lead",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Looking to",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Buy",
+              "Sell",
+              "Buy and sell",
+              "Invest"
+            ],
+            "choiceColors": {
+              "Buy": "blue",
+              "Sell": "green",
+              "Buy and sell": "amber",
+              "Invest": "violet"
+            }
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New lead",
+              "Nurturing",
+              "Active search",
+              "Under contract",
+              "Closed",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Lost": "red",
+              "New lead": "blue",
+              "Nurturing": "amber",
+              "Active search": "violet",
+              "Under contract": "teal",
+              "Closed": "green"
+            },
+            "statusGroups": {
+              "New lead": "todo",
+              "Nurturing": "in_progress",
+              "Active search": "in_progress",
+              "Under contract": "in_progress",
+              "Closed": "done",
+              "Lost": "done"
+            },
+            "required": true,
+            "default": "New lead"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open house",
+              "Referral",
+              "Website",
+              "Sign call",
+              "Past client"
+            ],
+            "choiceColors": {
+              "Open house": "blue",
+              "Referral": "green",
+              "Website": "amber",
+              "Sign call": "violet",
+              "Past client": "teal"
+            }
+          },
+          {
+            "key": "agent",
+            "label": "Agent",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "follow_up_on",
+            "label": "Follow up by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "active_btn",
+            "label": "Start search",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_active"
+            }
+          },
+          {
+            "key": "lost_btn",
+            "label": "Mark lost",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_lost"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "l01",
+            "values": {
+              "lead_name": "Percival Annandale",
+              "kind": "Buy",
+              "stage": "New lead",
+              "phone": "(619) 555-0131",
+              "email": "percival.a@mailbox-demo.net",
+              "source": "Website",
+              "agent": "tm-aiyana",
+              "follow_up_on": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "l02",
+            "values": {
+              "lead_name": "Rosalind Okafor-Brandt",
+              "kind": "Sell",
+              "stage": "New lead",
+              "phone": "(619) 555-0132",
+              "email": "rosalind.ob@mailbox-demo.net",
+              "source": "Sign call",
+              "agent": "tm-desmond",
+              "follow_up_on": "@today",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "l03",
+            "values": {
+              "lead_name": "Thaddeus and Imelda Voss",
+              "kind": "Buy",
+              "stage": "Active search",
+              "phone": "(619) 555-0133",
+              "email": "vosses@mailbox-demo.net",
+              "source": "Referral",
+              "agent": "tm-aiyana",
+              "follow_up_on": "@mon+2d"
+            }
+          },
+          {
+            "key": "l04",
+            "values": {
+              "lead_name": "Marisol Quinteros",
+              "kind": "Sell",
+              "stage": "Nurturing",
+              "phone": "(619) 555-0134",
+              "email": "marisol.q@mailbox-demo.net",
+              "source": "Past client",
+              "agent": "tm-desmond",
+              "follow_up_on": "@mon+3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "l05",
+            "values": {
+              "lead_name": "Ignatius Pemberton",
+              "kind": "Invest",
+              "stage": "Nurturing",
+              "phone": "(619) 555-0135",
+              "email": "ignatius.p@mailbox-demo.net",
+              "source": "Website",
+              "agent": "tm-valentina",
+              "follow_up_on": "@today-3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "l06",
+            "values": {
+              "lead_name": "Delphine Achterberg",
+              "kind": "Buy",
+              "stage": "Under contract",
+              "phone": "(619) 555-0136",
+              "email": "delphine.a@mailbox-demo.net",
+              "source": "Open house",
+              "agent": "tm-aiyana",
+              "follow_up_on": "@today+10d"
+            }
+          },
+          {
+            "key": "l07",
+            "values": {
+              "lead_name": "Cassius and Nora Whitlock",
+              "kind": "Buy and sell",
+              "stage": "Active search",
+              "phone": "(619) 555-0137",
+              "email": "whitlocks@mailbox-demo.net",
+              "source": "Referral",
+              "agent": "tm-aiyana",
+              "follow_up_on": "@today-1d"
+            }
+          },
+          {
+            "key": "l08",
+            "values": {
+              "lead_name": "Oluwaseun Adeyemi",
+              "kind": "Sell",
+              "stage": "Under contract",
+              "phone": "(619) 555-0138",
+              "email": "seun.a@mailbox-demo.net",
+              "source": "Past client",
+              "agent": "tm-desmond",
+              "follow_up_on": "@today+14d"
+            }
+          },
+          {
+            "key": "l09",
+            "values": {
+              "lead_name": "Henrietta Lindqvist",
+              "kind": "Buy",
+              "stage": "Closed",
+              "phone": "(619) 555-0139",
+              "email": "henrietta.l@mailbox-demo.net",
+              "source": "Open house",
+              "agent": "tm-aiyana",
+              "follow_up_on": "@today-60d"
+            }
+          },
+          {
+            "key": "l10",
+            "values": {
+              "lead_name": "Bartholomew Nkemelu",
+              "kind": "Buy",
+              "stage": "Lost",
+              "phone": "(619) 555-0140",
+              "email": "bart.n@mailbox-demo.net",
+              "source": "Website",
+              "agent": "tm-aiyana",
+              "follow_up_on": "@today-40d"
+            }
+          }
+        ],
+        "independentOf": {
+          "agent": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Active search"
+            ],
+            "filled": [
+              "kind"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Lost"
+            ],
+            "filled": [
+              "kind"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Lead",
+            "values": {
+              "stage": "New lead",
+              "lead_name": "New lead"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First conversation"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Needs"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Timeline"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Budget range and pre-approval status"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Areas and must-haves"
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Next steps"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up call booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Added to the listing alert"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "listing",
+        "name": "Listings",
+        "labelSingular": "Listing",
+        "labelPlural": "Listings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "house",
+        "titleField": "listing_title",
+        "describes": "Properties on the market and their status, price and agent.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "listing_title",
+            "label": "Listing",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "street",
+            "label": "Street address",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Coming soon",
+              "Active",
+              "Under contract",
+              "Sold",
+              "Withdrawn"
+            ],
+            "choiceColors": {
+              "Coming soon": "blue",
+              "Active": "amber",
+              "Under contract": "violet",
+              "Sold": "green",
+              "Withdrawn": "teal"
+            },
+            "statusGroups": {
+              "Coming soon": "in_progress",
+              "Active": "in_progress",
+              "Under contract": "in_progress",
+              "Sold": "done",
+              "Withdrawn": "done"
+            },
+            "required": true,
+            "default": "Coming soon"
+          },
+          {
+            "key": "price",
+            "label": "List price",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "listed_on",
+            "label": "Listed",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "agent",
+            "label": "Listing agent",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "beds",
+            "label": "Bedrooms",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
+          },
+          {
+            "key": "offers",
+            "label": "Offers received",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "transactions",
+            "pick": "txn_title",
+            "agg": "count"
+          },
+          {
+            "key": "txn_btn",
+            "label": "Start transaction",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "transaction",
+              "template": "Transaction",
+              "prefill": {
+                "listing": "@row"
+              }
+            }
+          },
+          {
+            "key": "active_btn",
+            "label": "Go active",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "listing_active"
+            }
+          },
+          {
+            "key": "sold_btn",
+            "label": "Mark sold",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "listing_sold"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "g01",
+            "values": {
+              "listing_title": "Craftsman bungalow near the park",
+              "street": "418 Tamarind Way",
+              "status": "Active",
+              "price": 649000,
+              "listed_on": "@today-12d",
+              "agent": "tm-desmond",
+              "beds": 3
+            }
+          },
+          {
+            "key": "g02",
+            "values": {
+              "listing_title": "Mid-century ranch with pool",
+              "street": "91 Ridgeback Lane",
+              "status": "Under contract",
+              "price": 875000,
+              "listed_on": "@today-30d",
+              "agent": "tm-desmond",
+              "beds": 4
+            }
+          },
+          {
+            "key": "g03",
+            "values": {
+              "listing_title": "Downtown loft with skyline view",
+              "street": "200 Corbel Street",
+              "status": "Active",
+              "price": 512000,
+              "listed_on": "@today-5d",
+              "agent": "tm-desmond",
+              "beds": 2
+            }
+          },
+          {
+            "key": "g04",
+            "values": {
+              "listing_title": "Family home on a cul-de-sac",
+              "street": "27 Foxglove Court",
+              "status": "Coming soon",
+              "price": 739000,
+              "listed_on": "@today+6d",
+              "agent": "tm-valentina",
+              "beds": 4
+            }
+          },
+          {
+            "key": "g05",
+            "values": {
+              "listing_title": "Starter condo by the marina",
+              "street": "15 Larkin Avenue",
+              "status": "Sold",
+              "price": 385000,
+              "listed_on": "@today-75d",
+              "agent": "tm-desmond",
+              "beds": 1
+            }
+          },
+          {
+            "key": "g06",
+            "values": {
+              "listing_title": "Hillside cottage with garden",
+              "street": "603 Tamarind Way",
+              "status": "Withdrawn",
+              "price": 560000,
+              "listed_on": "@today-50d",
+              "agent": "tm-valentina",
+              "beds": 2
+            }
+          },
+          {
+            "key": "g07",
+            "values": {
+              "listing_title": "Updated townhome with garage",
+              "street": "74 Corbel Street",
+              "status": "Under contract",
+              "price": 468000,
+              "listed_on": "@today-26d",
+              "agent": "tm-desmond",
+              "beds": 3
+            }
+          }
+        ],
+        "independentOf": {
+          "agent": "Anyone on the team can take this on, whenever they joined."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Active"
+            ],
+            "filled": [
+              "street"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Sold"
+            ],
+            "filled": [
+              "street"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Listing",
+            "values": {
+              "status": "Coming soon",
+              "listing_title": "New listing"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pre-listing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Listing agreement signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photos and floor plan ordered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pricing meeting held"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Marketing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Listing live on the MLS"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Open house scheduled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Offers"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "transaction",
+        "name": "Transactions",
+        "labelSingular": "Transaction",
+        "labelPlural": "Transactions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "txn_title",
+        "describes": "Each accepted offer through inspection, financing and closing.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "txn_title",
+            "label": "Transaction",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "listing",
+            "label": "Listing",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "listing",
+            "relationMax": 1
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "lead",
+            "relationMax": 1
+          },
+          {
+            "key": "side",
+            "label": "Side",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Listing side",
+              "Buyer side",
+              "Both sides"
+            ],
+            "choiceColors": {
+              "Listing side": "blue",
+              "Buyer side": "green",
+              "Both sides": "amber"
+            }
+          },
+          {
+            "key": "stage",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Offer accepted",
+              "Inspection",
+              "Appraisal",
+              "Financing",
+              "Final walkthrough",
+              "Closed",
+              "Fell through"
+            ],
+            "choiceColors": {
+              "Fell through": "red",
+              "Offer accepted": "blue",
+              "Inspection": "amber",
+              "Appraisal": "violet",
+              "Financing": "teal",
+              "Final walkthrough": "slate",
+              "Closed": "green"
+            },
+            "statusGroups": {
+              "Offer accepted": "in_progress",
+              "Inspection": "in_progress",
+              "Appraisal": "in_progress",
+              "Financing": "in_progress",
+              "Final walkthrough": "in_progress",
+              "Closed": "done",
+              "Fell through": "done"
+            },
+            "required": true,
+            "default": "Offer accepted"
+          },
+          {
+            "key": "price",
+            "label": "Listing price",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "listing",
+            "pick": "price"
+          },
+          {
+            "key": "commission_pct",
+            "label": "Commission rate (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "commission",
+            "label": "Expected commission",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Listing price} * {Commission rate (%)} / 100"
+          },
+          {
+            "key": "accepted_on",
+            "label": "Accepted",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closing_on",
+            "label": "Closing",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "coordinator",
+            "label": "Coordinator",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "open_tasks",
+            "label": "Open milestones",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "milestones",
+            "pick": "task_title",
+            "agg": "count",
+            "filter": {
+              "status": "Open"
+            }
+          },
+          {
+            "key": "task_btn",
+            "label": "Add milestone",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "milestone",
+              "template": "Milestone",
+              "prefill": {
+                "transaction": "@row"
+              }
+            }
+          },
+          {
+            "key": "closed_btn",
+            "label": "Mark closed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "transaction_closed"
+            }
+          },
+          {
+            "key": "fell_btn",
+            "label": "Fell through",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "transaction_fell"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "x01",
+            "values": {
+              "txn_title": "Ridgeback Lane sale",
+              "listing": "g02",
+              "client": "l08",
+              "side": "Listing side",
+              "stage": "Financing",
+              "commission_pct": 2.5,
+              "accepted_on": "@today-14d",
+              "closing_on": "@today+16d",
+              "coordinator": "tm-bertrand"
+            }
+          },
+          {
+            "key": "x02",
+            "values": {
+              "txn_title": "Corbel Street townhome sale",
+              "listing": "g07",
+              "client": "l06",
+              "side": "Listing side",
+              "stage": "Inspection",
+              "commission_pct": 2.5,
+              "accepted_on": "@today-6d",
+              "closing_on": "@today+27d",
+              "coordinator": "tm-bertrand"
+            }
+          },
+          {
+            "key": "x03",
+            "values": {
+              "txn_title": "Marina condo sale",
+              "listing": "g05",
+              "client": "l09",
+              "side": "Listing side",
+              "stage": "Closed",
+              "commission_pct": 2.5,
+              "accepted_on": "@today-70d",
+              "closing_on": "@today-40d",
+              "coordinator": "tm-bertrand"
+            }
+          },
+          {
+            "key": "x04",
+            "values": {
+              "txn_title": "Tamarind Way purchase",
+              "listing": "g01",
+              "client": "l03",
+              "side": "Buyer side",
+              "stage": "Appraisal",
+              "commission_pct": 2.5,
+              "accepted_on": "@today-10d",
+              "closing_on": "@mon+4d",
+              "coordinator": "tm-bertrand"
+            }
+          },
+          {
+            "key": "x05",
+            "values": {
+              "txn_title": "Foxglove Court purchase",
+              "listing": "g04",
+              "client": "l07",
+              "side": "Buyer side",
+              "stage": "Offer accepted",
+              "commission_pct": 2.5,
+              "accepted_on": "@today-1d",
+              "closing_on": "@today+35d",
+              "coordinator": "tm-bertrand"
+            }
+          },
+          {
+            "key": "x06",
+            "values": {
+              "txn_title": "Hillside cottage purchase",
+              "listing": "g06",
+              "client": "l10",
+              "side": "Buyer side",
+              "stage": "Fell through",
+              "commission_pct": 2.5,
+              "accepted_on": "@today-45d",
+              "closing_on": "@today-15d",
+              "coordinator": "tm-bertrand"
+            }
+          }
+        ],
+        "independentOf": {
+          "listing": "The two sides move on their own schedule and status; neither forces the other.",
+          "client": "The two sides move on their own schedule and status; neither forces the other.",
+          "coordinator": "Anyone on the team can take this on, whenever they joined."
+        },
+        "before": [
+          [
+            "accepted_on",
+            "closing_on"
+          ]
+        ],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Closed"
+            ],
+            "filled": [
+              "side"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Fell through"
+            ],
+            "filled": [
+              "side"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Transaction",
+            "values": {
+              "stage": "Offer accepted",
+              "txn_title": "New transaction"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "callout",
+                  "text": [
+                    {
+                      "text": "Create the milestones from the contract dates the day the offer is accepted."
+                    }
+                  ],
+                  "background": "blue",
+                  "props": {
+                    "icon": "Lightbulb"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Contract"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed contract saved"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Earnest money received"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parties introduced to title and lender"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Key dates"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Inspection period ends"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Appraisal ordered"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Loan commitment"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Final walkthrough"
+                    }
+                  ]
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": "Closing"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "token": "milestone",
+        "name": "Milestones",
+        "labelSingular": "Milestone",
+        "labelPlural": "Milestones",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flag",
+        "titleField": "task_title",
+        "describes": "Dated steps on each transaction: inspection, appraisal, financing and more.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "task_title",
+            "label": "Milestone",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "transaction",
+            "label": "Transaction",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "transaction",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Done",
+              "Waived"
+            ],
+            "choiceColors": {
+              "Open": "blue",
+              "Done": "green",
+              "Waived": "amber"
+            },
+            "statusGroups": {
+              "Open": "todo",
+              "Done": "done",
+              "Waived": "done"
+            },
+            "required": true,
+            "default": "Open"
+          },
+          {
+            "key": "owner",
+            "label": "Owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "milestone_done"
+            }
+          }
+        ],
+        "rows": [
+          {
+            "key": "m01",
+            "values": {
+              "task_title": "Loan commitment - Ridgeback Lane",
+              "transaction": "x01",
+              "due_on": "@today+9d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "m02",
+            "values": {
+              "task_title": "Final walkthrough - Ridgeback Lane",
+              "transaction": "x01",
+              "due_on": "@today+14d",
+              "status": "Open"
+            }
+          },
+          {
+            "key": "m03",
+            "values": {
+              "task_title": "Inspection report review - Corbel Street",
+              "transaction": "x02",
+              "due_on": "@today+1d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "m04",
+            "values": {
+              "task_title": "Repair request response - Corbel Street",
+              "transaction": "x02",
+              "due_on": "@mon+4d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "m05",
+            "values": {
+              "task_title": "Appraisal visit - Tamarind Way",
+              "transaction": "x04",
+              "due_on": "@today+3d",
+              "status": "Open"
+            }
+          },
+          {
+            "key": "m06",
+            "values": {
+              "task_title": "Earnest money - Foxglove Court",
+              "transaction": "x05",
+              "due_on": "@today",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "m07",
+            "values": {
+              "task_title": "Title commitment - Foxglove Court",
+              "transaction": "x05",
+              "due_on": "@today+12d",
+              "status": "Open"
+            }
+          },
+          {
+            "key": "m08",
+            "values": {
+              "task_title": "Lender approval - Tamarind Way",
+              "transaction": "x04",
+              "due_on": "@today-2d",
+              "status": "Open",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "m09",
+            "values": {
+              "task_title": "Closing statement review - Marina condo",
+              "transaction": "x03",
+              "due_on": "@today-42d",
+              "status": "Done"
+            }
+          },
+          {
+            "key": "m10",
+            "values": {
+              "task_title": "Inspection - Tamarind Way",
+              "transaction": "x04",
+              "due_on": "@today-4d",
+              "status": "Done"
+            }
+          }
+        ],
+        "independentOf": {
+          "transaction": "The two sides move on their own schedule and status; neither forces the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "transaction"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Milestone",
+            "values": {
+              "status": "Open",
+              "task_title": "New milestone"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What has to happen"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Who is waiting on it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "bulleted",
+                  "text": [
+                    {
+                      "text": ""
+                    }
+                  ]
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parties updated when done"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each lead links to one team member.",
+        "fromTable": "lead",
+        "fromField": "agent",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "agent_leads"
+      },
+      {
+        "describes": "Each listing links to one team member.",
+        "fromTable": "listing",
+        "fromField": "agent",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "agent_listings"
+      },
+      {
+        "describes": "Each transaction links to one listing.",
+        "fromTable": "transaction",
+        "fromField": "listing",
+        "toTable": "listing",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "transactions"
+      },
+      {
+        "describes": "Each transaction links to one lead.",
+        "fromTable": "transaction",
+        "fromField": "client",
+        "toTable": "lead",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "transactions"
+      },
+      {
+        "describes": "Each transaction links to one team member.",
+        "fromTable": "transaction",
+        "fromField": "coordinator",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "coordinated"
+      },
+      {
+        "describes": "Each milestone links to one transaction.",
+        "fromTable": "milestone",
+        "fromField": "transaction",
+        "toTable": "transaction",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "milestones"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-valentina",
+            "values": {
+              "full_name": "Valentina Okoro",
+              "role": "Broker owner",
+              "work_email": "valentina@harborstonerealty.net",
+              "mobile": "(619) 555-0121",
+              "start_date": "@today-14y"
+            }
+          },
+          {
+            "key": "tm-desmond",
+            "values": {
+              "full_name": "Desmond Hargrove-Lee",
+              "role": "Listing agent",
+              "work_email": "desmond@harborstonerealty.net",
+              "mobile": "(619) 555-0122",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-aiyana",
+            "values": {
+              "full_name": "Aiyana Redcloud",
+              "role": "Buyer's agent",
+              "work_email": "aiyana@harborstonerealty.net",
+              "mobile": "(619) 555-0123",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-bertrand",
+            "values": {
+              "full_name": "Bertrand Quimby",
+              "role": "Transaction coordinator",
+              "work_email": "bertrand@harborstonerealty.net",
+              "mobile": "(619) 555-0124",
+              "start_date": "@today-3y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "home_inquiry",
+        "name": "Home inquiry",
+        "describes": "How a buyer or seller reaches out.",
+        "audience": "staff",
+        "table": "lead",
+        "fields": [
+          {
+            "fieldKey": "lead_name",
+            "ask": "Your name?",
+            "required": true
+          },
+          {
+            "fieldKey": "kind",
+            "ask": "Are you buying, selling or both?"
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "email",
+            "ask": "Your email?"
+          }
+        ],
+        "submitLabel": "Send inquiry",
+        "confirmation": "Received. An agent will reach out within one business day."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "lead_active",
+        "table": "lead",
+        "name": "Start search",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Active search"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lead_lost",
+        "table": "lead",
+        "name": "Mark lost",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Lost"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "listing_active",
+        "table": "listing",
+        "name": "Go active",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Active"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "listing_sold",
+        "table": "listing",
+        "name": "Mark sold",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Sold"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "transaction_closed",
+        "table": "transaction",
+        "name": "Mark closed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Closed"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "transaction_fell",
+        "table": "transaction",
+        "name": "Fell through",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "stage",
+            "set": "value",
+            "value": "Fell through"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "milestone_done",
+        "table": "milestone",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_lead",
+        "name": "All leads",
+        "table": "lead",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "lead_board",
+        "name": "By status",
+        "table": "lead",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "lead_cal",
+        "name": "Calendar",
+        "table": "lead",
+        "kind": "calendar",
+        "dateField": "follow_up_on",
+        "allDay": true
+      },
+      {
+        "token": "lead_today",
+        "name": "Today",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "New lead",
+            "Nurturing",
+            "Active search",
+            "Under contract"
+          ]
+        }
+      },
+      {
+        "token": "lead_week",
+        "name": "This week",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "New lead",
+            "Nurturing",
+            "Active search",
+            "Under contract"
+          ]
+        }
+      },
+      {
+        "token": "lead_over",
+        "name": "Overdue",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "follow_up_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "New lead",
+            "Nurturing",
+            "Active search",
+            "Under contract"
+          ]
+        }
+      },
+      {
+        "token": "lead_mine",
+        "name": "My leads",
+        "table": "lead",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_listing",
+        "name": "All listings",
+        "table": "listing",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "listing_board",
+        "name": "By status",
+        "table": "listing",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "listing_cal",
+        "name": "Calendar",
+        "table": "listing",
+        "kind": "calendar",
+        "dateField": "listed_on",
+        "allDay": true
+      },
+      {
+        "token": "all_transaction",
+        "name": "All transactions",
+        "table": "transaction",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "transaction_board",
+        "name": "By status",
+        "table": "transaction",
+        "kind": "kanban",
+        "groupBy": "stage"
+      },
+      {
+        "token": "transaction_cal",
+        "name": "Calendar",
+        "table": "transaction",
+        "kind": "calendar",
+        "dateField": "closing_on",
+        "allDay": true
+      },
+      {
+        "token": "transaction_week",
+        "name": "This week",
+        "table": "transaction",
+        "kind": "grid",
+        "within": {
+          "closing_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Offer accepted",
+            "Inspection",
+            "Appraisal",
+            "Financing",
+            "Final walkthrough"
+          ]
+        }
+      },
+      {
+        "token": "transaction_next30",
+        "name": "Next 30 days",
+        "table": "transaction",
+        "kind": "grid",
+        "within": {
+          "closing_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "stage": [
+            "Offer accepted",
+            "Inspection",
+            "Appraisal",
+            "Financing",
+            "Final walkthrough"
+          ]
+        }
+      },
+      {
+        "token": "all_milestone",
+        "name": "All milestones",
+        "table": "milestone",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "milestone_board",
+        "name": "By status",
+        "table": "milestone",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "milestone_cal",
+        "name": "Calendar",
+        "table": "milestone",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "milestone_today",
+        "name": "Today",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "milestone_week",
+        "name": "This week",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "milestone_over",
+        "name": "Overdue",
+        "table": "milestone",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        }
+      },
+      {
+        "token": "milestone_mine",
+        "name": "My milestones",
+        "table": "milestone",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Brokerage assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "milestone",
+          "describes": "Every milestone with its transaction and due date."
+        },
+        {
+          "name": "related_tables",
+          "table": "transaction",
+          "describes": "The transactions milestones belong to."
+        }
+      ],
+      "question": {
+        "ask": "How many milestones are still open?",
+        "whyItMatters": "The coordinator reviews open milestones every morning.",
+        "expect": {
+          "table": "milestone",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Open"
+          },
+          "answer": 8,
+          "unit": "milestones"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open leads.",
+        "action": {
+          "kind": "open",
+          "surface": "lead_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lead_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open listings.",
+        "action": {
+          "kind": "open",
+          "surface": "listing_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "listing_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open transactions.",
+        "action": {
+          "kind": "open",
+          "surface": "transaction_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "transaction_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces template library builder (Claude)",
+      "authoredOn": "2026-10-18",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "harborstonerealty.net",
+        "mailbox-demo.net"
+      ],
+      "fictionalStreets": [
+        "Corbel Street",
+        "Foxglove Court",
+        "Larkin Avenue",
+        "Ridgeback Lane",
+        "Seabright Avenue",
+        "Tamarind Way"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "real-estate-brokerage",
+      "parent": null,
+      "title": "Real Estate Brokerage",
+      "icon": {
+        "emoji": "🏠"
+      },
+      "cover": {
+        "url": "gallery:photo-golden-palms",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Your brokerage in one place. Follow up with new Leads today, keep each Listing current, and run every Transaction from accepted offer to closing with dated Milestones. Operational tracking only."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-leads"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-listing"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-transaction"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sop-after-close"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At a glance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_lead"
+                    },
+                    "inline": true,
+                    "title": "Leads by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Leads by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_lead"
+                    },
+                    "inline": true,
+                    "title": "Leads by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Leads by source",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "listing",
+                      "view": "all_listing"
+                    },
+                    "inline": true,
+                    "title": "Listings by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Listings by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "lead_board"
+            },
+            "inline": true,
+            "title": "Leads",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "New lead",
+                    "Nurturing",
+                    "Active search",
+                    "Under contract"
+                  ]
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "New lead",
+                    "Nurturing",
+                    "Active search",
+                    "Under contract"
+                  ]
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "follow_up_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "New lead",
+                    "Nurturing",
+                    "Active search",
+                    "Under contract"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "follow_up_on"
+              },
+              {
+                "id": "vall",
+                "name": "All leads",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "follow_up_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Listings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "listing",
+              "view": "listing_board"
+            },
+            "inline": true,
+            "title": "Listings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "listed_on"
+              },
+              {
+                "id": "vall",
+                "name": "All listings",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "listed_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Transactions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "transaction",
+              "view": "transaction_board"
+            },
+            "inline": true,
+            "title": "Transactions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "closing_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Offer accepted",
+                    "Inspection",
+                    "Appraisal",
+                    "Financing",
+                    "Final walkthrough"
+                  ]
+                }
+              },
+              {
+                "id": "vs-next30",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "closing_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "stage": [
+                    "Offer accepted",
+                    "Inspection",
+                    "Appraisal",
+                    "Financing",
+                    "Final walkthrough"
+                  ]
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "stage"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "closing_on"
+              },
+              {
+                "id": "vall",
+                "name": "All transactions",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "closing_on",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vs-week"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "milestone_board"
+            },
+            "inline": true,
+            "title": "Milestones",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "vs-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "vs-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "vs-over",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "vb",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "vcal",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on"
+              },
+              {
+                "id": "vall",
+                "name": "All milestones",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "due_on",
+                    "direction": "asc"
+                  }
+                ]
+              },
+              {
+                "id": "vs-mine",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "List",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "vs-today"
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "real-estate-brokerage",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_lead"
+                    },
+                    "inline": true,
+                    "title": "Leads by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Leads by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_lead"
+                    },
+                    "inline": true,
+                    "title": "Leads by source",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Leads by source",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "listing",
+                      "view": "all_listing"
+                    },
+                    "inline": true,
+                    "title": "Listings by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Listings by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "listing",
+                      "view": "all_listing"
+                    },
+                    "inline": true,
+                    "title": "List price by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc7",
+                        "name": "List price by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "sum",
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc7"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "transaction",
+                      "view": "all_transaction"
+                    },
+                    "inline": true,
+                    "title": "Transactions by stage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc8",
+                        "name": "Transactions by stage",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "stage",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc8"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "milestone",
+                      "view": "all_milestone"
+                    },
+                    "inline": true,
+                    "title": "Milestones by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc9",
+                        "name": "Milestones by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc9"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Milestones still open"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "milestone",
+              "view": "all_milestone"
+            },
+            "inline": true,
+            "title": "Milestones still open",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d1",
+                "name": "Open",
+                "layout": "list",
+                "filters": {
+                  "status": "Open"
+                }
+              }
+            ],
+            "activeViewId": "d1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deals in progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "transaction",
+              "view": "all_transaction"
+            },
+            "inline": true,
+            "title": "Deals in progress",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d2",
+                "name": "In progress",
+                "layout": "list",
+                "anyOf": {
+                  "stage": [
+                    "Offer accepted",
+                    "Inspection",
+                    "Appraisal",
+                    "Financing",
+                    "Final walkthrough"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-leads",
+      "parent": "real-estate-brokerage",
+      "title": "Lead follow-up rhythm",
+      "icon": {
+        "emoji": "📞"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Speed and consistency win clients. Set a follow-up date on every lead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "New leads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call within the hour; text if no answer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log what they want, their timeline and whether they have talked to a lender."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set Follow up by to a specific day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Nurturing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contact every Nurturing lead at least every two weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After three months of silence, move to Lost with a note."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-listing",
+      "parent": "real-estate-brokerage",
+      "title": "Listing launch checklist",
+      "icon": {
+        "emoji": "📸"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before going live"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Listing agreement signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos, floor plan and description approved by the seller"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Disclosures collected"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pricing agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Launch week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Live on the MLS"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Social posts and email to the lead list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open house booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ongoing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weekly update call with the seller"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-transaction",
+      "parent": "real-estate-brokerage",
+      "title": "From offer to closing",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Add milestones the day an offer is accepted so nothing is missed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Start transaction on the listing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add milestones from the contract dates: inspection, appraisal, loan commitment, walkthrough, closing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Introduce the client to title and the lender."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Review Open milestones for every deal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update clients after every milestone."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark the transaction Closed, the listing Sold and the lead Closed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-after-close",
+      "parent": "real-estate-brokerage",
+      "title": "After closing",
+      "icon": {
+        "emoji": "🎁"
+      },
+      "blocks": [
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within a week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank-you note sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review request sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client added to the annual anniversary list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Within a quarter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check in on the move"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask for referrals"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

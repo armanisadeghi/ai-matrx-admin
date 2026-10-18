@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 3,
+  "version": 4,
   "title": "Bug Tracker",
-  "description": "Report, triage and fix bugs by severity, with a board, a triage guide and release rollups.",
+  "description": "Engineering and support teams: report, triage and fix bugs by severity on a board.",
   "forWho": "Engineering and support teams",
   "icon": {
     "emoji": "🐞"
@@ -17,7 +17,9 @@
     "bugs",
     "issues",
     "triage",
-    "engineering"
+    "engineering",
+    "kanban",
+    "tracker"
   ],
   "spec": {
     "specVersion": 1,
@@ -1259,7 +1261,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

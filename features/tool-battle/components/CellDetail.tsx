@@ -4,7 +4,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { formatMs, formatPoints, laneName, reasonLabel, statusLabel } from "../derive";
-import type { BattleView, CellView } from "../types";
+import type { AnswerField, BattleView, CellView } from "../types";
+import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
+
+const FIELD_COLUMNS: MatrxColumnDef<AnswerField>[] = [
+  { accessorKey: "path", header: "Field", className: "font-mono text-xs" },
+  { id: "type", header: "Type", accessorFn: (f) => (f.filled ? f.type : "empty"), className: "text-xs text-muted-foreground" },
+  { accessorKey: "sample", header: "Sample", className: "max-w-[16rem] truncate text-xs" },
+];
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -78,19 +85,15 @@ export function CellDetail({
                 <div className="mb-1 text-sm font-semibold text-foreground">
                   Fields · {cell.answerFields.filter((f) => f.filled).length} of {cell.answerFields.length} filled
                 </div>
-                <div className="max-h-64 overflow-y-auto rounded-md border border-border">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      {cell.answerFields.map((f) => (
-                        <tr key={f.path} className="border-b border-border/60 last:border-0">
-                          <td className="px-2 py-1 font-mono text-xs text-foreground">{f.path}</td>
-                          <td className="px-2 py-1 text-xs text-muted-foreground">{f.filled ? f.type : "empty"}</td>
-                          <td className="max-w-[16rem] truncate px-2 py-1 text-xs text-foreground">{f.sample ?? ""}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <LiteTable
+                  data={cell.answerFields}
+                  columns={FIELD_COLUMNS}
+                  getRowId={(f) => f.path}
+                  density="condensed"
+                  maxHeight="16rem"
+                  mobile="scroll"
+                  ariaLabel="Answer fields"
+                />
               </div>
             )}
             {cell.output != null && (

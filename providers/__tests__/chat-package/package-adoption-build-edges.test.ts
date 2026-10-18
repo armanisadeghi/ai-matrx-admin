@@ -47,9 +47,9 @@ test("Notes uses the one rich-copy door (agent-copy/copy-commands)", () => {
 
 test("the context preview copies through the CopyButtons host slot; no InlineCopyButton slot exists", () => {
   expect(read("../aidream/apps/shared/chat/src/agents/components/context-preview/AttachedContextSection.tsx"))
-    .toContain('import { CopyButtons } from "@ai-matrx/chat/host/ui-slots"');
+    .toContain('import { CopyButtonsSlot } from "@ai-matrx/chat/host/ui-slots"');
   const slots = read("../aidream/apps/shared/chat/src/host/ui-slots.tsx");
-  expect(slots).toContain('export const CopyButtons = slotComponent("CopyButtons"');
+  expect(slots).toContain('export const CopyButtonsSlot = slotComponent("CopyButtons"');
   expect(slots).not.toContain("InlineCopyButton");
   expect(read("providers/chatUiRegistrationBase.ts")).toContain("CopyButtons,");
 });

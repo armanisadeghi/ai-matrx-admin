@@ -279,7 +279,7 @@ export const RESEARCH_NAV_ITEMS: ResearchNavItem[] = [
   },
   {
     key: "youtube",
-    label: "YouTube",
+    label: "Videos",
     icon: "Video",
     href: (id) => `/research/topics/${id}/youtube`,
     group: "primary",

@@ -333,7 +333,7 @@ function CanonicalStudyCockpit({ sourceSurface }: { sourceSurface: Surface }) {
 
   return (
     <section
-      className={`@container relative flex w-full flex-col overflow-hidden rounded-[1.75rem] border border-border bg-card-textured shadow-[var(--elevation-3)] ${
+      className={`@container relative flex w-full flex-col overflow-hidden rounded-[1.75rem] border border-border bg-card-textured shadow-lg ${
         presentation === "compact"
           ? "h-[min(720px,82dvh)]"
           : "h-[min(820px,86dvh)]"
@@ -437,7 +437,7 @@ function CanonicalStudyCockpit({ sourceSurface }: { sourceSurface: Surface }) {
             type="button"
             aria-label={isFlipped ? "Show question" : "Show answer"}
             onClick={() => setIsFlipped((flipped) => !flipped)}
-            className="group relative flex w-full max-w-5xl flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border border-border bg-card p-[clamp(1.25rem,4vw,4rem)] text-center shadow-[var(--elevation-2)] transition-all duration-300 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group relative flex w-full max-w-5xl flex-col items-center justify-center overflow-hidden rounded-[1.5rem] border border-border bg-card p-[clamp(1.25rem,4vw,4rem)] text-center shadow-md transition-all duration-300 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="absolute left-4 top-4 rounded-full border border-border bg-muted px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:left-6 sm:top-6">
               {isFlipped ? "Answer" : "Prompt"}

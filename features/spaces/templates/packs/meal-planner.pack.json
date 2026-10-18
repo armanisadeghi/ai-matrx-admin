@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 3,
+  "version": 4,
   "title": "Meal Planner",
-  "description": "Weekly meal plan from a recipe library with a shopping list by aisle.",
+  "description": "Home cooks and families: plan the week's meals from your recipes, with a shopping list.",
   "forWho": "Home cooks and families",
   "icon": {
     "emoji": "🍽️"
@@ -16,7 +16,10 @@
   "tags": [
     "meals",
     "recipes",
-    "shopping"
+    "shopping",
+    "meal plan",
+    "food",
+    "groceries"
   ],
   "spec": {
     "specVersion": 1,
@@ -1536,7 +1539,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

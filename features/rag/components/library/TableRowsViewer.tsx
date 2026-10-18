@@ -19,12 +19,7 @@ import {
   fetchDerivativeChunks,
   type DerivativeChunkRow,
 } from "@/features/rag/api/derivations";
-import { cn } from "@/lib/utils";
-import {
-  MOBILE_TABLE,
-  MOBILE_TABLE_FROZEN_CELL,
-  MOBILE_TABLE_FROZEN_HEAD,
-} from "@/components/official/mobile-table/mobileTable";
+import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface TableRowMeta {
@@ -257,44 +252,14 @@ export function TableRowsViewer({
                     {t.header ? ` · ${t.header.length} cols` : ""}
                   </span>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className={cn("border-collapse type-secondary", MOBILE_TABLE)}>
-                    {t.header && (
-                      <thead>
-                        <tr className="bg-muted/20">
-                          {t.header.map((h, i) => (
-                            <th
-                              key={i}
-                              className={cn(
-                                "sticky top-0 border border-border/40 bg-muted/60 px-2 py-1.5 text-left align-top font-semibold",
-                                i === 0 && MOBILE_TABLE_FROZEN_HEAD,
-                              )}
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                    )}
-                    <tbody>
-                      {t.rows.map((row, ri) => (
-                        <tr key={ri} className="even:bg-muted/10">
-                          {row.map((cell, ci) => (
-                            <td
-                              key={ci}
-                              className={cn(
-                                "whitespace-pre-wrap break-words border border-border/40 px-2 py-1 align-top",
-                                ci === 0 && MOBILE_TABLE_FROZEN_CELL,
-                              )}
-                            >
-                              {cell}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <LiteTable
+                  data={t.rows.map((cells, index) => ({ index, cells }))}
+                  columns={cellColumns(t.header ?? null, t.rows)}
+                  getRowId={(row) => String(row.index)}
+                  density="condensed"
+                  mobile="scroll"
+                  ariaLabel={`Table ${t.tableIndex + 1}`}
+                />
               </div>
             ))}
           </div>
@@ -302,4 +267,15 @@ export function TableRowsViewer({
       </div>
     </div>
   );
+}
+
+/** One column per cell position; a table read without a header row names its columns by number. */
+function cellColumns(header: string[] | null, rows: string[][]): MatrxColumnDef<{ index: number; cells: string[] }>[] {
+  const width = Math.max(header?.length ?? 0, ...rows.map((r) => r.length));
+  return Array.from({ length: width }, (_, i) => ({
+    id: `c${i}`,
+    header: header?.[i] ?? `Column ${i + 1}`,
+    accessorFn: (row) => row.cells[i] ?? "",
+    className: "whitespace-pre-wrap break-words align-top",
+  }));
 }

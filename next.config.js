@@ -1189,7 +1189,7 @@ const nextConfig = {
 // `next dev` — another port, a second concurrent server even with a valid token,
 // any mode but live — is refused here, before a single
 // worker spawns. The table and the rule: scripts/agent-harness/shared-dev-servers.cjs.
-const { PHASE_DEVELOPMENT_SERVER } = require("next/constants");
+const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } = require("next/constants");
 const { sharedDevServerRefusal, otherDevServers } = require("./scripts/agent-harness/shared-dev-servers.cjs");
 
 function assertSharedDevServer(phase) {
@@ -1198,21 +1198,33 @@ function assertSharedDevServer(phase) {
   if (refusal) throw new Error(refusal);
 }
 
+// AN AGENT'S LOCAL `next build` RUNS UNDER THE MACHINE GUARD (Arman, 2026-10-17: "make the wrong one
+// very very very difficult"). Runaway local jobs of 28-112 GB ran the Mac out of memory about five
+// times a day; the wrapper runs one local build at a time and stops it at its memory ceiling.
+// `pnpm build:next` routes through it by itself. Vercel, CI and a person's own terminal are never
+// refused. Rule and wrapper: scripts/machine-guard/build-guard.cjs, docs/perf/machine-guard.md.
+const { rawBuildRefusal } = require("./scripts/machine-guard/build-guard.cjs");
+function assertGuardedBuild(phase) {
+  if (phase !== PHASE_PRODUCTION_BUILD) return;
+  const refusal = rawBuildRefusal({ env: process.env, platform: process.platform });
+  if (refusal) throw new Error(refusal);
+}
+
 // THE SHARED PREVIEW NEVER 500s ON AN @ai-matrx NAME NOT PUBLISHED YET (2026-10-07: three outages
 // in one day, every route 500 for ~30 agents, each one an edit importing a name the installed
-// package did not ship yet). In `next dev` only, a file that mentions @ai-matrx/ passes through a
-// loader that swaps an import the INSTALLED package certainly cannot satisfy for a loud placeholder
-// (red inline box + one console error naming file, package, installed and source version). A build
-// never gets it — a release must still fail on the real error. Why and the judge:
-// scripts/lib/matrx-pending-imports.mjs; `pnpm check:matrx-pending:self-test`.
-const MATRX_PENDING_LOADER = require.resolve("./lib/turbopack/matrx-pending-imports-loader.cjs");
+// package did not ship yet). In `next dev` only, a file that imports a name the INSTALLED package
+// certainly cannot satisfy passes through a loader that swaps it for a loud placeholder (red inline
+// box + one console error naming file, package, installed and source version). Since 2026-10-18 the
+// loader runs on THOSE FILES ONLY: one checker process (scripts/matrx-pending-checker.mjs, started by
+// preview:start and the watchdog) judges every changed file and lists the pending ones; this reads
+// the list at load (normally empty — no loader worker at all; it used to be every file mentioning
+// @ai-matrx/, 192 loader processes / 5.7 GB). A file that turns pending while the server runs gets a
+// restart from the checker. A build never gets it — a release must still fail on the real error.
+// Why and the judge: scripts/lib/matrx-pending-imports.mjs, docs/perf/preview-import-checker.md.
 function withPendingImportRescue(config) {
-  const rule = {
-    condition: { all: [{ not: "foreign" }, { content: /@ai-matrx\// }] },
-    loaders: [MATRX_PENDING_LOADER],
-  };
+  const { rules: rescue } = require("./scripts/lib/matrx-pending-rescue-state.cjs").loadRescueForDevServer(__dirname);
   const rules = { ...(config.turbopack?.rules ?? {}) };
-  for (const glob of ["*.ts", "*.tsx", "*.mts", "*.cts", "*.js", "*.jsx", "*.mjs", "*.cjs"]) {
+  for (const [glob, rule] of Object.entries(rescue)) {
     if (rules[glob]) throw new Error(`[matrx] turbopack.rules already has ${glob}; merge the pending-import rescue into it`);
     rules[glob] = rule;
   }
@@ -1236,6 +1248,7 @@ function withDevNativeReactCompiler(config) {
 copyFiles();
 module.exports = (phase) => {
   assertSharedDevServer(phase);
+  assertGuardedBuild(phase);
   const config =
     phase === PHASE_DEVELOPMENT_SERVER ? withDevNativeReactCompiler(withPendingImportRescue(nextConfig)) : nextConfig;
   return withBundleAnalyzer(config);

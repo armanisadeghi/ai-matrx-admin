@@ -143,6 +143,11 @@ describe("the triaged card", () => {
     expect(notice?.preparedByAgents).toBe(seven.length - FALLBACK_CARD_BUDGET);
   });
 
+  it("a failed triage read never puts an info item on the card", () => {
+    const info = item("fyi", { severity: "info" });
+    expect(buildAttentionNotice([source("spend-alarms", [info])], {}, NOW, "unavailable")).toBeNull();
+  });
+
   it("without triage (the review page) every live item is listed as before", () => {
     const notice = buildAttentionNotice([source("spend-alarms", seven)], {}, NOW);
     expect(notice?.sections[0].items).toHaveLength(seven.length);

@@ -18,7 +18,14 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Badge, Input } from "@ai-matrx/design-system/controls";
+import {
+  MatrxComparisonTable,
+  type ComparisonExtraColumn,
+  type ComparisonRow,
+  type ComparisonSubject,
+} from "@ai-matrx/design-system/data-table";
+import { TableSaveToMenu } from "@ai-matrx/rich-content/display/tables/TableSaveToMenu";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useCatalogBoundSelector } from "../shared/useCatalogBoundSelector";
@@ -44,7 +51,6 @@ import {
 } from "@ai-matrx/agents/presentation/decision-answers";
 import type { RootState } from "@/lib/redux/store";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { BattleTableTools } from "../shared/BattleTableTools";
 import { selectBlindActive, selectBlindOrder } from "../redux/selectors";
 import { blindAnonLabel } from "../shared/blind";
 
@@ -272,16 +278,147 @@ export function DecisionComparisonTable() {
     }),
   };
 
+  const answersFor = (name: string) =>
+    answering.map((c) => c.view?.answers.find((a) => a.name === name));
+  const deltaOf = (name: string) => {
+    const answers = answersFor(name);
+    const probabilities = answers
+      .map((a) => (a ? answerProbability(a) : null))
+      .filter((p): p is number => p != null);
+    const spread =
+      probabilities.length >= 2
+        ? Math.max(...probabilities) - Math.min(...probabilities)
+        : null;
+    const shownAnswers = answers
+      .map((a) => (a ? formatAnswerHeadline(a) : null))
+      .filter((a): a is string => a != null);
+    const disagree = shownAnswers.length >= 2 && new Set(shownAnswers).size > 1;
+    return { spread, disagree };
+  };
+
+  const subjects: ComparisonSubject[] = answering.map((column) => ({
+    id: column.columnId,
+    label: column.label,
+    header: (
+      <span className="inline-flex items-center gap-1.5">
+        {column.label}
+        {column.view?.method && (
+          <span
+            className="font-normal text-[10px] text-muted-foreground"
+            title={METHOD_EXPLANATIONS[column.view.method]}
+          >
+            {METHOD_LABELS[column.view.method]}
+          </span>
+        )}
+      </span>
+    ),
+  }));
+
+  const rows: ComparisonRow[] = questionNames.map((name) => {
+    // The question as asked leads; the field name is secondary.
+    const asked = answersFor(name).find((a) => a?.instruction)?.instruction;
+    return {
+      id: name,
+      label: asked ?? name,
+      header: (
+        <>
+          {asked && (
+            <span className="block text-xs leading-snug text-foreground">
+              {asked}
+            </span>
+          )}
+          <span className="block font-mono text-[10px] text-muted-foreground">
+            {name}
+          </span>
+        </>
+      ),
+      cell: (subject) => {
+        const column = answering.find((c) => c.columnId === subject.id);
+        const answer = column?.view?.answers.find((a) => a.name === name);
+        const refusal = answer
+          ? undefined
+          : column?.view?.refusals.find((r) => r.name === name);
+        if (!answer && !refusal) return null;
+        return {
+          text: answer ? formatAnswerHeadline(answer) : `refused — ${refusal?.reason ?? ""}`,
+          node: <ColumnAnswerCell view={column?.view ?? null} questionName={name} />,
+        };
+      },
+    };
+  });
+
+  const extraColumns: ComparisonExtraColumn[] = [
+    {
+      id: "delta",
+      label: "Delta",
+      width: 110,
+      text: (row) => {
+        const { spread, disagree } = deltaOf(row.id);
+        return disagree ? "different answers" : spread != null ? percent(spread) : "";
+      },
+      cell: (row) => {
+        const { spread, disagree } = deltaOf(row.id);
+        return disagree ? (
+          <Badge tone="destructive">different answers</Badge>
+        ) : spread != null ? (
+          <span
+            className={cn(
+              "font-mono text-[10px]",
+              spread >= 0.2 ? "text-warning" : "text-muted-foreground",
+            )}
+          >
+            {percent(spread)}
+          </span>
+        ) : (
+          <span className="text-[10px] text-muted-foreground">—</span>
+        );
+      },
+    },
+    {
+      id: "verdict",
+      label: "Verdict",
+      width: 220,
+      text: (row) => verdicts[row.id]?.answer ?? "",
+      cell: (row) => {
+        const name = row.id;
+        const verdict = verdicts[name];
+        const draft = drafts[name] ?? verdict?.answer ?? "";
+        return (
+          <div className="flex items-center gap-1">
+            <Input
+              value={draft}
+              disabled={!setId}
+              onChange={(e) =>
+                setDrafts((prev) => ({
+                  ...prev,
+                  [name]: e.target.value,
+                }))
+              }
+              onBlur={() => void commitVerdict(name)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void commitVerdict(name);
+              }}
+              placeholder={setId ? "What was true" : "Save first"}
+              aria-label={`True answer for ${name}`}
+            />
+            {savingName === name ? (
+              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+            ) : verdict ? (
+              <Check className="w-3 h-3 text-success" aria-label="Verdict saved" />
+            ) : null}
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-2 p-2">
-      <div className="flex items-center justify-end gap-2">
-        <BattleTableTools
-          name={battleName ? `${battleName} — Decisions` : "Decisions"}
-          grid={decisionsGrid}
-          aiContext="Each column's answer to every decision question, how far apart they are, and the verdict recorded as true."
-        />
-        {reviewAgentId && <ReviewAnswersLink agentId={reviewAgentId} force />}
-      </div>
+      {reviewAgentId && (
+        <div className="flex items-center justify-end gap-2">
+          <ReviewAnswersLink agentId={reviewAgentId} force />
+        </div>
+      )}
       {answering.length < 2 && (
         <p className="text-[11px] text-muted-foreground">
           The delta appears once a second column answers.
@@ -306,140 +443,25 @@ export function DecisionComparisonTable() {
         </p>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[32rem] text-xs border-collapse">
-          <thead>
-            <tr className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              <th className="text-left font-medium py-1 pr-2">Question</th>
-              {answering.map((column) => (
-                <th
-                  key={column.columnId}
-                  className="text-left font-medium py-1 pr-2"
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    {column.label}
-                    {column.view?.method && (
-                      <span
-                        className="normal-case font-normal text-[10px] text-muted-foreground"
-                        title={METHOD_EXPLANATIONS[column.view.method]}
-                      >
-                        {METHOD_LABELS[column.view.method]}
-                      </span>
-                    )}
-                  </span>
-                </th>
-              ))}
-              <th className="text-left font-medium py-1 pr-2 w-[4.5rem]">
-                Delta
-              </th>
-              <th className="text-left font-medium py-1 w-[12rem]">Verdict</th>
-            </tr>
-          </thead>
-          <tbody>
-            {questionNames.map((name) => {
-              const answers = answering.map((c) =>
-                c.view?.answers.find((a) => a.name === name),
-              );
-              const probabilities = answers
-                .map((a) => (a ? answerProbability(a) : null))
-                .filter((p): p is number => p != null);
-              const spread =
-                probabilities.length >= 2
-                  ? Math.max(...probabilities) - Math.min(...probabilities)
-                  : null;
-              const shownAnswers = answers
-                .map((a) => (a ? formatAnswerHeadline(a) : null))
-                .filter((a): a is string => a != null);
-              const disagree =
-                shownAnswers.length >= 2 && new Set(shownAnswers).size > 1;
-              const verdict = verdicts[name];
-              const draft = drafts[name] ?? verdict?.answer ?? "";
-              return (
-                <tr key={name} className="border-t border-border/60 align-top">
-                  <td className="py-1.5 pr-2">
-                    {/* The question as asked leads; the field name is secondary. */}
-                    {(() => {
-                      const asked = answers.find(
-                        (a) => a?.instruction,
-                      )?.instruction;
-                      return (
-                        <>
-                          {asked && (
-                            <span className="block text-xs leading-snug text-foreground">
-                              {asked}
-                            </span>
-                          )}
-                          <span className="block font-mono text-[10px] text-muted-foreground">
-                            {name}
-                          </span>
-                        </>
-                      );
-                    })()}
-                  </td>
-                  {answering.map((column) => (
-                    <td key={column.columnId} className="py-1.5 pr-2">
-                      <ColumnAnswerCell
-                        view={column.view}
-                        questionName={name}
-                      />
-                    </td>
-                  ))}
-                  <td className="py-1.5 pr-2">
-                    {disagree ? (
-                      <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] text-destructive-ink">
-                        different answers
-                      </span>
-                    ) : spread != null ? (
-                      <span
-                        className={cn(
-                          "font-mono text-[10px]",
-                          spread >= 0.2
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {percent(spread)}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground">
-                        —
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-1.5">
-                    <div className="flex items-center gap-1">
-                      <Input
-                        value={draft}
-                        disabled={!setId}
-                        onChange={(e) =>
-                          setDrafts((prev) => ({
-                            ...prev,
-                            [name]: e.target.value,
-                          }))
-                        }
-                        onBlur={() => void commitVerdict(name)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") void commitVerdict(name);
-                        }}
-                        placeholder={setId ? "What was true" : "Save first"}
-                        aria-label={`True answer for ${name}`}
-                      />
-                      {savingName === name ? (
-                        <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-                      ) : verdict ? (
-                        <Check
-                          className="w-3 h-3 text-emerald-500"
-                          aria-label="Verdict saved"
-                        />
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <MatrxComparisonTable
+        title={battleName ? `${battleName} — Decisions` : "Decisions"}
+        hideTitle
+        location="AI Matrx — Agent Battle"
+        cornerLabel="Question"
+        subjects={subjects}
+        rows={rows}
+        extraColumns={extraColumns}
+        cellLines="four"
+        rowHeaderWidth={260}
+        aiContext="Each column's answer to every decision question, how far apart they are, and the verdict recorded as true."
+        actions={
+          <TableSaveToMenu
+            headers={decisionsGrid.headers}
+            rows={decisionsGrid.rows}
+            title={battleName ? `${battleName} — Decisions` : "Decisions"}
+          />
+        }
+      />
     </div>
   );
 }

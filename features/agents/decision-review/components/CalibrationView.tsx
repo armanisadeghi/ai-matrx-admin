@@ -24,6 +24,8 @@ import {
 } from "../service";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { LiteTable } from "@ai-matrx/design-system/lite-table";
+import type { components } from "@ai-matrx/api/types";
 import { ReliabilityCurve } from "./ReliabilityCurve";
 import { ReferenceCheck } from "./ReferenceCheck";
 import { readReferenceGroups } from "../reference";
@@ -32,6 +34,21 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const ALL = "__all__";
 type View = "human" | "reference";
 type Signal = "probability" | "confidence";
+
+type CalibrationBin = components["schemas"]["ReliabilityBin"];
+
+const BIN_COLUMNS: MatrxColumnDef<CalibrationBin>[] = [
+  { id: "stated", header: "Stated", sortValue: (b) => b.lower, cell: (b) => `${pct(b.lower)}–${pct(b.upper)}`, className: "font-mono" },
+  { accessorKey: "count", header: "Labels", align: "right", className: "font-mono" },
+  { accessorKey: "mean_predicted", header: "Mean stated", align: "right", cell: (b) => pct(b.mean_predicted), className: "font-mono" },
+  { accessorKey: "observed_accuracy", header: "Right", align: "right", cell: (b) => pct(b.observed_accuracy), className: "font-mono" },
+  {
+    accessorKey: "gap",
+    header: "Gap",
+    align: "right",
+    cell: (b) => <span className={cn("font-mono", b.gap < -0.1 && "text-destructive")}>{`${b.gap > 0 ? "+" : ""}${Math.round(b.gap * 100)}`}</span>,
+  },
+];
 
 function pct(v: number | null | undefined): string {
   return v == null ? "—" : `${Math.round(v * 100)}%`;
@@ -325,38 +342,15 @@ export function CalibrationView({ agentId }: { agentId: string }) {
                     )}
                   </div>
                 )}
-                <table className="border-collapse self-start type-secondary">
-                  <thead>
-                    <tr className="text-left type-meta uppercase tracking-wide text-muted-foreground">
-                      <th className="py-1 pr-3 font-medium">Stated</th>
-                      <th className="py-1 pr-3 text-right font-medium">Labels</th>
-                      <th className="py-1 pr-3 text-right font-medium">Mean stated</th>
-                      <th className="py-1 pr-3 text-right font-medium">Right</th>
-                      <th className="py-1 text-right font-medium">Gap</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(measure.bins ?? []).map((b) => (
-                      <tr key={b.lower} className="border-t border-border/60 font-mono">
-                        <td className="py-1 pr-3">
-                          {pct(b.lower)}–{pct(b.upper)}
-                        </td>
-                        <td className="py-1 pr-3 text-right">{b.count}</td>
-                        <td className="py-1 pr-3 text-right">{pct(b.mean_predicted)}</td>
-                        <td className="py-1 pr-3 text-right">{pct(b.observed_accuracy)}</td>
-                        <td
-                          className={cn(
-                            "py-1 text-right",
-                            b.gap < -0.1 && "text-destructive",
-                          )}
-                        >
-                          {b.gap > 0 ? "+" : ""}
-                          {Math.round(b.gap * 100)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <LiteTable
+                  data={measure.bins ?? []}
+                  columns={BIN_COLUMNS}
+                  getRowId={(b) => String(b.lower)}
+                  density="condensed"
+                  copyRows={false}
+                  ariaLabel="Calibration bins"
+                  className="self-start"
+                />
               </div>
             )}
           </>

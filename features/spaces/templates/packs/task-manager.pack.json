@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "version": 3,
-  "title": "Task Manager",
-  "description": "Capture tasks, sort by status and priority, and work from smart lists and a calendar.",
-  "forWho": "Anyone with too many things to do",
+  "version": 4,
+  "title": "Personal To-Do List",
+  "description": "Anyone with a long to-do list: capture tasks, sort by priority, use smart lists.",
+  "forWho": "Anyone with a long to-do list",
   "icon": {
     "emoji": "☑️"
   },
@@ -14,9 +14,12 @@
   },
   "category": "personal",
   "tags": [
-    "tasks",
+    "to do",
     "todo",
-    "gtd"
+    "tasks",
+    "gtd",
+    "checklist",
+    "calendar"
   ],
   "spec": {
     "specVersion": 1,
@@ -935,13 +938,13 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
       "key": "task-manager",
       "parent": null,
-      "title": "Task Manager",
+      "title": "Personal To-Do List",
       "icon": {
         "emoji": "☑️"
       },
@@ -957,7 +960,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Capture everything, then work from the smart lists. Add a task, give it a day if it has one, and let the views sort the rest."
+              "text": "A simple personal to-do list. Capture everything, then work from the smart lists. Add a task, give it a day if it has one, and let the views sort the rest."
             }
           ],
           "background": "blue",

@@ -19,6 +19,12 @@ import Link from "next/link";
 import type { RulebookRule } from "../../types";
 import { ruleAnchorId } from "../detail/RuleRelations";
 import type { AuditionVerdict, RuleFinding } from "./auditionVerdict";
+import {
+  MatrxComparisonTable,
+  type ComparisonCell,
+  type ComparisonRow,
+  type ComparisonSubject,
+} from "@ai-matrx/design-system/data-table";
 
 const WINNER_COPY: Record<string, { label: string; cls: string }> = {
   candidate: { label: "wins", cls: "text-primary" },
@@ -47,80 +53,67 @@ export function RuleFidelityTable({
     ...verdict.vanilla_findings.filter((f) => !seen.has(f.rule_id)),
   ];
   const showVanilla = verdict.vanilla_compared;
+  const mineById = new Map(verdict.findings.map((f) => [f.rule_id, f] as const));
+  const subjects: ComparisonSubject[] = [
+    { id: "mine", label: "Yours vs the original" },
+    ...(showVanilla ? [{ id: "vanilla", label: "Vanilla AI vs the original" }] : []),
+  ];
+  const findingCell = (finding: RuleFinding | undefined): ComparisonCell => {
+    // An arm never asked about a rule says so — never a silent drop.
+    if (!finding) {
+      return {
+        text: "not judged on this rule",
+        node: <span className="text-muted-foreground">not judged on this rule</span>,
+      };
+    }
+    const copy = WINNER_COPY[finding.winner];
+    const label = copy?.label ?? finding.winner;
+    return {
+      text: finding.note ? `${label} — ${finding.note}` : label,
+      node: (
+        <span>
+          <span className={copy?.cls}>{label}</span>
+          {finding.note ? (
+            <span className="text-muted-foreground"> — {finding.note}</span>
+          ) : null}
+        </span>
+      ),
+    };
+  };
+  const tableRows: ComparisonRow[] = rows.map((row) => {
+    const rule = rulesById.get(row.rule_id);
+    return {
+      id: row.rule_id,
+      label: rule?.name ?? "a rule that is no longer in this Rulebook",
+      header: rule ? (
+        <Link
+          href={`/masterwork/${rulebookId}#${ruleAnchorId(rule.id)}`}
+          className="font-medium text-primary underline-offset-2 hover:underline"
+        >
+          {rule.name}
+        </Link>
+      ) : (
+        <span className="font-medium text-warning">
+          a rule that is no longer in this Rulebook
+        </span>
+      ),
+      cell: (subject) =>
+        findingCell(
+          subject.id === "mine" ? mineById.get(row.rule_id) : vanillaById.get(row.rule_id),
+        ),
+    };
+  });
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
-        <thead>
-          <tr className="text-left text-muted-foreground">
-            <th className="py-1 pr-2 font-medium">Rule</th>
-            <th className="py-1 pr-2 font-medium">Yours vs the original</th>
-            {showVanilla ? (
-              <th className="py-1 font-medium">Vanilla AI vs the original</th>
-            ) : null}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const rule = rulesById.get(row.rule_id);
-            const mine = seen.has(row.rule_id)
-              ? verdict.findings.find((f) => f.rule_id === row.rule_id)
-              : undefined;
-            const theirs = vanillaById.get(row.rule_id);
-            return (
-              <tr key={row.rule_id} className="border-t border-border align-top">
-                <td className="py-1 pr-2">
-                  {rule ? (
-                    <Link
-                      href={`/masterwork/${rulebookId}#${ruleAnchorId(rule.id)}`}
-                      className="font-medium text-primary underline-offset-2 hover:underline"
-                    >
-                      {rule.name}
-                    </Link>
-                  ) : (
-                    <span className="font-medium text-amber-600 dark:text-amber-500">
-                      a rule that is no longer in this Rulebook
-                    </span>
-                  )}
-                </td>
-                <td className="py-1 pr-2">
-                  {mine ? (
-                    <>
-                      <span className={WINNER_COPY[mine.winner]?.cls}>
-                        {WINNER_COPY[mine.winner]?.label ?? mine.winner}
-                      </span>
-                      {mine.note ? (
-                        <span className="text-muted-foreground"> — {mine.note}</span>
-                      ) : null}
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      not judged on this rule
-                    </span>
-                  )}
-                </td>
-                {showVanilla ? (
-                  <td className="py-1">
-                    {theirs ? (
-                      <>
-                        <span className={WINNER_COPY[theirs.winner]?.cls}>
-                          {WINNER_COPY[theirs.winner]?.label ?? theirs.winner}
-                        </span>
-                        {theirs.note ? (
-                          <span className="text-muted-foreground"> — {theirs.note}</span>
-                        ) : null}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        not judged on this rule
-                      </span>
-                    )}
-                  </td>
-                ) : null}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <MatrxComparisonTable
+      title="Rule by rule"
+      hideTitle
+      location="Masterwork Audition"
+      cornerLabel="Rule"
+      subjects={subjects}
+      rows={tableRows}
+      cellLines="four"
+      subjectWidth={280}
+      aiContext="Each rule the judge read: how the Masterwork did against the original, beside the plain model on the same rule."
+    />
   );
 }

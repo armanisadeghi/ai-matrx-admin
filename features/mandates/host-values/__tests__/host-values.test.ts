@@ -40,7 +40,15 @@ describe("host-value sites guard", () => {
   for (const site of HOST_VALUE_SITES.filter((s) => s.status === "wired")) {
     it(`${site.site} sends ${site.provision} through the channel`, () => {
       const source = readFileSync(path.join(ROOT, site.file), "utf8");
-      expect(channelCallFor(source, site.provision)).toBe(true);
+      if (site.via === "contextItems") {
+        // ProTextareaAgentPanel turns contextItems into `variables` on the mandate door.
+        expect(source).toMatch(/contextItems=/);
+        expect(source).toMatch(new RegExp(`mandateKey=\\{MANDATE_KEYS\\.${site.mandateKey.replace(/\./g, "__")}\\}`));
+        const panel = readFileSync(path.join(ROOT, "components/official/proTextareaAgentActions.ts"), "utf8");
+        expect(panel).toMatch(/byMandate\s*\?\s*\{\s*variables:/);
+      } else {
+        expect(channelCallFor(source, site.provision)).toBe(true);
+      }
     });
   }
 

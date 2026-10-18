@@ -566,12 +566,18 @@ function DatabaseBody({
                 if (wrapColumns && JSON.stringify(wrapColumns) !== JSON.stringify(view.wrapColumns ?? [])) look.wrapColumns = wrapColumns;
                 if (Object.keys(look).length) onLook(look);
               }
-            : undefined
+            : // A view this block cannot save onto (preview, published, read-only): the change is kept for the
+              // visit by records-ui's own state. Handing a no-op keeps its "nowhere to save" line off the page
+              // (ADVERSARIAL-1 #5: developer prose under every board).
+              KEEP_FOR_THE_VISIT
         }
       />
     </div>
   );
 }
+
+/** records-ui's onViewChange for a view nothing saves: its own state already keeps the change. */
+const KEEP_FOR_THE_VISIT = () => undefined;
 
 /**
  * Notion's lightning (F3): the table's automations — records-ui's rule editor ("when a row …, tell …")

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 2,
+  "version": 3,
   "title": "Product Roadmap",
-  "description": "Now, next, later roadmap with timeline, themes, releases and a status dashboard.",
+  "description": "Product teams: a now, next, later roadmap with themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
   "icon": {
     "emoji": "🗺️"
@@ -17,7 +17,9 @@
     "roadmap",
     "product",
     "releases",
-    "planning"
+    "planning",
+    "timeline",
+    "kanban"
   ],
   "spec": {
     "specVersion": 1,
@@ -85,7 +87,15 @@
             "contextPolicy": "include",
             "via": "items",
             "pick": "item_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Idea",
+                "Planned",
+                "In progress",
+                "Shipped"
+              ]
+            }
           },
           {
             "key": "shipped_count",
@@ -791,7 +801,15 @@
             "contextPolicy": "include",
             "via": "items",
             "pick": "item_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Idea",
+                "Planned",
+                "In progress",
+                "Shipped"
+              ]
+            }
           },
           {
             "key": "shipped_in",
@@ -1218,7 +1236,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

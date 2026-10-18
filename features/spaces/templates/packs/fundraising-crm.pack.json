@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0357",
-  "version": 3,
+  "version": 4,
   "title": "Fundraising CRM",
-  "description": "Run an investor pipeline with rounds, interactions, monthly updates and a cap table.",
+  "description": "Startup founders: run an investor pipeline with rounds, updates and a cap table.",
   "forWho": "Startup founders",
   "icon": {
     "emoji": "💰"
@@ -17,7 +17,9 @@
     "fundraising",
     "investors",
     "pipeline",
-    "startup"
+    "startup",
+    "crm",
+    "vc"
   ],
   "spec": {
     "specVersion": 1,
@@ -825,7 +827,17 @@
             "contextPolicy": "include",
             "via": "investors",
             "pick": "expected",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "stage": [
+                "Target",
+                "Contacted",
+                "Meeting",
+                "Diligence",
+                "Term sheet",
+                "Closed"
+              ]
+            }
           },
           {
             "key": "committed",
@@ -872,7 +884,17 @@
             "contextPolicy": "include",
             "via": "investors",
             "pick": "investor_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "stage": [
+                "Target",
+                "Contacted",
+                "Meeting",
+                "Diligence",
+                "Term sheet",
+                "Closed"
+              ]
+            }
           },
           {
             "key": "close_on",
@@ -1585,7 +1607,7 @@
               "holder_name": "Avery Lindqvist",
               "shares": 4200000,
               "share_class": "Common",
-              "percent_owned": 42.0
+              "percent_owned": 42
             }
           },
           {
@@ -1594,7 +1616,7 @@
               "holder_name": "Sunil Ramaswamy",
               "shares": 2200000,
               "share_class": "Common",
-              "percent_owned": 22.0
+              "percent_owned": 22
             }
           },
           {
@@ -1603,7 +1625,7 @@
               "holder_name": "Employee option pool",
               "shares": 1000000,
               "share_class": "Options",
-              "percent_owned": 10.0
+              "percent_owned": 10
             }
           },
           {
@@ -1612,7 +1634,7 @@
               "holder_name": "Larchwood Ventures",
               "shares": 1500000,
               "share_class": "Preferred",
-              "percent_owned": 15.0
+              "percent_owned": 15
             }
           },
           {
@@ -1621,7 +1643,7 @@
               "holder_name": "Early angels",
               "shares": 1100000,
               "share_class": "Preferred",
-              "percent_owned": 11.0
+              "percent_owned": 11
             }
           }
         ]
@@ -2009,7 +2031,7 @@
         "Hollin Wharf"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

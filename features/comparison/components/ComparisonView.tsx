@@ -11,9 +11,9 @@
  */
 
 import type { ReactNode } from "react";
-import { ExternalLink, Info, Table2, Trophy } from "lucide-react";
+import { ExternalLink, Table2, Trophy } from "lucide-react";
 import { Badge, Tile } from "@ai-matrx/design-system/controls";
-import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { formatPoints } from "@ai-matrx/kit/format";
 
@@ -151,11 +151,11 @@ function DetailsTable({ fields, items, label }: { fields: CompareField[]; items:
                 <div key={it.item_id} className="min-w-0">
                   <div className="type-meta truncate text-muted-foreground">{it.name}</div>
                   <div className="flex items-start gap-1">
-                    <div className="type-body line-clamp-3 min-w-0 text-foreground" title={v?.basis || undefined}>
+                    <div className="type-body line-clamp-3 min-w-0 text-foreground">
                       {v && v.display !== "—" ? v.display : <span className="text-muted-foreground">—</span>}
                     </div>
-                    <SourceMarker basis={v?.basis} what={`${f.label} for ${it.name}`} />
                   </div>
+                  {v?.basis ? <SourceLine basis={v.basis} /> : null}
                 </div>
               );
             })}
@@ -174,20 +174,9 @@ function HiddenNote({ result }: { result: ComparisonResult }) {
   return <span className="type-meta truncate text-muted-foreground" title={all}>Same for all · {all}</span>;
 }
 
-/** Where a number came from, reachable by tap or click (a `title` alone never shows on touch). */
-function SourceMarker({ basis, what }: { basis?: string | null; what: string }) {
-  if (!basis) return null;
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button type="button" aria-label={`Where ${what} comes from`}
-          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
-          <Info className="h-3.5 w-3.5" aria-hidden />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="type-secondary max-w-xs text-foreground">{basis}</PopoverContent>
-    </Popover>
-  );
+/** Where a value came from, printed on the cell itself — never hover-only. */
+function SourceLine({ basis, className }: { basis: string; className?: string }) {
+  return <span className={cn("type-meta block truncate text-muted-foreground", className)} title={basis}>{basis}</span>;
 }
 
 function ContenderCard({ item, primary, kind, factsHref, onPick }: {
@@ -211,7 +200,7 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
         <ItemLogo name={item.name} logoUrl={item.logo_url} website={item.website} size={44} fill={isPhoto(kind)} />
         <div className="flex items-center gap-1.5">
         {item.source_label ? <Badge>{item.source_label}</Badge> : null}
-        {!failed && !choosing ? (
+        {!failed && !choosing && item.rank > 0 ? (
           <span className={cn("flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-sm font-semibold tabular-nums",
             lead ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground")}
           aria-label={`Rank ${item.rank}`}>
@@ -243,9 +232,9 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
         <div className="flex items-baseline gap-1.5" title={pv?.basis || undefined}>
           <span className="text-3xl font-semibold tabular-nums tracking-tight text-foreground">{pv?.display ?? "—"}</span>
           {primary ? <span className="type-secondary text-muted-foreground">{primary.label.toLowerCase()}</span> : null}
-          <SourceMarker basis={pv?.basis} what={`${primary?.label ?? "Value"} for ${item.name}`} />
         </div>
       )}
+      {!failed && !choosing && pv?.basis ? <SourceLine basis={pv.basis} /> : null}
 
       <div className="mt-auto flex items-center gap-3 pt-1">
         {facts ? (
@@ -290,6 +279,7 @@ function FieldCard({ field, result }: { field: CompareField; result: ComparisonR
                 (!v || v.display === "—") && "text-muted-foreground")} title={v?.basis || undefined}>
                 {v?.display ?? "—"}
               </span>
+              {v?.basis ? <SourceLine basis={v.basis} className="col-span-2 col-start-2 sm:col-span-3" /> : null}
             </li>
           );
         })}

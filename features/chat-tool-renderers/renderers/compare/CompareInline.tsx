@@ -117,6 +117,11 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
   } else {
     body = (
       <div className="space-y-3 px-3 py-3" data-compare-confirm="">
+        {data.howFound ? (
+          <p className="type-secondary text-muted-foreground" data-compare-how="">
+            {data.howFound}{data.guessed ? " A best guess." : ""}
+          </p>
+        ) : null}
         <ul className="space-y-2.5">{data.found.map((f, i) => <FoundRow key={i} f={f} photo={photo} />)}</ul>
         {run.failure ? <ErrorNotice size="inline" message={run.failure} /> : null}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2.5">

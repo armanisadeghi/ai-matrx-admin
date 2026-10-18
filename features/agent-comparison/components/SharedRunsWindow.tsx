@@ -36,6 +36,7 @@ import { toast } from "@/lib/toast";
 import { exportFilename } from "@/components/agent-copy/export";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { RunsComparisonTable } from "./RunsComparisonTable";
+import { BattleTestsPanel } from "./BattleTestsPanel";
 import { runsReportHtml, runsReportMarkdown } from "./runsComparisonReport";
 
 interface SharedRunsWindowProps {
@@ -176,6 +177,7 @@ export function SharedRunsWindow({ id, onClose }: SharedRunsWindowProps) {
           </div>
         ) : (
           <div className="flex-1 overflow-auto">
+            <BattleTestsPanel />
             <RunsComparisonTable />
           </div>
         )}

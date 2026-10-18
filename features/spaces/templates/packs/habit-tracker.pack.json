@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0202",
-  "version": 2,
+  "version": 3,
   "title": "Habit Tracker",
-  "description": "Check habits off daily, see streaks and completion, and review the month at a glance.",
+  "description": "Anyone building routines: check habits off daily and watch streaks and monthly progress.",
   "forWho": "Anyone building routines",
   "icon": {
     "emoji": "✅"
@@ -17,7 +17,9 @@
     "habits",
     "routine",
     "streaks",
-    "health"
+    "health",
+    "tracker",
+    "daily"
   ],
   "spec": {
     "specVersion": 1,
@@ -1523,7 +1525,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0356",
-  "version": 3,
+  "version": 4,
   "title": "Subscription Tracker",
-  "description": "Track recurring payments with monthly and yearly cost, renewal dates and reminders.",
+  "description": "Individuals and teams: every recurring payment with cost, renewal date and reminders.",
   "forWho": "Individuals and small teams",
   "icon": {
     "emoji": "🔁"
@@ -17,7 +17,9 @@
     "subscriptions",
     "renewals",
     "recurring",
-    "budget"
+    "budget",
+    "bills",
+    "saas"
   ],
   "spec": {
     "specVersion": 1,
@@ -281,7 +283,7 @@
             "key": "s1",
             "values": {
               "sub_name": "Studio Suite design app",
-              "cost": 24.0,
+              "cost": 24,
               "cycle": "Monthly",
               "category": "Software",
               "payment": "Card",
@@ -309,7 +311,7 @@
             "key": "s3",
             "values": {
               "sub_name": "Cloud drive 2 TB",
-              "cost": 99.0,
+              "cost": 99,
               "cycle": "Yearly",
               "category": "Cloud",
               "payment": "Card",
@@ -337,7 +339,7 @@
             "key": "s5",
             "values": {
               "sub_name": "Notebook sync plan",
-              "cost": 29.0,
+              "cost": 29,
               "cycle": "Quarterly",
               "category": "Software",
               "payment": "Wallet",
@@ -351,7 +353,7 @@
             "key": "s6",
             "values": {
               "sub_name": "Daily Ledger news",
-              "cost": 8.0,
+              "cost": 8,
               "cycle": "Weekly",
               "category": "Media",
               "payment": "Card",
@@ -365,7 +367,7 @@
             "key": "s7",
             "values": {
               "sub_name": "Domain and email hosting",
-              "cost": 72.0,
+              "cost": 72,
               "cycle": "Bi-yearly",
               "category": "Cloud",
               "payment": "Card",
@@ -407,7 +409,7 @@
             "key": "s10",
             "values": {
               "sub_name": "Podcast network pass",
-              "cost": 6.0,
+              "cost": 6,
               "cycle": "Monthly",
               "category": "Media",
               "payment": "Wallet",
@@ -421,7 +423,7 @@
             "key": "s11",
             "values": {
               "sub_name": "Password manager family",
-              "cost": 48.0,
+              "cost": 48,
               "cycle": "Yearly",
               "category": "Software",
               "payment": "Card",
@@ -435,7 +437,7 @@
             "key": "s12",
             "values": {
               "sub_name": "Meal kit box",
-              "cost": 74.0,
+              "cost": 74,
               "cycle": "Quarterly",
               "category": "Other",
               "payment": "Bank transfer",
@@ -807,7 +809,7 @@
         "Quillon Terrace"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

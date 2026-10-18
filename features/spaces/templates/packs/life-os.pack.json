@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 3,
+  "version": 4,
   "title": "Life OS",
-  "description": "Tasks, projects, notes, goals and areas in one connected home with a daily view.",
+  "description": "Anyone: tasks, projects, notes and goals in one home, with a daily view.",
   "forWho": "Anyone running their whole life from one place",
   "icon": {
     "emoji": "🧭"
@@ -17,7 +17,9 @@
     "life",
     "tasks",
     "goals",
-    "para"
+    "para",
+    "to do",
+    "notes"
   ],
   "spec": {
     "specVersion": 1,
@@ -2079,7 +2081,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

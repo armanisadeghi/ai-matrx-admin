@@ -41,7 +41,7 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
       { id: "applets", name: "Applets", pitch: "Package your AI for anyone to use", icon: <Puzzle />, href: "/applets", tone: 8 },
       { id: "boards", name: "Boards", pitch: "All your work on one canvas", icon: <LayoutGrid />, href: "/board", tone: 3 },
       { id: "custom-data", name: "Custom data", pitch: "Your own tables, shaped your way", icon: <Database />, href: "/data", tone: 6 },
-      { id: "knowledge", name: "Knowledge", pitch: "Everything in one place. Agents never forget.", icon: <Library />, href: "/knowledge", tone: 5 },
+      { id: "knowledge", name: "Knowledge", pitch: "Everything in one place. Agents never forget.", icon: <Library />, href: "/knowledge/hub", tone: 5 },
       { id: "tools", name: "Tools & Connectors", pitch: "Plug agents into the apps you use", icon: <Plug />, href: "/agent-connections", tone: 2 },
     ],
   },

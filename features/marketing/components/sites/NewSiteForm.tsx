@@ -114,7 +114,7 @@ export function NewSiteForm() {
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedOrgId) {
-      toast.error("Choose an organization for this site.");
+      toast.error("An organization is needed for this site.");
       return;
     }
     let parsed: URL;

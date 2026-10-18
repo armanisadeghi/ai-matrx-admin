@@ -39,7 +39,7 @@ export function WarRoomThreadHitRow({ hit }: { hit: WarRoomSearchThreadHit }) {
       }}
       className={cn(
         "group relative flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 pl-4",
-        "transition-all hover:border-primary/40 hover:shadow-[var(--elevation-1)]",
+        "transition-all hover:border-primary/40 hover:shadow-sm",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         pending && "opacity-70 pointer-events-none",
       )}

@@ -488,7 +488,7 @@ function main(): void {
 
   if (blocking.findings.length > 0) {
     console.log(
-      `${C.red}${C.bold}${blocking.findings.length} BLOCKING finding${blocking.findings.length === 1 ? "" : "s"}.${C.reset} ${C.dim}copy-optout: place the copy control, never remove it (or \`// table-copy-optout: <reason>\`). hand-table: use MatrxDataTable. Never add to ${BASELINE_FILE}.${C.reset}\n`,
+      `${C.red}${C.bold}${blocking.findings.length} BLOCKING finding${blocking.findings.length === 1 ? "" : "s"}.${C.reset} ${C.dim}copy-optout: place the copy control, never remove it (or \`// table-copy-optout: <reason>\`). hand-table: RecordList → LiteTable → MatrxDataTable. Never add to ${BASELINE_FILE}.${C.reset}\n`,
     );
     exitAfterDrain(1);
   }

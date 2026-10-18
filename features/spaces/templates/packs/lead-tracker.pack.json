@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0158",
-  "version": 2,
+  "version": 3,
   "title": "Lead Tracker",
-  "description": "Capture leads, follow up on time and turn the best into deals.",
+  "description": "Small sales teams: capture leads, follow up on time and turn the best into deals.",
   "forWho": "Small sales teams and agencies",
   "icon": {
     "emoji": "🎯"
@@ -16,8 +16,10 @@
   "tags": [
     "leads",
     "sales",
-    "followup",
-    "intake"
+    "follow-up",
+    "crm",
+    "intake",
+    "pipeline"
   ],
   "spec": {
     "specVersion": 1,
@@ -971,7 +973,7 @@
         "Peachtree Hollow"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

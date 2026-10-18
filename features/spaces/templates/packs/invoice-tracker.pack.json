@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0359",
-  "version": 2,
+  "version": 3,
   "title": "Invoice Tracker",
-  "description": "Track invoices from draft to paid, flag late ones, and see what each client owes.",
-  "forWho": "Freelancers and small businesses",
+  "description": "Freelancers: track invoices from draft to paid, flag late ones, see what clients owe.",
+  "forWho": "Freelancers and solo consultants",
   "icon": {
     "emoji": "🧾"
   },
@@ -17,7 +17,9 @@
     "invoices",
     "billing",
     "clients",
-    "payments"
+    "payments",
+    "freelance",
+    "late payments"
   ],
   "spec": {
     "specVersion": 1,
@@ -126,7 +128,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "paid_total",
@@ -178,7 +187,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "memo",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "paid_pct",
@@ -1138,7 +1154,7 @@
         "Juniper Grist Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1160,7 +1176,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Create an invoice, move it from Draft to Sent to Paid, and let the Past due column warn you when a due date slips. Clients show what they have been billed and what is still open."
+              "text": "For freelancers billing a handful of clients. Create an invoice, move it from Draft to Sent to Paid, and let the Past due column warn you when a due date slips. Clients show what they have been billed and what is still open."
             }
           ],
           "background": "blue",

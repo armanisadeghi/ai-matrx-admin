@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0208",
-  "version": 2,
+  "version": 3,
   "title": "Personal Budget",
-  "description": "Track income, expenses by category, monthly totals and savings goals.",
+  "description": "Individuals: track monthly income and spending by category, plus savings goals.",
   "forWho": "Individuals tracking their money",
   "icon": {
     "emoji": "💵"
@@ -16,7 +16,10 @@
   "tags": [
     "budget",
     "money",
-    "expenses"
+    "expenses",
+    "income",
+    "savings",
+    "personal finance"
   ],
   "spec": {
     "specVersion": 1,
@@ -1466,7 +1469,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

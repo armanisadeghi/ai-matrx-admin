@@ -384,6 +384,8 @@ export function RequestsContent({ result }: Props) {
             extraSections={rowMenu.sections}
           >
           <MatrxDataTable
+            tableId="cx-requests"
+            viewFilters={sourceFilter.viewFilters}
             data={result.data}
             columns={columns}
             getRowId={(r) => r.id}

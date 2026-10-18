@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
-  "version": 2,
+  "version": 3,
   "title": "Marketing OS",
-  "description": "One home for campaigns, content, SEO, assets and leads with a weekly view.",
+  "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
   "forWho": "Marketing teams that want everything in one place",
   "icon": {
     "emoji": "🧭"
@@ -17,7 +17,9 @@
     "marketing",
     "dashboard",
     "campaigns",
-    "content"
+    "content",
+    "leads",
+    "seo"
   ],
   "spec": {
     "specVersion": 1,
@@ -172,7 +174,10 @@
             "contextPolicy": "include",
             "via": "pieces",
             "pick": "cost",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": "Published"
+            }
           },
           {
             "key": "remaining",
@@ -192,6 +197,7 @@
             "pick": "cost",
             "agg": "sum",
             "filter": {
+              "status": "Published",
               "publish_on": {
                 "relative": "this_month"
               }
@@ -1546,7 +1552,7 @@
         "Piñon Wash Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

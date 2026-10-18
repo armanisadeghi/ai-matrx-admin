@@ -8,6 +8,7 @@ import {
   ChevronRight,
   FileText,
   Folder,
+  Layers,
   Search,
   X,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 
 import { useSkillCategories } from "../hooks/useSkillCategories";
 import { useSkills } from "../hooks/useSkills";
+import { isSkillSet, resolveSetMembers } from "../skill-sets";
 import type { CategoryRow, SkillConfig, SkillRow } from "../types";
 import { SkillDetailView } from "./SkillDetailView";
 import { SkillAttributionLine, SkillOriginBadges } from "./SkillOriginBadges";
@@ -35,7 +37,7 @@ import {
 import { catalogProseText } from "@/features/content-ir/surfaces/kind-one-line";
 
 type Tier = SkillTierKey;
-type CatalogueFilter = "all" | "configured" | "unassigned";
+type CatalogueFilter = "all" | "configured" | "unassigned" | "sets";
 
 interface SkillConfigPickerProps {
   /** Current value — never null; pass the empty default if absent. */
@@ -105,6 +107,7 @@ export function SkillConfigPicker({
     const tier = tierBySkillId.get(skill.id);
     if (catalogueFilter === "configured") return tier !== undefined;
     if (catalogueFilter === "unassigned") return tier === undefined;
+    if (catalogueFilter === "sets") return isSkillSet(skill);
     return true;
   });
 
@@ -154,6 +157,12 @@ export function SkillConfigPicker({
       onMove={(target) => move(detailSkill.id, target)}
       onBack={() => setDetailSkillId(null)}
       disabled={assignmentDisabled}
+      members={
+        isSkillSet(detailSkill)
+          ? resolveSetMembers(detailSkill, skillById)
+          : undefined
+      }
+      onOpenMember={(id) => setDetailSkillId(id)}
     />
   ) : null;
 
@@ -277,6 +286,7 @@ export function SkillConfigPicker({
                   ["all", "All"],
                   ["configured", "Configured"],
                   ["unassigned", "Unassigned"],
+                  ["sets", "Sets"],
                 ] satisfies Array<[CatalogueFilter, string]>
               ).map(([filter, label]) => (
                 <Button
@@ -357,6 +367,13 @@ export function SkillConfigPicker({
                     onOpen={() => setDetailSkillId(skill.id)}
                     isOpen={detailSkillId === skill.id}
                     disabled={assignmentDisabled}
+                    memberLabels={
+                      isSkillSet(skill)
+                        ? resolveSetMembers(skill, skillById).map(
+                            (m) => m.skill?.label ?? `Skill ${m.id.slice(0, 8)}`,
+                          )
+                        : undefined
+                    }
                   />
                 ))}
               </div>
@@ -449,6 +466,7 @@ function SkillCatalogueRow({
   onOpen,
   isOpen,
   disabled,
+  memberLabels,
 }: {
   skill: SkillRow;
   categoryLabel?: string;
@@ -458,6 +476,8 @@ function SkillCatalogueRow({
   onOpen: () => void;
   isOpen: boolean;
   disabled: boolean;
+  /** A skill SET's member names, in order (absent for an ordinary skill). */
+  memberLabels?: string[];
 }) {
   return (
     <div
@@ -491,6 +511,20 @@ function SkillCatalogueRow({
             {catalogProseText(skill.description) || "No description provided."}
           </p>
           <SkillAttributionLine skill={skill} className="mt-1" />
+          {memberLabels && (
+            <p
+              className="mt-1 flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
+              data-testid="skill-set-row-members"
+            >
+              <Layers className="h-3 w-3 shrink-0" />
+              <span className="shrink-0 font-medium text-foreground">
+                {memberLabels.length} {memberLabels.length === 1 ? "skill" : "skills"}
+              </span>
+              {memberLabels.length > 0 && (
+                <span className="min-w-0 truncate">· {memberLabels.join(", ")}</span>
+              )}
+            </p>
+          )}
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground/80">
             {categoryLabel && <span>{categoryLabel}</span>}
             {categoryLabel && <span aria-hidden="true">·</span>}
@@ -597,8 +631,8 @@ function SelectedTier({
           {ids.map((id) => {
             const skill = skillById.get(id);
             return (
+              <div key={id}>
               <div
-                key={id}
                 className="group flex items-center gap-2 rounded-md border border-border/70 bg-background px-2.5 py-1.5"
                 title={catalogProseText(skill?.description) || id}
               >
@@ -636,6 +670,16 @@ function SelectedTier({
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
+                </div>
+                {skill && isSkillSet(skill) && (
+                  <ul className="ml-3 mt-1 space-y-0.5 border-l border-border pl-2">
+                    {resolveSetMembers(skill, skillById).map((m) => (
+                      <li key={m.id} className="truncate text-[11px] text-muted-foreground">
+                        {m.skill?.label ?? `Skill ${m.id.slice(0, 8)}`}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             );
           })}

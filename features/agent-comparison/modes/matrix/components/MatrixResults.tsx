@@ -7,12 +7,20 @@
  * break-even share.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { ExternalLink, History, RotateCw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Cost } from "@/components/cost/Cost";
+import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import {
+  MatrxComparisonTable,
+  MatrxDataTable,
+  type ComparisonExtraColumn,
+  type ComparisonRow,
+  type ComparisonSubject,
+  type MatrxColumnDef,
+} from "@ai-matrx/design-system/data-table";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { canonicalConversationHref } from "@ai-matrx/chat/agents/components/conversation-actions/conversation-verbs";
@@ -72,6 +80,7 @@ export function MatrixResults({
   busy: boolean;
 }) {
   const setup = useAppSelector(selectMatrixSetup);
+  const { format: formatCost } = useCostDisplay();
   const cells = useAppSelector(selectMatrixCells);
   const rows = setup.rows.variants;
   const cols = setup.columns.variants;
@@ -96,6 +105,121 @@ export function MatrixResults({
   const colAvgs = colCells.map((list) => avgMetrics(sumMetrics(list.map(cellMetrics))));
   const first = colAvgs[0];
 
+  const metricText = (m: Metrics) => `${formatCost(m.cost, { short: true })} · ${tokens(m.total)} tok`;
+  const subjects: ComparisonSubject[] = cols.map((c) => ({ id: c.id, label: c.label || "—" }));
+  const colById = new Map(cols.map((c) => [c.id, c] as const));
+  const rowById = new Map(rows.map((r) => [r.id, r] as const));
+  const gridRows: ComparisonRow[] = rows.map((r) => {
+    const used = rowUsedTools(cells.filter((x) => x.rowId === r.id));
+    return {
+      id: r.id,
+      label: r.label || "—",
+      header: (
+        <div className="flex items-center gap-1.5" title={r.patch.user_input ?? r.label}>
+          <span className="truncate">{r.label || "—"}</span>
+          {used != null && (
+            // read-gate-exempt: badge wording from the result's own tool-use flag; nothing is read
+            <Badge tone={used ? "warning" : "neutral"}>{used ? "tools" : "no tools"}</Badge>
+          )}
+        </div>
+      ),
+      cell: (subject) => {
+        const c = colById.get(subject.id);
+        if (!c) return null;
+        const list = cellsAt(r, c);
+        const avg = avgMetrics(sumMetrics(list.map(cellMetrics)));
+        const spend = spendOf(list, false);
+        const shown = avg ?? (spend.n > 0 ? spend : null);
+        return {
+          text: shown ? metricText(shown) : cellStatusLabel(list),
+          node: (
+            <CellButton
+              cells={list}
+              rowLabel={r.label}
+              colLabel={c.label}
+              busy={busy}
+              onRerun={(repeat) => onRerunCell({ row_id: r.id, column_id: c.id, repeat })}
+              expectedRepeats={setup.repeats}
+            />
+          ),
+        };
+      },
+    };
+  });
+  const rowTotalColumn: ComparisonExtraColumn = {
+    id: "row-total",
+    label: "Row total",
+    align: "right",
+    width: 120,
+    text: (row) => {
+      const rowSum = spendOf(cells.filter((x) => x.rowId === row.id), withHistory);
+      return rowSum.n > 0 ? metricText(rowSum) : "";
+    },
+    cell: (row) => {
+      const rowCells = cells.filter((x) => x.rowId === row.id);
+      const rowSum = spendOf(rowCells, withHistory);
+      if (!rowById.has(row.id) || rowSum.n === 0) return "—";
+      return (
+        <span className="flex flex-col items-end tabular-nums">
+          <Cost usd={rowSum.cost} short />
+          <span className="text-muted-foreground">{tokens(rowSum.total)} tok</span>
+          {rowSum.unfinished > 0 && <span className="text-destructive">{unfinishedLabel(rowCells)}</span>}
+        </span>
+      );
+    },
+  };
+  const metricsRow = (id: string, label: string, values: (Metrics | null)[], unfinished?: string[]): ComparisonRow => ({
+    id,
+    label,
+    cell: (_subject, i) => {
+      const m = values[i] ?? null;
+      const late = unfinished?.[i];
+      if (!m && !late) return null;
+      return {
+        text: [m ? metricText(m) : "—", late].filter(Boolean).join(" · "),
+        node: (
+          <span className="flex flex-col tabular-nums">
+            {m ? (
+              <>
+                <Cost usd={m.cost} short />
+                <TokenLine m={m} />
+              </>
+            ) : (
+              "—"
+            )}
+            {late && <span className="block text-destructive">{late}</span>}
+          </span>
+        ),
+      };
+    },
+  });
+  const footRows: ComparisonRow[] = [
+    metricsRow(
+      "total",
+      withHistory ? "Total · all attempts" : "Total",
+      colSpend.map((sp) => (sp.n ? sp : null)),
+      colUnfinished,
+    ),
+    metricsRow("average", "Average · completed", colAvgs),
+    {
+      id: "delta",
+      label: `Δ vs ${cols[0]?.label || "first"}`,
+      cell: (_subject, i) => {
+        const a = colAvgs[i];
+        if (i === 0 || !a || !first) return null;
+        return {
+          text: `cost ${pct(a.cost, first.cost)} · tok ${pct(a.total, first.total)}`,
+          node: (
+            <span className="flex flex-col tabular-nums">
+              <span className={deltaClass(a.cost, first.cost)}>cost {pct(a.cost, first.cost)}</span>
+              <span className={deltaClass(a.total, first.total)}>tok {pct(a.total, first.total)}</span>
+            </span>
+          ),
+        };
+      },
+    },
+  ];
+
   if (rows.length === 0 || cols.length === 0) {
     return <div className="p-8 text-center type-body text-muted-foreground">Set up rows and columns first</div>;
   }
@@ -109,97 +233,21 @@ export function MatrixResults({
           </Button>
         </div>
       )}
-      <div className="overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full type-secondary border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-muted/40">
-              <th className="sticky left-0 z-10 bg-muted/40 text-left font-semibold px-2 py-2 min-w-48">
-                {setup.rows.label} \ {setup.columns.label}
-              </th>
-              {cols.map((c) => (
-                <th key={c.id} className="text-left font-semibold px-2 py-2 min-w-40">
-                  {c.label || "—"}
-                </th>
-              ))}
-              <th className="text-right font-semibold px-2 py-2 min-w-28">Row total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const rowCells = cells.filter((x) => x.rowId === r.id);
-              const rowSum = spendOf(rowCells, withHistory);
-              const used = rowUsedTools(rowCells);
-              return (
-                <tr key={r.id} className="border-b border-border/60 align-top">
-                  <th
-                    scope="row"
-                    className="sticky left-0 z-10 bg-card text-left font-normal px-2 py-1.5 max-w-64"
-                    title={r.patch.user_input ?? r.label}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate">{r.label || "—"}</span>
-                      {used != null && (
-                        // read-gate-exempt: badge wording from the result's own tool-use flag; nothing is read
-                        <Badge tone={used ? "warning" : "neutral"}>{used ? "tools" : "no tools"}</Badge>
-                      )}
-                    </div>
-                  </th>
-                  {cols.map((c) => (
-                    <td key={c.id} className="px-1 py-1">
-                      <CellButton
-                        cells={cellsAt(r, c)}
-                        rowLabel={r.label}
-                        colLabel={c.label}
-                        busy={busy}
-                        onRerun={(repeat) => onRerunCell({ row_id: r.id, column_id: c.id, repeat })}
-                        expectedRepeats={setup.repeats}
-                      />
-                    </td>
-                  ))}
-                  <td className="px-2 py-1.5 text-right tabular-nums">
-                    {rowSum.n > 0 ? (
-                      <>
-                        <Cost usd={rowSum.cost} short />
-                        <div className="text-muted-foreground">{tokens(rowSum.total)} tok</div>
-                        {rowSum.unfinished > 0 && (
-                          <div className="text-destructive">{unfinishedLabel(rowCells)}</div>
-                        )}
-                      </>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot className="bg-muted/30">
-            <FootRow
-              label={withHistory ? "Total · all attempts" : "Total"}
-              values={colSpend.map((s) => (s.n ? s : null))}
-              unfinished={colUnfinished}
-            />
-            <FootRow label="Average · completed" values={colAvgs} />
-            <tr className="border-t border-border">
-              <th className="sticky left-0 z-10 bg-muted/30 text-left font-semibold px-2 py-1.5">
-                Δ vs {cols[0]?.label || "first"}
-              </th>
-              {colAvgs.map((a, i) => (
-                <td key={cols[i].id} className="px-2 py-1.5 tabular-nums">
-                  {i === 0 || !a || !first ? (
-                    "—"
-                  ) : (
-                    <span className="flex flex-col">
-                      <span className={deltaClass(a.cost, first.cost)}>cost {pct(a.cost, first.cost)}</span>
-                      <span className={deltaClass(a.total, first.total)}>tok {pct(a.total, first.total)}</span>
-                    </span>
-                  )}
-                </td>
-              ))}
-              <td />
-            </tr>
-          </tfoot>
-        </table>
+      <div className="rounded-lg border border-border bg-card">
+        <MatrxComparisonTable
+          title="Matrix results"
+          hideTitle
+          location="Agent Battle — Matrix"
+          corner={`${setup.rows.label} \\ ${setup.columns.label}`}
+          cornerLabel={`${setup.rows.label} \\ ${setup.columns.label}`}
+          subjects={subjects}
+          rows={gridRows}
+          footerRows={footRows}
+          extraColumns={[rowTotalColumn]}
+          rowHeaderWidth={220}
+          subjectWidth={180}
+          aiContext="Each row run against each column: cost and tokens per cell, row totals, column totals and averages, and each column's delta against the first."
+        />
       </div>
 
       <ToolsAnalysis cells={cells} rows={rows} cols={cols} />
@@ -209,37 +257,7 @@ export function MatrixResults({
 
 function deltaClass(a: number, b: number): string {
   if (!b || a === b) return "";
-  return a < b ? "text-emerald-600" : "text-rose-600";
-}
-
-function FootRow({
-  label,
-  values,
-  unfinished,
-}: {
-  label: string;
-  values: (Metrics | null)[];
-  unfinished?: string[];
-}) {
-  return (
-    <tr className="border-t border-border">
-      <th className="sticky left-0 z-10 bg-muted/30 text-left font-semibold px-2 py-1.5">{label}</th>
-      {values.map((m, i) => (
-        <td key={i} className="px-2 py-1.5 tabular-nums">
-          {m ? (
-            <span className="flex flex-col">
-              <Cost usd={m.cost} short />
-              <TokenLine m={m} />
-            </span>
-          ) : (
-            "—"
-          )}
-          {unfinished?.[i] && <span className="block text-destructive">{unfinished[i]}</span>}
-        </td>
-      ))}
-      <td />
-    </tr>
-  );
+  return a < b ? "text-success" : "text-destructive";
 }
 
 const STATUS_DOT: Record<string, string> = {
@@ -434,6 +452,92 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 // Used tools vs no tools
 // ---------------------------------------------------------------------------
 
+interface ToolStat {
+  col: MatrixVariant;
+  tools: Metrics | null;
+  none: Metrics | null;
+}
+
+interface PairRow {
+  id: string;
+  names: { a: string; b: string };
+  byCost: BreakEven;
+  byTokens: BreakEven;
+}
+
+/** The analysis tables sit inside their own section card: no frame, no pager, no row doors. */
+const SECTION_TABLE = {
+  appearance: "embedded",
+  frameHeight: "content",
+  density: "condensed",
+  hidePagination: true,
+  selection: false,
+  actionsColumn: "none",
+  detail: { enabled: false },
+  window: { enabled: false },
+} as const;
+
+function metricColumn(
+  id: string,
+  header: string,
+  pick: (st: ToolStat) => Metrics | null,
+  value: (m: Metrics) => number,
+  render: (m: Metrics) => ReactNode,
+  text: (m: Metrics) => string,
+): MatrxColumnDef<ToolStat> {
+  return {
+    id,
+    header,
+    align: "right",
+    accessorFn: (st) => {
+      const m = pick(st);
+      return m ? value(m) : null;
+    },
+    copyValue: (st) => {
+      const m = pick(st);
+      return m ? text(m) : "—";
+    },
+    cell: (st) => {
+      const m = pick(st);
+      return m ? render(m) : "—";
+    },
+  };
+}
+
+const toolColumns: MatrxColumnDef<ToolStat>[] = [
+  { id: "column", header: "Column", accessorFn: (st) => st.col.label || "—" },
+  metricColumn("cost-tools", "Cost · tools", (st) => st.tools, (m) => m.cost, (m) => <Cost usd={m.cost} short />, (m) => String(m.cost)),
+  metricColumn("cost-none", "Cost · none", (st) => st.none, (m) => m.cost, (m) => <Cost usd={m.cost} short />, (m) => String(m.cost)),
+  metricColumn("input-tools", "Input · tools", (st) => st.tools, (m) => m.inputAll, (m) => <InputCell m={m} />, (m) => tokens(m.inputAll)),
+  metricColumn("input-none", "Input · none", (st) => st.none, (m) => m.inputAll, (m) => <InputCell m={m} />, (m) => tokens(m.inputAll)),
+  metricColumn("output-tools", "Output · tools", (st) => st.tools, (m) => m.output, (m) => tokens(m.output), (m) => tokens(m.output)),
+  metricColumn("output-none", "Output · none", (st) => st.none, (m) => m.output, (m) => tokens(m.output), (m) => tokens(m.output)),
+];
+
+const PAIR_COLUMNS: MatrxColumnDef<PairRow>[] = [
+  { id: "pair", header: "Pair", accessorFn: (pr) => `${pr.names.a} vs ${pr.names.b}` },
+  {
+    id: "by-cost",
+    header: "By cost",
+    accessorFn: (pr) => breakEvenWords(pr.byCost, pr.names),
+    cell: (pr) => <BreakEvenText be={pr.byCost} names={pr.names} />,
+  },
+  {
+    id: "by-tokens",
+    header: "By all tokens",
+    helpText: "Input (cached included) plus output, so cache warmth does not move it.",
+    accessorFn: (pr) => breakEvenWords(pr.byTokens, pr.names),
+    cell: (pr) => <BreakEvenText be={pr.byTokens} names={pr.names} />,
+  },
+];
+
+/** The break-even verdict in words — what copy and sort read. */
+function breakEvenWords(be: BreakEven, names: { a: string; b: string }): string {
+  if (be.kind === "unknown") return "—";
+  if (be.kind === "always") return be.cheaper === "tie" ? "Equal" : `${names[be.cheaper]} always cheaper`;
+  return `${formatPercentFromFraction(be.p)} · ${names[be.cheaperBelow]} below`;
+}
+
 function ToolsAnalysis({
   cells,
   rows,
@@ -463,89 +567,51 @@ function ToolsAnalysis({
     for (let b = a + 1; b < cols.length; b += 1) pairs.push({ a, b });
   }
   const share = toolRows.size / (toolRows.size + noToolRows.size);
+  const pairRows: PairRow[] = pairs.map(({ a, b }) => {
+    const A = stats[a];
+    const B = stats[b];
+    return {
+      id: `${a}-${b}`,
+      names: { a: A.col.label || `#${a + 1}`, b: B.col.label || `#${b + 1}` },
+      byCost: breakEven(
+        { tools: A.tools?.cost ?? null, none: A.none?.cost ?? null },
+        { tools: B.tools?.cost ?? null, none: B.none?.cost ?? null },
+      ),
+      byTokens: breakEven(
+        { tools: A.tools?.total ?? null, none: A.none?.total ?? null },
+        { tools: B.tools?.total ?? null, none: B.none?.total ?? null },
+      ),
+    };
+  });
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <section className="rounded-lg border border-border bg-card overflow-x-auto">
+      <section className="rounded-lg border border-border bg-card">
         <header className="flex items-center gap-2 h-9 px-3 border-b border-border type-secondary">
-          <span className="font-semibold">Tools vs no tools</span>
           <span className="text-muted-foreground tabular-nums">
             {toolRows.size} of {toolRows.size + noToolRows.size} rows used tools ({formatPercentFromFraction(share)})
           </span>
         </header>
-        <table className="w-full type-secondary">
-          <thead>
-            <tr className="border-b border-border text-muted-foreground">
-              <th className="text-left font-medium px-3 py-1.5">{cols.length ? "Column" : ""}</th>
-              <th className="text-right font-medium px-2 py-1.5">Cost · tools</th>
-              <th className="text-right font-medium px-2 py-1.5">Cost · none</th>
-              <th className="text-right font-medium px-2 py-1.5">Input · tools</th>
-              <th className="text-right font-medium px-2 py-1.5">Input · none</th>
-              <th className="text-right font-medium px-2 py-1.5">Output · tools</th>
-              <th className="text-right font-medium px-3 py-1.5">Output · none</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.map((s) => (
-              <tr key={s.col.id} className="border-b border-border/60 tabular-nums">
-                <td className="px-3 py-1.5 font-medium truncate max-w-40">{s.col.label || "—"}</td>
-                <td className="px-2 py-1.5 text-right">{s.tools ? <Cost usd={s.tools.cost} short /> : "—"}</td>
-                <td className="px-2 py-1.5 text-right">{s.none ? <Cost usd={s.none.cost} short /> : "—"}</td>
-                <td className="px-2 py-1.5 text-right"><InputCell m={s.tools} /></td>
-                <td className="px-2 py-1.5 text-right"><InputCell m={s.none} /></td>
-                <td className="px-2 py-1.5 text-right">{s.tools ? tokens(s.tools.output) : "—"}</td>
-                <td className="px-3 py-1.5 text-right">{s.none ? tokens(s.none.output) : "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <MatrxDataTable<ToolStat>
+          data={stats}
+          columns={toolColumns}
+          getRowId={(st) => st.col.id}
+          {...SECTION_TABLE}
+          pageSize={Math.max(stats.length, 1)}
+          toolbar={{ title: "Tools vs no tools", search: false }}
+        />
       </section>
 
       {pairs.length > 0 && (
-        <section className="rounded-lg border border-border bg-card overflow-x-auto">
-          <header className="flex items-center h-9 px-3 border-b border-border type-secondary font-semibold">
-            Break-even share of tool rows
-          </header>
-          <table className="w-full type-secondary">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="text-left font-medium px-3 py-1.5">Pair</th>
-                <th className="text-left font-medium px-2 py-1.5">By cost</th>
-                <th className="text-left font-medium px-3 py-1.5">
-                  By all tokens{" "}
-                  <InfoHint text="Input (cached included) plus output, so cache warmth does not move it." label="About by all tokens" />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {pairs.map(({ a, b }) => {
-                const A = stats[a];
-                const B = stats[b];
-                const names = { a: A.col.label || `#${a + 1}`, b: B.col.label || `#${b + 1}` };
-                const byCost = breakEven(
-                  { tools: A.tools?.cost ?? null, none: A.none?.cost ?? null },
-                  { tools: B.tools?.cost ?? null, none: B.none?.cost ?? null },
-                );
-                const byTokens = breakEven(
-                  { tools: A.tools?.total ?? null, none: A.none?.total ?? null },
-                  { tools: B.tools?.total ?? null, none: B.none?.total ?? null },
-                );
-                return (
-                  <tr key={`${a}-${b}`} className="border-b border-border/60">
-                    <td className="px-3 py-1.5 font-medium truncate max-w-48">
-                      {names.a} vs {names.b}
-                    </td>
-                    <td className="px-2 py-1.5">
-                      <BreakEvenText be={byCost} names={names} />
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <BreakEvenText be={byTokens} names={names} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <section className="rounded-lg border border-border bg-card">
+          <MatrxDataTable<PairRow>
+            data={pairRows}
+            columns={PAIR_COLUMNS}
+            getRowId={(pr) => pr.id}
+            {...SECTION_TABLE}
+            pageSize={Math.max(pairRows.length, 1)}
+            toolbar={{ title: "Break-even share of tool rows", search: false }}
+          />
         </section>
       )}
     </div>

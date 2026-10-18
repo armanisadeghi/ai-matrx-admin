@@ -32,6 +32,9 @@ import {
   useCommentThreadSlot,
 } from "./canvas/commentThreadKind";
 import { recordKeyOf } from "./record-of-source";
+import { isSignedOutSentence } from "./errors";
+import { SIGN_IN_AGAIN_ACTION } from "./signed-out";
+import { toast } from "@/lib/toast";
 import type { AnnotationSource } from "./types";
 
 /** How far outside the viewport a record still counts as on screen (reads start before it scrolls in). */
@@ -63,9 +66,30 @@ function RecordAnnotationsMount({ record, root }: { record: AnnotationSource; ro
   return (
     <AnnotationSidecarProvider source={record} live={onScreen || open} onActivity={() => openDock(instance)}>
       <AnnotatedElement root={root} />
+      <ClosedDockFailureNotice instance={instance} open={open} />
       <RecordDock instance={instance} recordKey={recordKeyOf(record)} open={open} />
     </AnnotationSidecarProvider>
   );
+}
+
+/**
+ * NOTHING FAILS SILENTLY (2026-10-17). The dock is this record's only inline home for a failed
+ * comment read; while it is closed (a chat answer's usual state) the failure would reach only the
+ * console — measured on live: a signed-out chat tab's `cmt_list` 42501 went nowhere. So a failed
+ * read with the dock closed is a toast: one per failure sentence however many answers share it,
+ * with its remedy (Sign in for a signed-out tab, otherwise Show, which opens the dock and its Try again).
+ */
+function ClosedDockFailureNotice({ instance, open }: { instance: string; open: boolean }) {
+  const { api } = useSidecar();
+  const error = api.state.error;
+  useEffect(() => {
+    if (open || !error) return;
+    toast.error(error, {
+      id: `annotations-load-failed:${error}`,
+      action: isSignedOutSentence(error) ? SIGN_IN_AGAIN_ACTION : { label: "Show", onClick: () => openDock(instance) },
+    });
+  }, [error, open, instance]);
+  return null;
 }
 
 function RecordDock({ instance, recordKey, open }: { instance: string; recordKey: string; open: boolean }) {

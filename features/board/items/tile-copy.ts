@@ -42,6 +42,8 @@ export async function copyTileContent(
     }
     case "entity": {
       if (source.entity === "chat" || source.entity === "agent-form") return { title, source: { ...source, id: null } };
+      // A cover lives inside the tile (its hero and prose ride on the source): copied as is.
+      if (source.entity === "cover") return { title, source };
       if (!source.id) return null;
       if (source.entity === "note") {
         const copy = await services.copyNote(source.id);

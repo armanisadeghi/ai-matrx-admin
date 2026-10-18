@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 1,
+  "version": 2,
   "title": "IT Managed Services Desk",
   "description": "Clients, devices, support tickets, contract renewals and scheduled maintenance for an MSP.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -12,7 +12,7 @@
     "url": "gallery:photo-desert-dunes",
     "offsetY": 50
   },
-  "category": "operations",
+  "category": "services",
   "tags": [
     "it",
     "msp",
@@ -2125,7 +2125,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

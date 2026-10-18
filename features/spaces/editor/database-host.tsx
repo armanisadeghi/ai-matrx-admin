@@ -60,6 +60,11 @@ export interface PaintedSize {
   vw: number;
   /** Measured with the built-in table's "+ New page" row (round 30, 92ab128fa7). Absent on older saves. */
   nr?: 1;
+  /**
+   * Holds at any width: measured before the block was ever on this page (a template's gallery preview drew the
+   * same rows, ADVERSARIAL-1 #2), so the first visit holds it wherever it lands. The first real save replaces it.
+   */
+  any?: 1;
 }
 /** A stored size counts at a width this close to the one it was painted at. */
 export const PAINTED_WIDTH_SLACK = 24;
@@ -74,9 +79,17 @@ export const NEW_PAGE_ROW_PX = 34;
  */
 export function readPaintedSizes(raw: unknown, withNewRow = false): PaintedSize[] {
   const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
-  return list.flatMap((v: { w?: unknown; h?: unknown; vw?: unknown; nr?: unknown }) =>
+  return list.flatMap((v: { w?: unknown; h?: unknown; vw?: unknown; nr?: unknown; any?: unknown }) =>
     v && typeof v.w === "number" && typeof v.h === "number" && v.h > 0
-      ? [{ w: v.w, h: withNewRow && v.nr !== 1 ? v.h + NEW_PAGE_ROW_PX : v.h, vw: typeof v.vw === "number" ? v.vw : 0, ...(withNewRow || v.nr === 1 ? { nr: 1 as const } : {}) }]
+      ? [
+          {
+            w: v.w,
+            h: withNewRow && v.nr !== 1 ? v.h + NEW_PAGE_ROW_PX : v.h,
+            vw: typeof v.vw === "number" ? v.vw : 0,
+            ...(withNewRow || v.nr === 1 ? { nr: 1 as const } : {}),
+            ...(v.any === 1 ? { any: 1 as const } : {}),
+          },
+        ]
       : [],
   );
 }
@@ -95,7 +108,7 @@ export function pickPainted(list: PaintedSize[], at: { width?: number; vw?: numb
   const exact = list.find((p) => near(p.w, at.width)) ?? (at.width === undefined ? (list.find((p) => near(p.vw, at.vw)) ?? null) : null);
   // A chart tile's height does not follow the window (373px, 428px with the "Only showing" chip), so a size
   // painted at another width still holds it at this one: a cold load at a width nobody saved at moves nothing.
-  return exact ?? (anyWidth ? (list[0] ?? null) : null);
+  return exact ?? (anyWidth ? (list[0] ?? null) : (list.find((p) => p.any === 1) ?? null));
 }
 
 function useHeldHeight(blockId: string | undefined, ref: React.RefObject<HTMLDivElement | null>, painted: PaintedSize[], firstFrame = true, layout?: string): number | undefined {
@@ -278,7 +291,8 @@ export function withPaintedSizes<B extends { type: string; id: string; props?: R
         const r = el && !el.style.height && !el.querySelector(".spaces-db-loading") ? el.getBoundingClientRect() : null;
         if (r && r.height > 0) {
           const now: PaintedSize = { w: Math.round(r.width), h: Math.round(r.height), vw: window.innerWidth, nr: 1 };
-          const kept = paintedSizesOf(props).filter((p) => Math.abs(p.w - now.w) > PAINTED_WIDTH_SLACK);
+          // A seeded size (`any`, from the template preview) gives way to the first real measurement.
+          const kept = paintedSizesOf(props).filter((p) => p.any !== 1 && Math.abs(p.w - now.w) > PAINTED_WIDTH_SLACK);
           props = { ...props, paintedSize: [now, ...kept].slice(0, PAINTED_KEEP) };
         }
       }

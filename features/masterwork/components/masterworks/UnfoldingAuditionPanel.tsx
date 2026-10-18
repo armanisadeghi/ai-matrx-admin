@@ -21,6 +21,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useRead } from "@ai-matrx/design-system";
+import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import Link from "next/link";
 import { FileLock2 } from "lucide-react";
 
@@ -147,6 +148,40 @@ function UnfoldingHistory({ runs }: { runs: UnfoldingRunSummary[] }) {
 }
 
 /** The per-case table: arms down, what the judge said across. */
+const ARM_COLUMNS: MatrxColumnDef<UnfoldingArm>[] = [
+  { id: "arm", header: "Arm", accessorFn: (arm) => armLabel(arm) },
+  {
+    id: "diagnosis",
+    header: "Diagnosis",
+    // The judge not scoring an arm is a REAL state and is said, never drawn as a blank cell.
+    accessorFn: (arm) => (arm.diagnosis ? DIAGNOSIS_COPY[arm.diagnosis]?.label : null) ?? "The judge did not score this",
+    cell: (arm) => {
+      const diagnosis = arm.diagnosis ? DIAGNOSIS_COPY[arm.diagnosis] : null;
+      return <span className={diagnosis?.cls}>{diagnosis?.label ?? "The judge did not score this"}</span>;
+    },
+  },
+  {
+    id: "branch",
+    header: "Dangerous branch",
+    accessorFn: (arm) => {
+      const branch = arm.dangerousBranch ? BRANCH_COPY[arm.dangerousBranch] : null;
+      return `${branch?.label ?? "Not scored"}${arm.branchNamed ? ` — ${arm.branchNamed}` : ""}`;
+    },
+    cell: (arm) => {
+      const branch = arm.dangerousBranch ? BRANCH_COPY[arm.dangerousBranch] : null;
+      return (
+        <span className={branch?.cls}>
+          {branch?.label ?? "Not scored"}
+          {arm.branchNamed ? ` — ${arm.branchNamed}` : ""}
+        </span>
+      );
+    },
+  },
+  { id: "steps", header: "Steps", accessorFn: (arm) => arm.steps, tone: () => "muted" },
+  { id: "cost", header: "Cost", accessorFn: (arm) => arm.cost, tone: () => "muted" },
+  { id: "risk", header: "Risk", accessorFn: (arm) => arm.risk, tone: () => "muted" },
+];
+
 function CaseTable({ verdict }: { verdict: UnfoldingVerdict }) {
   return (
     <div className="space-y-3">
@@ -155,61 +190,21 @@ function CaseTable({ verdict }: { verdict: UnfoldingVerdict }) {
           key={entry.caseItemId ?? index}
           className="rounded-md border border-border"
         >
-          <p className="border-b border-border px-2 py-1.5 text-xs font-medium text-foreground">
-            {entry.label ?? `Case ${index + 1}`}
-          </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th className="px-2 py-1 font-medium">Arm</th>
-                  <th className="px-2 py-1 font-medium">Diagnosis</th>
-                  <th className="px-2 py-1 font-medium">Dangerous branch</th>
-                  <th className="px-2 py-1 font-medium">Steps</th>
-                  <th className="px-2 py-1 font-medium">Cost</th>
-                  <th className="px-2 py-1 font-medium">Risk</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entry.arms.map((arm, armIndex) => {
-                  const diagnosis = arm.diagnosis
-                    ? DIAGNOSIS_COPY[arm.diagnosis]
-                    : null;
-                  const branch = arm.dangerousBranch
-                    ? BRANCH_COPY[arm.dangerousBranch]
-                    : null;
-                  return (
-                    <tr
-                      key={`${arm.arm}-${arm.masterworkId ?? armIndex}`}
-                      className="border-t border-border"
-                    >
-                      <td className="px-2 py-1 text-foreground">
-                        {armLabel(arm)}
-                      </td>
-                      <td className={cn("px-2 py-1", diagnosis?.cls)}>
-                        {/* The judge not scoring an arm is a REAL state and is
-                            said, never drawn as a blank cell. */}
-                        {diagnosis?.label ?? "The judge did not score this"}
-                      </td>
-                      <td className={cn("px-2 py-1", branch?.cls)}>
-                        {branch?.label ?? "Not scored"}
-                        {arm.branchNamed ? ` — ${arm.branchNamed}` : ""}
-                      </td>
-                      <td className="px-2 py-1 text-muted-foreground">
-                        {arm.steps ?? "—"}
-                      </td>
-                      <td className="px-2 py-1 text-muted-foreground">
-                        {arm.cost ?? "—"}
-                      </td>
-                      <td className="px-2 py-1 text-muted-foreground">
-                        {arm.risk ?? "—"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <MatrxDataTable<UnfoldingArm>
+            data={entry.arms}
+            columns={ARM_COLUMNS}
+            getRowId={(arm) => `${arm.arm}-${arm.masterworkId ?? entry.arms.indexOf(arm)}`}
+            appearance="embedded"
+            frameHeight="content"
+            density="condensed"
+            hidePagination
+            pageSize={Math.max(entry.arms.length, 1)}
+            selection={false}
+            actionsColumn="none"
+            detail={{ enabled: false }}
+            window={{ enabled: false }}
+            toolbar={{ title: entry.label ?? `Case ${index + 1}`, search: false }}
+          />
         </div>
       ))}
     </div>

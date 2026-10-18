@@ -4,7 +4,7 @@
  * is the primary action (only when the candidate won).
  */
 
-import type { SetupScore } from "./battle";
+import { scoreTally, type SetupScore } from "@/features/agent-tests/battle";
 
 export interface CaseInputDeclaration {
   name: string;
@@ -36,9 +36,7 @@ export function battleVerdict(
   labelOf: (key: string) => string,
 ): BattleVerdict {
   if (!score.settled) return { line: "Running", tone: "neutral", keepIsPrimary: false };
-  const tally = score.scores
-    .map((s) => `${labelOf(s.key)} ${s.pass}/${s.pass + s.fail + s.other + s.pending}`)
-    .join(" · ");
+  const tally = scoreTally(score.scores, labelOf);
   if (!score.winner) return { line: `Tie · ${tally}`, tone: "neutral", keepIsPrimary: false };
   const won = score.winner === "candidate";
   return {

@@ -24,3 +24,19 @@ test("REGRESSION: a legacy GitHub callback never exchanges a code or exposes a t
 
   fetchMock.mockRestore();
 });
+
+test.each(["slack", "notion", "anything"])(
+  "REGRESSION: a legacy %s callback never exchanges a code or puts a token in a URL",
+  async (provider) => {
+    const fetchMock = jest.spyOn(global, "fetch");
+    const response = await GET(
+      new NextRequest(`https://www.aimatrx.com/app_callback?provider=${provider}&code=code-must-not-leave&state=s1`),
+    );
+    expect(response.status).toBe(307);
+    const redirect = new URL(response.headers.get("location") ?? "");
+    expect(redirect.pathname).toBe("/user-settings/integrations");
+    expect(redirect.search).toBe("");
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  },
+);

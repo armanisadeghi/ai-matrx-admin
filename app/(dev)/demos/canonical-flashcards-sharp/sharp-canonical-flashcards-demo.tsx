@@ -293,7 +293,7 @@ export function SharpCanonicalFlashcardsDemo() {
       </header>
 
       <section className="relative flex min-h-0 flex-1 items-stretch justify-center overflow-hidden p-2 sm:p-4 lg:p-6">
-        <div className="relative flex w-full max-w-5xl min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--elevation-2)] @container">
+        <div className="relative flex w-full max-w-5xl min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-md @container">
           <div className="flex shrink-0 items-center gap-3 px-4 py-3">
             <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
               {card.topic}

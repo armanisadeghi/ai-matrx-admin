@@ -79,6 +79,8 @@ export interface AnnotationItem {
   error?: string;
   /** False when trying the same write again cannot succeed (a switched-off capability, no permission): no Retry is offered. */
   retryable?: boolean;
+  /** The write went out with no session: the remedy is signing in, then Retry. */
+  signedOut?: boolean;
   /** Null = the whole document. */
   anchor: TextAnchor | null;
   author: AnnotationAuthor;

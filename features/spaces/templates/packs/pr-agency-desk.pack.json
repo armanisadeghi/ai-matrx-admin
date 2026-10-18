@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0453",
-  "version": 1,
+  "version": 2,
   "title": "PR Agency Desk",
   "description": "Clients, campaigns, a media contact book, pitches and earned coverage for a PR agency.",
   "forWho": "Public relations and communications agencies",
@@ -12,7 +12,7 @@
     "url": "gallery:photo-lavender-dusk",
     "offsetY": 50
   },
-  "category": "clients",
+  "category": "agencies",
   "tags": [
     "pr",
     "media relations",
@@ -2249,7 +2249,7 @@
         "Candlewick Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

@@ -493,7 +493,17 @@ export interface BattleSetup {
   key: string;
   label: string;
   holder: { kind: "agent" | "agent_version"; id: string };
-  patch?: { model_id?: string; messages?: unknown[] };
+  /** The battle resolver's `Patch` (aidream `agent_battle_matrix.resolve`): present keys override. */
+  patch?: {
+    model_id?: string;
+    messages?: unknown[];
+    settings?: Record<string, unknown>;
+    agent_version_id?: string;
+    variables?: Record<string, unknown>;
+    user_input?: string;
+  };
+  /** The battle column this setup is (`agent.cmp_comparison_entries.id` or the column id). */
+  entry_id?: string;
 }
 
 /**
@@ -505,6 +515,8 @@ export async function launchBattle(
   setups: readonly BattleSetup[],
   options: RunOptions,
   caseIds?: readonly string[],
+  /** The saved Agent Battle this run belongs to: its run history reads runs by this id. */
+  comparisonSetId?: string | null,
 ): Promise<LaunchedRun> {
   const body: Record<string, unknown> = {
     agent_ids: [agentId],
@@ -517,7 +529,27 @@ export async function launchBattle(
     initiation: "user",
   };
   if (caseIds && caseIds.length > 0) body.case_ids = [...caseIds];
+  if (comparisonSetId) body.comparison_set_id = comparisonSetId;
   return readLaunched(await serverApi.call<unknown>(RUNS_OP, { body }));
+}
+
+/** The newest test run filed under a saved Agent Battle (null when it never ran on the server). */
+export async function fetchLatestBattleRun(
+  comparisonSetId: string,
+): Promise<{ run: TestRunView; setups: BattleSetup[] } | null> {
+  const { data, error } = await createClient()
+    .schema("agent")
+    .from("test_run")
+    .select("*")
+    .eq("comparison_set_id", comparisonSetId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const setups = Array.isArray(data.setups) ? (data.setups as unknown as BattleSetup[]) : [];
+  return { run: toRunView(data), setups };
 }
 
 export async function cancelRun(runId: string): Promise<string> {

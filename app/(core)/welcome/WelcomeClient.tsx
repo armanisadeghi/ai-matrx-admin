@@ -90,14 +90,14 @@ const OPTIONS: WelcomeOption[] = [
     gradient: "from-orange-500 to-orange-700",
   },
   {
-    label: "Workbooks",
-    description: "Build structured, data-driven workbooks",
+    label: "Sheets",
+    description: "Spreadsheets your agents can read and fill",
     href: "/workbooks",
     icon: FileSpreadsheet,
     gradient: "from-emerald-500 to-emerald-700",
   },
   {
-    label: "Documents",
+    label: "Docs",
     description: "Create and collaborate on documents",
     href: "/documents",
     icon: FileText,
@@ -159,34 +159,25 @@ export function WelcomeClient({
 
   const busy = isNavPending || finishing;
 
-  function go(href: string) {
+  /**
+   * Picking a place to start IS finishing the welcome: the flag is written first, so /dashboard never funnels the
+   * person back here (until 2026-10-18 no tile wrote it — every new account that later opened /dashboard landed on
+   * /welcome again). A failed write still takes them where they asked; it only says so.
+   */
+  async function go(href: string) {
     if (busy) return;
     setNavigatingTo(href);
+    setFinishing(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { [ONBOARDING_METADATA_KEY]: true } });
+      if (error) toast.error(`Could not save your progress: ${error.message}`);
+      else await supabase.auth.refreshSession();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save your progress.");
+    }
     startNav(() => {
       router.push(href);
     });
-  }
-
-  async function finishOnboarding() {
-    if (busy) return;
-    setFinishing(true);
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: { [ONBOARDING_METADATA_KEY]: true },
-      });
-      if (error) {
-        toast.error(`Could not save your progress: ${error.message}`);
-        setFinishing(false);
-        return;
-      }
-      startNav(() => {
-        router.push("/dashboard");
-        router.refresh();
-      });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong.");
-      setFinishing(false);
-    }
   }
 
   return (
@@ -231,12 +222,12 @@ export function WelcomeClient({
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {OPTIONS.map((option) => {
               const Icon = option.icon;
-              const isTarget = navigatingTo === option.href && isNavPending;
+              const isTarget = navigatingTo === option.href && busy;
               return (
                 <button
                   key={option.href}
                   type="button"
-                  onClick={() => go(option.href)}
+                  onClick={() => void go(option.href)}
                   disabled={busy}
                   className="group relative flex cursor-pointer items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
                 >

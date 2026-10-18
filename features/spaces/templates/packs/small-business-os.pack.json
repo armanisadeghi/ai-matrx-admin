@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 3,
+  "version": 4,
   "title": "Small Business OS",
-  "description": "One home for sales, projects, money, team and goals in a small company.",
+  "description": "Owners of 1 to 15 person businesses: sales, projects, money, team and goals in one.",
   "forWho": "Owners of 1 to 15 person businesses",
   "icon": {
     "emoji": "🏢"
@@ -18,7 +18,8 @@
     "sales",
     "finance",
     "team",
-    "goals"
+    "goals",
+    "crm"
   ],
   "spec": {
     "specVersion": 1,
@@ -151,7 +152,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid",
+                "Overdue"
+              ]
+            }
           },
           {
             "key": "paid_total",
@@ -2930,7 +2938,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -4270,7 +4278,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Invoice: days late, worked out from the due date."
+              "text": "Invoice: days late, counted from the due date."
             }
           ]
         },

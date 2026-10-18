@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0153",
-  "version": 2,
+  "version": 3,
   "title": "Social Media Planner",
-  "description": "Plan posts across platforms on one calendar, with hashtag sets and results.",
+  "description": "Social managers and small brands: schedule posts on one calendar, with hashtag sets.",
   "forWho": "Social managers, creators and small brands",
   "icon": {
     "emoji": "📱"
@@ -17,7 +17,9 @@
     "social",
     "planner",
     "posts",
-    "hashtags"
+    "hashtags",
+    "calendar",
+    "instagram"
   ],
   "spec": {
     "specVersion": 1,
@@ -1225,7 +1227,7 @@
         "Driftwood Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1587,7 +1589,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Enter reach, likes and saves a few days after each post goes out. The engagement rate is worked out for you, so the charts below can compare platforms fairly."
+              "text": "Enter reach, likes and saves a few days after each post goes out. The engagement rate fills in for you, so the charts below can compare platforms fairly."
             }
           ]
         },

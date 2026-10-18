@@ -8,7 +8,7 @@ import { Badge, Button, EmptyState, SearchField, Tabs } from "@ai-matrx/design-s
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { standardBulkActionsFor } from "@/lib/entity-list/standardBulkActions";
 import { invalidateBlocks, loadBlocks } from "../blocksCache";
@@ -73,19 +73,6 @@ export function PromptBlockLibrary() {
           <SearchField aria-label="Search blocks" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} className="w-64" />
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto" data-testid={`prompt-block-lane-${lane}`}>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          {!error && !rows && <p className="text-sm text-muted-foreground">Loading</p>}
-          {!error && rows && shown.length === 0 && (
-            <EmptyState
-              icon={<Boxes />}
-              title={query ? "No match" : `No ${BLOCK_LANE_LABEL[lane].toLowerCase()} blocks yet`}
-              action={
-                <Button asChild variant="primary">
-                  <Link href="/agents/prompt-blocks/new">New block</Link>
-                </Button>
-              }
-            />
-          )}
           {rows && shown.length > 0 && (
             <div className="mb-1.5">
               <RowSelectionBar
@@ -99,32 +86,41 @@ export function PromptBlockLibrary() {
               />
             </div>
           )}
-          <ul className="flex flex-col gap-1.5">
-            {shown.map((row) => (
-              <li key={row.id} className="flex items-center gap-2 rounded-lg border border-border bg-card pl-3 hover:bg-accent">
-                <Checkbox
-                  checked={selection.has(row.id)}
-                  onCheckedChange={() => selection.toggle(row.id)}
-                  aria-label={`Select ${row.name}`}
-                  className="shrink-0"
-                />
-                <Link
-                  href={`/agents/prompt-blocks/${row.id}`}
-                  data-testid={`prompt-block-row-${row.name}`}
-                  className="flex min-w-0 flex-1 items-center gap-3 py-2 pr-3"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-mono text-sm">{row.name}</span>
-                    {(row.label || row.description) && (
-                      <span className="block truncate text-xs text-muted-foreground">{row.description || row.label}</span>
-                    )}
-                  </span>
+          <RecordList
+            items={rows ? shown : []}
+            getKey={(row) => row.id}
+            title={(row) => row.name}
+            subtitle={(row) => (row.label || row.description ? <span className="font-sans">{row.description || row.label}</span> : null)}
+            trailing={(row) =>
+              row.source_kind === "skill" || row.bound_tool ? (
+                <>
                   {row.source_kind === "skill" && <Badge tone="info">Skill</Badge>}
                   {row.bound_tool && <Badge>{row.bound_tool}</Badge>}
-                </Link>
-              </li>
-            ))}
-          </ul>
+                </>
+              ) : null
+            }
+            href={(row) => `/agents/prompt-blocks/${row.id}`}
+            selectedKeys={selection.rows.map((r) => r.id)}
+            onSelectedKeysChange={(keys) => {
+              const next = new Set(keys);
+              for (const row of shown) if (next.has(row.id) !== selection.has(row.id)) selection.toggle(row.id);
+            }}
+            read={{ status: error ? "error" : rows ? "ready" : "loading", error: error ?? undefined, what: "blocks" }}
+            emptyState={
+              <EmptyState
+                icon={<Boxes />}
+                title={query ? "No match" : `No ${BLOCK_LANE_LABEL[lane].toLowerCase()} blocks yet`}
+                action={
+                  <Button asChild variant="primary">
+                    <Link href="/agents/prompt-blocks/new">New block</Link>
+                  </Button>
+                }
+              />
+            }
+            sourceFeature="agent_prompt_block"
+            ariaLabel="Prompt blocks"
+            className="font-mono"
+          />
         </div>
       </div>
     </div>

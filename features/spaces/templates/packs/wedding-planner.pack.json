@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0213",
-  "version": 2,
+  "version": 3,
   "title": "Wedding Planner",
-  "description": "Tasks, guest list, vendors, budget and seating for the big day.",
+  "description": "Couples: tasks, guest list, vendors, budget and seating for your wedding.",
   "forWho": "Couples planning a wedding",
   "icon": {
     "emoji": "💍"
@@ -16,7 +16,10 @@
   "tags": [
     "wedding",
     "events",
-    "budget"
+    "budget",
+    "guests",
+    "planning",
+    "checklist"
   ],
   "spec": {
     "specVersion": 1,
@@ -1770,7 +1773,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

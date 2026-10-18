@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
+import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import {
   Select,
   SelectContent,
@@ -456,59 +457,52 @@ export function KnobOverridesAdmin({
       </p>
 
       {rows.length > 0 && (
-        <div className="overflow-x-auto rounded border border-border">
-          <table className="w-full text-left">
-            <thead className="bg-muted/50 text-[11px] text-muted-foreground">
-              <tr>
-                <th className="px-2 py-1 font-medium">Level</th>
-                <th className="px-2 py-1 font-medium">For</th>
-                <th className="px-2 py-1 font-medium">In organization</th>
-                <th className="px-2 py-1 font-medium">Value</th>
-                <th className="px-2 py-1 font-medium">Set by</th>
-                <th className="px-2 py-1 font-medium">When</th>
-                <th className="w-8 px-1 py-1" aria-label="Actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const editable = row.kind === "organization" || row.kind === "user";
-                return (
-                  <tr key={row.id} className="border-t border-border align-middle">
-                    <td className="px-2 py-1 text-muted-foreground">{row.levelLabel}</td>
-                    <td className="max-w-[14rem] truncate px-2 py-1 font-medium" title={row.who}>{row.who}</td>
-                    <td className="max-w-[14rem] truncate px-2 py-1 text-muted-foreground" title={row.organizationName}>{row.kind === "organization" ? "—" : row.organizationName}</td>
-                    <td className="w-40 px-2 py-1">
-                      {editable ? (
-                        <ValueEditor
-                          key={`${row.id}:${JSON.stringify(row.value)}`}
-                          knob={knob}
-                          value={row.value}
-                          busy={busyRow === row.id}
-                          commitOnPick
-                          ariaLabel={`Value for ${row.who}`}
-                          onCommit={(value) => void write({ kind: row.kind, organizationId: row.organizationId, scopeId: row.scopeId, value, rowId: row.id, success: `${row.who} now gets ${knobValueWords(knob, value)}` })}
-                        />
-                      ) : (
-                        <span title="Change this one on the organization's Configuration page">{row.valueWords}</span>
-                      )}
-                    </td>
-                    <td className="max-w-[10rem] truncate px-2 py-1 text-muted-foreground" title={row.note ?? undefined}>{row.setBy ?? "Not recorded"}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-muted-foreground" title={row.setAt ?? undefined}>{row.setAt ? formatRelativeTime(row.setAt) : "Not recorded"}</td>
-                    <td className="px-1 py-1">
-                      <Button
-                        icon={busyRow === row.id ? <Loader2 className="animate-spin" /> : <Trash2 />}
-                        variant="quiet"
-                        aria-label={`Remove ${row.who}'s override${row.kind === "organization" ? "" : ` in ${row.organizationName}`}`}
-                        disabled={busyRow === row.id}
-                        onClick={() => void remove(row)}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <MatrxDataTable<OverrideTableRow>
+          appearance="compact"
+          data={rows}
+          getRowId={(row) => row.id}
+          rowVersion={(row) => busyRow === row.id}
+          copy={{ label: "Setting override", listLabel: `Overrides · ${knob.full_key}`, location: "Administration › Limits" }}
+          columns={[
+            { id: "level", header: "Level", accessorFn: (row) => row.levelLabel },
+            { id: "who", header: "For", accessorFn: (row) => row.who },
+            { id: "organization", header: "In organization", accessorFn: (row) => (row.kind === "organization" ? null : row.organizationName) },
+            {
+              id: "value",
+              header: "Value",
+              accessorFn: (row) => row.valueWords,
+              width: 170,
+              cell: (row) =>
+                row.kind === "organization" || row.kind === "user" ? (
+                  <ValueEditor
+                    key={`${row.id}:${JSON.stringify(row.value)}`}
+                    knob={knob}
+                    value={row.value}
+                    busy={busyRow === row.id}
+                    commitOnPick
+                    ariaLabel={`Value for ${row.who}`}
+                    onCommit={(value) => void write({ kind: row.kind, organizationId: row.organizationId, scopeId: row.scopeId, value, rowId: row.id, success: `${row.who} now gets ${knobValueWords(knob, value)}` })}
+                  />
+                ) : (
+                  <span title="Change this one on the organization's Configuration page">{row.valueWords}</span>
+                ),
+            },
+            { id: "set_by", header: "Set by", accessorFn: (row) => row.setBy ?? "Not recorded" },
+            { id: "set_at", header: "When", accessorFn: (row) => row.setAt, format: { id: "datetime" }, cell: (row) => <span title={row.setAt ?? undefined}>{row.setAt ? formatRelativeTime(row.setAt) : "Not recorded"}</span> },
+            { id: "note", header: "Note", accessorFn: (row) => row.note ?? null, hidden: true },
+          ]}
+          rowActions={(row) => [
+            {
+              id: "remove",
+              icon: Trash2,
+              label: `Remove ${row.who}'s override${row.kind === "organization" ? "" : ` in ${row.organizationName}`}`,
+              loading: busyRow === row.id,
+              disabled: busyRow === row.id,
+              tone: "destructive",
+              onClick: () => void remove(row),
+            },
+          ]}
+        />
       )}
 
       {addable.length > 0 && (

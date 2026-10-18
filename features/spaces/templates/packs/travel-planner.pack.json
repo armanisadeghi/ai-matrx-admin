@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 3,
+  "version": 4,
   "title": "Travel Planner",
-  "description": "Trips with itinerary, bookings, packing and places in one hub.",
+  "description": "Travelers: plan each trip with an itinerary, bookings, a packing list and places.",
   "forWho": "Travelers planning trips",
   "icon": {
     "emoji": "🧳"
@@ -16,7 +16,10 @@
   "tags": [
     "travel",
     "trips",
-    "packing"
+    "packing",
+    "itinerary",
+    "vacation",
+    "bookings"
   ],
   "spec": {
     "specVersion": 1,
@@ -1660,7 +1663,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

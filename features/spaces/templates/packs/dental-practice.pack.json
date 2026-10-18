@@ -136,12 +136,12 @@
               "Cancelled"
             ],
             "choiceColors": {
+              "No-show": "red",
+              "Cancelled": "orange",
               "Scheduled": "blue",
-              "Confirmed": "green",
-              "Checked in": "amber",
-              "Completed": "violet",
-              "No-show": "teal",
-              "Cancelled": "red"
+              "Confirmed": "amber",
+              "Checked in": "violet",
+              "Completed": "green"
             },
             "statusGroups": {
               "Scheduled": "todo",
@@ -788,7 +788,7 @@
               "email": "willa.p@mailbox-demo.net",
               "insurance": "Self-pay",
               "last_visit": "@today-100d",
-              "next_recall": "@today+80d",
+              "next_recall": "@mon+5d",
               "hygienist": "tm-marcus"
             }
           },
@@ -814,7 +814,7 @@
               "email": "yuki.nf@mailbox-demo.net",
               "insurance": "Summit Dental PPO",
               "last_visit": "@today-45d",
-              "next_recall": "@today+135d",
+              "next_recall": "@today+4d",
               "hygienist": "tm-priya"
             }
           },
@@ -1020,12 +1020,12 @@
               "Declined"
             ],
             "choiceColors": {
+              "Declined": "red",
               "Proposed": "blue",
-              "Accepted": "green",
-              "Scheduled": "amber",
-              "In progress": "violet",
-              "Completed": "teal",
-              "Declined": "red"
+              "Accepted": "amber",
+              "Scheduled": "violet",
+              "In progress": "teal",
+              "Completed": "green"
             },
             "statusGroups": {
               "Proposed": "todo",
@@ -1473,10 +1473,10 @@
               "Denied"
             ],
             "choiceColors": {
+              "Denied": "red",
               "Draft": "blue",
-              "Submitted": "green",
-              "Paid": "amber",
-              "Denied": "violet"
+              "Submitted": "amber",
+              "Paid": "green"
             },
             "statusGroups": {
               "Draft": "todo",

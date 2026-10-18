@@ -116,7 +116,11 @@ export async function POST(
           recordId: outcome.record_id,
           origin: new URL(request.url).origin,
           back: await pathOnRequestHost(request, `/f/${formId}`),
-        }).catch((thrown: unknown) => ({ refused: thrown instanceof Error ? thrown.message : "Payment could not be started." }))
+        }).catch((thrown: unknown) => {
+          // A store/Stripe failure is logged, never handed to an anonymous payer verbatim (M3).
+          console.error("[payments] checkout did not start", thrown instanceof Error ? thrown.message : thrown);
+          return { refused: "Payment could not be started. Try again in a moment." };
+        })
       : null;
     return NextResponse.json(
       {

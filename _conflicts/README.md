@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-18-000555-old-path-refused/features/surfaces/utils/pinned-binding-args.ts.held — recreated moved path features/surfaces/utils/pinned-binding-args.ts; belongs at ../aidream/apps/shared/chat/src/surfaces/utils/pinned-binding-args.ts
 
 ## Resolution log
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.

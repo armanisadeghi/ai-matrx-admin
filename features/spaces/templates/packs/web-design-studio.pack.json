@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 1,
+  "version": 2,
   "title": "Web Design Studio HQ",
   "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
   "forWho": "Web design and development studios",
@@ -12,7 +12,7 @@
     "url": "gallery:photo-misty-mountains",
     "offsetY": 50
   },
-  "category": "clients",
+  "category": "agencies",
   "tags": [
     "web design",
     "projects",
@@ -2534,7 +2534,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

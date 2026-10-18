@@ -30,6 +30,7 @@ import { AnchorBuildError, buildTextAnchor } from "./anchor";
 import { projectSource, projectionIsCurrent, rangeToSource, sourceOffsetAtPoint, unmappedSelectedChars, type SourceProjection } from "./projection";
 import { paintCss, paintScopeClass, useSidecarPaint } from "./useSidecarPaint";
 import { useAnnotationSidecar, type AnnotationSidecarApi } from "./useAnnotationSidecar";
+import { sourceNotReadyError } from "./errors";
 import { MentionComposer } from "./MentionComposer";
 import { LinkRecordSheet } from "./LinkRecordSheet";
 import { PassageQuote } from "./PassageQuote";
@@ -516,6 +517,8 @@ function CommentComposerPanel({
           ) : undefined
         }
         onSubmit={async (text, why) => {
+          // Never close on a write that cannot go out: the composer keeps the text and says why.
+          if (!api.ready) throw sourceNotReadyError("comments");
           done();
           const stageInto = conversationId && sendWithNext ? conversationId : null;
           const stageToPage = recordRemark && toPageChat.on;

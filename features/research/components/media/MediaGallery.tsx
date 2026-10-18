@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { useCallback, useState, useMemo } from "react";
@@ -309,6 +311,7 @@ export default function MediaGallery() {
               items={buckets.videos}
               onToggleRelevance={handleToggleRelevance}
               identityForId={youtubeIdentityForId}
+              videosHref={`/research/topics/${topicId}/youtube`}
             />
           )}
           {buckets.audio.length > 0 && (
@@ -1167,17 +1170,25 @@ function VideoSection({
   items,
   onToggleRelevance,
   identityForId,
+  videosHref,
 }: SectionProps & {
   identityForId: (videoId: string) => YouTubeVideoIdentity | undefined;
+  /** The topic's Videos tab: the ranked library is the videos' home. */
+  videosHref: string;
 }) {
   return (
     <section className="space-y-2">
-      <SectionHeader
+      <div className="flex items-center justify-between gap-2">
+        <SectionHeader
         icon={Video}
         title="Videos"
         count={items.length}
         description="Press a video to play it here"
       />
+        <Link href={videosHref} className="type-meta font-medium text-foreground hover:underline">
+          Open in Videos
+        </Link>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {/* Videos we know (a library row: title, channel, views) lead; bare embeds follow. */}
         {[...items]

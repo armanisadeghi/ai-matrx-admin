@@ -82,6 +82,8 @@ export interface AddTileInput {
   title?: string;
   text?: string;
   html?: string;
+  /** A cover's hero (HTML snippet). */
+  hero?: string;
   url?: string;
   width?: number;
   height?: number;
@@ -91,6 +93,8 @@ export interface EditTileInput {
   title?: string;
   text?: string;
   html?: string;
+  /** A cover's hero (HTML snippet). */
+  hero?: string;
 }
 
 export type Failure = { ok: false; error: string };
@@ -225,6 +229,7 @@ const DEFAULT_SIZE: Record<BoardTileKindInput, { w: number; h: number }> = {
   markdown: { w: 640, h: 720 },
   text: { w: 520, h: 120 },
   html: { w: 800, h: 560 },
+  cover: { w: 1020, h: 520 },
   image: { w: 560, h: 400 },
 };
 
@@ -479,7 +484,7 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     const id = `${kind}:${crypto.randomUUID().slice(0, 8)}`;
     const made = host.createTile(
       id,
-      { kind, title: str(a.title), text: typeof a.text === "string" ? a.text : undefined, html: str(a.html), url: str(a.url), width: size.w, height: size.h },
+      { kind, title: str(a.title), text: typeof a.text === "string" ? a.text : undefined, html: str(a.html), hero: typeof a.hero === "string" ? a.hero : undefined, url: str(a.url), width: size.w, height: size.h },
       size,
     );
     if (isFailure(made)) return made;
@@ -592,7 +597,7 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     const title = str(a.title);
     const w = num(a.width);
     const h = num(a.height);
-    const content = typeof a.text === "string" || !!str(a.html);
+    const content = typeof a.text === "string" || !!str(a.html) || typeof a.hero === "string";
     const reshape = !!title || w !== undefined || h !== undefined;
     if (!reshape && !content) return fail("Nothing to change: pass title, text, html, width or height.");
     const updateTile = board.updateTile;
@@ -604,7 +609,7 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     }
     if (content) {
       if (!host.editTile) return fail("This board's tiles cannot have their content edited; only their title and size.");
-      const edit = host.editTile(tile, { text: typeof a.text === "string" ? a.text : undefined, html: str(a.html) });
+      const edit = host.editTile(tile, { text: typeof a.text === "string" ? a.text : undefined, html: str(a.html), hero: typeof a.hero === "string" ? a.hero : undefined });
       if (isFailure(edit)) return edit;
       patch = { ...patch, ...edit };
     }

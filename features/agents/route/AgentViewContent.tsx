@@ -79,7 +79,7 @@ import {
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
-import { CopyButtons } from "@ai-matrx/chat/host/ui-slots";
+import { CopyButtonsSlot } from "@ai-matrx/chat/host/ui-slots";
 import { agentDefinitionSummary } from "@ai-matrx/chat/agents/format";
 import { agentHref } from "@/features/agents/browse/agentPaths";
 import { buildSystemAgentAiPayload } from "@ai-matrx/chat/agents/route/buildSystemAgentAiPayload";
@@ -473,7 +473,7 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
             {effectiveView === "pretty" ? "Overview" : "Raw definition (JSON)"}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <CopyButtons
+            <CopyButtonsSlot
               size="sm"
               label={`${agent.name} definition`}
               human={() =>
@@ -811,7 +811,7 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
                       <Variable className="w-4 h-4 text-primary" />
                       Variables ({variableCount})
                     </span></CardTitle>
-                    <CopyButtons
+                    <CopyButtonsSlot
                       size="xs"
                       label="Variables"
                       human={() =>
@@ -892,7 +892,7 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
                       <Layers className="w-4 h-4 text-info" />
                       Context Policies ({contextPolicyCount})
                     </span></CardTitle>
-                    <CopyButtons
+                    <CopyButtonsSlot
                       size="xs"
                       label="Context policies"
                       human={() =>

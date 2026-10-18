@@ -17,6 +17,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import { FlaskConical, Lightbulb, Send, Swords } from "lucide-react";
 import Link from "next/link";
 import { Badge, Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
@@ -331,19 +332,18 @@ function VersionsTab({ agentId }: { agentId: string }) {
   return (
     <div className="flex flex-col gap-3">
       <CaseVersionGrid agentId={agentId} />
-      <ul className="flex flex-col gap-1" data-testid="studio-versions">
-      {rows.map((r) => (
-        <li key={r.version_number}>
-          <Link
-            href={`/agents/${agentId}/v/${r.version_number}`}
-            className="flex items-center justify-between rounded-md border border-border px-2 py-1.5 text-xs hover:bg-muted"
-          >
-            <span className="font-medium text-foreground">Version {r.version_number}</span>
-            <span className="text-muted-foreground">{new Date(r.changed_at).toLocaleString()}</span>
-          </Link>
-        </li>
-      ))}
-      </ul>
+      <div data-testid="studio-versions">
+        <RecordList
+          items={rows}
+          getKey={(r) => String(r.version_number)}
+          title={(r) => `Version ${r.version_number}`}
+          meta={(r) => new Date(r.changed_at).toLocaleString()}
+          href={(r) => `/agents/${agentId}/v/${r.version_number}`}
+          size="sm"
+          sourceFeature="agent"
+          ariaLabel="Versions"
+        />
+      </div>
     </div>
   );
 }

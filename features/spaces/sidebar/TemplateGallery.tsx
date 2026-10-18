@@ -17,12 +17,20 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ArrowLeft, FileText, LayoutGrid, LayoutTemplate } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
+import { searchTemplates } from "@/lib/spaces-blocks/template-search";
 
 import type { SpaceDoc, SpaceSummary } from "../contract";
 import { SpaceEditor } from "../editor/SpaceEditor";
@@ -30,10 +38,13 @@ import { Cover } from "../page/Cover";
 import { Preview } from "../page/PageHistory";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
 import { StaticSpacesProvider, useSpaces } from "../state/SpacesProvider";
+import { DATABASE_HOST_CLASS } from "../editor/database-host";
 import {
   listSpaceTemplates,
+  previewBlockId,
   previewPages,
   readSpaceTemplate,
+  type PreviewSizes,
   type SpaceTemplateCard,
   type SpaceTemplateFull,
 } from "../templates/use-pack";
@@ -101,24 +112,21 @@ export function TemplateGallery({
   }, [ids.join(",")]);
   const ownPages = ids.filter((id) => mine[id] && !mine[id]!.isArchived);
 
-  const needle = q.trim().toLowerCase();
-  const matches = (c: SpaceTemplateCard) =>
-    !needle ||
-    [
-      c.space.title,
-      c.space.description,
-      c.space.forWho,
-      ...(c.space.tags ?? []),
-    ].some((s) => s?.toLowerCase().includes(needle));
+  // THE ONE TEMPLATE SEARCH (lib/spaces-blocks/template-search.ts): words, synonyms, what is inside, ranked.
+  const needle = q.trim();
   const counts = new Map<string, number>();
   for (const c of cards ?? [])
     counts.set(c.space.category, (counts.get(c.space.category) ?? 0) + 1);
-  const shown = (cards ?? []).filter(
-    (c) => (category === ALL || c.space.category === category) && matches(c),
+  const shown = searchTemplates(
+    (cards ?? []).filter(
+      (c) => category === ALL || c.space.category === category,
+    ),
+    needle,
+    (c) => c.space,
   );
-  const ownShown = ownPages.filter(
-    (id) => !needle || (mine[id]?.title ?? "").toLowerCase().includes(needle),
-  );
+  const ownShown = searchTemplates(ownPages, needle, (id) => ({
+    title: mine[id]?.title ?? "",
+  }));
 
   const pick = (key: string | null) => setPicked(key);
   const close = (next: boolean) => {
@@ -186,7 +194,10 @@ export function TemplateGallery({
                 card={(cards ?? []).find((c) => c.id === picked)!}
                 onBack={() => pick(null)}
                 stage={packs.stage}
-                onUse={async () => (close(false), await packs.use(picked))}
+                onUse={async (sizes) => (
+                  close(false),
+                  await packs.use(picked, sizes)
+                )}
               />
             ) : (
               <div className="spaces-tg-scroll">
@@ -312,6 +323,64 @@ function RailRow({
   );
 }
 
+/**
+ * The sizes the preview drew the shown page's database blocks at (painted, not loading, not held), by their
+ * place on the page (previewBlockId): the page "Use template" makes holds them from its first frame.
+ */
+function measurePreview(
+  pane: HTMLElement | null,
+  pageKey: string,
+): PreviewSizes | null {
+  if (!pane) return null;
+  const prefix = previewBlockId(pageKey, 0).slice(0, -1);
+  const blocks: PreviewSizes["blocks"] = {};
+  for (const el of pane.querySelectorAll<HTMLElement>(
+    `.${DATABASE_HOST_CLASS}[data-block-id^="${CSS.escape(prefix)}"]`,
+  )) {
+    const k = Number(el.dataset.blockId?.slice(prefix.length));
+    if (!k || el.style.height || el.querySelector(".spaces-db-loading")) continue;
+    const r = el.getBoundingClientRect();
+    if (r.height > 0)
+      blocks[k] = { w: Math.round(r.width), h: Math.round(r.height) };
+  }
+  return Object.keys(blocks).length
+    ? { page: pageKey, vw: window.innerWidth, blocks }
+    : null;
+}
+
+/** How long a freshly opened preview page stays at its top against scrolls the person did not make. */
+const PIN_TOP_MS = 2500;
+
+/**
+ * A PREVIEW OPENS AT ITS TOP, EVERY TIME (ADVERSARIAL-1 #6: Weekly Agenda opened at Wednesday, Invoices at
+ * Expenses). Blocks that mount late scroll themselves into view (a calendar finding today, a grid focusing a
+ * cell) and drag the preview pane with them. So each time `key` changes the pane goes to its top and stays
+ * there for PIN_TOP_MS — until the person scrolls, presses or types, which ends the pin at once.
+ */
+function usePinnedTop(ref: RefObject<HTMLDivElement | null>, key: string) {
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollTop = 0;
+    let pinned = true;
+    const release = () => {
+      pinned = false;
+    };
+    const onScroll = () => {
+      if (pinned && el.scrollTop !== 0) el.scrollTop = 0;
+    };
+    const user = ["wheel", "touchstart", "pointerdown", "keydown"] as const;
+    for (const t of user) el.addEventListener(t, release, { passive: true });
+    el.addEventListener("scroll", onScroll);
+    const timer = window.setTimeout(release, PIN_TOP_MS);
+    return () => {
+      window.clearTimeout(timer);
+      el.removeEventListener("scroll", onScroll);
+      for (const t of user) el.removeEventListener(t, release);
+    };
+  }, [ref, key]);
+}
+
 /** A pack's real pages, read-only, over its tables in memory; page links walk the preview. */
 function PackPreview({
   card,
@@ -321,7 +390,7 @@ function PackPreview({
 }: {
   card: SpaceTemplateCard;
   onBack: () => void;
-  onUse: () => void;
+  onUse: (sizes: PreviewSizes | null) => void;
   stage: string | null;
 }) {
   const spaces = useSpaces();
@@ -344,6 +413,8 @@ function PackPreview({
   }, [card.id]);
   const pages = full ? previewPages(full) : [];
   const current = pages.find((p) => p.key === pageKey) ?? pages[0];
+  const scrollRef = useRef<HTMLDivElement>(null);
+  usePinnedTop(scrollRef, `${card.id}:${current?.key ?? ""}`);
   const summaries = new Map<string, SpaceSummary>(
     pages.map((p) => [
       `preview-${p.key}`,
@@ -383,7 +454,13 @@ function PackPreview({
         <span className="min-w-0 flex-1 truncate type-title">
           {card.space.title}
         </span>
-        <Button variant="primary" disabled={!full || !!stage} onClick={onUse}>
+        <Button
+          variant="primary"
+          disabled={!full || !!stage}
+          onClick={() =>
+            onUse(current ? measurePreview(scrollRef.current, current.key) : null)
+          }
+        >
           {stage ? "Adding…" : "Use template"}
         </Button>
       </div>
@@ -413,7 +490,11 @@ function PackPreview({
             </button>
           ))}
         </aside>
-        <div className="spaces-tg-page" data-matrx-page-scroll="">
+        <div
+          className="spaces-tg-page"
+          data-matrx-page-scroll=""
+          ref={scrollRef}
+        >
           {failed ? (
             <ErrorNotice
               title="This template could not be opened"

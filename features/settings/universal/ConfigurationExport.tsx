@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@ai-matrx/design-system/controls";
+import { MatrxComparisonTable, type ComparisonRow } from "@ai-matrx/design-system/data-table";
 import {
   Select,
   SelectContent,
@@ -177,34 +178,45 @@ export function ConfigurationExport(props: {
               {result.rows.length === 0 ? (
                 <p className="px-3 py-3 text-sm text-muted-foreground">No differences — every setting has the same value in effect.</p>
               ) : (
-                <table className="w-full text-xs">
-                  <thead className="bg-muted/50 text-left">
-                    <tr>
-                      {/* read-gate-exempt: rows of the comparison the person just ran; result is cleared when it starts and set only when both reads returned */}
-                      <th className="px-3 py-1.5 font-medium">Setting ({result.rows.length} differ)</th>
-                      <th className="px-3 py-1.5 font-medium">{result.leftName}</th>
-                      <th className="px-3 py-1.5 font-medium">{result.rightName}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {result.rows.map((row) => (
-                      <tr key={row.key}>
-                        <td className="px-3 py-1.5">
-                          <div className="font-medium">{row.label}</div>
-                          <code className="text-[10px] text-muted-foreground">{row.key}</code>
-                        </td>
-                        <td className="px-3 py-1.5">
-                          {row.left === undefined ? "—" : formatKnobValue(row.left)}
-                          {row.leftOrigin === "organization" && <span className="ml-1 text-muted-foreground">(own)</span>}
-                        </td>
-                        <td className="px-3 py-1.5">
-                          {row.right === undefined ? "—" : formatKnobValue(row.right)}
-                          {row.rightOrigin === "organization" && <span className="ml-1 text-muted-foreground">(own)</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                // read-gate-exempt: rows of the comparison the person just ran; result is cleared when it starts and set only when both reads returned
+                <MatrxComparisonTable
+                  title="Settings that differ"
+                  hideTitle
+                  location="Settings — compare organizations"
+                  cornerLabel={`Setting (${result.rows.length} differ)`}
+                  subjects={[
+                    { id: "left", label: result.leftName },
+                    { id: "right", label: result.rightName },
+                  ]}
+                  rows={result.rows.map((row): ComparisonRow => ({
+                    id: row.key,
+                    label: row.label,
+                    header: (
+                      <span className="flex flex-col">
+                        <span className="font-medium">{row.label}</span>
+                        <code className="text-[10px] text-muted-foreground">{row.key}</code>
+                      </span>
+                    ),
+                    cell: (subject) => {
+                      const value = subject.id === "left" ? row.left : row.right;
+                      const own = (subject.id === "left" ? row.leftOrigin : row.rightOrigin) === "organization";
+                      if (value === undefined) return null;
+                      const shown = formatKnobValue(value);
+                      return {
+                        text: own ? `${shown} (own)` : shown,
+                        node: (
+                          <span>
+                            {shown}
+                            {own && <span className="ml-1 text-muted-foreground">(own)</span>}
+                          </span>
+                        ),
+                      };
+                    },
+                  }))}
+                  rowHeaderWidth={240}
+                  subjectWidth={200}
+                  aiContext="Every setting whose value in effect differs between two organizations."
+                />
               )}
             </div>
           )}

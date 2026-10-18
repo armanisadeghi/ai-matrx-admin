@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0308",
-  "version": 2,
+  "version": 3,
   "title": "SOP Library",
-  "description": "Write down how work gets done, with owners, approvers and review dates.",
+  "description": "Teams: write down how work gets done, with owners, approvers and review dates.",
   "forWho": "Teams documenting their processes",
   "icon": {
     "emoji": "📚"
@@ -17,7 +17,9 @@
     "sop",
     "processes",
     "wiki",
-    "documentation"
+    "documentation",
+    "procedures",
+    "how-to"
   ],
   "spec": {
     "specVersion": 1,
@@ -1152,7 +1154,7 @@
         "Cobblestone Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

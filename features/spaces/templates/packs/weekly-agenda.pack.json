@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 3,
+  "version": 4,
   "title": "Weekly Agenda",
-  "description": "Plan the week by day with tasks and meetings side by side, then review on Friday.",
+  "description": "Solo consultants and small teams: tasks and meetings by day, with a Friday review.",
   "forWho": "Solo consultants and small teams",
   "icon": {
     "emoji": "🗓️"
@@ -17,7 +17,9 @@
     "weekly",
     "agenda",
     "planning",
-    "review"
+    "review",
+    "to do",
+    "calendar"
   ],
   "spec": {
     "specVersion": 1,
@@ -1160,7 +1162,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1182,7 +1184,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plan the week in one glance. Each day lists its tasks and meetings. Add the week’s single focus first, then fill the days."
+              "text": "A work week, day by day. Plan the week in one glance. Each day lists its tasks and meetings. Add the week’s single focus first, then fill the days."
             }
           ],
           "background": "blue",

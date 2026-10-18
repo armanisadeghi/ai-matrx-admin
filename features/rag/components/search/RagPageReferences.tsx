@@ -47,11 +47,7 @@ import type {
   RagReferenceKind,
   RagReferenceRequest,
 } from "@/features/rag/components/hit-card/referenceTypes";
-import {
-  MOBILE_TABLE,
-  MOBILE_TABLE_FROZEN_CELL,
-  MOBILE_TABLE_FROZEN_HEAD,
-} from "@/components/official/mobile-table/mobileTable";
+import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface DerivativePageGroup {
@@ -120,6 +116,13 @@ function tableGroupToTsv(group: DerivativePageGroup): string {
     return { header, cells, fallback: chunk.content_text };
   });
   const header = rows.find((row) => row.header.length)?.header ?? [];
+  const columns: MatrxColumnDef<(typeof rows)[number]>[] = header.map((cell, index) => ({
+    id: `c${index}`,
+    header: cell,
+    label: cell || `Column ${index + 1}`,
+    accessorFn: (row) => (row.cells.length ? (row.cells[index] ?? "") : index === 0 ? row.fallback : ""),
+    className: "align-top",
+  }));
   // THE one TSV writer: a cell holding a tab, a line break or a quote stays one cell; document
   // text starting with = + - @ is formula-guarded (parseDelimited reverses it on our own paste).
   return toDelimited(
@@ -1111,44 +1114,14 @@ function TableRowsPreview({
         Table rows on this page
       </div>
       {header.length ? (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className={cn("border-collapse type-secondary", MOBILE_TABLE)}>
-            <thead className="bg-muted/50">
-              <tr>
-                {header.map((cell, index) => (
-                  <th
-                    key={index}
-                    className={cn(
-                      "border-b border-r border-border px-2 py-1.5 text-left font-semibold last:border-r-0",
-                      index === 0 && MOBILE_TABLE_FROZEN_HEAD,
-                    )}
-                  >
-                    {cell}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="even:bg-muted/20">
-                  {(row.cells.length ? row.cells : [row.fallback]).map(
-                    (cell, index) => (
-                      <td
-                        key={index}
-                        className={cn(
-                          "border-b border-r border-border/70 px-2 py-1 align-top last:border-r-0",
-                          index === 0 && MOBILE_TABLE_FROZEN_CELL,
-                        )}
-                      >
-                        {cell}
-                      </td>
-                    ),
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <LiteTable
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          density="condensed"
+          mobile="scroll"
+          ariaLabel="Table rows on this page"
+        />
       ) : (
         <div className="space-y-1.5">
           {rows.map((row) => (

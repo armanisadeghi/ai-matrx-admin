@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 3,
+  "version": 4,
   "title": "Team Offsite Planner",
-  "description": "Agenda, logistics, budget, attendees and venues for a team retreat.",
+  "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
   "icon": {
     "emoji": "🏕️"
@@ -17,7 +17,9 @@
     "offsite",
     "retreat",
     "events",
-    "budget"
+    "budget",
+    "team",
+    "agenda"
   ],
   "spec": {
     "specVersion": 1,
@@ -1695,7 +1697,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2112,7 +2114,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+              "text": "These numbers update as you work. Use this page for the weekly check, then open the list behind any number to act on it."
             }
           ],
           "background": "blue",
@@ -2332,7 +2334,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+              "text": "Each chart groups your entries as shown; click a slice to see the entries behind it."
             }
           ]
         },
@@ -2340,7 +2342,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "The lists below show only the rows that need attention now."
+              "text": "The lists below show only what needs attention now."
             }
           ]
         },
@@ -2348,7 +2350,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+              "text": "If a chart looks off, check that every entry is connected to the right person or item."
             }
           ]
         }

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 3,
-  "title": "Newsletter Growth OS",
-  "description": "Write issues, sell sponsor slots and watch subscriber growth and open rates week by week.",
+  "version": 4,
+  "title": "Newsletter Growth & Sponsors",
+  "description": "Independent writers: write issues, sell sponsor slots and watch subscriber growth.",
   "forWho": "Independent newsletter writers",
   "icon": {
     "emoji": "✉️"
@@ -17,7 +17,9 @@
     "newsletter",
     "sponsors",
     "growth",
-    "issues"
+    "issues",
+    "subscribers",
+    "email"
   ],
   "spec": {
     "specVersion": 1,
@@ -569,7 +571,7 @@
               "status": "Sent",
               "send_on": "@today-20d",
               "open_rate": 55.3,
-              "click_rate": 7.0,
+              "click_rate": 7,
               "sponsor": "sp2",
               "subject": "Four-day weeks on Main Street",
               "sections": [
@@ -1640,13 +1642,13 @@
         "Quillfeather Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
       "key": "newsletter-growth-os",
       "parent": null,
-      "title": "Newsletter Growth OS",
+      "title": "Newsletter Growth & Sponsors",
       "icon": {
         "emoji": "✉️"
       },
@@ -1662,7 +1664,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Move each issue from idea to sent, link the sponsor who bought the slot and log subscribers every Monday."
+              "text": "For writers growing an audience and selling sponsor slots. Move each issue from idea to sent, link the sponsor who bought the slot and log subscribers every Monday."
             }
           ],
           "background": "blue",

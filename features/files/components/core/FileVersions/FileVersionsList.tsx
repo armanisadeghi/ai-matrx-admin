@@ -14,6 +14,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import { extractErrorMessage } from "@/utils/errors";
 import { AlertCircle, History, Loader2, RotateCcw } from "lucide-react";
 import {
@@ -262,68 +263,58 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
         </div>
       </div>
 
-      <ul className="flex-1 overflow-auto divide-y divide-border">
-        {sorted.map((v) => {
+      <RecordList
+        items={sorted}
+        getKey={(v) => v.id}
+        title={(v) => formatDate(v.createdAt)}
+        leading={(v) => (
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold tabular-nums">
+            v{v.versionNumber}
+          </span>
+        )}
+        trailing={(v) =>
+          v.versionNumber === currentVersion ? (
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary-ink">
+              Current
+            </span>
+          ) : null
+        }
+        subtitle={(v) => (
+          <span title={v.changeSummary ?? undefined}>
+            {v.fileSize != null ? formatFileSize(v.fileSize) : "—"}
+            {v.checksum ? (
+              <>
+                <span className="px-1">·</span>
+                <span className="font-mono" title={`SHA-256: ${v.checksum}`}>
+                  {v.checksum.slice(0, 8)}
+                </span>
+              </>
+            ) : null}
+            {v.changeSummary ? <span> — {v.changeSummary}</span> : null}
+          </span>
+        )}
+        actions={(v) => {
           const isCurrent = v.versionNumber === currentVersion;
           return (
-            <li
-              key={v.id}
-              className="group/version flex items-start gap-3 px-3 py-2.5 hover:bg-accent/30"
-            >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold tabular-nums">
-                v{v.versionNumber}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                  <p className="text-sm font-medium">
-                    {formatDate(v.createdAt)}
-                  </p>
-                  {isCurrent ? (
-                    <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary-ink">
-                      Current
-                    </span>
-                  ) : null}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {v.fileSize != null ? formatFileSize(v.fileSize) : "—"}
-                  {v.checksum ? (
-                    <>
-                      <span className="px-1">·</span>
-                      <span
-                        className="font-mono"
-                        title={`SHA-256: ${v.checksum}`}
-                      >
-                        {v.checksum.slice(0, 8)}
-                      </span>
-                    </>
-                  ) : null}
-                </p>
-                {v.changeSummary ? (
-                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                    {v.changeSummary}
-                  </p>
-                ) : null}
-              </div>
-              <span className="shrink-0 opacity-0 transition-opacity group-hover/version:opacity-100 focus-within:opacity-100">
-                <CopyButtons
-                  size="xs"
-                  label={`${fileName} v${v.versionNumber}`}
-                  human={() => versionRowSummary(v, isCurrent)}
-                  json={() => versionAgentData(v, isCurrent)}
-                  agent={() => ({
-                    kind: "cloud-file-version",
-                    location: "AI Matrx — Cloud Files — version history",
-                    description: "A single version of the file.",
-                    data: versionAgentData(v, isCurrent),
-                    summary: versionRowSummary(v, isCurrent),
-                    attributes: {
-                      "file-id": fileId,
-                      version: v.versionNumber ?? "",
-                      current: isCurrent,
-                    },
-                  })}
-                />
-              </span>
+            <>
+              <CopyButtons
+                size="xs"
+                label={`${fileName} v${v.versionNumber}`}
+                human={() => versionRowSummary(v, isCurrent)}
+                json={() => versionAgentData(v, isCurrent)}
+                agent={() => ({
+                  kind: "cloud-file-version",
+                  location: "AI Matrx — Cloud Files — version history",
+                  description: "A single version of the file.",
+                  data: versionAgentData(v, isCurrent),
+                  summary: versionRowSummary(v, isCurrent),
+                  attributes: {
+                    "file-id": fileId,
+                    version: v.versionNumber ?? "",
+                    current: isCurrent,
+                  },
+                })}
+              />
               {!isCurrent ? (
                 <button
                   type="button"
@@ -332,18 +323,18 @@ export function FileVersionsList({ fileId, className }: FileVersionsListProps) {
                   className="flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-accent disabled:opacity-50 shrink-0"
                   title="Restore this version"
                 >
-                  {restoring === v.versionNumber ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <RotateCcw className="h-3 w-3" />
-                  )}
+                  {restoring === v.versionNumber ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3" />}
                   Restore
                 </button>
               ) : null}
-            </li>
+            </>
           );
-        })}
-      </ul>
+        }}
+        framed={false}
+        sourceFeature="files"
+        ariaLabel="Versions"
+        className="flex-1 overflow-auto"
+      />
 
       <AlertDialog
         open={confirmTarget !== null}

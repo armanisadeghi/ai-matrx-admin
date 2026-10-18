@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0159",
-  "version": 4,
+  "version": 5,
   "title": "Account Management",
-  "description": "Track customer health, renewals, contacts and every touch in one view.",
+  "description": "Customer success teams: keep health, renewals and contacts for existing customers.",
   "forWho": "Customer success and account managers",
   "icon": {
     "emoji": "🏢"
@@ -17,7 +17,9 @@
     "accounts",
     "renewals",
     "customer success",
-    "health"
+    "health",
+    "crm",
+    "clients"
   ],
   "spec": {
     "specVersion": 1,
@@ -1329,7 +1331,7 @@
         "Marlin Terrace"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

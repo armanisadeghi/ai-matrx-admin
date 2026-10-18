@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 1,
+  "version": 2,
   "title": "Accounting Firm Desk",
   "description": "Clients, monthly closes, filing deadlines and document requests for an accounting firm.",
   "forWho": "Bookkeeping and accounting firms",
@@ -12,7 +12,7 @@
     "url": "gallery:photo-ocean-horizon",
     "offsetY": 50
   },
-  "category": "operations",
+  "category": "services",
   "tags": [
     "accounting",
     "bookkeeping",
@@ -1852,7 +1852,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {

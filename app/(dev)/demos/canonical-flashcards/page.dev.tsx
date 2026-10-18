@@ -151,7 +151,7 @@ export default function CanonicalFlashcardsDemoHubPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-success/30 bg-success/10 p-5 shadow-[var(--elevation-1)]">
+          <div className="rounded-2xl border border-success/30 bg-success/10 p-5 shadow-sm">
             <div className="flex items-start gap-3">
               <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
               <div>
@@ -187,7 +187,7 @@ export default function CanonicalFlashcardsDemoHubPage() {
             {ARCHITECTURE.map(({ label, detail, icon: Icon }, index) => (
               <div
                 key={label}
-                className="relative rounded-xl border border-border bg-card p-4 shadow-[var(--elevation-1)]"
+                className="relative rounded-xl border border-border bg-card p-4 shadow-sm"
               >
                 <Icon className="mb-3 h-5 w-5 text-primary" />
                 <h3 className="text-sm font-semibold">{label}</h3>
@@ -224,7 +224,7 @@ export default function CanonicalFlashcardsDemoHubPage() {
               <AppLink
                 key={variant.id}
                 href={variant.href}
-                className="group flex min-h-44 flex-col rounded-2xl border border-border bg-card p-5 shadow-[var(--elevation-1)] transition-colors hover:border-primary/50 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="group flex min-h-44 flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary/50 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

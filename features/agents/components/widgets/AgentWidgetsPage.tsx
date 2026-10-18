@@ -48,7 +48,7 @@ import {
   sealWidgetLaunchOptions,
   type WidgetLaunchState,
 } from "./build-widget-launch";
-import { CopyButtons } from "@ai-matrx/chat/host/ui-slots";
+import { CopyButtonsSlot } from "@ai-matrx/chat/host/ui-slots";
 import { csvExportItem, jsonExportItem } from "@ai-matrx/chat/agent-copy/export";
 import {
   agentWidgetTesterKpis,
@@ -425,7 +425,7 @@ export function AgentWidgetsPage({
         {/* Tap buttons space themselves (no row gap); the save status is text
             between two of them, so it adds the half-gap on both sides. */}
         <div className="flex items-center pt-0.5 shrink-0">
-          <CopyButtons
+          <CopyButtonsSlot
             size="icon"
             label={`Widget tester — ${initialAgentName}`}
             human={testerHuman}
@@ -594,7 +594,7 @@ export function AgentWidgetsPage({
                         {definitions.length} defined
                       </span>
                       <span className="opacity-0 transition-opacity focus-within:opacity-100 group-hover/vars:opacity-100">
-                        <CopyButtons
+                        <CopyButtonsSlot
                           size="xs"
                           label="Widget tester variables"
                           human={() =>
@@ -644,7 +644,7 @@ export function AgentWidgetsPage({
                       User Input
                     </Label>
                     <span className="opacity-0 transition-opacity focus-within:opacity-100 group-hover/input:opacity-100">
-                      <CopyButtons
+                      <CopyButtonsSlot
                         size="xs"
                         label="Widget tester user input"
                         human={() => userInput || "(empty)"}

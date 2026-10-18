@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0360",
-  "version": 3,
-  "title": "Design System",
-  "description": "Document tokens, components and usage rules with owners and status.",
+  "version": 4,
+  "title": "Design System Docs",
+  "description": "Design and front-end teams: document components, usage rules, owners and status.",
   "forWho": "Design and front-end teams",
   "icon": {
     "emoji": "🎨"
@@ -17,7 +17,9 @@
     "design",
     "components",
     "tokens",
-    "documentation"
+    "documentation",
+    "ui",
+    "guidelines"
   ],
   "spec": {
     "specVersion": 1,
@@ -1416,13 +1418,13 @@
         "Sallow Fen Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
       "key": "design-system",
       "parent": null,
-      "title": "Design System",
+      "title": "Design System Docs",
       "icon": {
         "emoji": "🎨"
       },
@@ -1438,7 +1440,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "One home for tokens, components and rules. Start from the foundations, find a component, and check its status before using it."
+              "text": "Documentation for the components people build with. One home for tokens, components and rules. Start from the foundations, find a component, and check its status before using it."
             }
           ],
           "background": "purple",

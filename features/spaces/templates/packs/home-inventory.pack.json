@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0215",
-  "version": 2,
+  "version": 3,
   "title": "Home Inventory",
-  "description": "Record what you own by room with values, serial numbers and warranty dates.",
+  "description": "Homeowners and renters: list what you own by room, with values and warranty dates.",
   "forWho": "Homeowners and renters",
   "icon": {
     "emoji": "🏠"
@@ -16,7 +16,10 @@
   "tags": [
     "inventory",
     "home",
-    "warranty"
+    "warranty",
+    "insurance",
+    "belongings",
+    "rooms"
   ],
   "spec": {
     "specVersion": 1,
@@ -1018,7 +1021,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

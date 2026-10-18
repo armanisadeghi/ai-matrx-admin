@@ -38,12 +38,12 @@ export function ItemLogo({ name, logoUrl, website, size = 40, fill = false, clas
   // A site the favicon service doesn't know comes back as its 16px default globe: that is not the
   // item's mark, so fall through to the next source (or the letter).
   const settle = useCallback((img: HTMLImageElement) => {
-    if (src !== logoUrl && img.naturalWidth > 0 && img.naturalWidth <= 16) {
+    if (!photo && img.naturalWidth > 0 && img.naturalWidth <= 16) {
       setFailed((n) => n + 1);
       return;
     }
     setLoaded(true);
-  }, [src, logoUrl]);
+  }, [photo]);
   // A cached picture can finish loading before React attaches onLoad; settle it on mount so the
   // shimmer never stays over a picture that is already there.
   const settleIfAlreadyLoaded = useCallback((img: HTMLImageElement | null) => {

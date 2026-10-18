@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0362",
-  "version": 2,
+  "version": 3,
   "title": "Net Worth Tracker",
-  "description": "Track accounts, holdings and dated balance snapshots. Tracking only, no advice.",
+  "description": "Individuals: track accounts, holdings and balance snapshots. Tracking only, no advice.",
   "forWho": "Individuals and households",
   "icon": {
     "emoji": "📈"
@@ -17,7 +17,9 @@
     "net worth",
     "accounts",
     "holdings",
-    "tracking"
+    "tracking",
+    "assets",
+    "finance"
   ],
   "spec": {
     "specVersion": 1,
@@ -1224,7 +1226,7 @@
         "Harrow Glen Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

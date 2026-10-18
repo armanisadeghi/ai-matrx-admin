@@ -16,12 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveSandboxId } from "../redux/codeWorkspaceSlice";
-import {
-  MOBILE_TABLE,
-  MOBILE_TABLE_CELL,
-  MOBILE_TABLE_FROZEN_CELL,
-  MOBILE_TABLE_FROZEN_HEAD,
-} from "@/components/official/mobile-table/mobileTable";
+import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -132,6 +127,66 @@ export const PortsTab: React.FC<PortsTabProps> = ({ className }) => {
     );
   }
 
+  const hostportOf = (entry: PortEntry) => (entry.host ? `${entry.host}:${entry.port}` : `localhost:${entry.port}`);
+  const portColumns: MatrxColumnDef<PortEntry & { key: string }>[] = [
+    {
+      accessorKey: "port",
+      header: "Port",
+      cell: (entry) => (
+        <span className="font-mono">
+          {entry.port}
+          {entry.proto && <span className="ml-1 text-[10px] uppercase text-neutral-500">{entry.proto}</span>}
+        </span>
+      ),
+    },
+    {
+      id: "process",
+      header: "Process",
+      accessorFn: (entry) => entry.process ?? entry.command ?? "",
+      cell: (entry) => (
+        <span className="text-neutral-600 dark:text-neutral-300">
+          {entry.process ?? entry.command ?? "—"}
+          {entry.pid && <span className="ml-1 text-[10px] text-neutral-500">#{entry.pid}</span>}
+        </span>
+      ),
+    },
+    { id: "address", header: "Address", accessorFn: hostportOf, className: "font-mono text-neutral-500 sm:truncate" },
+    {
+      id: "actions",
+      header: "",
+      label: "Actions",
+      sortable: false,
+      align: "right",
+      cell: (entry) => {
+        const hostport = hostportOf(entry);
+        const previewUrl = entry.preview_url ?? null;
+        return (
+          <div className="inline-flex gap-0.5">
+            <button
+              type="button"
+              aria-label="Copy host:port"
+              title="Copy host:port"
+              onClick={() => copy(`${entry.key}:hp`, hostport)}
+              className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
+            >
+              {copiedKey === `${entry.key}:hp` ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+            {previewUrl && (
+              <OutboundLink
+                href={previewUrl}
+                aria-label="Open preview URL"
+                title="Open preview URL"
+                className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
+              >
+                <ExternalLink size={12} />
+              </OutboundLink>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <div
       className={cn(
@@ -178,78 +233,15 @@ export const PortsTab: React.FC<PortsTabProps> = ({ className }) => {
           </div>
         )}
         {ports && ports.length > 0 && (
-          <table className={cn("text-[12px]", MOBILE_TABLE)}>
-            <thead>
-              <tr className="text-left text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                <th className={cn("px-2 py-1 font-medium", MOBILE_TABLE_FROZEN_HEAD, "max-sm:min-w-0 max-sm:bg-background")}>Port</th>
-                <th className={cn("px-2 py-1 font-medium", MOBILE_TABLE_CELL)}>Process</th>
-                <th className={cn("px-2 py-1 font-medium", MOBILE_TABLE_CELL)}>Address</th>
-                <th className="px-2 py-1 font-medium" aria-label="Actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {ports.map((entry, idx) => {
-                const key = `${entry.port}:${idx}`;
-                const hostport = entry.host
-                  ? `${entry.host}:${entry.port}`
-                  : `localhost:${entry.port}`;
-                const previewUrl = entry.preview_url ?? null;
-                return (
-                  <tr
-                    key={key}
-                    className="border-t border-neutral-100 dark:border-neutral-800/70 hover:bg-neutral-50 dark:hover:bg-neutral-900/60"
-                  >
-                    <td className={cn("px-2 py-1 font-mono", MOBILE_TABLE_FROZEN_CELL, "max-sm:min-w-0")}>
-                      {entry.port}
-                      {entry.proto && (
-                        <span className="ml-1 text-[10px] uppercase text-neutral-500">
-                          {entry.proto}
-                        </span>
-                      )}
-                    </td>
-                    <td className={cn("px-2 py-1 text-neutral-600 dark:text-neutral-300", MOBILE_TABLE_CELL)}>
-                      {entry.process ?? entry.command ?? "—"}
-                      {entry.pid && (
-                        <span className="ml-1 text-[10px] text-neutral-500">
-                          #{entry.pid}
-                        </span>
-                      )}
-                    </td>
-                    <td className={cn("px-2 py-1 font-mono text-neutral-500 sm:truncate", MOBILE_TABLE_CELL)}>
-                      {hostport}
-                    </td>
-                    <td className="px-2 py-1 text-right">
-                      <div className="inline-flex gap-0.5">
-                        <button
-                          type="button"
-                          aria-label="Copy host:port"
-                          title="Copy host:port"
-                          onClick={() => copy(`${key}:hp`, hostport)}
-                          className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
-                        >
-                          {copiedKey === `${key}:hp` ? (
-                            <Check size={12} />
-                          ) : (
-                            <Copy size={12} />
-                          )}
-                        </button>
-                        {previewUrl && (
-                          <OutboundLink
-                            href={previewUrl}
-                            aria-label="Open preview URL"
-                            title="Open preview URL"
-                            className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-500 hover:bg-neutral-200 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-100"
-                          >
-                            <ExternalLink size={12} />
-                          </OutboundLink>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <LiteTable
+            data={ports.map((entry, idx) => ({ ...entry, key: `${entry.port}:${idx}` }))}
+            columns={portColumns}
+            getRowId={(row) => row.key}
+            density="condensed"
+            copyRows={false}
+            mobile="scroll"
+            ariaLabel="Forwarded ports"
+          />
         )}
       </div>
     </div>

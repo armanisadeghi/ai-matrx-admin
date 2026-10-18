@@ -19,6 +19,8 @@ import { costRatingTier } from "../format";
 import { hasHeldTierChange, isMaxTier, tierMismatch, tierMismatchText } from "../maxTier";
 import { MaxTierBadge } from "./CostRatingCell";
 import type { AiModel, CostRatingChange } from "../types";
+import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 function ratingText(rating: number | null): string {
@@ -26,6 +28,16 @@ function ratingText(rating: number | null): string {
 }
 
 /** The model's MAX-tier state: badge, mismatch flag, held request, and who changed it. */
+
+/** The rating history as a compact table: when, from, to, held and who — each its own column. */
+const HISTORY_COLUMNS: MatrxColumnDef<CostRatingChange>[] = [
+  { id: "when", header: "When", accessorFn: (row) => row.occurred_at, format: { id: "datetime" } },
+  { id: "from", header: "From", accessorFn: (row) => ratingText(row.from_rating) },
+  { id: "to", header: "To", accessorFn: (row) => ratingText(row.to_rating) },
+  { id: "held", header: "Held", accessorFn: (row) => (row.held_rating == null ? null : ratingText(row.held_rating === 0 ? null : row.held_rating)) },
+  { id: "actor_tier", header: "By", accessorFn: (row) => row.actor_tier ?? "unknown" },
+  { id: "actor_id", header: "Actor", accessorFn: (row) => row.actor_id ?? null, cellKind: "uuid", hidden: true },
+];
 export default function ModelTierStrip({
   model,
   onChanged,
@@ -112,25 +124,14 @@ export default function ModelTierStrip({
           ) : history.length === 0 ? (
             <span className="text-muted-foreground">No MAX-tier changes recorded</span>
           ) : (
-            <table className="w-full">
-              <tbody>
-                {history.map((row) => (
-                  <tr key={`${row.version}-${row.occurred_at}`}>
-                    <td className="pr-3 whitespace-nowrap text-muted-foreground">
-                      {new Date(row.occurred_at).toLocaleString()}
-                    </td>
-                    <td className="pr-3 whitespace-nowrap">
-                      {ratingText(row.from_rating)} to {ratingText(row.to_rating)}
-                      {row.held_rating != null && ` (held: ${ratingText(row.held_rating === 0 ? null : row.held_rating)})`}
-                    </td>
-                    <td className="whitespace-nowrap text-muted-foreground">
-                      {row.actor_tier ?? "unknown"}
-                      {row.actor_id ? ` ${row.actor_id.slice(0, 8)}` : ""}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <MatrxDataTable<CostRatingChange>
+              appearance="compact"
+              data={history}
+              columns={HISTORY_COLUMNS}
+              getRowId={(row) => `${row.version}-${row.occurred_at}`}
+              defaultSort={{ id: "when", direction: "desc" }}
+              copy={{ label: "Rating change", listLabel: `Rating history · ${model.common_name || model.name}`, location: "AI models › Rating history" }}
+            />
           )}
         </div>
       )}

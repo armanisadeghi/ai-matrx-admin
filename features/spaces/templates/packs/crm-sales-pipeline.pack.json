@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0304",
-  "version": 3,
-  "title": "CRM and Sales Pipeline",
-  "description": "Track accounts, contacts, deals and follow-ups from first call to closed.",
-  "forWho": "Sales-led small businesses and consultants",
+  "version": 4,
+  "title": "Account CRM for Consultants",
+  "description": "Consultants and B2B firms: companies first, then their contacts, deals and follow-ups.",
+  "forWho": "Consultants and business-to-business firms",
   "icon": {
     "emoji": "📈"
   },
@@ -15,9 +15,11 @@
   "category": "sales",
   "tags": [
     "crm",
-    "sales",
+    "accounts",
+    "contacts",
+    "deals",
     "pipeline",
-    "deals"
+    "b2b"
   ],
   "spec": {
     "specVersion": 1,
@@ -1852,13 +1854,13 @@
         "Merriweather Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
       "key": "crm-sales-pipeline",
       "parent": null,
-      "title": "CRM and Sales Pipeline",
+      "title": "Account CRM for Consultants",
       "icon": {
         "emoji": "📈"
       },
@@ -1874,7 +1876,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Log each opportunity against an account, record every touch as an activity and keep the next step date current. Open the board to see where the money sits."
+              "text": "For consultants who sell to companies, so accounts come first. Log each opportunity against an account, record every touch as an activity and keep the next step date current. Open the board to see where the money sits."
             }
           ],
           "background": "blue",

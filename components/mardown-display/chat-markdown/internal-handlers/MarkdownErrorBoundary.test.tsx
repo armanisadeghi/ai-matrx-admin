@@ -1,10 +1,10 @@
 import type { ErrorInfo, ReactNode } from "react";
-import { captureReactRenderError } from "@ai-matrx/rich-content/utils/lifted/captureReactError";
+import { captureRichContentRenderError } from "@ai-matrx/rich-content/utils/lifted/captureReactError";
 import { notifyChunkLoadError } from "@ai-matrx/rich-content/utils/lifted/chunk-load-recovery";
 import { MarkdownErrorBoundary } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/MarkdownErrorBoundary";
 
 jest.mock("@ai-matrx/rich-content/utils/lifted/captureReactError", () => ({
-  captureReactRenderError: jest.fn(),
+  captureRichContentRenderError: jest.fn(),
 }));
 
 jest.mock("@ai-matrx/rich-content/utils/lifted/chunk-load-recovery", () => {
@@ -34,7 +34,7 @@ describe("MarkdownErrorBoundary chunk recovery", () => {
     createBoundary().componentDidCatch(error, errorInfo);
 
     expect(notifyChunkLoadError).toHaveBeenCalledWith(error);
-    expect(captureReactRenderError).not.toHaveBeenCalled();
+    expect(captureRichContentRenderError).not.toHaveBeenCalled();
   });
 
   it("still captures genuine Markdown render failures and invokes the caller hook", () => {
@@ -43,7 +43,7 @@ describe("MarkdownErrorBoundary chunk recovery", () => {
 
     createBoundary(onError).componentDidCatch(error, errorInfo);
 
-    expect(captureReactRenderError).toHaveBeenCalledWith(error, {
+    expect(captureRichContentRenderError).toHaveBeenCalledWith(error, {
       boundary: "MarkdownErrorBoundary",
       componentStack: errorInfo.componentStack,
     });

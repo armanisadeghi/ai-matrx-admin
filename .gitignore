@@ -134,6 +134,9 @@ public/pdfjs/
 # Surface-check screenshots and other generated verification artifacts
 .matrx/surface-check-artifacts/
 
+# The pending-import checker's state (scripts/matrx-pending-checker.mjs; read by next.config.js in dev)
+.matrx/pending-imports/
+
 # Local tool-trace output (transient diagnostics)
 .matrx-debug/
 

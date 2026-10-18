@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "version": 3,
+  "version": 4,
   "title": "SEO Hub",
-  "description": "Research keywords, brief and publish posts, and track rank and results.",
+  "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
   "icon": {
     "emoji": "🔎"
@@ -17,7 +17,9 @@
     "seo",
     "keywords",
     "content",
-    "rank"
+    "rank",
+    "blog",
+    "search"
   ],
   "spec": {
     "specVersion": 1,
@@ -1380,7 +1382,7 @@
         "Switchback Road"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

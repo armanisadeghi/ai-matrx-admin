@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 2,
+  "version": 3,
   "title": "Moving Checklist",
-  "description": "Timeframe checklist, box inventory and address-change tracker for a move.",
+  "description": "Anyone moving house: a timeline checklist, box inventory and address-change tracker.",
   "forWho": "Anyone moving house",
   "icon": {
     "emoji": "📦"
@@ -16,7 +16,10 @@
   "tags": [
     "moving",
     "checklist",
-    "home"
+    "home",
+    "boxes",
+    "relocation",
+    "to do"
   ],
   "spec": {
     "specVersion": 1,
@@ -1302,7 +1305,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

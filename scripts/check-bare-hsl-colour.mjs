@@ -18,7 +18,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const TOKENS =
-  "background|foreground|card(?:-foreground)?|popover(?:-foreground)?|primary(?:-foreground|-hover|-active|-ink)?|secondary(?:-foreground)?|muted(?:-foreground)?|accent(?:-foreground|-hover|-active)?|destructive(?:-foreground|-ink)?|border|input|ring|chart-\\d+|success(?:-foreground|-ink)?|warning(?:-foreground|-ink)?|info(?:-foreground|-ink)?|brand-secondary(?:-foreground|-hover|-active)?|sidebar-(?:background|foreground|primary|primary-foreground|accent|accent-foreground|border|ring)|matrx-chart-[a-z0-9]+|matrx-tooltip(?:-border|-foreground|-muted-foreground)?";
+  "background|foreground|card(?:-foreground)?|popover(?:-foreground)?|primary(?:-foreground|-hover|-active|-ink)?|secondary(?:-foreground)?|muted(?:-foreground)?|accent(?:-foreground|-hover|-active)?|destructive(?:-foreground|-ink)?|border|input|ring|elevation-\\d+|chart-\\d+|success(?:-foreground|-ink)?|warning(?:-foreground|-ink)?|info(?:-foreground|-ink)?|brand-secondary(?:-foreground|-hover|-active)?|sidebar-(?:background|foreground|primary|primary-foreground|accent|accent-foreground|border|ring)|matrx-chart-[a-z0-9]+|matrx-tooltip(?:-border|-foreground|-muted-foreground)?";
 const BARE = new RegExp(`var\\(\\s*--(?:${TOKENS})\\s*[,)]`, "g");
 const OK_BEFORE = /(?:hsla?|oklch|rgba?)\(\s*(?:from\s+)?$/;
 const CUSTOM_PROP_VALUE = /--[\w-]+\s*:\s*$/;
@@ -66,6 +66,8 @@ function selfTest() {
     "box-shadow: inset 0 0 0 1px var(--primary);",
     "color-mix(in srgb, var(--primary) 16%, transparent)",
     'fill="var(--background, #fff)"',
+    'className="shadow-md"',
+    "hover:shadow-[var(--border)]",
   ];
   const fine = [
     'const s = { background: "hsl(var(--popover))" };',
@@ -73,6 +75,7 @@ function selfTest() {
     'fill="hsl(var(--background, 0 0% 100%))"',
     "--glow: var(--primary);",
     "// var(--border) is no colour",
+    'className="shadow-md bg-elevation-2" style={{ background: "hsl(var(--elevation-1))" }}',
   ];
   for (const p of planted) if (!findBareHslColours(p).length) throw new Error(`self-test: planted bare var not caught: ${p}`);
   for (const f of fine) if (findBareHslColours(f).length) throw new Error(`self-test: wrongly flagged: ${f}`);

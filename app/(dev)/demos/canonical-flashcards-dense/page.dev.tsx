@@ -245,7 +245,7 @@ export default function DenseCanonicalFlashcardsDemo() {
                   event.currentTarget.setPointerCapture(event.pointerId);
                 }}
                 onPointerUp={handlePointerUp}
-                className="group relative flex min-h-0 flex-1 touch-pan-y select-none flex-col overflow-hidden rounded-xl border border-border bg-card text-left shadow-[var(--elevation-2)] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary"
+                className="group relative flex min-h-0 flex-1 touch-pan-y select-none flex-col overflow-hidden rounded-xl border border-border bg-card text-left shadow-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2">
                   <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -405,7 +405,7 @@ export default function DenseCanonicalFlashcardsDemo() {
           <section
             aria-label="Learning actions"
             onClick={(event) => event.stopPropagation()}
-            className="flex h-[58dvh] w-full flex-col rounded-t-2xl border border-border bg-card shadow-[var(--elevation-3)]"
+            className="flex h-[58dvh] w-full flex-col rounded-t-2xl border border-border bg-card shadow-lg"
           >
             <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2">
               <div>

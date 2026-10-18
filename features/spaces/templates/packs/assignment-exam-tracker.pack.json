@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0254",
-  "version": 2,
+  "version": 3,
   "title": "Assignment & Exam Tracker",
-  "description": "Deadlines, weights and grades for every course in one view.",
+  "description": "Students: deadlines, weights and grades for every course in one view.",
   "forWho": "Students tracking coursework",
   "icon": {
     "emoji": "📝"
@@ -17,7 +17,9 @@
     "assignments",
     "exams",
     "deadlines",
-    "grades"
+    "grades",
+    "homework",
+    "to do"
   ],
   "spec": {
     "specVersion": 1,
@@ -1029,7 +1031,7 @@
         "Thornwick Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1331,7 +1333,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "This page reads live from your tables. Use it for the weekly check, then open the table behind any number to act on it."
+              "text": "These numbers update as you work. Use this page for the weekly check, then open the list behind any number to act on it."
             }
           ],
           "background": "blue",
@@ -1539,7 +1541,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "The charts count rows by the groups shown; click through to see which rows they are."
+              "text": "Each chart groups your entries as shown; click a slice to see the entries behind it."
             }
           ]
         },
@@ -1547,7 +1549,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "The lists below show only the rows that need attention now."
+              "text": "The lists below show only what needs attention now."
             }
           ]
         },
@@ -1555,7 +1557,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "If a chart looks wrong, check that the linked column on the rows is filled in."
+              "text": "If a chart looks off, check that every entry is connected to the right person or item."
             }
           ]
         }

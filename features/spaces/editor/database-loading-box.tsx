@@ -11,7 +11,7 @@ import { SKELETON_EMBEDDED_PAGE_ROWS, embeddedGridBodyPx, skeletonRowsFor, Expec
 import type { ReactNode } from "react";
 
 import { useBlockExpectedGroups, useBlockExpectedRows } from "../page/space-seed-context";
-import { activeLayout } from "./database-host";
+import { activeLayout, paintedSizesOf, pickPainted } from "./database-host";
 
 /** The database frame's own chrome (spaces.css `.spaces-db-frame`): 1 px border and 14 + 10 px padding. */
 const FRAME_CHROME_PX = 26;
@@ -34,9 +34,15 @@ export function databaseFramePx(p: Record<string, unknown>, rows: number | null)
   return FRAME_CHROME_PX + BAR_PX + embeddedGridBodyPx(drawn) + (titled ? TITLE_PX + 2 * FRAME_GAP_PX : FRAME_GAP_PX);
 }
 
-/** The loading box of a database block: the loaded frame's height when the server told us the rows, else the default box. */
+/**
+ * The loading box of a database block: the loaded frame's height when the server told us the rows, else the
+ * size the block was last painted at (its stored `paintedSize`, the same on server and client), else the
+ * default box. A block still loading after its hold ends (SETTLE_MAX_MS) keeps its size, so nothing under
+ * it moves when the rows land (ADVERSARIAL-1 #2: a new template page's blocks filled in seconds later).
+ */
 export function DatabaseLoadingBox({ blockId, p }: { blockId: string; p: Record<string, unknown> }) {
-  const framePx = databaseFramePx(p, useBlockExpectedRows(blockId));
+  const painted = pickPainted(paintedSizesOf(p), {}, true)?.h;
+  const framePx = databaseFramePx(p, useBlockExpectedRows(blockId)) ?? (painted ? Math.max(0, painted - 2 * FRAME_MARGIN_PX) : null);
   if (framePx === null) return <div className="spaces-db-loading" />;
   return <div className="spaces-db-loading" style={{ minHeight: framePx, margin: `${FRAME_MARGIN_PX}px 0` }} data-expected-frame={framePx} />;
 }

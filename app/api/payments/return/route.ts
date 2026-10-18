@@ -13,10 +13,14 @@ import { isUuidShape } from "@ai-matrx/kit/uuid";
 export const dynamic = "force-dynamic";
 
 /** Only a path on THIS site is followed — never an outside address carried in the link (I3). */
+// `pid` names the payment so the page can READ its state on the server (I4) — the `payment` word is
+// only a hint about what happened in Stripe's window, never proof of money.
 function backTo(request: NextRequest, outcome: string): URL {
   const path = safeReturnPath(request.nextUrl.searchParams.get("back"), request.nextUrl.origin);
   const url = new URL(path, request.nextUrl.origin);
   url.searchParams.set("payment", outcome);
+  const paymentId = request.nextUrl.searchParams.get("payment") ?? "";
+  if (isUuidShape(paymentId)) url.searchParams.set("pid", paymentId);
   return url;
 }
 

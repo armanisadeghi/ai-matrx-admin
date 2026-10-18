@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import Link from "next/link";
 import {
   PackageOpen,
@@ -1227,28 +1228,19 @@ function GeneratedList({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-lg border border-border divide-y divide-border overflow-hidden", className)}>
-      {assets.map((a) => (
-        <button
-          key={a.id}
-          type="button"
-          onClick={() => onPick(a)}
-          aria-current={a.id === activeId ? "true" : undefined}
-          className={cn(
-            "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-accent",
-            a.id === activeId && "bg-accent",
-          )}
-        >
-          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-          <span className="flex-1 truncate type-meta font-medium text-foreground">
-            {a.title}
-          </span>
-          <span className="shrink-0 type-meta tabular-nums text-muted-foreground">
-            {new Date(a.created_at).toLocaleDateString()}
-          </span>
-        </button>
-      ))}
-    </div>
+    <RecordList
+      items={assets}
+      getKey={(a) => a.id}
+      title={(a) => a.title}
+      meta={(a) => new Date(a.created_at).toLocaleDateString()}
+      leading={() => <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+      activeKey={activeId}
+      onOpen={onPick}
+      size="sm"
+      sourceFeature="research_output"
+      ariaLabel="Generated outputs"
+      {...(className ? { className } : {})}
+    />
   );
 }
 

@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { StripeWebhookVerificationError, verifyStripeWebhook } from "@/lib/stripe/server";
-import { sessionForPaymentIntent, settle, syncAccount } from "@/features/payments/server";
+import { refundFromEvent, settleFromEvent, syncAccount, type EventOrigin } from "@/features/payments/server";
 
 export const dynamic = "force-dynamic";
 
@@ -34,27 +34,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Signature did not verify." }, { status: 400 });
   }
 
+  // M2: a checkout or refund event is applied only to a payment made on the event's own connected
+  // account and in the event's own mode (settleFromEvent / refundFromEvent compare both).
+  const origin: EventOrigin = { account: event.account ?? null, livemode: event.livemode };
   try {
     switch (event.type) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object;
-        if (session.payment_status === "paid") await settle(session.id, "paid", intentOf(session));
+        if (session.payment_status === "paid") await settleFromEvent(session.id, "paid", intentOf(session), origin);
         break;
       }
       case "checkout.session.async_payment_failed":
-        await settle(event.data.object.id, "failed", intentOf(event.data.object));
+        await settleFromEvent(event.data.object.id, "failed", intentOf(event.data.object), origin);
         break;
       case "checkout.session.expired":
-        await settle(event.data.object.id, "expired", null);
+        await settleFromEvent(event.data.object.id, "expired", null, origin);
         break;
       case "charge.refunded": {
+        // Full or partial (M1): amount_refunded is the charge's running total.
         const charge = event.data.object;
         const intent = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
-        if (intent && charge.refunded) {
-          const sessionId = await sessionForPaymentIntent(intent);
-          if (sessionId) await settle(sessionId, "refunded", intent);
-        }
+        if (intent && charge.amount_refunded > 0) await refundFromEvent(intent, charge.amount_refunded, origin);
         break;
       }
       case "account.updated":

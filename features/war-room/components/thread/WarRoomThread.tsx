@@ -78,10 +78,10 @@ export function WarRoomThread({
           ? "border-l-[3px] border-l-border/70"
           : cn("border-l-[3px]", kind.sectionBorder),
         actions.isPinned
-          ? "border-primary/40 shadow-[var(--elevation-2)] ring-1 ring-primary/15"
+          ? "border-primary/40 shadow-md ring-1 ring-primary/15"
           : featured
-            ? "border-border shadow-[var(--elevation-1)] hover:border-primary/30"
-            : "border-border hover:border-primary/30 hover:shadow-[var(--elevation-1)]",
+            ? "border-border shadow-sm hover:border-primary/30"
+            : "border-border hover:border-primary/30 hover:shadow-sm",
       )}
     >
       {/* Header — [pin] · TITLE (always wins space) · chips · view dropdown · focus · ⋯

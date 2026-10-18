@@ -9,20 +9,16 @@
  */
 
 import { useEffect, useState } from "react";
-import { Check, Swords, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Check, Swords } from "lucide-react";
 import { Badge, Button, EmptyState, RegionSkeleton, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { Cost } from "@/components/cost/Cost";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
 import { fetchCaseResults, fetchRunResults, launchBattle, toCaseView } from "@/features/agent-tests/service";
 import { DEFAULT_RUN_OPTIONS, type TestResultView } from "@/features/agent-tests/types";
-import { VERDICT_META } from "@/features/agent-tests/verdicts";
 import { TestRunPanel } from "@/features/agent-tests/components/AgentTestPage";
-import { saveFeedback, type FeedbackRating } from "@/features/agents/run-review/responseFeedbackService";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { BattleOutcome } from "@/features/agent-tests/components/BattleOutcome";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import {
@@ -36,7 +32,7 @@ import {
   type StudioCandidate,
 } from "../battle";
 import { battleVerdict, keepLabel } from "../tab-logic";
-import { ResultCard, TabHead, Waiting } from "./StudioTabParts";
+import { TabHead, Waiting } from "./StudioTabParts";
 
 type Challenger = "candidate" | "model" | "version";
 
@@ -283,7 +279,9 @@ export function StudioBattle({
               setups={setups}
               labelOf={labelOf}
               runId={runId}
-              verdict={verdict}
+              line={verdict.line}
+              tone={verdict.tone === "neutral" ? undefined : verdict.tone}
+              surface="agent_studio_battle"
               footer={
                 canKeep ? (
                   <Button
@@ -316,93 +314,6 @@ export function StudioBattle({
           </div>
         </>
       ) : null}
-    </div>
-  );
-}
-
-function BattleOutcome({
-  results,
-  cases,
-  setups,
-  labelOf,
-  runId,
-  verdict,
-  footer,
-}: {
-  results: TestResultView[];
-  cases: TestCaseRow[];
-  setups: RunSetupBody[];
-  labelOf: (key: string) => string;
-  runId: string;
-  verdict: ReturnType<typeof battleVerdict>;
-  footer: React.ReactNode;
-}) {
-  const userId = useAppSelector(selectUserId);
-  const [votes, setVotes] = useState<Record<string, FeedbackRating>>({});
-  const vote = async (r: TestResultView, rating: FeedbackRating) => {
-    if (!userId || !r.conversationId) return;
-    try {
-      await saveFeedback({
-        userId,
-        conversationId: r.conversationId,
-        requestId: r.userRequestIds[r.userRequestIds.length - 1] ?? null,
-        rating,
-        comment: null,
-        metadata: { surface: "agent_studio_battle", test_run_id: runId, test_result_id: r.id, setup_key: r.setupKey, case_id: r.caseId },
-      });
-      setVotes((v) => ({ ...v, [r.id]: rating }));
-    } catch (e) {
-      toast.error("The vote did not save", { description: e instanceof Error ? e.message : String(e) });
-    }
-  };
-  const shown = results.filter((r) => r.door !== "parity");
-  const caseIds = [...new Set(shown.map((r) => r.caseId))];
-  const caseLabel = (id: string) => cases.find((c) => c.id === id)?.label || "Case";
-  return (
-    <div className="flex flex-col gap-1.5" data-testid="studio-battle-outcome">
-      <ResultCard tone={verdict.tone === "neutral" ? undefined : verdict.tone}>
-        <div className="flex items-center gap-2">
-          <span className="min-w-0 flex-1 text-sm font-medium text-foreground" data-testid="studio-battle-winner">
-            {verdict.line}
-          </span>
-          {footer}
-        </div>
-      </ResultCard>
-      {caseIds.map((id) => (
-        <ResultCard key={id} data-testid="studio-battle-case">
-          <span className="truncate font-medium text-foreground">{caseLabel(id)}</span>
-          {setups.map((setup) => {
-            const r = shown.find((x) => x.caseId === id && x.setupKey === setup.key);
-            if (!r) return null;
-            const meta = r.verdict ? VERDICT_META[r.verdict] : null;
-            const mine = votes[r.id];
-            return (
-              <div key={r.id} className="flex h-7 items-center gap-1.5">
-                <span className="w-20 shrink-0 truncate text-muted-foreground">{labelOf(r.setupKey)}</span>
-                <span className="min-w-0 flex-1">
-                  {meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : <ShimmerText text="Judging" />}
-                </span>
-                <Button
-                  variant="quiet"
-                  icon={<ThumbsUp className={mine === "up" ? "text-primary" : undefined} />}
-                  aria-label={`Good answer, ${labelOf(r.setupKey)}`}
-                  aria-pressed={mine === "up"}
-                  disabled={!r.conversationId}
-                  onClick={() => void vote(r, "up")}
-                />
-                <Button
-                  variant="quiet"
-                  icon={<ThumbsDown className={mine === "down" ? "text-destructive" : undefined} />}
-                  aria-label={`Bad answer, ${labelOf(r.setupKey)}`}
-                  aria-pressed={mine === "down"}
-                  disabled={!r.conversationId}
-                  onClick={() => void vote(r, "down")}
-                />
-              </div>
-            );
-          })}
-        </ResultCard>
-      ))}
     </div>
   );
 }

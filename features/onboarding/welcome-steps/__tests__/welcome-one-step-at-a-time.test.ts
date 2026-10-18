@@ -20,6 +20,15 @@ describe("the welcome shows one step at a time", () => {
   });
 });
 
+describe("picking a place to start finishes the welcome", () => {
+  // Until 2026-10-18 no start tile wrote the completion flag, so /dashboard's funnel sent every new account back here.
+  it("the tile handler writes onboarding_completed before it navigates", () => {
+    const go = client.slice(client.indexOf("async function go("), client.indexOf("return (\n"));
+    expect(go).toMatch(/updateUser\(\{ data: \{ \[ONBOARDING_METADATA_KEY\]: true \} \}\)[\s\S]*router\.push\(href\)/);
+    expect(client).toContain("onClick={() => void go(option.href)}");
+  });
+});
+
 const mount = readFileSync(join(process.cwd(), "features/education/compliance/FirstSignInAgeGateMount.tsx"), "utf8");
 const ageStep = readFileSync(join(process.cwd(), "features/onboarding/welcome-steps/WelcomeAgeStep.tsx"), "utf8");
 const dialog = readFileSync(join(process.cwd(), "features/education/compliance/components/AgeDeclarationDialog.tsx"), "utf8");

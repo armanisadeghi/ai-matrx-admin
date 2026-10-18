@@ -40,6 +40,11 @@ import { MandateResolutionRibbon } from "@/features/mandates/components/MandateR
 import type { MandateResolutionLayer } from "@/features/mandates/components/MandateResolutionRibbon";
 import { cn } from "@/lib/utils";
 import {
+  MatrxComparisonTable,
+  type ComparisonRow,
+  type ComparisonSubject,
+} from "@ai-matrx/design-system/data-table";
+import {
   findJobByKey,
   type PreviewJob,
   type PrincipalScope,
@@ -68,6 +73,24 @@ const CANDIDATE_HOLDERS = [
   { id: "cand-2", name: "Intent Classification Flow", kind: "workflow" as const },
   { id: "cand-3", name: "Generalist SEO Analyst", kind: "agent" as const },
 ];
+
+// Stand-in bench (preview page): each exemplar run through the baseline and both candidates.
+const BENCH_ARMS: ComparisonSubject[] = [
+  { id: "baseline", label: "Baseline" },
+  { id: "a", label: "Candidate A" },
+  { id: "b", label: "Candidate B" },
+];
+const BENCH_RESULTS: Array<[string, string, string, string]> = [
+  ["Long-tail batch (240 rows)", "ran · 8.2s", "ran · 5.1s", "wrong structure"],
+  ["Non-English keywords", "ran · 9.7s", "ran · 6.0s", "ran · 7.4s"],
+  ["Empty input guard", "failed", "ran · 0.4s", "ran · 0.5s"],
+];
+const BENCH_ROWS: ComparisonRow[] = BENCH_RESULTS.map(([name, ...results]) => ({
+  id: name,
+  label: name,
+  emphasized: true,
+  cell: (_subject, index) => ({ text: results[index] ?? "", tone: "muted" }),
+}));
 
 export function JobWorkbench({
   job,
@@ -461,32 +484,14 @@ export function JobWorkbench({
 
         <TabsContent value="bench" className="mt-3 flex flex-col gap-3">
           <PreviewSection title="Baseline vs candidate">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border text-left text-muted-foreground">
-                    <th className="py-1 pr-3 font-medium">Exemplar</th>
-                    <th className="py-1 pr-3 font-medium">Baseline</th>
-                    <th className="py-1 pr-3 font-medium">Candidate A</th>
-                    <th className="py-1 font-medium">Candidate B</th>
-                  </tr>
-                </thead>
-                <tbody className="[&_td]:py-1.5 [&_td]:pr-3">
-                  {[
-                    ["Long-tail batch (240 rows)", "ran · 8.2s", "ran · 5.1s", "wrong structure"],
-                    ["Non-English keywords", "ran · 9.7s", "ran · 6.0s", "ran · 7.4s"],
-                    ["Empty input guard", "failed", "ran · 0.4s", "ran · 0.5s"],
-                  ].map(([name, a, b, c]) => (
-                    <tr key={name} className="border-b border-border/50">
-                      <td className="font-medium">{name}</td>
-                      <td className="text-muted-foreground">{a}</td>
-                      <td className="text-muted-foreground">{b}</td>
-                      <td className="text-muted-foreground">{c}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <MatrxComparisonTable
+              title="Baseline vs candidate"
+              hideTitle
+              location="Job workbench preview"
+              cornerLabel="Exemplar"
+              subjects={BENCH_ARMS}
+              rows={BENCH_ROWS}
+            />
             <Button
               variant="outline"
               className="mt-2"

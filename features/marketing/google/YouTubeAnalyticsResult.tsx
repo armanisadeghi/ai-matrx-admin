@@ -2,6 +2,7 @@
 
 import { SocialHandleValue } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
+import { LiteTable, type MatrxColumnDef } from "@ai-matrx/design-system/lite-table";
 import { Badge } from "@/components/ui/badge";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
@@ -49,6 +50,46 @@ function dayDifference(start: string, end: string): number {
   const endMs = Date.parse(`${end}T00:00:00Z`);
   return Math.max(0, Math.round((endMs - startMs) / 86_400_000));
 }
+
+type YouTubeDay = YouTubeAnalyticsPreview["days"][number];
+type YouTubeVideo = YouTubeAnalyticsPreview["videos"][number];
+
+const METRIC_COLUMNS = <T extends YouTubeDay | YouTubeVideo>(): MatrxColumnDef<T>[] => [
+  { id: "views", header: "Views", align: "right", accessorFn: (r) => r.views, cell: (r) => formatCount(r.views) },
+  {
+    id: "minutes",
+    header: "Watch time (min)",
+    align: "right",
+    accessorFn: (r) => r.estimated_minutes_watched,
+    cell: (r) => formatNumber(r.estimated_minutes_watched),
+  },
+  { id: "subscribers", header: "Subscribers gained", align: "right", accessorFn: (r) => r.subscribers_gained, cell: (r) => `+${r.subscribers_gained}` },
+];
+
+const dayColumns: MatrxColumnDef<YouTubeDay>[] = [
+  { accessorKey: "day", header: "Day", defaultSortDirection: "desc", cell: (d) => <span className="font-medium">{formatDate(d.day)}</span> },
+  ...METRIC_COLUMNS<YouTubeDay>(),
+];
+
+const videoColumns: MatrxColumnDef<YouTubeVideo>[] = [
+  {
+    accessorKey: "video_id",
+    header: "Video ID",
+    sortable: false,
+    cell: (video) => (
+      <a
+        href={`https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open YouTube video ${video.video_id}`}
+        className="break-all font-mono underline-offset-2 hover:underline"
+      >
+        {video.video_id}
+      </a>
+    ),
+  },
+  ...METRIC_COLUMNS<YouTubeVideo>(),
+];
 
 export function YouTubeAnalyticsResult({
   report,
@@ -151,40 +192,15 @@ export function YouTubeAnalyticsResult({
           Daily results
         </h3>
         {report.days.length ? (
-          <div className="max-h-72 overflow-auto rounded border">
-            <table className="w-full min-w-[36rem] text-left text-xs">
-              <thead className="sticky top-0 bg-muted text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 font-medium">Day</th>
-                  <th className="px-3 py-2 text-right font-medium">Views</th>
-                  <th className="px-3 py-2 text-right font-medium">
-                    Watch time (min)
-                  </th>
-                  <th className="px-3 py-2 text-right font-medium">
-                    Subscribers gained
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.days.map((day) => (
-                  <tr key={day.day} className="border-t">
-                    <td className="px-3 py-2 font-medium">
-                      {formatDate(day.day)}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      {formatCount(day.views)}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      {formatNumber(day.estimated_minutes_watched)}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      +{day.subscribers_gained}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LiteTable
+            data={report.days}
+            columns={dayColumns}
+            getRowId={(day) => day.day}
+            density="condensed"
+            maxHeight="18rem"
+            mobile="scroll"
+            ariaLabel="Daily results"
+          />
         ) : (
           <p className="rounded border border-dashed p-3 text-sm text-muted-foreground">
             No daily rows were returned.
@@ -219,48 +235,15 @@ export function YouTubeAnalyticsResult({
           </div>
         </div>
         {report.videos.length ? (
-          <div className="max-h-72 overflow-auto rounded border">
-            <table className="w-full min-w-[42rem] text-left text-xs">
-              <thead className="sticky top-0 bg-muted text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 font-medium">Video ID</th>
-                  <th className="px-3 py-2 text-right font-medium">Views</th>
-                  <th className="px-3 py-2 text-right font-medium">
-                    Watch time (min)
-                  </th>
-                  <th className="px-3 py-2 text-right font-medium">
-                    Subscribers gained
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.videos.map((video) => (
-                  <tr key={video.video_id} className="border-t">
-                    <td className="px-3 py-2">
-                      <a
-                        href={`https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Open YouTube video ${video.video_id}`}
-                        className="break-all font-mono underline-offset-2 hover:underline"
-                      >
-                        {video.video_id}
-                      </a>
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      {formatCount(video.views)}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      {formatNumber(video.estimated_minutes_watched)}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">
-                      +{video.subscribers_gained}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <LiteTable
+            data={report.videos}
+            columns={videoColumns}
+            getRowId={(video) => video.video_id}
+            density="condensed"
+            maxHeight="18rem"
+            mobile="scroll"
+            ariaLabel="Video results"
+          />
         ) : (
           <p className="rounded border border-dashed p-3 text-sm text-muted-foreground">
             {report.video_report_status === "complete"

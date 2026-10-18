@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 3,
+  "version": 4,
   "title": "Projects, Tasks & Sprints",
-  "description": "Projects with tasks, two-week sprints, points rollups and a live sprint dashboard.",
+  "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
   "icon": {
     "emoji": "🏃"
@@ -16,8 +16,10 @@
   "tags": [
     "sprints",
     "agile",
-    "projects",
-    "tasks"
+    "scrum",
+    "kanban",
+    "tasks",
+    "projects"
   ],
   "spec": {
     "specVersion": 1,
@@ -1465,7 +1467,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

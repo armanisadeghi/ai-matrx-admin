@@ -18,6 +18,7 @@
  */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { RecordList, readOf } from "@ai-matrx/design-system/record-list";
 import { useQuery } from "@tanstack/react-query";
 import { readOf } from "@ai-matrx/design-system";
 import {
@@ -458,64 +459,47 @@ export function MeaningPanel({
             </span>
           </div>
           {rules.isLoading ? <SectionSkeleton /> : null}
-          {rules.isError ? (
-            <InlineQueryError
-              what="value rules"
-              error={rules.error}
-              onRetry={() => void rules.refetch()}
+          {rules.isLoading ? null : (
+            <RecordList
+              items={rules.data ?? []}
+              getKey={(rule) => rule.id}
+              title={(rule) => rule.name}
+              subtitle={(rule) =>
+                (rule.match_facet
+                  ? `Fires when ${humanizeIdentifier(rule.match_facet).toLowerCase()} is “${humanizeIdentifier(rule.match_facet_value ?? "").toLowerCase()}”`
+                  : rule.pattern
+                    ? `Matches “${rule.pattern}” (${humanizeIdentifier(rule.match_kind ?? "word").toLowerCase()})`
+                    : "No match condition recorded") + (rule.description ? ` — ${rule.description}` : "")
+              }
+              trailing={(rule) => (
+                <>
+                  {rowOrigin(rule.metadata) === "pack" ? (
+                    <SourceChip state="pack" packName={humanizeIdentifier(rule.metadata.adopted_from_pack ?? "")} />
+                  ) : null}
+                  <span
+                    className={cn(
+                      "shrink-0 tabular-nums font-semibold",
+                      (rule.value_multiplier ?? 1) < 1 ? "text-warning" : "text-success",
+                    )}
+                  >
+                    ×{rule.value_multiplier}
+                  </span>
+                </>
+              )}
+              onOpen={(rule) => setEditingRule(rule)}
+              read={readOf(rules, { what: "value rules" })}
+              emptyState={
+                <EmptyLine>
+                  No value rules yet. Rules like “free” ×0.2 or “certification
+                  seeking” ×3 are how qualifier words change what a keyword is
+                  worth to this business.
+                </EmptyLine>
+              }
+              size="sm"
+              sourceFeature="seo_value_rule"
+              ariaLabel="Value rules"
             />
-          ) : null}
-          {!rules.isError && rules.data && rules.data.length === 0 ? (
-            <EmptyLine>
-              No value rules yet. Rules like “free” ×0.2 or “certification
-              seeking” ×3 are how qualifier words change what a keyword is
-              worth to this business.
-            </EmptyLine>
-          ) : null}
-          <ul className="space-y-1">
-            {(rules.data ?? []).map((rule) => (
-              <li key={rule.id}>
-                <button
-                  type="button"
-                  onClick={() => setEditingRule(rule)}
-                  className="w-full rounded-md border border-border bg-card px-2.5 py-1.5 text-left transition-colors hover:bg-accent"
-                  title="Edit this rule — the live preview shows what changes before you save."
-                >
-                <p className="flex items-center justify-between gap-2 text-[11px]">
-                  <span className="min-w-0 truncate font-medium text-foreground">
-                    {rule.name}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-1.5">
-                    {rowOrigin(rule.metadata) === "pack" ? (
-                      <SourceChip
-                        state="pack"
-                        packName={humanizeIdentifier(rule.metadata.adopted_from_pack ?? "")}
-                      />
-                    ) : null}
-                    <span
-                      className={cn(
-                        "shrink-0 tabular-nums font-semibold",
-                        (rule.value_multiplier ?? 1) < 1
-                          ? "text-warning"
-                          : "text-success",
-                      )}
-                    >
-                      ×{rule.value_multiplier}
-                    </span>
-                  </span>
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {rule.match_facet
-                    ? `Fires when ${humanizeIdentifier(rule.match_facet).toLowerCase()} is “${humanizeIdentifier(rule.match_facet_value ?? "").toLowerCase()}”`
-                    : rule.pattern
-                      ? `Matches “${rule.pattern}” (${humanizeIdentifier(rule.match_kind ?? "word").toLowerCase()})`
-                      : "No match condition recorded"}
-                  {rule.description ? ` — ${rule.description}` : ""}
-                </p>
-                </button>
-              </li>
-            ))}
-          </ul>
+          )}
         </section>
 
         {/* Combinations (C7 / KI-004) — the SAME component the Dimensions

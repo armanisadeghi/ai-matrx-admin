@@ -48,7 +48,7 @@ import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment
 import { DefaultFieldAdapter } from "@ai-matrx/diff/react";
 import { formatChangeType } from "@ai-matrx/diff/structural";
 import type { DiffNode, DiffResult } from "@ai-matrx/diff/structural";
-import { CopyButtons } from "@ai-matrx/chat/host/ui-slots";
+import { CopyButtonsSlot } from "@ai-matrx/chat/host/ui-slots";
 import { csvExportItem, jsonExportItem } from "@ai-matrx/chat/agent-copy/export";
 import {
   agentVersionDiffKpis,
@@ -324,7 +324,7 @@ export function AgentVersionDiffPage({
     return (
       <div className="flex flex-col items-center justify-center h-full gap-2 text-destructive type-body">
         <span>{error}</span>
-        <CopyButtons
+        <CopyButtonsSlot
           size="sm"
           label="Version history error"
           human={() =>
@@ -533,7 +533,7 @@ export function AgentVersionDiffPage({
           {/* Copy + export live outside the Compare-only block: the History
               tab shows real data too, and its payload carries the same
               rendered-diff KPIs. */}
-          <CopyButtons
+          <CopyButtonsSlot
             size="icon"
             label={`Diff ${leftLabel} → ${rightLabel}`}
             human={copyHuman}
@@ -697,7 +697,7 @@ export function AgentVersionDiffPage({
           <div className="shrink-0 flex items-center gap-2 px-4 py-2 border-b border-destructive/30 bg-destructive/10 type-secondary text-destructive-ink">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
             <span className="flex-1">{snapshotError}</span>
-            <CopyButtons
+            <CopyButtonsSlot
               size="icon"
               label="Version snapshot error"
               human={() =>

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0307",
-  "version": 2,
+  "version": 3,
   "title": "Inventory Tracker",
-  "description": "Track stock, suppliers, purchase orders and sales so you reorder before you run out.",
+  "description": "Small shops and makers: track stock, suppliers and orders so you reorder in time.",
   "forWho": "Small retailers, online shops and makers",
   "icon": {
     "emoji": "📦"
@@ -17,7 +17,9 @@
     "inventory",
     "stock",
     "suppliers",
-    "orders"
+    "orders",
+    "retail",
+    "reorder"
   ],
   "spec": {
     "specVersion": 1,
@@ -572,7 +574,7 @@
               "product_name": "Cotton wick pack, 50 count",
               "category": "Supplies",
               "supplier": "su3",
-              "unit_cost": 8.0,
+              "unit_cost": 8,
               "price": 0,
               "opening": 40,
               "reorder_at": 10
@@ -596,7 +598,7 @@
               "product_name": "Soy wax flakes, 10 lb bag",
               "category": "Supplies",
               "supplier": "su1",
-              "unit_cost": 42.0,
+              "unit_cost": 42,
               "price": 0,
               "opening": 5,
               "reorder_at": 6
@@ -608,7 +610,7 @@
               "product_name": "Fragrance oil sampler",
               "category": "Supplies",
               "supplier": "su3",
-              "unit_cost": 19.0,
+              "unit_cost": 19,
               "price": 0,
               "opening": 12,
               "reorder_at": 5
@@ -1795,7 +1797,7 @@
         "Brindle Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -1817,7 +1819,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "On hand is worked out for you: opening stock plus what you received, minus what you sold. Stock level turns to Reorder soon at the reorder point and to Out at zero, so there is nothing to update by hand."
+              "text": "On hand fills in for you: opening stock plus what you received, minus what you sold. Stock level turns to Reorder soon at the reorder point and to Out at zero, so there is nothing to update by hand."
             }
           ],
           "background": "blue",

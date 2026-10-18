@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0310",
-  "version": 3,
+  "version": 4,
   "title": "Brand Deals Tracker",
-  "description": "Manage sponsored deals from pitch to payment, with deliverables and due dates.",
+  "description": "Influencers and UGC creators: manage sponsored deals from pitch to payment.",
   "forWho": "Influencers and UGC creators",
   "icon": {
     "emoji": "🤝"
@@ -17,7 +17,9 @@
     "brand deals",
     "sponsorships",
     "influencer",
-    "payments"
+    "payments",
+    "ugc",
+    "pipeline"
   ],
   "spec": {
     "specVersion": 1,
@@ -1378,7 +1380,7 @@
         "Sandpiper Terrace"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

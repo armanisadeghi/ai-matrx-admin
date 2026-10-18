@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 4,
+  "version": 5,
   "title": "Freelance Client Portal",
-  "description": "Share deliverables, approvals and invoices with each freelance client on one private page.",
+  "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
   "forWho": "Solo freelancers delivering work to clients",
   "icon": {
     "emoji": "🪟"
@@ -16,8 +16,10 @@
   "tags": [
     "clients",
     "portal",
-    "sharing",
-    "updates"
+    "freelance",
+    "approvals",
+    "updates",
+    "sharing"
   ],
   "spec": {
     "specVersion": 1,
@@ -1457,7 +1459,7 @@
         "Tallow Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1479,7 +1481,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "One row per client. Open a client to see their tasks, files and updates together. Tick Visible to client on a task to show it on their page."
+              "text": "For one freelancer and their clients. One row per client. Open a client to see their tasks, files and updates together. Tick Visible to client on a task to show it on their page."
             }
           ],
           "background": "green",
@@ -2197,7 +2199,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add a filter so every list shows only that client."
+              "text": "Filter every list so it shows only that client."
             }
           ]
         },
