@@ -51,6 +51,8 @@ export interface PagePlan {
   column: { x: number; w: number };
   /** Frame ids in page order (the chapters). */
   chapters: string[];
+  /** Tile id → the chapter it was placed in: hand it back as `opts.members` so a tile stays in its chapter. */
+  members: Map<string, string>;
 }
 
 /** Rows within `width`, left to right then down (a tile wider than the row takes a row alone). */
@@ -84,13 +86,37 @@ export function planPageLayout(
    * A view narrower than the column (a phone): the column takes the view's width at 100% zoom, and every
    * tile wider than a chapter's inside narrows to it — text stays readable, nothing shrinks to fit.
    */
-  opts: { columnW?: number } = {},
+  opts: {
+    columnW?: number;
+    /**
+     * The chapter each tile was placed in last time (the previous plan's `members`). A tile stays in it
+     * while both exist — a section growing to its content must never fall into the next chapter because
+     * its centre crossed a boundary. New tiles are filed by where they sit.
+     */
+    members?: ReadonlyMap<string, string>;
+  } = {},
 ): PagePlan {
   const narrow = opts.columnW !== undefined && opts.columnW < PAGE_COLUMN_W ? Math.max(240, Math.floor(opts.columnW)) : null;
   const widest = Math.max(0, ...scene.tiles.map((t) => t.rect.w));
   const W = narrow ?? Math.max(PAGE_COLUMN_W, widest + PAGE_FRAME_PAD * 2);
   const x0 = 0;
-  const { units, members } = boardUnits(scene);
+  const geo = boardUnits(scene);
+  const members = new Map([...geo.members].map(([f, ids]) => [f, [...ids]] as [string, string[]]));
+  let units = geo.units;
+  if (opts.members) {
+    const frameIdSet = new Set(scene.frames.map((f) => f.id));
+    const placedIn = new Map<string, string>();
+    for (const [f, ids] of members) for (const id of ids) placedIn.set(id, f);
+    for (const t of scene.tiles) {
+      const kept = opts.members.get(t.id);
+      if (!kept || !frameIdSet.has(kept) || placedIn.get(t.id) === kept) continue;
+      const was = placedIn.get(t.id);
+      if (was) members.set(was, members.get(was)!.filter((id) => id !== t.id));
+      members.get(kept)!.push(t.id);
+      placedIn.set(t.id, kept);
+    }
+    units = units.filter((u) => frameIdSet.has(u.id) || !placedIn.has(u.id));
+  }
   const frameIds = new Set(scene.frames.map((f) => f.id));
   const tileById = new Map(scene.tiles.map((t) => [t.id, t]));
   const frameById = new Map(scene.frames.map((f) => [f.id, f]));
@@ -155,7 +181,9 @@ export function planPageLayout(
     if (was.x === r.x && was.y === r.y && !sizeChanged) continue;
     moves.push(sizes ? { id, x: r.x, y: r.y, w: r.w, h: r.h } : { id, x: r.x, y: r.y });
   }
-  return { moves, column: { x: x0, w: W }, chapters };
+  const memberOf = new Map<string, string>();
+  for (const [f, ids] of members) for (const id of ids) memberOf.set(id, f);
+  return { moves, column: { x: x0, w: W }, chapters, members: memberOf };
 }
 
 /** Frames in reading order — a board's chapters in either layout. */

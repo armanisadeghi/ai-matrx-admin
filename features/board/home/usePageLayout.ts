@@ -90,6 +90,8 @@ export function usePageLayout<T extends BoardTileBase>({
     snapshotRef.current = snapshot;
     orderRef.current = storedOrder;
   });
+  /** The chapter each tile was placed in: kept between re-flows so a growing tile stays in its chapter. */
+  const membersRef = useRef<ReadonlyMap<string, string> | undefined>(undefined);
   /** The chapter order the next page arrangement applies (set on the switch into page layout). */
   const entryOrder = useRef<readonly string[] | null>(null);
 
@@ -152,7 +154,8 @@ export function usePageLayout<T extends BoardTileBase>({
       timer = null;
       if (pressing) return; // the press's end runs it
       column = pageColumnFor(store);
-      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, { columnW: column });
+      const plan = planPageLayout(pageScene(board), entryOrder.current ?? undefined, { columnW: column, members: membersRef.current });
+      membersRef.current = plan.members;
       entryOrder.current = null;
       if (plan.moves.length) board.reflow(plan.moves);
       store.setPageLock({ column: plan.column });
@@ -210,7 +213,8 @@ export function usePageLayout<T extends BoardTileBase>({
     const j = i + dir;
     if (i < 0 || j < 0 || j >= order.length) return;
     [order[i], order[j]] = [order[j], order[i]];
-    const plan = planPageLayout(pageScene(board), order, { columnW: store ? pageColumnFor(store) : undefined });
+    const plan = planPageLayout(pageScene(board), order, { columnW: store ? pageColumnFor(store) : undefined, members: membersRef.current });
+    membersRef.current = plan.members;
     if (plan.moves.length) board.reflow(plan.moves);
     const moved = board.read().frames.find((f) => f.id === id);
     if (moved && store) store.pageScrollTo(moved.rect.y - PAGE_LABEL_ROOM);

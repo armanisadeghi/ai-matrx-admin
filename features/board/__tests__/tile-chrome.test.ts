@@ -134,6 +134,26 @@ describe("a phone reflows the page to its own width", () => {
 });
 
 describe("auto height", () => {
+  it("a tile stays in its chapter across re-flows even when its growth crosses the next chapter", () => {
+    const frames = [
+      { id: "f1", rect: { x: 0, y: 0, w: 1100, h: 120 }, title: "Colors" },
+      { id: "f2", rect: { x: 0, y: 136, w: 1100, h: 120 }, title: "Type" },
+    ];
+    const tiles = [
+      { id: "a", rect: { x: 8, y: 8, w: 1084, h: 100 }, title: "Colors" },
+      { id: "b", rect: { x: 8, y: 144, w: 1084, h: 100 }, title: "Type" },
+    ];
+    const first = planPageLayout({ frames, tiles });
+    expect(first.members.get("a")).toBe("f1");
+    // "a" grows to 1900: its centre now sits below chapter f2's top.
+    const grown = { frames, tiles: [{ ...tiles[0], rect: { ...tiles[0].rect, h: 1900 } }, tiles[1]] };
+    const next = planPageLayout(grown, undefined, { members: first.members });
+    expect(next.members.get("a")).toBe("f1");
+    expect(next.members.get("b")).toBe("f2");
+    const at = new Map(next.moves.map((m) => [m.id, m]));
+    expect(at.get("f2")!.y).toBeGreaterThan(8 + 1900); // the next chapter moved below the grown one
+  });
+
   it("a tile growing to its content takes its chapter with it (never drifts into the next chapter)", () => {
     const frames = [
       { id: "f1", rect: { x: 0, y: 0, w: 1100, h: 120 } },
