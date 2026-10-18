@@ -151,10 +151,3 @@ export function formatCompact(n: number): string {
 // value, which is the confident-wrong-number bug the package's em-dash exists
 // to stop; callers get "—" there now.
 
-/** Google favicon service with a usable default size. */
-export function faviconUrl(hostname: string | null): string | null {
-  if (!hostname) return null;
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
-    hostname,
-  )}&sz=64`;
-}

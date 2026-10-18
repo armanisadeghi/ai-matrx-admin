@@ -1279,6 +1279,7 @@ export default function SourceList() {
         >
           <SourceTypeIcon
             type={sourceTypeFromDb(s.source_type)}
+            source={s}
             size={14}
             className="text-muted-foreground"
           />
@@ -1534,6 +1535,7 @@ export default function SourceList() {
           <div className="flex items-center gap-1.5 flex-wrap">
             <SourceTypeIcon
               type={sourceTypeFromDb(source.source_type)}
+              source={source}
               size={12}
               className="text-muted-foreground"
             />

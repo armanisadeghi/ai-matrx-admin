@@ -900,8 +900,8 @@ function GroupRows({
               )}
             </td>
             <td className="py-1.5 px-1 align-middle">
-              <div className="flex items-start gap-1.5 min-w-0">
-                <SourceTypeIcon type={sourceTypeFromDb(s.source_type)} />
+              <div className="flex items-center gap-2 min-w-0">
+                <SourceTypeIcon type={sourceTypeFromDb(s.source_type)} source={s} size={20} />
                 <div className="min-w-0">
                   <Link
                     href={`/research/topics/${topicId}/sources/${s.id}`}

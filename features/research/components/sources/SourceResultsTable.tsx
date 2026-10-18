@@ -173,8 +173,8 @@ export function SourceResultsTable({
       cell: (source) => {
         const video = identityFor(source);
         return (
-          <div className="flex min-w-0 items-start gap-1.5">
-            <SourceTypeIcon type={sourceTypeFromDb(source.source_type)} />
+          <div className="flex min-w-0 items-center gap-2">
+            <SourceTypeIcon type={sourceTypeFromDb(source.source_type)} source={source} size={20} />
             <div className="min-w-0">
               <EntityRef
                 token="research_source"
@@ -231,7 +231,7 @@ export function SourceResultsTable({
       filter: false,
       width: 84,
       cell: () => (
-        <span className="inline-flex whitespace-nowrap rounded-full bg-green-100 px-1.5 py-px type-meta font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+        <span className="flex w-fit items-center whitespace-nowrap rounded-full bg-green-100 px-1.5 py-px type-meta font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
           <span className="mr-1 h-1 w-1 rounded-full bg-green-500" />
           Found
         </span>

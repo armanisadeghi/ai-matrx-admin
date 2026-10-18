@@ -16,6 +16,7 @@ import { SectionCard } from "../ui/SectionCard";
 import { StageHeader } from "../ui/StageHeader";
 import { StatusDot } from "../ui/StatusDot";
 import { Favicon } from "../ui/Favicon";
+import { searchResultFavicon } from "../../../shared/SourceTypeIcon";
 import { DeltaBadge } from "../ui/DeltaBadge";
 import { FoldableSection } from "../ui/FoldableSection";
 
@@ -136,7 +137,7 @@ function SourceRow({ source, isNew, isChanged }: SourceRowProps) {
         "hover:bg-muted/30",
       )}
     >
-      <Favicon hostname={source.hostname} size={14} />
+      <Favicon hostname={source.hostname} iconUrl={searchResultFavicon(source.raw_search_result)} size={14} />
       <span className="type-meta text-muted-foreground tabular-nums w-24 truncate shrink-0">
         {source.hostname}
       </span>

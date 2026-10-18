@@ -7,6 +7,7 @@ import { ExternalLink, ArrowUpRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AuthorityTierBadge } from "../sources/AuthorityTierBadge";
 import { SourceFavicon } from "./SourceFavicon";
+import { searchResultFavicon } from "../shared/SourceTypeIcon";
 import { resolveTier, TIER_VISUALS, type AuthorityTier } from "./resultsShared";
 import type { ResearchSource } from "../../types";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -109,7 +110,7 @@ function TopSourceCard({
       <div className="flex items-start gap-3">
         <SourceFavicon
           hostname={source.hostname}
-          thumbnailUrl={source.thumbnail_url}
+          iconUrl={searchResultFavicon(source.raw_search_result)}
           className="h-9 w-9 shrink-0 p-1 border border-border/40"
         />
         <div className="min-w-0 flex-1">

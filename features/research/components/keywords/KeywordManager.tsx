@@ -42,6 +42,7 @@ import { ResearchFilterBar, type FilterDef } from "../shared/ResearchFilterBar";
 import type { FilterOption } from "@/components/hierarchy-filter/HierarchyFilterPill";
 import type { ResearchKeyword, ResearchSource } from "../../types";
 import { Favicon } from "../overview/live-pipeline/ui/Favicon";
+import { searchResultFavicon } from "../shared/SourceTypeIcon";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import KeywordOverlapMatrix from "./KeywordOverlapMatrix";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -675,6 +676,7 @@ export default function KeywordManager() {
                             </span>
                             <Favicon
                               hostname={source.hostname}
+                              iconUrl={searchResultFavicon(source.raw_search_result)}
                               size={14}
                               className="mt-0.5 shrink-0"
                             />

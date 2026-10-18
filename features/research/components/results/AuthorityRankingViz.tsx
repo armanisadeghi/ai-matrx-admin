@@ -7,6 +7,7 @@ import { ExternalLink, TrendingUp, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AuthorityTierBadge } from "../sources/AuthorityTierBadge";
 import { SourceFavicon } from "./SourceFavicon";
+import { searchResultFavicon } from "../shared/SourceTypeIcon";
 import {
   resolveTier,
   TIER_VISUALS,
@@ -162,7 +163,7 @@ function AuthorityRow({
         {/* Favicon */}
         <SourceFavicon
           hostname={source.hostname}
-          thumbnailUrl={source.thumbnail_url}
+          iconUrl={searchResultFavicon(source.raw_search_result)}
           className="h-8 w-8 shrink-0 p-1 border border-border/40"
         />
 

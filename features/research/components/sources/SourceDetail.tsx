@@ -1165,6 +1165,9 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                 <div className="flex items-start gap-2">
                   <SourceTypeIcon
                     type={sourceTypeFromDb(typedSource.source_type)}
+                    source={typedSource}
+                    size={20}
+                    className="mt-0.5"
                   />
                   <h2 className="type-title leading-snug">
                     {typedSource.title || "Untitled"}
