@@ -18,7 +18,7 @@ import {
 } from '@/lib/sms/numbers';
 import { ensureOrgIdServer } from '@/lib/organizations/ensureOrgId';
 import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 /**
  * GET /api/sms/numbers

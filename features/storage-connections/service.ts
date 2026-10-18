@@ -1,6 +1,6 @@
 import { readConnectionStatus } from "@/features/connectors/connection-status";
 import { createClient } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { operationFailed } from "@/utils/errors";
 import type {
   StorageAuthorizationStart,

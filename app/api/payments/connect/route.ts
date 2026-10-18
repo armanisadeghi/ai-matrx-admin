@@ -7,7 +7,7 @@
 // is ever involved (Arman, 2026-10-17). Plan: common-docs/systems/data/custom-data/PAYMENTS-CONNECT.md
 
 import { NextRequest, NextResponse } from "next/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { createClient } from "@/utils/supabase/server";
 import { isStripeConfigured } from "@/lib/stripe/server";
 import {

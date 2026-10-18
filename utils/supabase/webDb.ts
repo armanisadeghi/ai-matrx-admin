@@ -9,7 +9,7 @@
  *
  * Works with browser, SSR, and admin Supabase clients.
  */
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 

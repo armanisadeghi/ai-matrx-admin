@@ -27,7 +27,7 @@
 import { executeSqlQuery } from "@/actions/admin/database";
 import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import {
   assertSafeIdentifier,
   sqlLiteral,

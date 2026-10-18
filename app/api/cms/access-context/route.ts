@@ -19,7 +19,7 @@ import {
   type CmsPageAccessRecord,
   type CmsSiteAccessRecord,
 } from "../_lib/cmsDb";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 type ResolvedTarget = {
   token: CmsAccessGateToken;

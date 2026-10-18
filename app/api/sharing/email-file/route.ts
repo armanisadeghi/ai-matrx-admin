@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { isRfc4122Uuid } from "@ai-matrx/kit/uuid";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { sendEmail } from "@/lib/email/client";
 import { accountEmail } from "@/lib/notifications/notifyFromSql";
 

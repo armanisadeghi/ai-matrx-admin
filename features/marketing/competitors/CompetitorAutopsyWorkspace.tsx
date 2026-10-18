@@ -57,7 +57,7 @@ import { webLocation } from "@/features/marketing/lib/copy-payloads";
 import { toast } from "@/lib/toast";
 import { formatAbsoluteDate, formatRelativeTime } from "@/utils/datetime";
 import { supabase } from "@/utils/supabase/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { emitAssistTracked } from "@/features/assists/redux/emitTracked";
 import { assistPriority } from "@/features/assists/types";

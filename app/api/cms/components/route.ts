@@ -30,7 +30,7 @@ import {
   withCmsValidationHeader,
   type CmsContentValidationResult,
 } from "../_lib/validateContent";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { writeOneRow } from "@/utils/supabase/writeOne";
 
 export async function POST(request: NextRequest) {

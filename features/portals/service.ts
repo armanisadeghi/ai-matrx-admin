@@ -42,7 +42,7 @@ import { cache } from "react";
 import { storeDoors as storeDoorsOf, type StoreCaller as StoreDoorsBound } from "@ai-matrx/records/core";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 /**
  * THE STORE'S SCHEMA IS NOT IN `types/database.types.ts`, AND THAT IS CORRECT —

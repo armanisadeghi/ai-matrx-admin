@@ -4,7 +4,7 @@
 // line, that their records come with them. Reads the guest's OWN session cookie (never the main one) and
 // asks `app.guest_save_status` as that guest, so the number is the same one the Applet's account line shows.
 // Never throws: no guest, an unreadable session, or zero records answers 0 and the page says nothing.
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import "server-only";
 
 import { cookies } from "next/headers";

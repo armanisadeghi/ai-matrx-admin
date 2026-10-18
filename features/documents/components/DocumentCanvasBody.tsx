@@ -30,7 +30,7 @@ import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentRow } from "@ai-matrx/office/core";
 import { cn } from "@/lib/utils";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { printMarkdown } from "@ai-matrx/print/markdown";

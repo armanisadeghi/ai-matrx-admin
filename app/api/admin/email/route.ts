@@ -4,7 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { checkIsSuperAdmin } from "@/utils/supabase/userSessionData";
 import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { sendEmail, isValidFromAddress, getDefaultFromAddress, getAllowedEmailDomains } from "@/lib/email/client";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
 /**
  * POST /api/admin/email

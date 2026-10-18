@@ -18,7 +18,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { createClient as createMainSupabaseClient } from "@/utils/supabase/server";
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import {
   CMS_TRASH_KINDS,
   isCmsTrashToken,

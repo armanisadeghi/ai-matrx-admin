@@ -134,7 +134,7 @@ import { useWorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTa
 import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@ai-matrx/office/univer";
 import { stampCovered, takeCovered } from "@ai-matrx/office/univer";
 
-import { getClaimsUser } from "@ai-matrx/auth";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 // LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
