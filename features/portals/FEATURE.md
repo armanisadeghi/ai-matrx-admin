@@ -46,7 +46,11 @@ and sees **her** jobs and **her** invoices and nothing else — on a phone first
    the portal did not open with a sentence and a hint; both are carried whole to the screen.
    Never "Save failed".
 
+- **Blocks (lane PORTAL-BLOCKS).** A portal page can be built from blocks stored in `custom.portal.config.blocks` (judged by `custom._portal_config_judge`, handed over by `portal_me`): number tiles, bar/line/donut charts (records-ui's one `ChartBlock`), list/cards/table of her records, each opening `/r/[recordId]` (owner-chosen `detail_fields`). `blocks.ts` computes every number over HER rows only (`hers.ts`, after `isHers`) and keeps every key to `visible_fields`; a page with no blocks shows the plain table sections as before. The owner builds them in `PortalBlocksEditor` (mounted under the portal builder in /make).
+
 ## Change Log
+
+- **2026-10-18** — Lane PORTAL-BLOCKS: blocks on the portal page (tiles, charts, list/cards/table to record page), owner's page-block editor.
 
 - **2026-09-20** — Built the outsider's screens (lane W6-PORTAL): sign-in panel, portal list,
   record view with in-place edit and comments, and the magic-link route.

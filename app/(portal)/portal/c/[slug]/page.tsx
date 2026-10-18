@@ -43,12 +43,12 @@ import {
   membershipFor,
   portalMe,
   portalPublic,
-  portalRecords,
   portalViewer,
   type PortalMembership,
-  type PortalTable,
 } from "@/features/portals/service";
-import { isHers, readable, shownFields } from "@/features/portals/shown";
+import { readable } from "@/features/portals/shown";
+import { tableData, type TableData } from "@/features/portals/hers";
+import { PortalBlocks } from "@/features/portals/PortalBlocks";
 import { stageLabel } from "@/features/portals/timeline";
 
 // Who is asking decides the whole page, and her rows move.
@@ -154,6 +154,11 @@ export default async function ClientPortalPage({
   // Her own portal carries the look it was read with (portal_me), the same answer as above.
   const her = portalLook(membership.style ?? portal.style, membership.organization);
   const forms = [...(membership.forms ?? [])].sort((a, b) => a.order - b.order);
+  // One read of her rows per Table; the plain sections and the owner's blocks both draw from it.
+  const data = new Map<string, TableData>(
+    (await Promise.all(membership.tables.map((table) => tableData(membership, table)))).map((d) => [d.table.table_id, d]),
+  );
+  const hasBlocks = (membership.blocks ?? []).length > 0;
 
   return (
     <Shell align="start" look={her}>
@@ -177,9 +182,13 @@ export default async function ClientPortalPage({
 
         <div className="mt-6 space-y-8 pb-12">
           {forms.length > 0 ? <FormsSection slug={membership.slug} forms={forms} look={her} /> : null}
-          {membership.tables.map((table) => (
-            <TableSection key={table.table_id} membership={membership} table={table} />
-          ))}
+          {hasBlocks ? (
+            <PortalBlocks membership={membership} data={data} />
+          ) : (
+            membership.tables.map((table) => (
+              <TableSection key={table.table_id} membership={membership} data={data.get(table.table_id)!} />
+            ))
+          )}
           {membership.tables.length === 0 ? (
             <p className="rounded-xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
               {membership.organization} has not shared anything on this portal yet.
@@ -255,18 +264,8 @@ function Shell({
 }
 
 /** One Table: its name, how many of her rows are in it, and the rows. */
-async function TableSection({
-  membership,
-  table,
-}: {
-  membership: PortalMembership;
-  table: PortalTable;
-}) {
-  const [fields, readable_] = await Promise.all([
-    shownFields(membership.organization_id, table),
-    portalRecords({ organizationId: membership.organization_id, tableId: table.table_id }),
-  ]);
-  const records = readable_.filter((r) => isHers(r.document, table.names_via, membership.client_record_id));
+function TableSection({ membership, data }: { membership: PortalMembership; data: TableData }) {
+  const { table, fields, records } = data;
 
   // A relation Field holds another record's id, which is not something a person reads; the
   // headline is the first Field that holds words.
