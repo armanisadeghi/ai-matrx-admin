@@ -67,18 +67,26 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
    that connection; 2026-10-17 it fired on ICE alone and the page's black loader showed between).
    Only the endpoint's origin and the frame's own window are believed. Until `connected`,
    `ScaledFrame` covers the frame (absolute, no shift) with a shimmering "Connecting…" /
-   "Reconnecting…" (or a still "Disconnected"). A page that never speaks is revealed 8 s after `load`
-   (`SILENT_STREAM_REVEAL_MS`) — the fallback until the stream page that posts state ships.
+   "Reconnecting…" (or a still "Disconnected"). A page that never says `connected` stays covered until
+   the connect deadline (the old 8 s silent reveal could drop the cover onto a black loader; removed
+   2026-10-18). Every state is reported to the tab (`onStateChange`).
 8. **Keyboard comes back.** While in control the row shows a Keyboard control ("Reconnect keyboard"):
    it focuses the frame and posts `{type:"matrx-stream-cmd", cmd:"keyboard-reset"}` (target origin =
    the endpoint's). Coming back to the page (window focus, visibility) refocuses the frame and posts
    `cmd:"focus"`; so does a press on the stream (window blur into the frame) or its letterbox.
    Anything that takes focus by itself while in control is handed back, except a dialog or menu.
+   After a press on a page control (maximize, shrink, Keyboard, a tab) the keyboard goes back to the
+   machine; a press that lands in a typing field or opens a dialog/menu keeps it (2026-10-18).
 9. **No step-list poll.** The tab calls `useCloudBrowser(…, "sandbox", { followProgress: false })`: it
    never shows written progress, so it never reads `action_event` every 2 s.
 10. **Chip says Computer.** Host slot `useCloudBrowserSurfaceKind` (registered in
    `providers/chatUiRegistrationBase.ts`, defined in `cloud-browser/hooks/useOpenCloudBrowserCanvas.ts`)
    answers "computer" when the slice's run is on the machine or the person has one.
+11. **Honest states.** Machine up but its run still starting → "Waking up…" with no Watching pill
+   and no Take control; run live, no picture yet → "Connecting…". A picture that goes away
+   (`reconnecting`, or the connect deadline) first renews the claim: superseded (the person's other
+   window took it) → "Opened somewhere else" + Take over, never an automatic take-back. Take control
+   / Stop say "Taking control…" / "Stopping…" while the server works.
 
 ## Invariants & gotchas
 
@@ -98,6 +106,10 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 - `features/canvas/` — host pane.
 
 ## Change log
+
+- **2026-10-18** — Honest states (Waking up until the run is live, Connecting before the picture);
+  second window → "Opened somewhere else" + Take over via a claim check on reconnect; keyboard handed
+  back after page-control presses; no silent reveal; Taking control… / Stopping… labels.
 
 - **2026-10-17 (c)** — Frame address carries the claim's one-use entry code
   (`streamFrameAddress`); fixes the 401 page on every cross-site (local) embed.

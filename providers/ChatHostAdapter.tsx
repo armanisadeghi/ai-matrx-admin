@@ -46,6 +46,7 @@
 // handed to the package (`store`), which keeps its `chatHost` slice synced.
 
 import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-local-models";
+import { whenEngagedLate } from "@/lib/boot/engagedLate";
 import { useMemo, type ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
 import { useNextNavigation } from "@ai-matrx/chat/next/navigation";
@@ -447,6 +448,9 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
     // The person's local models, for the chat composer's picker only (never ModelCatalogHost):
     // Matrx 2 on THIS computer, paired; a pick opens Confidential Chat there.
     localModels: thisMachineLocalModels(),
+    // Background live channels (the sidebar's nested-children socket) open on the engaged-late
+    // tier: page settled AND a trusted press, key or touch. An untouched page opens none.
+    whenEngaged: () => whenEngagedLate(),
   };
 
   // The app's store IS the chat store (its root reducer spreads chatReducers):
