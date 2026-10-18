@@ -152,6 +152,7 @@ function PairLine({
 }) {
   if (!verdict) return null;
   if (verdict.winner === null) return <ShimmerText text="Comparing answers" />;
+  if (verdict.winner === "none") return <Badge tone="warning">Judge gave no verdict</Badge>;
   const head = verdict.winner === "tie" ? "Even" : `${labelOf(verdict.winner)} better`;
   const rounds = verdict.judge.challenger + verdict.judge.baseline + verdict.judge.ties;
   const rationale = verdict.byVote ? "Your vote" : verdict.rationales[0] ?? "";

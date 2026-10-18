@@ -68,6 +68,13 @@ describe("pairwiseVerdict", () => {
     expect(pairwiseBattleVerdict(pairwiseVerdict(rows)!, labelOf)).toEqual({ line: "Live wins 4–0", tone: "warning", keepIsPrimary: false });
   });
 
+  it("never counts a failed judge call as a tie", () => {
+    const v = pairwiseVerdict([pair("c1", "candidate"), pair("c2", null), pair("c3", "candidate")])!;
+    expect(v).toMatchObject({ wins: 2, ties: 0, unjudged: 1 });
+    expect(v.cases[1].winner).toBe("none");
+    expect(pairwiseLine(v, labelOf)).toBe("Leans Candidate 2–0 · 1 not judged · too close to call");
+  });
+
   it("reads an even split as too close to call", () => {
     const v = pairwiseVerdict([pair("c1", "candidate"), pair("c2", "live"), pair("c3", "tie")])!;
     expect(pairwiseLine(v, labelOf)).toBe("Too close to call · 1–1 · 1 tie");
