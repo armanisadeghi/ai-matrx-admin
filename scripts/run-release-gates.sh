@@ -387,6 +387,10 @@ if $STRICT; then
         # …Peek / …HoverPreview / …DetailCard component. Baseline scripts/one-peek/baseline.json only shrinks.
         "One peek|pnpm check:one-peek:strict"
         "One peek — self-test|pnpm check:one-peek:self-test"
+        # THERE IS ONE ID (Arman, 2026-10-18): every record id shown or copied is <RecordId>;
+        # no hand-sliced ids, private copy-id buttons or local id components. Baseline scripts/one-id/baseline.json only shrinks.
+        "One id|pnpm check:one-id:strict"
+        "One id — self-test|pnpm check:one-id:self-test"
         # ONE DOOR TO BROWSER STORAGE (2026-10-14): outside lib/sync nothing calls localStorage /
         # sessionStorage directly — declare the key in @/lib/sync/client-storage, or move a setting to
         # server preferences. Baseline scripts/check-raw-storage/baseline.json only shrinks.
@@ -1330,6 +1334,8 @@ else
         "Writing boxes — self-test|pnpm check:writing-boxes:self-test"
         "One peek|pnpm check:one-peek"
         "One peek — self-test|pnpm check:one-peek:self-test"
+        "One id|pnpm check:one-id"
+        "One id — self-test|pnpm check:one-id:self-test"
         "Raw storage|pnpm check:raw-storage"
         "Raw storage — self-test|pnpm check:raw-storage:self-test"
         "Bare secret fill|pnpm check:fill-secret"
