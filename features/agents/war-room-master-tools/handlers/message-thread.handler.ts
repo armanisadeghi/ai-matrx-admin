@@ -249,7 +249,10 @@ export const messageThreadHandler: WarRoomMasterToolHandler<
       const threadMandate = await resolveMandate(WAR_ROOM_THREAD_AGENT_MANDATE);
       const conversationId = await dispatch(
         createManualInstance({
+          // agentId is the display identity; the run goes through the mandate
+          // door so the server resolves (and records) who answers.
           agentId: threadMandate.agentId,
+          mandateKey: WAR_ROOM_THREAD_AGENT_MANDATE,
           apiEndpointMode: "agent",
           sourceFeature: "agent-runner",
           allowChat: true,
