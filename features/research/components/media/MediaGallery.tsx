@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useCallback, useState, useMemo } from "react";
 import {
   ImageIcon,
@@ -158,46 +159,28 @@ export default function MediaGallery() {
 
   return (
     <div className="p-3 sm:p-4 space-y-4">
-      <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
-        <span className="type-secondary font-medium text-foreground/80">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl sm:flex-nowrap sm:rounded-full matrx-glass-thin-border px-3 py-1.5">
+        <span className="type-secondary shrink-0 whitespace-nowrap font-medium text-foreground/80">
           Media
         </span>
-        <span className="type-meta text-muted-foreground tabular-nums">
+        <span className="type-meta shrink-0 whitespace-nowrap text-muted-foreground tabular-nums">
           <UntrustedCount
             read={readOf({ isLoading: mediaLoading, error: mediaError })}
             value={`${filtered.length}/${mediaList.length}`}
             label="Media"
           />
         </span>
-        <div className="flex items-center rounded-full matrx-glass-card p-0.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setView("gallery")}
-            className={cn(
-              "flex items-center gap-1 px-2 h-5 rounded-full text-[10px] font-medium transition-colors",
-              view === "gallery"
-                ? "bg-background/80 text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <LayoutGrid className="h-3 w-3" />
-            Gallery
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("debug")}
-            className={cn(
-              "flex items-center gap-1 px-2 h-5 rounded-full text-[10px] font-medium transition-colors",
-              view === "debug"
-                ? "bg-background/80 text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Bug className="h-3 w-3" />
-            Debug
-          </button>
-        </div>
-        <div className="flex-1 relative min-w-0">
+        <SegmentedControl
+          aria-label="Media view"
+          className="shrink-0"
+          value={view}
+          onValueChange={(next) => setView(next)}
+          data={[
+            { value: "gallery", label: <span className="inline-flex items-center gap-1"><LayoutGrid className="size-3" />Gallery</span> },
+            { value: "debug", label: <span className="inline-flex items-center gap-1"><Bug className="size-3" />Debug</span> },
+          ]}
+        />
+        <div className="relative order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:flex-1">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             value={search}
