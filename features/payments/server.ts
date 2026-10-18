@@ -51,6 +51,7 @@ export async function readOrgAccount(organizationId: string): Promise<OrgPayment
     .from("org_payment_account")
     .select("organization_id, stripe_account_id, livemode, charges_enabled, payouts_enabled, details_submitted, disconnected_at")
     .eq("organization_id", organizationId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) throw new Error(`billing.org_payment_account read failed: ${error.message}`);
   return (data as OrgPaymentAccount | null) ?? null;
@@ -152,6 +153,7 @@ export async function readAsk(subjectKind: PaymentSubjectKind, subjectId: string
     .select("id, organization_id, subject_kind, subject_id, table_id, enabled, amount_mode, amount_cents, amount_field, currency, description, status_field_key")
     .eq("subject_kind", subjectKind)
     .eq("subject_id", subjectId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) throw new Error(`billing.payment_ask read failed: ${error.message}`);
   const ask = (data as PaymentAsk | null) ?? null;
@@ -263,6 +265,13 @@ async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ accou
   if (!record || record.table_id !== ask.table_id) throw new PaymentRefusal("That record is not one this payment is for.", 404);
   const amount = resolveAmountCents(ask, record.data);
   if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
+<<<<<<< HEAD
+  const max = await maxChargeCents(ask.organization_id);
+  if (amount.cents > max) {
+    throw new PaymentRefusal(`The amount to pay is above the ${(max / 100).toFixed(2)} limit for one payment.`, 400);
+  }
+=======
+>>>>>>> origin/main
   return { account, amount };
 }
 
@@ -385,6 +394,7 @@ export async function settleFromReturn(paymentId: string, sessionId: string): Pr
   const { data, error } = await billing().from("payment")
     .select("stripe_account_id, stripe_checkout_session_id")
     .eq("id", paymentId)
+    .is("deleted_at", null)
     .maybeSingle();
   if (error) throw new Error(`Reading the payment failed: ${error.message}`);
   const row = data as { stripe_account_id: string; stripe_checkout_session_id: string | null } | null;
@@ -397,14 +407,68 @@ export async function settleFromReturn(paymentId: string, sessionId: string): Pr
   return status;
 }
 
-/** charge.refunded carries the payment intent; find its session to settle. */
-export async function sessionForPaymentIntent(paymentIntentId: string): Promise<string | null> {
-  const { data } = await billing().from("payment").select("stripe_checkout_session_id")
-    .eq("stripe_payment_intent_id", paymentIntentId).maybeSingle();
-  return (data as { stripe_checkout_session_id: string | null } | null)?.stripe_checkout_session_id ?? null;
+/** The Stripe ledger an event came from: its connected account and its mode (REVIEW-PAYMENTS M2). */
+export interface EventOrigin {
+  account: string | null;
+  livemode: boolean;
 }
 
 /**
+<<<<<<< HEAD
+ * True when the payment this event names was created on the event's own connected account and in
+ * the event's own mode. A mismatch is logged and the event is not applied.
+ */
+async function eventMatches(column: "stripe_checkout_session_id" | "stripe_payment_intent_id", value: string, origin: EventOrigin): Promise<boolean> {
+  const { data, error } = await billing().from("payment").select("id, stripe_account_id, livemode")
+    .eq(column, value).is("deleted_at", null).maybeSingle();
+  if (error) throw new Error(`Reading the payment failed: ${error.message}`);
+  const row = data as { id: string; stripe_account_id: string; livemode: boolean } | null;
+  if (!row) return true; // unknown here: payment_settle / payment_refund answer "unknown" themselves
+  if (row.stripe_account_id !== origin.account || row.livemode !== origin.livemode) {
+    console.error("[payments/webhook] event ledger does not match payment", row.id, { account: origin.account, livemode: origin.livemode });
+    return false;
+  }
+  return true;
+}
+
+/** A verified Connect event settles only the payment it belongs to. */
+export async function settleFromEvent(sessionId: string, status: SettleStatus, paymentIntentId: string | null, origin: EventOrigin): Promise<void> {
+  if (!(await eventMatches("stripe_checkout_session_id", sessionId, origin))) return;
+  await settle(sessionId, status, paymentIntentId);
+}
+
+/**
+ * charge.refunded (full or partial, REVIEW-PAYMENTS M1): billing.payment_refund keeps a partial refund
+ * Paid with "Partially refunded <amount>" on the record, and settles a full one as Refunded.
+ */
+export async function refundFromEvent(paymentIntentId: string, amountRefundedCents: number, origin: EventOrigin): Promise<void> {
+  if (!(await eventMatches("stripe_payment_intent_id", paymentIntentId, origin))) return;
+  const { error } = await billing().rpc("payment_refund", {
+    p_payment_intent_id: paymentIntentId,
+    p_amount_refunded_cents: amountRefundedCents,
+  });
+  if (error) throw new Error(`billing.payment_refund refused: ${error.message}`);
+}
+
+/** The organization's largest single charge (knob billing.payments / max_charge_cents, REVIEW-PAYMENTS M3). */
+async function maxChargeCents(organizationId: string): Promise<number> {
+  const { data, error } = await createAdminClient().schema("platform").rpc("knob_resolve", {
+    p_feature: "billing.payments",
+    p_key: "max_charge_cents",
+    p_organization_id: organizationId,
+    p_user_id: null,
+    p_scopes: null,
+  });
+  if (error) throw new Error(`Reading the payment limit failed: ${error.message}`);
+  const raw = data as unknown;
+  const value = typeof raw === "number" ? raw : typeof raw === "object" && raw && "value" in raw ? Number((raw as { value: unknown }).value) : Number(raw);
+  if (!Number.isFinite(value) || value <= 0) throw new Error("The payment limit knob billing.payments/max_charge_cents has no usable value.");
+  return value;
+}
+
+/**
+=======
+>>>>>>> origin/main
  * What a record's payments say, for the portal Pay button: "paid" when ANY live payment for it is
  * paid (a stray newer row never brings Pay back for a paid record), otherwise the newest row's status.
  */

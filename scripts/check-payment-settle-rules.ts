@@ -8,6 +8,7 @@
  *   I1  an older session expiring after a newer one was paid never flips the record off Paid
  *   I1b an older session failing after a newer one was paid never flips the record off Paid
  *   I1c the record's own current payment expiring still says Unpaid
+ *   M1  a partial refund keeps the payment paid and says "Partially refunded 10.00 USD"; the rest makes it Refunded
  *   I2  a second pending payment for the same record is refused (23505) — one live session per record
  *
  *   pnpm check:payment-settle-rules
@@ -59,6 +60,27 @@ const SCENARIOS: Scenario[] = [
       await db.query("select billing.payment_settle('cs_rule_only', 'expired', null)");
     },
     expect: "Unpaid",
+  },
+  {
+    name: "M1  a partial refund says Partially refunded with the amount",
+    run: async (db, pay) => {
+      await db.query("update billing.payment set deleted_at = now() where record_id = $1", [RECORD]);
+      await pay("cs_rule_refund", "pending", 1);
+      await db.query("select billing.payment_settle('cs_rule_refund', 'paid', 'pi_rule_refund')");
+      await db.query("select billing.payment_refund('pi_rule_refund', 1000)");
+    },
+    expect: "Partially refunded 10.00 USD",
+  },
+  {
+    name: "M1b the rest of the refund makes the record Refunded",
+    run: async (db, pay) => {
+      await db.query("update billing.payment set deleted_at = now() where record_id = $1", [RECORD]);
+      await pay("cs_rule_refund", "pending", 1);
+      await db.query("select billing.payment_settle('cs_rule_refund', 'paid', 'pi_rule_refund')");
+      await db.query("select billing.payment_refund('pi_rule_refund', 1000)");
+      await db.query("select billing.payment_refund('pi_rule_refund', 4000)");
+    },
+    expect: "Refunded",
   },
   {
     name: "I2  a second pending payment for one record is refused",
