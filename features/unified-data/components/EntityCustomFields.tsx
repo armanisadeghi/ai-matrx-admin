@@ -41,11 +41,12 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import { CustomFieldsSection, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import { entityRecordHome } from "@/features/unified-data/hub/doors";
 import { cn } from "@/lib/utils";
 import { EntityBackLinks } from "@/features/unified-data/components/EntityBackLinks";
 import { useCustomFieldsHost } from "@/features/unified-data/components/useCustomFieldsHost";
+import { useCollapsedCustomFieldsDoor } from "@/features/unified-data/components/useCollapsedCustomFieldsDoor";
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { createClient } from "@/utils/supabase/client";
 import { mayReadAsMember } from "@/features/organizations/organizationsIAmIn";
@@ -59,6 +60,7 @@ import {
   useSurfaceScopeContribution,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
+  customFieldsScopeFromRecord,
   readRecordReadable,
   recordReadableKey,
   type RecordReadableAnswer,
@@ -159,7 +161,8 @@ function useRecordReadable(token: string, recordId: string, organizationId: stri
           ? "ok"
           : "absent"
         : "checking";
-  return { readable, retry: () => void read.refresh() };
+  const record = readable === "ok" && read.data?.state === "ok" ? read.data.record : null;
+  return { readable, record, retry: () => void read.refresh() };
 }
 
 function useRecordHome(
@@ -287,7 +290,16 @@ function EntityCustomFieldsSection({
   const member = useIsMemberOf(organizationId);
   // W1-STORE 3: the read is a member-only door, so it is asked only once she is known to be a member
   // (a System-organization agent opened by a platform admin used to ask first and be refused: ~24 rows in 7 days).
-  const { readable, retry: retryRead } = useRecordReadable(entityToken, recordId, member === true ? organizationId : null);
+  const { readable, record, retry: retryRead } = useRecordReadable(entityToken, recordId, member === true ? organizationId : null);
+  // The agent's door while collapsed: the screen stays unloaded, the target is still there, and a write opens it.
+  useCollapsedCustomFieldsDoor({
+    enabled: Boolean(collapsed && !opened && member === true && readable === "ok"),
+    entityToken,
+    recordId,
+    entityLabel: hostCustom.entityLabel ?? null,
+    record,
+    open: () => setOpened(true),
+  });
   if (home.state === "absent") return null;
   if (home.state === "refused" && absentWhenNotApplicable && home.reason === "no_table") return null;
   if (home.state === "refused") {
@@ -303,7 +315,7 @@ function EntityCustomFieldsSection({
     return (
       <SectionLine state="error" title={title} className={className}>
         <span data-error-box className="text-muted-foreground">Couldn&apos;t read this record<ErrorAlchemyMenu /></span>
-        <Button size="sm" variant="ghost" className="ml-auto" onClick={retryHome}>
+        <Button variant="quiet" className="ml-auto" onClick={retryHome}>
           Retry
         </Button>
       </SectionLine>
@@ -324,7 +336,7 @@ function EntityCustomFieldsSection({
     return (
       <SectionLine state="error" title={title} className={className}>
         <span data-error-box className="text-muted-foreground">Couldn&apos;t read this record<ErrorAlchemyMenu /></span>
-        <Button size="sm" variant="ghost" className="ml-auto" onClick={retryRead}>
+        <Button variant="quiet" className="ml-auto" onClick={retryRead}>
           Retry
         </Button>
       </SectionLine>
@@ -333,7 +345,13 @@ function EntityCustomFieldsSection({
   if (collapsed && !opened) {
     return (
       <SectionLine state="collapsed" title={title} className={className}>
-        <Button size="sm" variant="ghost" className="ml-auto" aria-expanded={false} onClick={() => setOpened(true)}>
+        <Button
+          variant="quiet"
+          className="ml-auto"
+          aria-expanded={false}
+          meta={customFieldsScopeFromRecord(entityToken, recordId, record)[0]?.fields.length ?? 0}
+          onClick={() => setOpened(true)}
+        >
           Show
         </Button>
       </SectionLine>
