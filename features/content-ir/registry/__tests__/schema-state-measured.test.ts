@@ -30,6 +30,7 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
   captureError: () => {},
 }));
 
+import { PackageKindRegistry } from "@ai-matrx/rich-content/kinds/registry/package-kind-registry";
 import { kindRegistry } from "../kind-registry";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 20));
@@ -84,7 +85,8 @@ it("a read that throws is 'failed', never 'absent'", async () => {
 // FIRST PAINT (2026-10-17): this app registers its kindDataClient through the LAZY rich-content host
 // loader (providers/richContentHost). Until that loader settles there is no client YET — the screen
 // must say "checking", never "no loaded schema". The state is planted the way the loader registers it.
-it("is pending, never absent, while the lazy host has not landed", () => {
+// A COLD registry is used: once the catalog has landed, the catalog itself answers (next test).
+function withLazyHost<T>(settled: boolean, run: () => T): T {
   const key = Symbol.for("ai-matrx.rich-content.host.loader");
   const g = globalThis as unknown as Record<symbol, unknown>;
   const clientKey = Symbol.for("ai-matrx.rich-content.host");
@@ -92,13 +94,26 @@ it("is pending, never absent, while the lazy host has not landed", () => {
   const savedHost = store.host;
   const savedLoader = g[key];
   store.host = {};
-  g[key] = { load: () => new Promise(() => {}), promise: null, settled: false };
+  g[key] = { load: settled ? async () => {} : () => new Promise(() => {}), promise: null, settled };
   try {
-    expect(kindRegistry.schemaState("never_asked_kind")).toBe("pending");
-    g[key] = { load: async () => {}, promise: null, settled: true };
-    expect(kindRegistry.schemaState("never_asked_kind")).toBe("absent");
+    return run();
   } finally {
     store.host = savedHost;
     g[key] = savedLoader;
   }
+}
+
+it("is pending, never absent, while the lazy host has not landed (catalog not yet landed)", () => {
+  const cold = new PackageKindRegistry();
+  withLazyHost(false, () => expect(cold.schemaState("never_asked_kind")).toBe("pending"));
+  withLazyHost(true, () => expect(cold.schemaState("never_asked_kind")).toBe("absent"));
+});
+
+// THE KIND'S OWN "NONE" SETTLES (rich-content ffae619b96, 2026-10-17; published in 0.2.207): once the
+// catalog (every slug the platform knows) has landed and a kind is not in it, that IS the definition's
+// answer — `requestSchema` never reads a kind the catalog does not name — so a nested kind nobody
+// rendered on its own is "absent", not "pending" for ever, even while the lazy host has not landed.
+// (The first tests in this file warmed the shared registry's catalog with three slugs.)
+it("a kind the landed catalog does not name is absent even before the lazy host lands — never waits forever", () => {
+  withLazyHost(false, () => expect(kindRegistry.schemaState("never_asked_kind")).toBe("absent"));
 });
