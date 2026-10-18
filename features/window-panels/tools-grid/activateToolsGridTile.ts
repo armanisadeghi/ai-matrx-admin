@@ -1,11 +1,11 @@
 import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayId } from "@ai-matrx/summon/open";
-// Plain-data metadata only (id / instance / windowId). Never `definitions/register` or
-// `definitions/registry` here: they import every overlay definition, and each definition's
-// `render: () => import(...)` drags that window's whole implementation into any graph that
-// reaches this file (the knowledge command bar reaches it from a lab page: the lab build went
-// from seconds to an 8 GB OOM, v0.4.3309).
-import { OVERLAY_META_INDEX } from "@/features/overlays/definitions/overlay-meta-index";
+// Plain-data metadata only (id / instance / windowId), fetched on the first click: the shell's nav
+// reaches this file on every route, and the index (every overlay's row, 27 KB) is first-load weight
+// a page never uses until a tile is pressed (W4 2026-10-17). Never `definitions/register` or
+// `definitions/registry` here: they import every overlay definition (the knowledge command bar
+// reaches this file from a lab page: the lab build went from seconds to an 8 GB OOM, v0.4.3309).
+const loadOverlayMeta = () => import("@/features/overlays/definitions/overlay-meta-index");
 import {
   TOOLS_GRID_TILES,
   type TileContext,
@@ -35,42 +35,32 @@ export function activateToolsGridTile(
 
   if (!tile.overlayId) return false;
 
-  const entry = OVERLAY_META_INDEX.find((row) => row.id === tile.overlayId);
-  if (!entry) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `[ToolsGrid] tile "${tile.id}" points at overlayId "${tile.overlayId}" which is not registered`,
-    );
-    return false;
-  }
-
-  const strategy =
-    tile.instanceStrategy ??
-    (entry.instance === "multi" ? "fresh-per-click" : "singleton-default");
-
-  const instanceId =
-    strategy === "fresh-per-click" ? `${(entry.window?.windowId ?? entry.id)}-${Date.now()}` : undefined;
-
-  // seedData may be async (e.g. a Mandate resolution) — dispatch once it
-  // settles. Activation still reports success synchronously: the tile matched
-  // and the open is in flight.
+  const overlayId = tile.overlayId;
+  // seedData may be async (e.g. a Mandate resolution) — dispatch once it and the metadata settle.
+  // Activation still reports success synchronously: the tile matched and the open is in flight.
   let declined = false;
-  void Promise.resolve(tile.seedData?.(ctx))
-    .catch((error: unknown) => {
-      // "Not now" on the organization question opens nothing, says nothing.
-      // A broken seed must not eat the click — open unseeded, loudly.
-      console.error(`[ToolsGrid] tile "${tile.id}" seedData failed:`, error);
-      return undefined;
-    })
-    .then((data) => {
-      if (declined) return;
-      ctx.dispatch(
-        openOverlay({
-          overlayId: entry.id as OverlayId,
-          ...(instanceId ? { instanceId } : {}),
-          ...(data ? { data } : {}),
-        }),
-      );
-    });
+  const seeded = Promise.resolve(tile.seedData?.(ctx)).catch((error: unknown) => {
+    // "Not now" on the organization question opens nothing, says nothing.
+    // A broken seed must not eat the click — open unseeded, loudly.
+    console.error(`[ToolsGrid] tile "${tile.id}" seedData failed:`, error);
+    return undefined;
+  });
+  void Promise.all([loadOverlayMeta(), seeded]).then(([{ OVERLAY_META_INDEX }, data]) => {
+    if (declined) return;
+    const entry = OVERLAY_META_INDEX.find((row) => row.id === overlayId);
+    if (!entry) {
+      console.warn(`[ToolsGrid] tile "${tile.id}" points at overlayId "${overlayId}" which is not registered`);
+      return;
+    }
+    const strategy = tile.instanceStrategy ?? (entry.instance === "multi" ? "fresh-per-click" : "singleton-default");
+    const instanceId = strategy === "fresh-per-click" ? `${entry.window?.windowId ?? entry.id}-${Date.now()}` : undefined;
+    ctx.dispatch(
+      openOverlay({
+        overlayId: entry.id as OverlayId,
+        ...(instanceId ? { instanceId } : {}),
+        ...(data ? { data } : {}),
+      }),
+    );
+  });
   return true;
 }

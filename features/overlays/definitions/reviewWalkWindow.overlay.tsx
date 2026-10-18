@@ -20,7 +20,6 @@ import {
   REVIEW_WALK_OVERLAY_ID,
   openReviewWalk,
 } from "@/features/review-walk/openReviewWalk";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export interface OpenReviewWalkWindowOptions {
@@ -67,40 +66,7 @@ export function ReviewWalkWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ReviewWalkWindowDefinitionData = OpenReviewWalkWindowOptions;
-
-export const reviewWalkWindowOverlay = /* @__PURE__ */ defineOverlay<ReviewWalkWindowDefinitionData>()({
-  id: "reviewWalkWindow",
-  label: "Review Walk",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          unitKind: null,
-          unitId: null,
-          agentId: null,
-          agentName: null,
-          roleLabel: null,
-          detailLabel: null,
-          stackIndex: 0,
-        },
-    windowId: "review-walk-window",
-    mobile: "fullscreen",
-    preservation: {
-      dataKeys: ["unitKind", "unitId", "agentId", "agentName", "roleLabel", "detailLabel"],
-      requiredDataKeys: ["unitKind", "unitId"],
-    },
-  },
-  link: {
-    key: "review_walk",
-    hydrate: (ctx) => import("./reviewWalkWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

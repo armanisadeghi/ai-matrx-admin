@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickChatHistory" as const;
@@ -64,28 +63,7 @@ export function ChatHistoryWindowController(props: OpenChatHistoryWindowOptions)
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type QuickChatHistoryDefinitionData = OpenChatHistoryWindowOptions;
-
-export const quickChatHistoryOverlay = /* @__PURE__ */ defineOverlay<QuickChatHistoryDefinitionData>()({
-  id: "quickChatHistory",
-  label: "Quick Chat History",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { selectedConversationId: null, groupBy: "date" },
-    windowId: "quick-chat-history",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "chat_history",
-    hydrate: (ctx) => import("./quickChatHistory.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

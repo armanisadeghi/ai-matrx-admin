@@ -20,7 +20,6 @@ import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "aiWatchWindow" as const;
@@ -76,48 +75,7 @@ export function useWatchAiRun() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AiWatchWindowDefinitionData = Record<string, unknown>;
-
-export const aiWatchWindowOverlay = /* @__PURE__ */ defineOverlay<AiWatchWindowDefinitionData>()({
-  id: "aiWatchWindow",
-  label: "Watch AI",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          windowInstanceId: null,
-          requestId: null,
-          userRequestId: null,
-          workflowRunId: null,
-          conversationId: null,
-          nodeId: null,
-          label: null,
-        },
-    windowId: "ai-watch-window",
-    mobile: "card",
-    ephemeral: true,
-    preservation: {
-      dataKeys: [
-        "windowInstanceId",
-        "requestId",
-        "userRequestId",
-        "workflowRunId",
-        "conversationId",
-        "nodeId",
-        "label",
-      ],
-    },
-  },
-  link: {
-    key: "ai-watch",
-    hydrate: (ctx) => import("./aiWatchWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

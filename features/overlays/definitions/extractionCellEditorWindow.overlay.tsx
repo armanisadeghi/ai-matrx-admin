@@ -14,7 +14,6 @@ import {
   type ExtractionCellEditorHandlers,
   type ExtractionCellEditorTargetInput,
 } from "@/features/page-extraction/data-review/extractionCellEditorCallbacks";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "extractionCellEditorWindow" as const;
@@ -93,35 +92,7 @@ export function useOpenExtractionCellEditor(
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ExtractionCellEditorWindowDefinitionData = OpenExtractionCellEditorOptions;
-
-export const extractionCellEditorWindowOverlay = /* @__PURE__ */ defineOverlay<ExtractionCellEditorWindowDefinitionData>()({
-  id: "extractionCellEditorWindow",
-  label: "Extraction Cell Editor Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          rowId: null,
-          columnKey: null,
-          columnLabel: "",
-          pageLabel: "",
-          value: "",
-          readOnly: false,
-          writeKey: null,
-          currentPayload: {},
-          callbackGroupId: null,
-        },
-    windowId: "extraction-cell-editor-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

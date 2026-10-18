@@ -20,7 +20,6 @@ import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 // (map, topic) is the identity of a panel — not the moment it was opened. The
 // format is owned there because the URL hydrator has to read it back.
 import { topicPanelInstanceId } from "@/features/marketing/seo/topical-map/panel/topicPanelInstance";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "topicalMapTopicPanel" as const;
@@ -36,7 +35,6 @@ export interface OpenTopicPanelOptions {
 export interface TopicPanelHandle {
   close: () => void;
 }
-
 
 export function useOpenTopicPanel() {
   const dispatch = useAppDispatch();
@@ -92,32 +90,7 @@ export function TopicalMapTopicPanelController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type TopicalMapTopicPanelDefinitionData = OpenTopicPanelOptions;
-
-export const topicalMapTopicPanelOverlay = /* @__PURE__ */ defineOverlay<TopicalMapTopicPanelDefinitionData>()({
-  id: "topicalMapTopicPanel",
-  label: "Topic",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { mapId: "", slug: "", siteId: null },
-    windowId: "topical-map-topic-panel",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["mapId", "slug", "siteId"],
-      requiredDataKeys: ["mapId", "slug"],
-    },
-  },
-  link: {
-    key: "topic",
-    hydrate: (ctx) => import("./topicalMapTopicPanel.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

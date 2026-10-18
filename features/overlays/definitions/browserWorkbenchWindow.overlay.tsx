@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "browserWorkbenchWindow" as const;
@@ -65,26 +64,7 @@ export function BrowserWorkbenchWindowController(props: OpenBrowserWorkbenchWind
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type BrowserWorkbenchWindowDefinitionData = OpenBrowserWorkbenchWindowOptions;
-
-export const browserWorkbenchWindowOverlay = /* @__PURE__ */ defineOverlay<BrowserWorkbenchWindowDefinitionData>()({
-  id: "browserWorkbenchWindow",
-  label: "Browser Workbench Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { bookmarks: [], tabs: [], activeTabId: null },
-    windowId: "browser-workbench-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-    preservation: { dataKeys: ["tabs", "activeTabId"] },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

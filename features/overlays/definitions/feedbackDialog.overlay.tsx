@@ -15,7 +15,6 @@ import { useCallback, useEffect } from "react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "feedbackDialog" as const;
@@ -119,28 +118,7 @@ export function FeedbackWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FeedbackDialogDefinitionData = OpenFeedbackWindowOptions;
-
-export const feedbackDialogOverlay = /* @__PURE__ */ defineOverlay<FeedbackDialogDefinitionData>()({
-  id: "feedbackDialog",
-  label: "Feedback Dialog",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { draftText: null, attachmentUrls: [] },
-    windowId: "feedback-window",
-    mobile: "drawer",
-  },
-  link: {
-    key: "feedback",
-    hydrate: (ctx) => import("./feedbackDialog.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

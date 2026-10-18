@@ -12,7 +12,6 @@ import {
   type ImageAnnotationWindowData,
   type ImageAnnotationWindowHandlers,
 } from "./callbacks/imageAnnotationWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "imageAnnotationWindow" as const;
@@ -129,33 +128,7 @@ export function ImageAnnotationWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ImageAnnotationWindowDefinitionData = OpenImageAnnotationWindowOptions;
-
-export const imageAnnotationWindowOverlay = /* @__PURE__ */ defineOverlay<ImageAnnotationWindowDefinitionData>()({
-  id: "imageAnnotationWindow",
-  label: "Image Annotation",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null,
-          sourceFileId: null,
-          sourceUrl: null,
-          sourceFilename: null,
-          defaultFolder: null,
-          title: null,
-          overwriteSource: false,
-        },
-    windowId: "image-annotation-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -18,7 +18,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AppDispatch } from "@/lib/redux/store";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "imageViewer" as const;
@@ -119,29 +118,7 @@ export function ImageViewerWindowController(props: OpenImageViewerWindowOptions)
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ImageViewerDefinitionData = OpenImageViewerWindowOptions;
-
-export const imageViewerOverlay = /* @__PURE__ */ defineOverlay<ImageViewerDefinitionData>()({
-  id: "imageViewer",
-  label: "Image Viewer",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          images: [],
-          initialIndex: 0,
-          alts: undefined,
-          title: undefined,
-        },
-    windowId: "image-viewer-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

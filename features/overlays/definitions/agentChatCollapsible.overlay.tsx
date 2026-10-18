@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentChatCollapsible" as const;
@@ -67,19 +66,7 @@ export function ChatCollapsibleController(props: OpenChatCollapsibleOptions): nu
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentChatCollapsibleDefinitionData = OpenChatCollapsibleOptions;
-
-export const agentChatCollapsibleOverlay = /* @__PURE__ */ defineOverlay<AgentChatCollapsibleDefinitionData>()({
-  id: "agentChatCollapsible",
-  label: "Agent Chat Collapsible",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

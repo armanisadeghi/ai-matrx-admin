@@ -15,7 +15,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "userTableWindow" as const;
@@ -65,19 +64,7 @@ export function UserTableWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type UserTableWindowDefinitionData = OpenUserTableWindowOptions;
-
-export const userTableWindowOverlay = /* @__PURE__ */ defineOverlay<UserTableWindowDefinitionData>()({
-  id: "userTableWindow",
-  label: "Custom Table Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {},
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

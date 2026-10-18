@@ -16,7 +16,6 @@ import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "directiveItemWindow" as const;
@@ -69,25 +68,7 @@ export function useOpenDirectiveItemWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type DirectiveItemWindowDefinitionData = OpenDirectiveItemWindowOptions;
-
-export const directiveItemWindowOverlay = /* @__PURE__ */ defineOverlay<DirectiveItemWindowDefinitionData>()({
-  id: "directiveItemWindow",
-  label: "Proposed item",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { item: null, itemKind: null, title: null, subtitle: null },
-    windowId: "directive-item-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

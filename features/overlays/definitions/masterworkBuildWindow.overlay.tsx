@@ -15,7 +15,6 @@ import {
   type BuildWindowData,
   type BuildWindowHandlers,
 } from "@/features/masterwork/build/callbacks";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "masterworkBuildWindow" as const;
@@ -74,28 +73,7 @@ export function BuildWindowController(props: OpenBuildWindowOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MasterworkBuildWindowDefinitionData = OpenBuildWindowOptions;
-
-export const masterworkBuildWindowOverlay = /* @__PURE__ */ defineOverlay<MasterworkBuildWindowDefinitionData>()({
-  id: "masterworkBuildWindow",
-  label: "Build a Masterwork",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null as string | null,
-          rulebookId: null as string | null,
-        },
-    windowId: "masterwork-build-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

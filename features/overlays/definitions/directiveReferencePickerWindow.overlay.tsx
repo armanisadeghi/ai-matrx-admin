@@ -9,7 +9,6 @@ import {
   type DirectiveReferencePickerWindowData,
 } from "@/features/window-panels/windows/admin/directive-reference-picker/callbacks";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "directiveReferencePickerWindow";
@@ -99,30 +98,7 @@ export function DirectiveReferencePickerWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type DirectiveReferencePickerWindowDefinitionData = OpenDirectiveReferencePickerOptions;
-
-export const directiveReferencePickerWindowOverlay = /* @__PURE__ */ defineOverlay<DirectiveReferencePickerWindowDefinitionData>()({
-  id: "directiveReferencePickerWindow",
-  label: "Directive Reference Picker Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null as string | null,
-          entityToken: null as string | null,
-          fieldKey: "id",
-          title: null as string | null,
-        },
-    windowId: "directive-reference-picker-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

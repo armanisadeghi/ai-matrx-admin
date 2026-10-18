@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentFullModal" as const;
@@ -67,19 +66,7 @@ export function AgentFullModalController(props: OpenAgentFullModalOptions): null
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentFullModalDefinitionData = OpenAgentFullModalOptions;
-
-export const agentFullModalOverlay = /* @__PURE__ */ defineOverlay<AgentFullModalDefinitionData>()({
-  id: "agentFullModal",
-  label: "Agent Full Modal",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

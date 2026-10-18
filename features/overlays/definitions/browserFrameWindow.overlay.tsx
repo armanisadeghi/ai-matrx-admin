@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "browserFrameWindow" as const;
@@ -63,27 +62,7 @@ export function BrowserFrameWindowController(props: OpenBrowserFrameWindowOption
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type BrowserFrameWindowDefinitionData = OpenBrowserFrameWindowOptions;
-
-export const browserFrameWindowOverlay = /* @__PURE__ */ defineOverlay<BrowserFrameWindowDefinitionData>()({
-  id: "browserFrameWindow",
-  label: "Browser Frame Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          initialUrl: "https://lucide.dev/icons/",
-          initialWindowTitle: null,
-        },
-    windowId: "browser-frame-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

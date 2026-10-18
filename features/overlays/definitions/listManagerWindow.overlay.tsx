@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "listManagerWindow" as const;
@@ -61,28 +60,7 @@ export function ListManagerWindowController(props: OpenListManagerWindowOptions)
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ListManagerWindowDefinitionData = OpenListManagerWindowOptions;
-
-export const listManagerWindowOverlay = /* @__PURE__ */ defineOverlay<ListManagerWindowDefinitionData>()({
-  id: "listManagerWindow",
-  label: "List Manager Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { activeListId: null },
-    windowId: "list-manager-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "listManager",
-    hydrate: (ctx) => import("./listManagerWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "streamDebugHistoryWindow" as const;
@@ -61,25 +60,7 @@ export function StreamDebugHistoryWindowController(props: OpenStreamDebugHistory
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type StreamDebugHistoryWindowDefinitionData = OpenStreamDebugHistoryWindowOptions;
-
-export const streamDebugHistoryWindowOverlay = /* @__PURE__ */ defineOverlay<StreamDebugHistoryWindowDefinitionData>()({
-  id: "streamDebugHistoryWindow",
-  label: "Stream Debug History Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { initialConversationId: null },
-    windowId: "stream-debug-history",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

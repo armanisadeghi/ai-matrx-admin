@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "aiVoiceWindow" as const;
@@ -61,28 +60,7 @@ export function AiVoiceWindowController(props: OpenAiVoiceWindowOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AiVoiceWindowDefinitionData = OpenAiVoiceWindowOptions;
-
-export const aiVoiceWindowOverlay = /* @__PURE__ */ defineOverlay<AiVoiceWindowDefinitionData>()({
-  id: "aiVoiceWindow",
-  label: "Ai Voice Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { voiceId: null, speed: null, model: null },
-    windowId: "ai-voice-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "aiVoiceWindow",
-    hydrate: (ctx) => import("./aiVoiceWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

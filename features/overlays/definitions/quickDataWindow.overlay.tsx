@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "quickDataWindow" as const;
@@ -61,28 +60,7 @@ export function QuickDataWindowController(props: OpenQuickDataWindowOptions): nu
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type QuickDataWindowDefinitionData = OpenQuickDataWindowOptions;
-
-export const quickDataWindowOverlay = /* @__PURE__ */ defineOverlay<QuickDataWindowDefinitionData>()({
-  id: "quickDataWindow",
-  label: "Quick Data Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { selectedTable: null, search: "", filters: {} },
-    windowId: "quick-data-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "quick_data",
-    hydrate: (ctx) => import("./quickDataWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

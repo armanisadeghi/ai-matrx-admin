@@ -7,7 +7,6 @@ import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import type { DoorAudience } from "@/features/hindsight/subject-doors";
 import type { Finding } from "@/features/hindsight/types";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "hindsightFindingWindow" as const;
@@ -91,30 +90,7 @@ export function HindsightFindingWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type HindsightFindingWindowDefinitionData = OpenHindsightFindingWindowOptions;
-
-export const hindsightFindingWindowOverlay = /* @__PURE__ */ defineOverlay<HindsightFindingWindowDefinitionData>()({
-  id: "hindsightFindingWindow",
-  label: "Hindsight Finding",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          finding: null,
-          findings: [],
-          agentId: null,
-          audience: "product",
-        },
-    windowId: "hindsight-finding-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

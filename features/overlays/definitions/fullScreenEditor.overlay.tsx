@@ -31,7 +31,6 @@ import {
   type FullScreenEditorHandlers,
 } from "./callbacks/fullScreenEditor";
 import type { EditorPrimaryAction } from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "fullScreenEditor" as const;
@@ -185,19 +184,7 @@ export type FullScreenEditorMode =
   | "user-message"
   | "free";
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FullScreenEditorDefinitionData = OpenFullScreenMarkdownEditorBridgeOptions;
-
-export const fullScreenEditorOverlay = /* @__PURE__ */ defineOverlay<FullScreenEditorDefinitionData>()({
-  id: "fullScreenEditor",
-  label: "Full Screen Editor",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

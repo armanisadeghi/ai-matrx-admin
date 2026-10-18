@@ -17,7 +17,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { activateAudio } from "@/features/audio/activation";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "audioControlWindow" as const;
@@ -54,25 +53,7 @@ export function AudioControlWindowController(): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AudioControlWindowDefinitionData = Record<string, unknown>;
-
-export const audioControlWindowOverlay = /* @__PURE__ */ defineOverlay<AudioControlWindowDefinitionData>()({
-  id: "audioControlWindow",
-  label: "Media",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "audio-control-window",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

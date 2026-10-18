@@ -3,7 +3,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "convertToShapeWindow" as const;
@@ -48,25 +47,7 @@ export function ConvertToShapeWindowController({
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ConvertToShapeWindowDefinitionData = OpenConvertToShapeWindowOptions;
-
-export const convertToShapeWindowOverlay = /* @__PURE__ */ defineOverlay<ConvertToShapeWindowDefinitionData>()({
-  id: "convertToShapeWindow",
-  label: "Convert JSON to Shape",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { initialJsonContent: "" },
-    windowId: "convert-to-shape-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

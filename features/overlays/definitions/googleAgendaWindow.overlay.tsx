@@ -14,7 +14,6 @@ import { useCallback, useEffect } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "googleAgendaWindow" as const;
@@ -40,29 +39,7 @@ export function GoogleAgendaWindowController() {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type GoogleAgendaWindowDefinitionData = Record<string, unknown>;
-
-export const googleAgendaWindowOverlay = /* @__PURE__ */ defineOverlay<GoogleAgendaWindowDefinitionData>()({
-  id: "googleAgendaWindow",
-  label: "Agenda",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "google-agenda-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-  link: {
-    key: "agenda",
-    hydrate: (ctx) => import("./googleAgendaWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

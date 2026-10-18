@@ -19,7 +19,6 @@ import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createKnowledgeCommandBarCallbackGroup } from "./callbacks/knowledgeCommandBar";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "knowledgeCommandBar" as const;
@@ -71,18 +70,7 @@ export function useOpenKnowledgeCommandBar() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type KnowledgeCommandBarDefinitionData = OpenKnowledgeCommandBarOptions;
-
-export const knowledgeCommandBarOverlay = /* @__PURE__ */ defineOverlay<KnowledgeCommandBarDefinitionData>()({
-  id: "knowledgeCommandBar",
-  label: "Search your knowledge",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

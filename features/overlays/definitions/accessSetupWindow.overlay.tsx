@@ -13,7 +13,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "accessSetupWindow" as const;
@@ -59,34 +58,7 @@ export function AccessSetupWindowController(props: OpenAccessSetupWindowOptions)
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AccessSetupWindowDefinitionData = OpenAccessSetupWindowOptions;
-
-export const accessSetupWindowOverlay = /* @__PURE__ */ defineOverlay<AccessSetupWindowDefinitionData>()({
-  id: "accessSetupWindow",
-  label: "People Involved",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          headType: null,
-          recordId: null,
-          cycleId: null,
-          recordName: null,
-        },
-    windowId: "access-setup-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-  link: {
-    key: "access-setup",
-    hydrate: (ctx) => import("./accessSetupWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

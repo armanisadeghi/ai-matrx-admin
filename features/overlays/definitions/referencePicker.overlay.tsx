@@ -18,7 +18,6 @@ import type {
   ReferenceDelivery,
   ReferencePick,
 } from "@/features/matrx-envelope/components/reference-picker/referencePickerTypes";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "referencePicker" as const;
@@ -81,18 +80,7 @@ export function useOpenReferencePicker() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ReferencePickerDefinitionData = OpenReferencePickerOptions;
-
-export const referencePickerOverlay = /* @__PURE__ */ defineOverlay<ReferencePickerDefinitionData>()({
-  id: "referencePicker",
-  label: "Add a Reference",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

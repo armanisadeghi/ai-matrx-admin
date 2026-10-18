@@ -23,7 +23,6 @@ import {
   siteCommandKey,
   type SiteCommandMode,
 } from "@/features/marketing/crawler/site-commands";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteCommandRunWindow" as const;
@@ -73,25 +72,7 @@ export function useOpenSiteCommandRunWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SiteCommandRunWindowDefinitionData = OpenSiteCommandRunWindowOptions;
-
-export const siteCommandRunWindowOverlay = /* @__PURE__ */ defineOverlay<SiteCommandRunWindowDefinitionData>()({
-  id: "siteCommandRunWindow",
-  label: "Site Command Run",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "site-command-run-window",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

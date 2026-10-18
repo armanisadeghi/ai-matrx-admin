@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "emailDialogWindow" as const;
@@ -65,28 +64,7 @@ export function EmailDialogWindowController(props: OpenEmailDialogWindowOptions)
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type EmailDialogWindowDefinitionData = OpenEmailDialogWindowOptions;
-
-export const emailDialogWindowOverlay = /* @__PURE__ */ defineOverlay<EmailDialogWindowDefinitionData>()({
-  id: "emailDialogWindow",
-  label: "Email Dialog Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { to: null, subject: null, draftBody: null },
-    windowId: "email-dialog-window",
-    mobile: "drawer",
-  },
-  link: {
-    key: "email_dialog",
-    hydrate: (ctx) => import("./emailDialogWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

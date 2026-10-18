@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "promptPreviewWindow" as const;
@@ -60,25 +59,7 @@ export function PromptPreviewWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type PromptPreviewWindowDefinitionData = OpenPromptPreviewWindowOptions;
-
-export const promptPreviewWindowOverlay = /* @__PURE__ */ defineOverlay<PromptPreviewWindowDefinitionData>()({
-  id: "promptPreviewWindow",
-  label: "Full Prompt Preview Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { conversationId: "" },
-    windowId: "prompt-preview-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

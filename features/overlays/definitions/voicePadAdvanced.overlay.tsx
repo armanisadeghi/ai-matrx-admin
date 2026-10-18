@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "voicePadAdvanced" as const;
@@ -65,28 +64,7 @@ export function VoicePadAdvancedController(props: OpenVoicePadAdvancedOptions): 
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type VoicePadAdvancedDefinitionData = OpenVoicePadAdvancedOptions;
-
-export const voicePadAdvancedOverlay = /* @__PURE__ */ defineOverlay<VoicePadAdvancedDefinitionData>()({
-  id: "voicePadAdvanced",
-  label: "Voice Pad Advanced",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { transcript: null },
-    windowId: "voice-pad-advanced",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "voice-advanced",
-    hydrate: (ctx) => import("./voicePadAdvanced.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

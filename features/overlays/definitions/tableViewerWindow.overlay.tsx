@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "tableViewerWindow" as const;
@@ -64,24 +63,7 @@ export function TableViewerWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type TableViewerWindowDefinitionData = OpenTableViewerWindowOptions;
-
-export const tableViewerWindowOverlay = /* @__PURE__ */ defineOverlay<TableViewerWindowDefinitionData>()({
-  id: "tableViewerWindow",
-  label: "Table Viewer Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { content: null, title: null },
-    windowId: "table-viewer-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

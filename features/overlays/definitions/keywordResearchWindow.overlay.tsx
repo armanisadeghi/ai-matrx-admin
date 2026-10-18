@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "keywordResearchWindow" as const;
@@ -50,29 +49,7 @@ export function useOpenKeywordResearchWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type KeywordResearchWindowDefinitionData = OpenKeywordResearchWindowOptions;
-
-export const keywordResearchWindowOverlay = /* @__PURE__ */ defineOverlay<KeywordResearchWindowDefinitionData>()({
-  id: "keywordResearchWindow",
-  label: "Keyword Research",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { primaryKeyword: "", autoRun: false },
-    windowId: "keyword-research-window",
-    mobile: "fullscreen",
-    preservation: { dataKeys: ["primaryKeyword"] },
-  },
-  link: {
-    key: "keyword_research",
-    hydrate: (ctx) => import("./keywordResearchWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

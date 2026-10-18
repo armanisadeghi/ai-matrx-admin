@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "messageAnalysisWindow" as const;
@@ -65,30 +64,7 @@ export function MessageAnalysisWindowController(props: OpenMessageAnalysisWindow
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MessageAnalysisWindowDefinitionData = OpenMessageAnalysisWindowOptions;
-
-export const messageAnalysisWindowOverlay = /* @__PURE__ */ defineOverlay<MessageAnalysisWindowDefinitionData>()({
-  id: "messageAnalysisWindow",
-  label: "Message Analysis Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          conversationId: null,
-          requestId: null,
-          messageId: null,
-          activeTab: "request",
-        },
-    windowId: "message-analysis-window",
-    mobile: "card",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

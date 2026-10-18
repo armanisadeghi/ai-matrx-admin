@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "codeFileManagerWindow" as const;
@@ -67,29 +66,7 @@ export function CodeFileManagerWindowController(props: OpenCodeFileManagerWindow
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CodeFileManagerWindowDefinitionData = OpenCodeFileManagerWindowOptions;
-
-export const codeFileManagerWindowOverlay = /* @__PURE__ */ defineOverlay<CodeFileManagerWindowDefinitionData>()({
-  id: "codeFileManagerWindow",
-  label: "Code File Manager Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          selectedFolderId: null,
-          searchQuery: "",
-          sortBy: "updated",
-        },
-    windowId: "code-file-manager-window",
-    mobile: "drawer",
-    mobileSidebarAs: "drawer",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

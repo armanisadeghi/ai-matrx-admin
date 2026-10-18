@@ -29,7 +29,7 @@ describe("copySubsetWindow overlay registration", () => {
   });
 
   it("has a definition whose render module renders the window per instance", () => {
-    const definition = readFileSync(join(ROOT, "features/overlays/definitions/copySubsetWindow.overlay.tsx"), "utf8");
+    const definition = readFileSync(join(ROOT, "features/overlays/definitions/copySubsetWindow.definition.tsx"), "utf8");
     // Definitions carry no render; the host's generated render map loads it (host-build law).
     const renderMap = readFileSync(join(ROOT, "features/overlays/definitions/render-map.ts"), "utf8");
     expect(renderMap).toContain('copySubsetWindow: () => import("./copySubsetWindow.render")');
@@ -39,7 +39,7 @@ describe("copySubsetWindow overlay registration", () => {
     expect(render).toContain("instanceId");
   });
 
-  it("keeps the typed opener (hook + controller component) in the definition file", () => {
+  it("keeps the typed opener (hook + controller component) in the opener file", () => {
     const opener = readFileSync(join(ROOT, "features/overlays/definitions/copySubsetWindow.overlay.tsx"), "utf8");
     expect(opener).toContain("export function useOpenCopySubsetWindow");
     expect(opener).toContain("export function CopySubsetWindowController");

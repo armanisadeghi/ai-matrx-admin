@@ -8,7 +8,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "flashcardsBlockWindow" as const;
@@ -70,34 +69,7 @@ export function FlashcardsBlockWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FlashcardsBlockWindowDefinitionData = OpenFlashcardsBlockWindowOptions;
-
-export const flashcardsBlockWindowOverlay = /* @__PURE__ */ defineOverlay<FlashcardsBlockWindowDefinitionData>()({
-  id: "flashcardsBlockWindow",
-  label: "Flashcards Block Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          content: null,
-          serverData: null,
-          title: null,
-          additionalDetails: null,
-          taskId: null,
-          artifactId: null,
-          messageId: null,
-          conversationId: null,
-          blockIndex: null,
-        },
-    windowId: "flashcards-block-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

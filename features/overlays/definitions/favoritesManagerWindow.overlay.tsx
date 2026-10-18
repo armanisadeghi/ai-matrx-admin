@@ -15,7 +15,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "favoritesManagerWindow" as const;
@@ -52,25 +51,7 @@ export function FavoritesManagerWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FavoritesManagerWindowDefinitionData = OpenFavoritesManagerWindowOptions;
-
-export const favoritesManagerWindowOverlay = /* @__PURE__ */ defineOverlay<FavoritesManagerWindowDefinitionData>()({
-  id: "favoritesManagerWindow",
-  label: "Manage Favorites",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "favorites-manager-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentRunHistoryWindow" as const;
@@ -70,24 +69,7 @@ export function AgentRunHistoryWindowController(props: OpenAgentRunHistoryWindow
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentRunHistoryWindowDefinitionData = OpenAgentRunHistoryWindowOptions;
-
-export const agentRunHistoryWindowOverlay = /* @__PURE__ */ defineOverlay<AgentRunHistoryWindowDefinitionData>()({
-  id: "agentRunHistoryWindow",
-  label: "Agent Run History Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { agentId: null, initialSelectedConversationId: null },
-    windowId: "agent-run-history-window",
-    mobile: "fullscreen",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

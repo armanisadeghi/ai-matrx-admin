@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "streamDebug" as const;
@@ -66,24 +65,7 @@ export function StreamDebugFloatingController(props: OpenStreamDebugFloatingOpti
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type StreamDebugDefinitionData = OpenStreamDebugFloatingOptions;
-
-export const streamDebugOverlay = /* @__PURE__ */ defineOverlay<StreamDebugDefinitionData>()({
-  id: "streamDebug",
-  label: "Stream Debug",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { conversationId: null, requestIdOverride: undefined },
-    windowId: "stream-debug",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

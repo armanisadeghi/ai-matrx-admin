@@ -15,7 +15,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { RunControlsTab } from "@ai-matrx/chat/agents/components/inputs/smart-input/RunControlsTabPanel";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "runControlsWindow" as const;
@@ -69,25 +68,7 @@ export function RunControlsWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type RunControlsWindowDefinitionData = OpenRunControlsWindowOptions;
-
-export const runControlsWindowOverlay = /* @__PURE__ */ defineOverlay<RunControlsWindowDefinitionData>()({
-  id: "runControlsWindow",
-  label: "Chat Options Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { conversationId: null },
-    windowId: "run-controls-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

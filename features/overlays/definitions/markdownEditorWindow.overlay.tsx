@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "markdownEditorWindow" as const;
@@ -65,33 +64,7 @@ export function MarkdownEditorWindowController(props: OpenMarkdownEditorWindowOp
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MarkdownEditorWindowDefinitionData = OpenMarkdownEditorWindowOptions;
-
-export const markdownEditorWindowOverlay = /* @__PURE__ */ defineOverlay<MarkdownEditorWindowDefinitionData>()({
-  id: "markdownEditorWindow",
-  label: "Markdown Editor Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          content: null,
-          processorId: null,
-          coordinatorId: null,
-          sampleId: null,
-        },
-    windowId: "markdown-editor-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "markdown_editor",
-    hydrate: (ctx) => import("./markdownEditorWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

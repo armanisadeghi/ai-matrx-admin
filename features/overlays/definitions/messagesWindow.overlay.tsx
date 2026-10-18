@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "messagesWindow" as const;
@@ -61,30 +60,7 @@ export function MessagesWindowController(props: OpenMessagesWindowOptions): null
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MessagesWindowDefinitionData = OpenMessagesWindowOptions;
-
-export const messagesWindowOverlay = /* @__PURE__ */ defineOverlay<MessagesWindowDefinitionData>()({
-  id: "messagesWindow",
-  label: "Messages Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { conversationId: null, search: "" },
-    windowId: "messages-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-    preservation: { dataKeys: ["conversationId"] },
-  },
-  link: {
-    key: "messages",
-    hydrate: (ctx) => import("./messagesWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

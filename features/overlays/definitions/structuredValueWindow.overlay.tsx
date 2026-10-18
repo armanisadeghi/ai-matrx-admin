@@ -19,7 +19,6 @@ import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "structuredValueWindow" as const;
@@ -72,25 +71,7 @@ export function useOpenStructuredValueWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type StructuredValueWindowDefinitionData = OpenStructuredValueWindowOptions;
-
-export const structuredValueWindowOverlay = /* @__PURE__ */ defineOverlay<StructuredValueWindowDefinitionData>()({
-  id: "structuredValueWindow",
-  label: "Details",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { value: null, title: null, subtitle: null },
-    windowId: "structured-value-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

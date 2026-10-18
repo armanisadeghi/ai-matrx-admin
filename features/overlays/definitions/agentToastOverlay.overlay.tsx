@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentToastOverlay" as const;
@@ -69,19 +68,7 @@ export function AgentToastOverlayController(props: OpenAgentToastOverlayOptions)
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentToastOverlayDefinitionData = OpenAgentToastOverlayOptions;
-
-export const agentToastOverlayOverlay = /* @__PURE__ */ defineOverlay<AgentToastOverlayDefinitionData>()({
-  id: "agentToastOverlay",
-  label: "Agent Toast Overlay",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

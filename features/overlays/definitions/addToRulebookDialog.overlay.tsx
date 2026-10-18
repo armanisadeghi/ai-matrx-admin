@@ -13,7 +13,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "addToRulebookDialog" as const;
@@ -73,19 +72,7 @@ export function AddToRulebookDialogController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AddToRulebookDialogDefinitionData = OpenAddToRulebookDialogOptions;
-
-export const addToRulebookDialogOverlay = /* @__PURE__ */ defineOverlay<AddToRulebookDialogDefinitionData>()({
-  id: "addToRulebookDialog",
-  label: "Add to Rulebook",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

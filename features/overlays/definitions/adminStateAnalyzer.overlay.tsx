@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "adminStateAnalyzer" as const;
@@ -53,19 +52,7 @@ export function StateViewerOverlayController(props: OpenStateViewerOverlayOption
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AdminStateAnalyzerDefinitionData = OpenStateViewerOverlayOptions;
-
-export const adminStateAnalyzerOverlay = /* @__PURE__ */ defineOverlay<AdminStateAnalyzerDefinitionData>()({
-  id: "adminStateAnalyzer",
-  label: "Admin State Analyzer",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentFromChatWindow" as const;
@@ -56,25 +55,7 @@ export function AgentFromChatWindowController(props: OpenAgentFromChatWindowOpti
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentFromChatWindowDefinitionData = OpenAgentFromChatWindowOptions;
-
-export const agentFromChatWindowOverlay = /* @__PURE__ */ defineOverlay<AgentFromChatWindowDefinitionData>()({
-  id: "agentFromChatWindow",
-  label: "Make an Agent From a Chat",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { conversationId: null, conversationTitle: null },
-    windowId: "agent-from-chat-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

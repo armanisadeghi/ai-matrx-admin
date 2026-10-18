@@ -7,7 +7,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay, toggleOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export const BUILDER_PANEL_OVERLAY_ID = "builderPanelWindow" as const;
@@ -41,25 +40,7 @@ export function useToggleBuilderPanel() {
   }, [dispatch]);
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type BuilderPanelWindowDefinitionData = OpenBuilderPanelOptions;
-
-export const builderPanelWindowOverlay = /* @__PURE__ */ defineOverlay<BuilderPanelWindowDefinitionData>()({
-  id: "builderPanelWindow",
-  label: "Builder",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { surfaceKey: null, tab: "run", entryKey: null, raw: false },
-    windowId: "builder-panel-window",
-    mobile: "fullscreen",
-    preservation: { dataKeys: ["surfaceKey", "tab", "entryKey", "raw"] },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

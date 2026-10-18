@@ -16,7 +16,6 @@ import { useCallback, useEffect } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "socialPostWindow" as const;
@@ -83,32 +82,7 @@ export function SocialPostWindowController(props: OpenSocialPostOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SocialPostWindowDefinitionData = OpenSocialPostOptions;
-
-export const socialPostWindowOverlay = /* @__PURE__ */ defineOverlay<SocialPostWindowDefinitionData>()({
-  id: "socialPostWindow",
-  label: "Post",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: true,
-  window: {
-    restoreDefaults: { postId: "", organizationId: "", brandSeg: "", tab: "overview" },
-    windowId: "social-post-window",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["postId", "organizationId", "brandSeg", "tab"],
-      requiredDataKeys: ["postId", "organizationId"],
-    },
-  },
-  link: {
-    key: "social_post",
-    hydrate: (ctx) => import("./socialPostWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

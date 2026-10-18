@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentDataStorageWindow" as const;
@@ -61,26 +60,7 @@ export function AgentDataStorageWindowController(props: OpenAgentDataStorageWind
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentDataStorageWindowDefinitionData = OpenAgentDataStorageWindowOptions;
-
-export const agentDataStorageWindowOverlay = /* @__PURE__ */ defineOverlay<AgentDataStorageWindowDefinitionData>()({
-  id: "agentDataStorageWindow",
-  label: "Agent Data Storage Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { agentId: null },
-    windowId: "agent-data-storage-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-    deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

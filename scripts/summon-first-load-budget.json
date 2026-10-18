@@ -1,5 +1,5 @@
 {
-  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs, needs a `build-lab/run.sh <label> --maps` build). Ratchet only down (--update). 2026-10-17: before the fix /notes 314879, /dashboard 314879, /pricing 287617; after 147337 / 144429 / 115998.",
+  "_doc": "Minified first-load bytes of @ai-matrx/summon + the app's overlay host/definitions per route (scripts/check-summon-first-load.mjs, needs a `build-lab/run.sh <label> --maps` build). Ratchet only down (--update). 2026-10-17: before the fix /notes 314879, /dashboard 314879, /pricing 287617; after 147337 / 144429 / 115998. W4 2026-10-17: definitions split from openers (<id>.definition.ts(x), read only by the lazy registry) and overlay-meta-index loaded on click: 45750 / 44148 / 43459.",
   "forbidden": [
     "^summon/window/(WindowPanel|WindowSidebar|LayoutIcon|useWindowPanel|icons)",
     "^summon/window/(chrome|mobile|utils|tray/TrayChip)",
@@ -12,11 +12,13 @@
     "^summon/core/(overlaysSlice|windowManagerSlice|linksSlice|overlayStateSlice|store)\\.ts",
     "^summon/core/(middleware|geometry)/",
     "^summon/react/",
-    "^summon/window/"
+    "^summon/window/",
+    "^app:features/overlays/definitions/[^/]+\\.definition\\.tsx?$",
+    "^app:features/overlays/definitions/overlay-meta-index"
   ],
   "routes": {
-    "(core)/notes": 102243,
-    "(core)/dashboard": 99311,
-    "(public)/pricing": 70841
+    "(core)/notes": 45750,
+    "(core)/dashboard": 44148,
+    "(public)/pricing": 43459
   }
 }

@@ -17,7 +17,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "impactBatchWindow" as const;
@@ -113,48 +112,7 @@ export function ImpactBatchWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ImpactBatchWindowDefinitionData = OpenImpactBatchWindowOptions;
-
-export const impactBatchWindowOverlay = /* @__PURE__ */ defineOverlay<ImpactBatchWindowDefinitionData>()({
-  id: "impactBatchWindow",
-  label: "Change impact",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          agentIds: null,
-          mode: null,
-          delta: null,
-          batchLabel: null,
-          sourceSentence: null,
-          preselectedRungIds: null,
-          surfaceName: null,
-          posture: null,
-          focusAgentId: null,
-        },
-    windowId: "impact-batch-window",
-    mobile: "fullscreen",
-    preservation: {
-      dataKeys: [
-        "agentIds",
-        "mode",
-        "delta",
-        "batchLabel",
-        "sourceSentence",
-        "preselectedRungIds",
-        "surfaceName",
-        "posture",
-        "focusAgentId",
-      ],
-      requiredDataKeys: ["agentIds", "mode"],
-    },
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

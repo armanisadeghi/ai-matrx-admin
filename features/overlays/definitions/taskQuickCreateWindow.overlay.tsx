@@ -18,7 +18,6 @@ import type {
   TaskPrePopulate,
   TaskSourceInput,
 } from "@/features/tasks/widgets/quick-create/TaskQuickCreateCore";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "taskQuickCreateWindow" as const;
@@ -86,32 +85,7 @@ export function TaskQuickCreateWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type TaskQuickCreateWindowDefinitionData = OpenTaskQuickCreateWindowOptions;
-
-export const taskQuickCreateWindowOverlay = /* @__PURE__ */ defineOverlay<TaskQuickCreateWindowDefinitionData>()({
-  id: "taskQuickCreateWindow",
-  label: "Task Quick Create Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          entity_type: null,
-          entity_id: null,
-          label: "",
-          metadata: {},
-          source: undefined,
-          prePopulate: { title: "", description: "", priority: null },
-        },
-    windowId: "task-quick-create-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

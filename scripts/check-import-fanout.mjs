@@ -46,6 +46,10 @@ export const HOST_ONLY = [
     hosts: ["features/overlays/definitions/register.ts", "features/overlays/host/OverlayWorldHost.tsx"],
   },
   { module: /^features\/overlays\/definitions\/[^/]+\.render\.tsx$/, hosts: [] },
+  // A definition (defineOverlay) is read only by the generated registry list, which the lazy summon
+  // runtime loads. Callers import the opener file (<id>.overlay.ts(x)); a static import of a
+  // definition from anywhere else puts it back in that graph's first load (W4 2026-10-17).
+  { module: /^features\/overlays\/definitions\/[^/]+\.definition\.tsx?$/, hosts: ["features/overlays/definitions/overlay-definitions.gen.ts"] },
   // Registering every definition loads all ~224 definition modules. Never in the boot graph: only
   // the idle-loaded overlay services and lazily imported open paths may reach it (2026-10-17: the
   // extension bridge subscriber, mounted in every tab, pulled the whole list into first load).

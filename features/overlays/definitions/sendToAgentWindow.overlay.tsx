@@ -15,7 +15,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "sendToAgentWindow" as const;
@@ -69,28 +68,7 @@ export function SendToAgentWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SendToAgentWindowDefinitionData = OpenSendToAgentWindowOptions;
-
-export const sendToAgentWindowOverlay = /* @__PURE__ */ defineOverlay<SendToAgentWindowDefinitionData>()({
-  id: "sendToAgentWindow",
-  label: "Send to another agent",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          initialContent: null as string | null,
-          initialSourceTitle: null as string | null,
-        },
-    windowId: "send-to-agent-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

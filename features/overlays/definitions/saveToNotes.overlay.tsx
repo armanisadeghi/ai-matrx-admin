@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "saveToNotes" as const;
@@ -74,19 +73,7 @@ export function QuickNoteSaveOverlayController(props: OpenQuickNoteSaveOverlayOp
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SaveToNotesDefinitionData = OpenQuickNoteSaveOverlayOptions;
-
-export const saveToNotesOverlay = /* @__PURE__ */ defineOverlay<SaveToNotesDefinitionData>()({
-  id: "saveToNotes",
-  label: "Save To Notes",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

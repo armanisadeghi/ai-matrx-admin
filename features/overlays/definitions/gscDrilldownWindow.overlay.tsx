@@ -21,7 +21,6 @@ import type {
   GscFilters,
   GscRangeKey,
 } from "@/features/marketing/search-console/types";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "gscDrilldownWindow" as const;
@@ -103,25 +102,7 @@ export function useOpenGscDrilldownWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type GscDrilldownWindowDefinitionData = OpenGscDrilldownWindowOptions;
-
-export const gscDrilldownWindowOverlay = /* @__PURE__ */ defineOverlay<GscDrilldownWindowDefinitionData>()({
-  id: "gscDrilldownWindow",
-  label: "Search Console Drill-down",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "gsc-drilldown-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

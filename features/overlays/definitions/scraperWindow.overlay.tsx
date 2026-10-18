@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "scraperWindow" as const;
@@ -69,38 +68,7 @@ export function ScraperWindowController(props: OpenScraperWindowOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ScraperWindowDefinitionData = OpenScraperWindowOptions;
-
-export const scraperWindowOverlay = /* @__PURE__ */ defineOverlay<ScraperWindowDefinitionData>()({
-  id: "scraperWindow",
-  label: "Scraper Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          mode: "single",
-          url: "",
-          keyword: "",
-          maxPages: 1,
-          results: [],
-          scrapeStates: {},
-          selectedIndex: null,
-          activeTab: "results",
-        },
-    windowId: "scraper-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-  },
-  link: {
-    key: "scraper",
-    hydrate: (ctx) => import("./scraperWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "noteInfoWindow" as const;
@@ -64,25 +63,7 @@ export function NoteInfoWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type NoteInfoWindowDefinitionData = OpenNoteInfoWindowOptions;
-
-export const noteInfoWindowOverlay = /* @__PURE__ */ defineOverlay<NoteInfoWindowDefinitionData>()({
-  id: "noteInfoWindow",
-  label: "Note Info",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { noteId: null, title: undefined },
-    windowId: "note-info-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

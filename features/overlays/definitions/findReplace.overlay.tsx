@@ -20,7 +20,6 @@ import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createFindReplaceCallbackGroup } from "./callbacks/findReplace";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "findReplace" as const;
@@ -119,18 +118,7 @@ export function FindReplaceController(props: OpenFindReplaceOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FindReplaceDefinitionData = OpenFindReplaceOptions;
-
-export const findReplaceOverlay = /* @__PURE__ */ defineOverlay<FindReplaceDefinitionData>()({
-  id: "findReplace",
-  label: "Find & Replace",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

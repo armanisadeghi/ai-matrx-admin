@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "cloudFilesWindow" as const;
@@ -62,29 +61,7 @@ export function CloudFilesWindowController(props: OpenCloudFilesWindowOptions): 
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CloudFilesWindowDefinitionData = OpenCloudFilesWindowOptions;
-
-export const cloudFilesWindowOverlay = /* @__PURE__ */ defineOverlay<CloudFilesWindowDefinitionData>()({
-  id: "cloudFilesWindow",
-  label: "Cloud Files Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { initialTab: "browse" },
-    windowId: "cloud-files-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-  },
-  link: {
-    key: "cloud_files", aliases: ["files"],
-    hydrate: (ctx) => import("./cloudFilesWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

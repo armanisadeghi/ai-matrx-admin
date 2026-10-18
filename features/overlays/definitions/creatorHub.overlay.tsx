@@ -15,7 +15,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "creatorHub" as const;
@@ -79,29 +78,7 @@ export function CreatorHubController(props: OpenCreatorHubOptions): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type CreatorHubDefinitionData = OpenCreatorHubOptions;
-
-export const creatorHubOverlay = /* @__PURE__ */ defineOverlay<CreatorHubDefinitionData>()({
-  id: "creatorHub",
-  label: "Creator Hub",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { activeTab: "settings" },
-    windowId: "creator-hub-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-  },
-  link: {
-    key: "creator_hub",
-    hydrate: (ctx) => import("./creatorHub.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -3,7 +3,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "flashcardStudyWindow" as const;
@@ -51,25 +50,7 @@ export function FlashcardStudyWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type FlashcardStudyWindowDefinitionData = OpenFlashcardStudyWindowOptions;
-
-export const flashcardStudyWindowOverlay = /* @__PURE__ */ defineOverlay<FlashcardStudyWindowDefinitionData>()({
-  id: "flashcardStudyWindow",
-  label: "Flashcard Study Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { setId: null, title: null },
-    windowId: "flashcard-study-window",
-    mobile: "fullscreen",
-    mobileSidebarAs: "drawer",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

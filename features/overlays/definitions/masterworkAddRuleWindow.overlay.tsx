@@ -14,7 +14,6 @@ import {
   type AddRuleWindowData,
   type AddRuleWindowHandlers,
 } from "@/features/window-panels/windows/masterwork/callbacks";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { UntypedOverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "masterworkAddRuleWindow" as const;
@@ -67,29 +66,7 @@ export function useOpenAddRuleWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type MasterworkAddRuleWindowDefinitionData = OpenAddRuleWindowOptions;
-
-export const masterworkAddRuleWindowOverlay = /* @__PURE__ */ defineOverlay<MasterworkAddRuleWindowDefinitionData>()({
-  id: "masterworkAddRuleWindow",
-  label: "Add a rule",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          callbackGroupId: null as string | null,
-          rulebookId: null as string | null,
-          defaultSection: null as string | null,
-        },
-    windowId: "masterwork-add-rule-window",
-    mobile: "fullscreen",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

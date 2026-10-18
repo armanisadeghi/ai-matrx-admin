@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "serpAnalyzerWindow" as const;
@@ -39,28 +38,7 @@ export function useOpenSerpAnalyzerWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SerpAnalyzerWindowDefinitionData = OpenSerpAnalyzerWindowOptions;
-
-export const serpAnalyzerWindowOverlay = /* @__PURE__ */ defineOverlay<SerpAnalyzerWindowDefinitionData>()({
-  id: "serpAnalyzerWindow",
-  label: "Search Appearance",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { url: "", title: "", description: "" },
-    windowId: "serp-analyzer-window",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "serp_analyzer",
-    hydrate: (ctx) => import("./serpAnalyzerWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

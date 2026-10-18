@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "scopeBatchImportWindow" as const;
@@ -60,19 +59,7 @@ export function ScopeBatchImportWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ScopeBatchImportWindowDefinitionData = OpenScopeBatchImportWindowOptions;
-
-export const scopeBatchImportWindowOverlay = /* @__PURE__ */ defineOverlay<ScopeBatchImportWindowDefinitionData>()({
-  id: "scopeBatchImportWindow",
-  label: "Batch Add from Scope Window",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {},
-});
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

@@ -11,7 +11,6 @@ import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "dataChangesWindow" as const;
@@ -39,28 +38,7 @@ export function useOpenDataChangesWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type DataChangesWindowDefinitionData = OpenDataChangesOptions;
-
-export const dataChangesWindowOverlay = /* @__PURE__ */ defineOverlay<DataChangesWindowDefinitionData>()({
-  id: "dataChangesWindow",
-  label: "Data Changes",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { tableId: null },
-    windowId: "data-changes",
-    mobile: "fullscreen",
-  },
-  link: {
-    key: "data_changes",
-    hydrate: (ctx) => import("./dataChangesWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

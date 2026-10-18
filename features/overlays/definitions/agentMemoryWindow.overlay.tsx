@@ -12,7 +12,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentMemoryWindow" as const;
@@ -44,25 +43,7 @@ export function AgentMemoryWindowController(): null {
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentMemoryWindowDefinitionData = Record<string, unknown>;
-
-export const agentMemoryWindowOverlay = /* @__PURE__ */ defineOverlay<AgentMemoryWindowDefinitionData>()({
-  id: "agentMemoryWindow",
-  label: "Agent Memory",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {},
-    windowId: "agent-memory-window",
-    mobile: "drawer",
-    ephemeral: true,
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

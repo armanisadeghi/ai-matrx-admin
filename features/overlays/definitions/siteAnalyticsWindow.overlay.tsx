@@ -9,7 +9,6 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "siteAnalyticsWindow" as const;
@@ -39,32 +38,7 @@ export function useOpenSiteAnalyticsWindow() {
   );
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type SiteAnalyticsWindowDefinitionData = OpenSiteAnalyticsWindowOptions;
-
-export const siteAnalyticsWindowOverlay = /* @__PURE__ */ defineOverlay<SiteAnalyticsWindowDefinitionData>()({
-  id: "siteAnalyticsWindow",
-  label: "Google Analytics",
-  instance: "single",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: { siteId: "", siteLabel: "" },
-    windowId: "site-analytics-window",
-    mobile: "drawer",
-    preservation: {
-      dataKeys: ["siteId", "siteLabel"],
-      requiredDataKeys: ["siteId"],
-    },
-  },
-  link: {
-    key: "site_analytics",
-    hydrate: (ctx) => import("./siteAnalyticsWindow.link").then((m) => m.hydrate(ctx)),
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

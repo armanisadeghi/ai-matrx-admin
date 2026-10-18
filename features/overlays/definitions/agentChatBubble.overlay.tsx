@@ -14,7 +14,6 @@
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "agentChatBubble" as const;
@@ -67,19 +66,7 @@ export function AgentChatBubbleController(props: OpenAgentChatBubbleOptions): nu
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type AgentChatBubbleDefinitionData = OpenAgentChatBubbleOptions;
-
-export const agentChatBubbleOverlay = /* @__PURE__ */ defineOverlay<AgentChatBubbleDefinitionData>()({
-  id: "agentChatBubble",
-  label: "Agent Chat Bubble",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {

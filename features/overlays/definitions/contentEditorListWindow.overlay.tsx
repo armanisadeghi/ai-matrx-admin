@@ -12,7 +12,6 @@ import {
   type OpenContentEditorListWindowOptions,
   type ContentEditorWindowHandle,
 } from "@/features/window-panels/windows/content-editors/useOpenContentEditorWindow";
-import { defineOverlay } from "@ai-matrx/summon/define";
 import type { OverlayWire } from "./overlay-types";
 
 export {
@@ -33,30 +32,7 @@ export function ContentEditorListWindowController(
   return null;
 }
 
-// ── definition (@ai-matrx/summon) ──────────────────────────────────────────────────
-
 export type ContentEditorListWindowDefinitionData = OpenContentEditorListWindowOptions;
-
-export const contentEditorListWindowOverlay = /* @__PURE__ */ defineOverlay<ContentEditorListWindowDefinitionData>()({
-  id: "contentEditorListWindow",
-  label: "Content Editor List Window",
-  instance: "multi",
-  keepAlive: "none",
-  closesOnNavigation: false,
-  window: {
-    restoreDefaults: {
-          documents: [],
-          activeDocumentId: null,
-          listTitle: null,
-          title: null,
-        },
-    windowId: "content-editor-list-window",
-    mobile: "drawer",
-    mobileSidebarAs: "drawer",
-  },
-});
-
-
 
 declare module "@ai-matrx/summon" {
   interface OverlayRegistry {
