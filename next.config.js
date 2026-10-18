@@ -1245,11 +1245,31 @@ function withDevNativeReactCompiler(config) {
   return { ...config, experimental: { ...config.experimental, turbopackRustReactCompiler: true } };
 }
 
+// THE SHARED PREVIEW'S NODE-SIDE WORK RUNS IN WORKER THREADS (2026-10-18). Turbopack runs its
+// Node-side work (webpack loaders such as the pending-import rescue above, PostCSS) in a pool of
+// child processes by default: 24 children beside next-server on an ordinary page. Measured on a
+// 15 GB cloud host, signed in, cold /notes: with the default the server passed 12.5 GB and never
+// served the page (killed and restarted three times); with worker threads it served in 219 s at a
+// 12.1 GB peak with 2 processes, and the command bar and a note opened cleanly. Next falls back to
+// child processes by itself on Node versions with the worker teardown bug. DEV ONLY; set false to
+// go back to child processes.
+// NOT ON: experimental.turbopackLazyDynamicImports (compile an import() target on first use). It
+// cut /notes to an 8.2 GB peak and 14,040 browser modules, but a cold overlay then compiles past
+// summon's fixed 12 s import timeout and fails its first open as a ChunkLoadError (seen on the
+// command bar). Turn it on only once SummonRoot lets this app give dev a longer importTimeoutMs.
+const DEV_PLUGIN_WORKER_THREADS = true;
+function withDevWorkerThreads(config) {
+  if (!DEV_PLUGIN_WORKER_THREADS) return config;
+  return { ...config, experimental: { ...config.experimental, turbopackPluginRuntimeStrategy: "workerThreads" } };
+}
+
 copyFiles();
 module.exports = (phase) => {
   assertSharedDevServer(phase);
   assertGuardedBuild(phase);
   const config =
-    phase === PHASE_DEVELOPMENT_SERVER ? withDevNativeReactCompiler(withPendingImportRescue(nextConfig)) : nextConfig;
+    phase === PHASE_DEVELOPMENT_SERVER
+      ? withDevWorkerThreads(withDevNativeReactCompiler(withPendingImportRescue(nextConfig)))
+      : nextConfig;
   return withBundleAnalyzer(config);
 };
