@@ -272,6 +272,12 @@ export function SurfaceBindingsBatchEditor({
       (b) =>
         b.surfaceName === surfaceName && bindingMatchesScope(b, scope, scopeId),
     )?.autoRun ?? false;
+  /** The stored version pin at this tier — same wholesale-replace round-trip. */
+  const agentVersionIdFor = (surfaceName: string): string | null =>
+    bindings.find(
+      (b) =>
+        b.surfaceName === surfaceName && bindingMatchesScope(b, scope, scopeId),
+    )?.agentVersionId ?? null;
 
   // Surfaces in the batch that declare write targets — only these render a
   // policy editor; the rest still round-trip their stored overrides on apply.
@@ -330,6 +336,7 @@ export function SurfaceBindingsBatchEditor({
       // Round-trip: the payload is replaced wholesale per surface, so a
       // binding that already runs instantly must keep doing so.
       autoRun: autoRunFor(surfaceName),
+      agentVersionId: agentVersionIdFor(surfaceName),
     }));
 
     setApplying(true);

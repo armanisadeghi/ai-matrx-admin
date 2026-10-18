@@ -38,6 +38,8 @@ import {
   upsertAgentSurfaceBindingThunk,
   deleteAgentSurfaceBindingThunk,
 } from "@ai-matrx/chat/surfaces/redux/thunks";
+import { pinnedBindingArgs } from "@/features/surfaces/services/pinned-binding-args";
+
 import {
   makeSelectBindingsForAgent,
   makeSelectSurfaceValues,
@@ -325,7 +327,7 @@ function BindingForm({
     setBusy(true);
     try {
       const saved = await dispatch(
-        upsertAgentSurfaceBindingThunk({
+        upsertAgentSurfaceBindingThunk(pinnedBindingArgs({
           agentId: agent.id,
           surfaceName,
           scope: {
@@ -345,7 +347,9 @@ function BindingForm({
           // Same round-trip for the binding's auto-run answer — it is edited
           // in SurfaceAgentBindPanel, not this form.
           autoRun: existing?.autoRun,
-        }),
+          // And for its version pin (edited in SurfaceAgentBindPanel).
+          agentVersionId: existing?.agentVersionId ?? null,
+        })),
       ).unwrap();
       toast.success(existing ? "Binding updated" : "Binding created");
       onSaved(saved.id);
